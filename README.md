@@ -26,7 +26,7 @@ Add `mcp_ex` to your dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:mcp_ex, "~> 0.2"}
+    {:mcp_ex, "~> 1.0"}
   ]
 end
 ```
@@ -36,7 +36,7 @@ For **Streamable HTTP** transport support, also add these optional dependencies:
 ```elixir
 def deps do
   [
-    {:mcp_ex, "~> 0.2"},
+    {:mcp_ex, "~> 1.0"},
     {:req, "~> 0.5"},        # HTTP client (for MCP client over HTTP)
     {:plug, "~> 1.16"},      # HTTP framework (for MCP server over HTTP)
     {:bandit, "~> 1.5"}      # HTTP server (for MCP server over HTTP)
@@ -403,7 +403,6 @@ See [mcp_ex_examples](https://github.com/JohnSmall/mcp_ex_examples) for complete
 
 - [MCP Specification (2025-11-25)](https://modelcontextprotocol.io/specification/2025-11-25)
 - [Architecture](docs/architecture.md) — module map, data flow, transport design
-- [Implementation Plan](docs/implementation-plan.md) — phased build plan with task details
 - [Onboarding](docs/onboarding.md) — full context for contributors
 
 ## License

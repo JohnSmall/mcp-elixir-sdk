@@ -1,18 +1,26 @@
 defmodule McpEx.MixProject do
   use Mix.Project
 
+  @version "1.0.0"
+  @source_url "https://github.com/JohnSmall/mcp_ex"
+
   def project do
     [
       app: :mcp_ex,
-      version: "0.2.3",
+      version: @version,
       elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
       deps: deps(),
       dialyzer: [plt_add_apps: [:ex_unit]],
+
+      # Hex
       name: "MCP Ex",
       description: "Elixir implementation of the Model Context Protocol (MCP)",
-      source_url: "https://github.com/JohnSmall/mcp_ex"
+      source_url: @source_url,
+      homepage_url: "https://modelcontextprotocol.io",
+      package: package(),
+      docs: docs()
     ]
   end
 
@@ -25,6 +33,60 @@ defmodule McpEx.MixProject do
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
+
+  defp package do
+    [
+      licenses: ["MIT"],
+      links: %{
+        "GitHub" => @source_url,
+        "MCP Specification" => "https://modelcontextprotocol.io/specification/2025-11-25",
+        "Examples" => "https://github.com/JohnSmall/mcp_ex_examples"
+      },
+      files: ~w(lib usage-rules.md .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      extras: [
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE",
+        "usage-rules.md": [title: "Usage Rules (AI Agents)"],
+        "docs/architecture.md": [title: "Architecture"],
+        "docs/onboarding.md": [title: "Onboarding"]
+      ],
+      groups_for_extras: [
+        Guides: ["docs/architecture.md", "docs/onboarding.md"],
+        Reference: ["CHANGELOG.md", "LICENSE", "usage-rules.md"]
+      ],
+      groups_for_modules: [
+        Client: [MCP.Client],
+        Server: [MCP.Server, MCP.Server.Handler, MCP.Server.ToolContext],
+        Protocol: [
+          MCP.Protocol,
+          MCP.Protocol.Error,
+          MCP.Protocol.Methods
+        ],
+        Capabilities: ~r/MCP\.Protocol\.Capabilities\..*/,
+        Messages: ~r/MCP\.Protocol\.Messages\..*/,
+        Types: ~r/MCP\.Protocol\.Types\..*/,
+        Transport: [
+          MCP.Transport,
+          MCP.Transport.Stdio,
+          MCP.Transport.SSE,
+          MCP.Transport.StreamableHTTP.Client,
+          MCP.Transport.StreamableHTTP.Server,
+          MCP.Transport.StreamableHTTP.Plug,
+          MCP.Transport.StreamableHTTP.PreStarted
+        ]
+      ],
+      source_ref: "v#{@version}",
+      source_url: @source_url,
+      skip_undefined_reference_warnings_on: ["docs/architecture.md"]
+    ]
+  end
 
   defp deps do
     [
