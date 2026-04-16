@@ -8,9 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2026-04-16
 
 ### Changed
+- **Renamed package** from `mcp_ex` to `mcp_elixir_sdk` (the `mcp_ex` hex name was previously taken by another client-only library)
+- Top-level OTP application module renamed from `McpEx.Application` to `MCPElixirSDK.Application` (internal, not part of the public API)
+- Default `client_info`/`server_info` name updated to `mcp_elixir_sdk`
 - First stable release
 - 100% MCP conformance (Tier 1, 30/30 scenarios, 40/40 checks)
 - Full hex package metadata, documentation, and usage rules for AI agents
+
+### Note
+Public module names under the `MCP.*` namespace (e.g. `MCP.Client`, `MCP.Server`, `MCP.Server.Handler`, `MCP.Transport.*`) are unchanged, so existing code using these modules continues to work — only the dependency declaration needs updating.
 
 ## [0.2.3] - 2025-02-17
 
@@ -53,9 +59,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pagination support for list operations
 - Tools, resources, prompts, completions, and logging features
 
-[1.0.0]: https://github.com/JohnSmall/mcp_ex/compare/v0.2.3...v1.0.0
-[0.2.3]: https://github.com/JohnSmall/mcp_ex/compare/v0.2.2...v0.2.3
-[0.2.2]: https://github.com/JohnSmall/mcp_ex/compare/v0.2.1...v0.2.2
-[0.2.1]: https://github.com/JohnSmall/mcp_ex/compare/v0.2.0...v0.2.1
-[0.2.0]: https://github.com/JohnSmall/mcp_ex/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/JohnSmall/mcp_ex/releases/tag/v0.1.0
+[1.0.0]: https://github.com/JohnSmall/mcp-elixir-sdk/compare/v0.2.3...v1.0.0
+[0.2.3]: https://github.com/JohnSmall/mcp-elixir-sdk/compare/v0.2.2...v0.2.3
+[0.2.2]: https://github.com/JohnSmall/mcp-elixir-sdk/compare/v0.2.1...v0.2.2
+[0.2.1]: https://github.com/JohnSmall/mcp-elixir-sdk/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/JohnSmall/mcp-elixir-sdk/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/JohnSmall/mcp-elixir-sdk/releases/tag/v0.1.0

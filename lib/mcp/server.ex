@@ -218,7 +218,7 @@ defmodule MCP.Server do
     {handler_spec, opts} = Keyword.pop!(opts, :handler)
 
     server_info =
-      build_server_info(Keyword.get(opts, :server_info, %{name: "mcp_ex", version: "0.1.0"}))
+      build_server_info(Keyword.get(opts, :server_info, %{name: "mcp_elixir_sdk", version: "1.0.0"}))
 
     instructions = Keyword.get(opts, :instructions)
     request_timeout = Keyword.get(opts, :request_timeout, @default_request_timeout)
@@ -742,8 +742,8 @@ defmodule MCP.Server do
 
   defp build_server_info(map) when is_map(map) do
     %Implementation{
-      name: Map.get(map, :name) || Map.get(map, "name", "mcp_ex"),
-      version: Map.get(map, :version) || Map.get(map, "version", "0.1.0")
+      name: Map.get(map, :name) || Map.get(map, "name", "mcp_elixir_sdk"),
+      version: Map.get(map, :version) || Map.get(map, "version", "1.0.0")
     }
   end
 

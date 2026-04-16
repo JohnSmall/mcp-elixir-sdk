@@ -5,4 +5,4 @@
 /tmp/
 erl_crash.dump
 *.ez
-mcp_ex-*.tar
+mcp_elixir_sdk-*.tar

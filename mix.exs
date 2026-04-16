@@ -1,12 +1,12 @@
-defmodule McpEx.MixProject do
+defmodule MCPElixirSDK.MixProject do
   use Mix.Project
 
   @version "1.0.0"
-  @source_url "https://github.com/JohnSmall/mcp_ex"
+  @source_url "https://github.com/JohnSmall/mcp-elixir-sdk"
 
   def project do
     [
-      app: :mcp_ex,
+      app: :mcp_elixir_sdk,
       version: @version,
       elixir: "~> 1.17",
       start_permanent: Mix.env() == :prod,
@@ -15,8 +15,8 @@ defmodule McpEx.MixProject do
       dialyzer: [plt_add_apps: [:ex_unit]],
 
       # Hex
-      name: "MCP Ex",
-      description: "Elixir implementation of the Model Context Protocol (MCP)",
+      name: "MCP Elixir SDK",
+      description: "Official-style Elixir SDK for the Model Context Protocol (MCP) — client and server with stdio and Streamable HTTP transports.",
       source_url: @source_url,
       homepage_url: "https://modelcontextprotocol.io",
       package: package(),
@@ -27,7 +27,7 @@ defmodule McpEx.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {McpEx.Application, []}
+      mod: {MCPElixirSDK.Application, []}
     ]
   end
 
@@ -84,7 +84,7 @@ defmodule McpEx.MixProject do
       ],
       source_ref: "v#{@version}",
       source_url: @source_url,
-      skip_undefined_reference_warnings_on: ["docs/architecture.md"]
+      skip_undefined_reference_warnings_on: ["docs/architecture.md", "CHANGELOG.md"]
     ]
   end
 

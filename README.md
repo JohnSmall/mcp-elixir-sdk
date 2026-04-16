@@ -1,6 +1,6 @@
-# MCP Ex
+# MCP Elixir SDK
 
-Elixir implementation of the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) — an open protocol for integrating LLM applications with external data sources and tools.
+Elixir SDK for the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) — an open protocol for integrating LLM applications with external data sources and tools.
 
 Provides both **client** and **server** implementations with pluggable transports (stdio, Streamable HTTP).
 
@@ -21,12 +21,12 @@ Implements MCP specification **2025-11-25**.
 
 ## Installation
 
-Add `mcp_ex` to your dependencies in `mix.exs`:
+Add `mcp_elixir_sdk` to your dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:mcp_ex, "~> 1.0"}
+    {:mcp_elixir_sdk, "~> 1.0"}
   ]
 end
 ```
@@ -36,7 +36,7 @@ For **Streamable HTTP** transport support, also add these optional dependencies:
 ```elixir
 def deps do
   [
-    {:mcp_ex, "~> 1.0"},
+    {:mcp_elixir_sdk, "~> 1.0"},
     {:req, "~> 0.5"},        # HTTP client (for MCP client over HTTP)
     {:plug, "~> 1.16"},      # HTTP framework (for MCP server over HTTP)
     {:bandit, "~> 1.5"}      # HTTP server (for MCP server over HTTP)

@@ -320,7 +320,7 @@ defmodule MCP.Client do
     {transport_spec, opts} = Keyword.pop!(opts, :transport)
 
     client_info =
-      build_client_info(Keyword.get(opts, :client_info, %{name: "mcp_ex", version: "0.1.0"}))
+      build_client_info(Keyword.get(opts, :client_info, %{name: "mcp_elixir_sdk", version: "1.0.0"}))
 
     notification_handler = Keyword.get(opts, :notification_handler)
     request_timeout = Keyword.get(opts, :request_timeout, @default_request_timeout)
@@ -672,8 +672,8 @@ defmodule MCP.Client do
 
   defp build_client_info(map) when is_map(map) do
     %Implementation{
-      name: Map.get(map, :name) || Map.get(map, "name", "mcp_ex"),
-      version: Map.get(map, :version) || Map.get(map, "version", "0.1.0")
+      name: Map.get(map, :name) || Map.get(map, "name", "mcp_elixir_sdk"),
+      version: Map.get(map, :version) || Map.get(map, "version", "1.0.0")
     }
   end
 

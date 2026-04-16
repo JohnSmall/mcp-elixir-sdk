@@ -1,4 +1,4 @@
-defmodule McpEx.Application do
+defmodule MCPElixirSDK.Application do
   @moduledoc false
 
   use Application
@@ -7,7 +7,7 @@ defmodule McpEx.Application do
   def start(_type, _args) do
     children = []
 
-    opts = [strategy: :one_for_one, name: McpEx.Supervisor]
+    opts = [strategy: :one_for_one, name: MCPElixirSDK.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end

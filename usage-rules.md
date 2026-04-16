@@ -1,17 +1,19 @@
-# MCP Ex — Usage Rules
+# MCP Elixir SDK — Usage Rules
 
-> Condensed rules for AI agents and developers using `mcp_ex`.
-> For full documentation see [hexdocs](https://hexdocs.pm/mcp_ex).
+> Condensed rules for AI agents and developers using `mcp_elixir_sdk`.
+> For full documentation see [hexdocs](https://hexdocs.pm/mcp_elixir_sdk).
 
 ## What This Package Does
 
-`mcp_ex` is an Elixir implementation of the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) — an open protocol for integrating LLM applications with external data sources and tools. It provides both **client** and **server** implementations with pluggable transports. Protocol version: **2025-11-25**.
+`mcp_elixir_sdk` is an Elixir SDK for the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) — an open protocol for integrating LLM applications with external data sources and tools. It provides both **client** and **server** implementations with pluggable transports. Protocol version: **2025-11-25**.
+
+Public modules live under the `MCP.*` namespace (e.g. `MCP.Client`, `MCP.Server`).
 
 ## Installation
 
 ```elixir
 # mix.exs deps
-{:mcp_ex, "~> 1.0"}
+{:mcp_elixir_sdk, "~> 1.0"}
 
 # Also add these for Streamable HTTP transport:
 {:req, "~> 0.5"}      # HTTP client

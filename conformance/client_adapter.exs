@@ -47,7 +47,7 @@ defmodule MCP.Conformance.ClientAdapter do
     Client.start_link(
       transport:
         {MCP.Transport.StreamableHTTP.Client, url: url, headers: []},
-      client_info: %{name: "mcp_ex_conformance", version: "0.1.0"},
+      client_info: %{name: "mcp_elixir_sdk_conformance", version: "1.0.0"},
       on_sampling: fn params ->
         {:ok,
          %{
