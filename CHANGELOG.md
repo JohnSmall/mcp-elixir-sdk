@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-07-07
+
+### Changed
+- Documentation only — no code changes. Updated `docs/prd.md`, `docs/architecture.md`, `docs/implementation-plan.md`, and `docs/onboarding.md` headers to reflect the `mcp_elixir_sdk` package name and current version (they still referred to the pre-rename `MCP Ex` / v0.2.1). Directory paths (`/workspace/elixir_code/mcp_ex/`) are intentionally left unchanged.
+
 ## [1.0.1] - 2026-04-16
 
 ### Changed

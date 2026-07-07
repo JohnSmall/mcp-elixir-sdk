@@ -1,14 +1,15 @@
-# Onboarding Guide: MCP Ex
+# Onboarding Guide: MCP Elixir SDK
 
 ## For New AI Agents / Developers
 
-This document provides everything needed to start implementing the MCP Ex library.
+This document provides everything needed to start implementing the MCP Elixir SDK library
+(Hex package `mcp_elixir_sdk`; local directory still `/workspace/elixir_code/mcp_ex/`).
 
 ---
 
 ## 1. What Is This Project?
 
-MCP Ex is an Elixir implementation of the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP). MCP is an open standard (like LSP for code editors) that enables standardized communication between LLM applications and external tools/data sources.
+MCP Elixir SDK is an Elixir implementation of the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP). MCP is an open standard (like LSP for code editors) that enables standardized communication between LLM applications and external tools/data sources.
 
 The library provides:
 - **MCP Client** — connects to MCP servers, discovers and calls tools, reads resources, uses prompts
@@ -409,10 +410,10 @@ npx @modelcontextprotocol/conformance@latest test server --url http://localhost:
 
 ## 12. Relationship to ADK
 
-MCP Ex is standalone — no ADK dependency. The ADK uses it via a thin adapter:
+MCP Elixir SDK is standalone — no ADK dependency. The ADK uses it via a thin adapter:
 
 ```
-adk_ex                          mcp_ex
+adk_ex                          mcp_elixir_sdk
 ├── ADK.Tool.Toolset behaviour  ├── MCP.Client
 │   └── ADK.Tool.McpToolset ────┤   (wraps MCP.Client as Toolset)
 │       name/1 → "mcp:server"  │   list_tools → ADK tool structs

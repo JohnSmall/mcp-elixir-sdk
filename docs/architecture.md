@@ -1,8 +1,8 @@
-# Architecture Document: MCP Ex
+# Architecture Document: MCP Elixir SDK
 
 ## Document Info
-- **Project**: MCP Ex
-- **Version**: 0.2.1
+- **Project**: MCP Elixir SDK (Hex package `mcp_elixir_sdk`)
+- **Version**: 1.0.2
 - **Date**: 2026-02-09
 - **Status**: Phase 7 Complete — 100% Conformance (Tier 1)
 - **Protocol**: MCP 2025-11-25

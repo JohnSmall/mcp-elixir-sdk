@@ -1,8 +1,8 @@
-# Implementation Plan: MCP Ex
+# Implementation Plan: MCP Elixir SDK
 
 ## Document Info
-- **Project**: MCP Ex
-- **Version**: 0.2.1
+- **Project**: MCP Elixir SDK (Hex package `mcp_elixir_sdk`)
+- **Version**: 1.0.2
 - **Date**: 2026-02-09
 - **Status**: Phase 7 Complete — 100% Conformance (Tier 1)
 - **Protocol**: MCP 2025-11-25
@@ -36,7 +36,7 @@ git clone https://github.com/modelcontextprotocol/conformance /workspace/samples
   - `mix new mcp_ex --sup`
   - Configure mix.exs with deps: jason, elixir_uuid, dialyxir, credo, ex_doc
   - Set Elixir >= 1.17, OTP >= 26
-  - Application name `:mcp_ex`
+  - Application name `:mcp_ex` — later renamed to `:mcp_elixir_sdk` for the Hex release (the `mcp_ex` name was taken; local directory kept as `mcp_ex`)
 
 - [x] **1.2** Define protocol error module (`lib/mcp/protocol/error.ex`)
   - `MCP.Protocol.Error` struct: code, message, data

@@ -1,18 +1,20 @@
-# Product Requirements Document: MCP Ex
+# Product Requirements Document: MCP Elixir SDK
 
 ## Document Info
-- **Project**: MCP Ex — Elixir implementation of the Model Context Protocol
-- **Version**: 0.2.1
+- **Project**: MCP Elixir SDK — Elixir implementation of the Model Context Protocol
+- **Hex package**: `mcp_elixir_sdk`
+- **Version**: 1.0.2
 - **Date**: 2026-02-09
 - **Status**: Phase 7 Complete — 100% Conformance (Tier 1)
 - **Protocol**: MCP 2025-11-25
-- **GitHub**: github.com/JohnSmall/mcp_ex
+- **GitHub**: github.com/JohnSmall/mcp-elixir-sdk
+- **Local directory**: `/workspace/elixir_code/mcp_ex/` (not renamed)
 
 ---
 
 ## 1. Executive Summary
 
-`mcp_ex` is a standalone Elixir library implementing the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP), an open protocol for integrating LLM applications with external tools and data sources. The library provides both **client** and **server** implementations with pluggable transports (stdio, Streamable HTTP).
+`mcp_elixir_sdk` is a standalone Elixir library implementing the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP), an open protocol for integrating LLM applications with external tools and data sources. The library provides both **client** and **server** implementations with pluggable transports (stdio, Streamable HTTP).
 
 MCP is to AI tool integration what LSP (Language Server Protocol) is to code editors — a universal standard replacing N×M custom integrations with a single protocol.
 
@@ -160,7 +162,7 @@ The ADK integration is a thin adapter: `ADK.Tool.McpToolset` wraps `MCP.Client` 
 - **OTP**: >= 26
 - **Runtime deps**: jason (JSON), elixir_uuid or nanoid (IDs)
 - **Optional deps**: req (HTTP client for Streamable HTTP client), plug + bandit (HTTP server for Streamable HTTP server)
-- **No ADK dependency** — mcp_ex is standalone
+- **No ADK dependency** — mcp_elixir_sdk is standalone
 - **No mandatory HTTP deps** — stdio transport works with zero HTTP deps
 - **Conformance testing** via npx (Node.js required in CI only)
 
