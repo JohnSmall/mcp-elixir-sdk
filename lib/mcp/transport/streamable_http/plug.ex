@@ -26,11 +26,66 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
     * `:server_mod` (required) — the MCP.Server.Handler module
     * `:server_opts` — options to pass to `MCP.Server.start_link/1`
+      (only `:server_info`, `:capabilities`, and `:instructions` are forwarded)
+    * `:handler_opts` — options passed to the handler's `c:MCP.Server.Handler.init/1`
+      for each session. Either a static keyword list, or a factory function
+      `(Plug.Conn.t() -> keyword())` evaluated once per session at `initialize`
+      (default: `[]`). See "Request-scoped handler options" below.
     * `:session_id_generator` — function that generates session IDs
       (default: `UUID.uuid4/0`). Pass `nil` for stateless mode.
     * `:enable_json_response` — if true, return `application/json` instead
       of SSE for simple request/response (default: false)
     * `:protocol_version` — expected protocol version (default: "2025-11-25")
+
+  ## Request-scoped handler options
+
+  `:handler_opts` threads options into the per-session handler's
+  `c:MCP.Server.Handler.init/1`. This is the supported seam for carrying a
+  request-established identity — validated by an upstream auth Plug and placed
+  in `conn.assigns` — into handler state, **without forking this Plug**.
+
+  Two forms:
+
+    * **Static** — `handler_opts: [region: "eu"]`. Passed verbatim to `init/1`.
+    * **Factory** — `handler_opts: fn conn -> [identity: conn.assigns.identity] end`.
+      Evaluated **once per session, at the `initialize` POST**, against that
+      request's `conn`. The returned keyword list is bound into handler state for
+      the session's whole life; later requests on the same session reuse it and do
+      **not** re-run the factory.
+
+  Example:
+
+      # Your auth Plug runs first and sets conn.assigns.identity
+      plug = MCP.Transport.StreamableHTTP.Plug.new(
+        server_mod: MyApp.McpHandler,
+        handler_opts: fn conn -> [identity: conn.assigns.identity] end
+      )
+
+      defmodule MyApp.McpHandler do
+        @behaviour MCP.Server.Handler
+        @impl true
+        def init(opts), do: {:ok, %{identity: Keyword.fetch!(opts, :identity)}}
+
+        @impl true
+        def handle_call_tool("whoami", _args, state),
+          # acts as the bound principal — NEVER an identity taken from tool args
+          do: {:ok, [%{"type" => "text", "text" => state.identity.subject}], state}
+      end
+
+  Security: identity must be established server-side by the authenticated Plug
+  pipeline and bound at the `initialize` trust boundary — never supplied by the
+  model via tool-call arguments, which are model-controlled and spoofable. The
+  handler stays transport-agnostic: identity arrives through `init/1` opts, and
+  the `conn` is never leaked into `handle_call_tool/3,4`.
+
+  The factory form requires a `conn`, so it is supported only on the Plug's
+  `initialize` request path. Conn-less start paths (a directly supervised
+  `MCP.Server`, stdio, `MCP.Transport.StreamableHTTP.PreStarted`) support the
+  **static** keyword form only.
+
+  A factory that raises or returns a non-keyword produces a clean JSON-RPC
+  "Internal error" (HTTP 500, code -32603) at `initialize` with no session
+  started; the detail is logged server-side and never returned to the client.
   """
 
   @behaviour Plug
@@ -42,9 +97,18 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   @protocol_version "2025-11-25"
 
+  @typedoc """
+  Options threaded into the handler's `c:MCP.Server.Handler.init/1`.
+
+  Either a static keyword list, or a factory `(Plug.Conn.t() -> keyword())`
+  evaluated once per session at `initialize` against that request's conn.
+  """
+  @type handler_opts :: keyword() | (Plug.Conn.t() -> keyword())
+
   defstruct [
     :server_mod,
     :server_opts,
+    :handler_opts,
     :session_id_generator,
     :enable_json_response,
     :protocol_version,
@@ -69,6 +133,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   def init(opts) do
     server_mod = Keyword.fetch!(opts, :server_mod)
     server_opts = Keyword.get(opts, :server_opts, [])
+    handler_opts = validate_handler_opts!(Keyword.get(opts, :handler_opts, []))
 
     session_id_generator =
       case Keyword.get(opts, :session_id_generator, :default) do
@@ -86,6 +151,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     %__MODULE__{
       server_mod: server_mod,
       server_opts: server_opts,
+      handler_opts: handler_opts,
       session_id_generator: session_id_generator,
       enable_json_response: enable_json_response,
       protocol_version: protocol_version,
@@ -141,17 +207,29 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   defp handle_initialize(conn, config, message) do
     session_id = generate_session_id(config)
 
-    case create_session_and_deliver(config, session_id, message) do
-      {:ok, response} ->
-        conn
-        |> maybe_set_session_header(session_id)
-        |> send_response(config, response)
+    # Resolve handler_opts against this request's conn BEFORE any transport or
+    # server is started, so a factory failure orphans nothing (no ETS row, no
+    # transport, no half-started MCP.Server). Bound once, for the session's life.
+    case resolve_handler_opts(config.handler_opts, conn) do
+      {:ok, handler_opts} ->
+        case create_session_and_deliver(config, session_id, message, handler_opts) do
+          {:ok, response} ->
+            conn
+            |> maybe_set_session_header(session_id)
+            |> send_response(config, response)
 
-      :accepted ->
-        Plug.Conn.send_resp(conn, 202, "")
+          :accepted ->
+            Plug.Conn.send_resp(conn, 202, "")
+
+          {:error, reason} ->
+            send_json_error(conn, 500, -32_603, "Internal error", inspect(reason))
+        end
 
       {:error, reason} ->
-        send_json_error(conn, 500, -32_603, "Internal error", inspect(reason))
+        # Server-side fault (server-supplied factory). Log full detail; return a
+        # controlled, non-leaking message — a factory closure may hold secrets.
+        Logger.error("MCP Plug: handler_opts factory failed: #{inspect(reason)}")
+        send_json_error(conn, 500, -32_603, "Internal error", "handler_opts factory error")
     end
   end
 
@@ -297,8 +375,8 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     end
   end
 
-  defp create_session_and_deliver(config, session_id, message) do
-    case start_session(config, session_id) do
+  defp create_session_and_deliver(config, session_id, message, handler_opts) do
+    case start_session(config, session_id, handler_opts) do
       {:ok, transport_pid} ->
         if session_id, do: :ets.insert(config.sessions, {session_id, transport_pid})
         HTTPTransport.deliver_message(transport_pid, message)
@@ -308,12 +386,12 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     end
   end
 
-  defp start_session(config, session_id) do
+  defp start_session(config, session_id, handler_opts) do
     transport_opts = [owner: self(), session_id: session_id]
 
     case HTTPTransport.start_link(transport_opts) do
       {:ok, transport_pid} ->
-        case start_mcp_server(config, transport_pid) do
+        case start_mcp_server(config, transport_pid, handler_opts) do
           {:ok, _server_pid} ->
             {:ok, transport_pid}
 
@@ -327,9 +405,9 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     end
   end
 
-  defp start_mcp_server(config, transport_pid) do
+  defp start_mcp_server(config, transport_pid, handler_opts) do
     server_opts = [
-      handler: {config.server_mod, []},
+      handler: {config.server_mod, handler_opts},
       transport: {MCP.Transport.StreamableHTTP.PreStarted, pid: transport_pid}
     ]
 
@@ -338,6 +416,50 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
         Keyword.take(config.server_opts, [:server_info, :capabilities, :instructions])
 
     MCP.Server.start_link(server_opts)
+  end
+
+  # Resolves `handler_opts` for a session. Static keyword lists (already
+  # validated at init) pass through; a factory is evaluated once against the
+  # `initialize` request's conn. Returns `{:error, reason}` — never raises — if
+  # the factory raises or returns a non-keyword, so the caller can fail the
+  # request cleanly without starting a session.
+  defp resolve_handler_opts(fun, conn) when is_function(fun, 1) do
+    case fun.(conn) do
+      result when is_list(result) ->
+        if Keyword.keyword?(result) do
+          {:ok, result}
+        else
+          {:error, {:non_keyword_result, result}}
+        end
+
+      other ->
+        {:error, {:non_keyword_result, other}}
+    end
+  rescue
+    exception -> {:error, {:factory_raised, exception, __STACKTRACE__}}
+  end
+
+  defp resolve_handler_opts(list, _conn) when is_list(list), do: {:ok, list}
+
+  # Fail-fast validation at Plug.init/1: the static form must be a keyword list,
+  # or the option must be a 1-arity factory. A config error surfaces at mount
+  # time, never per-request.
+  defp validate_handler_opts!(fun) when is_function(fun, 1), do: fun
+
+  defp validate_handler_opts!(list) when is_list(list) do
+    if Keyword.keyword?(list) do
+      list
+    else
+      raise ArgumentError,
+            "handler_opts must be a keyword list or a 1-arity function " <>
+              "(Plug.Conn.t() -> keyword()), got a non-keyword list: #{inspect(list)}"
+    end
+  end
+
+  defp validate_handler_opts!(other) do
+    raise ArgumentError,
+          "handler_opts must be a keyword list or a 1-arity function " <>
+            "(Plug.Conn.t() -> keyword()), got: #{inspect(other)}"
   end
 
   defp require_session_id(conn) do
