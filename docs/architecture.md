@@ -188,6 +188,10 @@ Architecture overview:
     pending response callers so responses can be routed back to the correct HTTP connection.
   - `StreamableHTTP.PreStarted` — Adapter that lets MCP.Server reuse an already-started
     transport process (since the Plug starts the transport before the MCP.Server).
+  - **Proposed (1.1.0 candidate):** a `handler_opts` seam on the Plug threads request-scoped
+    identity from the authenticated Plug pipeline into `Handler.init/1`. See
+    [`handler-opts-identity-seam-spec.md`](handler-opts-identity-seam-spec.md) (MES-2, spec-only;
+    implementation MES-3).
 
 - **SSE**: `MCP.Transport.SSE` provides encoding/decoding utilities:
   - `encode_event/1`, `encode_message/2` for SSE event creation
