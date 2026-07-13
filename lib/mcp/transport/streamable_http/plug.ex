@@ -22,9 +22,34 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
       # Start Bandit with the Plug
       {:ok, _} = Bandit.start_link(plug: plug, port: 8080)
 
+  The public Plug option is `:server_mod`. Do **not** use `:handler` here —
+  `:handler` is the internal `MCP.Server.start_link/1` key that this Plug
+  constructs for you; passing it to the Plug has no effect.
+
+  ## Client handshake (initialize → initialized → tools/call)
+
+  Each session's `MCP.Server` starts in the `:waiting` state and only becomes
+  `:ready` after it receives the `notifications/initialized` notification. A
+  client MUST drive the full MCP handshake, in order:
+
+    1. `POST` an `initialize` request — the response carries the
+       `MCP-Session-Id` header identifying the new session.
+    2. `POST` a `notifications/initialized` notification on that session
+       (include the `MCP-Session-Id` header). The server returns `202 Accepted`
+       and transitions to `:ready`.
+    3. Only then `POST` `tools/call` (and other requests) on that session.
+
+  Going straight from `initialize` to `tools/call` — skipping step 2 — is the
+  single most common integration mistake: the server rejects the request with
+  "Server not initialized", which can surface as a hang or a confusing error.
+  `MCP.Client.connect/1` performs this handshake for you; if you drive the
+  transport with a raw HTTP client, you must send `notifications/initialized`
+  yourself.
+
   ## Options
 
-    * `:server_mod` (required) — the MCP.Server.Handler module
+    * `:server_mod` (required) — the `MCP.Server.Handler` module. This is the
+      **public** Plug option (not `:handler`, which is internal to `MCP.Server`).
     * `:server_opts` — options to pass to `MCP.Server.start_link/1`
       (only `:server_info`, `:capabilities`, and `:instructions` are forwarded)
     * `:handler_opts` — options passed to the handler's `c:MCP.Server.Handler.init/1`

@@ -1,7 +1,7 @@
 defmodule MCPElixirSDK.MixProject do
   use Mix.Project
 
-  @version "1.0.2"
+  @version "1.1.0"
   @source_url "https://github.com/JohnSmall/mcp-elixir-sdk"
 
   def project do
@@ -40,9 +40,9 @@ defmodule MCPElixirSDK.MixProject do
       links: %{
         "GitHub" => @source_url,
         "MCP Specification" => "https://modelcontextprotocol.io/specification/2025-11-25",
-        "Examples" => "https://github.com/JohnSmall/mcp_ex_examples"
+        "Examples" => "#{@source_url}#server-examples"
       },
-      files: ~w(lib usage-rules.md .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
+      files: ~w(lib docs/architecture.md usage-rules.md .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
     ]
   end
 
@@ -54,11 +54,10 @@ defmodule MCPElixirSDK.MixProject do
         "CHANGELOG.md",
         "LICENSE",
         "usage-rules.md": [title: "Usage Rules (AI Agents)"],
-        "docs/architecture.md": [title: "Architecture"],
-        "docs/onboarding.md": [title: "Onboarding"]
+        "docs/architecture.md": [title: "Architecture"]
       ],
       groups_for_extras: [
-        Guides: ["docs/architecture.md", "docs/onboarding.md"],
+        Guides: ["docs/architecture.md"],
         Reference: ["CHANGELOG.md", "LICENSE", "usage-rules.md"]
       ],
       groups_for_modules: [

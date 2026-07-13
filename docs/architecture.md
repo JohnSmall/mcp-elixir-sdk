@@ -188,10 +188,11 @@ Architecture overview:
     pending response callers so responses can be routed back to the correct HTTP connection.
   - `StreamableHTTP.PreStarted` — Adapter that lets MCP.Server reuse an already-started
     transport process (since the Plug starts the transport before the MCP.Server).
-  - **Proposed (1.1.0 candidate):** a `handler_opts` seam on the Plug threads request-scoped
-    identity from the authenticated Plug pipeline into `Handler.init/1`. See
-    [`handler-opts-identity-seam-spec.md`](handler-opts-identity-seam-spec.md) (MES-2, spec-only;
-    implementation MES-3).
+  - **`handler_opts` seam (1.1.0):** the Plug threads request-scoped identity from the
+    authenticated Plug pipeline into `Handler.init/1` — a static keyword list or a per-session
+    `(Plug.Conn.t() -> keyword())` factory evaluated once at `initialize`. Backward-compatible
+    (absent `handler_opts` = prior behaviour). See
+    [`handler-opts-identity-seam-spec.md`](https://github.com/JohnSmall/mcp-elixir-sdk/blob/main/docs/handler-opts-identity-seam-spec.md).
 
 - **SSE**: `MCP.Transport.SSE` provides encoding/decoding utilities:
   - `encode_event/1`, `encode_message/2` for SSE event creation
@@ -200,6 +201,12 @@ Architecture overview:
 
 - **Session management**: Server generates UUID session IDs, stores in ETS. Client extracts
   from `MCP-Session-Id` response header. Protocol version validated via `MCP-Protocol-Version`.
+
+- **Handshake ordering**: a session's `MCP.Server` stays `:waiting` until it receives
+  `notifications/initialized`; clients MUST drive `initialize → notifications/initialized →
+  tools/call` (requests before `:ready` are rejected with "Server not initialized"). This is the
+  most common consumer stumble. `MCP.Client.connect/1` does this automatically; raw HTTP clients
+  must send `notifications/initialized` themselves.
 
 - **Dependencies**: req ~> 0.5 (HTTP client), plug ~> 1.16 (HTTP framework),
   bandit ~> 1.5 (HTTP server) — all optional, only needed for Streamable HTTP

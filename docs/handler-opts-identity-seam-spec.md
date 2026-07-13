@@ -28,6 +28,13 @@ This spec adds a first-class, supported seam — **`handler_opts`** — so ident
 
 ## 2. The `handler_opts` API
 
+> **Public option name.** The Plug's public options are **`server_mod:`** (the
+> handler module) and **`server_opts:`**. `handler:` is the *internal*
+> `MCP.Server.start_link/1` key that the Plug constructs for you (it appears in
+> the thread path in §2.1 for illustration only) — **do not** pass `handler:`
+> when configuring the Plug; consumer-facing configuration always uses
+> `server_mod:`.
+
 Add one new option to `MCP.Transport.StreamableHTTP.Plug`:
 
 ```elixir

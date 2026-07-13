@@ -26,7 +26,7 @@ Add `mcp_elixir_sdk` to your dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:mcp_elixir_sdk, "~> 1.0"}
+    {:mcp_elixir_sdk, "~> 1.1"}
   ]
 end
 ```
@@ -36,7 +36,7 @@ For **Streamable HTTP** transport support, also add these optional dependencies:
 ```elixir
 def deps do
   [
-    {:mcp_elixir_sdk, "~> 1.0"},
+    {:mcp_elixir_sdk, "~> 1.1"},
     {:req, "~> 0.5"},        # HTTP client (for MCP client over HTTP)
     {:plug, "~> 1.16"},      # HTTP framework (for MCP server over HTTP)
     {:bandit, "~> 1.5"}      # HTTP server (for MCP server over HTTP)
@@ -350,6 +350,16 @@ plug_config = MCP.Transport.StreamableHTTP.Plug.init(
 IO.puts("MCP server running at http://localhost:8080/mcp")
 ```
 
+> **Client handshake (Streamable HTTP).** Each session's server starts in the
+> `:waiting` state and becomes `:ready` only after the client sends the
+> `notifications/initialized` notification. A client MUST drive the handshake in
+> order: **`initialize` → `notifications/initialized` → `tools/call`** (each
+> request after `initialize` carries the `MCP-Session-Id` header from the
+> `initialize` response). Skipping the `notifications/initialized` step and going
+> straight to `tools/call` is rejected with "Server not initialized" and is the
+> most common integration mistake. `MCP.Client.connect/1` performs this handshake
+> for you; a raw HTTP client must send it explicitly.
+
 ### Sampling over HTTP
 
 When using `ToolContext.request_sampling/2` over the Streamable HTTP transport,
@@ -390,20 +400,16 @@ capabilities based on which callbacks your handler implements.
 
 ## Examples
 
-See [mcp_ex_examples](https://github.com/JohnSmall/mcp_ex_examples) for complete, runnable example projects:
-
-| Example | Transport | Description |
-|---------|-----------|-------------|
-| server_example_1 | Stdio | Weather/calculator server with sync tools and resources |
-| server_example_2 | HTTP | Knowledge base server with async tools, prompts, resource templates, and logging |
-| client_example_1 | Both | Basic client connecting to both servers |
-| client_example_2 | Both | Advanced client with sampling callbacks, pagination, and notification handling |
+Complete, runnable examples ship in this README — see [Client Examples](#client-examples)
+and [Server Examples](#server-examples) above — and in the published
+[API documentation](https://hexdocs.pm/mcp_elixir_sdk). Each is self-contained and
+copy-pasteable, covering stdio and Streamable HTTP for both client and server.
 
 ## Documentation
 
 - [MCP Specification (2025-11-25)](https://modelcontextprotocol.io/specification/2025-11-25)
 - [Architecture](docs/architecture.md) — module map, data flow, transport design
-- [Onboarding](docs/onboarding.md) — full context for contributors
+- [Onboarding](https://github.com/JohnSmall/mcp-elixir-sdk/blob/main/docs/onboarding.md) — full context for contributors
 
 ## License
 

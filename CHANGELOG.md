@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-07-12
+
+### Added
+- **`handler_opts` request-identity seam** on `MCP.Transport.StreamableHTTP.Plug`. A new public
+  Plug option threads request-scoped options into each session's handler `init/1`, so an
+  authenticated Streamable-HTTP MCP server can bind a pipeline-established identity into handler
+  state **without forking the Plug**. Two forms:
+  - **Static** — `handler_opts: keyword()`, passed verbatim to `Handler.init/1`.
+  - **Factory** — `handler_opts: (Plug.Conn.t() -> keyword())`, evaluated **once per session at
+    the `initialize` request** against that request's `conn` (e.g. reading `conn.assigns` set by an
+    upstream auth Plug), then bound for the session's lifetime.
+- Validated against EMFA's consumer acceptance criteria (AC1–AC8) in the test suite, and by an
+  external consumer running the seam in production against real Jira.
+
+### Security
+- Identity is established **server-side** by the authenticated Plug pipeline and bound at the
+  `initialize` trust boundary — it is delivered to the handler via `init/1` opts and read from
+  handler **state**, never supplied by the model as a tool-call argument (which is model-controlled
+  and spoofable). The `conn` is never leaked into `handle_call_tool/3,4`, keeping handlers
+  transport-agnostic. A factory that raises or returns a non-keyword fails the session cleanly at
+  `initialize` (HTTP 500 / JSON-RPC -32603) with no session started and no server-side detail
+  leaked to the client.
+
+### Changed
+- **Backward-compatible**: with no `handler_opts` (the default `[]`), behaviour is identical to
+  prior releases — existing consumers are unaffected.
+- **Docs**: clarified that the public Plug option is `server_mod:` (not the internal `MCP.Server`
+  `handler:` key); documented the required client handshake ordering
+  (`initialize → notifications/initialized → tools/call`; the per-session server stays `:waiting`
+  until `notifications/initialized`); fixed the stale Examples link.
+
 ## [1.0.2] - 2026-07-07
 
 ### Changed
