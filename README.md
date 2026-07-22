@@ -410,6 +410,7 @@ copy-pasteable, covering stdio and Streamable HTTP for both client and server.
 - [MCP Specification (2025-11-25)](https://modelcontextprotocol.io/specification/2025-11-25)
 - [Architecture](docs/architecture.md) — module map, data flow, transport design
 - [Onboarding](https://github.com/JohnSmall/mcp-elixir-sdk/blob/main/docs/onboarding.md) — full context for contributors
+- [Architecture Decision Records (ADRs)](https://github.com/JohnSmall/mcp-elixir-sdk/tree/main/docs/adr) — project decision records
 
 ## License
 
