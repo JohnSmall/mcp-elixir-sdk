@@ -52,14 +52,20 @@ landed **as ratified**; nothing below was silently edited. Items flagged here ar
 | RC locked 2026-05-21; final publishes 2026-07-28 | RC blog post | ✅ Confirmed |
 | C# reference SDK keeps both eras / negotiates down to the legacy handshake (basis for the deliberate divergence in sub-decision 5) | C# `2.0.0-preview` release notes | ✅ Confirmed (directionally) |
 
-**Could not confirm (left as ratified — for PM/PO):**
+**Discrepancy raised and now RESOLVED (corrected in the ADR, not waived):**
 
-- **"22 SEPs" total count** (ADR-002 Context, sub-decision 4, Consequences). No authoritative source
-  checked states an explicit total: the 2026-07-28 RC blog post, the SDK-betas post, and the changelog
-  do not give a headline "N SEPs" figure; the RC post references ~20 distinct SEP numbers. The figure is
-  neither confirmed nor refuted, so it is **not** changed. Suggest reconciling against the SEP index
-  (`modelcontextprotocol.io/seps`) / the release milestone before it is relied on for scope-sizing in
-  Sprint 3.
+- **"22 SEPs" total count** (originally in ADR-002 Context, sub-decision 4, Consequences, Next steps —
+  four places). CC's landing-verification pass could not substantiate the total against any authoritative
+  source: the 2026-07-28 RC blog post, the SDK-betas post, and the changelog give no headline "N SEPs"
+  figure (the RC post references ~20 distinct SEPs). A PM re-check confirmed no official total is
+  published. **Actioned by the PM with PO approval (2026-07-23):** the unsupported count was removed and
+  replaced with accurate framing — stateless core = six SEPs, authorization hardening = a further six,
+  plus extensions/lifecycle/routing/caching/trace-context/error-code changes — pointing to the
+  authoritative inventory (draft changelog "Key Changes" + the [SEP index](https://modelcontextprotocol.io/seps));
+  sub-decision 4 was reworded to "the revision in its entirety, not a subset." Newly-confirmed anchors
+  (SEP-2164, SEP-2243, SEP-2260, SEP-2577/2596, SEP-414) were folded in. Repo copy re-synced from
+  Confluence v3; see the ADR's own **Amendment log**. **No sub-decision, scope, or version choice
+  changed.**
 
 No objective typos were found in any SEP number or error code — all specific anchors matched upstream
 exactly, so no corrections were applied.
