@@ -12,9 +12,14 @@ defmodule MCP.Protocol.ErrorTest do
       assert Error.internal_error_code() == -32_603
     end
 
-    test "MCP-specific error codes" do
-      assert Error.resource_not_found_code() == -32_002
-      assert Error.url_elicitation_required_code() == -32_042
+    test "MCP spec-reserved error codes (2026-07-28)" do
+      assert Error.header_mismatch_code() == -32_020
+      assert Error.missing_required_client_capability_code() == -32_021
+      assert Error.unsupported_protocol_version_code() == -32_022
+    end
+
+    test "resource-not-found maps to standard Invalid Params (SEP-2164)" do
+      assert Error.resource_not_found_code() == -32_602
     end
   end
 
@@ -56,17 +61,22 @@ defmodule MCP.Protocol.ErrorTest do
       assert error.message == "Internal error"
     end
 
-    test "resource_not_found/1" do
+    test "resource_not_found/1 uses -32602 (SEP-2164)" do
       error = Error.resource_not_found("file:///missing")
-      assert error.code == -32_002
+      assert error.code == -32_602
       assert error.data == "file:///missing"
     end
 
-    test "url_elicitation_required/1" do
-      data = %{"url" => "https://auth.example.com", "description" => "Login required"}
-      error = Error.url_elicitation_required(data)
-      assert error.code == -32_042
-      assert error.data == data
+    test "unsupported_protocol_version/1" do
+      error = Error.unsupported_protocol_version("2025-11-25")
+      assert error.code == -32_022
+      assert error.message == "Unsupported protocol version"
+      assert error.data == "2025-11-25"
+    end
+
+    test "header_mismatch/1 and missing_required_client_capability/1" do
+      assert Error.header_mismatch("Mcp-Method").code == -32_020
+      assert Error.missing_required_client_capability("sampling").code == -32_021
     end
   end
 

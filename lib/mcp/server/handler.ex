@@ -129,21 +129,77 @@ defmodule MCP.Server.Handler do
 
   @doc """
   Set the logging level. Called on `logging/setLevel`.
+
+  > **Deprecated in the 2026-07-28 stateless core.** `logging/setLevel` is
+  > removed as a control method (SEP-2575); the log level now rides each
+  > request's `io.modelcontextprotocol/logLevel` `_meta` key. The Logging
+  > feature (server→client notifications) is retained-deprecated. This callback
+  > is not invoked by the stateless dispatch and is removed in MES-9.
   """
   @callback handle_set_log_level(level :: String.t(), state()) :: {:ok, state()}
 
+  # --- Stateless per-request callbacks (2026-07-28) ---
+  #
+  # The stateless dispatch (`MCP.Server.Dispatch`) constructs one per-request
+  # context (`MCP.Server.ToolContext`, carrying the pipeline-established
+  # `:identity`) and passes it to the identity-capable callback for the request.
+  # These context-bearing arities are the stateless successors to the arities
+  # above; a handler implements the context arity for any request type where it
+  # makes an identity-dependent decision. `handle_call_tool/4` (defined above)
+  # already carries the context and doubles as the stateless tools/call callback.
+
+  @typedoc "The per-request handler context carrying `:identity`."
+  @type context :: MCP.Server.ToolContext.t()
+
+  @doc "Stateless `tools/list` (context-bearing). Successor to `handle_list_tools/2`."
+  @callback handle_list_tools(cursor(), context(), state()) ::
+              {:ok, tools :: [map()], next_cursor :: cursor(), state()}
+
+  @doc "Stateless `resources/list` (context-bearing). Successor to `handle_list_resources/2`."
+  @callback handle_list_resources(cursor(), context(), state()) ::
+              {:ok, resources :: [map()], next_cursor :: cursor(), state()}
+
+  @doc "Stateless `resources/read` (context-bearing). Successor to `handle_read_resource/2`."
+  @callback handle_read_resource(uri :: String.t(), context(), state()) ::
+              {:ok, contents :: [map()], state()}
+              | {:error, code :: integer(), message :: String.t(), state()}
+
+  @doc "Stateless `resources/templates/list` (context-bearing)."
+  @callback handle_list_resource_templates(cursor(), context(), state()) ::
+              {:ok, templates :: [map()], next_cursor :: cursor(), state()}
+
+  @doc "Stateless `prompts/list` (context-bearing). Successor to `handle_list_prompts/2`."
+  @callback handle_list_prompts(cursor(), context(), state()) ::
+              {:ok, prompts :: [map()], next_cursor :: cursor(), state()}
+
+  @doc "Stateless `prompts/get` (context-bearing). Successor to `handle_get_prompt/3`."
+  @callback handle_get_prompt(name :: String.t(), arguments :: map() | nil, context(), state()) ::
+              {:ok, result :: map(), state()}
+              | {:error, code :: integer(), message :: String.t(), state()}
+
+  @doc "Stateless `completion/complete` (context-bearing). Successor to `handle_complete/3`."
+  @callback handle_complete(ref :: map(), argument :: map(), context(), state()) ::
+              {:ok, completion :: map(), state()}
+
   @optional_callbacks [
     handle_list_tools: 2,
+    handle_list_tools: 3,
     handle_call_tool: 3,
     handle_call_tool: 4,
     handle_list_resources: 2,
+    handle_list_resources: 3,
     handle_read_resource: 2,
+    handle_read_resource: 3,
     handle_subscribe: 2,
     handle_unsubscribe: 2,
     handle_list_resource_templates: 2,
+    handle_list_resource_templates: 3,
     handle_list_prompts: 2,
+    handle_list_prompts: 3,
     handle_get_prompt: 3,
+    handle_get_prompt: 4,
     handle_complete: 3,
+    handle_complete: 4,
     handle_set_log_level: 2
   ]
 end

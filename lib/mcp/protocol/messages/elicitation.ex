@@ -6,17 +6,25 @@ defmodule MCP.Protocol.Messages.Elicitation do
   defmodule Params do
     @moduledoc """
     Parameters for `elicitation/create`.
+
+    **URL-mode elicitation is retained** in the 2026-07-28 stateless core (PO
+    Ruling 5; draft schema `7634684382c3d14cf7e9f14073fe40a2d8ace3fa`,
+    `schema/draft/schema.ts:2812/:2832` — `ElicitRequestURLParams.mode = "url"`,
+    `url`, and client capability `elicitation.url` at `:769`). What 2026-07-28
+    removes is only the async **completion-correlation machinery**: the
+    `elicitationId` field and the `notifications/elicitation/complete`
+    notification (both 2025-11-25) — correlation moves to `requestState` under
+    MRTR. The `elicitationId` field is therefore dropped here; `mode`/`url` stay.
     """
 
     @derive Jason.Encoder
-    defstruct [:mode, :message, :requested_schema, :url, :elicitation_id, :meta]
+    defstruct [:mode, :message, :requested_schema, :url, :meta]
 
     @type t :: %__MODULE__{
             mode: String.t() | nil,
             message: String.t(),
             requested_schema: map() | nil,
             url: String.t() | nil,
-            elicitation_id: String.t() | nil,
             meta: map() | nil
           }
 
@@ -27,7 +35,6 @@ defmodule MCP.Protocol.Messages.Elicitation do
         message: Map.fetch!(map, "message"),
         requested_schema: Map.get(map, "requestedSchema"),
         url: Map.get(map, "url"),
-        elicitation_id: Map.get(map, "elicitationId"),
         meta: Map.get(map, "_meta")
       }
     end
@@ -43,7 +50,6 @@ defmodule MCP.Protocol.Messages.Elicitation do
             {:message, _}, acc -> acc
             {_key, nil}, acc -> acc
             {:requested_schema, val}, acc -> Map.put(acc, :requestedSchema, val)
-            {:elicitation_id, val}, acc -> Map.put(acc, :elicitationId, val)
             {:meta, val}, acc -> Map.put(acc, :_meta, val)
             {key, val}, acc -> Map.put(acc, key, val)
           end)

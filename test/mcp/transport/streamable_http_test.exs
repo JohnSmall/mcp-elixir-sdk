@@ -1,6 +1,11 @@
 defmodule MCP.Transport.StreamableHTTPTest do
   use ExUnit.Case, async: false
 
+  # MES-8 ledger: RETIRED — owner MES-9. Old Streamable-HTTP transport lifecycle
+  # (handshake/session). Replaced by the stateless transport in MES-9. Not
+  # deleted (Ruling 3).
+  @moduletag :mes9_retired
+
   alias MCP.Transport.StreamableHTTP
 
   # --- Test Handler ---

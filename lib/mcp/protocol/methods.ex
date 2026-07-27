@@ -6,6 +6,8 @@ defmodule MCP.Protocol.Methods do
   # Request methods (client → server)
   def initialize, do: "initialize"
   def ping, do: "ping"
+  # server/discover replaces the initialize handshake in the 2026-07-28 stateless core (SEP-2575)
+  def discover, do: "server/discover"
   def tools_list, do: "tools/list"
   def tools_call, do: "tools/call"
   def resources_list, do: "resources/list"

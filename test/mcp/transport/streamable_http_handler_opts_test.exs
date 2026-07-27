@@ -16,6 +16,12 @@ defmodule MCP.Transport.StreamableHTTPHandlerOptsTest do
   """
   use ExUnit.Case, async: false
 
+  # MES-8 ledger: RETIRED — owner MES-10. The MES-3 handshake-time handler_opts
+  # identity tests; superseded by the stateless identity seam + the D4 ported
+  # ACs (AC3/AC3′) in MES-10. Not deleted (Ruling 3). MC-4 no-copy is asserted
+  # now in server/dispatch_test.exs.
+  @moduletag :mes10_retired
+
   import Plug.Test
   import ExUnit.CaptureLog
 

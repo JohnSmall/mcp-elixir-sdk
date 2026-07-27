@@ -1,6 +1,12 @@
 defmodule MCP.ServerTest do
   use ExUnit.Case, async: true
 
+  # MES-8 ledger: RETIRED — owner MES-9. Exercises the @deprecated per-session
+  # MCP.Server shell (handshake, :ready gating, logging/setLevel); the shell is
+  # deleted when MES-9 wires the transport to MCP.Server.Dispatch. Not deleted
+  # (Ruling 3). Stateless equivalents: server/dispatch_test.exs.
+  @moduletag :mes9_retired
+
   alias MCP.Test.MockTransport
 
   # --- Test Handler ---

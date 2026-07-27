@@ -2,6 +2,16 @@ defmodule MCP.Server do
   @moduledoc """
   MCP server implementation.
 
+  > #### Deprecated — for removal in MES-9 {: .warning}
+  >
+  > This per-session GenServer is the 2025-11-25 server model. In the 2026-07-28
+  > stateless core it is superseded by the pure per-request `MCP.Server.Dispatch`
+  > (no `initialize` handshake, no session, per-request identity context). The
+  > shell is retained only so the (MES-9-owned) Streamable-HTTP transport keeps
+  > compiling; it now returns the **stateless** behaviour for removed methods
+  > (`initialize` → -32022; `ping`/`logging/setLevel` → method-not-found) and is
+  > deleted when MES-9 rewires the transport to `MCP.Server.Dispatch`.
+
   A GenServer that handles incoming MCP client requests via a pluggable
   transport. Routes requests to a handler module implementing the
   `MCP.Server.Handler` behaviour.
@@ -60,10 +70,10 @@ defmodule MCP.Server do
   }
 
   alias MCP.Protocol.Error
-  alias MCP.Protocol.Messages.{Initialize, Notification, Request, Response}
+  alias MCP.Protocol.Messages.{Discover, Notification, Request, Response}
   alias MCP.Protocol.Methods
   alias MCP.Protocol.Types.Implementation
-  alias MCP.Server.ToolContext
+  alias MCP.Server.{Dispatch, ToolContext}
 
   defstruct [
     :handler_module,
@@ -101,13 +111,6 @@ defmodule MCP.Server do
   """
   def transport(server) do
     GenServer.call(server, :get_transport)
-  end
-
-  @doc """
-  Returns the current server status.
-  """
-  def status(server) do
-    GenServer.call(server, :get_status)
   end
 
   @doc """
@@ -155,8 +158,11 @@ defmodule MCP.Server do
   @doc """
   Sends a log message notification to the client.
 
-  Respects the log level set by the client via `logging/setLevel`.
-  Messages below the current level are silently dropped.
+  > #### Deprecated (2026-07-28, SEP-2577) {: .warning}
+  > The **Logging** feature is retained but deprecated. The `logging/setLevel`
+  > control method is removed (SEP-2575); the level now rides each request's
+  > `io.modelcontextprotocol/logLevel` `_meta` key. In this @deprecated shell the
+  > level is unset, so messages are dropped by default.
   """
   def log(server, level, data, logger_name \\ nil) do
     GenServer.cast(server, {:log, level, data, logger_name})
@@ -176,6 +182,11 @@ defmodule MCP.Server do
 
   Returns `{:ok, result}` or `{:error, reason}`.
   Requires the client to have declared sampling capability.
+
+  > #### Deprecated (2026-07-28, SEP-2577) {: .warning}
+  > **Sampling** is retained but deprecated; prefer calling an LLM provider
+  > directly. Under the stateless core, server→client requests migrate to Multi
+  > Round-Trip Requests (SEP-2322) — that conversion is MES-9.
   """
   def request_sampling(server, params, timeout \\ 60_000) do
     GenServer.call(server, {:request_client, Methods.sampling_create_message(), params}, timeout)
@@ -186,6 +197,10 @@ defmodule MCP.Server do
 
   Returns `{:ok, result}` or `{:error, reason}`.
   Requires the client to have declared roots capability.
+
+  > #### Deprecated (2026-07-28, SEP-2577) {: .warning}
+  > **Roots** is retained but deprecated; prefer tool params / resource URIs /
+  > config. Server→client requests migrate to MRTR (SEP-2322) in MES-9.
   """
   def request_roots(server, timeout \\ 30_000) do
     GenServer.call(server, {:request_client, Methods.roots_list(), %{}}, timeout)
@@ -239,7 +254,6 @@ defmodule MCP.Server do
               server_info: server_info,
               capabilities: capabilities,
               instructions: instructions,
-              status: :waiting,
               pending_requests: %{},
               next_id: 1,
               request_timeout: request_timeout,
@@ -263,10 +277,6 @@ defmodule MCP.Server do
     {:reply, state.transport_pid, state}
   end
 
-  def handle_call(:get_status, _from, state) do
-    {:reply, state.status, state}
-  end
-
   def handle_call(:get_client_capabilities, _from, state) do
     {:reply, state.client_capabilities, state}
   end
@@ -279,16 +289,14 @@ defmodule MCP.Server do
     do_close(state)
   end
 
-  def handle_call({:request_client, method, params}, from, %{status: :ready} = state) do
+  # Server-initiated request. De-sessioned: gated on nothing readiness-like
+  # (transport connectivity is MES-9's concern, not shell lifecycle state).
+  def handle_call({:request_client, method, params}, from, state) do
     {id, state} = next_id(state)
     send_request(state, id, method, params)
     timeout_ref = schedule_timeout(id, state.request_timeout)
     state = put_pending(state, id, from, timeout_ref)
     {:noreply, state}
-  end
-
-  def handle_call({:request_client, _method, _params}, _from, %{status: status} = state) do
-    {:reply, {:error, {:not_ready, status}}, state}
   end
 
   # Context calls from async tool handlers
@@ -306,26 +314,18 @@ defmodule MCP.Server do
   end
 
   @impl GenServer
-  def handle_cast({:notify, method, params}, %{status: :ready} = state) do
+  def handle_cast({:notify, method, params}, state) do
     send_notification(state, method, params)
     {:noreply, state}
   end
 
-  def handle_cast({:notify, _method, _params}, state) do
-    {:noreply, state}
-  end
-
-  def handle_cast({:log, level, data, logger_name}, %{status: :ready} = state) do
+  def handle_cast({:log, level, data, logger_name}, state) do
     if should_log?(level, state.log_level) do
       params = %{"level" => level, "data" => data}
       params = if logger_name, do: Map.put(params, "logger", logger_name), else: params
       send_notification(state, Methods.logging_message(), params)
     end
 
-    {:noreply, state}
-  end
-
-  def handle_cast({:log, _level, _data, _logger_name}, state) do
     {:noreply, state}
   end
 
@@ -414,32 +414,50 @@ defmodule MCP.Server do
 
   # --- Request handling ---
 
-  defp handle_client_request(%Request{id: id, method: "initialize", params: params}, state) do
-    handle_initialize(id, params, state)
-  end
+  # initialize handshake removed (SEP-2575) — no legacy path; old-shape → -32022.
+  defp handle_client_request(%Request{id: id, method: "initialize"}, state) do
+    send_error_response(
+      state,
+      id,
+      Error.unsupported_protocol_version(
+        "the initialize handshake is removed in 2026-07-28; carry the protocol version in per-request _meta"
+      )
+    )
 
-  defp handle_client_request(%Request{id: id, method: "ping"}, state) do
-    send_success_response(state, id, %{})
     {:noreply, state}
   end
 
-  # All other requests require :ready status
-  defp handle_client_request(%Request{id: id} = request, %{status: :ready} = state) do
+  # ping and logging/setLevel removed (SEP-2575).
+  defp handle_client_request(%Request{id: id, method: method}, state)
+       when method in ["ping", "logging/setLevel"] do
+    send_error_response(state, id, Error.method_not_found(method))
+    {:noreply, state}
+  end
+
+  # server/discover replaces the handshake as the up-front capability probe.
+  defp handle_client_request(%Request{id: id, method: "server/discover"}, state) do
+    result =
+      Discover.Result.to_map(%Discover.Result{
+        supported_versions: [Dispatch.protocol_version()],
+        capabilities: state.capabilities,
+        server_info: state.server_info,
+        instructions: state.instructions
+      })
+
+    send_success_response(state, id, result)
+    {:noreply, state}
+  end
+
+  # Stateless: no readiness gate — every request routes.
+  defp handle_client_request(%Request{id: id} = request, state) do
     route_request(request, id, state)
-  end
-
-  defp handle_client_request(%Request{id: id}, state) do
-    send_error_response(state, id, Error.invalid_request("Server not initialized"))
-    {:noreply, state}
   end
 
   # --- Notification handling ---
 
-  defp handle_client_notification(
-         %Notification{method: "notifications/initialized"},
-         %{status: :waiting} = state
-       ) do
-    {:noreply, %{state | status: :ready}}
+  # notifications/initialized removed with the handshake (SEP-2575); tolerated as a no-op.
+  defp handle_client_notification(%Notification{method: "notifications/initialized"}, state) do
+    {:noreply, state}
   end
 
   defp handle_client_notification(
@@ -479,40 +497,6 @@ defmodule MCP.Server do
     end
   end
 
-  # --- Initialization ---
-
-  defp handle_initialize(id, params, %{status: :waiting} = state) do
-    init_params = Initialize.Params.from_map(params)
-
-    result =
-      Initialize.Result.to_map(%Initialize.Result{
-        protocol_version: negotiate_version(init_params.protocol_version),
-        capabilities: state.capabilities,
-        server_info: state.server_info,
-        instructions: state.instructions
-      })
-
-    send_success_response(state, id, result)
-
-    state = %{
-      state
-      | client_capabilities: init_params.capabilities,
-        client_info: init_params.client_info
-    }
-
-    {:noreply, state}
-  end
-
-  defp handle_initialize(id, _params, %{status: :ready} = state) do
-    send_error_response(state, id, Error.invalid_request("Already initialized"))
-    {:noreply, state}
-  end
-
-  defp handle_initialize(id, _params, state) do
-    send_error_response(state, id, Error.invalid_request("Invalid server state"))
-    {:noreply, state}
-  end
-
   # --- Request routing ---
 
   defp route_request(%Request{method: "tools/list", params: params}, id, state),
@@ -544,9 +528,6 @@ defmodule MCP.Server do
 
   defp route_request(%Request{method: "completion/complete", params: params}, id, state),
     do: handle_completion(id, params, state)
-
-  defp route_request(%Request{method: "logging/setLevel", params: params}, id, state),
-    do: handle_set_log_level(id, params, state)
 
   defp route_request(%Request{method: method}, id, state) do
     send_error_response(state, id, Error.method_not_found(method))
@@ -719,16 +700,6 @@ defmodule MCP.Server do
     end
   end
 
-  defp handle_set_log_level(id, params, state) do
-    level = Map.get(params || %{}, "level", "info")
-
-    case state.handler_module.handle_set_log_level(level, state.handler_state) do
-      {:ok, handler_state} ->
-        send_success_response(state, id, %{})
-        {:noreply, %{state | handler_state: handler_state, log_level: level}}
-    end
-  end
-
   # --- Private helpers ---
 
   defp start_transport({module, opts}) do
@@ -769,16 +740,6 @@ defmodule MCP.Server do
         list_changed: true,
         subscribe: if(has_subscribe, do: true)
       }
-    end
-  end
-
-  defp negotiate_version(client_version) do
-    supported = Protocol.protocol_version()
-
-    if client_version == supported do
-      supported
-    else
-      supported
     end
   end
 

@@ -1,0 +1,74 @@
+defmodule MCP.Test.StatelessHandler do
+  @moduledoc """
+  Test handler implementing the 2026-07-28 **context-bearing** callbacks for all
+  eight identity-capable families, used to drive `MCP.Server.Dispatch`
+  in-process. Every callback reads caller identity from `ctx.identity` — never
+  from arguments — and echoes it into its result so the dispatch's MC-1 (context
+  reaches every callback) and MC-4 (no model-arg override) guarantees can be
+  asserted per family.
+  """
+  @behaviour MCP.Server.Handler
+
+  alias MCP.Server.ToolContext
+
+  @impl true
+  def init(opts), do: {:ok, %{tools: Keyword.get(opts, :tools, [])}}
+
+  @impl true
+  def handle_list_tools(_cursor, %ToolContext{} = ctx, state) do
+    {:ok, [%{"name" => "whoami", "boundIdentity" => id_str(ctx)}], nil, state}
+  end
+
+  @impl true
+  def handle_call_tool("whoami", _args, %ToolContext{} = ctx, state) do
+    {:ok, [%{"type" => "text", "text" => id_str(ctx)}], state}
+  end
+
+  # Reads identity ONLY from ctx; the model-supplied "identity" arg is ignored.
+  def handle_call_tool("whoami_with_arg", _args, %ToolContext{} = ctx, state) do
+    {:ok, [%{"type" => "text", "text" => id_str(ctx)}], state}
+  end
+
+  def handle_call_tool(_name, _args, %ToolContext{}, state) do
+    {:error, -32_602, "unknown tool", state}
+  end
+
+  @impl true
+  def handle_list_resources(_cursor, %ToolContext{} = ctx, state) do
+    {:ok, [%{"uri" => "mem://res", "name" => id_str(ctx)}], nil, state}
+  end
+
+  @impl true
+  def handle_read_resource(uri, %ToolContext{} = ctx, state) do
+    {:ok, [%{"uri" => uri, "text" => id_str(ctx)}], state}
+  end
+
+  @impl true
+  def handle_list_resource_templates(_cursor, %ToolContext{} = ctx, state) do
+    {:ok, [%{"uriTemplate" => "mem://{x}", "name" => id_str(ctx)}], nil, state}
+  end
+
+  @impl true
+  def handle_list_prompts(_cursor, %ToolContext{} = ctx, state) do
+    {:ok, [%{"name" => "who", "description" => id_str(ctx)}], nil, state}
+  end
+
+  # Reads identity ONLY from ctx; a model-supplied "identity" arg is ignored (AC3′).
+  @impl true
+  def handle_get_prompt("who", _args, %ToolContext{} = ctx, state) do
+    {:ok,
+     %{
+       "messages" => [
+         %{"role" => "user", "content" => %{"type" => "text", "text" => id_str(ctx)}}
+       ]
+     }, state}
+  end
+
+  @impl true
+  def handle_complete(_ref, _argument, %ToolContext{} = ctx, state) do
+    {:ok, %{"values" => [id_str(ctx)], "total" => 1}, state}
+  end
+
+  defp id_str(%ToolContext{identity: nil}), do: ""
+  defp id_str(%ToolContext{identity: id}), do: to_string(id)
+end

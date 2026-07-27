@@ -8,6 +8,11 @@ defmodule MCP.IntegrationTest do
 
   use ExUnit.Case, async: true
 
+  # MES-8 ledger: RETIRED — owner MES-9. Client↔server 2025-11-25 handshake
+  # integration; the stateless client/transport re-test lands in MES-9. Not
+  # deleted (Ruling 3). Stateless protocol coverage: server/dispatch_test.exs.
+  @moduletag :mes9_retired
+
   alias MCP.Client
   alias MCP.Server
   alias MCP.Test.BridgeTransport

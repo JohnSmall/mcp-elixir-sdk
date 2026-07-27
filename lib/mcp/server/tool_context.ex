@@ -1,10 +1,25 @@
 defmodule MCP.Server.ToolContext do
   @moduledoc """
-  Context passed to `handle_call_tool/4` handlers during tool execution.
+  Per-request context passed to identity-capable handler callbacks.
 
-  Provides an API for tool handlers to interact with the MCP server
-  while the tool is running — sending notifications (logging, progress)
-  and making server-to-client requests (sampling, elicitation).
+  In the 2026-07-28 stateless core this struct is **the per-request handler
+  context** (the D2 identity-threading design's `ToolContext` successor): it is
+  constructed once per request by the stateless dispatch (`MCP.Server.Dispatch`)
+  and handed to every identity-capable callback, carrying a first-class
+  `:identity` field.
+
+  ## The `:identity` field (security-critical)
+
+  `:identity` holds the caller principal established by the **authenticated
+  transport pipeline** — for HTTP, resolved per request from `conn`; for
+  stdio/in-process, resolved once at launch (PO Comment B). It is populated by
+  the transport/dispatch **before** the handler runs and is **never** derived
+  from the JSON-RPC `params`/`arguments`. Handlers MUST read the caller identity
+  from `ctx.identity`, never from a model-supplied argument.
+
+  Beyond identity, the struct also provides an API for handlers to interact with
+  the server while a request is in flight — sending notifications (logging,
+  progress) and making server-to-client requests (sampling, elicitation).
 
   ## Example
 
@@ -23,12 +38,13 @@ defmodule MCP.Server.ToolContext do
       end
   """
 
-  defstruct [:server_pid, :request_id, :meta]
+  defstruct [:server_pid, :request_id, :meta, :identity]
 
   @type t :: %__MODULE__{
-          server_pid: pid(),
+          server_pid: pid() | nil,
           request_id: term(),
-          meta: map() | nil
+          meta: map() | nil,
+          identity: term() | nil
         }
 
   @doc """
