@@ -24,6 +24,19 @@ defmodule MCP.Test.StatelessHandler do
     {:ok, [%{"type" => "text", "text" => id_str(ctx)}], state}
   end
 
+  # MRTR (SEP-2322): on a first attempt (`ctx.input` nil) the tool asks for
+  # client input and hands back a continuation token; on the retry it reads the
+  # fulfilled responses from `ctx.input` and completes.
+  def handle_call_tool("needs_input", _args, %ToolContext{input: nil}, state) do
+    input_requests = [%{"kind" => "elicitation", "message" => "what is your name?"}]
+    {:input_required, input_requests, "rs-token-1", state}
+  end
+
+  def handle_call_tool("needs_input", _args, %ToolContext{input: %{responses: responses}}, state) do
+    name = responses |> List.wrap() |> List.first() |> then(&Map.get(&1 || %{}, "name", "?"))
+    {:ok, [%{"type" => "text", "text" => "hello #{name}"}], state}
+  end
+
   # Reads identity ONLY from ctx; the model-supplied "identity" arg is ignored.
   def handle_call_tool("whoami_with_arg", _args, %ToolContext{} = ctx, state) do
     {:ok, [%{"type" => "text", "text" => id_str(ctx)}], state}

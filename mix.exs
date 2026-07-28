@@ -16,7 +16,8 @@ defmodule MCPElixirSDK.MixProject do
 
       # Hex
       name: "MCP Elixir SDK",
-      description: "Official-style Elixir SDK for the Model Context Protocol (MCP) — client and server with stdio and Streamable HTTP transports.",
+      description:
+        "Official-style Elixir SDK for the Model Context Protocol (MCP) — client and server with stdio and Streamable HTTP transports.",
       source_url: @source_url,
       homepage_url: "https://modelcontextprotocol.io",
       package: package(),
@@ -42,7 +43,8 @@ defmodule MCPElixirSDK.MixProject do
         "MCP Specification" => "https://modelcontextprotocol.io/specification/2025-11-25",
         "Examples" => "#{@source_url}#server-examples"
       },
-      files: ~w(lib docs/architecture.md usage-rules.md .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
+      files:
+        ~w(lib docs/architecture.md usage-rules.md .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
     ]
   end
 

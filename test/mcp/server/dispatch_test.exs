@@ -85,7 +85,10 @@ defmodule MCP.Server.DispatchTest do
 
   test "ping and logging/setLevel are removed → method not found (-32601)" do
     {:reply, ping_resp, _} = Dispatch.dispatch(req("ping", %{}), ctx(), config())
-    {:reply, log_resp, _} = Dispatch.dispatch(req("logging/setLevel", %{"level" => "info"}), ctx(), config())
+
+    {:reply, log_resp, _} =
+      Dispatch.dispatch(req("logging/setLevel", %{"level" => "info"}), ctx(), config())
+
     assert ping_resp["error"]["code"] == -32_601
     assert log_resp["error"]["code"] == -32_601
   end
@@ -93,7 +96,9 @@ defmodule MCP.Server.DispatchTest do
   # --- Per-request version gate ---
 
   test "request without a protocolVersion _meta fails fast (-32022)" do
-    {:reply, resp, _} = Dispatch.dispatch(req("tools/call", %{"name" => "whoami"}), ctx("PM"), config())
+    {:reply, resp, _} =
+      Dispatch.dispatch(req("tools/call", %{"name" => "whoami"}), ctx("PM"), config())
+
     assert resp["error"]["code"] == -32_022
   end
 

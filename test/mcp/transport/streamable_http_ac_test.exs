@@ -19,6 +19,15 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
   """
   use ExUnit.Case, async: false
 
+  # MES-9 ledger (D-C split): the AC1–AC6/AC8 `handler_opts` identity-binding
+  # criteria are handshake/`initialize`-anchored (they drive the removed
+  # session model). Per PO ratification 2026-07-27 they are RETIRED here to
+  # MES-10, which re-anchors them per-request (Comment B) and ports them onto
+  # the stateless transport. AC7 (localhost/Origin enforcement; factory not
+  # invoked on reject) is re-homed to MES-9's stateless enforcement test in
+  # `streamable_http_stateless_test.exs`.
+  @moduletag :mes10_retired
+
   import Plug.Test
   import Plug.Conn
   import ExUnit.CaptureLog
@@ -66,11 +75,17 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
   # POST initialize (running any `mutate` to set conn.assigns), read the
   # session id, then send `notifications/initialized` to reach :ready.
   defp initialize(plug_opts, mutate \\ & &1) do
-    conn = build_post(@init_body, [{"origin", "http://localhost"}], mutate) |> MCPPlug.call(plug_opts)
+    conn =
+      build_post(@init_body, [{"origin", "http://localhost"}], mutate) |> MCPPlug.call(plug_opts)
+
     sid = session_id(conn)
 
     if sid do
-      build_post(@initialized_body, [{"origin", "http://localhost"}, {"mcp-session-id", sid}], & &1)
+      build_post(
+        @initialized_body,
+        [{"origin", "http://localhost"}, {"mcp-session-id", sid}],
+        & &1
+      )
       |> MCPPlug.call(plug_opts)
     end
 
@@ -147,7 +162,9 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
 
     # A later call on the same session carries a DIFFERENT assign — the value
     # bound at initialize must still win.
-    text = tool_text(call(opts, sid, "whoami", %{}, fn conn -> assign(conn, :role, "REVIEWER") end))
+    text =
+      tool_text(call(opts, sid, "whoami", %{}, fn conn -> assign(conn, :role, "REVIEWER") end))
+
     assert text == "PM"
   end
 
@@ -163,30 +180,8 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
     assert tool_text(call(opts, sid_b, "whoami", %{})) == "REVIEWER"
   end
 
-  # --- AC7 — localhost enforcement preserved; factory NOT invoked (NEW) ---
-
-  test "AC7 — non-localhost origin is rejected with handler_opts set; factory not invoked" do
-    test_pid = self()
-
-    opts =
-      init_opts(
-        handler_opts: fn _conn ->
-          send(test_pid, :factory_ran)
-          [identity: "PM"]
-        end
-      )
-
-    conn =
-      :post
-      |> conn("http://localhost/", @init_body)
-      |> put_req_header("content-type", "application/json")
-      |> put_req_header("origin", "http://evil.example")
-      |> MCPPlug.call(opts)
-
-    assert conn.status == 403
-    # The origin check fires before routing, so the factory closure never runs.
-    refute_receive :factory_ran, 200
-  end
+  # AC7 (localhost/Origin enforcement) is re-homed to MES-9's stateless
+  # enforcement test — see `streamable_http_stateless_test.exs`.
 
   # --- AC8 — factory failure mode: non-keyword fails the session cleanly ---
   # (PreStarted static-only, and factory-raises, are covered in MES-3
@@ -206,7 +201,5 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
 
     assert conn.status == 500
     assert Jason.decode!(conn.resp_body)["error"]["code"] == -32_603
-    # No server started with a garbage identity: no session row was inserted.
-    assert :ets.tab2list(opts.sessions) == []
   end
 end

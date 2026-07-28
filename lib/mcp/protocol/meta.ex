@@ -18,6 +18,14 @@ defmodule MCP.Protocol.Meta do
       the removed `logging/setLevel` control method (the Logging feature itself
       is retained-deprecated).
 
+  ## W3C Trace Context passthrough (SEP-414)
+
+  Distributed-tracing propagation rides `_meta` under the standard W3C key
+  names `traceparent` / `tracestate` / `baggage` (SEP-414 is a convention, not
+  a schema-defined shape — these keys are absent from `schema/draft/schema.ts`).
+  This module extracts them for observability; the raw `_meta` is preserved on
+  `:raw` so a stateless transport can pass the context through unmodified.
+
   This module reads `_meta` from a decoded request/notification's `params`; it
   never derives any caller **identity** — that comes from the authenticated
   transport pipeline (see the identity-threading design spec), never from the
@@ -29,13 +37,27 @@ defmodule MCP.Protocol.Meta do
   @client_capabilities_key "io.modelcontextprotocol/clientCapabilities"
   @log_level_key "io.modelcontextprotocol/logLevel"
 
-  defstruct [:protocol_version, :client_info, :client_capabilities, :log_level, raw: %{}]
+  # W3C Trace Context (SEP-414) — standard header names carried in _meta.
+  @traceparent_key "traceparent"
+  @tracestate_key "tracestate"
+  @baggage_key "baggage"
+  @trace_keys [@traceparent_key, @tracestate_key, @baggage_key]
+
+  defstruct [
+    :protocol_version,
+    :client_info,
+    :client_capabilities,
+    :log_level,
+    :trace_context,
+    raw: %{}
+  ]
 
   @type t :: %__MODULE__{
           protocol_version: String.t() | nil,
           client_info: map() | nil,
           client_capabilities: map() | nil,
           log_level: String.t() | nil,
+          trace_context: map() | nil,
           raw: map()
         }
 
@@ -43,6 +65,7 @@ defmodule MCP.Protocol.Meta do
   def client_info_key, do: @client_info_key
   def client_capabilities_key, do: @client_capabilities_key
   def log_level_key, do: @log_level_key
+  def trace_keys, do: @trace_keys
 
   @doc """
   Extracts the per-request `_meta` keys from a request/notification's `params`.
@@ -67,8 +90,15 @@ defmodule MCP.Protocol.Meta do
       client_info: Map.get(meta, @client_info_key),
       client_capabilities: Map.get(meta, @client_capabilities_key),
       log_level: Map.get(meta, @log_level_key),
+      trace_context: extract_trace_context(meta),
       raw: meta
     }
+  end
+
+  # Returns the W3C trace-context subset of `_meta`, or `nil` when none present.
+  defp extract_trace_context(meta) do
+    ctx = Map.take(meta, @trace_keys)
+    if map_size(ctx) > 0, do: ctx, else: nil
   end
 
   @doc """

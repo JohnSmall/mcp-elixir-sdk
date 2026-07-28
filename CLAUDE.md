@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Elixir SDK for the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP). Standalone library providing both MCP **client** and **server** with pluggable transports. Protocol version: **2025-11-25**.
+Elixir SDK for the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP). Standalone library providing both MCP **client** and **server** with pluggable transports. Protocol version: **2026-07-28** (stateless core — no handshake, no session).
 
 **Hex package name:** `mcp_elixir_sdk` — published as v1.0.0.
 **GitHub repo:** `mcp-elixir-sdk` (matches `mcp-go-sdk`, `mcp-python-sdk` naming).
@@ -96,14 +96,14 @@ Requires building conformance adapter scripts (see `docs/implementation-plan.md`
 
 ## Critical Rules
 
-1. **JSON-RPC 2.0**: All messages must be valid JSON-RPC 2.0. IDs must be unique per session, never null.
-2. **Capability negotiation**: Only use features declared during initialization handshake.
+1. **JSON-RPC 2.0**: All messages must be valid JSON-RPC 2.0. IDs must be unique per request, never null.
+2. **Stateless core (2026-07-28)**: No `initialize` handshake and no session (SEP-2575/2567). Every request is self-contained and carries the protocol version, client info, and client capabilities in per-request `_meta` under `io.modelcontextprotocol/*` keys. Capability discovery is via `server/discover`. Any request is serviceable by any instance behind a round-robin balancer.
 3. **Stdio framing**: Messages are newline-delimited. Must NOT contain embedded newlines.
-4. **Streamable HTTP**: POST for sending, GET for SSE listen, `MCP-Session-Id` header for stateful sessions.
-5. **Protocol version header**: HTTP requests must include `MCP-Protocol-Version: 2025-11-25`.
-6. **Initialization order**: Client sends `initialize` request → server responds → client sends `initialized` notification. No other requests before this completes (except ping).
+4. **Streamable HTTP**: POST for request/response (JSON or SSE per `Accept`); **no `Mcp-Session-Id`**. `Mcp-Method`/`Mcp-Name` routing headers (SEP-2243) enable gateway routing without body inspection.
+5. **Protocol version**: carried per request in `_meta["io.modelcontextprotocol/protocolVersion"]` (`2026-07-28`); a missing/unsupported version fails fast with `-32022`.
+6. **Identity**: the caller principal comes from the authenticated transport pipeline (HTTP: per request from `conn` via the `handler_opts` factory; stdio: launch-static) into `ToolContext.identity` — **never** from model-controlled `params`/`arguments`.
 7. **Tool annotations are untrusted**: Unless from a trusted server.
-8. **Partial events**: Sampling and elicitation are client features (server requests them from client).
+8. **Server→client input via MRTR (SEP-2322)**: a handler returns `InputRequiredResult` (+`requestState`); the client fulfils inputs and retries. There is no held-open server→client request path.
 
 ## Architecture Quick Reference
 

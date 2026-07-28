@@ -44,7 +44,9 @@ defmodule MCP.Protocol.MetaTest do
 
     test "mismatched (e.g. legacy 2025-11-25) → {:error, {:unsupported, got}}" do
       meta = Meta.from_meta(%{"io.modelcontextprotocol/protocolVersion" => "2025-11-25"})
-      assert Meta.validate_protocol_version(meta, @version) == {:error, {:unsupported, "2025-11-25"}}
+
+      assert Meta.validate_protocol_version(meta, @version) ==
+               {:error, {:unsupported, "2025-11-25"}}
     end
   end
 end

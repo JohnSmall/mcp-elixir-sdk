@@ -1,154 +1,91 @@
 defmodule MCP.Transport.StreamableHTTP.Plug do
   @moduledoc """
-  Plug endpoint for the MCP Streamable HTTP transport.
+  Stateless Plug endpoint for the MCP Streamable HTTP transport (2026-07-28).
 
-  Handles POST, GET, and DELETE HTTP methods at the MCP endpoint:
+  A thin **per-request driver** for `MCP.Server.Dispatch`: there is no
+  `initialize` handshake, no `Mcp-Session-Id`, and no session affinity — any
+  request is serviceable by any instance behind a round-robin balancer
+  (SEP-2575 / SEP-2567). The dispatch `config` is built once at `init/1`; every
+  request builds its own `MCP.Server.ToolContext` and calls `Dispatch`.
 
-    * **POST** — receive JSON-RPC messages from clients, route to the
-      appropriate MCP.Server session, and return the response
-    * **GET** — open an SSE stream for server-initiated messages
-    * **DELETE** — terminate a session
+  Handles `POST` (JSON-RPC request/response) and returns `application/json` or
+  `text/event-stream` per the client's `Accept`. `GET` opens an (empty) event
+  stream; server→client messages only flow while a client request is being
+  processed (SEP-2260), so there is no standing session stream to feed it.
 
   ## Usage
 
-  Mount this Plug in your HTTP server (e.g., with Bandit):
-
-      # Create a Plug with a server factory function
-      plug = MCP.Transport.StreamableHTTP.Plug.new(
-        server_mod: MyApp.McpHandler,
-        server_opts: []
-      )
-
-      # Start Bandit with the Plug
+      plug = MCP.Transport.StreamableHTTP.Plug.new(server_mod: MyApp.Handler)
       {:ok, _} = Bandit.start_link(plug: plug, port: 8080)
 
-  The public Plug option is `:server_mod`. Do **not** use `:handler` here —
-  `:handler` is the internal `MCP.Server.start_link/1` key that this Plug
-  constructs for you; passing it to the Plug has no effect.
+  ## Per-request pipeline (strict order)
 
-  ## Client handshake (initialize → initialized → tools/call)
-
-  Each session's `MCP.Server` starts in the `:waiting` state and only becomes
-  `:ready` after it receives the `notifications/initialized` notification. A
-  client MUST drive the full MCP handshake, in order:
-
-    1. `POST` an `initialize` request — the response carries the
-       `MCP-Session-Id` header identifying the new session.
-    2. `POST` a `notifications/initialized` notification on that session
-       (include the `MCP-Session-Id` header). The server returns `202 Accepted`
-       and transitions to `:ready`.
-    3. Only then `POST` `tools/call` (and other requests) on that session.
-
-  Going straight from `initialize` to `tools/call` — skipping step 2 — is the
-  single most common integration mistake: the server rejects the request with
-  "Server not initialized", which can surface as a hang or a confusing error.
-  `MCP.Client.connect/1` performs this handshake for you; if you drive the
-  transport with a raw HTTP client, you must send `notifications/initialized`
-  yourself.
+    1. **Enforcement** — localhost/Origin (and any host auth) runs first, on
+       every request, before the identity factory (MC-5 / AC7). A rejected
+       request never runs the factory.
+    2. **Decode + routing headers** — parse the JSON-RPC body; validate any
+       `Mcp-Method` / `Mcp-Name` routing headers against it (SEP-2243) —
+       mismatch → `-32020`.
+    3. **Identity resolution** — the `:handler_opts` factory is evaluated
+       against *this request's* `conn` (or the static keyword's `:identity`);
+       the result populates `ToolContext.identity`, never from `params`
+       (MC-2/Comment B, MC-3, MC-4). Factory failure → controlled `-32603`,
+       no dispatch (MC-6).
+    4. **Dispatch** — `Dispatch.dispatch(message, ctx, config)`.
 
   ## Options
 
-    * `:server_mod` (required) — the `MCP.Server.Handler` module. This is the
-      **public** Plug option (not `:handler`, which is internal to `MCP.Server`).
-    * `:server_opts` — options to pass to `MCP.Server.start_link/1`
-      (only `:server_info`, `:capabilities`, and `:instructions` are forwarded)
-    * `:handler_opts` — options passed to the handler's `c:MCP.Server.Handler.init/1`
-      for each session. Either a static keyword list, or a factory function
-      `(Plug.Conn.t() -> keyword())` evaluated once per session at `initialize`
-      (default: `[]`). See "Request-scoped handler options" below.
-    * `:session_id_generator` — function that generates session IDs
-      (default: `UUID.uuid4/0`). Pass `nil` for stateless mode.
-    * `:enable_json_response` — if true, return `application/json` instead
-      of SSE for simple request/response (default: false)
-    * `:protocol_version` — expected protocol version (default: "2025-11-25")
+    * `:server_mod` (required) — the `MCP.Server.Handler` module.
+    * `:server_opts` — `:server_info`, `:instructions`, `:cache_defaults`
+      forwarded to `MCP.Server.Config`.
+    * `:handler_opts` — static `keyword()` **or** a `(Plug.Conn.t() ->
+      keyword())` factory. The factory is evaluated **per request** against the
+      request's `conn` and its `:identity` populates the per-request context.
+      The static form's `:identity` is used as a constant. (The non-identity
+      base is passed once to `Handler.init/1` at mount.)
+    * `:enable_json_response` — return `application/json` instead of SSE for
+      request/response (default: false).
+    * `:protocol_version` — advertised version (default: the stateless core's).
 
-  ## Request-scoped handler options
+  ## Security
 
-  `:handler_opts` threads options into the per-session handler's
-  `c:MCP.Server.Handler.init/1`. This is the supported seam for carrying a
-  request-established identity — validated by an upstream auth Plug and placed
-  in `conn.assigns` — into handler state, **without forking this Plug**.
-
-  Two forms:
-
-    * **Static** — `handler_opts: [region: "eu"]`. Passed verbatim to `init/1`.
-    * **Factory** — `handler_opts: fn conn -> [identity: conn.assigns.identity] end`.
-      Evaluated **once per session, at the `initialize` POST**, against that
-      request's `conn`. The returned keyword list is bound into handler state for
-      the session's whole life; later requests on the same session reuse it and do
-      **not** re-run the factory.
-
-  Example:
-
-      # Your auth Plug runs first and sets conn.assigns.identity
-      plug = MCP.Transport.StreamableHTTP.Plug.new(
-        server_mod: MyApp.McpHandler,
-        handler_opts: fn conn -> [identity: conn.assigns.identity] end
-      )
-
-      defmodule MyApp.McpHandler do
-        @behaviour MCP.Server.Handler
-        @impl true
-        def init(opts), do: {:ok, %{identity: Keyword.fetch!(opts, :identity)}}
-
-        @impl true
-        def handle_call_tool("whoami", _args, state),
-          # acts as the bound principal — NEVER an identity taken from tool args
-          do: {:ok, [%{"type" => "text", "text" => state.identity.subject}], state}
-      end
-
-  Security: identity must be established server-side by the authenticated Plug
-  pipeline and bound at the `initialize` trust boundary — never supplied by the
-  model via tool-call arguments, which are model-controlled and spoofable. The
-  handler stays transport-agnostic: identity arrives through `init/1` opts, and
-  the `conn` is never leaked into `handle_call_tool/3,4`.
-
-  The factory form requires a `conn`, so it is supported only on the Plug's
-  `initialize` request path. Conn-less start paths (a directly supervised
-  `MCP.Server`, stdio, `MCP.Transport.StreamableHTTP.PreStarted`) support the
-  **static** keyword form only.
-
-  A factory that raises or returns a non-keyword produces a clean JSON-RPC
-  "Internal error" (HTTP 500, code -32603) at `initialize` with no session
-  started; the detail is logged server-side and never returned to the client.
+  Identity must be established server-side by the authenticated Plug pipeline
+  (e.g. an upstream auth Plug setting `conn.assigns`) and resolved by the
+  factory — never supplied by the model via tool-call arguments. The handler
+  stays transport-agnostic: it reads `ctx.identity`; the `conn` is never leaked
+  into a handler callback. A factory that raises or returns a non-keyword
+  yields a clean `-32603` (HTTP 500) with no handler invoked; the detail is
+  logged server-side and never returned to the client.
   """
 
   @behaviour Plug
 
   require Logger
 
+  alias MCP.Protocol
+  alias MCP.Protocol.Error
+  alias MCP.Protocol.Messages.Notification
+  alias MCP.Server.{Config, Dispatch, ToolContext}
   alias MCP.Transport.SSE
-  alias MCP.Transport.StreamableHTTP.Server, as: HTTPTransport
-
-  @protocol_version "2025-11-25"
 
   @typedoc """
-  Options threaded into the handler's `c:MCP.Server.Handler.init/1`.
-
-  Either a static keyword list, or a factory `(Plug.Conn.t() -> keyword())`
-  evaluated once per session at `initialize` against that request's conn.
+  Options threaded into the handler's identity resolution: a static keyword
+  list, or a factory `(Plug.Conn.t() -> keyword())` evaluated per request.
   """
   @type handler_opts :: keyword() | (Plug.Conn.t() -> keyword())
 
   defstruct [
     :server_mod,
-    :server_opts,
     :handler_opts,
-    :session_id_generator,
     :enable_json_response,
     :protocol_version,
-    :sessions
+    :config
   ]
 
   @doc """
-  Creates a new Plug configuration.
-
-  Returns a tuple `{MCP.Transport.StreamableHTTP.Plug, opts}` suitable
-  for passing to Bandit or other HTTP servers.
+  Creates a Plug configuration tuple suitable for Bandit.
   """
-  def new(opts) do
-    {__MODULE__, opts}
-  end
+  def new(opts), do: {__MODULE__, opts}
 
   # --- Plug callbacks ---
 
@@ -159,33 +96,35 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     server_mod = Keyword.fetch!(opts, :server_mod)
     server_opts = Keyword.get(opts, :server_opts, [])
     handler_opts = validate_handler_opts!(Keyword.get(opts, :handler_opts, []))
-
-    session_id_generator =
-      case Keyword.get(opts, :session_id_generator, :default) do
-        :default -> fn -> UUID.uuid4() end
-        nil -> nil
-        fun when is_function(fun, 0) -> fun
-      end
-
     enable_json_response = Keyword.get(opts, :enable_json_response, false)
-    protocol_version = Keyword.get(opts, :protocol_version, @protocol_version)
+    protocol_version = Keyword.get(opts, :protocol_version, Dispatch.protocol_version())
 
-    # Create an ETS table to store session mappings
-    sessions = :ets.new(:mcp_sessions, [:set, :public])
+    # Build the immutable dispatch config once. Only the non-identity static
+    # base reaches Handler.init/1; per-request identity rides ToolContext.
+    static_base = if is_function(handler_opts), do: [], else: handler_opts
+
+    config_opts =
+      [handler_opts: static_base] ++
+        Keyword.take(server_opts, [:server_info, :instructions, :cache_defaults])
+
+    dispatch_config =
+      case Config.build(server_mod, config_opts) do
+        {:ok, config} -> config
+        {:error, reason} -> raise "MCP Plug: handler init failed: #{inspect(reason)}"
+      end
 
     %__MODULE__{
       server_mod: server_mod,
-      server_opts: server_opts,
       handler_opts: handler_opts,
-      session_id_generator: session_id_generator,
       enable_json_response: enable_json_response,
       protocol_version: protocol_version,
-      sessions: sessions
+      config: dispatch_config
     }
   end
 
   @impl Plug
   def call(conn, config) do
+    # Step 1 — enforcement precedes everything (MC-5 / AC7).
     if localhost_request?(conn) do
       route_method(conn, config)
     else
@@ -198,277 +137,139 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   defp route_method(conn, config) do
     case conn.method do
       "POST" -> handle_post(conn, config)
-      "GET" -> handle_get(conn, config)
-      "DELETE" -> handle_delete(conn, config)
+      "GET" -> handle_get(conn)
       _ -> method_not_allowed(conn)
     end
   end
 
-  # --- POST handler ---
+  # --- POST: the request/response path ---
 
   defp handle_post(conn, config) do
     with {:ok, body, conn} <- Plug.Conn.read_body(conn),
-         {:ok, message} <- Jason.decode(body) do
-      route_post(conn, config, message)
+         {:ok, message} <- Jason.decode(body),
+         :ok <- check_routing_headers(conn, message),
+         {:ok, identity} <- resolve_identity(config.handler_opts, conn),
+         {:ok, decoded} <- Protocol.decode_message(message) do
+      dispatch(conn, config, decoded, message, identity)
     else
-      {:error, reason} ->
-        send_json_error(conn, 400, -32_700, "Parse error", inspect(reason))
-    end
-  end
+      {:error, %Jason.DecodeError{} = e} ->
+        send_json_error(conn, 400, Error.parse_error_code(), "Parse error", inspect(e))
 
-  defp route_post(conn, config, message) do
-    cond do
-      Map.get(message, "method") == "initialize" ->
-        handle_initialize(conn, config, message)
+      {:error, {:routing_mismatch, detail}} ->
+        send_json_error(conn, 400, Error.header_mismatch_code(), "Header mismatch", detail)
 
-      config.session_id_generator == nil ->
-        handle_stateless_request(conn, config, message)
-
-      true ->
-        handle_session_request(conn, config, message)
-    end
-  end
-
-  defp handle_initialize(conn, config, message) do
-    session_id = generate_session_id(config)
-
-    # Resolve handler_opts against this request's conn BEFORE any transport or
-    # server is started, so a factory failure orphans nothing (no ETS row, no
-    # transport, no half-started MCP.Server). Bound once, for the session's life.
-    case resolve_handler_opts(config.handler_opts, conn) do
-      {:ok, handler_opts} ->
-        case create_session_and_deliver(config, session_id, message, handler_opts) do
-          {:ok, response} ->
-            conn
-            |> maybe_set_session_header(session_id)
-            |> send_response(config, response)
-
-          :accepted ->
-            Plug.Conn.send_resp(conn, 202, "")
-
-          {:error, reason} ->
-            send_json_error(conn, 500, -32_603, "Internal error", inspect(reason))
-        end
-
-      {:error, reason} ->
-        # Server-side fault (server-supplied factory). Log full detail; return a
-        # controlled, non-leaking message — a factory closure may hold secrets.
+      {:error, {:factory_failed, reason}} ->
         Logger.error("MCP Plug: handler_opts factory failed: #{inspect(reason)}")
-        send_json_error(conn, 500, -32_603, "Internal error", "handler_opts factory error")
+
+        send_json_error(
+          conn,
+          500,
+          Error.internal_error_code(),
+          "Internal error",
+          "handler_opts factory error"
+        )
+
+      {:error, reason} ->
+        send_json_error(
+          conn,
+          400,
+          Error.invalid_request_code(),
+          "Invalid request",
+          inspect(reason)
+        )
     end
   end
 
-  defp handle_session_request(conn, config, message) do
-    validate_protocol_version(conn, config)
+  defp dispatch(conn, config, decoded, raw_message, identity) do
+    request_id = Map.get(raw_message, "id")
 
-    with {:ok, session_id} <- require_session_id(conn),
-         {:ok, transport_pid} <- lookup_session(config, session_id) do
-      deliver_and_respond(conn, config, transport_pid, message)
-    else
-      {:error, :missing_session_id} ->
-        send_json_error(conn, 400, -32_600, "Bad request", "Missing MCP-Session-Id header")
+    ctx = %ToolContext{
+      request_id: request_id,
+      meta: get_in(raw_message, ["params", "_meta"]),
+      identity: identity,
+      reply_sink: notification_collector()
+    }
 
-      :not_found ->
-        send_json_error(conn, 404, -32_600, "Not found", "Session not found")
+    case Dispatch.dispatch(decoded, ctx, config.config) do
+      {:reply, response, _state} ->
+        notifications = take_notifications()
+        send_response(conn, config, response, notifications)
+
+      {:noreply, _state} ->
+        Plug.Conn.send_resp(conn, 202, "")
     end
   end
 
-  defp handle_stateless_request(conn, config, message) do
-    case :ets.first(config.sessions) do
-      :"$end_of_table" ->
-        send_json_error(conn, 400, -32_600, "Bad request", "Not initialized")
+  # --- GET: empty event stream (no standing session stream in stateless mode) ---
 
-      session_id ->
-        case lookup_session(config, session_id) do
-          {:ok, transport_pid} -> deliver_and_respond(conn, config, transport_pid, message)
-          :not_found -> send_json_error(conn, 400, -32_600, "Bad request", "Session expired")
-        end
-    end
-  end
-
-  defp deliver_and_respond(conn, config, transport_pid, message) do
-    is_request = Map.has_key?(message, "id") && Map.has_key?(message, "method")
-
-    if is_request && !config.enable_json_response && accepts_sse?(conn) do
-      stream_request(conn, transport_pid, message)
-    else
-      sync_deliver(conn, config, transport_pid, message)
-    end
-  end
-
-  defp sync_deliver(conn, config, transport_pid, message) do
-    case HTTPTransport.deliver_message(transport_pid, message) do
-      {:ok, response} -> send_response(conn, config, response)
-      :accepted -> Plug.Conn.send_resp(conn, 202, "")
-      {:error, reason} -> send_json_error(conn, 500, -32_603, "Internal error", inspect(reason))
-    end
-  end
-
-  defp stream_request(conn, transport_pid, message) do
-    request_id = Map.get(message, "id")
-
-    # Register this Plug process as a stream endpoint
-    HTTPTransport.register_stream(transport_pid, request_id, self())
-
-    # Open chunked SSE response
-    conn =
-      conn
-      |> Plug.Conn.put_resp_content_type("text/event-stream")
-      |> Plug.Conn.put_resp_header("cache-control", "no-cache")
-      |> Plug.Conn.send_chunked(200)
-
-    # Deliver message to transport (non-blocking)
-    HTTPTransport.deliver_message_async(transport_pid, message)
-
-    # Enter receive loop to stream events
-    stream_loop(conn)
-  end
-
-  defp stream_loop(conn) do
-    receive do
-      {:sse_event, data} ->
-        case Plug.Conn.chunk(conn, data) do
-          {:ok, conn} -> stream_loop(conn)
-          {:error, _} -> conn
-        end
-
-      {:sse_done, data} ->
-        case Plug.Conn.chunk(conn, data) do
-          {:ok, conn} -> conn
-          {:error, _} -> conn
-        end
-
-      {:sse_error, _reason} ->
-        conn
-    after
-      120_000 ->
-        conn
-    end
-  end
-
-  defp accepts_sse?(conn) do
-    accept = Plug.Conn.get_req_header(conn, "accept")
-    Enum.any?(accept, &String.contains?(&1, "text/event-stream"))
-  end
-
-  # --- GET handler ---
-
-  defp handle_get(conn, config) do
-    with :ok <- require_sse_accept(conn),
-         {:ok, session_id} <- require_session_id_if_stateful(conn, config),
-         {:ok, _transport_pid} <- lookup_session(config, session_id) do
+  defp handle_get(conn) do
+    if accepts_sse?(conn) do
       conn
       |> Plug.Conn.put_resp_content_type("text/event-stream")
       |> Plug.Conn.put_resp_header("cache-control", "no-cache")
       |> Plug.Conn.send_resp(200, "")
     else
-      {:error, :not_acceptable} ->
-        send_json_error(conn, 406, -32_000, "Not Acceptable", "Must accept text/event-stream")
-
-      {:error, :missing_session_id} ->
-        send_json_error(conn, 400, -32_600, "Bad request", "Missing MCP-Session-Id header")
-
-      :not_found ->
-        send_json_error(conn, 404, -32_600, "Not found", "Session not found")
+      send_json_error(conn, 406, -32_000, "Not Acceptable", "Must accept text/event-stream")
     end
   end
 
-  # --- DELETE handler ---
+  # --- Routing headers (SEP-2243) ---
 
-  defp handle_delete(conn, config) do
-    with {:ok, session_id} <- require_session_id(conn),
-         {:ok, transport_pid} <- lookup_session(config, session_id) do
-      HTTPTransport.close(transport_pid)
-      :ets.delete(config.sessions, session_id)
-      Plug.Conn.send_resp(conn, 200, "")
-    else
-      {:error, :missing_session_id} ->
-        send_json_error(conn, 400, -32_600, "Bad request", "Missing MCP-Session-Id header")
+  # `Mcp-Method` must match the body method; `Mcp-Name` (when present) must
+  # match the request's **method-appropriate** target (SEP-2243, §"Mcp-Name":
+  # `params.name` for `tools/call`/`prompts/get`, `params.uri` for
+  # `resources/read`). Enables gateways to route without inspecting the body.
+  defp check_routing_headers(conn, message) do
+    method = Map.get(message, "method")
+    header_method = first_header(conn, "mcp-method")
+    header_name = first_header(conn, "mcp-name")
+    target = routing_target(method, Map.get(message, "params"))
 
-      :not_found ->
-        Plug.Conn.send_resp(conn, 404, "")
+    cond do
+      header_method && header_method != method ->
+        {:error, {:routing_mismatch, "Mcp-Method #{header_method} != #{inspect(method)}"}}
+
+      header_name && target && header_name != target ->
+        {:error, {:routing_mismatch, "Mcp-Name #{header_name} != #{inspect(target)}"}}
+
+      true ->
+        :ok
     end
   end
 
-  # --- Helpers ---
-
-  defp generate_session_id(config) do
-    if config.session_id_generator do
-      config.session_id_generator.()
-    else
-      nil
+  # SEP-2243: the `Mcp-Name` target is the method-appropriate field —
+  # `params.name` for tool/prompt calls, `params.uri` for resource reads.
+  defp routing_target(method, params) when is_map(params) do
+    case method do
+      "tools/call" -> Map.get(params, "name")
+      "prompts/get" -> Map.get(params, "name")
+      "resources/read" -> Map.get(params, "uri")
+      _ -> nil
     end
   end
 
-  defp create_session_and_deliver(config, session_id, message, handler_opts) do
-    case start_session(config, session_id, handler_opts) do
-      {:ok, transport_pid} ->
-        if session_id, do: :ets.insert(config.sessions, {session_id, transport_pid})
-        HTTPTransport.deliver_message(transport_pid, message)
+  defp routing_target(_method, _params), do: nil
 
-      {:error, reason} ->
-        {:error, reason}
-    end
-  end
+  # --- Per-request identity resolution (MC-2/Comment B) ---
 
-  defp start_session(config, session_id, handler_opts) do
-    transport_opts = [owner: self(), session_id: session_id]
-
-    case HTTPTransport.start_link(transport_opts) do
-      {:ok, transport_pid} ->
-        case start_mcp_server(config, transport_pid, handler_opts) do
-          {:ok, _server_pid} ->
-            {:ok, transport_pid}
-
-          {:error, reason} ->
-            HTTPTransport.close(transport_pid)
-            {:error, reason}
-        end
-
-      {:error, reason} ->
-        {:error, reason}
-    end
-  end
-
-  defp start_mcp_server(config, transport_pid, handler_opts) do
-    server_opts = [
-      handler: {config.server_mod, handler_opts},
-      transport: {MCP.Transport.StreamableHTTP.PreStarted, pid: transport_pid}
-    ]
-
-    server_opts =
-      server_opts ++
-        Keyword.take(config.server_opts, [:server_info, :capabilities, :instructions])
-
-    MCP.Server.start_link(server_opts)
-  end
-
-  # Resolves `handler_opts` for a session. Static keyword lists (already
-  # validated at init) pass through; a factory is evaluated once against the
-  # `initialize` request's conn. Returns `{:error, reason}` — never raises — if
-  # the factory raises or returns a non-keyword, so the caller can fail the
-  # request cleanly without starting a session.
-  defp resolve_handler_opts(fun, conn) when is_function(fun, 1) do
+  defp resolve_identity(fun, conn) when is_function(fun, 1) do
     case fun.(conn) do
       result when is_list(result) ->
-        if Keyword.keyword?(result) do
-          {:ok, result}
-        else
-          {:error, {:non_keyword_result, result}}
-        end
+        if Keyword.keyword?(result),
+          do: {:ok, Keyword.get(result, :identity)},
+          else: {:error, {:factory_failed, {:non_keyword_result, result}}}
 
       other ->
-        {:error, {:non_keyword_result, other}}
+        {:error, {:factory_failed, {:non_keyword_result, other}}}
     end
   rescue
-    exception -> {:error, {:factory_raised, exception, __STACKTRACE__}}
+    exception -> {:error, {:factory_failed, {:raised, exception, __STACKTRACE__}}}
   end
 
-  defp resolve_handler_opts(list, _conn) when is_list(list), do: {:ok, list}
+  defp resolve_identity(list, _conn) when is_list(list), do: {:ok, Keyword.get(list, :identity)}
 
-  # Fail-fast validation at Plug.init/1: the static form must be a keyword list,
-  # or the option must be a 1-arity factory. A config error surfaces at mount
-  # time, never per-request.
+  # --- handler_opts validation (fail-fast at mount) ---
+
   defp validate_handler_opts!(fun) when is_function(fun, 1), do: fun
 
   defp validate_handler_opts!(list) when is_list(list) do
@@ -487,77 +288,36 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
             "(Plug.Conn.t() -> keyword()), got: #{inspect(other)}"
   end
 
-  defp require_session_id(conn) do
-    case Plug.Conn.get_req_header(conn, "mcp-session-id") do
-      [session_id | _] -> {:ok, session_id}
-      [] -> {:error, :missing_session_id}
-    end
-  end
+  # --- Notification collection (per-request, process-local) ---
 
-  defp require_session_id_if_stateful(conn, config) do
-    if config.session_id_generator == nil do
-      {:ok, :ets.first(config.sessions)}
-    else
-      require_session_id(conn)
-    end
-  end
+  # dispatch runs synchronously in this request process, so a handler emitting
+  # progress/logging calls this sink inline; collected notifications are flushed
+  # as SSE events before the final result. (JSON mode is single-response.)
+  @notifications_key :mcp_plug_notifications
 
-  defp require_sse_accept(conn) do
-    accept = Plug.Conn.get_req_header(conn, "accept")
-    accepts_sse = Enum.any?(accept, &String.contains?(&1, "text/event-stream"))
+  defp notification_collector do
+    key = @notifications_key
 
-    if accepts_sse do
+    fn method, params ->
+      encoded = Jason.decode!(Jason.encode!(Notification.new(method, params)))
+      Process.put(key, [encoded | Process.get(key, [])])
       :ok
-    else
-      {:error, :not_acceptable}
     end
   end
 
-  defp validate_protocol_version(conn, config) do
-    case Plug.Conn.get_req_header(conn, "mcp-protocol-version") do
-      [] ->
-        :ok
-
-      [version | _] when version == config.protocol_version ->
-        :ok
-
-      [version | _] ->
-        # MCP spec says servers MAY reject unsupported versions.
-        # We log a warning but accept to maximize interoperability.
-        Logger.debug(
-          "MCP Plug: client sent protocol version #{version}, expected #{config.protocol_version}"
-        )
-
-        :ok
-    end
+  defp take_notifications do
+    notifications = @notifications_key |> Process.get([]) |> Enum.reverse()
+    Process.delete(@notifications_key)
+    notifications
   end
 
-  defp lookup_session(config, session_id) do
-    case :ets.lookup(config.sessions, session_id) do
-      [{^session_id, pid}] ->
-        if Process.alive?(pid) do
-          {:ok, pid}
-        else
-          :ets.delete(config.sessions, session_id)
-          :not_found
-        end
+  # --- Response shaping ---
 
-      [] ->
-        :not_found
-    end
-  end
-
-  defp maybe_set_session_header(conn, nil), do: conn
-
-  defp maybe_set_session_header(conn, session_id) do
-    Plug.Conn.put_resp_header(conn, "mcp-session-id", session_id)
-  end
-
-  defp send_response(conn, config, response) do
+  defp send_response(conn, config, response, notifications) do
     if config.enable_json_response do
       send_json_response(conn, response)
     else
-      send_sse_response(conn, response)
+      send_sse_response(conn, response, notifications)
     end
   end
 
@@ -567,13 +327,15 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     |> Plug.Conn.send_resp(200, Jason.encode!(response))
   end
 
-  defp send_sse_response(conn, response) do
-    sse_data = SSE.encode_message(response)
+  defp send_sse_response(conn, response, notifications) do
+    body =
+      (notifications ++ [response])
+      |> Enum.map_join(&SSE.encode_message/1)
 
     conn
     |> Plug.Conn.put_resp_content_type("text/event-stream")
     |> Plug.Conn.put_resp_header("cache-control", "no-cache")
-    |> Plug.Conn.send_resp(200, sse_data)
+    |> Plug.Conn.send_resp(200, body)
   end
 
   defp send_json_error(conn, http_status, code, message, data) do
@@ -589,8 +351,23 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   defp method_not_allowed(conn) do
     conn
-    |> Plug.Conn.put_resp_header("allow", "GET, POST, DELETE")
+    |> Plug.Conn.put_resp_header("allow", "GET, POST")
     |> Plug.Conn.send_resp(405, "")
+  end
+
+  # --- Header / origin helpers ---
+
+  defp first_header(conn, name) do
+    case Plug.Conn.get_req_header(conn, name) do
+      [value | _] -> value
+      [] -> nil
+    end
+  end
+
+  defp accepts_sse?(conn) do
+    conn
+    |> Plug.Conn.get_req_header("accept")
+    |> Enum.any?(&String.contains?(&1, "text/event-stream"))
   end
 
   @localhost_patterns ~w(localhost 127.0.0.1 [::1])
@@ -606,16 +383,13 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   end
 
   defp localhost_value?(value) do
-    # Strip scheme prefix if present
     host_part =
       value
       |> String.replace(~r{^https?://}, "")
       |> String.split("/")
       |> hd()
 
-    # Strip port suffix
     host_without_port = String.replace(host_part, ~r{:\d+$}, "")
-
     host_without_port in @localhost_patterns
   end
 end

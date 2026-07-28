@@ -21,9 +21,17 @@ defmodule MCP.Server.Dispatch do
   * `config` — `%{handler_module, handler_state, server_info, capabilities,
     instructions, protocol_version}`.
 
-  The context is passed to **every identity-capable handler callback** (MC-1),
-  preferring the context-bearing callback arity and falling back to the legacy
-  arity only for handlers not yet migrated.
+  The context is passed to **every identity-capable handler callback** (MC-1).
+  MC-1 is **strict** (PO Ruling 4): the context-bearing callback arity is
+  *required* for every identity-capable family — there is **no legacy
+  no-context fallback**. A handler that does not implement the required context
+  arity is a contract error, surfaced as method-not-found; the legacy arity is
+  **never** invoked.
+
+  > #### Provenance {: .info}
+  > This paragraph corrects doc drift: the MES-8 F3 correction removed the
+  > legacy-arity fallback from `call/6`, but the moduledoc still described it
+  > (MES-9 review F3). Doc statements about removed behaviour are claims too.
 
   Removed methods return the stateless behaviour (no legacy path): `initialize`
   → `UnsupportedProtocolVersion` (-32022); `ping` and `logging/setLevel` →
@@ -31,9 +39,13 @@ defmodule MCP.Server.Dispatch do
   """
 
   alias MCP.Protocol.Error
-  alias MCP.Protocol.Messages.{Discover, Notification, Request}
+  alias MCP.Protocol.Messages.{Discover, MRTR, Notification, Request}
   alias MCP.Protocol.Meta
   alias MCP.Server.ToolContext
+
+  # Conservative caching policy default (SEP-2549): no-store (ttlMs 0), public
+  # scope. `resultType` "complete" is the Result base requirement (schema.ts:658).
+  @default_cache_defaults {0, "public"}
 
   @stateless_protocol_version "2026-07-28"
 
@@ -100,75 +112,144 @@ defmodule MCP.Server.Dispatch do
   defp route("tools/list", id, params, ctx, config) do
     cursor = get_in_params(params, "cursor")
 
-    call(config, ctx, :handle_list_tools, [cursor], fn
-      {:ok, tools, next_cursor, state} -> {list_result("tools", tools, next_cursor), state}
-    end, id)
+    call(
+      config,
+      ctx,
+      :handle_list_tools,
+      [cursor],
+      fn
+        {:ok, tools, next_cursor, state} ->
+          {cacheable(list_result("tools", tools, next_cursor), config), state}
+      end,
+      id
+    )
   end
 
+  # tools/call is the MRTR entry point: the per-request context carries any
+  # continuation (requestState/inputResponses) parsed from params (SEP-2322),
+  # and the handler may return `{:input_required, ...}` to request client input.
   defp route("tools/call", id, params, ctx, config) do
     name = Map.get(params || %{}, "name", "")
     args = Map.get(params || %{}, "arguments", %{})
+    ctx = %{ctx | input: MRTR.continuation_from_params(params)}
 
-    call(config, ctx, :handle_call_tool, [name, args], fn
-      {:ok, content, state} -> {%{"content" => content}, state}
-      {:ok, content, is_error, state} -> {maybe_error(%{"content" => content}, is_error), state}
-      {:error, code, message, state} -> {{:error, %Error{code: code, message: message}}, state}
-    end, id)
+    call(
+      config,
+      ctx,
+      :handle_call_tool,
+      [name, args],
+      fn
+        {:ok, content, state} ->
+          {complete(%{"content" => content}), state}
+
+        {:ok, content, is_error, state} ->
+          {complete(maybe_error(%{"content" => content}, is_error)), state}
+
+        {:input_required, input_requests, request_state, state} ->
+          {MRTR.input_required(input_requests, request_state), state}
+
+        {:error, code, message, state} ->
+          {{:error, %Error{code: code, message: message}}, state}
+      end,
+      id
+    )
   end
 
   defp route("resources/list", id, params, ctx, config) do
     cursor = get_in_params(params, "cursor")
 
-    call(config, ctx, :handle_list_resources, [cursor], fn
-      {:ok, resources, next_cursor, state} ->
-        {list_result("resources", resources, next_cursor), state}
-    end, id)
+    call(
+      config,
+      ctx,
+      :handle_list_resources,
+      [cursor],
+      fn
+        {:ok, resources, next_cursor, state} ->
+          {cacheable(list_result("resources", resources, next_cursor), config), state}
+      end,
+      id
+    )
   end
 
   defp route("resources/read", id, params, ctx, config) do
     uri = Map.get(params || %{}, "uri", "")
 
-    call(config, ctx, :handle_read_resource, [uri], fn
-      {:ok, contents, state} -> {%{"contents" => contents}, state}
-      {:error, code, message, state} -> {{:error, %Error{code: code, message: message}}, state}
-    end, id)
+    call(
+      config,
+      ctx,
+      :handle_read_resource,
+      [uri],
+      fn
+        {:ok, contents, state} -> {cacheable(%{"contents" => contents}, config), state}
+        {:error, code, message, state} -> {{:error, %Error{code: code, message: message}}, state}
+      end,
+      id
+    )
   end
 
   defp route("resources/templates/list", id, params, ctx, config) do
     cursor = get_in_params(params, "cursor")
 
-    call(config, ctx, :handle_list_resource_templates, [cursor], fn
-      {:ok, templates, next_cursor, state} ->
-        {list_result("resourceTemplates", templates, next_cursor), state}
-    end, id)
+    call(
+      config,
+      ctx,
+      :handle_list_resource_templates,
+      [cursor],
+      fn
+        {:ok, templates, next_cursor, state} ->
+          {cacheable(list_result("resourceTemplates", templates, next_cursor), config), state}
+      end,
+      id
+    )
   end
 
   defp route("prompts/list", id, params, ctx, config) do
     cursor = get_in_params(params, "cursor")
 
-    call(config, ctx, :handle_list_prompts, [cursor], fn
-      {:ok, prompts, next_cursor, state} ->
-        {list_result("prompts", prompts, next_cursor), state}
-    end, id)
+    call(
+      config,
+      ctx,
+      :handle_list_prompts,
+      [cursor],
+      fn
+        {:ok, prompts, next_cursor, state} ->
+          {cacheable(list_result("prompts", prompts, next_cursor), config), state}
+      end,
+      id
+    )
   end
 
   defp route("prompts/get", id, params, ctx, config) do
     name = Map.get(params || %{}, "name", "")
     args = Map.get(params || %{}, "arguments")
 
-    call(config, ctx, :handle_get_prompt, [name, args], fn
-      {:ok, result, state} -> {result, state}
-      {:error, code, message, state} -> {{:error, %Error{code: code, message: message}}, state}
-    end, id)
+    call(
+      config,
+      ctx,
+      :handle_get_prompt,
+      [name, args],
+      fn
+        {:ok, result, state} -> {complete(result), state}
+        {:error, code, message, state} -> {{:error, %Error{code: code, message: message}}, state}
+      end,
+      id
+    )
   end
 
   defp route("completion/complete", id, params, ctx, config) do
     ref = Map.get(params || %{}, "ref", %{})
     argument = Map.get(params || %{}, "argument", %{})
 
-    call(config, ctx, :handle_complete, [ref, argument], fn
-      {:ok, completion, state} -> {%{"completion" => completion}, state}
-    end, id)
+    call(
+      config,
+      ctx,
+      :handle_complete,
+      [ref, argument],
+      fn
+        {:ok, completion, state} -> {complete(%{"completion" => completion}), state}
+      end,
+      id
+    )
   end
 
   defp route(method, id, _params, _ctx, config) do
@@ -219,6 +300,21 @@ defmodule MCP.Server.Dispatch do
   defp list_result(key, items, next_cursor) do
     base = %{key => items}
     if next_cursor, do: Map.put(base, "nextCursor", next_cursor), else: base
+  end
+
+  # Every result carries `resultType` (Result base, schema.ts:658).
+  defp complete(map), do: Map.put(map, "resultType", "complete")
+
+  # CacheableResult (list/read) additionally carries ttlMs/cacheScope
+  # (schema.ts:969). Policy default is no-store; a config `:cache_defaults`
+  # {ttl_ms, scope} overrides.
+  defp cacheable(map, config) do
+    {ttl_ms, cache_scope} = Map.get(config, :cache_defaults, @default_cache_defaults)
+
+    map
+    |> complete()
+    |> Map.put("ttlMs", ttl_ms)
+    |> Map.put("cacheScope", cache_scope)
   end
 
   defp maybe_error(result, true), do: Map.put(result, "isError", true)

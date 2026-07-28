@@ -12,13 +12,14 @@ defmodule MCP.Transport.StreamableHTTP.Client do
       `{:mcp_transport_closed, reason}` messages
     * `:url` (required) — the MCP endpoint URL (e.g., "http://localhost:8080/mcp")
     * `:headers` — extra HTTP headers to include on all requests
-    * `:protocol_version` — MCP protocol version (default: "2025-11-25")
+    * `:protocol_version` — MCP protocol version (default: the stateless core's)
 
-  ## Session Management
+  ## Stateless (2026-07-28)
 
-  The client automatically extracts the `MCP-Session-Id` header from the
-  server's initialize response and includes it in all subsequent requests.
-  On close, it sends an HTTP DELETE to terminate the session.
+  There is **no session**: the client sends no `MCP-Session-Id` and issues no
+  DELETE on close (SEP-2567). Every POST is self-contained — the per-request
+  `_meta` (protocol version, client identity/capabilities) is placed on the
+  JSON-RPC message by `MCP.Client`, so any server instance can service it.
   """
 
   use GenServer
@@ -29,12 +30,11 @@ defmodule MCP.Transport.StreamableHTTP.Client do
 
   @behaviour MCP.Transport
 
-  @protocol_version "2025-11-25"
+  @protocol_version "2026-07-28"
 
   defstruct [
     :owner,
     :url,
-    :session_id,
     :protocol_version,
     :extra_headers,
     :sse_task
@@ -155,23 +155,21 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     case Req.post(state.url, body: body, headers: headers, receive_timeout: 60_000) do
       {:ok, %Req.Response{status: status, headers: resp_headers, body: resp_body}}
       when status in [200, 201] ->
-        # Check for session ID in response headers
-        new_state = maybe_extract_session_id(state, resp_headers)
         content_type = get_content_type(resp_headers)
 
         cond do
           String.contains?(content_type, "text/event-stream") ->
             # Parse SSE events from the response body
-            parse_sse_body(new_state, resp_body)
+            parse_sse_body(state, resp_body)
 
           String.contains?(content_type, "application/json") ->
             # Single JSON response
-            deliver_json_response(new_state, resp_body)
+            deliver_json_response(state, resp_body)
 
           true ->
             Logger.warning("MCP StreamableHTTP Client: unexpected content-type: #{content_type}")
 
-            {:ok, new_state}
+            {:ok, state}
         end
 
       {:ok, %Req.Response{status: 202}} ->
@@ -191,27 +189,11 @@ defmodule MCP.Transport.StreamableHTTP.Client do
   end
 
   defp build_headers(state) do
-    base = [
+    [
       {"content-type", "application/json"},
       {"accept", "application/json, text/event-stream"},
       {"mcp-protocol-version", state.protocol_version}
-    ]
-
-    base =
-      if state.session_id do
-        [{"mcp-session-id", state.session_id} | base]
-      else
-        base
-      end
-
-    base ++ state.extra_headers
-  end
-
-  defp maybe_extract_session_id(state, resp_headers) do
-    case get_header(resp_headers, "mcp-session-id") do
-      nil -> state
-      session_id -> %{state | session_id: session_id}
-    end
+    ] ++ state.extra_headers
   end
 
   defp get_content_type(headers) do
@@ -269,18 +251,8 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     end
   end
 
-  defp do_close(state) do
-    # Send DELETE to terminate session if we have a session ID
-    if state.session_id do
-      headers = [
-        {"mcp-session-id", state.session_id},
-        {"mcp-protocol-version", state.protocol_version}
-      ]
-
-      # Best-effort DELETE, ignore errors
-      Req.delete(state.url, headers: headers)
-    end
-  catch
-    _, _ -> :ok
+  defp do_close(_state) do
+    # Stateless: no session to terminate, so no DELETE is issued (SEP-2567).
+    :ok
   end
 end
