@@ -43,6 +43,26 @@ defmodule MCP.Server.Config do
   Builds the dispatch config from a handler module and options.
 
   Returns `{:ok, config}` or `{:error, reason}` if `handler.init/1` fails.
+
+  ## Options of note
+
+    * `:cache_defaults` — `{ttl_ms, cache_scope}` applied to cacheable results
+      (`tools/list`, `resources/list`, `resources/read`, etc. via
+      `CacheableResult`, SEP-2549). Defaults to `{0, "public"}` — **no-store**,
+      so nothing is cached and there is no cross-principal cache exposure.
+
+  > #### Security — cache scope on identity-dependent results {: .warning}
+  >
+  > If you raise `ttl_ms` above the no-store default **and** a result varies by
+  > caller identity (e.g. a per-principal `tools/list` gated on
+  > `ctx.identity`), you MUST set the scope to `"private"`:
+  > `cache_defaults: {60_000, "private"}`. A `"public"` scope authorises shared
+  > caches / gateways to serve one principal's identity-dependent result to
+  > another — an identity leak. The SDK cannot detect which of *your* results
+  > are identity-dependent (that is handler-author knowledge, the D2 §4.2
+  > author-responsibility boundary), so this is a configuration guarantee you
+  > own. The shipped default (`{0, "public"}`) is safe because nothing is
+  > stored.
   """
   @spec build(module(), keyword()) :: {:ok, map()} | {:error, term()}
   def build(handler_module, opts) do

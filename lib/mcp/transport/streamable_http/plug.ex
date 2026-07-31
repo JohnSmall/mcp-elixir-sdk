@@ -37,12 +37,33 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
     * `:server_mod` (required) — the `MCP.Server.Handler` module.
     * `:server_opts` — `:server_info`, `:instructions`, `:cache_defaults`
-      forwarded to `MCP.Server.Config`.
+      forwarded to `MCP.Server.Config`. If you raise `:cache_defaults` above the
+      no-store default on identity-dependent results, set `cacheScope: "private"`
+      — see the security warning on `MCP.Server.Config.build/2`.
     * `:handler_opts` — static `keyword()` **or** a `(Plug.Conn.t() ->
       keyword())` factory. The factory is evaluated **per request** against the
       request's `conn` and its `:identity` populates the per-request context.
       The static form's `:identity` is used as a constant. (The non-identity
       base is passed once to `Handler.init/1` at mount.)
+
+      > #### Factory last-mile responsibility {: .warning}
+      >
+      > The factory receives the **whole** `conn`, which carries **both**
+      > authenticated material (assigns your upstream auth Plug set) **and**
+      > model-reachable material (raw request headers, the request body). The
+      > invariant's last mile is yours: read the **authenticated** part only.
+      >
+      >     # RIGHT — an assign established server-side by your auth pipeline:
+      >     handler_opts: fn conn -> [identity: conn.assigns[:current_user]] end
+      >
+      >     # WRONG — a raw header is caller-supplied and unauthenticated;
+      >     # anyone (including the model) can set it, defeating the invariant:
+      >     handler_opts: fn conn -> [identity: get_req_header(conn, "x-user")] end
+      >
+      > This is the one identity-leak path the SDK cannot close by construction:
+      > it drops model-controlled `params`/`arguments`/`_meta` and never reads a
+      > header into identity itself, but it cannot tell which part of the `conn`
+      > **your** factory chooses to trust. Read `conn.assigns`, not raw input.
     * `:enable_json_response` — return `application/json` instead of SSE for
       request/response (default: false).
     * `:protocol_version` — advertised version (default: the stateless core's).
@@ -81,6 +102,12 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     :protocol_version,
     :config
   ]
+
+  # Per-request notification collector key (process-local). Declared here, above
+  # its first use in `dispatch/5`, so the security clears in `dispatch/5`
+  # reference the real key (a module attribute used before definition resolves
+  # to nil — Ruling 7 fix must not silently no-op).
+  @notifications_key :mcp_plug_notifications
 
   @doc """
   Creates a Plug configuration tuple suitable for Bandit.
@@ -181,6 +208,15 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   end
 
   defp dispatch(conn, config, decoded, raw_message, identity) do
+    # Security (Ruling 7): the notification collector is process-local, and a
+    # request process may be reused. Clear any residue at request START so a
+    # prior request's notifications can never survive INTO this one, and wrap
+    # dispatch in an `after` so a *raising* handler cannot leave residue behind
+    # for the NEXT request. Belt and braces: either guard alone suffices; both
+    # together mean no code path can flush one principal's notifications into
+    # another principal's response.
+    Process.delete(@notifications_key)
+
     request_id = Map.get(raw_message, "id")
 
     ctx = %ToolContext{
@@ -190,13 +226,17 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
       reply_sink: notification_collector()
     }
 
-    case Dispatch.dispatch(decoded, ctx, config.config) do
-      {:reply, response, _state} ->
-        notifications = take_notifications()
-        send_response(conn, config, response, notifications)
+    try do
+      case Dispatch.dispatch(decoded, ctx, config.config) do
+        {:reply, response, _state} ->
+          notifications = take_notifications()
+          send_response(conn, config, response, notifications)
 
-      {:noreply, _state} ->
-        Plug.Conn.send_resp(conn, 202, "")
+        {:noreply, _state} ->
+          Plug.Conn.send_resp(conn, 202, "")
+      end
+    after
+      Process.delete(@notifications_key)
     end
   end
 
@@ -292,9 +332,9 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   # dispatch runs synchronously in this request process, so a handler emitting
   # progress/logging calls this sink inline; collected notifications are flushed
-  # as SSE events before the final result. (JSON mode is single-response.)
-  @notifications_key :mcp_plug_notifications
-
+  # as SSE events before the final result. (JSON mode is single-response.) The
+  # `@notifications_key` attribute is declared near the top of the module so the
+  # security clears in `dispatch/5` bind the real key (see Ruling 7).
   defp notification_collector do
     key = @notifications_key
 

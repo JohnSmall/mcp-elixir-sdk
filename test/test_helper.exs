@@ -1,18 +1,26 @@
 # Test ledger — retired-with-owner (Ruling 3: no silent deletions).
 #
-# MES-9 closed all three :mes9_retired lines (the old per-session server shell,
-# the old Streamable-HTTP transport, and the client↔server handshake
-# integration): those suites were rewritten stateless or deleted with a ledger
-# line (see the MES-9 implementation notes). No :mes9_retired files remain.
+# EMPTY as of MES-10. Both Sprint-3 ledger lines are now CLOSED:
 #
-#   :mes10_retired — the MES-3/MES-5 handshake-time handler_opts identity
-#                    criteria (streamable_http_ac_test.exs AC1–AC6/AC8). Owner:
-#                    MES-10 (identity seam v2), which re-anchors them per-request
-#                    (PO Comment B) and ports them onto the stateless transport.
-#                    AC7 (localhost/Origin enforcement) is re-homed now in
-#                    test/mcp/transport/streamable_http_stateless_test.exs.
+#   :mes9_retired  — closed by MES-9 (old per-session server shell, old
+#                    Streamable-HTTP transport, client↔server handshake
+#                    integration): rewritten stateless or deleted with a
+#                    ledger line. No files remain.
 #
-# Stateless protocol behaviour is covered by test/mcp/server/dispatch_test.exs;
-# the stateless transport + client↔server integration by
-# streamable_http_stateless_test.exs and integration_test.exs.
-ExUnit.start(exclude: [:mes10_retired])
+#   :mes10_retired — closed by MES-10. The MES-3/MES-5 handshake-time
+#                    handler_opts identity criteria (streamable_http_ac_test.exs
+#                    AC1–AC6/AC8) are PORTED, per-request, onto the stateless
+#                    transport as real-HTTP acceptance tests in
+#                    streamable_http_ac_test.exs (AC1–AC8 + AC3′), and the
+#                    deleted streamable_http_handler_opts_test.exs (content @
+#                    9a6150a) is closed per-case (see the MES-10 impl notes).
+#                    No :mes10_retired files remain.
+#
+# Coverage map (post-MES-10):
+#   * Stateless protocol behaviour   — test/mcp/server/dispatch_test.exs
+#   * Stateless transport (plug-unit)— streamable_http_stateless_test.exs
+#   * Identity ACs + spoof sweep     — streamable_http_ac_test.exs (real HTTP)
+#   * Client ↔ server integration    — integration_test.exs
+#
+# The exclude list is EMPTY: every test runs.
+ExUnit.start()

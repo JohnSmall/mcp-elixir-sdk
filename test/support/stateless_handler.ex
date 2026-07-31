@@ -42,6 +42,32 @@ defmodule MCP.Test.StatelessHandler do
     {:ok, [%{"type" => "text", "text" => id_str(ctx)}], state}
   end
 
+  # A tool that never touches identity — used to prove the SDK response
+  # envelope carries no identity of its own (§3.2 identity-never-on-the-wire).
+  def handle_call_tool("silent", _args, %ToolContext{}, state) do
+    {:ok, [%{"type" => "text", "text" => "ok"}], state}
+  end
+
+  # MRTR identity variant: like `needs_input`, but the completion echoes
+  # `ctx.identity` (re-resolved from THIS request's pipeline on the retry),
+  # never anything carried in the model-supplied requestState/inputResponses.
+  def handle_call_tool("needs_input_id", _args, %ToolContext{input: nil}, state) do
+    input_requests = [%{"kind" => "elicitation", "message" => "who are you?"}]
+    {:input_required, input_requests, "rs-token-id", state}
+  end
+
+  def handle_call_tool("needs_input_id", _args, %ToolContext{input: %{responses: _}} = ctx, state) do
+    {:ok, [%{"type" => "text", "text" => id_str(ctx)}], state}
+  end
+
+  # Ruling 7 regression: emit an identity-bearing notification, then RAISE.
+  # Proves the transport clears its per-request notification collector even when
+  # the handler crashes, so no residue leaks into the next same-process request.
+  def handle_call_tool("emit_then_raise", _args, %ToolContext{} = ctx, _state) do
+    ToolContext.log(ctx, "info", %{"identity" => id_str(ctx)})
+    raise "boom after emitting a notification"
+  end
+
   def handle_call_tool(_name, _args, %ToolContext{}, state) do
     {:error, -32_602, "unknown tool", state}
   end

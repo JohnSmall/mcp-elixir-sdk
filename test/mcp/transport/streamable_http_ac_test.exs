@@ -1,205 +1,281 @@
 defmodule MCP.Transport.StreamableHTTP.ACTest do
   @moduledoc """
-  MES-5 — EMFA consumer-acceptance criteria AC1–AC8 for the `handler_opts`
-  seam, as named ExUnit tests (1:1 with the AC contract).
+  MES-10 — the ported EMFA acceptance criteria AC1–AC8 (+ AC3′) and the
+  identity-invariant **spoof-vector sweep**, as end-to-end tests over **real
+  HTTP** (Bandit + `Req`) through a realistic authenticated pipeline.
 
-  The **assertions** are EMFA's; only the request plumbing is adapted to the
-  real SDK source:
+  The harness (`MCP.Test.AuthedMCPPlug`) is `MCP.Test.AuthPlug` → the MCP Plug:
+  an upstream auth Plug converts the `x-test-role` credential into
+  `conn.assigns[:role]` (the **authenticated** channel), and the MCP identity
+  factory reads that assign. Spoof tests plant a competing identity value in
+  **every model-controlled channel** — tool arguments, `prompts/get` arguments,
+  `_meta`, raw request headers, and the MRTR `requestState`/`inputResponses`
+  continuation — and assert the pipeline identity always wins.
 
-    * public Plug option is `server_mod:` (not `handler:`);
-    * the server is `:waiting` until a `notifications/initialized` notification
-      flips it to `:ready` (`server.ex:426-442`), so `initialize/2` sends that
-      notification before any `tools/call`;
-    * non-localhost origin is rejected with HTTP **403**.
-
-  AC1/AC2/AC4/AC5/AC8 also have coverage in
-  `streamable_http_handler_opts_test.exs` (MES-3); the genuinely-new depth here
-  is **AC3** (arg cannot override bound identity), **AC6** (session isolation),
-  and **AC7** (localhost enforcement preserved; factory not invoked on reject).
+  Lineage: this file previously held the MES-5 handshake-anchored AC1–AC8
+  (retired `:mes10_retired` by the MES-9 ledger split). MES-10 rewrites it
+  stateless and **closes** that ledger line — the file that held the retired
+  ACs is the file that ports them. AC7 (localhost/Origin enforcement; factory
+  not invoked on reject) is proven at plug-unit level with a `refute_receive`
+  in `streamable_http_stateless_test.exs`; this suite adds an acceptance-level
+  403 parity assertion only.
   """
   use ExUnit.Case, async: false
 
-  # MES-9 ledger (D-C split): the AC1–AC6/AC8 `handler_opts` identity-binding
-  # criteria are handshake/`initialize`-anchored (they drive the removed
-  # session model). Per PO ratification 2026-07-27 they are RETIRED here to
-  # MES-10, which re-anchors them per-request (Comment B) and ports them onto
-  # the stateless transport. AC7 (localhost/Origin enforcement; factory not
-  # invoked on reject) is re-homed to MES-9's stateless enforcement test in
-  # `streamable_http_stateless_test.exs`.
-  @moduletag :mes10_retired
-
-  import Plug.Test
-  import Plug.Conn
   import ExUnit.CaptureLog
 
-  alias MCP.Test.EchoHandler
+  alias MCP.Test.{AuthedMCPPlug, StatelessHandler}
   alias MCP.Transport.StreamableHTTP.Plug, as: MCPPlug
 
-  @init_body Jason.encode!(%{
-               "jsonrpc" => "2.0",
-               "id" => 1,
-               "method" => "initialize",
-               "params" => %{
-                 "protocolVersion" => "2025-11-25",
-                 "capabilities" => %{},
-                 "clientInfo" => %{"name" => "ac", "version" => "1.0"}
-               }
-             })
+  @version "2026-07-28"
 
-  @initialized_body Jason.encode!(%{"jsonrpc" => "2.0", "method" => "notifications/initialized"})
+  # --- harness ---
 
-  # --- framing helpers (adapted from the SDK's own transport tests) ---
+  # The standard instance: a per-request factory reading the authenticated
+  # `conn.assigns[:role]`. Two are started so AC6′ can round-robin across
+  # independent, share-nothing instances.
+  setup_all do
+    role_factory = fn conn -> [identity: conn.assigns[:role]] end
+    u1 = start_instance(handler_opts: role_factory)
+    u2 = start_instance(handler_opts: role_factory)
+    %{std: u1, std2: u2}
+  end
 
-  defp init_opts(extra) do
-    MCPPlug.init(
+  defp start_instance(extra_opts) do
+    port = free_port()
+
+    mcp_opts =
+      Keyword.merge([server_mod: StatelessHandler, enable_json_response: true], extra_opts)
+
+    {:ok, bandit} =
+      Bandit.start_link(plug: {AuthedMCPPlug, mcp_opts}, port: port, ip: {127, 0, 0, 1})
+
+    on_exit(fn -> Process.exit(bandit, :normal) end)
+    "http://127.0.0.1:#{port}"
+  end
+
+  defp free_port do
+    {:ok, socket} = :gen_tcp.listen(0, [:binary, active: false, reuseaddr: true])
+    {:ok, port} = :inet.port(socket)
+    :gen_tcp.close(socket)
+    port
+  end
+
+  defp with_meta(params, extra_meta \\ %{}) do
+    meta = Map.merge(%{"io.modelcontextprotocol/protocolVersion" => @version}, extra_meta)
+    Map.put(params, "_meta", meta)
+  end
+
+  # POST a JSON-RPC message over real HTTP. `:role` sets the authenticated
+  # `x-test-role` header; `:headers` adds arbitrary (model-reachable) headers;
+  # `:origin` overrides the default localhost origin.
+  defp post(url, method, params, opts) do
+    role = Keyword.get(opts, :role)
+    origin = Keyword.get(opts, :origin, "http://localhost")
+
+    headers =
       [
-        server_mod: EchoHandler,
-        enable_json_response: true,
-        session_id_generator: fn -> UUID.uuid4() end
-      ] ++ extra
-    )
+        {"content-type", "application/json"},
+        {"accept", "application/json"},
+        {"origin", origin}
+      ] ++
+        if(role, do: [{"x-test-role", role}], else: []) ++
+        Keyword.get(opts, :headers, [])
+
+    body = Jason.encode!(%{"jsonrpc" => "2.0", "id" => 1, "method" => method, "params" => params})
+    {:ok, resp} = Req.post(url, body: body, headers: headers)
+    resp
   end
 
-  defp build_post(body, headers, mutate) do
-    base =
-      :post
-      |> conn("http://localhost/", body)
-      |> put_req_header("content-type", "application/json")
-      |> put_req_header("accept", "application/json, text/event-stream")
+  defp result(resp), do: resp.body["result"]
+  defp error(resp), do: resp.body["error"]
+  defp tool_text(resp), do: result(resp)["content"] |> hd() |> Map.get("text")
 
-    headers
-    |> Enum.reduce(base, fn {k, v}, c -> put_req_header(c, k, v) end)
-    |> mutate.()
+  # ======================================================================
+  # AC PORT MATRIX — AC1–AC8 + AC3′
+  # ======================================================================
+
+  # --- AC1 — static handler_opts identity threads per request ---
+
+  test "AC1 — static handler_opts identity threads per request" do
+    url = start_instance(handler_opts: [identity: "PM"])
+    # Even with a competing authenticated role, the static identity is the
+    # constant the SDK uses (the static form ignores conn).
+    assert tool_text(post(url, "tools/call", with_meta(%{"name" => "whoami"}), role: "REVIEWER")) ==
+             "PM"
   end
 
-  # POST initialize (running any `mutate` to set conn.assigns), read the
-  # session id, then send `notifications/initialized` to reach :ready.
-  defp initialize(plug_opts, mutate \\ & &1) do
-    conn =
-      build_post(@init_body, [{"origin", "http://localhost"}], mutate) |> MCPPlug.call(plug_opts)
+  # --- AC2 — per-request factory reads conn.assigns ---
 
-    sid = session_id(conn)
-
-    if sid do
-      build_post(
-        @initialized_body,
-        [{"origin", "http://localhost"}, {"mcp-session-id", sid}],
-        & &1
-      )
-      |> MCPPlug.call(plug_opts)
-    end
-
-    {conn, sid}
+  test "AC2 — factory reads conn.assigns per request", %{std: url} do
+    assert tool_text(
+             post(url, "tools/call", with_meta(%{"name" => "whoami"}), role: "CODE_CREATOR")
+           ) ==
+             "CODE_CREATOR"
   end
 
-  defp call(plug_opts, sid, name, args, mutate \\ & &1) do
-    body =
-      Jason.encode!(%{
-        "jsonrpc" => "2.0",
-        "id" => 2,
-        "method" => "tools/call",
-        "params" => %{"name" => name, "arguments" => args}
-      })
+  # --- AC3 ★ — a tools/call identity arg is ignored; pipeline wins (real HTTP) ---
 
-    build_post(body, [{"origin", "http://localhost"}, {"mcp-session-id", sid}], mutate)
-    |> MCPPlug.call(plug_opts)
+  test "AC3 — tools/call identity arg is ignored; pipeline wins", %{std: url} do
+    params = with_meta(%{"name" => "whoami_with_arg", "arguments" => %{"identity" => "PM-SPOOF"}})
+    assert tool_text(post(url, "tools/call", params, role: "REVIEWER")) == "REVIEWER"
   end
 
-  defp session_id(conn) do
-    case get_resp_header(conn, "mcp-session-id") do
-      [sid | _] -> sid
-      [] -> nil
-    end
-  end
+  # --- AC3′ ★ (NEW) — a prompts/get identity arg is ignored; pipeline wins ---
 
-  defp tool_text(conn) do
-    conn.resp_body
-    |> Jason.decode!()
-    |> get_in(["result", "content"])
-    |> hd()
-    |> Map.get("text")
-  end
-
-  # --- AC1 — static opts through the Plug ---
-
-  test "AC1 — static handler_opts flow through the plug to the handler" do
-    opts = init_opts(handler_opts: [identity: "PM"])
-    {_c, sid} = initialize(opts)
-    assert tool_text(call(opts, sid, "whoami", %{})) == "PM"
-  end
-
-  # --- AC2 — factory reads conn.assigns set by an upstream plug ---
-
-  test "AC2 — factory handler_opts capture conn.assigns from the upstream pipeline" do
-    opts = init_opts(handler_opts: fn conn -> [identity: conn.assigns[:role]] end)
-    {_c, sid} = initialize(opts, fn conn -> assign(conn, :role, "CODE_CREATOR") end)
-    assert tool_text(call(opts, sid, "whoami", %{})) == "CODE_CREATOR"
-  end
-
-  # --- AC3 — bound identity is state; a tool ARG cannot override it (NEW) ---
-
-  test "AC3 — a tool-arg identity does NOT override the bound identity" do
-    opts = init_opts(handler_opts: fn conn -> [identity: conn.assigns[:role]] end)
-    {_c, sid} = initialize(opts, fn conn -> assign(conn, :role, "REVIEWER") end)
-
-    text = tool_text(call(opts, sid, "whoami_with_arg", %{"identity" => "PM"}))
+  test "AC3' — prompts/get identity arg is ignored; pipeline wins", %{std: url} do
+    params = with_meta(%{"name" => "who", "arguments" => %{"identity" => "PM-SPOOF"}})
+    resp = post(url, "prompts/get", params, role: "REVIEWER")
+    text = result(resp)["messages"] |> hd() |> get_in(["content", "text"])
     assert text == "REVIEWER"
   end
 
-  # --- AC4 — no handler_opts → unchanged behaviour ---
+  # --- AC4 — absent handler_opts is backward-compatible (empty identity) ---
 
-  test "AC4 — absent handler_opts is backward compatible (identity empty)" do
-    opts = init_opts([])
-    {_c, sid} = initialize(opts)
-    assert tool_text(call(opts, sid, "whoami", %{})) == ""
+  test "AC4 — absent handler_opts is backward-compatible (empty identity)" do
+    url = start_instance([])
+
+    assert tool_text(post(url, "tools/call", with_meta(%{"name" => "whoami"}), role: "REVIEWER")) ==
+             ""
   end
 
-  # --- AC5 — factory runs once at initialize; later calls reuse bound state ---
+  # --- AC5 — identity is per-request fresh, never sticky ---
 
-  test "AC5 — identity is bound per-session at initialize, not re-derived per call" do
-    opts = init_opts(handler_opts: fn conn -> [identity: conn.assigns[:role]] end)
-    {_c, sid} = initialize(opts, fn conn -> assign(conn, :role, "PM") end)
+  test "AC5 — identity is per-request fresh; a changed credential is reflected next request",
+       %{std: url} do
+    # No initialize/session to bind at: each request resolves its own identity.
+    assert tool_text(post(url, "tools/call", with_meta(%{"name" => "whoami"}), role: "PM")) ==
+             "PM"
 
-    # A later call on the same session carries a DIFFERENT assign — the value
-    # bound at initialize must still win.
-    text =
-      tool_text(call(opts, sid, "whoami", %{}, fn conn -> assign(conn, :role, "REVIEWER") end))
-
-    assert text == "PM"
+    assert tool_text(post(url, "tools/call", with_meta(%{"name" => "whoami"}), role: "REVIEWER")) ==
+             "REVIEWER"
   end
 
-  # --- AC6 — session isolation (NEW) ---
+  # --- AC6′ ★ — interleaved callers across two instances never leak identity ---
 
-  test "AC6 — concurrent sessions get independent bound identities" do
-    opts = init_opts(handler_opts: fn conn -> [identity: conn.assigns[:role]] end)
-    {_a, sid_a} = initialize(opts, fn c -> assign(c, :role, "PM") end)
-    {_b, sid_b} = initialize(opts, fn c -> assign(c, :role, "REVIEWER") end)
+  test "AC6' — interleaved authenticated callers across two instances never leak identity",
+       %{std: u1, std2: u2} do
+    # Round-robin two instances with interleaved principals; each request must
+    # observe only its own identity (no session/affinity, no shared store).
+    seq = [{u1, "PM"}, {u2, "REVIEWER"}, {u1, "REVIEWER"}, {u2, "PM"}, {u1, "PO"}, {u2, "CC"}]
 
-    assert sid_a != sid_b
-    assert tool_text(call(opts, sid_a, "whoami", %{})) == "PM"
-    assert tool_text(call(opts, sid_b, "whoami", %{})) == "REVIEWER"
+    for {url, role} <- seq do
+      assert tool_text(post(url, "tools/call", with_meta(%{"name" => "whoami"}), role: role)) ==
+               role
+    end
   end
 
-  # AC7 (localhost/Origin enforcement) is re-homed to MES-9's stateless
-  # enforcement test — see `streamable_http_stateless_test.exs`.
+  # --- AC7 — non-localhost origin rejected over real HTTP (parity) ---
 
-  # --- AC8 — factory failure mode: non-keyword fails the session cleanly ---
-  # (PreStarted static-only, and factory-raises, are covered in MES-3
-  #  streamable_http_handler_opts_test.exs cases 7 and 8.)
+  test "AC7 — non-localhost origin is rejected 403 (acceptance parity)", %{std: url} do
+    resp =
+      post(url, "tools/call", with_meta(%{"name" => "whoami"}),
+        role: "PM",
+        origin: "http://evil.example"
+      )
 
-  test "AC8 — a factory that returns a non-keyword fails the session cleanly" do
-    opts = init_opts(handler_opts: fn _conn -> :not_a_keyword end)
+    assert resp.status == 403
+  end
 
-    {conn, _log} =
-      with_log(fn ->
-        :post
-        |> conn("http://localhost/", @init_body)
-        |> put_req_header("content-type", "application/json")
-        |> put_req_header("origin", "http://localhost")
-        |> MCPPlug.call(opts)
-      end)
+  # --- AC8 — factory raise / non-keyword → clean -32603, nothing leaked ---
 
-    assert conn.status == 500
-    assert Jason.decode!(conn.resp_body)["error"]["code"] == -32_603
+  test "AC8 — a factory that raises fails cleanly (-32603); the secret never leaks" do
+    url = start_instance(handler_opts: fn _conn -> raise "boom secret=xyz789" end)
+
+    {resp, _log} =
+      with_log(fn -> post(url, "tools/call", with_meta(%{"name" => "whoami"}), role: "PM") end)
+
+    assert resp.status == 500
+    assert error(resp)["code"] == -32_603
+    refute Jason.encode!(resp.body) =~ "xyz789"
+  end
+
+  test "AC8 — a factory that returns a non-keyword fails cleanly (-32603)" do
+    url = start_instance(handler_opts: fn _conn -> :not_a_keyword end)
+
+    {resp, _log} =
+      with_log(fn -> post(url, "tools/call", with_meta(%{"name" => "whoami"}), role: "PM") end)
+
+    assert resp.status == 500
+    assert error(resp)["code"] == -32_603
+  end
+
+  test "AC8 — a static non-keyword handler_opts fails fast at init (ArgumentError)" do
+    # Preserves the MES-3 case-8 fail-fast (handler_opts_test.exs) at the SDK
+    # boundary: bad static config never reaches a request.
+    assert_raise ArgumentError, ~r/handler_opts must be a keyword list/, fn ->
+      MCPPlug.init(server_mod: StatelessHandler, handler_opts: [1, 2, 3])
+    end
+  end
+
+  # ======================================================================
+  # HARDENING — spoof-vector sweep (D2 §4.2). Each vector: plant a competing
+  # identity in the model-controlled channel; assert the pipeline value wins.
+  # ======================================================================
+
+  # Vector: tool-call arguments — covered by AC3 (tools/call) + AC3′ (prompts/get).
+
+  # Vector: _meta entries (incl. the self-declared clientInfo label).
+  test "spoof — a _meta clientInfo/identity value is ignored; pipeline wins", %{std: url} do
+    spoof_meta = %{
+      "io.modelcontextprotocol/clientInfo" => %{"name" => "PM-SPOOF"},
+      "identity" => "PM-SPOOF"
+    }
+
+    params = with_meta(%{"name" => "whoami"}, spoof_meta)
+    assert tool_text(post(url, "tools/call", params, role: "REVIEWER")) == "REVIEWER"
+  end
+
+  # Vector: model-reachable raw request headers (not the authenticated assign).
+  test "spoof — a body-reachable identity-looking header does not change identity", %{std: url} do
+    headers = [{"x-user", "PM-SPOOF"}, {"identity", "PM-SPOOF"}]
+    params = with_meta(%{"name" => "whoami"})
+
+    assert tool_text(post(url, "tools/call", params, role: "REVIEWER", headers: headers)) ==
+             "REVIEWER"
+  end
+
+  # Vector: MRTR continuation (SEP-2567 state handle). requestState +
+  # inputResponses are model-passed; identity must be re-resolved from THIS
+  # request's pipeline on the retry, never taken from the continuation.
+  test "spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+       %{std: url} do
+    first = post(url, "tools/call", with_meta(%{"name" => "needs_input_id"}), role: "PM")
+    assert result(first)["resultType"] == "input_required"
+    assert result(first)["requestState"] == "rs-token-id"
+
+    retry_params =
+      with_meta(%{
+        "name" => "needs_input_id",
+        "arguments" => %{},
+        "requestState" => result(first)["requestState"],
+        "inputResponses" => [%{"name" => "x", "identity" => "PM-SPOOF"}]
+      })
+
+    # Retry carries a DIFFERENT authenticated role than the first request:
+    # completion must echo the retry's re-resolved identity (REVIEWER),
+    # neither the first request's PM nor the planted PM-SPOOF.
+    final = post(url, "tools/call", retry_params, role: "REVIEWER")
+    assert result(final)["resultType"] == "complete"
+    assert tool_text(final) == "REVIEWER"
+  end
+
+  # Vector: caches shared across requests/instances — the shipped default is
+  # no-store (ttlMs 0), so nothing is cached to leak. (AC6′ proves no
+  # cross-request/instance identity leakage directly.)
+  test "default caching policy is no-store (ttlMs 0)", %{std: url} do
+    r = result(post(url, "tools/list", with_meta(%{}), role: "PM"))
+    assert r["ttlMs"] == 0
+    assert r["cacheScope"] == "public"
+  end
+
+  # §3.2 — identity is server-internal and never serialized into the response
+  # envelope unless a handler deliberately echoes it. The `silent` tool never
+  # touches identity, so a sentinel principal must appear nowhere in the body.
+  test "identity never crosses the wire (envelope carries no identity)", %{std: url} do
+    sentinel = "SENTINEL-PRINCIPAL-9f3a"
+    resp = post(url, "tools/call", with_meta(%{"name" => "silent"}), role: sentinel)
+    assert tool_text(resp) == "ok"
+    refute Jason.encode!(resp.body) =~ sentinel
   end
 end

@@ -244,6 +244,45 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert error(bad)["code"] == -32_700
   end
 
+  # --- Ruling 7: no cross-request notification residue after a handler raises ---
+
+  test "a raising handler leaves no notification residue for the next request (SSE)" do
+    # SSE mode so notifications are flushed into the response body — exactly
+    # where the leak was visible. Two calls in THIS process: request 1 (PM)
+    # emits an identity-bearing notification then raises; request 2 (REVIEWER),
+    # same process, must not receive PM's notification.
+    plug_opts =
+      MCPPlug.init(
+        server_mod: StatelessHandler,
+        enable_json_response: false,
+        handler_opts: fn conn -> [identity: conn.assigns[:role]] end
+      )
+
+    assert_raise RuntimeError, fn ->
+      post(
+        plug_opts,
+        rpc("tools/call", with_meta(%{"name" => "emit_then_raise"})),
+        [],
+        &assign(&1, :role, "PM")
+      )
+    end
+
+    conn2 =
+      post(
+        plug_opts,
+        rpc("tools/call", with_meta(%{"name" => "whoami"})),
+        [],
+        &assign(&1, :role, "REVIEWER")
+      )
+
+    assert conn2.status == 200
+    # No residue: neither the notification frame nor PM's identity leaks.
+    refute conn2.resp_body =~ "notifications/message"
+    refute conn2.resp_body =~ "PM"
+    # Sanity: request 2 still gets its own result.
+    assert conn2.resp_body =~ "REVIEWER"
+  end
+
   # --- DoD: two-instance / no-affinity smoke ---
 
   describe "two-instance / no-affinity smoke (DoD)" do
