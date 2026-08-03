@@ -19,16 +19,23 @@ WP pin Global v2 · Methodology pin Global v1.
 | --- | --- | --- | --- | --- |
 | [ADR-001](0001-target-2025-11-25-defer-2026-07-28.md) | Target MCP spec revision 2025-11-25 only; defer 2026-07-28 | Accepted (retroactive) · **deferral superseded** | — | ADR-002 (deferral only) |
 | [ADR-002](0002-adopt-2026-07-28-stateless-core-migration.md) | Adopt MCP 2026-07-28; migrate transport to the stateless core (2.0.0) | **Accepted** (2026-07-20) | ADR-001 (the deferral) | — |
+| [ADR-003](0003-2.0.0-conformance-scope.md) | 2.0.0 conformance scope — core only, authorization profile excluded, client held to the same bar | **Accepted** (2026-08-02) | — | — |
 
-**Next ADR number: ADR-003.**
+**Next ADR number: ADR-004.**
 
 ADR-002 supersedes **only the deferral** in ADR-001, not the whole decision: ADR-001's choice to _ship_
 1.1.0 against 2025-11-25 stands and is already released. ADR-002 governs what comes next — adopt
 2026-07-28, package-level cutover to 2.0.0, EMFA rides the migration.
 
+ADR-003 **refines** ADR-002 sub-decisions 3 and 4 (it supersedes nothing): it fixes the denominator of
+ADR-002's "in its entirety" conformance commitment — 2.0.0 targets the **core specification** on server
+_and_ client, **excluding** the authorization profile and the extension track, with the claim worded to
+that scope.
+
 Confluence mirror: [ADR register](https://vidhya-trading.atlassian.net/wiki/spaces/ElixirMCPS/pages/232980491)
 · [ADR-001](https://vidhya-trading.atlassian.net/wiki/spaces/ElixirMCPS/pages/232194078)
-· [ADR-002](https://vidhya-trading.atlassian.net/wiki/spaces/ElixirMCPS/pages/232620042).
+· [ADR-002](https://vidhya-trading.atlassian.net/wiki/spaces/ElixirMCPS/pages/232620042)
+· [ADR-003](https://vidhya-trading.atlassian.net/wiki/spaces/ElixirMCPS/pages/249724984).
 
 ## Verification notes
 
