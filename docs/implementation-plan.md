@@ -395,7 +395,7 @@ mix dialyzer
     4 prompts, resource templates, subscriptions, logging, completion
   - `conformance/server_adapter.exs` — Starts Bandit HTTP server with Streamable HTTP Plug
   - `conformance/client_adapter.exs` — Client adapter with scenario dispatch
-  - `conformance/expected_failures.yml` — Baseline of 7 expected failures
+  - `conformance/expected_failures.yml` — Baseline of 7 expected failures — **RETIRED MES-13 (2026-08-03):** superseded at Phase 7 (30/30 active); see `docs/sprint_4_issues.md`
 
 - [x] **6.7** Run conformance test suite
   - Server: `mix run conformance/server_adapter.exs 3099`

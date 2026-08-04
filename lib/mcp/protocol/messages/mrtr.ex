@@ -12,18 +12,20 @@ defmodule MCP.Protocol.Messages.MRTR do
   and `requestState` (SEP-2260 is satisfied by construction: the input-required
   reply *is* the response to an active client request).
 
-  ## Wire shape — verified against the pinned draft schema
+  ## Wire shape — verified against the pinned published-final schema
 
-  Commit `7634684382c3d14cf7e9f14073fe40a2d8ace3fa`, `schema/draft/schema.ts`:
+  Commit `5f5440bb26a62e2cf3440b92da5a667efa03b267` (tag `2026-07-28`,
+  2026-07-28), `schema/2026-07-28/schema.ts`:
 
-    * `Result` (schema.ts:658) requires `resultType: ResultType`
-      (`"complete" | "input_required" | string`, schema.ts:651).
-    * `InputRequiredResult extends Result` (schema.ts:1253) adds
-      **`inputRequests?: InputRequests`** and **`requestState?: string`**
-      (schema.ts:1268); at least one must be present.
-    * On retry the client sends `InputResponseRequestParams` (schema.ts:1284)
-      carrying **`inputResponses?`** and **`requestState?`** on the request
-      **params** (not `_meta`).
+    * `Result` (schema.ts:223) requires `resultType: ResultType`
+      (`"complete" | "input_required" | string`; `ResultType` at schema.ts:216,
+      the field at schema.ts:234).
+    * `InputRequiredResult extends Result` (schema.ts:584) adds
+      **`inputRequests?: InputRequests`** (schema.ts:588) and
+      **`requestState?: string`** (schema.ts:594); at least one must be present.
+    * On retry the client sends `InputResponseRequestParams` (schema.ts:600)
+      carrying **`inputResponses?`** (schema.ts:605) and **`requestState?`**
+      (schema.ts:608) on the request **params** (not `_meta`).
   """
 
   @result_type "input_required"

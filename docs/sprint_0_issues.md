@@ -123,6 +123,9 @@ is also stale (says "24/30 (80%) Tier 2", contradicting the achieved active-suit
 conformance therefore cannot currently be demonstrated beyond the handshake.
 **Recommendation:** Update `client_adapter.exs` scenario routing to suite v0.1.16; regenerate the
 expected-failures baseline; wire both modes into CI.
+**Resolution (MES-13, 2026-08-03):** `conformance/expected_failures.yml` **retired** (superseded at
+Phase 7, 30/30 active). Adapter staleness re-confirmed and now tracked as a named finding in
+`docs/sprint_4_issues.md` (2025-11-25 adapters cannot exercise the 2026-07-28 stateless core).
 **Priority Hint:** Medium · **Blocking?:** No · **Suggested Jira Ticket?:** Yes
 
 ### Issue: Docs claim a SimpleHandler that does not exist

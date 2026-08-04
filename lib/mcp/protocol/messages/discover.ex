@@ -6,10 +6,11 @@ defmodule MCP.Protocol.Messages.Discover do
   `server/discover` so clients can learn its supported protocol versions,
   capabilities, and identity up-front.
 
-  ## Wire shape — verified against the draft schema
+  ## Wire shape — verified against the published-final schema
 
-  Pinned to the authoritative draft schema at commit
-  `7634684382c3d14cf7e9f14073fe40a2d8ace3fa`, `schema/draft/schema.ts`:
+  Pinned to the published-final `2026-07-28` schema at commit
+  `5f5440bb26a62e2cf3440b92da5a667efa03b267` (tag `2026-07-28`, 2026-07-28),
+  `schema/2026-07-28/schema.ts`:
 
     * `LATEST_PROTOCOL_VERSION = "2026-07-28"` (schema.ts:30).
     * `DiscoverResult extends CacheableResult` (schema.ts:678); the field is

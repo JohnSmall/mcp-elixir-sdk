@@ -5,7 +5,8 @@ defmodule MCP.Protocol.Messages.DiscoverTest do
   alias MCP.Protocol.Messages.Discover
   alias MCP.Protocol.Types.Implementation
 
-  # Wire shape pinned to draft schema 7634684382c3d14cf7e9f14073fe40a2d8ace3fa
+  # Wire shape pinned to published-final 2026-07-28 schema 5f5440bb26a62e2cf3440b92da5a667efa03b267,
+  # schema/2026-07-28/schema.ts
   # (DiscoverResult extends CacheableResult): supportedVersions + resultType/
   # ttlMs/cacheScope; serverInfo under _meta["io.modelcontextprotocol/serverInfo"].
 
