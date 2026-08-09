@@ -1,0 +1,45 @@
+defmodule MCP.Server.SubscriptionPublisher do
+  @moduledoc false
+
+  alias MCP.Protocol.Types.SubscriptionFilter
+  alias MCP.Server.SubscriptionRegistry
+  alias MCP.Server.SubscriptionWorker
+
+  @spec publish(atom() | pid(), term(), String.t(), map() | nil) ::
+          :ok | {:error, :invalid_registry}
+  def publish(registry, endpoint, method, params) do
+    with {:ok, registry_name} <- SubscriptionRegistry.name(registry) do
+      entries = Registry.lookup(registry_name, {:mcp_subscriptions, endpoint})
+      dispatch(entries, method, params)
+
+      :ok
+    end
+  end
+
+  defp dispatch(entries, method, params) do
+    Enum.each(entries, fn {worker, %{honored: honored}} ->
+      if matches?(honored, method, params) do
+        SubscriptionWorker.publish(worker, method, params)
+      end
+    end)
+  end
+
+  defp matches?(%SubscriptionFilter{} = filter, method, _params)
+       when method == "notifications/tools/list_changed",
+       do: filter.tools_list_changed
+
+  defp matches?(%SubscriptionFilter{} = filter, method, _params)
+       when method == "notifications/prompts/list_changed",
+       do: filter.prompts_list_changed
+
+  defp matches?(%SubscriptionFilter{} = filter, method, _params)
+       when method == "notifications/resources/list_changed",
+       do: filter.resources_list_changed
+
+  defp matches?(%SubscriptionFilter{} = filter, method, %{"uri" => uri})
+       when method == "notifications/resources/updated" do
+    uri in filter.resource_subscriptions
+  end
+
+  defp matches?(%SubscriptionFilter{}, _method, _params), do: false
+end

@@ -28,17 +28,17 @@ them.
 
 | Slice | Status | Accepted evidence | Depends on | Next gate |
 | --- | --- | --- | --- | --- |
-| S1 Routing and parameter headers | Verified | 247 full tests; strict Credo and Dialyzer clean; pinned header conformance 9/9; not committed | S4a complete locally | Review and commit the S1/S4a working-tree slice |
-| S2 Subscriptions | Not started | None | — | Write failing wire-type and acknowledgment-order tests from fixed runtime contract |
+| S1 Routing and parameter headers | Verified | 247 full tests; strict Credo and Dialyzer clean; pinned header conformance 9/9; committed and pushed as `332235c` | S4a complete | Review and merge the feature branch |
+| S2 Subscriptions | Implementing | S2a codecs, S2b client worker, and S2c server publication locally green; 266 full tests; strict Credo and Dialyzer clean; uncommitted | — | Wire `listen_subscriptions` through stdio and HTTP |
 | S3 Extensions negotiation | Not started | None | — | Write capability round-trip and invalid-key tests |
-| S4 JSON Schema 2020-12 | Implementing | S4a locally green; not committed | — | Write absent/null and all-six-JSON-value structured-content tests |
+| S4 JSON Schema 2020-12 | Implementing | S4a committed and pushed as `332235c` | — | Write absent/null and all-six-JSON-value structured-content tests |
 | S5 Client/server wiring + conformance | Not started | None | S1-S4 | Write lifecycle tests for pre-send deadlines, callback isolation, immutable handler configuration, and complete scenario ledger |
 | S6 Release hardening | Not started | None | S1-S5 | Resolve dependency/toolchain findings and rewrite public docs |
 
-Overall core progress is **one locally verified whole slice (S1) plus one
-locally green sub-slice (S4a), all uncommitted, within six slices**. Nothing is
-release-closed. This ledger uses completed gates and immutable evidence, never
-subjective percentages.
+Overall core progress is **one verified whole slice (S1), one committed
+sub-slice (S4a), and three locally green S2 sub-slices (S2a/S2b/S2c) within six
+slices**. Nothing is release-closed. This ledger uses completed gates and
+immutable evidence, never subjective percentages.
 
 ## S1a retrospective ledger — standard routing headers
 
@@ -78,7 +78,7 @@ Streamable HTTP POST requests.
 | Focused static analysis | `mix credo --strict` on four changed files | 39 functions, no issues |
 | Official conformance | `@modelcontextprotocol/conformance@0.2.0-alpha.11`, client `http-standard-headers`, spec `2026-07-28` | **9/9 passed**, 0 failed, 0 warnings; scenario-owned skips: `initialize` response and `notifications/initialized` |
 | Patch hygiene | `git diff --check` | Pass |
-| Commit/push | Repository status | Not committed or pushed |
+| Commit/push | Git/GitHub | Included in `332235c`, pushed to `origin/codex/mcp-routing-headers` |
 
 ## S1b.1 retrospective ledger — safe standard routing headers
 
@@ -129,7 +129,7 @@ server validation.
 | Official conformance | `@modelcontextprotocol/conformance@0.2.0-alpha.11`, client `http-standard-headers`, spec `2026-07-28` | **9/9 passed**, 0 failed, 0 warnings; scenario-owned skips: `initialize` response and `notifications/initialized` |
 | Format | `mix format --check-formatted` | Pass |
 | Patch hygiene | `git diff --check` | Pass |
-| Commit/push | Repository status | Not committed or pushed |
+| Commit/push | Git/GitHub | Included in `332235c`, pushed to `origin/codex/mcp-routing-headers` |
 
 ## S1b.2 retrospective ledger — schema-driven parameter headers
 
@@ -185,7 +185,7 @@ the server, and recover once from a stale schema.
 | Documentation | `mix docs` with SDK 2.0 and ADR extras | Built without missing-file warnings |
 | Package | `mix hex.build` | Pass; full `docs/` tree included |
 | Patch hygiene | `git diff --check` | Pass |
-| Commit/push | Repository status | Not committed or pushed |
+| Commit/push | Git/GitHub | Included in `332235c`, pushed to `origin/codex/mcp-routing-headers` |
 
 ## Slice execution plans
 
@@ -199,6 +199,38 @@ subset enforcement, notification correlation, and cancellation.
 server worker → client worker → HTTP path → stdio multiplexing → client API.
 **Exit:** focused and full tests; official client/server subscription scenarios;
 no sleep-based tests; no legacy GET/subscribe path in 2.0 behavior.
+
+#### S2a/S2b/S2c evidence captured 2026-08-08
+
+S2a adds final-schema `SubscriptionFilter`, listen params, acknowledgment
+params, graceful listen result, and method constants. The codecs use the
+published-final `2026-07-28` schema names, require subscription correlation on
+acknowledgments/results, reject malformed closed filters, and preserve resource
+URI order and duplicates.
+
+S2b adds the client-side worker beneath a consumer-supplied
+`DynamicSupervisor` and the opaque `SubscriptionHandle`. The worker monitors
+its owner, delivers FIFO events, defaults to a 256-event bound, rejects invalid
+bounds, reports local overflow, terminates temporarily, and isolates siblings.
+`close/1` is idempotent. Transport open/cancel wiring remains S2 work.
+
+S2c adds a distinct server worker and filtered publisher. The worker queues the
+correlated acknowledgment before becoming visible to publication, accepts a
+consumer-supplied duplicate Registry by name or pid, stamps subscription IDs
+without discarding existing metadata, enforces exact resource-URI filters, and
+removes its registration before exit. Overflow and owner loss remain local;
+the overflow test passed 30 consecutive focused repetitions after its mailbox
+assertion was given an explicit load-tolerant timeout.
+
+| Gate | Command/evidence | Result |
+| --- | --- | --- |
+| Accepted RED | Protocol files, client worker file, then server worker file | Missing S2 modules/methods; 5/5 client-worker and 5/5 server-worker tests failed on missing implementations |
+| Focused tests | Protocol, client-worker, and server-worker files | **22 passed**, 0 failures; server worker repeated 30 times cleanly |
+| Full tests | `mix test --seed 0` | **266 passed**, 0 failures |
+| Full static analysis | `mix credo --strict` | 110 files, 913 modules/functions, no issues |
+| Type analysis | `mix dialyzer` | 0 errors, 0 skipped, 0 unnecessary skips |
+| Format/patch hygiene | `mix format --check-formatted`; `git diff --check` | Pass |
+| Commit/push | Repository status | Not committed or pushed |
 
 ### S3 — Extensions negotiation
 
@@ -239,7 +271,7 @@ non-object, and union roots with a stable `ArgumentError`.
 | Full tests | `mix test --seed 0` | **231 passed** |
 | Focused static analysis | `mix credo --strict` on Tool implementation/test | 10 modules/functions, no issues |
 | Type analysis | `mix dialyzer` | 0 errors, 0 skipped, 0 unnecessary skips |
-| Commit/push | Repository status | Not committed or pushed |
+| Commit/push | Git/GitHub | Included in `332235c`, pushed to `origin/codex/mcp-routing-headers` |
 
 ### S5 — Client wiring and conformance
 
