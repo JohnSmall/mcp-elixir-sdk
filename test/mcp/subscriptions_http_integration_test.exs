@@ -157,6 +157,12 @@ defmodule MCP.SubscriptionsHTTPIntegrationTest do
                )
     end
 
+    # The HTTP stream applies backpressure across several supervised processes.
+    # Wait until the client worker has observed the terminal overflow before
+    # consuming the queue so the assertion is independent of scheduler speed.
+    worker = Map.fetch!(handle, :worker)
+    assert :ok = await_terminal_subscription(worker, 2_000)
+
     outcomes =
       Enum.reduce_while(1..3, [], fn _attempt, acc ->
         case SubscriptionHandle.next(handle, 1_000) do
@@ -170,6 +176,16 @@ defmodule MCP.SubscriptionsHTTPIntegrationTest do
     _ = :sys.get_state(context.client)
     transport = Client.transport(context.client)
     assert :sys.get_state(transport).subscriptions == %{}
+  end
+
+  defp await_terminal_subscription(_worker, 0), do: {:error, :timeout}
+
+  defp await_terminal_subscription(worker, attempts) do
+    if :sys.get_state(worker).terminal? do
+      :ok
+    else
+      await_terminal_subscription(worker, attempts - 1)
+    end
   end
 
   test "subscription response disables proxy buffering", context do
