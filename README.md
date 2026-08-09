@@ -37,7 +37,7 @@ def deps do
   [
     {:mcp_elixir_sdk,
      github: "jmagar/mcp-elixir-sdk",
-     ref: "6dcbfed2e2b0a6a1efa667d2e2e6f0a0b362966e"}
+     ref: "3fa6dce07fdf3e1e471d0e742100a34a3b3488cb"}
   ]
 end
 ```
