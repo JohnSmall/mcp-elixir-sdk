@@ -25,12 +25,17 @@ defmodule MCP.Client.SubscriptionHandle do
 
   @doc "Returns the next subscription event, or a terminal/local error."
   @spec next(t(), timeout()) :: {:ok, term()} | {:error, term()}
-  def next(%__MODULE__{} = handle, timeout \\ 5_000) do
+  def next(handle, timeout \\ 5_000)
+
+  def next(%__MODULE__{} = handle, timeout)
+      when timeout == :infinity or (is_integer(timeout) and timeout >= 0) do
     case take_down(handle) do
       {:down, reason} -> {:error, normalize_reason(reason)}
       :none -> next_from_worker(handle, timeout)
     end
   end
+
+  def next(%__MODULE__{}, timeout), do: {:error, {:invalid_timeout, timeout}}
 
   @doc "Closes the subscription. Calling this function more than once is safe."
   @spec close(t()) :: :ok
@@ -62,9 +67,15 @@ defmodule MCP.Client.SubscriptionHandle do
   end
 
   defp down_or_call_reason(handle, call_reason) do
-    case take_down(handle) do
-      {:down, reason} -> normalize_reason(reason)
-      :none -> normalize_reason(call_reason)
+    case normalize_reason(call_reason) do
+      :closed ->
+        case take_down(handle) do
+          {:down, reason} -> normalize_reason(reason)
+          :none -> :closed
+        end
+
+      reason ->
+        reason
     end
   end
 
@@ -83,5 +94,9 @@ defmodule MCP.Client.SubscriptionHandle do
   defp normalize_reason(:noproc), do: :closed
   defp normalize_reason({:noproc, _call}), do: :closed
   defp normalize_reason({:timeout, _call}), do: :timeout
+
+  defp normalize_reason({reason, {GenServer, :call, _details}}),
+    do: normalize_reason(reason)
+
   defp normalize_reason(reason), do: reason
 end

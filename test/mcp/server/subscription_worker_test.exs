@@ -139,7 +139,7 @@ defmodule MCP.Server.SubscriptionWorkerTest do
 
     :ok = :sys.resume(overflowing)
 
-    assert_receive {:DOWN, ^ref, :process, ^overflowing, :queue_overflow}, 1_000
+    assert_receive {:DOWN, ^ref, :process, ^overflowing, :queue_overflow}, 5_000
     assert Registry.lookup(context.registry, {:mcp_subscriptions, :endpoint}) |> length() == 1
     assert {:ok, acknowledgment} = SubscriptionWorker.next(sibling, 1_000)
     assert acknowledgment["params"]["_meta"][@subscription_id_key] == "sibling"

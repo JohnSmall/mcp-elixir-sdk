@@ -41,9 +41,10 @@ defmodule MCPElixirSDK.MixProject do
       links: %{
         "GitHub" => @source_url,
         "MCP Specification" => "https://modelcontextprotocol.io/specification/2026-07-28",
-        "Examples" => "#{@source_url}#server-examples"
+        "Examples" => "#{@source_url}#server-handler"
       },
-      files: ~w(lib docs usage-rules.md .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
+      files:
+        ~w(lib docs conformance usage-rules.md .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
     ]
   end
 
@@ -56,6 +57,7 @@ defmodule MCPElixirSDK.MixProject do
         "LICENSE",
         "usage-rules.md": [title: "Usage Rules (AI Agents)"],
         "docs/architecture.md": [title: "Architecture"],
+        "docs/dev-tooling.md": [title: "Development Tooling"],
         "docs/sdk-2.0/specifications.md": [title: "2.0 Specifications"],
         "docs/sdk-2.0/contracts.md": [title: "2.0 Contracts"],
         "docs/sdk-2.0/types.md": [title: "2.0 Types"],
@@ -77,6 +79,7 @@ defmodule MCPElixirSDK.MixProject do
       groups_for_extras: [
         Guides: [
           "docs/architecture.md",
+          "docs/dev-tooling.md",
           "docs/sdk-2.0/specifications.md",
           "docs/sdk-2.0/contracts.md",
           "docs/sdk-2.0/types.md",
@@ -95,7 +98,14 @@ defmodule MCPElixirSDK.MixProject do
       ],
       groups_for_modules: [
         Client: [MCP.Client],
-        Server: [MCP.Server, MCP.Server.Handler, MCP.Server.ToolContext],
+        Server: [
+          MCP.Server.Config,
+          MCP.Server.Connection,
+          MCP.Server.Dispatch,
+          MCP.Server.Handler,
+          MCP.Server.SubscriptionPublisher,
+          MCP.Server.ToolContext
+        ],
         Protocol: [
           MCP.Protocol,
           MCP.Protocol.Error,
@@ -109,9 +119,7 @@ defmodule MCPElixirSDK.MixProject do
           MCP.Transport.Stdio,
           MCP.Transport.SSE,
           MCP.Transport.StreamableHTTP.Client,
-          MCP.Transport.StreamableHTTP.Server,
-          MCP.Transport.StreamableHTTP.Plug,
-          MCP.Transport.StreamableHTTP.PreStarted
+          MCP.Transport.StreamableHTTP.Plug
         ]
       ],
       source_ref: "v#{@version}",
@@ -126,7 +134,7 @@ defmodule MCPElixirSDK.MixProject do
       {:elixir_uuid, "~> 1.2"},
 
       # Optional: Streamable HTTP transport
-      {:req, "~> 0.5", optional: true},
+      {:req, "~> 0.7", optional: true},
       {:plug, "~> 1.16", optional: true},
       {:bandit, "~> 1.5", optional: true},
 

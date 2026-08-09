@@ -1,5 +1,11 @@
 defmodule MCP.Server.SubscriptionPublisher do
-  @moduledoc false
+  @moduledoc """
+  Publishes a server notification to matching live subscriptions.
+
+  The registry and endpoint must match the values configured on the server
+  transport. Publication validates metadata before fan-out and returns an
+  error instead of terminating subscribers when the notification is malformed.
+  """
 
   alias MCP.Protocol.Types.SubscriptionFilter
   alias MCP.Server.SubscriptionRegistry

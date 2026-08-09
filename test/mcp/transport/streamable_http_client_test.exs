@@ -1,7 +1,7 @@
 defmodule MCP.Transport.StreamableHTTPClientTest do
   use ExUnit.Case, async: true
 
-  alias MCP.Test.HTTPResponsePlug
+  alias MCP.Test.{DelayedResponsePlug, HTTPResponsePlug}
   alias MCP.Test.RequestCapturePlug
   alias MCP.Transport.StreamableHTTP.Client
 
@@ -137,6 +137,43 @@ defmodule MCP.Transport.StreamableHTTPClientTest do
 
     assert {:error, {:http_error, 500, ^body}} = Client.send_message(client, message)
     refute_receive {:mcp_message, ^body}
+  end
+
+  test "a cancelled slow POST does not head-of-line block later requests" do
+    bandit =
+      start_supervised!(
+        {Bandit,
+         plug: {DelayedResponsePlug, test_pid: self(), delayed_id: 1}, ip: {127, 0, 0, 1}, port: 0}
+      )
+
+    {:ok, {_address, port}} = ThousandIsland.listener_info(bandit)
+
+    client =
+      start_supervised!(
+        Supervisor.child_spec(
+          {Client, owner: self(), url: "http://127.0.0.1:#{port}/mcp"},
+          id: :concurrent_post_client
+        )
+      )
+
+    first =
+      Task.async(fn ->
+        Client.send_message(client, %{
+          "jsonrpc" => "2.0",
+          "id" => 1,
+          "method" => "tools/list",
+          "params" => %{}
+        })
+      end)
+
+    assert_receive {:delayed_request_started, delayed_request}, 1_000
+    Task.shutdown(first, :brutal_kill)
+
+    second = %{"jsonrpc" => "2.0", "id" => 2, "method" => "tools/list", "params" => %{}}
+    assert :ok = Client.send_message(client, second)
+    assert_receive {:mcp_message, %{"id" => 2}}, 1_000
+
+    send(delayed_request, :release_delayed_request)
   end
 
   test "emits a selected validated custom parameter header", %{client: client} do

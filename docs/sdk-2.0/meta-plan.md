@@ -1,10 +1,11 @@
 # MCP Elixir SDK 2.0 Meta-plan and Progress Ledger
 
-**Status:** Active
-**Last updated:** 2026-08-08
+**Status:** Final review remediated; commit and hosted verification pending
+**Last updated:** 2026-08-09
 **Target release:** `2.0.0`
 **Baseline commit:** `2b34b324b390f7368e5c2bb10918ceabdea75b93`
 (`2.0.0-dev.1`)
+**Current branch baseline:** `6dcbfed` on `codex/mcp-routing-headers`
 
 This is the single progress tracker for the six-slice 2.0 effort. It records
 work that can be proven from the repository or a named command. Requirements
@@ -28,17 +29,16 @@ them.
 
 | Slice | Status | Accepted evidence | Depends on | Next gate |
 | --- | --- | --- | --- | --- |
-| S1 Routing and parameter headers | Verified | 247 full tests; strict Credo and Dialyzer clean; pinned header conformance 9/9; committed and pushed as `332235c` | S4a complete | Review and merge the feature branch |
-| S2 Subscriptions | Implementing | S2a codecs, S2b client worker, and S2c server publication pushed as `256f22c`; adversarial remediation locally green in a 295-test full suite | — | Wire `listen_subscriptions` through stdio and HTTP |
-| S3 Extensions negotiation | Not started | None | — | Write capability round-trip and invalid-key tests |
-| S4 JSON Schema 2020-12 | Implementing | S4a committed and pushed as `332235c` | — | Write absent/null and all-six-JSON-value structured-content tests |
-| S5 Client/server wiring + conformance | Not started | None | S1-S4 | Write lifecycle tests for pre-send deadlines, callback isolation, immutable handler configuration, and complete scenario ledger |
-| S6 Release hardening | Not started | None | S1-S5 | Resolve dependency/toolchain findings and rewrite public docs |
+| S1 Routing and parameter headers | Verified | Required client header scenarios: **38/38** checks across standard, custom, and invalid-tool cases | S4a complete | Commit and hosted CI |
+| S2 Subscriptions | Verified | Stdio and real HTTP integrations cover acknowledgment ordering, filters, bounded delivery, cancellation, keepalive, completion, isolation, and no-resumption policy | — | Commit and hosted CI |
+| S3 Extensions negotiation | Verified | Capability round-trip, unknown-field preservation, invalid-key/value rejection, and per-request propagation tests pass | — | Commit and hosted CI |
+| S4 JSON Schema 2020-12 | Verified | Server pending scenario **8/8**; client preservation **9/9**; no network `$ref` dereference **1/1** | — | Commit and hosted CI |
+| S5 Client/server wiring + conformance | Verified | **367** local tests; all **120** scored server checks pass with no warnings; required client matrix **63/63** | S1-S4 | Commit and hosted CI |
+| S6 Release hardening | Verified | Final Lavra review remediated; Credo/Dialyzer/audit/docs/Hex gates are clean; CI dependencies and conformance tooling are integrity-pinned | S1-S5 | Commit, push, and hosted CI |
 
-Overall core progress is **one verified whole slice (S1), one committed
-sub-slice (S4a), and three locally green S2 sub-slices (S2a/S2b/S2c) within six
-slices**. Nothing is release-closed. This ledger uses completed gates and
-immutable evidence, never subjective percentages.
+All six implementation slices and the final adversarial remediation are
+verified locally. Nothing is `Release-closed`: branch commit/push, hosted CI,
+merge, tag, and Hex publication remain distinct gates.
 
 ## S1a retrospective ledger — standard routing headers
 
@@ -292,6 +292,29 @@ release candidate artifact.
 **Exit:** all checks green on supported runtimes; built tarball inspected;
 release claim matches evidence; owner approves publish/tag.
 
+## 2026-08-09 — all-slice implementation verification
+
+The branch completed S2d/S2e transport integration, S3 extension negotiation,
+S4 lossless JSON values, S5 lifecycle and universal MRTR behavior, and S6
+release hardening. Earlier slice evidence remains below as history; this table
+is the current whole-branch denominator after final adversarial remediation.
+
+| Gate | Exact result |
+| --- | --- |
+| Full tests | `mix test --seed 0`: **367 tests, 0 failures** |
+| Focused upgraded HTTP stack | Four Streamable HTTP/subscription files: **54 tests, 0 failures** on Req 0.7.2, Plug 1.20.3, Bandit 1.12.4 |
+| Compile | `mix compile --force --warnings-as-errors`: pass |
+| Static analysis | `mix credo --strict`: 123 files, 1,146 modules/functions, no issues |
+| Type analysis | `mix dialyzer`: 0 errors, 0 skipped, 0 unnecessary skips |
+| Security | `mix hex.audit`: no retired or advisory packages |
+| Documentation | `mix docs`: generated without warnings |
+| Package | `mix hex.build`: `mcp_elixir_sdk-2.0.0-dev.1.tar` built; current guides, ADRs, and conformance ledger included |
+| Server conformance | Harness `0.2.0-alpha.11`, requirements `2026-07-28`: all **120 scored checks** pass, 0 failures, 0 warnings |
+| Pending draft server scenarios | JSON Schema + standard/custom header validation: **32/32** checks pass |
+| Client conformance | Eight required scenarios: **63/63** checks pass, 0 warnings |
+| Tasks extension | Ten scenarios executed and reported separately; intentionally outside core 2.0 per ADR-003, not scored by the requirements profile |
+| Patch/data hygiene | `git diff --check`, `mix deps.unlock --check-unused`, and `jq empty conformance/scenarios.json`: pass |
+
 ## Standard slice workflow
 
 Every slice follows this sequence:
@@ -311,12 +334,9 @@ the test-first gate for that behavior.
 
 ## Verification commands
 
-Until the repository pins project runtimes, use mise without machine-specific
-installation paths:
-
-```bash
-mise exec erlang@29.0.5 elixir@1.20.3-otp-29 -- mix test
-```
+The checked-in `.tool-versions` pins Erlang/OTP 27.2.3 and Elixir
+1.18.4-otp-27 for local evidence. CI separately exercises Elixir 1.17.3 and
+1.18.4 on OTP 27.2.
 
 Release-gate commands, after the toolchain issue is resolved:
 
@@ -341,17 +361,17 @@ The conformance command must always pin a version and `--spec-version
 | R1b | `x-mcp-header` argument mirroring and schema refresh/retry are absent | Incomplete SEP-2243 client behavior | S1 | Closed in `332235c`; cursor/deadline hardening is in the closure remediation |
 | R1c | Server currently accepts missing required standard routing headers | Non-conforming request reaches dispatch | S1 | Closed, committed, and pushed in `332235c` |
 | R1d | Invalid `x-mcp-header` annotations are not rejected per tool | Injection/non-conforming catalog | S1b/S4a | Shared descriptor validation committed in `332235c`; boundary hardening is in the closure remediation |
-| R2 | Long-lived subscription work inside current transport GenServer could block other sends | Deadlock/availability | S2 | Ownership fixed; implementation/test open |
-| R2a | Pending state and timeout begin after synchronous HTTP I/O | Configured timeout does not bound calls | S5 | Contract fixed; implementation/test open |
-| R2b | Function callbacks run inside the client GenServer | Slow/raising host code blocks or crashes client | S5 | Contract fixed; implementation/test open |
-| R3 | Subscription broadcast without back-pressure can grow memory | VM instability | S2 | 256 default bound fixed; implementation/test open |
-| R4 | `structuredContent` currently narrows to maps and uses truthy encoder checks | Data loss for valid JSON | S4 | Open |
-| R4a | Current typed decoders discard unknown members at open schema boundaries | Forward-compatibility loss | S4/S5 | `raw`/`extra` contract fixed; implementation open |
-| R5 | Cache hints without a declared client policy can imply behavior that does not exist | Stale/security-sensitive results | S5 | No-result-cache policy fixed; implementation test open |
-| R5a | Current callback results return replacement state that transport owners discard | False public contract and lost consumer updates | S5 | Immutable launch-config contract fixed; migration open |
-| R6 | Full Credo crashes under Elixir 1.20.3 with Credo 1.7.16 on existing sigils | Release gate unavailable | S6 | Open toolchain issue |
-| R7 | Locked HTTP dependencies report security advisories | Release/security exposure | S6 | Remediate before release |
-| R8 | README, PRD, package links, and examples still describe 1.x/2025 behavior | Misleading published package | S6 | Open |
+| R2 | Long-lived subscription work inside current transport GenServer could block other sends | Deadlock/availability | S2 | Closed: owned workers and transport tasks isolate streams |
+| R2a | Pending state and timeout begin after synchronous HTTP I/O | Configured timeout does not bound calls | S5 | Closed: pending entry and absolute deadline precede async transport work |
+| R2b | Function callbacks run inside the client GenServer | Slow/raising host code blocks or crashes client | S5 | Closed: supervised callback tasks share the original deadline |
+| R3 | Subscription broadcast without back-pressure can grow memory | VM instability | S2 | Closed: bounded FIFO queues, local overflow termination, sibling isolation |
+| R4 | `structuredContent` currently narrows to maps and uses truthy encoder checks | Data loss for valid JSON | S4 | Closed: all six JSON value categories plus absent/null distinction tested |
+| R4a | Current typed decoders discard unknown members at open schema boundaries | Forward-compatibility loss | S4/S5 | Closed at declared open `extra` boundaries and conformance preservation checks |
+| R5 | Cache hints without a declared client policy can imply behavior that does not exist | Stale/security-sensitive results | S5 | Closed: hints preserved, repeated-call transport regression proves no cache |
+| R5a | Current callback results return replacement state that transport owners discard | False public contract and lost consumer updates | S5 | Closed: immutable launch configuration contract implemented |
+| R6 | Full Credo crashes under Elixir 1.20.3 with Credo 1.7.16 on existing sigils | Release gate unavailable | S6 | Closed: pinned supported toolchain and Credo 1.7.19 pass strict analysis |
+| R7 | Locked HTTP dependencies report security advisories | Release/security exposure | S6 | Closed: Req/Plug/Bandit/Mint/HPAX upgraded; `mix hex.audit` clean |
+| R8 | README, PRD, package links, and examples still describe 1.x/2025 behavior | Misleading published package | S6 | Closed: public docs rewritten; retained 1.x records carry explicit archive banners |
 
 ## Durable architecture decisions
 
@@ -428,6 +448,25 @@ One proposed default-SSE incompatibility did not reproduce: the SDK Plug emits
 JSON-RPC errors as JSON even when successful responses use SSE. A real
 default-option Plug/client regression was added, and the client was also made
 content-type aware for non-2xx SSE error bodies.
+
+### 2026-08-09 final Lavra touched-file review
+
+The final protocol, OTP/runtime, and security/release review covered every file
+changed from branch baseline `6dcbfed`. Every reported issue was either fixed
+and regression-tested or recorded as an explicit, enumerated scope exclusion:
+
+| Review area | Closed findings |
+| --- | --- |
+| Protocol | Subscription preflight/version bypass; missing `resources/read` MRTR; forbidden down-negotiation; malformed discovery and `_meta`; structured tool results; duplicate JSON keys; object-only `outputSchema`; false `listChanged`; invalid continuation types |
+| OTP/runtime | Invalid call/handle timeouts; handler raise/throw/exit containment; HTTP head-of-line blocking; orphaned subscription requests; stdio overflow terminal delivery; bounded notification execution; malformed subscription frames; async subscription opens; immutable subscription configuration validation |
+| Backpressure | Subscription stream delivery now waits for synchronous bounded-worker admission; overflow cancels the stream and preserves `:queue_overflow` as the consumer-visible terminal reason |
+| HTTP/security | Bounded request bodies with controlled 413 responses; duplicate Host/Origin rejection; caller-owned POST cancellation; no result-cache or identity-boundary regression |
+| Release/CI | All eight client scenarios are hosted gates; Actions use commit SHAs; the exact conformance CLI is integrity-locked; advisory/unused-dependency/JSON/diff gates run in CI; supported runtime matrix includes Elixir 1.17, 1.18, and 1.20 |
+| Evidence/docs | Every harness scenario has a machine-readable status, count, command, scoring flag, and exclusion reason; stale schema/runtime/install/capability text and package links were corrected |
+
+Post-remediation local evidence: **367 tests, 0 failures**; format and
+warnings-as-errors compilation pass. The static-analysis, package, advisory,
+and official conformance commands below are rerun immediately before commit.
 
 ## Current evidence anchors
 

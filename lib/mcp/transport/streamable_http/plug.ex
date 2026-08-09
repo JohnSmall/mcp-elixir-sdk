@@ -23,16 +23,18 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     1. **Enforcement** — localhost/Origin (and any host auth) runs first, on
        every request, before the identity factory (MC-5 / AC7). A rejected
        request never runs the factory.
-    2. **Decode + standard routing headers** — parse the JSON-RPC body; validate
+    2. **Decode + request metadata** — parse the JSON-RPC body and validate the
+       required 2026-07-28 `_meta` fields.
+    3. **Standard routing headers** — validate
        `Mcp-Method` / `Mcp-Name` against it (SEP-2243) — mismatch → `-32020`.
-    3. **Identity resolution** — the `:handler_opts` factory is evaluated
+    4. **Identity resolution** — the `:handler_opts` factory is evaluated
        against *this request's* `conn` (or the static keyword's `:identity`);
        the result populates `ToolContext.identity`, never from `params`
        (MC-2/Comment B, MC-3, MC-4). Factory failure → controlled `-32603`,
        no dispatch (MC-6).
-    4. **Custom routing headers** — resolve the selected tool schema using the
+    5. **Custom routing headers** — resolve the selected tool schema using the
        authenticated identity and validate recognized `Mcp-Param-*` values.
-    5. **Dispatch** — `Dispatch.dispatch(message, ctx, config)`.
+    6. **Dispatch** — `Dispatch.dispatch(message, ctx, config)`.
 
   ## Options
 
@@ -67,6 +69,9 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
       > **your** factory chooses to trust. Read `conn.assigns`, not raw input.
     * `:enable_json_response` — return `application/json` instead of SSE for
       request/response (default: false).
+    * `:max_body_length` — maximum accepted POST body size in bytes (default:
+      `8_000_000`). Larger or multi-chunk bodies are rejected with HTTP 413
+      before JSON decoding.
     * `:protocol_version` — advertised version (default: the stateless core's).
     * `:tool_schemas` — either `%{tool_name => input_schema}` or a
       `(tool_name, identity -> input_schema | nil)` resolver. Static schemas
@@ -92,9 +97,12 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   alias MCP.Protocol
   alias MCP.Protocol.Error
-  alias MCP.Protocol.Messages.{Notification, Response}
+  alias MCP.Protocol.Messages.{Notification, Request, Response}
+  alias MCP.Protocol.Messages.Subscriptions.ListenParams
+  alias MCP.Protocol.Meta
   alias MCP.Protocol.ToolRouting
-  alias MCP.Server.{Config, Dispatch, ToolContext}
+  alias MCP.Protocol.Types.SubscriptionFilter
+  alias MCP.Server.{Config, Dispatch, SubscriptionWorker, ToolContext}
   alias MCP.Transport.SSE
 
   @typedoc """
@@ -109,6 +117,12 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     :enable_json_response,
     :protocol_version,
     :tool_schemas,
+    :subscription_supervisor,
+    :subscription_registry,
+    :subscription_endpoint,
+    :subscription_queue_limit,
+    :subscription_keepalive_interval,
+    :max_body_length,
     :config
   ]
 
@@ -135,14 +149,35 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     enable_json_response = Keyword.get(opts, :enable_json_response, false)
     protocol_version = Keyword.get(opts, :protocol_version, Dispatch.protocol_version())
     tool_schemas = compile_tool_schemas!(Keyword.get(opts, :tool_schemas, %{}))
+    subscription_supervisor = Keyword.get(opts, :subscription_supervisor)
+    subscription_registry = Keyword.get(opts, :subscription_registry)
+    subscription_endpoint = Keyword.get(opts, :subscription_endpoint, server_mod)
+    subscription_queue_limit = Keyword.get(opts, :subscription_queue_limit, 256)
+    subscription_keepalive_interval = Keyword.get(opts, :subscription_keepalive_interval, 15_000)
+    max_body_length = Keyword.get(opts, :max_body_length, 8_000_000)
+
+    unless is_integer(max_body_length) and max_body_length > 0 do
+      raise ArgumentError, ":max_body_length must be a positive integer"
+    end
+
+    validate_subscription_options!(
+      subscription_supervisor,
+      subscription_registry,
+      subscription_queue_limit,
+      subscription_keepalive_interval
+    )
 
     # Build the immutable dispatch config once. Only the non-identity static
     # base reaches Handler.init/1; per-request identity rides ToolContext.
     static_base = if is_function(handler_opts), do: [], else: handler_opts
 
     config_opts =
-      [handler_opts: static_base] ++
-        Keyword.take(server_opts, [:server_info, :instructions, :cache_defaults])
+      [
+        handler_opts: static_base,
+        subscriptions_enabled:
+          not is_nil(subscription_supervisor) and not is_nil(subscription_registry)
+      ] ++
+        Keyword.take(server_opts, [:server_info, :instructions, :cache_defaults, :extensions])
 
     dispatch_config =
       case Config.build(server_mod, config_opts) do
@@ -156,6 +191,12 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
       enable_json_response: enable_json_response,
       protocol_version: protocol_version,
       tool_schemas: tool_schemas,
+      subscription_supervisor: subscription_supervisor,
+      subscription_registry: subscription_registry,
+      subscription_endpoint: subscription_endpoint,
+      subscription_queue_limit: subscription_queue_limit,
+      subscription_keepalive_interval: subscription_keepalive_interval,
+      max_body_length: max_body_length,
       config: dispatch_config
     }
   end
@@ -183,10 +224,23 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   # --- POST: the request/response path ---
 
   defp handle_post(conn, config) do
-    with {:ok, body, conn} <- Plug.Conn.read_body(conn),
+    with {:ok, body, conn} <-
+           Plug.Conn.read_body(conn,
+             length: config.max_body_length,
+             read_length: min(config.max_body_length, 1_000_000)
+           ),
          {:ok, message} <- Jason.decode(body) do
       handle_decoded_post(conn, config, message)
     else
+      {:more, _partial_body, conn} ->
+        send_json_error(
+          conn,
+          413,
+          Error.invalid_request_code(),
+          "Request body too large",
+          "request body exceeds configured maximum"
+        )
+
       {:error, %Jason.DecodeError{} = e} ->
         send_json_error(conn, 400, Error.parse_error_code(), "Parse error", inspect(e))
 
@@ -203,6 +257,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   defp handle_decoded_post(conn, config, message) when is_map(message) do
     with :ok <- validate_message_shape(message),
+         :ok <- validate_required_request_meta(message),
          :ok <- check_routing_headers(conn, message),
          {:ok, identity} <- resolve_identity(config.handler_opts, conn),
          :ok <- check_custom_routing_headers(conn, message, config.tool_schemas, identity),
@@ -216,6 +271,16 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
           Error.header_mismatch_code(),
           "Header mismatch",
           detail,
+          Map.get(message, "id")
+        )
+
+      {:error, {:invalid_params, detail}} ->
+        send_json_error(
+          conn,
+          400,
+          Error.invalid_params_code(),
+          "Invalid params",
+          inspect(detail),
           Map.get(message, "id")
         )
 
@@ -268,11 +333,30 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   defp validate_message_shape(_message), do: :ok
 
+  defp validate_required_request_meta(%{"id" => _id, "method" => _method} = message) do
+    case message |> Map.get("params") |> Meta.from_params() |> Meta.validate_required() do
+      :ok -> :ok
+      {:error, reason} -> {:error, {:invalid_params, reason}}
+    end
+  end
+
+  defp validate_required_request_meta(_message), do: :ok
+
   # The stateless core issues no server-to-client requests, so a response has
   # nothing to correlate. It is still a valid routing-header-free JSON-RPC
   # message and receives the same empty acknowledgment as on stdio.
   defp dispatch(conn, _config, %Response{}, _raw_message, _identity) do
     Plug.Conn.send_resp(conn, 202, "")
+  end
+
+  defp dispatch(
+         conn,
+         config,
+         %Request{method: "subscriptions/listen", params: params, id: id},
+         _raw_message,
+         identity
+       ) do
+    open_subscription_stream(conn, config, id, params, identity)
   end
 
   defp dispatch(conn, config, decoded, raw_message, identity) do
@@ -296,11 +380,11 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
     try do
       case Dispatch.dispatch(decoded, ctx, config.config) do
-        {:reply, response, _state} ->
+        {:reply, response} ->
           notifications = take_notifications()
           send_response(conn, config, response, notifications)
 
-        {:noreply, _state} ->
+        :noreply ->
           Plug.Conn.send_resp(conn, 202, "")
       end
     after
@@ -333,7 +417,6 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     version = get_in(params, ["_meta", "io.modelcontextprotocol/protocolVersion"])
 
     with {:ok, header_version} <- required_header(conn, "mcp-protocol-version"),
-         :ok <- valid_protocol_version_header(header_version),
          :ok <- matching_header("mcp-protocol-version", header_version, version),
          {:ok, header_method} <- required_header(conn, "mcp-method"),
          :ok <- matching_header("mcp-method", header_method, method) do
@@ -355,13 +438,6 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   defp matching_header(name, header_value, body_value) do
     {:error,
      {:routing_mismatch, "#{name} #{inspect(header_value)} != body value #{inspect(body_value)}"}}
-  end
-
-  defp valid_protocol_version_header(value) do
-    case Date.from_iso8601(value) do
-      {:ok, _date} -> :ok
-      {:error, _reason} -> {:error, {:routing_mismatch, "malformed mcp-protocol-version"}}
-    end
   end
 
   defp check_name_header(conn, method, params)
@@ -399,8 +475,10 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   defp decode_header_value(value), do: decode_plain_header_value(value)
 
   defp decode_plain_header_value(value) do
-    if plain_header_value?(value) do
-      {:ok, value}
+    trimmed = String.trim(value)
+
+    if plain_header_value?(trimmed) do
+      {:ok, trimmed}
     else
       {:error, {:routing_mismatch, "invalid plain mcp-name header"}}
     end
@@ -408,7 +486,6 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   defp plain_header_value?(value) do
     String.valid?(value) and
-      String.trim(value) == value and
       Enum.all?(:binary.bin_to_list(value), &(&1 == 0x09 or &1 in 0x20..0x7E))
   end
 
@@ -521,6 +598,143 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
           "tool_schemas must be a map or a 2-arity function, got: #{inspect(other)}"
   end
 
+  # --- Long-lived subscriptions/listen response ---
+
+  defp open_subscription_stream(conn, config, id, params, identity) do
+    with :ok <- Dispatch.validate_request(params, config.config),
+         :ok <- reject_resumption(conn),
+         :ok <- subscription_configuration(config),
+         {:ok, requested} <- parse_subscription_filter(params),
+         {:ok, honored} <- authorize_subscription(config, id, params, requested, identity),
+         {:ok, worker} <-
+           SubscriptionWorker.start(
+             config.subscription_supervisor,
+             config.subscription_registry,
+             config.subscription_endpoint,
+             id,
+             self(),
+             requested,
+             honored,
+             queue_limit: config.subscription_queue_limit
+           ) do
+      conn =
+        conn
+        |> Plug.Conn.put_resp_content_type("text/event-stream")
+        |> Plug.Conn.put_resp_header("cache-control", "no-cache")
+        |> Plug.Conn.put_resp_header("x-accel-buffering", "no")
+        |> Plug.Conn.send_chunked(200)
+
+      stream_subscription(conn, worker, config.subscription_keepalive_interval)
+    else
+      {:error, :resumption_unsupported} ->
+        send_json_error(
+          conn,
+          400,
+          Error.invalid_request_code(),
+          "Invalid request",
+          "Last-Event-ID resumption is unsupported",
+          id
+        )
+
+      {:error, %Error{} = error} ->
+        send_json_error(conn, 400, error.code, error.message, inspect(error.data), id)
+
+      {:error, reason} ->
+        send_json_error(
+          conn,
+          500,
+          Error.internal_error_code(),
+          "Internal error",
+          inspect(reason),
+          id
+        )
+    end
+  end
+
+  defp reject_resumption(conn) do
+    if Plug.Conn.get_req_header(conn, "last-event-id") == [],
+      do: :ok,
+      else: {:error, :resumption_unsupported}
+  end
+
+  defp subscription_configuration(config) do
+    if config.subscription_supervisor && config.subscription_registry,
+      do: :ok,
+      else: {:error, Error.method_not_found("subscriptions/listen")}
+  end
+
+  defp parse_subscription_filter(params) do
+    {:ok, ListenParams.from_map(params).notifications}
+  rescue
+    error in [ArgumentError, KeyError] -> {:error, Error.invalid_params(Exception.message(error))}
+  end
+
+  defp authorize_subscription(config, id, params, requested, identity) do
+    module = config.config.handler_module
+
+    if function_exported?(module, :handle_listen_subscriptions, 3) do
+      context = %ToolContext{
+        request_id: id,
+        meta: Map.get(params || %{}, "_meta"),
+        identity: identity,
+        reply_sink: notification_collector()
+      }
+
+      case module.handle_listen_subscriptions(requested, context, config.config.handler_state) do
+        {:ok, %SubscriptionFilter{} = honored} -> {:ok, honored}
+        {:error, code, message} -> {:error, %Error{code: code, message: message}}
+        other -> {:error, {:invalid_subscription_callback_result, other}}
+      end
+    else
+      {:error, Error.method_not_found("subscriptions/listen")}
+    end
+  rescue
+    exception -> {:error, {:subscription_callback_raised, exception, __STACKTRACE__}}
+  end
+
+  defp stream_subscription(conn, worker, keepalive_interval) do
+    case SubscriptionWorker.next(worker, keepalive_interval) do
+      {:ok, message} ->
+        case Plug.Conn.chunk(conn, SSE.encode_message(message)) do
+          {:ok, conn} -> stream_subscription(conn, worker, keepalive_interval)
+          {:error, _reason} -> close_disconnected_subscription(conn, worker)
+        end
+
+      {:error, :timeout} ->
+        case Plug.Conn.chunk(conn, ": keepalive\n\n") do
+          {:ok, conn} -> stream_subscription(conn, worker, keepalive_interval)
+          {:error, _reason} -> close_disconnected_subscription(conn, worker)
+        end
+
+      {:error, _reason} ->
+        conn
+    end
+  end
+
+  defp close_disconnected_subscription(conn, worker) do
+    if Process.alive?(worker), do: GenServer.stop(worker, :normal)
+    conn
+  end
+
+  defp validate_subscription_options!(nil, nil, _queue_limit, _keepalive), do: :ok
+
+  defp validate_subscription_options!(supervisor, registry, queue_limit, keepalive) do
+    if is_nil(supervisor) or is_nil(registry) do
+      raise ArgumentError,
+            "subscription_supervisor and subscription_registry must be configured together"
+    end
+
+    unless is_integer(queue_limit) and queue_limit > 0 do
+      raise ArgumentError, "subscription_queue_limit must be a positive integer"
+    end
+
+    unless is_integer(keepalive) and keepalive > 0 do
+      raise ArgumentError, "subscription_keepalive_interval must be a positive integer"
+    end
+
+    :ok
+  end
+
   # --- Per-request identity resolution (MC-2/Comment B) ---
 
   defp resolve_identity(fun, conn) when is_function(fun, 1) do
@@ -595,8 +809,10 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   end
 
   defp response_status(%{"error" => %{"code" => code}})
-       when code == -32_022,
+       when code in [-32_022, -32_021, -32_602],
        do: 400
+
+  defp response_status(%{"error" => %{"code" => -32_601}}), do: 404
 
   defp response_status(_response), do: 200
 
@@ -656,11 +872,12 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     origin = Plug.Conn.get_req_header(conn, "origin")
     host = Plug.Conn.get_req_header(conn, "host")
 
-    origin_ok = origin == [] || Enum.any?(origin, &localhost_value?/1)
-    host_ok = host == [] || Enum.any?(host, &localhost_value?/1)
-
-    origin_ok && host_ok
+    local_header?(origin) && local_header?(host)
   end
+
+  defp local_header?([]), do: true
+  defp local_header?([value]), do: localhost_value?(value)
+  defp local_header?(_multiple_values), do: false
 
   defp localhost_value?(value) do
     host_part =

@@ -16,7 +16,10 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
   alias MCP.Transport.StreamableHTTP.Plug, as: MCPPlug
 
   @version "2026-07-28"
-  @meta %{"io.modelcontextprotocol/protocolVersion" => @version}
+  @meta %{
+    "io.modelcontextprotocol/protocolVersion" => @version,
+    "io.modelcontextprotocol/clientCapabilities" => %{}
+  }
 
   # --- helpers ---
 
@@ -83,7 +86,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
   # --- lifecycle (no handshake, no session) ---
 
-  test "server/discover returns the schema-shaped result with no version gate" do
+  test "server/discover returns the schema-shaped result after the version gate" do
     conn = post(opts(), rpc("server/discover", with_meta(%{})))
     r = result(conn)
     assert conn.status == 200
@@ -111,14 +114,16 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert r["cacheScope"] == "public"
   end
 
-  test "a request without protocol routing metadata fails header validation (-32020)" do
+  test "a request without required metadata fails as invalid params before header validation" do
     conn = post(opts(), rpc("tools/call", %{"name" => "whoami"}))
     assert conn.status == 400
-    assert error(conn)["code"] == -32_020
+    assert error(conn)["code"] == -32_602
   end
 
-  test "initialize is gone → -32022; ping/logging.setLevel → -32601" do
-    assert error(post(opts(), rpc("initialize", with_meta(%{}))))["code"] == -32_022
+  test "initialize/ping/logging.setLevel are gone → -32601 and HTTP 404" do
+    initialize = post(opts(), rpc("initialize", with_meta(%{})))
+    assert initialize.status == 404
+    assert error(initialize)["code"] == -32_601
     assert error(post(opts(), rpc("ping", with_meta(%{}))))["code"] == -32_601
 
     assert error(post(opts(), rpc("logging/setLevel", with_meta(%{"level" => "info"}))))[
@@ -164,14 +169,18 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert error(conn)["code"] == -32_020
   end
 
-  test "a malformed but internally matching protocol version is HeaderMismatch" do
-    meta = %{"io.modelcontextprotocol/protocolVersion" => "not-a-date"}
+  test "an unknown non-date protocol version reaches negotiation" do
+    meta = %{
+      "io.modelcontextprotocol/protocolVersion" => "not-a-date",
+      "io.modelcontextprotocol/clientCapabilities" => %{}
+    }
+
     message = rpc("tools/list", %{"_meta" => meta})
 
     conn = post(opts(), message)
 
     assert conn.status == 400
-    assert error(conn)["code"] == -32_020
+    assert error(conn)["code"] == -32_022
   end
 
   test "malformed JSON structures return controlled errors instead of crashing" do
@@ -193,6 +202,23 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
       assert conn.status == 400
       assert is_integer(error(conn)["code"])
     end
+  end
+
+  test "oversized request bodies are rejected without crashing" do
+    conn =
+      :post
+      |> conn("http://localhost/", String.duplicate("x", 65))
+      |> put_req_header("content-type", "application/json")
+      |> put_req_header("accept", "application/json")
+      |> put_req_header("origin", "http://localhost")
+      |> MCPPlug.call(opts(max_body_length: 64))
+
+    assert conn.status == 413
+    assert error(conn)["code"] == -32_600
+  end
+
+  test "rejects an invalid maximum body length at mount" do
+    assert_raise ArgumentError, ~r/max_body_length/, fn -> opts(max_body_length: 0) end
   end
 
   test "scalar tool arguments return a controlled error" do
@@ -225,7 +251,11 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
   end
 
   test "a well-formed but unsupported protocol version reaches dispatch" do
-    meta = %{"io.modelcontextprotocol/protocolVersion" => "2099-01-01"}
+    meta = %{
+      "io.modelcontextprotocol/protocolVersion" => "2099-01-01",
+      "io.modelcontextprotocol/clientCapabilities" => %{}
+    }
+
     message = rpc("tools/list", %{"_meta" => meta})
 
     conn = post(opts(), message)
@@ -427,6 +457,24 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     refute_receive :factory_ran, 200
   end
 
+  test "AC7 — duplicate Origin or Host headers are rejected even when one value is localhost" do
+    message = Jason.encode!(rpc("tools/list", with_meta(%{})))
+
+    for headers <- [
+          [{"origin", "http://evil.example"}, {"origin", "http://localhost"}],
+          [{"host", "evil.example"}, {"host", "localhost"}]
+        ] do
+      conn =
+        :post
+        |> conn("http://localhost/", message)
+        |> put_req_header("content-type", "application/json")
+
+      conn = MCPPlug.call(%{conn | req_headers: headers ++ conn.req_headers}, opts())
+
+      assert conn.status == 403
+    end
+  end
+
   # --- per-request identity (MC-2 / MC-3 / MC-4 over real HTTP) ---
 
   test "MC-2 — the factory resolves identity per request from conn.assigns" do
@@ -496,14 +544,14 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     first = post(opts(), rpc("tools/call", with_meta(%{"name" => "needs_input"}))) |> result()
     assert first["resultType"] == "input_required"
     assert first["requestState"] == "rs-token-1"
-    assert is_list(first["inputRequests"])
+    assert is_map(first["inputRequests"])
 
     retry_params =
       with_meta(%{
         "name" => "needs_input",
         "arguments" => %{},
         "requestState" => first["requestState"],
-        "inputResponses" => [%{"name" => "Ada"}]
+        "inputResponses" => %{"name" => %{"name" => "Ada"}}
       })
 
     final = post(opts(), rpc("tools/call", retry_params)) |> result()
@@ -547,14 +595,16 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
         handler_opts: fn conn -> [identity: conn.assigns[:role]] end
       )
 
-    assert_raise RuntimeError, fn ->
+    failed =
       post(
         plug_opts,
         rpc("tools/call", with_meta(%{"name" => "emit_then_raise"})),
         [],
         &assign(&1, :role, "PM")
       )
-    end
+
+    assert failed.status == 200
+    assert failed.resp_body =~ "handler callback failed"
 
     conn2 =
       post(
@@ -570,6 +620,15 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     refute conn2.resp_body =~ "PM"
     # Sanity: request 2 still gets its own result.
     assert conn2.resp_body =~ "REVIEWER"
+  end
+
+  test "raising, throwing, exiting, and malformed handlers return internal errors" do
+    for name <- ["emit_then_raise", "throwing", "exiting", "invalid_return"] do
+      conn = post(opts(), rpc("tools/call", with_meta(%{"name" => name})))
+      assert conn.status == 200
+      assert error(conn)["code"] == -32_603
+      assert error(conn)["data"] == "handler callback failed"
+    end
   end
 
   # --- DoD: two-instance / no-affinity smoke ---

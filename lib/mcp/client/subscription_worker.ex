@@ -10,6 +10,7 @@ defmodule MCP.Client.SubscriptionWorker do
     :owner,
     :owner_ref,
     :waiter,
+    terminal?: false,
     queue: :queue.new(),
     queue_size: 0,
     queue_limit: @default_queue_limit
@@ -29,9 +30,22 @@ defmodule MCP.Client.SubscriptionWorker do
     end
   end
 
-  @spec enqueue(pid(), term()) :: :ok
+  @spec enqueue(pid(), term()) :: :ok | {:error, :queue_overflow | :closed}
   def enqueue(worker, event) do
-    GenServer.cast(worker, {:enqueue, event})
+    GenServer.call(worker, {:enqueue, event}, :infinity)
+  catch
+    :exit, {:noproc, _call} -> {:error, :closed}
+    :exit, _reason -> {:error, :closed}
+  end
+
+  @spec complete(pid(), term()) :: :ok
+  def complete(worker, result) do
+    GenServer.cast(worker, {:complete, result})
+  end
+
+  @spec fail(pid(), term()) :: :ok
+  def fail(worker, reason) do
+    GenServer.cast(worker, {:fail, reason})
   end
 
   @spec next(pid(), timeout()) :: {:ok, term()} | {:error, term()}
@@ -69,6 +83,31 @@ defmodule MCP.Client.SubscriptionWorker do
   end
 
   @impl true
+  def handle_call({:enqueue, event}, _from, %__MODULE__{waiter: waiter} = state)
+      when not is_nil(waiter) do
+    complete_waiter(waiter, {:ok, event})
+    {:reply, :ok, %{state | waiter: nil}}
+  end
+
+  def handle_call({:enqueue, event}, _from, %__MODULE__{} = state)
+      when state.queue_size < state.queue_limit and not state.terminal? do
+    next_state = %{state | queue: :queue.in(event, state.queue), queue_size: state.queue_size + 1}
+    {:reply, :ok, next_state}
+  end
+
+  def handle_call({:enqueue, _event}, _from, %__MODULE__{} = state) do
+    failure = {:mcp_subscription_failure, :queue_overflow}
+
+    next_state = %{
+      state
+      | queue: :queue.in(failure, :queue.new()),
+        queue_size: 1,
+        terminal?: true
+    }
+
+    {:reply, {:error, :queue_overflow}, next_state}
+  end
+
   def handle_call({:next, timeout}, from, %__MODULE__{queue_size: 0, waiter: nil} = state) do
     {:noreply, %{state | waiter: new_waiter(from, timeout)}}
   end
@@ -79,7 +118,13 @@ defmodule MCP.Client.SubscriptionWorker do
 
   def handle_call({:next, _timeout}, _from, %__MODULE__{} = state) do
     {{:value, event}, queue} = :queue.out(state.queue)
-    {:reply, {:ok, event}, %{state | queue: queue, queue_size: state.queue_size - 1}}
+    next_state = %{state | queue: queue, queue_size: state.queue_size - 1}
+
+    case event do
+      {:mcp_subscription_terminal, result} -> {:stop, :normal, {:ok, result}, next_state}
+      {:mcp_subscription_failure, reason} -> {:stop, :normal, {:error, reason}, next_state}
+      event -> {:reply, {:ok, event}, next_state}
+    end
   end
 
   def handle_call(:close, _from, %__MODULE__{} = state) do
@@ -88,19 +133,47 @@ defmodule MCP.Client.SubscriptionWorker do
   end
 
   @impl true
-  def handle_cast({:enqueue, event}, %__MODULE__{waiter: waiter} = state)
+  def handle_cast({:complete, result}, %__MODULE__{waiter: waiter} = state)
       when not is_nil(waiter) do
-    complete_waiter(waiter, {:ok, event})
-    {:noreply, %{state | waiter: nil}}
+    complete_waiter(waiter, {:ok, result})
+    {:stop, :normal, %{state | waiter: nil, terminal?: true}}
   end
 
-  def handle_cast({:enqueue, event}, %__MODULE__{} = state)
-      when state.queue_size < state.queue_limit do
-    {:noreply, %{state | queue: :queue.in(event, state.queue), queue_size: state.queue_size + 1}}
+  def handle_cast({:complete, result}, %__MODULE__{} = state)
+      when state.queue_size < state.queue_limit and not state.terminal? do
+    terminal = {:mcp_subscription_terminal, result}
+
+    {:noreply,
+     %{
+       state
+       | queue: :queue.in(terminal, state.queue),
+         queue_size: state.queue_size + 1,
+         terminal?: true
+     }}
   end
 
-  def handle_cast({:enqueue, _event}, %__MODULE__{} = state) do
-    {:stop, :queue_overflow, state}
+  def handle_cast({:complete, _result}, %__MODULE__{terminal?: true} = state),
+    do: {:noreply, state}
+
+  def handle_cast({:complete, _result}, %__MODULE__{} = state),
+    do: {:stop, :queue_overflow, state}
+
+  def handle_cast({:fail, reason}, %__MODULE__{waiter: waiter} = state)
+      when not is_nil(waiter) do
+    complete_waiter(state.waiter, {:error, reason})
+    {:stop, :normal, %{state | waiter: nil, terminal?: true}}
+  end
+
+  def handle_cast({:fail, reason}, %__MODULE__{} = state) do
+    failure = {:mcp_subscription_failure, reason}
+
+    {:noreply,
+     %{
+       state
+       | queue: :queue.in(failure, :queue.new()),
+         queue_size: 1,
+         terminal?: true
+     }}
   end
 
   @impl true

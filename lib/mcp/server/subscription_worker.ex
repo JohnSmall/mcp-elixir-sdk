@@ -22,10 +22,12 @@ defmodule MCP.Server.SubscriptionWorker do
     :honored,
     :acknowledgment,
     :waiter,
+    notify_owner?: false,
     queue: :queue.new(),
     queue_size: 0,
     queue_limit: @default_queue_limit,
-    registered?: false
+    registered?: false,
+    terminal?: false
   ]
 
   @type request_id :: String.t() | integer()
@@ -42,6 +44,7 @@ defmodule MCP.Server.SubscriptionWorker do
         ) :: DynamicSupervisor.on_start_child() | {:error, term()}
   def start(supervisor, registry, endpoint, id, owner, requested, honored, opts \\ []) do
     queue_limit = Keyword.get(opts, :queue_limit, @default_queue_limit)
+    notify_owner? = Keyword.get(opts, :notify_owner, false)
 
     with {:ok, registry_name} <- SubscriptionRegistry.name(registry) do
       cond do
@@ -52,7 +55,17 @@ defmodule MCP.Server.SubscriptionWorker do
           {:error, :honored_filter_not_subset}
 
         true ->
-          args = {registry_name, endpoint, id, owner, requested, honored, queue_limit}
+          args = {
+            registry_name,
+            endpoint,
+            id,
+            owner,
+            requested,
+            honored,
+            queue_limit,
+            notify_owner?
+          }
+
           DynamicSupervisor.start_child(supervisor, {__MODULE__, args})
       end
     end
@@ -66,6 +79,11 @@ defmodule MCP.Server.SubscriptionWorker do
     else
       {:error, :invalid_notification_params}
     end
+  end
+
+  @spec complete(pid()) :: :ok
+  def complete(worker) do
+    GenServer.cast(worker, :complete)
   end
 
   @spec next(pid(), timeout()) :: {:ok, map()} | {:error, term()}
@@ -91,7 +109,7 @@ defmodule MCP.Server.SubscriptionWorker do
   end
 
   @impl true
-  def init({registry, endpoint, id, owner, requested, honored, queue_limit}) do
+  def init({registry, endpoint, id, owner, requested, honored, queue_limit, notify_owner?}) do
     registry_key = {:mcp_subscriptions, endpoint}
 
     state = %__MODULE__{
@@ -104,12 +122,17 @@ defmodule MCP.Server.SubscriptionWorker do
       requested: requested,
       honored: honored,
       acknowledgment: acknowledgment(id, honored),
-      queue_limit: queue_limit
+      queue_limit: queue_limit,
+      notify_owner?: notify_owner?
     }
 
     case Registry.register(state.registry, state.registry_key, %{honored: state.honored}) do
-      {:ok, _value} -> {:ok, %{state | registered?: true}}
-      {:error, {:already_registered, pid}} -> {:stop, {:registry_conflict, pid}}
+      {:ok, _value} ->
+        notify_owner(state)
+        {:ok, %{state | registered?: true}}
+
+      {:error, {:already_registered, pid}} ->
+        {:stop, {:registry_conflict, pid}}
     end
   end
 
@@ -129,7 +152,15 @@ defmodule MCP.Server.SubscriptionWorker do
 
   def handle_call({:next, _timeout}, _from, %__MODULE__{} = state) do
     {{:value, notification}, queue} = :queue.out(state.queue)
-    {:reply, {:ok, notification}, %{state | queue: queue, queue_size: state.queue_size - 1}}
+    next_state = %{state | queue: queue, queue_size: state.queue_size - 1}
+
+    case notification do
+      {:mcp_subscription_terminal, response} ->
+        {:stop, :normal, {:ok, response}, next_state}
+
+      notification ->
+        {:reply, {:ok, notification}, next_state}
+    end
   end
 
   @impl true
@@ -139,9 +170,13 @@ defmodule MCP.Server.SubscriptionWorker do
     {:noreply, %{state | waiter: nil}}
   end
 
+  def handle_cast({:publish, _method, _params}, %__MODULE__{terminal?: true} = state),
+    do: {:noreply, state}
+
   def handle_cast({:publish, method, params}, %__MODULE__{} = state)
-      when state.queue_size < state.queue_limit do
+      when state.queue_size < state.queue_limit and not state.terminal? do
     notification = notification(state.id, method, params)
+    notify_owner(state)
 
     {:noreply,
      %{
@@ -154,6 +189,28 @@ defmodule MCP.Server.SubscriptionWorker do
   def handle_cast({:publish, _method, _params}, %__MODULE__{} = state) do
     {:stop, :queue_overflow, state}
   end
+
+  def handle_cast(:complete, %__MODULE__{terminal?: true} = state), do: {:noreply, state}
+
+  def handle_cast(:complete, %__MODULE__{waiter: waiter} = state) when not is_nil(waiter) do
+    complete_waiter(waiter, {:ok, completion_response(state.id)})
+    {:stop, :normal, %{state | waiter: nil, terminal?: true}}
+  end
+
+  def handle_cast(:complete, %__MODULE__{} = state) when state.queue_size < state.queue_limit do
+    terminal = {:mcp_subscription_terminal, completion_response(state.id)}
+    notify_owner(state)
+
+    {:noreply,
+     %{
+       state
+       | queue: :queue.in(terminal, state.queue),
+         queue_size: state.queue_size + 1,
+         terminal?: true
+     }}
+  end
+
+  def handle_cast(:complete, %__MODULE__{} = state), do: {:stop, :queue_overflow, state}
 
   @impl true
   def handle_info({:DOWN, ref, :process, owner, _reason}, %__MODULE__{} = state)
@@ -198,6 +255,17 @@ defmodule MCP.Server.SubscriptionWorker do
     %{"jsonrpc" => "2.0", "method" => method, "params" => params}
   end
 
+  defp completion_response(id) do
+    %{
+      "jsonrpc" => "2.0",
+      "id" => id,
+      "result" => %{
+        "_meta" => %{@subscription_id_key => id},
+        "resultType" => "complete"
+      }
+    }
+  end
+
   defp subset?(%SubscriptionFilter{} = honored, %SubscriptionFilter{} = requested) do
     boolean_subset?(honored.tools_list_changed, requested.tools_list_changed) and
       boolean_subset?(honored.prompts_list_changed, requested.prompts_list_changed) and
@@ -233,4 +301,10 @@ defmodule MCP.Server.SubscriptionWorker do
     if timer, do: Process.cancel_timer(timer)
     GenServer.reply(from, reply)
   end
+
+  defp notify_owner(%__MODULE__{notify_owner?: true} = state) do
+    send(state.owner, {:mcp_subscription_ready, state.id, self()})
+  end
+
+  defp notify_owner(%__MODULE__{}), do: :ok
 end

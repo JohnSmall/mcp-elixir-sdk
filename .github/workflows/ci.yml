@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - otp: "27.2"
+            elixir: "1.17.3"
+          - otp: "27.2"
+            elixir: "1.18.4"
+          - otp: "29.0.5"
+            elixir: "1.20.3"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
+        with:
+          otp-version: ${{ matrix.otp }}
+          elixir-version: ${{ matrix.elixir }}
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: |
+            deps
+            _build
+          key: beam-${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('mix.lock') }}
+      - run: mix deps.get
+      - run: mix format --check-formatted
+      - run: mix compile --warnings-as-errors
+      - run: mix test --seed 0
+
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
+        with:
+          otp-version: "27.2"
+          elixir-version: "1.18.4"
+      - run: mix deps.get
+      - run: mix credo --strict
+      - run: mix dialyzer
+      - run: mix docs
+      - run: mix hex.build
+      - run: mix hex.audit
+      - run: mix deps.unlock --check-unused
+      - run: git diff --check
+      - run: jq empty conformance/scenarios.json
+
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
+        with:
+          otp-version: "27.2"
+          elixir-version: "1.18.4"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: mix deps.get
+      - run: mix run --no-halt conformance/server_adapter.exs 43001 &
+      - run: |
+          for _ in $(seq 1 30); do
+            curl -fsS http://127.0.0.1:43001/mcp -H 'Accept: text/event-stream' && exit 0
+            sleep 1
+          done
+          exit 1
+      - run: >-
+          npx --no-install conformance server
+          --url http://127.0.0.1:43001/mcp
+          --requirements 2026-07-28
+      - name: Required client conformance scenarios
+        run: |
+          for scenario in \
+            tools_call \
+            request-metadata \
+            sep-2322-client-request-state \
+            http-standard-headers \
+            http-custom-headers \
+            http-invalid-tool-headers \
+            json-schema-ref-no-deref \
+            json-schema-2020-12-preservation
+          do
+            npx --no-install conformance client \
+              --command 'mix run conformance/client_adapter.exs' \
+              --scenario "$scenario" \
+              --spec-version 2026-07-28
+          done

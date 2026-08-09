@@ -9,7 +9,7 @@ defmodule MCP.Test.MockTransport do
 
   @behaviour MCP.Transport
 
-  defstruct [:owner, :sent, :send_options, :closed, :send_error]
+  defstruct [:owner, :sent, :send_options, :closed, :send_error, waiters: []]
 
   @impl MCP.Transport
   def start_link(opts) do
@@ -45,6 +45,13 @@ defmodule MCP.Test.MockTransport do
   """
   def sent_messages(pid) do
     GenServer.call(pid, :sent_messages)
+  end
+
+  @doc "Waits until at least `count` messages have been recorded."
+  def await_sent(pid, count, timeout \\ 1_000) do
+    GenServer.call(pid, {:await_sent, count}, timeout)
+  catch
+    :exit, {:timeout, _call} -> {:error, :timeout}
   end
 
   @doc """
@@ -99,6 +106,14 @@ defmodule MCP.Test.MockTransport do
     {:reply, state.sent, state}
   end
 
+  def handle_call({:await_sent, count}, from, state) do
+    if length(state.sent) >= count do
+      {:reply, {:ok, state.sent}, state}
+    else
+      {:noreply, %{state | waiters: [{from, count} | state.waiters]}}
+    end
+  end
+
   def handle_call(:last_sent, _from, state) do
     {:reply, List.last(state.sent), state}
   end
@@ -124,6 +139,11 @@ defmodule MCP.Test.MockTransport do
         send_options: state.send_options ++ [opts]
     }
 
-    {:reply, :ok, new_state}
+    {ready, waiting} =
+      Enum.split_with(new_state.waiters, fn {_from, count} -> length(new_state.sent) >= count end)
+
+    Enum.each(ready, fn {from, _count} -> GenServer.reply(from, {:ok, new_state.sent}) end)
+
+    {:reply, :ok, %{new_state | waiters: waiting}}
   end
 end

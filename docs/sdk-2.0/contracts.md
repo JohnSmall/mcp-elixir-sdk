@@ -52,7 +52,7 @@ notifications and leaves optional notification-POST routing headers undefined.
 
 Every request POST also carries `MCP-Protocol-Version`. It exactly matches
 `params._meta["io.modelcontextprotocol/protocolVersion"]`. Missing, malformed,
-or mismatched values return HTTP 400 plus `HeaderMismatch`; an internally
+or mismatched headers return HTTP 400 plus `HeaderMismatch`; an internally
 consistent but unsupported version returns HTTP 400 plus
 `UnsupportedProtocolVersion` and the supported-version list.
 
@@ -114,10 +114,11 @@ Every client request carries these keys inside `params._meta`:
 | `io.modelcontextprotocol/logLevel` | Optional and deprecated | Host configuration |
 | `traceparent`, `tracestate`, `baggage` | Optional, preserved unchanged | Observability integration |
 
-`server/discover` may report supported versions even when the requested version
-is unsupported, but its request metadata remains self-describing. Missing
-required metadata returns `UnsupportedProtocolVersion` (`-32022`); HTTP header
-mismatch is handled separately by C2 before dispatch.
+`server/discover` is subject to the same request metadata and version gate as
+other methods. Missing required metadata returns Invalid Params (`-32602`); an
+unsupported version returns `UnsupportedProtocolVersion` (`-32022`) with
+`data.supported` and `data.requested`. HTTP header mismatch is handled
+separately by C2 before dispatch.
 
 Unknown `_meta` keys are preserved. The protocol layer must not convert remote
 strings to atoms.

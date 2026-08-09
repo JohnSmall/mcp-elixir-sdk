@@ -21,9 +21,10 @@ defmodule MCP.Server.ToolContext do
 
   For Multi Round-Trip Requests (SEP-2322), a resumed request carries the
   server's continuation token and the client's fulfilled inputs. `:input` is
-  `nil` on a first attempt, or `%{request_state: binary(), responses: term()}`
-  on a retry. `MCP.Server.Dispatch` populates it from the request `params`
-  (`requestState` / `inputResponses`) before invoking the tool handler. It is
+  `nil` on a first attempt, or
+  `%{request_state: binary() | nil, responses: term()}` on a retry. Ephemeral
+  input flows can omit `requestState`. `MCP.Server.Dispatch` populates it from the request `params`
+  (`requestState` / `inputResponses`) before invoking the handler. It is
   handler-continuation data, orthogonal to identity.
 
   ## The `:reply_sink` field (per-request notification emitter)
@@ -36,8 +37,8 @@ defmodule MCP.Server.ToolContext do
   request's outbound channel. When `nil`, notifications are dropped.
 
   Server→client **requests** (sampling/elicitation) are NOT made through this
-  context in the stateless core: they convert to MRTR (a tool returns
-  `{:input_required, input_requests, request_state, state}`, which
+  context in the stateless core: they convert to MRTR (a handler returns
+  `{:input_required, input_requests, request_state}`, which
   `Dispatch` shapes into an `InputRequiredResult`; the client fulfils the
   inputs and retries carrying `requestState`). The old blocking
   `request_sampling/3` / `request_elicitation/3` / `request/4` helpers are
@@ -46,7 +47,7 @@ defmodule MCP.Server.ToolContext do
 
   defstruct [:request_id, :meta, :identity, :input, :reply_sink]
 
-  @type input :: %{request_state: binary(), responses: term()} | nil
+  @type input :: %{request_state: binary() | nil, responses: term()} | nil
 
   @type t :: %__MODULE__{
           request_id: term(),

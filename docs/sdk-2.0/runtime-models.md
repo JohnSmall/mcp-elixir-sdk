@@ -68,20 +68,14 @@ There is no initializing/negotiating session state in 2.0. `connect/2` performs
 optional `server/discover` and enriches introspection fields; ordinary requests
 are valid without a negotiated session.
 
-### Current defects that the target model corrects
+### Implemented lifecycle invariants
 
-The baseline does **not** yet satisfy the target lifecycle:
-
-- `send_rpc/5` performs synchronous transport I/O before it creates the pending
-  entry or starts the request timer. The configured request timeout therefore
-  does not bound initial HTTP transmission.
-- Streamable HTTP performs `Req.post/2` inside the transport GenServer and may
-  block it for its independent 60-second timeout.
-- Function-based notification and MRTR input callbacks execute inside the
-  client GenServer. A slow callback blocks unrelated work and a raising callback
-  can terminate the client.
-
-These are S5 implementation defects, not accepted runtime behavior.
+The 2.0 implementation installs pending state and its absolute deadline before
+transport I/O. Streamable HTTP POSTs run in supervised, caller-monitored tasks,
+so a timed-out request is cancelled without blocking the transport GenServer or
+later requests. MRTR resolvers and function notification handlers also run
+outside the client GenServer; notification execution has a configurable bounded
+concurrency limit.
 
 ### Target request lifecycle
 
@@ -108,8 +102,9 @@ deadline covers transmission, response waiting, callback resolution, and MRTR
 retries; retrying does not reset it. A terminal response or failure removes it
 exactly once. Late transport/callback results are ignored by operation token.
 
-Function callbacks run under a consumer-supplied `Task.Supervisor`. The task is
-monitored and bounded by the remaining operation deadline. Callback exception,
+Function callbacks run under SDK-owned task supervisors. MRTR tasks are
+monitored and bounded by the remaining operation deadline; notification tasks
+have bounded admission. Callback exception,
 timeout, client cancellation, or transport loss cancels the task and resolves
 the pending call without blocking or crashing the client GenServer. Pid-based
 notification delivery remains an ordinary non-blocking `send/2`.
@@ -125,15 +120,17 @@ delivery:
   url: String.t(),
   protocol_version: String.t(),
   extra_headers: [{String.t(), String.t()}],
-  sse_task: Task.t() | nil
+  task_supervisor: pid(),
+  post_tasks: %{reference() => map()},
+  subscriptions: %{term() => map()}
 }
 ```
 
-In the baseline, `send_message/2` performs a POST synchronously within the
-transport GenServer. S5 replaces this with supervised request workers and an
-asynchronous acceptance result so the high-level client can establish its
-deadline first. Workers report responses using an operation token; the
-transport ignores late results after cancellation.
+`send_message/2` starts supervised request work without performing `Req.post/2`
+inside the transport GenServer. Each task is tied to its calling process; caller
+death, request timeout, transport close, and explicit subscription cancellation
+reclaim the corresponding work. Workers report responses using an operation
+token, and late results after cancellation are ignored.
 
 S1 adds message-derived routing headers. The high-level client owns a bounded
 LRU schema index (default 1,024 tools) or accepts an explicit call schema. The
@@ -144,9 +141,10 @@ precompiled static map or an identity-aware resolver evaluated after the
 authenticated identity factory. This is separate from dispatch configuration
 because it is an HTTP routing concern.
 
-S2 must avoid monopolizing this GenServer with a long-lived listen response;
-each subscription stream needs a supervised task or worker whose lifecycle is
-represented explicitly.
+Long-lived subscription responses use supervised tasks. Delivery is
+acknowledged end-to-end from stream parser through the client subscription
+worker, so the configured queue limit also bounds upstream parsing and mailbox
+growth rather than merely bounding the final worker queue.
 
 ## M3 — Stdio transport
 

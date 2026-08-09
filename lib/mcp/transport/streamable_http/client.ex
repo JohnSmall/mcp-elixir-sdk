@@ -35,10 +35,13 @@ defmodule MCP.Transport.StreamableHTTP.Client do
 
   defstruct [
     :owner,
+    :owner_ref,
     :url,
     :protocol_version,
     :extra_headers,
-    :sse_task
+    :task_supervisor,
+    post_tasks: %{},
+    subscriptions: %{}
   ]
 
   # --- Public API (Transport behaviour) ---
@@ -65,22 +68,38 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     :exit, _ -> :ok
   end
 
+  @impl MCP.Transport
+  def open_subscription(pid, message, opts \\ []) when is_map(message) and is_list(opts) do
+    GenServer.call(pid, {:open_subscription, message, opts}, 60_000)
+  end
+
+  @impl MCP.Transport
+  def cancel_subscription(pid, request_id) do
+    GenServer.call(pid, {:cancel_subscription, request_id})
+  catch
+    :exit, _ -> :ok
+  end
+
   # --- GenServer callbacks ---
 
   @impl GenServer
   def init(opts) do
+    Process.flag(:trap_exit, true)
     owner = Keyword.fetch!(opts, :owner)
     url = Keyword.fetch!(opts, :url)
     protocol_version = Keyword.get(opts, :protocol_version, @protocol_version)
     extra_headers = Keyword.get(opts, :headers, [])
+    {:ok, task_supervisor} = Task.Supervisor.start_link()
 
     case reserved_extra_header(extra_headers) do
       nil ->
         state = %__MODULE__{
           owner: owner,
+          owner_ref: Process.monitor(owner),
           url: url,
           protocol_version: protocol_version,
-          extra_headers: extra_headers
+          extra_headers: extra_headers,
+          task_supervisor: task_supervisor
         }
 
         {:ok, state}
@@ -91,14 +110,40 @@ defmodule MCP.Transport.StreamableHTTP.Client do
   end
 
   @impl GenServer
-  def handle_call({:send_message, message, opts}, _from, state) do
-    # Send HTTP POST with the JSON-RPC message
-    case do_post(state, message, opts) do
-      {:ok, new_state} ->
-        {:reply, :ok, new_state}
+  def handle_call({:send_message, message, opts}, from, state) do
+    case build_headers(state, message, opts) do
+      {:ok, headers} -> start_post_task(state, from, message, headers)
+      {:error, reason} -> {:reply, {:error, reason}, state}
+    end
+  end
 
-      {:error, reason} ->
-        {:reply, {:error, reason}, state}
+  def handle_call({:open_subscription, message, opts}, _from, state) do
+    id = Map.get(message, "id")
+
+    cond do
+      not (is_binary(id) or is_integer(id)) ->
+        {:reply, {:error, :invalid_subscription_id}, state}
+
+      Map.has_key?(state.subscriptions, id) ->
+        {:reply, {:error, :duplicate_subscription_id}, state}
+
+      true ->
+        case build_headers(state, message, opts) do
+          {:ok, headers} -> start_subscription_task(state, id, message, headers)
+          {:error, reason} -> {:reply, {:error, reason}, state}
+        end
+    end
+  end
+
+  def handle_call({:cancel_subscription, request_id}, _from, state) do
+    case Map.pop(state.subscriptions, request_id) do
+      {nil, _subscriptions} ->
+        {:reply, :ok, state}
+
+      {subscription, subscriptions} ->
+        Process.demonitor(subscription.monitor_ref, [:flush])
+        _ = Task.Supervisor.terminate_child(state.task_supervisor, subscription.task)
+        {:reply, :ok, %{state | subscriptions: subscriptions}}
     end
   end
 
@@ -135,16 +180,75 @@ defmodule MCP.Transport.StreamableHTTP.Client do
 
   def handle_info({:sse_stream_closed, reason}, state) do
     Logger.debug("MCP StreamableHTTP Client: SSE stream closed: #{inspect(reason)}")
-    {:noreply, %{state | sse_task: nil}}
-  end
-
-  def handle_info({ref, _result}, state) when is_reference(ref) do
-    # Task completion message — ignore (we handle via :DOWN)
     {:noreply, state}
   end
 
-  def handle_info({:DOWN, _ref, :process, _pid, _reason}, state) do
+  def handle_info({:subscription_stream_message, id, stream, delivery_ref, message}, state) do
+    if Map.has_key?(state.subscriptions, id) do
+      send(
+        state.owner,
+        {:mcp_subscription_message, self(), stream, delivery_ref, message}
+      )
+    else
+      send(stream, {:subscription_delivery_ack, delivery_ref})
+    end
+
     {:noreply, state}
+  end
+
+  def handle_info({:subscription_stream_closed, id, reason}, state) do
+    case Map.pop(state.subscriptions, id) do
+      {nil, _subscriptions} ->
+        {:noreply, state}
+
+      {subscription, subscriptions} ->
+        Process.demonitor(subscription.monitor_ref, [:flush])
+        send(state.owner, {:mcp_subscription_transport_closed, id, reason})
+        {:noreply, %{state | subscriptions: subscriptions}}
+    end
+  end
+
+  def handle_info({ref, result}, state) when is_reference(ref) do
+    case Map.pop(state.post_tasks, ref) do
+      {nil, _post_tasks} ->
+        {:noreply, state}
+
+      {operation, post_tasks} ->
+        Process.demonitor(ref, [:flush])
+        Process.demonitor(operation.caller_ref, [:flush])
+        GenServer.reply(operation.from, normalize_post_result(result))
+        {:noreply, %{state | post_tasks: post_tasks}}
+    end
+  end
+
+  def handle_info({:EXIT, owner, _reason}, %{owner: owner} = state) do
+    do_close(state)
+    {:stop, :normal, state}
+  end
+
+  def handle_info({:DOWN, ref, :process, owner, _reason}, %{owner: owner, owner_ref: ref} = state) do
+    do_close(state)
+    {:stop, :normal, state}
+  end
+
+  def handle_info({:DOWN, ref, :process, task, reason}, state) do
+    cond do
+      Map.has_key?(state.post_tasks, ref) ->
+        fail_post_task(state, ref, reason)
+
+      operation = post_task_by_caller_ref(state.post_tasks, ref, task) ->
+        _ = Task.Supervisor.terminate_child(state.task_supervisor, operation.task_pid)
+        Process.demonitor(operation.task_ref, [:flush])
+        {:noreply, %{state | post_tasks: Map.delete(state.post_tasks, operation.task_ref)}}
+
+      subscription = subscription_by_monitor(state.subscriptions, ref, task) ->
+        {id, _subscription} = subscription
+        send(state.owner, {:mcp_subscription_transport_closed, id, reason})
+        {:noreply, %{state | subscriptions: Map.delete(state.subscriptions, id)}}
+
+      true ->
+        {:noreply, state}
+    end
   end
 
   def handle_info(msg, state) do
@@ -160,11 +264,31 @@ defmodule MCP.Transport.StreamableHTTP.Client do
 
   # --- Private helpers ---
 
-  defp do_post(state, message, opts) do
-    case build_headers(state, message, opts) do
-      {:ok, headers} -> post(state, message, headers)
-      {:error, _reason} = error -> error
-    end
+  defp start_post_task(state, from, message, headers) do
+    task =
+      Task.Supervisor.async_nolink(state.task_supervisor, fn -> post(state, message, headers) end)
+
+    caller_ref = Process.monitor(elem(from, 0))
+
+    operation = %{
+      from: from,
+      caller_ref: caller_ref,
+      task_ref: task.ref,
+      task_pid: task.pid
+    }
+
+    {:noreply, %{state | post_tasks: Map.put(state.post_tasks, task.ref, operation)}}
+  end
+
+  defp normalize_post_result({:ok, _state}), do: :ok
+  defp normalize_post_result({:error, _reason} = error), do: error
+  defp normalize_post_result(other), do: {:error, {:invalid_post_result, other}}
+
+  defp fail_post_task(state, ref, reason) do
+    {operation, post_tasks} = Map.pop(state.post_tasks, ref)
+    Process.demonitor(operation.caller_ref, [:flush])
+    GenServer.reply(operation.from, {:error, {:post_task_exit, reason}})
+    {:noreply, %{state | post_tasks: post_tasks}}
   end
 
   defp post(state, message, headers) do
@@ -410,8 +534,149 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     end
   end
 
-  defp do_close(_state) do
+  defp do_close(state) do
+    Enum.each(state.post_tasks, fn {_ref, operation} ->
+      Process.demonitor(operation.caller_ref, [:flush])
+      _ = Task.Supervisor.terminate_child(state.task_supervisor, operation.task_pid)
+    end)
+
+    Enum.each(state.subscriptions, fn {_id, subscription} ->
+      Process.demonitor(subscription.monitor_ref, [:flush])
+      _ = Task.Supervisor.terminate_child(state.task_supervisor, subscription.task)
+    end)
+
     # Stateless: no session to terminate, so no DELETE is issued (SEP-2567).
     :ok
+  end
+
+  defp start_subscription_task(state, id, message, headers) do
+    transport = self()
+    url = state.url
+
+    {:ok, task} =
+      Task.Supervisor.start_child(state.task_supervisor, fn ->
+        run_subscription_stream(transport, id, url, message, headers)
+      end)
+
+    monitor_ref = Process.monitor(task)
+    subscription = %{task: task, monitor_ref: monitor_ref}
+    subscriptions = Map.put(state.subscriptions, id, subscription)
+    {:reply, :ok, %{state | subscriptions: subscriptions}}
+  end
+
+  defp run_subscription_stream(transport, id, url, message, headers) do
+    result =
+      case Req.post(url,
+             body: Jason.encode!(message),
+             headers: headers,
+             into: :self,
+             receive_timeout: :infinity
+           ) do
+        {:ok, %Req.Response{status: 200} = response} ->
+          if String.contains?(get_content_type(response.headers), "text/event-stream") do
+            consume_subscription_stream(transport, id, response, SSE.new_parser())
+          else
+            {:error, {:unexpected_content_type, get_content_type(response.headers)}}
+          end
+
+        {:ok, %Req.Response{status: status, body: body}} ->
+          {:error, {:http_error, status, body}}
+
+        {:error, reason} ->
+          {:error, reason}
+      end
+
+    send(transport, {:subscription_stream_closed, id, result})
+  rescue
+    exception ->
+      send(
+        transport,
+        {:subscription_stream_closed, id, {:error, {:raised, exception, __STACKTRACE__}}}
+      )
+  end
+
+  defp consume_subscription_stream(transport, id, response, parser) do
+    receive do
+      {:cancel_subscription_stream, requested_id} when requested_id in [id, :all] ->
+        _ = Req.cancel_async_response(response)
+        {:error, :cancelled}
+
+      message ->
+        case Req.parse_message(response, message) do
+          {:ok, chunks} -> consume_subscription_chunks(transport, id, response, parser, chunks)
+          {:error, reason} -> {:error, reason}
+          :unknown -> consume_subscription_stream(transport, id, response, parser)
+        end
+    end
+  end
+
+  defp consume_subscription_chunks(transport, id, response, parser, chunks) do
+    Enum.reduce_while(chunks, {:continue, parser}, fn
+      {:data, data}, {:continue, current_parser} ->
+        {events, next_parser} = SSE.feed(current_parser, data)
+
+        case deliver_subscription_events(transport, id, events) do
+          :ok -> {:cont, {:continue, next_parser}}
+          {:error, reason} -> {:halt, {:error, reason}}
+        end
+
+      :done, {:continue, current_parser} ->
+        {:halt, {:done, current_parser}}
+
+      {:trailers, _trailers}, accumulator ->
+        {:cont, accumulator}
+    end)
+    |> case do
+      {:continue, next_parser} ->
+        consume_subscription_stream(transport, id, response, next_parser)
+
+      {:done, _parser} ->
+        :eof
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp deliver_subscription_events(transport, id, events) do
+    Enum.reduce_while(events, :ok, fn event, :ok ->
+      case Map.get(event, :data) do
+        nil ->
+          {:cont, :ok}
+
+        "" ->
+          {:cont, :ok}
+
+        data ->
+          deliver_subscription_event(transport, id, data)
+      end
+    end)
+  end
+
+  defp deliver_subscription_event(transport, id, data) do
+    case Jason.decode(data) do
+      {:ok, decoded} ->
+        delivery_ref = make_ref()
+        send(transport, {:subscription_stream_message, id, self(), delivery_ref, decoded})
+
+        receive do
+          {:subscription_delivery_ack, ^delivery_ref} -> {:cont, :ok}
+        end
+
+      {:error, reason} ->
+        {:halt, {:error, {:invalid_sse_json, reason}}}
+    end
+  end
+
+  defp subscription_by_monitor(subscriptions, ref, task) do
+    Enum.find(subscriptions, fn {_id, subscription} ->
+      subscription.monitor_ref == ref and subscription.task == task
+    end)
+  end
+
+  defp post_task_by_caller_ref(post_tasks, ref, caller) do
+    Enum.find_value(post_tasks, fn {_task_ref, operation} ->
+      if operation.caller_ref == ref and elem(operation.from, 0) == caller, do: operation
+    end)
   end
 end

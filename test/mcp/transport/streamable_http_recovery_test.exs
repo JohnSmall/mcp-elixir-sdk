@@ -56,7 +56,10 @@ defmodule MCP.Transport.StreamableHTTPRecoveryTest do
       "params" => %{
         "name" => "whoami",
         "arguments" => %{"region" => "east"},
-        "_meta" => %{"io.modelcontextprotocol/protocolVersion" => "2026-07-28"}
+        "_meta" => %{
+          "io.modelcontextprotocol/protocolVersion" => "2026-07-28",
+          "io.modelcontextprotocol/clientCapabilities" => %{}
+        }
       }
     }
 

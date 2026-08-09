@@ -119,15 +119,35 @@ defmodule MCP.Protocol.Types.ToolTest do
       assert decoded["inputSchema"] == schema
     end
 
-    test "permits a boolean output schema without narrowing it to an object" do
+    test "requires outputSchema to be a JSON object" do
+      for invalid <- [true, false, [], "schema", 1] do
+        assert_raise ArgumentError, ~r/outputSchema must be a JSON object/, fn ->
+          @tool_map |> Map.put("outputSchema", invalid) |> Tool.from_map()
+        end
+      end
+    end
+
+    test "preserves unknown tool members at the open type boundary" do
       decoded =
         @tool_map
-        |> Map.put("outputSchema", true)
+        |> Map.put("vendorField", %{"enabled" => false})
         |> Tool.from_map()
         |> Jason.encode!()
         |> Jason.decode!()
 
-      assert decoded["outputSchema"] == true
+      assert decoded["vendorField"] == %{"enabled" => false}
+    end
+
+    test "rejects known-field collisions in manually constructed extras" do
+      tool = Tool.from_map(@tool_map)
+
+      assert_raise ArgumentError, ~r/tool extra field collides with name/, fn ->
+        Jason.encode!(%{tool | extra: %{"name" => "ambiguous"}})
+      end
+
+      assert_raise ArgumentError, ~r/field names must be strings/, fn ->
+        Jason.encode!(%{tool | extra: %{name: "ambiguous"}})
+      end
     end
 
     test "rejects an input schema whose root is not explicitly an object" do

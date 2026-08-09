@@ -105,7 +105,7 @@ Every slice preserves these invariants:
   values are authoritative; the final implementation MUST reject or prevent an
   extra-header override that would make headers disagree with the body.
 - JSON-RPC responses, which have no `method`, MUST not acquire routing headers.
-- A server MUST reject a missing, malformed, undecodable, or mismatched required
+- A server MUST reject a missing, undecodable, or mismatched required
   standard/custom header with HTTP 400 and MCP `HeaderMismatch` (`-32020`). An
   unsupported protocol value instead returns HTTP 400 with
   `UnsupportedProtocolVersion` (`-32022`) and the supported versions.
@@ -262,8 +262,8 @@ S1b and may proceed in parallel once S4a is stable.
 
 - `Tool.inputSchema` MUST preserve arbitrary JSON Schema 2020-12 keywords while
   requiring an object root (`"type": "object"`).
-- `Tool.outputSchema` MAY be any JSON Schema 2020-12 schema and MUST NOT be
-  narrowed to an object schema.
+- `Tool.outputSchema` MUST be a JSON object, matching the pinned MCP wire type,
+  while preserving arbitrary JSON Schema 2020-12 object keywords unchanged.
 - `structuredContent` MAY be any JSON value: object, array, string, number,
   boolean, or null.
 - Public structs MUST represent an absent `structuredContent` member as

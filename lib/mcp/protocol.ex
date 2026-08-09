@@ -9,6 +9,14 @@ defmodule MCP.Protocol do
   @protocol_version "2026-07-28"
   @jsonrpc_version "2.0"
 
+  @type json_value ::
+          nil
+          | boolean()
+          | number()
+          | String.t()
+          | [json_value()]
+          | %{required(String.t()) => json_value()}
+
   @doc """
   Returns the MCP protocol version this library targets.
   """

@@ -32,7 +32,13 @@ defmodule MCP.Transport do
   @callback send_message(pid :: pid(), message()) :: :ok | {:error, term()}
   @callback send_message(pid :: pid(), message(), opts()) :: :ok | {:error, term()}
 
-  @optional_callbacks send_message: 3
+  @doc "Opens a transport-owned long-lived subscription response stream."
+  @callback open_subscription(pid :: pid(), message(), opts()) :: :ok | {:error, term()}
+
+  @doc "Cancels one transport-owned subscription stream without closing siblings."
+  @callback cancel_subscription(pid :: pid(), request_id :: String.t() | integer()) :: :ok
+
+  @optional_callbacks send_message: 3, open_subscription: 3, cancel_subscription: 2
 
   @doc """
   Closes the transport, releasing all resources.

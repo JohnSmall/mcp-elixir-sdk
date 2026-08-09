@@ -21,23 +21,9 @@ defmodule MCP.ClientTest do
   }
 
   defp wait_for_sent(transport, count, timeout \\ 1000) do
-    deadline = System.monotonic_time(:millisecond) + timeout
-    do_wait_for_sent(transport, count, deadline)
-  end
-
-  defp do_wait_for_sent(transport, count, deadline) do
-    messages = MockTransport.sent_messages(transport)
-
-    cond do
-      length(messages) >= count ->
-        messages
-
-      System.monotonic_time(:millisecond) >= deadline ->
-        flunk("Timed out waiting for #{count} messages, got #{length(messages)}")
-
-      true ->
-        Process.sleep(5)
-        do_wait_for_sent(transport, count, deadline)
+    case MockTransport.await_sent(transport, count, timeout) do
+      {:ok, messages} -> messages
+      {:error, :timeout} -> flunk("Timed out waiting for #{count} messages")
     end
   end
 
@@ -99,6 +85,14 @@ defmodule MCP.ClientTest do
                  tool_schema_limit: -1
                )
     end
+
+    test "rejects an invalid notification concurrency limit at startup" do
+      assert {:error, {:invalid_notification_concurrency, 0}} =
+               Client.start_link(
+                 transport: {MockTransport, []},
+                 notification_concurrency: 0
+               )
+    end
   end
 
   describe "connect/1 (server/discover)" do
@@ -142,9 +136,118 @@ defmodule MCP.ClientTest do
       {:error, error} = Task.await(task)
       assert error.code == -32_603
     end
+
+    test "retries discover once using a server-supported protocol version" do
+      {client, transport} = start_client()
+      task = Task.async(fn -> Client.connect(client) end)
+      [first] = wait_for_sent(transport, 1)
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => first["id"],
+        "error" => %{
+          "code" => -32_022,
+          "message" => "Unsupported protocol version",
+          "data" => %{"supported" => ["2026-07-28"], "requested" => "2026-07-28"}
+        }
+      })
+
+      [_first, retry] = wait_for_sent(transport, 2)
+      assert retry["method"] == "server/discover"
+      assert retry["params"]["_meta"]["io.modelcontextprotocol/protocolVersion"] == "2026-07-28"
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => retry["id"],
+        "result" => %{
+          "supportedVersions" => ["2026-07-28"],
+          "capabilities" => %{},
+          "resultType" => "complete",
+          "ttlMs" => 0,
+          "cacheScope" => "public",
+          "_meta" => %{"io.modelcontextprotocol/serverInfo" => @server_info}
+        }
+      })
+
+      assert {:ok, %{protocol_version: "2026-07-28"}} = Task.await(task)
+    end
+
+    test "does not negotiate down to an unsupported protocol revision" do
+      {client, transport} = start_client()
+      task = Task.async(fn -> Client.connect(client) end)
+      [first] = wait_for_sent(transport, 1)
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => first["id"],
+        "error" => %{
+          "code" => -32_022,
+          "message" => "Unsupported protocol version",
+          "data" => %{"supported" => ["2025-11-25"]}
+        }
+      })
+
+      assert {:error, %{code: -32_022}} = Task.await(task)
+      assert length(MockTransport.sent_messages(transport)) == 1
+      assert Client.status(client) == :ready
+    end
+
+    test "rejects malformed discovery results without terminating the client" do
+      {client, transport} = start_client()
+      task = Task.async(fn -> Client.connect(client) end)
+      [request] = wait_for_sent(transport, 1)
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => request["id"],
+        "result" => %{
+          "supportedVersions" => ["2026-07-28"],
+          "capabilities" => %{"extensions" => %{"tasks" => %{}}}
+        }
+      })
+
+      assert {:error, {:invalid_discover_result, _reason}} = Task.await(task)
+      assert Client.status(client) == :ready
+    end
+  end
+
+  describe "timeout validation" do
+    test "invalid per-call and connect timeouts do not terminate the client" do
+      {client, _transport} = start_client()
+
+      for timeout <- [-1, :infinity, "soon"] do
+        assert Client.connect(client, timeout) == {:error, {:invalid_timeout, timeout}}
+
+        assert Client.list_tools(client, timeout: timeout) ==
+                 {:error, {:invalid_timeout, timeout}}
+      end
+
+      assert Client.status(client) == :ready
+    end
   end
 
   describe "per-request _meta" do
+    test "accepts string-keyed capability maps at the public API" do
+      {client, transport} =
+        start_client(
+          client_capabilities: %{
+            "sampling" => %{},
+            "elicitation" => %{},
+            "roots" => %{"listChanged" => true}
+          }
+        )
+
+      do_connect(client, transport)
+      [request] = MockTransport.sent_messages(transport)
+      capabilities = request["params"]["_meta"]["io.modelcontextprotocol/clientCapabilities"]
+
+      assert capabilities == %{
+               "sampling" => %{},
+               "elicitation" => %{},
+               "roots" => %{"listChanged" => true}
+             }
+    end
+
     test "every request carries protocolVersion + client identity/capabilities" do
       {client, transport} = start_client()
       do_connect(client, transport)
@@ -856,7 +959,7 @@ defmodule MCP.ClientTest do
   describe "MRTR client retry" do
     test "an input_required result is transparently completed via :on_input_required" do
       {client, transport} =
-        start_client(on_input_required: fn _requests -> [%{"name" => "Ada"}] end)
+        start_client(on_input_required: fn _requests -> %{"name" => %{"name" => "Ada"}} end)
 
       do_connect(client, transport)
 
@@ -868,7 +971,9 @@ defmodule MCP.ClientTest do
         "id" => first["id"],
         "result" => %{
           "resultType" => "input_required",
-          "inputRequests" => [%{"kind" => "elicitation"}],
+          "inputRequests" => %{
+            "name" => %{"method" => "elicitation/create", "params" => %{}}
+          },
           "requestState" => "rs-1"
         }
       })
@@ -877,7 +982,7 @@ defmodule MCP.ClientTest do
       retry = last_after_connect(transport, 2)
       assert retry["method"] == "tools/call"
       assert retry["params"]["requestState"] == "rs-1"
-      assert retry["params"]["inputResponses"] == [%{"name" => "Ada"}]
+      assert retry["params"]["inputResponses"] == %{"name" => %{"name" => "Ada"}}
 
       MockTransport.inject(transport, %{
         "jsonrpc" => "2.0",
@@ -890,6 +995,70 @@ defmodule MCP.ClientTest do
 
       {:ok, result} = Task.await(task)
       assert hd(result["content"])["text"] == "hi Ada"
+    end
+
+    test "an ephemeral retry omits requestState instead of serializing null" do
+      {client, transport} =
+        start_client(on_input_required: fn _requests -> %{"answer" => %{"value" => "yes"}} end)
+
+      do_connect(client, transport)
+      task = Task.async(fn -> Client.call_tool(client, "ephemeral", %{}) end)
+      first = last_after_connect(transport, 1)
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => first["id"],
+        "result" => %{
+          "resultType" => "input_required",
+          "inputRequests" => %{"answer" => %{"method" => "elicitation/create", "params" => %{}}}
+        }
+      })
+
+      retry = last_after_connect(transport, 2)
+      refute Map.has_key?(retry["params"], "requestState")
+      assert retry["params"]["inputResponses"] == %{"answer" => %{"value" => "yes"}}
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => retry["id"],
+        "result" => %{"resultType" => "complete", "content" => []}
+      })
+
+      assert {:ok, %{"resultType" => "complete"}} = Task.await(task)
+    end
+
+    test "input-required retry is universal for prompts/get" do
+      {client, transport} =
+        start_client(on_input_required: fn _requests -> %{"context" => %{"value" => "ready"}} end)
+
+      do_connect(client, transport)
+      task = Task.async(fn -> Client.get_prompt(client, "needs_input", %{}) end)
+      first = last_after_connect(transport, 1)
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => first["id"],
+        "result" => %{
+          "resultType" => "input_required",
+          "inputRequests" => %{"context" => %{"method" => "elicitation/create", "params" => %{}}}
+        }
+      })
+
+      retry = last_after_connect(transport, 2)
+      assert retry["method"] == "prompts/get"
+      assert retry["params"]["name"] == "needs_input"
+      assert retry["params"]["inputResponses"] == %{"context" => %{"value" => "ready"}}
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => retry["id"],
+        "result" => %{
+          "resultType" => "complete",
+          "messages" => [%{"role" => "user", "content" => %{"type" => "text", "text" => "ok"}}]
+        }
+      })
+
+      assert {:ok, %{"resultType" => "complete"}} = Task.await(task)
     end
 
     test "without a resolver the input_required result is returned as-is" do

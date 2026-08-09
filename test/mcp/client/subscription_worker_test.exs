@@ -31,6 +31,21 @@ defmodule MCP.Client.SubscriptionWorkerTest do
     assert SubscriptionHandle.next(handle, 1_000) == {:ok, :after_timeout}
   end
 
+  test "an invalid timeout is rejected without terminating the subscription", %{
+    supervisor: supervisor
+  } do
+    {:ok, worker} = SubscriptionWorker.start(supervisor, "invalid-timeout", self())
+    handle = SubscriptionHandle.new("invalid-timeout", worker)
+
+    assert SubscriptionHandle.next(handle, -1) == {:error, {:invalid_timeout, -1}}
+
+    assert SubscriptionHandle.next(handle, :eventually) ==
+             {:error, {:invalid_timeout, :eventually}}
+
+    SubscriptionWorker.enqueue(worker, :still_available)
+    assert SubscriptionHandle.next(handle, 1_000) == {:ok, :still_available}
+  end
+
   test "close/1 is idempotent and reports a closed handle", %{supervisor: supervisor} do
     {:ok, worker} = SubscriptionWorker.start(supervisor, 42, self())
     handle = SubscriptionHandle.new(42, worker)

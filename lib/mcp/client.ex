@@ -22,17 +22,19 @@ defmodule MCP.Client do
 
   ## Multi Round-Trip Requests (SEP-2322)
 
-  If a `tools/call` result comes back with `resultType: "input_required"`, the
+  If any request result comes back with `resultType: "input_required"`, the
   client fulfils the requested inputs via the optional `:on_input_required`
-  callback and **retries** the original request carrying `requestState` and
-  `inputResponses`; only the final `complete` result is returned to the caller.
-  Without a resolver, the `InputRequiredResult` is returned as-is.
+  callback and **retries** the original request carrying `inputResponses` and
+  the exact `requestState` when one was supplied. Only the final `complete`
+  result is returned to the caller. Without a resolver, the
+  `InputRequiredResult` is returned as-is.
 
   ## Options
 
     * `:transport` — `{module, opts}` transport spec (started here, owner = self)
     * `:client_info` — `%Implementation{}` or `%{name:, version:}`
-    * `:client_capabilities` — `%ClientCapabilities{}` (advertised in `_meta`)
+    * `:client_capabilities` — `%ClientCapabilities{}` or a string-keyed map
+      (advertised in `_meta`)
     * `:protocol_version` — advertised version (default: the stateless core's)
     * `:notification_handler` — pid or `(method, params -> any)` for server
       notifications
@@ -45,17 +47,22 @@ defmodule MCP.Client do
 
   require Logger
 
+  alias MCP.Client.{SubscriptionHandle, SubscriptionWorker}
   alias MCP.Protocol
   alias MCP.Protocol.Capabilities.ClientCapabilities
   alias MCP.Protocol.Error
   alias MCP.Protocol.Messages.{Discover, MRTR, Notification, Request, Response}
+  alias MCP.Protocol.Messages.Subscriptions.{AcknowledgedParams, ListenParams, ListenResult}
   alias MCP.Protocol.Methods
   alias MCP.Protocol.ToolRouting
-  alias MCP.Protocol.Types.Implementation
+  alias MCP.Protocol.Types.{Implementation, SubscriptionFilter}
 
   @default_request_timeout 30_000
   @max_tool_refresh_pages 32
+  @default_subscription_queue_limit 256
+  @default_notification_concurrency 32
   @protocol_version "2026-07-28"
+  @subscription_ack_method "notifications/subscriptions/acknowledged"
 
   defstruct [
     :transport_module,
@@ -73,7 +80,15 @@ defmodule MCP.Client do
     :tool_schema_limit,
     :pending_requests,
     :next_id,
-    :request_timeout
+    :request_timeout,
+    :task_supervisor,
+    :notification_supervisor,
+    :subscription_supervisor,
+    :subscription_queue_limit,
+    transport_tasks: %{},
+    callback_tasks: %{},
+    subscription_open_tasks: %{},
+    subscriptions: %{}
   ]
 
   # --- Public API ---
@@ -82,7 +97,7 @@ defmodule MCP.Client do
   def start_link(opts) do
     {gen_opts, client_opts} = Keyword.split(opts, [:name])
 
-    case validate_tool_schema_limit(client_opts) do
+    case validate_start_options(client_opts) do
       :ok -> GenServer.start_link(__MODULE__, client_opts, gen_opts)
       {:error, reason} -> {:error, reason}
     end
@@ -96,13 +111,17 @@ defmodule MCP.Client do
   instructions:}}`.
   """
   def connect(client, timeout \\ 60_000) do
-    GenServer.call(client, :connect, timeout)
+    with :ok <- validate_timeout(timeout) do
+      GenServer.call(client, {:connect, timeout}, :infinity)
+    end
   end
 
   @doc "Lists available tools. Options: `:cursor`, `:timeout`."
   def list_tools(client, opts \\ []) do
-    {timeout, opts} = Keyword.pop(opts, :timeout)
-    GenServer.call(client, {:list_tools, opts}, timeout || @default_request_timeout)
+    with :ok <- validate_call_options(opts) do
+      {timeout, opts} = Keyword.pop(opts, :timeout)
+      GenServer.call(client, {:list_tools, opts, timeout}, :infinity)
+    end
   end
 
   @doc """
@@ -112,51 +131,101 @@ defmodule MCP.Client do
   tool's input schema explicitly for routing-header derivation.
   """
   def call_tool(client, name, arguments \\ %{}, opts \\ []) do
-    timeout = Keyword.get(opts, :timeout)
-    input_schema = Keyword.get(opts, :input_schema)
+    with :ok <- validate_call_options(opts) do
+      timeout = Keyword.get(opts, :timeout)
+      input_schema = Keyword.get(opts, :input_schema)
+      meta = Keyword.get(opts, :meta)
 
-    GenServer.call(
-      client,
-      {:call_tool, name, arguments, input_schema},
-      timeout || @default_request_timeout
-    )
+      GenServer.call(
+        client,
+        {:call_tool, name, arguments, input_schema, meta, timeout},
+        :infinity
+      )
+    end
   end
 
   @doc "Lists available resources. Options: `:cursor`, `:timeout`."
   def list_resources(client, opts \\ []) do
-    {timeout, opts} = Keyword.pop(opts, :timeout)
-    GenServer.call(client, {:list_resources, opts}, timeout || @default_request_timeout)
+    with :ok <- validate_call_options(opts) do
+      {timeout, opts} = Keyword.pop(opts, :timeout)
+      GenServer.call(client, {:list_resources, opts, timeout}, :infinity)
+    end
   end
 
   @doc "Reads a resource by URI."
   def read_resource(client, uri, opts \\ []) do
-    timeout = Keyword.get(opts, :timeout)
-    GenServer.call(client, {:read_resource, uri}, timeout || @default_request_timeout)
+    with :ok <- validate_call_options(opts) do
+      timeout = Keyword.get(opts, :timeout)
+      GenServer.call(client, {:read_resource, uri, Keyword.get(opts, :meta), timeout}, :infinity)
+    end
   end
 
   @doc "Lists resource templates. Options: `:cursor`, `:timeout`."
   def list_resource_templates(client, opts \\ []) do
-    {timeout, opts} = Keyword.pop(opts, :timeout)
-    GenServer.call(client, {:list_resource_templates, opts}, timeout || @default_request_timeout)
+    with :ok <- validate_call_options(opts) do
+      {timeout, opts} = Keyword.pop(opts, :timeout)
+      GenServer.call(client, {:list_resource_templates, opts, timeout}, :infinity)
+    end
   end
 
   @doc "Lists available prompts. Options: `:cursor`, `:timeout`."
   def list_prompts(client, opts \\ []) do
-    {timeout, opts} = Keyword.pop(opts, :timeout)
-    GenServer.call(client, {:list_prompts, opts}, timeout || @default_request_timeout)
+    with :ok <- validate_call_options(opts) do
+      {timeout, opts} = Keyword.pop(opts, :timeout)
+      GenServer.call(client, {:list_prompts, opts, timeout}, :infinity)
+    end
   end
 
   @doc "Gets a specific prompt by name with optional arguments."
   def get_prompt(client, name, arguments \\ %{}, opts \\ []) do
-    timeout = Keyword.get(opts, :timeout)
-    GenServer.call(client, {:get_prompt, name, arguments}, timeout || @default_request_timeout)
+    with :ok <- validate_call_options(opts) do
+      timeout = Keyword.get(opts, :timeout)
+
+      GenServer.call(
+        client,
+        {:get_prompt, name, arguments, Keyword.get(opts, :meta), timeout},
+        :infinity
+      )
+    end
   end
 
   @doc "Requests a completion."
   def complete(client, ref, argument, opts \\ []) do
-    timeout = Keyword.get(opts, :timeout)
-    GenServer.call(client, {:complete, ref, argument}, timeout || @default_request_timeout)
+    with :ok <- validate_call_options(opts) do
+      timeout = Keyword.get(opts, :timeout)
+
+      GenServer.call(
+        client,
+        {:complete, ref, argument, Keyword.get(opts, :meta), timeout},
+        :infinity
+      )
+    end
   end
+
+  @doc """
+  Opens a long-lived `subscriptions/listen` request.
+
+  The client must be started with a consumer-owned `:subscription_supervisor`.
+  Options: `:queue_limit` and `:timeout` for opening the local worker.
+  """
+  @spec listen_subscriptions(GenServer.server(), SubscriptionFilter.t(), keyword()) ::
+          {:ok, SubscriptionHandle.t()} | {:error, term()}
+  def listen_subscriptions(client, filter, opts \\ [])
+
+  def listen_subscriptions(client, %SubscriptionFilter{} = filter, opts) when is_list(opts) do
+    with :ok <- validate_call_options(opts) do
+      {timeout, opts} = Keyword.pop(opts, :timeout, @default_request_timeout)
+
+      GenServer.call(
+        client,
+        {:listen_subscriptions, filter, Keyword.put(opts, :open_timeout, timeout)},
+        :infinity
+      )
+    end
+  end
+
+  def listen_subscriptions(_client, filter, _opts),
+    do: {:error, {:invalid_subscription_filter, filter}}
 
   @doc "Closes the client and its transport."
   def close(client) do
@@ -214,9 +283,20 @@ defmodule MCP.Client do
   defp init_with_schema_limit(opts, tool_schema_limit) do
     {transport_spec, opts} = Keyword.pop!(opts, :transport)
 
+    {:ok, task_supervisor} = Task.Supervisor.start_link()
+
+    notification_concurrency =
+      Keyword.get(opts, :notification_concurrency, @default_notification_concurrency)
+
+    {:ok, notification_supervisor} =
+      Task.Supervisor.start_link(max_children: notification_concurrency)
+
     state = %__MODULE__{
       client_info: build_client_info(Keyword.get(opts, :client_info, default_info())),
-      client_capabilities: Keyword.get(opts, :client_capabilities, %ClientCapabilities{}),
+      client_capabilities:
+        opts
+        |> Keyword.get(:client_capabilities, %ClientCapabilities{})
+        |> normalize_client_capabilities(),
       protocol_version: Keyword.get(opts, :protocol_version, @protocol_version),
       status: :ready,
       notification_handler: Keyword.get(opts, :notification_handler),
@@ -226,7 +306,13 @@ defmodule MCP.Client do
       tool_schema_limit: tool_schema_limit,
       pending_requests: %{},
       next_id: 1,
-      request_timeout: Keyword.get(opts, :request_timeout, @default_request_timeout)
+      request_timeout: Keyword.get(opts, :request_timeout, @default_request_timeout),
+      task_supervisor: task_supervisor,
+      notification_supervisor: notification_supervisor,
+      subscription_supervisor: Keyword.get(opts, :subscription_supervisor),
+      subscription_queue_limit:
+        Keyword.get(opts, :subscription_queue_limit, @default_subscription_queue_limit),
+      subscriptions: %{}
     }
 
     case start_transport(transport_spec) do
@@ -236,11 +322,11 @@ defmodule MCP.Client do
   end
 
   @impl GenServer
-  def handle_call(:connect, _from, %{status: :closed} = state),
+  def handle_call({:connect, _timeout}, _from, %{status: :closed} = state),
     do: {:reply, {:error, :closed}, state}
 
-  def handle_call(:connect, from, state) do
-    send_rpc(state, from, Methods.discover(), %{}, {:discover})
+  def handle_call({:connect, timeout}, from, state) do
+    send_rpc(state, from, Methods.discover(), %{}, {:discover, false}, [], timeout)
   end
 
   # Introspection + close work in any state (including :closed) and must precede
@@ -257,19 +343,20 @@ defmodule MCP.Client do
   def handle_call(_request, _from, %{status: :closed} = state),
     do: {:reply, {:error, :closed}, state}
 
-  def handle_call({:list_tools, opts}, from, state),
-    do: send_rpc(state, from, Methods.tools_list(), cursor_params(opts), :tools_list)
+  def handle_call({:list_tools, opts, timeout}, from, state),
+    do: send_rpc(state, from, Methods.tools_list(), cursor_params(opts), :tools_list, [], timeout)
 
-  def handle_call({:call_tool, name, arguments, input_schema}, from, state) do
+  def handle_call({:call_tool, name, arguments, input_schema, meta, timeout}, from, state) do
     case selected_descriptors(state, name, input_schema) do
       {:ok, descriptors, state} ->
         send_rpc(
           state,
           from,
           Methods.tools_call(),
-          name_args(name, arguments),
+          name_args(name, arguments) |> put_meta(meta),
           {:tool_call, name, arguments, false, descriptors},
-          routing_headers: descriptors
+          [routing_headers: descriptors],
+          timeout
         )
 
       {:error, reason} ->
@@ -277,24 +364,63 @@ defmodule MCP.Client do
     end
   end
 
-  def handle_call({:list_resources, opts}, from, state),
-    do: send_rpc(state, from, Methods.resources_list(), cursor_params(opts))
+  def handle_call({:list_resources, opts, timeout}, from, state),
+    do: send_rpc(state, from, Methods.resources_list(), cursor_params(opts), :call, [], timeout)
 
-  def handle_call({:read_resource, uri}, from, state),
-    do: send_rpc(state, from, Methods.resources_read(), %{"uri" => uri})
-
-  def handle_call({:list_resource_templates, opts}, from, state),
-    do: send_rpc(state, from, Methods.resources_templates_list(), cursor_params(opts))
-
-  def handle_call({:list_prompts, opts}, from, state),
-    do: send_rpc(state, from, Methods.prompts_list(), cursor_params(opts))
-
-  def handle_call({:get_prompt, name, arguments}, from, state),
-    do: send_rpc(state, from, Methods.prompts_get(), name_args(name, arguments))
-
-  def handle_call({:complete, ref, argument}, from, state),
+  def handle_call({:read_resource, uri, meta, timeout}, from, state),
     do:
-      send_rpc(state, from, Methods.completion_complete(), %{"ref" => ref, "argument" => argument})
+      send_rpc(
+        state,
+        from,
+        Methods.resources_read(),
+        put_meta(%{"uri" => uri}, meta),
+        :call,
+        [],
+        timeout
+      )
+
+  def handle_call({:list_resource_templates, opts, timeout}, from, state),
+    do:
+      send_rpc(
+        state,
+        from,
+        Methods.resources_templates_list(),
+        cursor_params(opts),
+        :call,
+        [],
+        timeout
+      )
+
+  def handle_call({:list_prompts, opts, timeout}, from, state),
+    do: send_rpc(state, from, Methods.prompts_list(), cursor_params(opts), :call, [], timeout)
+
+  def handle_call({:get_prompt, name, arguments, meta, timeout}, from, state),
+    do:
+      send_rpc(
+        state,
+        from,
+        Methods.prompts_get(),
+        name_args(name, arguments) |> put_meta(meta),
+        :call,
+        [],
+        timeout
+      )
+
+  def handle_call({:complete, ref, argument, meta, timeout}, from, state),
+    do:
+      send_rpc(
+        state,
+        from,
+        Methods.completion_complete(),
+        put_meta(%{"ref" => ref, "argument" => argument}, meta),
+        :call,
+        [],
+        timeout
+      )
+
+  def handle_call({:listen_subscriptions, filter, opts}, from, state) do
+    open_subscription(state, from, filter, opts)
+  end
 
   @impl GenServer
   def handle_cast({:cancel_request, request_id, reason}, %{status: :ready} = state) do
@@ -327,24 +453,136 @@ defmodule MCP.Client do
     end
   end
 
+  def handle_info(
+        {:mcp_subscription_message, transport, stream, delivery_ref, message},
+        %{transport_pid: transport} = state
+      ) do
+    result =
+      case Protocol.decode_message(message) do
+        {:ok, %Response{} = response} ->
+          handle_response(response, state)
+
+        {:ok, %Notification{} = notification} ->
+          handle_notification(notification, state)
+
+        {:ok, _other} ->
+          {:noreply, state}
+
+        {:error, error} ->
+          Logger.warning("MCP Client: invalid subscription message: #{inspect(error)}")
+          {:noreply, state}
+      end
+
+    send(stream, {:subscription_delivery_ack, delivery_ref})
+    result
+  end
+
   def handle_info({:mcp_transport_closed, reason}, state) do
-    Enum.each(state.pending_requests, fn {_id, %{from: from, timeout_ref: ref}} ->
-      cancel_timeout(ref)
-      GenServer.reply(from, {:error, {:transport_closed, reason}})
+    state = fail_all_operations(state, {:transport_closed, reason})
+
+    Enum.each(state.subscriptions, fn {_id, subscription} ->
+      Process.demonitor(subscription.monitor_ref, [:flush])
+      SubscriptionWorker.fail(subscription.worker, {:transport_closed, reason})
     end)
 
-    {:noreply, %{state | status: :closed, pending_requests: %{}}}
+    {:noreply, %{state | status: :closed, subscriptions: %{}}}
+  end
+
+  def handle_info({:mcp_subscription_transport_closed, id, reason}, state) do
+    case Map.pop(state.subscriptions, id) do
+      {nil, _subscriptions} ->
+        {:noreply, state}
+
+      {subscription, subscriptions} ->
+        Process.demonitor(subscription.monitor_ref, [:flush])
+        SubscriptionWorker.fail(subscription.worker, {:transport_closed, reason})
+        {:noreply, %{state | subscriptions: subscriptions}}
+    end
+  end
+
+  def handle_info({:DOWN, ref, :process, worker, _reason}, state)
+      when not is_map_key(state.transport_tasks, ref) and
+             not is_map_key(state.callback_tasks, ref) and
+             not is_map_key(state.subscription_open_tasks, ref) do
+    case subscription_by_monitor(state.subscriptions, ref, worker) do
+      {id, _subscription} ->
+        send_subscription_cancel(state, id, "subscription consumer closed")
+        {:noreply, %{state | subscriptions: Map.delete(state.subscriptions, id)}}
+
+      nil ->
+        {:noreply, state}
+    end
   end
 
   def handle_info({:request_timeout, id}, state) do
     case Map.pop(state.pending_requests, id) do
-      {%{from: from}, pending} ->
+      {%{from: from} = operation, pending} ->
+        state = stop_operation_tasks(state, operation)
         GenServer.reply(from, {:error, :timeout})
         {:noreply, %{state | pending_requests: pending}}
 
       {nil, _} ->
         {:noreply, state}
     end
+  end
+
+  def handle_info({:callback_timeout, ref}, state) do
+    case Map.pop(state.callback_tasks, ref) do
+      {nil, _callback_tasks} ->
+        {:noreply, state}
+
+      {callback, callback_tasks} ->
+        _ = Task.Supervisor.terminate_child(state.task_supervisor, callback.task_pid)
+        GenServer.reply(callback.operation.from, {:error, :timeout})
+        {:noreply, %{state | callback_tasks: callback_tasks}}
+    end
+  end
+
+  def handle_info({:subscription_open_timeout, ref}, state) do
+    case Map.pop(state.subscription_open_tasks, ref) do
+      {nil, _open_tasks} ->
+        {:noreply, state}
+
+      {operation, open_tasks} ->
+        _ = Task.Supervisor.terminate_child(state.task_supervisor, operation.task_pid)
+        GenServer.stop(operation.worker, :normal)
+        GenServer.reply(operation.from, {:error, :timeout})
+        {:noreply, %{state | subscription_open_tasks: open_tasks}}
+    end
+  end
+
+  def handle_info({ref, result}, state) when is_reference(ref) do
+    cond do
+      Map.has_key?(state.transport_tasks, ref) ->
+        Process.demonitor(ref, [:flush])
+        finish_transport_task(ref, result, state)
+
+      Map.has_key?(state.callback_tasks, ref) ->
+        Process.demonitor(ref, [:flush])
+        finish_callback_task(ref, result, state)
+
+      Map.has_key?(state.subscription_open_tasks, ref) ->
+        Process.demonitor(ref, [:flush])
+        finish_subscription_open(ref, result, state)
+
+      true ->
+        {:noreply, state}
+    end
+  end
+
+  def handle_info({:DOWN, ref, :process, _pid, reason}, state)
+      when is_map_key(state.transport_tasks, ref) do
+    fail_transport_task(ref, {:transport_task_exit, reason}, state)
+  end
+
+  def handle_info({:DOWN, ref, :process, _pid, reason}, state)
+      when is_map_key(state.callback_tasks, ref) do
+    fail_callback_task(ref, reason, state)
+  end
+
+  def handle_info({:DOWN, ref, :process, _pid, reason}, state)
+      when is_map_key(state.subscription_open_tasks, ref) do
+    fail_subscription_open(ref, reason, state)
   end
 
   def handle_info(msg, state) do
@@ -364,66 +602,123 @@ defmodule MCP.Client do
   # --- Response handling ---
 
   defp handle_response(%Response{id: id} = response, state) do
-    case Map.pop(state.pending_requests, id) do
-      {%{from: from, timeout_ref: ref, kind: kind}, pending} ->
-        cancel_timeout(ref)
-        finish_response(response, from, kind, %{state | pending_requests: pending})
+    case Map.fetch(state.subscriptions, id) do
+      {:ok, subscription} ->
+        finish_subscription_response(response, subscription, state)
 
-      {nil, _} ->
-        Logger.warning("MCP Client: response for unknown request id=#{inspect(id)}")
-        {:noreply, state}
+      :error ->
+        case Map.pop(state.pending_requests, id) do
+          {%{timeout_ref: ref} = operation, pending} ->
+            cancel_timeout(ref)
+            state = detach_transport_task(%{state | pending_requests: pending}, operation)
+            finish_response_with_operation(response, operation, state)
+
+          {nil, _} ->
+            handle_unknown_response(response, id, state)
+        end
     end
   end
 
+  defp handle_unknown_response(response, id, state) do
+    if subscription_result?(response) do
+      Logger.debug("MCP Client: final response for locally closed subscription id=#{inspect(id)}")
+    else
+      Logger.warning("MCP Client: response for unknown request id=#{inspect(id)}")
+    end
+
+    {:noreply, state}
+  end
+
+  defp finish_response_with_operation(
+         %Response{error: %Error{code: -32_022, data: data}} = response,
+         %{kind: {:discover, false}, deadline: deadline} = operation,
+         state
+       ) do
+    remaining = deadline - System.monotonic_time(:millisecond)
+
+    case supported_protocol_version(data) do
+      version when is_binary(version) and remaining > 0 ->
+        state = %{state | protocol_version: version}
+
+        send_rpc_with_timeout(
+          state,
+          operation.from,
+          Methods.discover(),
+          %{},
+          {:discover, true},
+          [],
+          remaining
+        )
+
+      _no_supported_version_or_time ->
+        finish_response(response, operation.from, operation.kind, state)
+    end
+  end
+
+  defp finish_response_with_operation(
+         %Response{error: nil, result: result} = response,
+         operation,
+         state
+       )
+       when is_map(result) do
+    if input_required?(result) and is_function(state.on_input_required, 1) do
+      start_mrtr_callback(result, operation, state)
+    else
+      finish_response(response, operation.from, operation.kind, state)
+    end
+  end
+
+  defp finish_response_with_operation(
+         %Response{error: error},
+         %{
+           from: from,
+           deadline: deadline,
+           kind: {:tool_call, name, arguments, false, descriptors}
+         },
+         state
+       )
+       when not is_nil(error) do
+    if recognized_custom_header_mismatch?(error, descriptors) do
+      remaining = deadline - System.monotonic_time(:millisecond)
+
+      if remaining > 0 do
+        send_rpc_with_timeout(
+          state,
+          from,
+          Methods.tools_list(),
+          %{},
+          {:tool_header_refresh, name, arguments, error, new_refresh_state(deadline)},
+          [],
+          remaining
+        )
+      else
+        GenServer.reply(from, {:error, :timeout})
+        {:noreply, state}
+      end
+    else
+      GenServer.reply(from, {:error, error})
+      {:noreply, state}
+    end
+  end
+
+  defp finish_response_with_operation(response, operation, state),
+    do: finish_response(response, operation.from, operation.kind, state)
+
   # server/discover result → capability probe reply.
-  defp finish_response(%Response{error: error}, from, {:discover}, state) when error != nil do
+  defp finish_response(%Response{error: error}, from, {:discover, _retried?}, state)
+       when error != nil do
     GenServer.reply(from, {:error, error})
     {:noreply, state}
   end
 
-  defp finish_response(%Response{result: result}, from, {:discover}, state) do
-    discover = Discover.Result.from_map(result)
+  defp finish_response(%Response{result: result}, from, {:discover, _retried?}, state) do
+    case decode_discover_result(result, state.protocol_version) do
+      {:ok, discover} ->
+        finish_discover(from, discover, state)
 
-    state = %{
-      state
-      | server_capabilities: discover.capabilities,
-        server_info: discover.server_info
-    }
-
-    GenServer.reply(
-      from,
-      {:ok,
-       %{
-         server_info: discover.server_info,
-         server_capabilities: discover.capabilities,
-         protocol_version: List.first(discover.supported_versions) || state.protocol_version,
-         instructions: discover.instructions
-       }}
-    )
-
-    {:noreply, state}
-  end
-
-  # A recognized custom-header mismatch can mean the cached schema is stale.
-  # Refresh once, then retry the original call with the newly selected descriptors.
-  defp finish_response(
-         %Response{error: error},
-         from,
-         {:tool_call, name, arguments, false, descriptors},
-         state
-       )
-       when error != nil do
-    if recognized_custom_header_mismatch?(error, descriptors) do
-      send_rpc(
-        state,
-        from,
-        Methods.tools_list(),
-        %{},
-        {:tool_header_refresh, name, arguments, error, new_refresh_state(state)}
-      )
-    else
-      GenServer.reply(from, {:error, error})
-      {:noreply, state}
+      {:error, reason} ->
+        GenServer.reply(from, {:error, {:invalid_discover_result, reason}})
+        {:noreply, state}
     end
   end
 
@@ -436,15 +731,11 @@ defmodule MCP.Client do
   defp finish_response(
          %Response{result: result},
          from,
-         {:tool_call, name, arguments, refresh_attempted?, descriptors},
+         {:tool_call, _name, _arguments, _refresh_attempted?, _descriptors},
          state
        ) do
-    if input_required?(result) and is_function(state.on_input_required, 1) do
-      resume_mrtr(result, from, name, arguments, refresh_attempted?, descriptors, state)
-    else
-      GenServer.reply(from, {:ok, result})
-      {:noreply, state}
-    end
+    GenServer.reply(from, {:ok, result})
+    {:noreply, state}
   end
 
   defp finish_response(
@@ -472,15 +763,7 @@ defmodule MCP.Client do
           selected_tool ->
             state = cache_tools(state, [selected_tool])
             {descriptors, state} = cached_descriptors(state, name)
-
-            send_rpc(
-              state,
-              from,
-              Methods.tools_call(),
-              name_args(name, arguments),
-              {:tool_call, name, arguments, true, descriptors},
-              routing_headers: descriptors
-            )
+            retry_tool_call(state, from, name, arguments, descriptors, refresh.deadline)
         end
 
       {:error, reason} ->
@@ -505,6 +788,46 @@ defmodule MCP.Client do
   defp finish_response(%Response{result: result}, from, _kind, state) do
     GenServer.reply(from, {:ok, result})
     {:noreply, state}
+  end
+
+  defp finish_discover(from, discover, state) do
+    state = %{
+      state
+      | server_capabilities: discover.capabilities,
+        server_info: discover.server_info
+    }
+
+    GenServer.reply(
+      from,
+      {:ok,
+       %{
+         server_info: discover.server_info,
+         server_capabilities: discover.capabilities,
+         protocol_version: state.protocol_version,
+         instructions: discover.instructions
+       }}
+    )
+
+    {:noreply, state}
+  end
+
+  defp retry_tool_call(state, from, name, arguments, descriptors, deadline) do
+    remaining = deadline - System.monotonic_time(:millisecond)
+
+    if remaining > 0 do
+      send_rpc_with_timeout(
+        state,
+        from,
+        Methods.tools_call(),
+        name_args(name, arguments),
+        {:tool_call, name, arguments, true, descriptors},
+        [routing_headers: descriptors],
+        remaining
+      )
+    else
+      GenServer.reply(from, {:error, :timeout})
+      {:noreply, state}
+    end
   end
 
   defp valid_header_annotation_locations?(%{"name" => name} = tool) when is_binary(name) do
@@ -602,11 +925,11 @@ defmodule MCP.Client do
 
   defp tools_from_result(_result), do: {:error, :result_must_be_an_object}
 
-  defp new_refresh_state(state) do
+  defp new_refresh_state(deadline) do
     %{
       seen_cursors: MapSet.new(),
       pages_remaining: @max_tool_refresh_pages,
-      deadline: System.monotonic_time(:millisecond) + state.request_timeout
+      deadline: deadline
     }
   end
 
@@ -649,54 +972,308 @@ defmodule MCP.Client do
 
   defp input_required?(result), do: Map.get(result, "resultType") == MRTR.result_type()
 
-  # Fulfil the requested inputs and retry the original tools/call carrying the
-  # server's requestState + the resolved inputResponses (SEP-2322).
-  defp resume_mrtr(
-         result,
-         from,
-         name,
-         arguments,
-         refresh_attempted?,
-         descriptors,
-         state
-       ) do
-    responses = state.on_input_required.(Map.get(result, "inputRequests"))
+  # Fulfil requested inputs outside the GenServer, bounded by the original
+  # operation deadline. A callback failure affects only its request.
+  defp start_mrtr_callback(result, operation, state) do
+    remaining = operation.deadline - System.monotonic_time(:millisecond)
 
-    params =
-      name
-      |> name_args(arguments)
-      |> Map.put("requestState", Map.get(result, "requestState"))
-      |> Map.put("inputResponses", responses)
+    if remaining > 0 do
+      task =
+        Task.Supervisor.async_nolink(state.task_supervisor, fn ->
+          state.on_input_required.(Map.get(result, "inputRequests"))
+        end)
 
-    send_rpc(
-      state,
-      from,
-      Methods.tools_call(),
-      params,
-      {:tool_call, name, arguments, refresh_attempted?, descriptors},
-      routing_headers: descriptors
-    )
+      timeout_ref = Process.send_after(self(), {:callback_timeout, task.ref}, remaining)
+
+      callback = %{
+        operation: operation,
+        result: result,
+        task_pid: task.pid,
+        timeout_ref: timeout_ref
+      }
+
+      {:noreply, %{state | callback_tasks: Map.put(state.callback_tasks, task.ref, callback)}}
+    else
+      GenServer.reply(operation.from, {:error, :timeout})
+      {:noreply, state}
+    end
   end
 
   # --- Notifications ---
 
   defp handle_notification(%Notification{method: method, params: params}, state) do
-    dispatch_notification(state.notification_handler, method, params)
+    case subscription_id(params) do
+      nil ->
+        dispatch_notification(state, state.notification_handler, method, params)
+        {:noreply, state}
+
+      id ->
+        route_subscription_notification(id, method, params, state)
+    end
+  end
+
+  defp dispatch_notification(_state, nil, method, _params),
+    do: Logger.debug("MCP Client: unhandled notification: #{method}")
+
+  defp dispatch_notification(_state, pid, method, params) when is_pid(pid),
+    do: send(pid, {:mcp_notification, method, params})
+
+  defp dispatch_notification(state, fun, method, params) when is_function(fun, 2) do
+    case Task.Supervisor.start_child(state.notification_supervisor, fn -> fun.(method, params) end) do
+      {:ok, _pid} ->
+        :ok
+
+      {:error, :max_children} ->
+        Logger.warning("MCP Client: notification handler saturated")
+
+      {:error, reason} ->
+        Logger.warning("MCP Client: notification handler failed: #{inspect(reason)}")
+    end
+
+    :ok
+  end
+
+  # --- Subscriptions ---
+
+  defp open_subscription(%{subscription_supervisor: nil} = state, _from, _filter, _opts),
+    do: {:reply, {:error, :subscriptions_not_configured}, state}
+
+  defp open_subscription(state, from, filter, opts) do
+    queue_limit = Keyword.get(opts, :queue_limit, state.subscription_queue_limit)
+    owner = elem(from, 0)
+    {id, next_state} = next_id(state)
+
+    case SubscriptionWorker.start(state.subscription_supervisor, id, owner,
+           queue_limit: queue_limit
+         ) do
+      {:ok, worker} ->
+        start_subscription_request(next_state, from, id, worker, filter, opts)
+
+      {:error, reason} ->
+        {:reply, {:error, reason}, state}
+    end
+  end
+
+  defp start_subscription_request(state, from, id, worker, filter, opts) do
+    params =
+      ListenParams.to_map(%ListenParams{notifications: filter})
+      |> put_meta(Keyword.get(opts, :meta))
+
+    message = encode(Request.new(id, Methods.subscriptions_listen(), with_meta(params, state)))
+    timeout = Keyword.fetch!(opts, :open_timeout)
+
+    task =
+      Task.Supervisor.async_nolink(state.task_supervisor, fn ->
+        open_subscription_request(state, message)
+      end)
+
+    timeout_ref = Process.send_after(self(), {:subscription_open_timeout, task.ref}, timeout)
+
+    operation = %{
+      from: from,
+      id: id,
+      worker: worker,
+      task_pid: task.pid,
+      timeout_ref: timeout_ref
+    }
+
+    {:noreply,
+     %{
+       state
+       | subscription_open_tasks: Map.put(state.subscription_open_tasks, task.ref, operation)
+     }}
+  end
+
+  defp finish_subscription_open(ref, result, state) do
+    {operation, open_tasks} = Map.pop(state.subscription_open_tasks, ref)
+    cancel_timeout(operation.timeout_ref)
+    state = %{state | subscription_open_tasks: open_tasks}
+
+    case result do
+      :ok ->
+        monitor_ref = Process.monitor(operation.worker)
+
+        subscription = %{
+          worker: operation.worker,
+          monitor_ref: monitor_ref,
+          acknowledged?: false
+        }
+
+        handle = SubscriptionHandle.new(operation.id, operation.worker)
+        subscriptions = Map.put(state.subscriptions, operation.id, subscription)
+        GenServer.reply(operation.from, {:ok, handle})
+        {:noreply, %{state | subscriptions: subscriptions}}
+
+      {:error, reason} ->
+        GenServer.stop(operation.worker, :normal)
+        GenServer.reply(operation.from, {:error, reason})
+        {:noreply, state}
+
+      other ->
+        GenServer.stop(operation.worker, :normal)
+        GenServer.reply(operation.from, {:error, {:invalid_transport_result, other}})
+        {:noreply, state}
+    end
+  end
+
+  defp fail_subscription_open(ref, reason, state) do
+    {operation, open_tasks} = Map.pop(state.subscription_open_tasks, ref)
+    cancel_timeout(operation.timeout_ref)
+    GenServer.stop(operation.worker, :normal)
+    GenServer.reply(operation.from, {:error, {:transport_task_exit, reason}})
+    {:noreply, %{state | subscription_open_tasks: open_tasks}}
+  end
+
+  defp route_subscription_notification(id, method, params, state) do
+    case Map.fetch(state.subscriptions, id) do
+      {:ok, %{acknowledged?: false} = subscription}
+      when method == @subscription_ack_method ->
+        acknowledge_subscription(id, method, params, subscription, state)
+
+      {:ok, %{acknowledged?: false}} ->
+        fail_subscription(state, id, :notification_before_acknowledgment)
+
+      {:ok, %{acknowledged?: true}}
+      when method == @subscription_ack_method ->
+        fail_subscription(state, id, :duplicate_acknowledgment)
+
+      {:ok, %{acknowledged?: true} = subscription} ->
+        case SubscriptionWorker.enqueue(subscription.worker, notification_map(method, params)) do
+          :ok -> {:noreply, state}
+          {:error, reason} -> fail_subscription(state, id, reason)
+        end
+
+      :error ->
+        Logger.warning("MCP Client: notification for unknown subscription id=#{inspect(id)}")
+        {:noreply, state}
+    end
+  end
+
+  defp acknowledge_subscription(id, method, params, subscription, state) when is_map(params) do
+    acknowledged = AcknowledgedParams.from_map(params)
+
+    if subscription_id(acknowledged.meta) == id do
+      case SubscriptionWorker.enqueue(subscription.worker, notification_map(method, params)) do
+        :ok ->
+          updated = %{subscription | acknowledged?: true}
+          {:noreply, %{state | subscriptions: Map.put(state.subscriptions, id, updated)}}
+
+        {:error, reason} ->
+          fail_subscription(state, id, reason)
+      end
+    else
+      fail_subscription(state, id, :acknowledgment_id_mismatch)
+    end
+  rescue
+    error in [ArgumentError, KeyError, FunctionClauseError] ->
+      fail_subscription(state, id, {:invalid_acknowledgment, Exception.message(error)})
+  end
+
+  defp acknowledge_subscription(id, _method, _params, _subscription, state),
+    do: fail_subscription(state, id, :invalid_acknowledgment)
+
+  defp finish_subscription_response(%Response{id: id, error: error}, subscription, state)
+       when not is_nil(error) do
+    state = remove_subscription(state, id, subscription)
+    SubscriptionWorker.fail(subscription.worker, error)
     {:noreply, state}
   end
 
-  defp dispatch_notification(nil, method, _params),
-    do: Logger.debug("MCP Client: unhandled notification: #{method}")
+  defp finish_subscription_response(
+         %Response{id: id, result: result},
+         %{acknowledged?: true} = subscription,
+         state
+       )
+       when is_map(result) do
+    listen_result = ListenResult.from_map(result)
 
-  defp dispatch_notification(pid, method, params) when is_pid(pid),
-    do: send(pid, {:mcp_notification, method, params})
+    if subscription_id(listen_result.meta) == id do
+      state = remove_subscription(state, id, subscription)
+      SubscriptionWorker.complete(subscription.worker, listen_result)
+      {:noreply, state}
+    else
+      fail_subscription(state, id, :result_id_mismatch)
+    end
+  rescue
+    error in [ArgumentError, KeyError, FunctionClauseError] ->
+      fail_subscription(state, id, {:invalid_subscription_result, Exception.message(error)})
+  end
 
-  defp dispatch_notification(fun, method, params) when is_function(fun, 2),
-    do: fun.(method, params)
+  defp finish_subscription_response(
+         %Response{id: id},
+         %{acknowledged?: true},
+         state
+       ),
+       do: fail_subscription(state, id, :invalid_subscription_result)
+
+  defp finish_subscription_response(%Response{id: id}, _subscription, state),
+    do: fail_subscription(state, id, :result_before_acknowledgment)
+
+  defp fail_subscription(state, id, reason) do
+    case Map.pop(state.subscriptions, id) do
+      {nil, _subscriptions} ->
+        {:noreply, state}
+
+      {subscription, subscriptions} ->
+        Process.demonitor(subscription.monitor_ref, [:flush])
+        SubscriptionWorker.fail(subscription.worker, reason)
+        send_subscription_cancel(state, id, "subscription protocol error")
+        {:noreply, %{state | subscriptions: subscriptions}}
+    end
+  end
+
+  defp remove_subscription(state, id, subscription) do
+    Process.demonitor(subscription.monitor_ref, [:flush])
+    %{state | subscriptions: Map.delete(state.subscriptions, id)}
+  end
+
+  defp subscription_by_monitor(subscriptions, ref, worker) do
+    Enum.find(subscriptions, fn {_id, subscription} ->
+      subscription.monitor_ref == ref and subscription.worker == worker
+    end)
+  end
+
+  defp subscription_id(%{"io.modelcontextprotocol/subscriptionId" => id}), do: id
+
+  defp subscription_id(%{"_meta" => meta}) when is_map(meta) do
+    Map.get(meta, "io.modelcontextprotocol/subscriptionId")
+  end
+
+  defp subscription_id(_params), do: nil
+
+  defp notification_map(method, params) do
+    encode(Notification.new(method, params))
+  end
+
+  defp subscription_result?(%Response{id: id, result: result}) when is_map(result) do
+    subscription_id(result) == id
+  end
+
+  defp subscription_result?(_response), do: false
+
+  defp send_subscription_cancel(%{status: :ready} = state, id, reason) do
+    result =
+      if function_exported?(state.transport_module, :cancel_subscription, 2) do
+        state.transport_module.cancel_subscription(state.transport_pid, id)
+      else
+        params = %{"requestId" => id, "reason" => reason}
+        send_notification(state, Methods.cancelled(), params)
+      end
+
+    case result do
+      :ok ->
+        :ok
+
+      {:error, error} ->
+        Logger.warning("MCP Client: subscription cancellation failed: #{inspect(error)}")
+    end
+  end
+
+  defp send_subscription_cancel(_state, _id, _reason), do: :ok
 
   # --- Sending ---
 
-  defp send_rpc(state, from, method, params, kind \\ :call, transport_opts \\ []) do
+  defp send_rpc(state, from, method, params, kind, transport_opts, timeout) do
     send_rpc_with_timeout(
       state,
       from,
@@ -704,34 +1281,58 @@ defmodule MCP.Client do
       params,
       kind,
       transport_opts,
-      state.request_timeout
+      timeout || state.request_timeout
     )
   end
 
   defp send_rpc_with_timeout(state, from, method, params, kind, transport_opts, timeout) do
     {id, state} = next_id(state)
+    timeout_ref = schedule_timeout(id, timeout)
+    deadline = System.monotonic_time(:millisecond) + timeout
 
-    case send_request(state, id, method, with_meta(params, state), transport_opts) do
-      :ok ->
-        timeout_ref = schedule_timeout(id, timeout)
-        {:noreply, put_pending(state, id, from, timeout_ref, kind)}
+    operation = %{
+      from: from,
+      timeout_ref: timeout_ref,
+      kind: kind,
+      deadline: deadline,
+      method: method,
+      params: params,
+      transport_opts: transport_opts
+    }
 
-      {:error, reason} ->
-        GenServer.reply(from, {:error, reason})
-        {:noreply, state}
-    end
+    state = put_pending(state, id, operation)
+
+    task =
+      Task.Supervisor.async_nolink(state.task_supervisor, fn ->
+        send_request(state, id, method, with_meta(params, state), transport_opts)
+      end)
+
+    pending =
+      Map.update!(state.pending_requests, id, fn operation ->
+        operation
+        |> Map.put(:transport_ref, task.ref)
+        |> Map.put(:transport_pid, task.pid)
+      end)
+
+    {:noreply,
+     %{
+       state
+       | pending_requests: pending,
+         transport_tasks: Map.put(state.transport_tasks, task.ref, id)
+     }}
   end
 
   # Every request carries the per-request _meta the stateless server needs in
   # place of the removed handshake (SEP-2575): protocol version + client
   # identity/capabilities. `server/discover` also carries it harmlessly.
   defp with_meta(params, state) do
-    meta = %{
+    reserved = %{
       "io.modelcontextprotocol/protocolVersion" => state.protocol_version,
       "io.modelcontextprotocol/clientInfo" => encode(state.client_info),
       "io.modelcontextprotocol/clientCapabilities" => encode(state.client_capabilities)
     }
 
+    meta = Map.merge(Map.get(params, "_meta", %{}), reserved)
     Map.put(params, "_meta", meta)
   end
 
@@ -740,6 +1341,14 @@ defmodule MCP.Client do
 
     if function_exported?(state.transport_module, :send_message, 3) do
       state.transport_module.send_message(state.transport_pid, message, opts)
+    else
+      state.transport_module.send_message(state.transport_pid, message)
+    end
+  end
+
+  defp open_subscription_request(state, message) do
+    if function_exported?(state.transport_module, :open_subscription, 3) do
+      state.transport_module.open_subscription(state.transport_pid, message, [])
     else
       state.transport_module.send_message(state.transport_pid, message)
     end
@@ -754,11 +1363,128 @@ defmodule MCP.Client do
 
   defp encode(struct), do: Jason.decode!(Jason.encode!(struct))
 
-  defp put_pending(state, id, from, timeout_ref, kind) do
-    pending =
-      Map.put(state.pending_requests, id, %{from: from, timeout_ref: timeout_ref, kind: kind})
+  defp put_pending(state, id, operation),
+    do: %{state | pending_requests: Map.put(state.pending_requests, id, operation)}
 
-    %{state | pending_requests: pending}
+  defp finish_transport_task(ref, result, state) do
+    {id, transport_tasks} = Map.pop(state.transport_tasks, ref)
+    state = %{state | transport_tasks: transport_tasks}
+
+    case {id, result} do
+      {nil, _result} ->
+        {:noreply, state}
+
+      {id, :ok} ->
+        pending =
+          Map.update(state.pending_requests, id, nil, fn operation ->
+            Map.drop(operation, [:transport_ref, :transport_pid])
+          end)
+
+        {:noreply, %{state | pending_requests: pending}}
+
+      {id, {:error, reason}} ->
+        fail_pending_transport(state, id, reason)
+
+      {id, other} ->
+        fail_pending_transport(state, id, {:invalid_transport_result, other})
+    end
+  end
+
+  defp fail_transport_task(ref, reason, state) do
+    {id, transport_tasks} = Map.pop(state.transport_tasks, ref)
+    state = %{state | transport_tasks: transport_tasks}
+
+    if id, do: fail_pending_transport(state, id, reason), else: {:noreply, state}
+  end
+
+  defp fail_pending_transport(state, id, reason) do
+    case Map.pop(state.pending_requests, id) do
+      {%{from: from, timeout_ref: timeout_ref}, pending} ->
+        cancel_timeout(timeout_ref)
+        GenServer.reply(from, {:error, reason})
+        {:noreply, %{state | pending_requests: pending}}
+
+      {nil, _pending} ->
+        {:noreply, state}
+    end
+  end
+
+  defp finish_callback_task(ref, responses, state) do
+    {callback, callback_tasks} = Map.pop(state.callback_tasks, ref)
+    state = %{state | callback_tasks: callback_tasks}
+
+    if callback && is_map(responses) do
+      cancel_timeout(callback.timeout_ref)
+      remaining = callback.operation.deadline - System.monotonic_time(:millisecond)
+
+      if remaining > 0 do
+        params =
+          callback.operation.params
+          |> Map.put("inputResponses", responses)
+          |> maybe_put_request_state(callback.result)
+
+        send_rpc_with_timeout(
+          state,
+          callback.operation.from,
+          callback.operation.method,
+          params,
+          callback.operation.kind,
+          callback.operation.transport_opts,
+          remaining
+        )
+      else
+        GenServer.reply(callback.operation.from, {:error, :timeout})
+        {:noreply, state}
+      end
+    else
+      if callback do
+        cancel_timeout(callback.timeout_ref)
+
+        GenServer.reply(
+          callback.operation.from,
+          {:error, {:invalid_input_responses, responses}}
+        )
+      end
+
+      {:noreply, state}
+    end
+  end
+
+  defp fail_callback_task(ref, reason, state) do
+    {callback, callback_tasks} = Map.pop(state.callback_tasks, ref)
+    state = %{state | callback_tasks: callback_tasks}
+
+    if callback do
+      cancel_timeout(callback.timeout_ref)
+      GenServer.reply(callback.operation.from, {:error, {:callback_failed, reason}})
+    end
+
+    {:noreply, state}
+  end
+
+  defp detach_transport_task(state, operation) do
+    case Map.get(operation, :transport_ref) do
+      nil ->
+        state
+
+      ref ->
+        Process.demonitor(ref, [:flush])
+        %{state | transport_tasks: Map.delete(state.transport_tasks, ref)}
+    end
+  end
+
+  defp stop_operation_tasks(state, operation) do
+    if pid = Map.get(operation, :transport_pid) do
+      _ = Task.Supervisor.terminate_child(state.task_supervisor, pid)
+    end
+
+    transport_tasks =
+      case Map.get(operation, :transport_ref) do
+        nil -> state.transport_tasks
+        ref -> Map.delete(state.transport_tasks, ref)
+      end
+
+    %{state | transport_tasks: transport_tasks}
   end
 
   defp next_id(state), do: {state.next_id, %{state | next_id: state.next_id + 1}}
@@ -766,8 +1492,26 @@ defmodule MCP.Client do
   defp cancel_timeout(ref), do: Process.cancel_timer(ref)
 
   defp cursor_params(opts) do
-    if cursor = Keyword.get(opts, :cursor), do: %{"cursor" => cursor}, else: %{}
+    params = if cursor = Keyword.get(opts, :cursor), do: %{"cursor" => cursor}, else: %{}
+    put_meta(params, Keyword.get(opts, :meta))
   end
+
+  defp put_meta(params, nil), do: params
+  defp put_meta(params, meta) when is_map(meta), do: Map.put(params, "_meta", meta)
+
+  defp validate_call_options(opts) when is_list(opts) do
+    with :ok <- validate_timeout(Keyword.get(opts, :timeout)) do
+      case Keyword.get(opts, :meta) do
+        nil -> :ok
+        meta when is_map(meta) -> :ok
+        meta -> {:error, {:invalid_meta, meta}}
+      end
+    end
+  end
+
+  defp validate_timeout(nil), do: :ok
+  defp validate_timeout(timeout) when is_integer(timeout) and timeout >= 0, do: :ok
+  defp validate_timeout(timeout), do: {:error, {:invalid_timeout, timeout}}
 
   defp name_args(name, arguments) do
     params = %{"name" => name}
@@ -792,6 +1536,24 @@ defmodule MCP.Client do
 
   defp default_info, do: %{name: "mcp_elixir_sdk", version: "1.0.0"}
 
+  defp validate_start_options(opts) do
+    with :ok <- validate_tool_schema_limit(opts),
+         :ok <- validate_positive_option(opts, :request_timeout, @default_request_timeout),
+         :ok <-
+           validate_positive_option(
+             opts,
+             :subscription_queue_limit,
+             @default_subscription_queue_limit
+           ),
+         :ok <-
+           validate_positive_option(
+             opts,
+             :notification_concurrency,
+             @default_notification_concurrency
+           ),
+         do: validate_client_capabilities(opts)
+  end
+
   defp validate_tool_schema_limit(opts) do
     limit = Keyword.get(opts, :tool_schema_limit, 1_024)
 
@@ -800,11 +1562,114 @@ defmodule MCP.Client do
       else: {:error, {:invalid_tool_schema_limit, limit}}
   end
 
+  defp validate_positive_option(opts, key, default) do
+    value = Keyword.get(opts, key, default)
+
+    if is_integer(value) and value > 0,
+      do: :ok,
+      else: {:error, {invalid_option_error(key), value}}
+  end
+
+  defp invalid_option_error(:request_timeout), do: :invalid_request_timeout
+  defp invalid_option_error(:subscription_queue_limit), do: :invalid_subscription_queue_limit
+  defp invalid_option_error(:notification_concurrency), do: :invalid_notification_concurrency
+
+  defp validate_client_capabilities(opts) do
+    capabilities = Keyword.get(opts, :client_capabilities, %ClientCapabilities{})
+    _encoded = capabilities |> normalize_client_capabilities() |> ClientCapabilities.to_map()
+    :ok
+  rescue
+    exception in [ArgumentError, FunctionClauseError] ->
+      {:error, {:invalid_client_capabilities, Exception.message(exception)}}
+  end
+
+  defp normalize_client_capabilities(%ClientCapabilities{} = capabilities), do: capabilities
+
+  defp normalize_client_capabilities(capabilities) when is_map(capabilities) do
+    ClientCapabilities.from_map(capabilities)
+  end
+
+  defp supported_protocol_version(%{"supported" => versions}) when is_list(versions),
+    do: Enum.find(versions, &(&1 == @protocol_version))
+
+  defp supported_protocol_version(_data), do: nil
+
+  defp decode_discover_result(result, protocol_version) when is_map(result) do
+    discover = Discover.Result.from_map(result)
+
+    cond do
+      not is_list(discover.supported_versions) ->
+        {:error, :supported_versions_must_be_an_array}
+
+      not Enum.all?(discover.supported_versions, &is_binary/1) ->
+        {:error, :supported_versions_must_contain_strings}
+
+      protocol_version not in discover.supported_versions ->
+        {:error, {:protocol_version_not_advertised, protocol_version}}
+
+      true ->
+        {:ok, discover}
+    end
+  rescue
+    error in [ArgumentError, KeyError, FunctionClauseError] ->
+      {:error, Exception.message(error)}
+  end
+
+  defp decode_discover_result(_result, _protocol_version), do: {:error, :result_must_be_an_object}
+
+  defp maybe_put_request_state(params, result) do
+    if Map.has_key?(result, "requestState") do
+      Map.put(params, "requestState", Map.get(result, "requestState"))
+    else
+      Map.delete(params, "requestState")
+    end
+  end
+
   defp do_close(state) do
+    state = fail_all_operations(state, :closed)
+
+    Enum.each(state.subscriptions, fn {_id, subscription} ->
+      Process.demonitor(subscription.monitor_ref, [:flush])
+      SubscriptionWorker.fail(subscription.worker, :closed)
+    end)
+
     if state.transport_pid, do: state.transport_module.close(state.transport_pid)
-    {:stop, :normal, :ok, %{state | status: :closed}}
+    {:stop, :normal, :ok, %{state | status: :closed, subscriptions: %{}}}
   catch
-    _, _ -> {:stop, :normal, :ok, %{state | status: :closed}}
+    _, _ -> {:stop, :normal, :ok, %{state | status: :closed, subscriptions: %{}}}
+  end
+
+  defp fail_all_operations(state, reason) do
+    Enum.each(state.pending_requests, fn {_id, operation} ->
+      cancel_timeout(operation.timeout_ref)
+
+      if pid = Map.get(operation, :transport_pid) do
+        _ = Task.Supervisor.terminate_child(state.task_supervisor, pid)
+      end
+
+      GenServer.reply(operation.from, {:error, reason})
+    end)
+
+    Enum.each(state.callback_tasks, fn {_ref, callback} ->
+      cancel_timeout(callback.timeout_ref)
+      _ = Task.Supervisor.terminate_child(state.task_supervisor, callback.task_pid)
+      GenServer.reply(callback.operation.from, {:error, reason})
+    end)
+
+    Enum.each(state.subscription_open_tasks, fn {_ref, operation} ->
+      cancel_timeout(operation.timeout_ref)
+      _ = Task.Supervisor.terminate_child(state.task_supervisor, operation.task_pid)
+      GenServer.stop(operation.worker, :normal)
+      GenServer.reply(operation.from, {:error, reason})
+    end)
+
+    %{
+      state
+      | pending_requests: %{},
+        transport_tasks: %{},
+        callback_tasks: %{},
+        subscription_open_tasks: %{}
+    }
   end
 
   defp list_all(client, operation, items_key, opts),

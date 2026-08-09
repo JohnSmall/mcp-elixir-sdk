@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-dev.1] - Unreleased
+
+### Added
+
+- Stateless MCP `2026-07-28` client/server core with per-request metadata and
+  `server/discover`.
+- OTP-supervised stdio and Streamable HTTP subscriptions with explicit handles,
+  acknowledgment-first ordering, filters, bounded queues, and cancellation.
+- MRTR input-required client resolution, extension capability negotiation,
+  lossless JSON Schema 2020-12, complete JSON structured-content values, W3C
+  trace metadata, and schema-directed routing headers.
+- Pinned official conformance adapters, scenario ledger, and CI release gates.
+
+### Changed
+
+- `MCP.Server.Handler` callbacks receive `ToolContext` and immutable launch
+  configuration; callback results no longer replace handler state.
+- `MCP.Server.Connection` replaces the removed per-session `MCP.Server` API.
+- The request deadline now covers transport send, schema refresh, and MRTR
+  resolver work. Callback failures are isolated to their request.
+
+### Removed
+
+- The initialize/session handshake, legacy resource subscription methods, and
+  held-open server-to-client sampling/elicitation requests.
+- Protocol negotiation with `2025-11-25` and older revisions.
+- Client result caching. Cache metadata remains visible to consumers.
+
+### Security
+
+- Identity is resolved per authenticated HTTP request or once at stdio launch
+  and is carried only in `ToolContext`; model-controlled arguments and metadata
+  cannot override it.
+- Request metadata, routing headers, extension values, cache policy, queue
+  bounds, and tool routing annotations are validated at their boundaries.
+
 ## [1.1.0] - 2026-07-12
 
 ### Added

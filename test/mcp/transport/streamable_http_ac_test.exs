@@ -62,7 +62,15 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
   end
 
   defp with_meta(params, extra_meta \\ %{}) do
-    meta = Map.merge(%{"io.modelcontextprotocol/protocolVersion" => @version}, extra_meta)
+    meta =
+      Map.merge(
+        %{
+          "io.modelcontextprotocol/protocolVersion" => @version,
+          "io.modelcontextprotocol/clientCapabilities" => %{}
+        },
+        extra_meta
+      )
+
     Map.put(params, "_meta", meta)
   end
 
@@ -265,7 +273,9 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
         "name" => "needs_input_id",
         "arguments" => %{},
         "requestState" => result(first)["requestState"],
-        "inputResponses" => [%{"name" => "x", "identity" => "PM-SPOOF"}]
+        "inputResponses" => %{
+          "identity" => %{"name" => "x", "identity" => "PM-SPOOF"}
+        }
       })
 
     # Retry carries a DIFFERENT authenticated role than the first request:
