@@ -1,11 +1,11 @@
 # MCP Elixir SDK 2.0 Meta-plan and Progress Ledger
 
-**Status:** Final review remediated; commit and hosted verification pending
+**Status:** Implementation complete; final review remediated; hosted CI green
 **Last updated:** 2026-08-09
 **Target release:** `2.0.0`
 **Baseline commit:** `2b34b324b390f7368e5c2bb10918ceabdea75b93`
 (`2.0.0-dev.1`)
-**Current branch baseline:** `6dcbfed` on `codex/mcp-routing-headers`
+**Published implementation head:** `431866b` on `codex/mcp-routing-headers`
 
 This is the single progress tracker for the six-slice 2.0 effort. It records
 work that can be proven from the repository or a named command. Requirements
@@ -29,16 +29,18 @@ them.
 
 | Slice | Status | Accepted evidence | Depends on | Next gate |
 | --- | --- | --- | --- | --- |
-| S1 Routing and parameter headers | Verified | Required client header scenarios: **38/38** checks across standard, custom, and invalid-tool cases | S4a complete | Commit and hosted CI |
-| S2 Subscriptions | Verified | Stdio and real HTTP integrations cover acknowledgment ordering, filters, bounded delivery, cancellation, keepalive, completion, isolation, and no-resumption policy | — | Commit and hosted CI |
-| S3 Extensions negotiation | Verified | Capability round-trip, unknown-field preservation, invalid-key/value rejection, and per-request propagation tests pass | — | Commit and hosted CI |
-| S4 JSON Schema 2020-12 | Verified | Server pending scenario **8/8**; client preservation **9/9**; no network `$ref` dereference **1/1** | — | Commit and hosted CI |
-| S5 Client/server wiring + conformance | Verified | **367** local tests; all **120** scored server checks pass with no warnings; required client matrix **63/63** | S1-S4 | Commit and hosted CI |
-| S6 Release hardening | Verified | Final Lavra review remediated; Credo/Dialyzer/audit/docs/Hex gates are clean; CI dependencies and conformance tooling are integrity-pinned | S1-S5 | Commit, push, and hosted CI |
+| S1 Routing and parameter headers | Verified | Required client header scenarios: **38/38** checks across standard, custom, and invalid-tool cases | S4a complete | Merge/release decision |
+| S2 Subscriptions | Verified | Stdio and real HTTP integrations cover acknowledgment ordering, filters, bounded delivery, cancellation, keepalive, completion, isolation, and no-resumption policy | — | Merge/release decision |
+| S3 Extensions negotiation | Verified | Capability round-trip, unknown-field preservation, invalid-key/value rejection, and per-request propagation tests pass | — | Merge/release decision |
+| S4 JSON Schema 2020-12 | Verified | Server pending scenario **8/8**; client preservation **9/9**; no network `$ref` dereference **1/1** | — | Merge/release decision |
+| S5 Client/server wiring + conformance | Verified | **367** local tests; all **120** scored server checks pass with no warnings; required client matrix **63/63** | S1-S4 | Merge/release decision |
+| S6 Release hardening | Verified | Final Lavra review remediated; Credo/Dialyzer/audit/docs/Hex gates are clean; CI dependencies and conformance tooling are integrity-pinned | S1-S5 | Merge/release decision |
 
 All six implementation slices and the final adversarial remediation are
-verified locally. Nothing is `Release-closed`: branch commit/push, hosted CI,
-merge, tag, and Hex publication remain distinct gates.
+committed, pushed, and verified by hosted CI run
+[`31304324703`](https://github.com/jmagar/mcp-elixir-sdk/actions/runs/31304324703).
+Nothing is `Release-closed`: merge, tag, and Hex publication remain distinct
+gates.
 
 ## S1a retrospective ledger — standard routing headers
 
@@ -465,8 +467,10 @@ and regression-tested or recorded as an explicit, enumerated scope exclusion:
 | Evidence/docs | Every harness scenario has a machine-readable status, count, command, scoring flag, and exclusion reason; stale schema/runtime/install/capability text and package links were corrected |
 
 Post-remediation local evidence: **367 tests, 0 failures**; format and
-warnings-as-errors compilation pass. The static-analysis, package, advisory,
-and official conformance commands below are rerun immediately before commit.
+warnings-as-errors compilation pass. Hosted CI run
+[`31304324703`](https://github.com/jmagar/mcp-elixir-sdk/actions/runs/31304324703)
+repeated the runtime matrix, static-analysis, package, advisory, and official
+conformance gates successfully.
 
 ## Current evidence anchors
 
