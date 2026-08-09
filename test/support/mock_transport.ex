@@ -9,7 +9,7 @@ defmodule MCP.Test.MockTransport do
 
   @behaviour MCP.Transport
 
-  defstruct [:owner, :sent, :send_options, :closed]
+  defstruct [:owner, :sent, :send_options, :closed, :send_error]
 
   @impl MCP.Transport
   def start_link(opts) do
@@ -70,18 +70,24 @@ defmodule MCP.Test.MockTransport do
   @impl GenServer
   def init(opts) do
     owner = Keyword.fetch!(opts, :owner)
-    {:ok, %__MODULE__{owner: owner, sent: [], send_options: [], closed: false}}
+
+    {:ok,
+     %__MODULE__{
+       owner: owner,
+       sent: [],
+       send_options: [],
+       closed: false,
+       send_error: Keyword.get(opts, :send_error)
+     }}
   end
 
   @impl GenServer
   def handle_call({:send_message, message, opts}, _from, state) do
-    new_state = %{
-      state
-      | sent: state.sent ++ [message],
-        send_options: state.send_options ++ [opts]
-    }
-
-    {:reply, :ok, new_state}
+    if state.send_error do
+      {:reply, {:error, state.send_error}, state}
+    else
+      record_message(message, opts, state)
+    end
   end
 
   def handle_call(:close, _from, state) do
@@ -109,5 +115,15 @@ defmodule MCP.Test.MockTransport do
   def handle_cast({:inject, message}, state) do
     send(state.owner, {:mcp_message, message})
     {:noreply, state}
+  end
+
+  defp record_message(message, opts, state) do
+    new_state = %{
+      state
+      | sent: state.sent ++ [message],
+        send_options: state.send_options ++ [opts]
+    }
+
+    {:reply, :ok, new_state}
   end
 end

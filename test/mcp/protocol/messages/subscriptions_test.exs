@@ -54,7 +54,7 @@ defmodule MCP.Protocol.Messages.SubscriptionsTest do
     assert Jason.decode!(Jason.encode!(result)) == map
   end
 
-  test "acknowledgment and result require a string or numeric subscription ID" do
+  test "acknowledgment and result require a string or integer subscription ID" do
     for module <- [AcknowledgedParams, ListenResult] do
       assert_raise ArgumentError, fn ->
         module.from_map(%{
@@ -69,6 +69,18 @@ defmodule MCP.Protocol.Messages.SubscriptionsTest do
           "notifications" => %{},
           "resultType" => "complete",
           "_meta" => %{@subscription_id_key => nil}
+        })
+      end
+    end
+  end
+
+  test "acknowledgment and result reject floating-point subscription IDs" do
+    for module <- [AcknowledgedParams, ListenResult] do
+      assert_raise ArgumentError, fn ->
+        module.from_map(%{
+          "notifications" => %{},
+          "resultType" => "complete",
+          "_meta" => %{@subscription_id_key => 1.5}
         })
       end
     end

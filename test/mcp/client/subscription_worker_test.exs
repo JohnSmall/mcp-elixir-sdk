@@ -20,6 +20,17 @@ defmodule MCP.Client.SubscriptionWorkerTest do
     assert SubscriptionHandle.next(handle, 1_000) == {:ok, %{method: "second"}}
   end
 
+  test "a timed-out read does not consume the next event", %{supervisor: supervisor} do
+    {:ok, worker} = SubscriptionWorker.start(supervisor, "timed", self())
+    handle = SubscriptionHandle.new("timed", worker)
+
+    assert SubscriptionHandle.next(handle, 1) == {:error, :timeout}
+
+    SubscriptionWorker.enqueue(worker, :after_timeout)
+
+    assert SubscriptionHandle.next(handle, 1_000) == {:ok, :after_timeout}
+  end
+
   test "close/1 is idempotent and reports a closed handle", %{supervisor: supervisor} do
     {:ok, worker} = SubscriptionWorker.start(supervisor, 42, self())
     handle = SubscriptionHandle.new(42, worker)

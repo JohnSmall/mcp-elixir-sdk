@@ -22,14 +22,30 @@ defmodule MCP.Protocol.ToolRouting do
   @spec argument_value(map(), descriptor()) ::
           :missing | {:ok, String.t()} | {:error, :invalid_argument_type | :unsafe_integer}
   def argument_value(arguments, descriptor) when is_map(arguments) do
-    case get_in(arguments, descriptor.path) do
+    case fetch_argument(arguments, descriptor.path) do
       nil -> :missing
+      :invalid_path -> {:error, :invalid_argument_type}
       value -> encode_value(value, descriptor.type)
     end
   end
 
+  def argument_value(_arguments, _descriptor), do: {:error, :invalid_argument_type}
+
+  defp fetch_argument(arguments, []), do: arguments
+
+  defp fetch_argument(arguments, [key | rest]) when is_map(arguments) do
+    case Map.fetch(arguments, key) do
+      {:ok, nil} -> nil
+      {:ok, value} -> fetch_argument(value, rest)
+      :error -> nil
+    end
+  end
+
+  defp fetch_argument(_arguments, _path), do: :invalid_path
+
   defp walk(node, location, path) when is_map(node) do
     with {:ok, own} <- annotation_descriptor(node, location, path),
+         true <- properties_allowed?(node),
          {:ok, nested} <- walk_properties(Map.get(node, "properties"), path),
          remainder = Map.drop(node, ["properties", "x-mcp-header"]),
          true <- no_annotations_outside_properties?(remainder) do
@@ -43,15 +59,33 @@ defmodule MCP.Protocol.ToolRouting do
   defp walk(_node, _location, _path), do: {:ok, []}
 
   defp walk_properties(properties, path) when is_map(properties) do
-    Enum.reduce_while(properties, {:ok, []}, fn {property, schema}, {:ok, acc} ->
+    properties
+    |> Enum.reduce_while({:ok, []}, fn {property, schema}, {:ok, acc} ->
       case walk(schema, :property, path ++ [property]) do
-        {:ok, descriptors} -> {:cont, {:ok, acc ++ descriptors}}
+        {:ok, descriptors} -> {:cont, {:ok, [descriptors | acc]}}
         {:error, reason} -> {:halt, {:error, reason}}
       end
     end)
+    |> case do
+      {:ok, descriptor_groups} -> {:ok, descriptor_groups |> Enum.reverse() |> List.flatten()}
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   defp walk_properties(_properties, _path), do: {:ok, []}
+
+  defp properties_allowed?(%{"properties" => properties, "type" => "object"})
+       when is_map(properties),
+       do: true
+
+  defp properties_allowed?(%{"properties" => properties, "type" => types})
+       when is_map(properties) and is_list(types),
+       do: "object" in types and Enum.all?(types, &(&1 in ["object", "null"]))
+
+  defp properties_allowed?(%{"properties" => properties} = node) when is_map(properties),
+    do: not Map.has_key?(node, "type")
+
+  defp properties_allowed?(_node), do: true
 
   defp annotation_descriptor(node, _location, _path)
        when not is_map_key(node, "x-mcp-header"),

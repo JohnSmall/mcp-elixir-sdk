@@ -184,29 +184,11 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   defp handle_post(conn, config) do
     with {:ok, body, conn} <- Plug.Conn.read_body(conn),
-         {:ok, message} <- Jason.decode(body),
-         :ok <- check_routing_headers(conn, message),
-         {:ok, identity} <- resolve_identity(config.handler_opts, conn),
-         :ok <- check_custom_routing_headers(conn, message, config.tool_schemas, identity),
-         {:ok, decoded} <- Protocol.decode_message(message) do
-      dispatch(conn, config, decoded, message, identity)
+         {:ok, message} <- Jason.decode(body) do
+      handle_decoded_post(conn, config, message)
     else
       {:error, %Jason.DecodeError{} = e} ->
         send_json_error(conn, 400, Error.parse_error_code(), "Parse error", inspect(e))
-
-      {:error, {:routing_mismatch, detail}} ->
-        send_json_error(conn, 400, Error.header_mismatch_code(), "Header mismatch", detail)
-
-      {:error, {:factory_failed, reason}} ->
-        Logger.error("MCP Plug: handler_opts factory failed: #{inspect(reason)}")
-
-        send_json_error(
-          conn,
-          500,
-          Error.internal_error_code(),
-          "Internal error",
-          "handler_opts factory error"
-        )
 
       {:error, reason} ->
         send_json_error(
@@ -218,6 +200,73 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
         )
     end
   end
+
+  defp handle_decoded_post(conn, config, message) when is_map(message) do
+    with :ok <- validate_message_shape(message),
+         :ok <- check_routing_headers(conn, message),
+         {:ok, identity} <- resolve_identity(config.handler_opts, conn),
+         :ok <- check_custom_routing_headers(conn, message, config.tool_schemas, identity),
+         {:ok, decoded} <- Protocol.decode_message(message) do
+      dispatch(conn, config, decoded, message, identity)
+    else
+      {:error, {:routing_mismatch, detail}} ->
+        send_json_error(
+          conn,
+          400,
+          Error.header_mismatch_code(),
+          "Header mismatch",
+          detail,
+          Map.get(message, "id")
+        )
+
+      {:error, {:factory_failed, reason}} ->
+        Logger.error("MCP Plug: handler_opts factory failed: #{inspect(reason)}")
+
+        send_json_error(
+          conn,
+          500,
+          Error.internal_error_code(),
+          "Internal error",
+          "handler_opts factory error",
+          Map.get(message, "id")
+        )
+
+      {:error, reason} ->
+        send_json_error(
+          conn,
+          400,
+          Error.invalid_request_code(),
+          "Invalid request",
+          inspect(reason),
+          Map.get(message, "id")
+        )
+    end
+  end
+
+  defp handle_decoded_post(conn, _config, _message) do
+    send_json_error(conn, 400, Error.invalid_request_code(), "Invalid request", "expected object")
+  end
+
+  defp validate_message_shape(%{"method" => method} = message) when is_binary(method) do
+    params = Map.get(message, "params", %{})
+
+    cond do
+      not is_map(params) ->
+        {:error, :params_must_be_an_object}
+
+      Map.has_key?(params, "_meta") and not is_map(Map.get(params, "_meta")) ->
+        {:error, :meta_must_be_an_object}
+
+      method == "tools/call" and Map.has_key?(params, "arguments") and
+          not is_map(Map.get(params, "arguments")) ->
+        {:error, :arguments_must_be_an_object}
+
+      true ->
+        :ok
+    end
+  end
+
+  defp validate_message_shape(_message), do: :ok
 
   # The stateless core issues no server-to-client requests, so a response has
   # nothing to correlate. It is still a valid routing-header-free JSON-RPC
@@ -332,18 +381,24 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     end
   end
 
-  defp decode_header_value("=?base64?" <> encoded_with_suffix) do
-    with true <- String.ends_with?(encoded_with_suffix, "?="),
-         encoded <- binary_part(encoded_with_suffix, 0, byte_size(encoded_with_suffix) - 2),
-         {:ok, decoded} <- Base.decode64(encoded),
-         true <- String.valid?(decoded) do
-      {:ok, decoded}
+  defp decode_header_value("=?base64?" <> encoded_with_suffix = value) do
+    if String.ends_with?(encoded_with_suffix, "?=") do
+      encoded = binary_part(encoded_with_suffix, 0, byte_size(encoded_with_suffix) - 2)
+
+      with {:ok, decoded} <- Base.decode64(encoded),
+           true <- String.valid?(decoded) do
+        {:ok, decoded}
+      else
+        _ -> {:error, {:routing_mismatch, "invalid Base64-sentinel mcp-name header"}}
+      end
     else
-      _ -> {:error, {:routing_mismatch, "invalid Base64-sentinel mcp-name header"}}
+      decode_plain_header_value(value)
     end
   end
 
-  defp decode_header_value(value) do
+  defp decode_header_value(value), do: decode_plain_header_value(value)
+
+  defp decode_plain_header_value(value) do
     if plain_header_value?(value) do
       {:ok, value}
     else
@@ -562,9 +617,10 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     |> Plug.Conn.send_resp(status, body)
   end
 
-  defp send_json_error(conn, http_status, code, message, data) do
+  defp send_json_error(conn, http_status, code, message, data, id \\ nil) do
     error = %{
       "jsonrpc" => "2.0",
+      "id" => id,
       "error" => %{"code" => code, "message" => message, "data" => data}
     }
 

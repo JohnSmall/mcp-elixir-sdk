@@ -54,6 +54,7 @@ defmodule MCP.Client do
   alias MCP.Protocol.Types.Implementation
 
   @default_request_timeout 30_000
+  @max_tool_refresh_pages 32
   @protocol_version "2026-07-28"
 
   defstruct [
@@ -418,7 +419,7 @@ defmodule MCP.Client do
         from,
         Methods.tools_list(),
         %{},
-        {:tool_header_refresh, name, arguments}
+        {:tool_header_refresh, name, arguments, error, new_refresh_state(state)}
       )
     else
       GenServer.reply(from, {:error, error})
@@ -449,28 +450,56 @@ defmodule MCP.Client do
   defp finish_response(
          %Response{result: result},
          from,
-         {:tool_header_refresh, name, arguments},
+         {:tool_header_refresh, name, arguments, original_error, refresh},
          state
        ) do
-    tools = Enum.filter(Map.get(result, "tools", []), &valid_header_annotation_locations?/1)
-    state = cache_tools(state, tools)
-    {descriptors, state} = cached_descriptors(state, name)
+    case tools_from_result(result) do
+      {:ok, tools} ->
+        state = cache_tools(state, tools)
 
-    send_rpc(
-      state,
-      from,
-      Methods.tools_call(),
-      name_args(name, arguments),
-      {:tool_call, name, arguments, true, descriptors},
-      routing_headers: descriptors
-    )
+        case Enum.find(tools, &(Map.get(&1, "name") == name)) do
+          nil ->
+            continue_tool_refresh(
+              result,
+              from,
+              name,
+              arguments,
+              original_error,
+              refresh,
+              state
+            )
+
+          selected_tool ->
+            state = cache_tools(state, [selected_tool])
+            {descriptors, state} = cached_descriptors(state, name)
+
+            send_rpc(
+              state,
+              from,
+              Methods.tools_call(),
+              name_args(name, arguments),
+              {:tool_call, name, arguments, true, descriptors},
+              routing_headers: descriptors
+            )
+        end
+
+      {:error, reason} ->
+        GenServer.reply(from, {:error, {:invalid_tools_result, reason}})
+        {:noreply, state}
+    end
   end
 
   defp finish_response(%Response{result: result}, from, :tools_list, state) do
-    tools = Enum.filter(Map.get(result, "tools", []), &valid_header_annotation_locations?/1)
-    state = cache_tools(state, tools)
-    GenServer.reply(from, {:ok, Map.put(result, "tools", tools)})
-    {:noreply, state}
+    case tools_from_result(result) do
+      {:ok, tools} ->
+        state = cache_tools(state, tools)
+        GenServer.reply(from, {:ok, Map.put(result, "tools", tools)})
+        {:noreply, state}
+
+      {:error, reason} ->
+        GenServer.reply(from, {:error, {:invalid_tools_result, reason}})
+        {:noreply, state}
+    end
   end
 
   defp finish_response(%Response{result: result}, from, _kind, state) do
@@ -478,26 +507,34 @@ defmodule MCP.Client do
     {:noreply, state}
   end
 
-  defp valid_header_annotation_locations?(%{"inputSchema" => schema, "name" => name}) do
-    valid? = match?({:ok, _descriptors}, ToolRouting.descriptors(schema))
+  defp valid_header_annotation_locations?(%{"name" => name} = tool) when is_binary(name) do
+    valid? =
+      case Map.fetch(tool, "inputSchema") do
+        {:ok, %{"type" => "object"} = schema} ->
+          match?({:ok, _descriptors}, ToolRouting.descriptors(schema))
+
+        _missing_or_invalid ->
+          false
+      end
 
     unless valid? do
       Logger.warning(
-        "MCP Client: excluding tool #{inspect(name)}: invalid x-mcp-header annotation"
+        "MCP Client: excluding tool #{inspect(name)}: invalid inputSchema or x-mcp-header annotation"
       )
     end
 
     valid?
   end
 
-  defp valid_header_annotation_locations?(_tool), do: true
+  defp valid_header_annotation_locations?(tool) do
+    Logger.warning("MCP Client: excluding malformed tool catalog entry: #{inspect(tool)}")
+    false
+  end
 
   defp tool_index_entry(%{"name" => name, "inputSchema" => schema}) do
     {:ok, descriptors} = ToolRouting.descriptors(schema)
     {name, descriptors}
   end
-
-  defp tool_index_entry(%{"name" => name}), do: {name, []}
 
   defp cache_tools(state, tools) do
     Enum.reduce(tools, state, fn tool, acc ->
@@ -543,15 +580,72 @@ defmodule MCP.Client do
     end
   end
 
-  defp recognized_custom_header_mismatch?(error, descriptors) do
+  defp recognized_custom_header_mismatch?(error, _descriptors) do
+    detail = error.data |> inspect() |> String.downcase()
+
     error.code == Error.header_mismatch_code() and
-      Enum.any?(descriptors, fn descriptor ->
-        error.data
-        |> inspect()
-        |> String.downcase()
-        |> String.contains?("mcp-param-#{String.downcase(descriptor.header)}")
-      end)
+      String.contains?(detail, "mcp-param-")
   end
+
+  defp tools_from_result(result) when is_map(result) do
+    case Map.fetch(result, "tools") do
+      {:ok, tools} when is_list(tools) ->
+        {:ok, Enum.filter(tools, &valid_header_annotation_locations?/1)}
+
+      {:ok, _invalid} ->
+        {:error, :tools_must_be_a_list}
+
+      :error ->
+        {:error, :missing_tools}
+    end
+  end
+
+  defp tools_from_result(_result), do: {:error, :result_must_be_an_object}
+
+  defp new_refresh_state(state) do
+    %{
+      seen_cursors: MapSet.new(),
+      pages_remaining: @max_tool_refresh_pages,
+      deadline: System.monotonic_time(:millisecond) + state.request_timeout
+    }
+  end
+
+  defp continue_tool_refresh(
+         result,
+         from,
+         name,
+         arguments,
+         original_error,
+         refresh,
+         state
+       ) do
+    cursor = Map.get(result, "nextCursor")
+    remaining_timeout = refresh.deadline - System.monotonic_time(:millisecond)
+
+    if is_binary(cursor) and refresh.pages_remaining > 0 and remaining_timeout > 0 and
+         not MapSet.member?(refresh.seen_cursors, cursor) and caller_alive?(from) do
+      next_refresh = %{
+        refresh
+        | seen_cursors: MapSet.put(refresh.seen_cursors, cursor),
+          pages_remaining: refresh.pages_remaining - 1
+      }
+
+      send_rpc_with_timeout(
+        state,
+        from,
+        Methods.tools_list(),
+        %{"cursor" => cursor},
+        {:tool_header_refresh, name, arguments, original_error, next_refresh},
+        [],
+        remaining_timeout
+      )
+    else
+      GenServer.reply(from, {:error, original_error})
+      {:noreply, state}
+    end
+  end
+
+  defp caller_alive?({pid, _tag}) when is_pid(pid), do: Process.alive?(pid)
 
   defp input_required?(result), do: Map.get(result, "resultType") == MRTR.result_type()
 
@@ -573,20 +667,15 @@ defmodule MCP.Client do
       |> name_args(arguments)
       |> Map.put("requestState", Map.get(result, "requestState"))
       |> Map.put("inputResponses", responses)
-      |> with_meta(state)
 
-    {id, state} = next_id(state)
-    send_request(state, id, Methods.tools_call(), params, routing_headers: descriptors)
-    timeout_ref = schedule_timeout(id, state.request_timeout)
-
-    {:noreply,
-     put_pending(
-       state,
-       id,
-       from,
-       timeout_ref,
-       {:tool_call, name, arguments, refresh_attempted?, descriptors}
-     )}
+    send_rpc(
+      state,
+      from,
+      Methods.tools_call(),
+      params,
+      {:tool_call, name, arguments, refresh_attempted?, descriptors},
+      routing_headers: descriptors
+    )
   end
 
   # --- Notifications ---
@@ -608,10 +697,29 @@ defmodule MCP.Client do
   # --- Sending ---
 
   defp send_rpc(state, from, method, params, kind \\ :call, transport_opts \\ []) do
+    send_rpc_with_timeout(
+      state,
+      from,
+      method,
+      params,
+      kind,
+      transport_opts,
+      state.request_timeout
+    )
+  end
+
+  defp send_rpc_with_timeout(state, from, method, params, kind, transport_opts, timeout) do
     {id, state} = next_id(state)
-    send_request(state, id, method, with_meta(params, state), transport_opts)
-    timeout_ref = schedule_timeout(id, state.request_timeout)
-    {:noreply, put_pending(state, id, from, timeout_ref, kind)}
+
+    case send_request(state, id, method, with_meta(params, state), transport_opts) do
+      :ok ->
+        timeout_ref = schedule_timeout(id, timeout)
+        {:noreply, put_pending(state, id, from, timeout_ref, kind)}
+
+      {:error, reason} ->
+        GenServer.reply(from, {:error, reason})
+        {:noreply, state}
+    end
   end
 
   # Every request carries the per-request _meta the stateless server needs in

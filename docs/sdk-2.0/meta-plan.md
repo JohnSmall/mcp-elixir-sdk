@@ -29,7 +29,7 @@ them.
 | Slice | Status | Accepted evidence | Depends on | Next gate |
 | --- | --- | --- | --- | --- |
 | S1 Routing and parameter headers | Verified | 247 full tests; strict Credo and Dialyzer clean; pinned header conformance 9/9; committed and pushed as `332235c` | S4a complete | Review and merge the feature branch |
-| S2 Subscriptions | Implementing | S2a codecs, S2b client worker, and S2c server publication locally green; 266 full tests; strict Credo and Dialyzer clean; uncommitted | — | Wire `listen_subscriptions` through stdio and HTTP |
+| S2 Subscriptions | Implementing | S2a codecs, S2b client worker, and S2c server publication pushed as `256f22c`; adversarial remediation locally green in a 295-test full suite | — | Wire `listen_subscriptions` through stdio and HTTP |
 | S3 Extensions negotiation | Not started | None | — | Write capability round-trip and invalid-key tests |
 | S4 JSON Schema 2020-12 | Implementing | S4a committed and pushed as `332235c` | — | Write absent/null and all-six-JSON-value structured-content tests |
 | S5 Client/server wiring + conformance | Not started | None | S1-S4 | Write lifecycle tests for pre-send deadlines, callback isolation, immutable handler configuration, and complete scenario ledger |
@@ -226,11 +226,11 @@ assertion was given an explicit load-tolerant timeout.
 | --- | --- | --- |
 | Accepted RED | Protocol files, client worker file, then server worker file | Missing S2 modules/methods; 5/5 client-worker and 5/5 server-worker tests failed on missing implementations |
 | Focused tests | Protocol, client-worker, and server-worker files | **22 passed**, 0 failures; server worker repeated 30 times cleanly |
-| Full tests | `mix test --seed 0` | **266 passed**, 0 failures |
+| Full tests | `mix test --max-cases 1 --seed 0` | **295 passed**, 0 failures after adversarial remediation |
 | Full static analysis | `mix credo --strict` | 110 files, 913 modules/functions, no issues |
 | Type analysis | `mix dialyzer` | 0 errors, 0 skipped, 0 unnecessary skips |
 | Format/patch hygiene | `mix format --check-formatted`; `git diff --check` | Pass |
-| Commit/push | Repository status | Not committed or pushed |
+| Commit/push | Repository status | S2a-S2c checkpoint committed and pushed as `256f22c`; closure remediation follows in the next commit |
 
 ### S3 — Extensions negotiation
 
@@ -337,10 +337,10 @@ The conformance command must always pin a version and `--spec-version
 | ID | Risk/decision | Impact | Owner slice | State |
 | --- | --- | --- | --- | --- |
 | R1 | Conflicting extra HTTP headers may override generated routing values | Header/body mismatch or authorization bypass | S1 | Closed locally: all standard and `mcp-param-*` names are reserved case-insensitively |
-| R1a | Unsafe `Mcp-Name` values are not Base64-sentinel encoded | Invalid HTTP or routing mismatch | S1 | Closed locally in S1b.1; not committed |
-| R1b | `x-mcp-header` argument mirroring and schema refresh/retry are absent | Incomplete SEP-2243 client behavior | S1 | Closed locally in S1b.2; not committed |
-| R1c | Server currently accepts missing required standard routing headers | Non-conforming request reaches dispatch | S1 | Closed locally in S1b.1; not committed |
-| R1d | Invalid `x-mcp-header` annotations are not rejected per tool | Injection/non-conforming catalog | S1b/S4a | Closed locally with shared descriptor validation; not committed |
+| R1a | Unsafe `Mcp-Name` values are not Base64-sentinel encoded | Invalid HTTP or routing mismatch | S1 | Closed, committed, and pushed in `332235c` |
+| R1b | `x-mcp-header` argument mirroring and schema refresh/retry are absent | Incomplete SEP-2243 client behavior | S1 | Closed in `332235c`; cursor/deadline hardening is in the closure remediation |
+| R1c | Server currently accepts missing required standard routing headers | Non-conforming request reaches dispatch | S1 | Closed, committed, and pushed in `332235c` |
+| R1d | Invalid `x-mcp-header` annotations are not rejected per tool | Injection/non-conforming catalog | S1b/S4a | Shared descriptor validation committed in `332235c`; boundary hardening is in the closure remediation |
 | R2 | Long-lived subscription work inside current transport GenServer could block other sends | Deadlock/availability | S2 | Ownership fixed; implementation/test open |
 | R2a | Pending state and timeout begin after synchronous HTTP I/O | Configured timeout does not bound calls | S5 | Contract fixed; implementation/test open |
 | R2b | Function callbacks run inside the client GenServer | Slow/raising host code blocks or crashes client | S5 | Contract fixed; implementation/test open |
@@ -406,6 +406,28 @@ and tests land.
 | Slice graph was circular | S4a explicitly precedes S1b; S5 now depends on S1-S4 |
 | Normative documents contained open alternatives | Presence, worker ownership, handle API, queues, overflow, and cancellation are fixed |
 | Progress evidence was not reproducible | Percentages removed; historical red run labeled non-reproducible; skip names enumerated |
+
+The subsequent eight-role code closure review produced nine unique actionable
+findings after deduplication. All were addressed test-first:
+
+| Finding | Resolution evidence |
+| --- | --- |
+| Timed-out reads consumed later subscription events | Worker-owned deadline tokens; client/server regressions |
+| Malformed envelopes, params, arguments, and tool catalogs crashed processes | Structural Plug validation, typed routing errors, result-container validation |
+| HTTP errors and transport send failures did not reach callers reliably | Correlated non-2xx JSON-RPC/SSE error delivery and immediate send-error replies |
+| Stale schemas could not self-heal through eviction or pagination | Selected-tool reacquisition, cursor cycle/page/deadline bounds, one retry |
+| Registry conflicts and invalid registries reported success asynchronously | Synchronous validation and registration during worker init |
+| Subscription IDs accepted floats | String-or-integer validation in both final codecs |
+| Malformed publication metadata killed subscribers | Pre-fanout validation plus worker-side defense |
+| Routing annotations below arrays were accepted | Object-only property descent |
+| Descriptor collection was quadratic | Linear descriptor-group accumulation; 8,000-property regression |
+| Malformed response error objects reached a partial decoder | Total response-error validation across protocol, client, and Plug tests |
+| Array guard rejected valid untyped/nullable object paths | Explicitly incompatible types rejected; omitted/object-union types accepted |
+
+One proposed default-SSE incompatibility did not reproduce: the SDK Plug emits
+JSON-RPC errors as JSON even when successful responses use SSE. A real
+default-option Plug/client regression was added, and the client was also made
+content-type aware for non-2xx SSE error bodies.
 
 ## Current evidence anchors
 

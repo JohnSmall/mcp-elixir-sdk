@@ -9,14 +9,16 @@ defmodule MCP.Client.SubscriptionHandle do
   @enforce_keys [:id, :worker, :monitor_ref]
   defstruct [:id, :worker, :monitor_ref]
 
+  alias MCP.Client.SubscriptionWorker
+
   @opaque t :: %__MODULE__{
-            id: String.t() | number(),
+            id: String.t() | integer(),
             worker: pid(),
             monitor_ref: reference()
           }
 
   @doc false
-  @spec new(String.t() | number(), pid()) :: t()
+  @spec new(String.t() | integer(), pid()) :: t()
   def new(id, worker) when is_pid(worker) do
     %__MODULE__{id: id, worker: worker, monitor_ref: Process.monitor(worker)}
   end
@@ -40,9 +42,10 @@ defmodule MCP.Client.SubscriptionHandle do
   end
 
   defp call_next(handle, timeout) do
-    GenServer.call(handle.worker, :next, timeout)
-  catch
-    :exit, reason -> {:error, down_or_call_reason(handle, reason)}
+    case SubscriptionWorker.next(handle.worker, timeout) do
+      {:error, reason} -> {:error, down_or_call_reason(handle, reason)}
+      result -> result
+    end
   end
 
   defp next_from_worker(handle, timeout) do

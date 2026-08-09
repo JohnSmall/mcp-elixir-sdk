@@ -46,6 +46,18 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     |> MCPPlug.call(plug_opts)
   end
 
+  defp raw_post(plug_opts, message, headers) do
+    :post
+    |> conn("http://localhost/", Jason.encode!(message))
+    |> put_req_header("content-type", "application/json")
+    |> put_req_header("accept", "application/json")
+    |> put_req_header("origin", "http://localhost")
+    |> then(fn conn ->
+      Enum.reduce(headers, conn, fn {name, value}, acc -> put_req_header(acc, name, value) end)
+    end)
+    |> MCPPlug.call(plug_opts)
+  end
+
   defp result(conn), do: conn.resp_body |> Jason.decode!() |> Map.get("result")
   defp error(conn), do: conn.resp_body |> Jason.decode!() |> Map.get("error")
   defp with_meta(params), do: Map.put(params, "_meta", @meta)
@@ -162,6 +174,56 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert error(conn)["code"] == -32_020
   end
 
+  test "malformed JSON structures return controlled errors instead of crashing" do
+    standard = [
+      {"mcp-method", "tools/call"},
+      {"mcp-protocol-version", @version}
+    ]
+
+    cases = [
+      {[], standard},
+      {%{"jsonrpc" => "2.0", "id" => 1, "method" => "tools/call", "params" => "scalar"},
+       standard},
+      {rpc("tools/list", %{"_meta" => "scalar"}),
+       [{"mcp-method", "tools/list"}, {"mcp-protocol-version", @version}]}
+    ]
+
+    for {message, headers} <- cases do
+      conn = raw_post(opts(), message, headers)
+      assert conn.status == 400
+      assert is_integer(error(conn)["code"])
+    end
+  end
+
+  test "scalar tool arguments return a controlled error" do
+    schema = %{
+      "type" => "object",
+      "properties" => %{
+        "region" => %{"type" => "string", "x-mcp-header" => "Region"}
+      }
+    }
+
+    message = rpc("tools/call", with_meta(%{"name" => "whoami", "arguments" => "scalar"}))
+
+    conn =
+      raw_post(opts(tool_schemas: %{"whoami" => schema}), message, [
+        {"mcp-method", "tools/call"},
+        {"mcp-name", "whoami"},
+        {"mcp-protocol-version", @version}
+      ])
+
+    assert conn.status == 400
+    assert is_integer(error(conn)["code"])
+  end
+
+  test "malformed JSON-RPC error responses are rejected without crashing" do
+    message = %{"jsonrpc" => "2.0", "id" => 1, "error" => "scalar"}
+    conn = raw_post(opts(), message, [])
+
+    assert conn.status == 400
+    assert error(conn)["code"] == -32_600
+  end
+
   test "a well-formed but unsupported protocol version reaches dispatch" do
     meta = %{"io.modelcontextprotocol/protocolVersion" => "2099-01-01"}
     message = rpc("tools/list", %{"_meta" => meta})
@@ -180,6 +242,16 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
     assert conn.status == 200
     assert hd(result(conn)["contents"])["uri"] == " padded "
+  end
+
+  test "a plain value with only the Base64 sentinel prefix remains plain" do
+    name = "=?base64?literal"
+    message = rpc("resources/read", with_meta(%{"uri" => name}))
+
+    conn = post(opts(), message, [{"mcp-name", name}])
+
+    assert conn.status == 200
+    assert hd(result(conn)["contents"])["uri"] == name
   end
 
   test "a malformed Base64-sentinel Mcp-Name is rejected even when its text matches" do

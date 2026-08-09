@@ -15,7 +15,7 @@ Review the existing Elixir MCP SDK, fork it, establish substantive 2.0 specifica
 
 ## Session Overview
 
-The session forked and published the SDK, implemented the 2026-07-28 standard and custom routing-header slice, added the substantive 2.0 documentation package and three durable ADRs, and built the first three subscription sub-slices: codecs, client ownership/queueing, and server publication/queueing. A Lavra review then identified ten concrete correctness and resilience issues that remain to be fixed after this checkpoint.
+The session forked and published the SDK, implemented the 2026-07-28 standard and custom routing-header slice, added the substantive 2.0 documentation package and three durable ADRs, and built the first three subscription sub-slices: codecs, client ownership/queueing, and server publication/queueing. The checkpoint was pushed, all ten prior correctness findings were fixed test-first, and a fresh eight-role Lavra closure review produced nine additional unique issues that were also resolved.
 
 ## Sequence of Events
 
@@ -24,15 +24,18 @@ The session forked and published the SDK, implemented the 2026-07-28 standard an
 3. Implemented routing headers, schema-driven `Mcp-Param-*` handling, bounded schema descriptors, identity-aware server validation, and one-shot refresh behavior.
 4. Added normative specifications, contracts, types, runtime models, the meta-plan, and ADRs for immutable handler configuration, consumer-owned subscription supervision, and no result cache.
 5. Implemented subscription codecs and supervised client/server workers with bounded queues and publication filtering.
-6. Ran an eight-role Lavra review. Ten unique findings survived deduplication; remediation follows this checkpoint.
+6. Ran an eight-role Lavra review and reproduced its ten unique findings with failing tests.
+7. Pushed the S2a-S2c checkpoint as `256f22c`, then fixed all ten findings.
+8. Ran a fresh eight-role closure review, reconciled nine unique actionable findings, and addressed every one test-first.
+9. Verified the complete tree with 295 serialized tests, formatting, strict Credo, Dialyzer, and patch hygiene.
 
 ## Key Findings
 
 - The baseline is `2b34b32`; routing/docs were committed as `332235c` and pushed to `origin/codex/mcp-routing-headers`.
-- The current S2a-S2c work is locally green at 266 tests with strict Credo, Dialyzer, formatting, and diff checks previously clean.
+- The S2a-S2c checkpoint is pushed as `256f22c`; its closure remediation is green at 295 tests with strict Credo, Dialyzer, formatting, and diff checks clean.
 - Review reproduced subscription event loss after a timed-out `next/2` in both worker implementations.
 - Review found remotely triggerable crashes from malformed nested routing arguments and malformed `tools/list` entries.
-- Review found incomplete HTTP mismatch propagation, cache self-healing, sentinel decoding, registry validation, and request-ID validation.
+- Closure review additionally drove structural wire validation, bounded schema-refresh pagination, strict catalog schemas, publication validation, linear routing descriptor compilation, and alignment of the public protocol version.
 
 ## Technical Decisions
 
@@ -113,7 +116,7 @@ No bead activity was observed. `bd where` reports that this repository has no ac
 
 | Command | Result |
 | --- | --- |
-| `mise x erlang@27.2.3 elixir@1.18.4-otp-27 -- mix test --seed 0` | 266 tests, 0 failures |
+| `mise x erlang@27.2.3 elixir@1.18.4-otp-27 -- mix test --max-cases 1 --seed 0` | 295 tests, 0 failures |
 | `mise x erlang@27.2.3 elixir@1.18.4-otp-27 -- mix credo --strict` | No issues |
 | `mise x erlang@27.2.3 elixir@1.18.4-otp-27 -- mix dialyzer` | 0 errors |
 | `mix format --check-formatted` | Passed under pinned runtime |
@@ -139,7 +142,7 @@ No bead activity was observed. `bd where` reports that this repository has no ac
 
 | Command | Expected | Actual | Status |
 | --- | --- | --- | --- |
-| Full ExUnit suite | All tests pass | 266 tests, 0 failures | Pass |
+| Full ExUnit suite | All tests pass | 295 tests, 0 failures | Pass |
 | Strict Credo | No findings | No issues | Pass |
 | Dialyzer | No errors | 0 errors | Pass |
 | Formatter | No changes required | Passed | Pass |
@@ -147,7 +150,7 @@ No bead activity was observed. `bd where` reports that this repository has no ac
 
 ## Risks and Rollback
 
-The branch remains development-only and is not merged into `main`. Rollback is non-destructive: revert the feature commits or continue from baseline tag `2.0.0-dev.1` (`2b34b32`). The known Lavra findings must be resolved before merge or release.
+The branch remains development-only and is not merged into `main`. Rollback is non-destructive: revert the feature commits or continue from baseline tag `2.0.0-dev.1` (`2b34b32`). The two Lavra waves are closed; S2 transport wiring and the later release slices remain incomplete.
 
 ## Decisions Not Taken
 
@@ -169,8 +172,6 @@ The branch remains development-only and is not merged into `main`. Rollback is n
 
 ## Next Steps
 
-1. Push this S2a-S2c checkpoint.
-2. Add failing tests for all ten findings from the completed Lavra review and implement every fix.
-3. Re-run full tests, formatter, Credo, and Dialyzer.
-4. Run a fresh Lavra closure review and address any additional findings.
-5. Commit and push the remediation, then continue S2 transport wiring.
+1. Commit and push the completed adversarial remediation.
+2. Continue S2 transport wiring for `listen_subscriptions` over stdio and HTTP.
+3. Add official client/server subscription scenarios before marking S2 verified.

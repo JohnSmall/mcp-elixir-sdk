@@ -87,6 +87,19 @@ defmodule MCP.Server.SubscriptionWorkerTest do
     assert notification["params"]["uri"] == "file:///guide.md"
   end
 
+  test "a timed-out read does not consume the next notification", context do
+    filter = %SubscriptionFilter{tools_list_changed: true}
+    {:ok, worker} = start_worker(context, "timed", filter, filter)
+
+    assert {:ok, _acknowledgment} = SubscriptionWorker.next(worker, 1_000)
+    assert SubscriptionWorker.next(worker, 1) == {:error, :timeout}
+
+    SubscriptionWorker.publish(worker, Methods.tools_list_changed(), %{})
+
+    assert {:ok, notification} = SubscriptionWorker.next(worker, 1_000)
+    assert notification["method"] == Methods.tools_list_changed()
+  end
+
   test "rejects an honored filter that is not a subset of the request", context do
     requested = %SubscriptionFilter{tools_list_changed: true}
     honored = %SubscriptionFilter{prompts_list_changed: true}
@@ -163,6 +176,87 @@ defmodule MCP.Server.SubscriptionWorkerTest do
 
     assert_receive {:DOWN, ^ref, :process, ^worker, :normal}, 1_000
     assert Registry.lookup(context.registry, {:mcp_subscriptions, :endpoint}) == []
+  end
+
+  test "invalid registries fail before start reports success", context do
+    filter = %SubscriptionFilter{tools_list_changed: true}
+
+    assert {:error, :invalid_registry} =
+             SubscriptionWorker.start(
+               context.supervisor,
+               :not_a_registry,
+               :endpoint,
+               "invalid-registry",
+               self(),
+               filter,
+               filter
+             )
+
+    assert SubscriptionPublisher.publish(
+             :not_a_registry,
+             :endpoint,
+             Methods.tools_list_changed(),
+             %{}
+           ) == {:error, :invalid_registry}
+  end
+
+  test "invalid notification metadata is rejected before fanout", context do
+    filter = %SubscriptionFilter{tools_list_changed: true}
+    {:ok, worker} = start_worker(context, "still-alive", filter, filter)
+    assert {:ok, _acknowledgment} = SubscriptionWorker.next(worker, 1_000)
+
+    assert {:error, :invalid_notification_params} =
+             SubscriptionPublisher.publish(
+               context.registry,
+               :endpoint,
+               Methods.tools_list_changed(),
+               %{"_meta" => nil}
+             )
+
+    assert Process.alive?(worker)
+
+    assert :ok =
+             SubscriptionPublisher.publish(
+               context.registry,
+               :endpoint,
+               Methods.tools_list_changed(),
+               %{}
+             )
+
+    assert {:ok, _notification} = SubscriptionWorker.next(worker, 1_000)
+  end
+
+  @tag capture_log: true
+  test "registry conflicts are returned by start instead of crashing after success", context do
+    unique_registry =
+      Module.concat(__MODULE__, "UniqueRegistry#{System.unique_integer([:positive])}")
+
+    start_supervised!({Registry, keys: :unique, name: unique_registry})
+    filter = %SubscriptionFilter{tools_list_changed: true}
+
+    assert {:ok, first} =
+             SubscriptionWorker.start(
+               context.supervisor,
+               unique_registry,
+               :same_endpoint,
+               "first",
+               self(),
+               filter,
+               filter
+             )
+
+    _ = :sys.get_state(first)
+
+    assert {:error, {:registry_conflict, ^first}} =
+             SubscriptionWorker.start(
+               context.supervisor,
+               unique_registry,
+               :same_endpoint,
+               "second",
+               self(),
+               filter,
+               filter
+             )
   end
 
   defp start_registry do

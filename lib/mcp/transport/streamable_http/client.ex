@@ -194,10 +194,8 @@ defmodule MCP.Transport.StreamableHTTP.Client do
         # Accepted (notification/response acknowledged)
         {:ok, state}
 
-      {:ok, %Req.Response{status: status, body: resp_body}} ->
-        Logger.warning("MCP StreamableHTTP Client: HTTP #{status}: #{inspect(resp_body)}")
-
-        {:error, {:http_error, status, resp_body}}
+      {:ok, %Req.Response{status: status, headers: resp_headers, body: resp_body}} ->
+        handle_non_success_response(state, status, resp_headers, resp_body)
 
       {:error, reason} ->
         Logger.warning("MCP StreamableHTTP Client: POST failed: #{inspect(reason)}")
@@ -205,6 +203,61 @@ defmodule MCP.Transport.StreamableHTTP.Client do
         {:error, reason}
     end
   end
+
+  defp handle_non_success_response(state, status, headers, body) do
+    Logger.warning("MCP StreamableHTTP Client: HTTP #{status}: #{inspect(body)}")
+
+    if String.contains?(get_content_type(headers), "text/event-stream") do
+      deliver_sse_error_response(state, status, body)
+    else
+      deliver_json_error_response(state, status, body)
+    end
+  end
+
+  defp json_rpc_error_response?(body) when is_map(body) do
+    Map.get(body, "jsonrpc") == "2.0" and Map.has_key?(body, "id") and
+      Map.has_key?(body, "error") and is_map(Map.get(body, "error"))
+  end
+
+  defp json_rpc_error_response?(body) when is_binary(body) do
+    case Jason.decode(body) do
+      {:ok, decoded} -> json_rpc_error_response?(decoded)
+      {:error, _reason} -> false
+    end
+  end
+
+  defp json_rpc_error_response?(_body), do: false
+
+  defp deliver_json_error_response(state, status, body) do
+    if json_rpc_error_response?(body) do
+      deliver_json_response(state, body)
+    else
+      {:error, {:http_error, status, body}}
+    end
+  end
+
+  defp deliver_sse_error_response(state, status, body) when is_binary(body) do
+    {events, _parser} = SSE.feed(SSE.new_parser(), body)
+
+    error =
+      Enum.find_value(events, fn event ->
+        with data when is_binary(data) <- Map.get(event, :data),
+             {:ok, decoded} <- Jason.decode(data),
+             true <- json_rpc_error_response?(decoded) do
+          decoded
+        else
+          _invalid -> nil
+        end
+      end)
+
+    case error do
+      nil -> {:error, {:http_error, status, body}}
+      error -> deliver_json_response(state, error)
+    end
+  end
+
+  defp deliver_sse_error_response(_state, status, body),
+    do: {:error, {:http_error, status, body}}
 
   defp build_headers(state, message, opts) do
     with {:ok, custom_headers} <-

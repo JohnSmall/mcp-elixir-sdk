@@ -28,7 +28,7 @@ defmodule MCP.Server.SubscriptionWorker do
     registered?: false
   ]
 
-  @type request_id :: String.t() | number()
+  @type request_id :: String.t() | integer()
 
   @spec start(
           GenServer.server(),
@@ -58,16 +58,20 @@ defmodule MCP.Server.SubscriptionWorker do
     end
   end
 
-  @spec publish(pid(), String.t(), map() | nil) :: :ok
+  @spec publish(pid(), String.t(), map() | nil) ::
+          :ok | {:error, :invalid_notification_params}
   def publish(worker, method, params) do
-    GenServer.cast(worker, {:publish, method, params})
+    if valid_notification_params?(params) do
+      GenServer.cast(worker, {:publish, method, params})
+    else
+      {:error, :invalid_notification_params}
+    end
   end
 
   @spec next(pid(), timeout()) :: {:ok, map()} | {:error, term()}
   def next(worker, timeout \\ 5_000) do
-    GenServer.call(worker, :next, timeout)
+    GenServer.call(worker, {:next, timeout}, :infinity)
   catch
-    :exit, {:timeout, _call} -> {:error, :timeout}
     :exit, {:noproc, _call} -> {:error, :closed}
     :exit, reason -> {:error, reason}
   end
@@ -103,32 +107,27 @@ defmodule MCP.Server.SubscriptionWorker do
       queue_limit: queue_limit
     }
 
-    {:ok, state, {:continue, :register}}
+    case Registry.register(state.registry, state.registry_key, %{honored: state.honored}) do
+      {:ok, _value} -> {:ok, %{state | registered?: true}}
+      {:error, {:already_registered, pid}} -> {:stop, {:registry_conflict, pid}}
+    end
   end
 
   @impl true
-  def handle_continue(:register, %__MODULE__{} = state) do
-    {:ok, _value} =
-      Registry.register(state.registry, state.registry_key, %{honored: state.honored})
-
-    {:noreply, %{state | registered?: true}}
-  end
-
-  @impl true
-  def handle_call(:next, _from, %__MODULE__{acknowledgment: acknowledgment} = state)
+  def handle_call({:next, _timeout}, _from, %__MODULE__{acknowledgment: acknowledgment} = state)
       when not is_nil(acknowledgment) do
     {:reply, {:ok, acknowledgment}, %{state | acknowledgment: nil}}
   end
 
-  def handle_call(:next, from, %__MODULE__{queue_size: 0, waiter: nil} = state) do
-    {:noreply, %{state | waiter: from}}
+  def handle_call({:next, timeout}, from, %__MODULE__{queue_size: 0, waiter: nil} = state) do
+    {:noreply, %{state | waiter: new_waiter(from, timeout)}}
   end
 
-  def handle_call(:next, _from, %__MODULE__{queue_size: 0} = state) do
+  def handle_call({:next, _timeout}, _from, %__MODULE__{queue_size: 0} = state) do
     {:reply, {:error, :concurrent_next}, state}
   end
 
-  def handle_call(:next, _from, %__MODULE__{} = state) do
+  def handle_call({:next, _timeout}, _from, %__MODULE__{} = state) do
     {{:value, notification}, queue} = :queue.out(state.queue)
     {:reply, {:ok, notification}, %{state | queue: queue, queue_size: state.queue_size - 1}}
   end
@@ -136,7 +135,7 @@ defmodule MCP.Server.SubscriptionWorker do
   @impl true
   def handle_cast({:publish, method, params}, %__MODULE__{waiter: waiter} = state)
       when not is_nil(waiter) do
-    GenServer.reply(waiter, {:ok, notification(state.id, method, params)})
+    complete_waiter(waiter, {:ok, notification(state.id, method, params)})
     {:noreply, %{state | waiter: nil}}
   end
 
@@ -159,9 +158,16 @@ defmodule MCP.Server.SubscriptionWorker do
   @impl true
   def handle_info({:DOWN, ref, :process, owner, _reason}, %__MODULE__{} = state)
       when ref == state.owner_ref and owner == state.owner do
-    reply_waiter(state.waiter, {:error, :closed})
+    complete_waiter(state.waiter, {:error, :closed})
     {:stop, :normal, %{state | waiter: nil}}
   end
+
+  def handle_info({:next_timeout, token}, %__MODULE__{waiter: {_from, token, _timer}} = state) do
+    complete_waiter(state.waiter, {:error, :timeout})
+    {:noreply, %{state | waiter: nil}}
+  end
+
+  def handle_info({:next_timeout, _token}, state), do: {:noreply, state}
 
   @impl true
   def terminate(_reason, %__MODULE__{registered?: true} = state) do
@@ -203,6 +209,28 @@ defmodule MCP.Server.SubscriptionWorker do
   defp boolean_subset?(true, true), do: true
   defp boolean_subset?(true, false), do: false
 
-  defp reply_waiter(nil, _reply), do: :ok
-  defp reply_waiter(waiter, reply), do: GenServer.reply(waiter, reply)
+  defp valid_notification_params?(nil), do: true
+
+  defp valid_notification_params?(params) when is_map(params) do
+    case Map.fetch(params, "_meta") do
+      {:ok, meta} -> is_map(meta)
+      :error -> true
+    end
+  end
+
+  defp valid_notification_params?(_params), do: false
+
+  defp new_waiter(from, :infinity), do: {from, make_ref(), nil}
+
+  defp new_waiter(from, timeout) when is_integer(timeout) and timeout >= 0 do
+    token = make_ref()
+    {from, token, Process.send_after(self(), {:next_timeout, token}, timeout)}
+  end
+
+  defp complete_waiter(nil, _reply), do: :ok
+
+  defp complete_waiter({from, _token, timer}, reply) do
+    if timer, do: Process.cancel_timer(timer)
+    GenServer.reply(from, reply)
+  end
 end

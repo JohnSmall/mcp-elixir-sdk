@@ -138,7 +138,8 @@ standard-header validation, HTTP 400 propagation for unsupported versions, and
 routing-header-free response acknowledgment. Exact red/green and verification
 evidence is kept in [meta-plan.md](meta-plan.md).
 
-S1b.2 is verified locally and awaits commit/review gates. It provides shared
+S1b.2 was committed and pushed as `332235c`; its post-commit adversarial
+remediation is verified locally. It provides shared
 `x-mcp-header` validation, invalid-tool filtering,
 schema-driven `Mcp-Param-*` headers, the bounded client index, explicit
 per-call schemas, server enforcement, and one-shot refresh/retry behavior. Its
@@ -147,7 +148,7 @@ delivery was split at the tool-schema boundary:
 1. **S1b.1, complete locally:** safe standard routing headers and collision
    protection.
 2. **S4a:** lossless `Tool.inputSchema` representation and round trips.
-3. **S1b.2, implemented locally after S4a:** `x-mcp-header` validation,
+3. **S1b.2, committed after S4a:** `x-mcp-header` validation,
    invalid-tool filtering, bounded schema indexing, `Mcp-Param-*` emission,
    server enforcement, and one-shot refresh/retry.
 

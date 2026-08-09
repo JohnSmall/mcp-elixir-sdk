@@ -1,6 +1,7 @@
 defmodule MCP.Transport.StreamableHTTPClientTest do
   use ExUnit.Case, async: true
 
+  alias MCP.Test.HTTPResponsePlug
   alias MCP.Test.RequestCapturePlug
   alias MCP.Transport.StreamableHTTP.Client
 
@@ -113,6 +114,29 @@ defmodule MCP.Transport.StreamableHTTPClientTest do
     assert_receive {:captured_request, headers, ^message}
     assert header(headers, "mcp-method") == nil
     assert header(headers, "mcp-name") == nil
+  end
+
+  test "rejects a result-bearing JSON-RPC body on a non-success HTTP status" do
+    body = %{"jsonrpc" => "2.0", "id" => 99, "result" => %{"ok" => true}}
+
+    bandit =
+      start_supervised!(
+        {Bandit, plug: {HTTPResponsePlug, status: 500, body: body}, ip: {127, 0, 0, 1}, port: 0}
+      )
+
+    {:ok, {_address, port}} = ThousandIsland.listener_info(bandit)
+
+    child_spec =
+      Supervisor.child_spec(
+        {Client, owner: self(), url: "http://127.0.0.1:#{port}/mcp"},
+        id: :non_success_result_client
+      )
+
+    client = start_supervised!(child_spec)
+    message = %{"jsonrpc" => "2.0", "id" => 99, "method" => "tools/list", "params" => %{}}
+
+    assert {:error, {:http_error, 500, ^body}} = Client.send_message(client, message)
+    refute_receive {:mcp_message, ^body}
   end
 
   test "emits a selected validated custom parameter header", %{client: client} do

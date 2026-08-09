@@ -15,7 +15,7 @@ defmodule MCP.Client.SubscriptionWorker do
     queue_limit: @default_queue_limit
   ]
 
-  @type request_id :: String.t() | number()
+  @type request_id :: String.t() | integer()
 
   @spec start(GenServer.server(), request_id(), pid(), keyword()) ::
           DynamicSupervisor.on_start_child() | {:error, {:invalid_queue_limit, term()}}
@@ -32,6 +32,14 @@ defmodule MCP.Client.SubscriptionWorker do
   @spec enqueue(pid(), term()) :: :ok
   def enqueue(worker, event) do
     GenServer.cast(worker, {:enqueue, event})
+  end
+
+  @spec next(pid(), timeout()) :: {:ok, term()} | {:error, term()}
+  def next(worker, timeout \\ 5_000) do
+    GenServer.call(worker, {:next, timeout}, :infinity)
+  catch
+    :exit, {:noproc, _call} -> {:error, :closed}
+    :exit, reason -> {:error, reason}
   end
 
   @spec start_link({request_id(), pid(), pos_integer()}) :: GenServer.on_start()
@@ -61,28 +69,28 @@ defmodule MCP.Client.SubscriptionWorker do
   end
 
   @impl true
-  def handle_call(:next, from, %__MODULE__{queue_size: 0, waiter: nil} = state) do
-    {:noreply, %{state | waiter: from}}
+  def handle_call({:next, timeout}, from, %__MODULE__{queue_size: 0, waiter: nil} = state) do
+    {:noreply, %{state | waiter: new_waiter(from, timeout)}}
   end
 
-  def handle_call(:next, _from, %__MODULE__{queue_size: 0} = state) do
+  def handle_call({:next, _timeout}, _from, %__MODULE__{queue_size: 0} = state) do
     {:reply, {:error, :concurrent_next}, state}
   end
 
-  def handle_call(:next, _from, %__MODULE__{} = state) do
+  def handle_call({:next, _timeout}, _from, %__MODULE__{} = state) do
     {{:value, event}, queue} = :queue.out(state.queue)
     {:reply, {:ok, event}, %{state | queue: queue, queue_size: state.queue_size - 1}}
   end
 
   def handle_call(:close, _from, %__MODULE__{} = state) do
-    reply_waiter(state.waiter, {:error, :closed})
+    complete_waiter(state.waiter, {:error, :closed})
     {:stop, :normal, :ok, %{state | waiter: nil}}
   end
 
   @impl true
   def handle_cast({:enqueue, event}, %__MODULE__{waiter: waiter} = state)
       when not is_nil(waiter) do
-    GenServer.reply(waiter, {:ok, event})
+    complete_waiter(waiter, {:ok, event})
     {:noreply, %{state | waiter: nil}}
   end
 
@@ -98,10 +106,28 @@ defmodule MCP.Client.SubscriptionWorker do
   @impl true
   def handle_info({:DOWN, ref, :process, owner, _reason}, %__MODULE__{} = state)
       when ref == state.owner_ref and owner == state.owner do
-    reply_waiter(state.waiter, {:error, :closed})
+    complete_waiter(state.waiter, {:error, :closed})
     {:stop, :normal, %{state | waiter: nil}}
   end
 
-  defp reply_waiter(nil, _reply), do: :ok
-  defp reply_waiter(waiter, reply), do: GenServer.reply(waiter, reply)
+  def handle_info({:next_timeout, token}, %__MODULE__{waiter: {_from, token, _timer}} = state) do
+    complete_waiter(state.waiter, {:error, :timeout})
+    {:noreply, %{state | waiter: nil}}
+  end
+
+  def handle_info({:next_timeout, _token}, state), do: {:noreply, state}
+
+  defp new_waiter(from, :infinity), do: {from, make_ref(), nil}
+
+  defp new_waiter(from, timeout) when is_integer(timeout) and timeout >= 0 do
+    token = make_ref()
+    {from, token, Process.send_after(self(), {:next_timeout, token}, timeout)}
+  end
+
+  defp complete_waiter(nil, _reply), do: :ok
+
+  defp complete_waiter({from, _token, timer}, reply) do
+    if timer, do: Process.cancel_timer(timer)
+    GenServer.reply(from, reply)
+  end
 end

@@ -30,13 +30,13 @@ defmodule MCP.Protocol.Messages.Subscriptions.ListenResult do
 
   defp validate_meta!(meta) when is_map(meta) do
     case Map.get(meta, @subscription_id_key) do
-      id when is_binary(id) or is_number(id) -> meta
-      _ -> raise ArgumentError, "_meta must contain a string or numeric subscription ID"
+      id when is_binary(id) or is_integer(id) -> meta
+      _ -> raise ArgumentError, "_meta must contain a string or integer subscription ID"
     end
   end
 
   defp validate_meta!(_meta) do
-    raise ArgumentError, "_meta must contain a string or numeric subscription ID"
+    raise ArgumentError, "_meta must contain a string or integer subscription ID"
   end
 
   defp validate_result_type!(result_type) when is_binary(result_type), do: result_type

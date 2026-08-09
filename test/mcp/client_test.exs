@@ -179,7 +179,9 @@ defmodule MCP.ClientTest do
       MockTransport.inject(transport, %{
         "jsonrpc" => "2.0",
         "id" => req["id"],
-        "result" => %{"tools" => [%{"name" => "echo"}]}
+        "result" => %{
+          "tools" => [%{"name" => "echo", "inputSchema" => %{"type" => "object"}}]
+        }
       })
 
       {:ok, result} = Task.await(task)
@@ -302,6 +304,85 @@ defmodule MCP.ClientTest do
       })
 
       assert {:ok, %{"tools" => []}} = Task.await(task)
+    end
+
+    test "list_tools excludes malformed catalog entries without terminating the client" do
+      {client, transport} = start_client()
+      do_connect(client, transport)
+
+      task = Task.async(fn -> Client.list_tools(client) end)
+      req = last_after_connect(transport, 1)
+      valid = %{"name" => "echo", "inputSchema" => %{"type" => "object"}}
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => req["id"],
+        "result" => %{"tools" => [nil, %{"description" => "missing name"}, valid]}
+      })
+
+      assert {:ok, %{"tools" => [^valid]}} = Task.await(task)
+      assert Client.status(client) == :ready
+    end
+
+    test "list_tools rejects malformed result containers without terminating the client" do
+      for invalid_result <- [%{"tools" => nil}, %{"tools" => %{}}, []] do
+        {client, transport} = start_client()
+        do_connect(client, transport)
+        task = Task.async(fn -> Client.list_tools(client) end)
+        req = last_after_connect(transport, 1)
+
+        MockTransport.inject(transport, %{
+          "jsonrpc" => "2.0",
+          "id" => req["id"],
+          "result" => invalid_result
+        })
+
+        assert {:error, {:invalid_tools_result, _reason}} = Task.await(task)
+        assert Client.status(client) == :ready
+      end
+    end
+
+    test "malformed JSON-RPC errors do not terminate the client" do
+      # Keep the timeout short enough to exercise the malformed-response path,
+      # but long enough that connection setup cannot consume it under a loaded
+      # test scheduler.
+      {client, transport} = start_client(request_timeout: 250)
+      do_connect(client, transport)
+      task = Task.async(fn -> Client.list_tools(client) end)
+      req = last_after_connect(transport, 1)
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => req["id"],
+        "error" => "scalar"
+      })
+
+      assert {:error, :timeout} = Task.await(task, 1_000)
+      assert Client.status(client) == :ready
+    end
+
+    test "list_tools requires an object-root inputSchema" do
+      {client, transport} = start_client()
+      do_connect(client, transport)
+      task = Task.async(fn -> Client.list_tools(client) end)
+      req = last_after_connect(transport, 1)
+      valid = %{"name" => "valid", "inputSchema" => %{"type" => "object"}}
+
+      invalid = [
+        %{"name" => "missing"},
+        %{"name" => "boolean", "inputSchema" => true},
+        %{"name" => "untyped", "inputSchema" => %{}},
+        %{"name" => "scalar", "inputSchema" => %{"type" => "string"}}
+      ]
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => req["id"],
+        "result" => %{"tools" => invalid ++ [valid]}
+      })
+
+      assert {:ok, %{"tools" => [^valid]}} = Task.await(task)
+      assert Client.status(client) == :ready
     end
 
     test "call_tool sends name and arguments" do
@@ -527,6 +608,193 @@ defmodule MCP.ClientTest do
       assert length(MockTransport.sent_messages(transport)) == 5
     end
 
+    test "an evicted annotated tool refreshes and retries with reacquired descriptors" do
+      {client, transport} = start_client(tool_schema_limit: 1)
+      do_connect(client, transport)
+
+      tool = fn name, header ->
+        %{
+          "name" => name,
+          "inputSchema" => %{
+            "type" => "object",
+            "properties" => %{
+              "value" => %{"type" => "string", "x-mcp-header" => header}
+            }
+          }
+        }
+      end
+
+      first = tool.("first", "First")
+      second = tool.("second", "Second")
+      list_task = Task.async(fn -> Client.list_tools(client) end)
+      list_req = last_after_connect(transport, 1)
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => list_req["id"],
+        "result" => %{"tools" => [first, second]}
+      })
+
+      assert {:ok, _result} = Task.await(list_task)
+
+      call_task = Task.async(fn -> Client.call_tool(client, "first", %{"value" => "a"}) end)
+      first_call = last_after_connect(transport, 2)
+      assert MockTransport.last_send_options(transport) == [routing_headers: []]
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => first_call["id"],
+        "error" => %{
+          "code" => -32_020,
+          "message" => "Header mismatch",
+          "data" => "missing mcp-param-first header"
+        }
+      })
+
+      refresh = last_after_connect(transport, 3)
+      assert refresh["method"] == "tools/list"
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => refresh["id"],
+        "result" => %{"tools" => [first, second]}
+      })
+
+      retry = last_after_connect(transport, 4)
+
+      assert MockTransport.last_send_options(transport) == [
+               routing_headers: [%{header: "First", path: ["value"], type: "string"}]
+             ]
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => retry["id"],
+        "result" => %{"content" => []}
+      })
+
+      assert {:ok, %{"content" => []}} = Task.await(call_task)
+    end
+
+    test "schema refresh paginates until it reacquires the selected tool" do
+      {client, transport} = start_client()
+      do_connect(client, transport)
+
+      tool = fn header ->
+        %{
+          "name" => "weather",
+          "inputSchema" => %{
+            "type" => "object",
+            "properties" => %{
+              "region" => %{"type" => "string", "x-mcp-header" => header}
+            }
+          }
+        }
+      end
+
+      page_task = Task.async(fn -> Client.list_tools(client, cursor: "page-2") end)
+      page_req = last_after_connect(transport, 1)
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => page_req["id"],
+        "result" => %{"tools" => [tool.("Region")]}
+      })
+
+      assert {:ok, _result} = Task.await(page_task)
+
+      call_task = Task.async(fn -> Client.call_tool(client, "weather", %{"region" => "east"}) end)
+      first_call = last_after_connect(transport, 2)
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => first_call["id"],
+        "error" => %{
+          "code" => -32_020,
+          "message" => "Header mismatch",
+          "data" => "mcp-param-region mismatch"
+        }
+      })
+
+      refresh_page_1 = last_after_connect(transport, 3)
+      assert refresh_page_1["params"]["cursor"] == nil
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => refresh_page_1["id"],
+        "result" => %{"tools" => [%{"name" => "other"}], "nextCursor" => "next"}
+      })
+
+      refresh_page_2 = last_after_connect(transport, 4)
+      assert refresh_page_2["params"]["cursor"] == "next"
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => refresh_page_2["id"],
+        "result" => %{"tools" => [tool.("Zone")]}
+      })
+
+      retry = last_after_connect(transport, 5)
+
+      assert MockTransport.last_send_options(transport) == [
+               routing_headers: [%{header: "Zone", path: ["region"], type: "string"}]
+             ]
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => retry["id"],
+        "result" => %{"content" => []}
+      })
+
+      assert {:ok, %{"content" => []}} = Task.await(call_task)
+    end
+
+    test "schema refresh stops when a server repeats a cursor" do
+      {client, transport} = start_client()
+      do_connect(client, transport)
+
+      call_task = Task.async(fn -> Client.call_tool(client, "weather", %{"region" => "east"}) end)
+      first_call = last_after_connect(transport, 1)
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => first_call["id"],
+        "error" => %{
+          "code" => -32_020,
+          "message" => "Header mismatch",
+          "data" => "missing mcp-param-region header"
+        }
+      })
+
+      first_page = last_after_connect(transport, 2)
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => first_page["id"],
+        "result" => %{"tools" => [], "nextCursor" => "same"}
+      })
+
+      second_page = last_after_connect(transport, 3)
+      assert second_page["params"]["cursor"] == "same"
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => second_page["id"],
+        "result" => %{"tools" => [], "nextCursor" => "same"}
+      })
+
+      assert {:error, error} = Task.await(call_task)
+      assert error.code == -32_020
+      assert length(MockTransport.sent_messages(transport)) == 4
+      assert Client.status(client) == :ready
+    end
+
+    test "transport send errors are returned immediately without pending timeout state" do
+      {client, _transport} = start_client(transport: {MockTransport, send_error: :invalid_route})
+
+      assert Client.call_tool(client, "weather", %{}, timeout: 100) ==
+               {:error, :invalid_route}
+    end
+
     test "call_tool surfaces an error response" do
       {client, transport} = start_client()
       do_connect(client, transport)
@@ -722,7 +990,10 @@ defmodule MCP.ClientTest do
       MockTransport.inject(transport, %{
         "jsonrpc" => "2.0",
         "id" => req1["id"],
-        "result" => %{"tools" => [%{"name" => "t1"}], "nextCursor" => "c1"}
+        "result" => %{
+          "tools" => [%{"name" => "t1", "inputSchema" => %{"type" => "object"}}],
+          "nextCursor" => "c1"
+        }
       })
 
       req2 = last_after_connect(transport, 2)
@@ -731,7 +1002,9 @@ defmodule MCP.ClientTest do
       MockTransport.inject(transport, %{
         "jsonrpc" => "2.0",
         "id" => req2["id"],
-        "result" => %{"tools" => [%{"name" => "t2"}]}
+        "result" => %{
+          "tools" => [%{"name" => "t2", "inputSchema" => %{"type" => "object"}}]
+        }
       })
 
       {:ok, tools} = Task.await(task)

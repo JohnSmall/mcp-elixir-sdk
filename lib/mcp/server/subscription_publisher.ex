@@ -6,15 +6,27 @@ defmodule MCP.Server.SubscriptionPublisher do
   alias MCP.Server.SubscriptionWorker
 
   @spec publish(atom() | pid(), term(), String.t(), map() | nil) ::
-          :ok | {:error, :invalid_registry}
+          :ok | {:error, :invalid_registry | :invalid_notification_params}
   def publish(registry, endpoint, method, params) do
-    with {:ok, registry_name} <- SubscriptionRegistry.name(registry) do
+    with :ok <- validate_params(params),
+         {:ok, registry_name} <- SubscriptionRegistry.name(registry) do
       entries = Registry.lookup(registry_name, {:mcp_subscriptions, endpoint})
       dispatch(entries, method, params)
 
       :ok
     end
   end
+
+  defp validate_params(nil), do: :ok
+
+  defp validate_params(params) when is_map(params) do
+    case Map.fetch(params, "_meta") do
+      {:ok, meta} when not is_map(meta) -> {:error, :invalid_notification_params}
+      _meta -> :ok
+    end
+  end
+
+  defp validate_params(_params), do: {:error, :invalid_notification_params}
 
   defp dispatch(entries, method, params) do
     Enum.each(entries, fn {worker, %{honored: honored}} ->
