@@ -69,19 +69,39 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: mix deps.get
-      - run: mix run --no-halt conformance/server_adapter.exs 43001 &
-      - run: |
+      - name: Server and client conformance
+        run: |
+          set -euo pipefail
+          server_log="${RUNNER_TEMP}/mcp-conformance-server.log"
+          mix run --no-halt conformance/server_adapter.exs 43001 >"${server_log}" 2>&1 &
+          server_pid=$!
+          cleanup() {
+            kill "${server_pid}" 2>/dev/null || true
+            wait "${server_pid}" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          ready=false
           for _ in $(seq 1 30); do
-            curl -fsS http://127.0.0.1:43001/mcp -H 'Accept: text/event-stream' && exit 0
+            if curl -fsS http://127.0.0.1:43001/mcp -H 'Accept: text/event-stream' >/dev/null; then
+              ready=true
+              break
+            fi
+            if ! kill -0 "${server_pid}" 2>/dev/null; then
+              break
+            fi
             sleep 1
           done
-          exit 1
-      - run: >-
-          npx --no-install conformance server
-          --url http://127.0.0.1:43001/mcp
-          --requirements 2026-07-28
-      - name: Required client conformance scenarios
-        run: |
+
+          if [[ "${ready}" != "true" ]]; then
+            cat "${server_log}"
+            exit 1
+          fi
+
+          npx --no-install conformance server \
+            --url http://127.0.0.1:43001/mcp \
+            --requirements 2026-07-28
+
           for scenario in \
             tools_call \
             request-metadata \
