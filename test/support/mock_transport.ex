@@ -9,7 +9,7 @@ defmodule MCP.Test.MockTransport do
 
   @behaviour MCP.Transport
 
-  defstruct [:owner, :sent, :closed]
+  defstruct [:owner, :sent, :send_options, :closed]
 
   @impl MCP.Transport
   def start_link(opts) do
@@ -18,7 +18,12 @@ defmodule MCP.Test.MockTransport do
 
   @impl MCP.Transport
   def send_message(pid, message) do
-    GenServer.call(pid, {:send_message, message})
+    send_message(pid, message, [])
+  end
+
+  @impl MCP.Transport
+  def send_message(pid, message, opts) do
+    GenServer.call(pid, {:send_message, message, opts})
   end
 
   @impl MCP.Transport
@@ -49,6 +54,10 @@ defmodule MCP.Test.MockTransport do
     GenServer.call(pid, :last_sent)
   end
 
+  def last_send_options(pid) do
+    GenServer.call(pid, :last_send_options)
+  end
+
   @doc """
   Returns whether close has been called.
   """
@@ -61,12 +70,18 @@ defmodule MCP.Test.MockTransport do
   @impl GenServer
   def init(opts) do
     owner = Keyword.fetch!(opts, :owner)
-    {:ok, %__MODULE__{owner: owner, sent: [], closed: false}}
+    {:ok, %__MODULE__{owner: owner, sent: [], send_options: [], closed: false}}
   end
 
   @impl GenServer
-  def handle_call({:send_message, message}, _from, state) do
-    {:reply, :ok, %{state | sent: state.sent ++ [message]}}
+  def handle_call({:send_message, message, opts}, _from, state) do
+    new_state = %{
+      state
+      | sent: state.sent ++ [message],
+        send_options: state.send_options ++ [opts]
+    }
+
+    {:reply, :ok, new_state}
   end
 
   def handle_call(:close, _from, state) do
@@ -80,6 +95,10 @@ defmodule MCP.Test.MockTransport do
 
   def handle_call(:last_sent, _from, state) do
     {:reply, List.last(state.sent), state}
+  end
+
+  def handle_call(:last_send_options, _from, state) do
+    {:reply, List.last(state.send_options), state}
   end
 
   def handle_call(:closed?, _from, state) do

@@ -91,4 +91,53 @@ defmodule MCP.Protocol.Types.ToolTest do
       refute Map.has_key?(decoded, "_meta")
     end
   end
+
+  describe "JSON Schema 2020-12 preservation" do
+    test "round-trips nested input-schema keywords and x-mcp-header annotations unchanged" do
+      schema = %{
+        "$schema" => "https://json-schema.org/draft/2020-12/schema",
+        "type" => "object",
+        "$defs" => %{
+          "region" => %{"type" => "string", "enum" => ["us-east", "eu-west"]}
+        },
+        "properties" => %{
+          "region" => %{"$ref" => "#/$defs/region", "x-mcp-header" => "Region"},
+          "mode" => %{"oneOf" => [%{"const" => "fast"}, %{"const" => "safe"}]}
+        },
+        "if" => %{"properties" => %{"mode" => %{"const" => "safe"}}},
+        "then" => %{"required" => ["region"]},
+        "x-unknown-keyword" => %{"nested" => [true, nil, 1]}
+      }
+
+      decoded =
+        @tool_map
+        |> Map.put("inputSchema", schema)
+        |> Tool.from_map()
+        |> Jason.encode!()
+        |> Jason.decode!()
+
+      assert decoded["inputSchema"] == schema
+    end
+
+    test "permits a boolean output schema without narrowing it to an object" do
+      decoded =
+        @tool_map
+        |> Map.put("outputSchema", true)
+        |> Tool.from_map()
+        |> Jason.encode!()
+        |> Jason.decode!()
+
+      assert decoded["outputSchema"] == true
+    end
+
+    test "rejects an input schema whose root is not explicitly an object" do
+      for invalid <- [true, %{}, %{"type" => "string"}, %{"type" => ["object", "null"]}] do
+        assert_raise ArgumentError, ~r/inputSchema root must have type object/, fn ->
+          @tool_map
+          |> Map.put("inputSchema", invalid)
+          |> Tool.from_map()
+        end
+      end
+    end
+  end
 end

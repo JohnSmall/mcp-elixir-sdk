@@ -2,7 +2,7 @@ defmodule MCPElixirSDK.MixProject do
   use Mix.Project
 
   @version "2.0.0-dev.1"
-  @source_url "https://github.com/JohnSmall/mcp-elixir-sdk"
+  @source_url "https://github.com/jmagar/mcp-elixir-sdk"
 
   def project do
     [
@@ -40,11 +40,10 @@ defmodule MCPElixirSDK.MixProject do
       licenses: ["MIT"],
       links: %{
         "GitHub" => @source_url,
-        "MCP Specification" => "https://modelcontextprotocol.io/specification/2025-11-25",
+        "MCP Specification" => "https://modelcontextprotocol.io/specification/2026-07-28",
         "Examples" => "#{@source_url}#server-examples"
       },
-      files:
-        ~w(lib docs/architecture.md usage-rules.md .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
+      files: ~w(lib docs usage-rules.md .formatter.exs mix.exs README.md LICENSE CHANGELOG.md)
     ]
   end
 
@@ -56,10 +55,42 @@ defmodule MCPElixirSDK.MixProject do
         "CHANGELOG.md",
         "LICENSE",
         "usage-rules.md": [title: "Usage Rules (AI Agents)"],
-        "docs/architecture.md": [title: "Architecture"]
+        "docs/architecture.md": [title: "Architecture"],
+        "docs/sdk-2.0/specifications.md": [title: "2.0 Specifications"],
+        "docs/sdk-2.0/contracts.md": [title: "2.0 Contracts"],
+        "docs/sdk-2.0/types.md": [title: "2.0 Types"],
+        "docs/sdk-2.0/runtime-models.md": [title: "2.0 Runtime Models"],
+        "docs/sdk-2.0/meta-plan.md": [title: "2.0 Meta-plan"],
+        "docs/adr/0001-target-2025-11-25-defer-2026-07-28.md": [title: "ADR-001"],
+        "docs/adr/0002-adopt-2026-07-28-stateless-core-migration.md": [title: "ADR-002"],
+        "docs/adr/0003-2.0.0-conformance-scope.md": [title: "ADR-003"],
+        "docs/adr/0004-immutable-handler-launch-configuration.md": [
+          title: "ADR-004 Immutable Handler Configuration"
+        ],
+        "docs/adr/0005-consumer-owned-subscription-supervision.md": [
+          title: "ADR-005 Subscription Supervision"
+        ],
+        "docs/adr/0006-no-client-result-cache-in-2.0.md": [
+          title: "ADR-006 No Client Result Cache"
+        ]
       ],
       groups_for_extras: [
-        Guides: ["docs/architecture.md"],
+        Guides: [
+          "docs/architecture.md",
+          "docs/sdk-2.0/specifications.md",
+          "docs/sdk-2.0/contracts.md",
+          "docs/sdk-2.0/types.md",
+          "docs/sdk-2.0/runtime-models.md",
+          "docs/sdk-2.0/meta-plan.md"
+        ],
+        Decisions: [
+          "docs/adr/0001-target-2025-11-25-defer-2026-07-28.md",
+          "docs/adr/0002-adopt-2026-07-28-stateless-core-migration.md",
+          "docs/adr/0003-2.0.0-conformance-scope.md",
+          "docs/adr/0004-immutable-handler-launch-configuration.md",
+          "docs/adr/0005-consumer-owned-subscription-supervision.md",
+          "docs/adr/0006-no-client-result-cache-in-2.0.md"
+        ],
         Reference: ["CHANGELOG.md", "LICENSE", "usage-rules.md"]
       ],
       groups_for_modules: [

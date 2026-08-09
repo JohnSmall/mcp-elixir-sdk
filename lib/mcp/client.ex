@@ -38,6 +38,7 @@ defmodule MCP.Client do
       notifications
     * `:on_input_required` — `(input_requests -> input_responses)` MRTR resolver
     * `:request_timeout` — default request timeout in ms (default: 30_000)
+    * `:tool_schema_limit` — maximum cached tool schemas (default: 1,024)
   """
 
   use GenServer
@@ -46,8 +47,10 @@ defmodule MCP.Client do
 
   alias MCP.Protocol
   alias MCP.Protocol.Capabilities.ClientCapabilities
+  alias MCP.Protocol.Error
   alias MCP.Protocol.Messages.{Discover, MRTR, Notification, Request, Response}
   alias MCP.Protocol.Methods
+  alias MCP.Protocol.ToolRouting
   alias MCP.Protocol.Types.Implementation
 
   @default_request_timeout 30_000
@@ -64,6 +67,9 @@ defmodule MCP.Client do
     :status,
     :notification_handler,
     :on_input_required,
+    :tool_schema_index,
+    :tool_schema_order,
+    :tool_schema_limit,
     :pending_requests,
     :next_id,
     :request_timeout
@@ -74,7 +80,11 @@ defmodule MCP.Client do
   @doc "Starts the client GenServer and its transport."
   def start_link(opts) do
     {gen_opts, client_opts} = Keyword.split(opts, [:name])
-    GenServer.start_link(__MODULE__, client_opts, gen_opts)
+
+    case validate_tool_schema_limit(client_opts) do
+      :ok -> GenServer.start_link(__MODULE__, client_opts, gen_opts)
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   @doc """
@@ -94,10 +104,21 @@ defmodule MCP.Client do
     GenServer.call(client, {:list_tools, opts}, timeout || @default_request_timeout)
   end
 
-  @doc "Calls a tool. Transparently completes MRTR round-trips when a resolver is set."
+  @doc """
+  Calls a tool. Transparently completes MRTR round-trips when a resolver is set.
+
+  Options: `:timeout` and `:input_schema`. The latter supplies the selected
+  tool's input schema explicitly for routing-header derivation.
+  """
   def call_tool(client, name, arguments \\ %{}, opts \\ []) do
     timeout = Keyword.get(opts, :timeout)
-    GenServer.call(client, {:call_tool, name, arguments}, timeout || @default_request_timeout)
+    input_schema = Keyword.get(opts, :input_schema)
+
+    GenServer.call(
+      client,
+      {:call_tool, name, arguments, input_schema},
+      timeout || @default_request_timeout
+    )
   end
 
   @doc "Lists available resources. Options: `:cursor`, `:timeout`."
@@ -180,6 +201,16 @@ defmodule MCP.Client do
 
   @impl GenServer
   def init(opts) do
+    tool_schema_limit = Keyword.get(opts, :tool_schema_limit, 1_024)
+
+    if is_integer(tool_schema_limit) and tool_schema_limit >= 0 do
+      init_with_schema_limit(opts, tool_schema_limit)
+    else
+      {:stop, {:invalid_tool_schema_limit, tool_schema_limit}}
+    end
+  end
+
+  defp init_with_schema_limit(opts, tool_schema_limit) do
     {transport_spec, opts} = Keyword.pop!(opts, :transport)
 
     state = %__MODULE__{
@@ -189,6 +220,9 @@ defmodule MCP.Client do
       status: :ready,
       notification_handler: Keyword.get(opts, :notification_handler),
       on_input_required: Keyword.get(opts, :on_input_required),
+      tool_schema_index: %{},
+      tool_schema_order: [],
+      tool_schema_limit: tool_schema_limit,
       pending_requests: %{},
       next_id: 1,
       request_timeout: Keyword.get(opts, :request_timeout, @default_request_timeout)
@@ -223,17 +257,24 @@ defmodule MCP.Client do
     do: {:reply, {:error, :closed}, state}
 
   def handle_call({:list_tools, opts}, from, state),
-    do: send_rpc(state, from, Methods.tools_list(), cursor_params(opts))
+    do: send_rpc(state, from, Methods.tools_list(), cursor_params(opts), :tools_list)
 
-  def handle_call({:call_tool, name, arguments}, from, state),
-    do:
-      send_rpc(
-        state,
-        from,
-        Methods.tools_call(),
-        name_args(name, arguments),
-        {:tool_call, name, arguments}
-      )
+  def handle_call({:call_tool, name, arguments, input_schema}, from, state) do
+    case selected_descriptors(state, name, input_schema) do
+      {:ok, descriptors, state} ->
+        send_rpc(
+          state,
+          from,
+          Methods.tools_call(),
+          name_args(name, arguments),
+          {:tool_call, name, arguments, false, descriptors},
+          routing_headers: descriptors
+        )
+
+      {:error, reason} ->
+        {:reply, {:error, {:invalid_input_schema, reason}}, state}
+    end
+  end
 
   def handle_call({:list_resources, opts}, from, state),
     do: send_rpc(state, from, Methods.resources_list(), cursor_params(opts))
@@ -362,19 +403,74 @@ defmodule MCP.Client do
     {:noreply, state}
   end
 
+  # A recognized custom-header mismatch can mean the cached schema is stale.
+  # Refresh once, then retry the original call with the newly selected descriptors.
+  defp finish_response(
+         %Response{error: error},
+         from,
+         {:tool_call, name, arguments, false, descriptors},
+         state
+       )
+       when error != nil do
+    if recognized_custom_header_mismatch?(error, descriptors) do
+      send_rpc(
+        state,
+        from,
+        Methods.tools_list(),
+        %{},
+        {:tool_header_refresh, name, arguments}
+      )
+    else
+      GenServer.reply(from, {:error, error})
+      {:noreply, state}
+    end
+  end
+
   # tools/call result → complete transparently through MRTR when input is required.
   defp finish_response(%Response{error: error} = _resp, from, _kind, state) when error != nil do
     GenServer.reply(from, {:error, error})
     {:noreply, state}
   end
 
-  defp finish_response(%Response{result: result}, from, {:tool_call, name, arguments}, state) do
+  defp finish_response(
+         %Response{result: result},
+         from,
+         {:tool_call, name, arguments, refresh_attempted?, descriptors},
+         state
+       ) do
     if input_required?(result) and is_function(state.on_input_required, 1) do
-      resume_mrtr(result, from, name, arguments, state)
+      resume_mrtr(result, from, name, arguments, refresh_attempted?, descriptors, state)
     else
       GenServer.reply(from, {:ok, result})
       {:noreply, state}
     end
+  end
+
+  defp finish_response(
+         %Response{result: result},
+         from,
+         {:tool_header_refresh, name, arguments},
+         state
+       ) do
+    tools = Enum.filter(Map.get(result, "tools", []), &valid_header_annotation_locations?/1)
+    state = cache_tools(state, tools)
+    {descriptors, state} = cached_descriptors(state, name)
+
+    send_rpc(
+      state,
+      from,
+      Methods.tools_call(),
+      name_args(name, arguments),
+      {:tool_call, name, arguments, true, descriptors},
+      routing_headers: descriptors
+    )
+  end
+
+  defp finish_response(%Response{result: result}, from, :tools_list, state) do
+    tools = Enum.filter(Map.get(result, "tools", []), &valid_header_annotation_locations?/1)
+    state = cache_tools(state, tools)
+    GenServer.reply(from, {:ok, Map.put(result, "tools", tools)})
+    {:noreply, state}
   end
 
   defp finish_response(%Response{result: result}, from, _kind, state) do
@@ -382,11 +478,94 @@ defmodule MCP.Client do
     {:noreply, state}
   end
 
+  defp valid_header_annotation_locations?(%{"inputSchema" => schema, "name" => name}) do
+    valid? = match?({:ok, _descriptors}, ToolRouting.descriptors(schema))
+
+    unless valid? do
+      Logger.warning(
+        "MCP Client: excluding tool #{inspect(name)}: invalid x-mcp-header annotation"
+      )
+    end
+
+    valid?
+  end
+
+  defp valid_header_annotation_locations?(_tool), do: true
+
+  defp tool_index_entry(%{"name" => name, "inputSchema" => schema}) do
+    {:ok, descriptors} = ToolRouting.descriptors(schema)
+    {name, descriptors}
+  end
+
+  defp tool_index_entry(%{"name" => name}), do: {name, []}
+
+  defp cache_tools(state, tools) do
+    Enum.reduce(tools, state, fn tool, acc ->
+      {name, descriptors} = tool_index_entry(tool)
+      order = Enum.reject(acc.tool_schema_order, &(&1 == name)) ++ [name]
+      index = Map.put(acc.tool_schema_index, name, descriptors)
+      trim_tool_index(%{acc | tool_schema_index: index, tool_schema_order: order})
+    end)
+  end
+
+  defp trim_tool_index(state) when length(state.tool_schema_order) > state.tool_schema_limit do
+    [evicted | order] = state.tool_schema_order
+
+    %{
+      state
+      | tool_schema_index: Map.delete(state.tool_schema_index, evicted),
+        tool_schema_order: order
+    }
+  end
+
+  defp trim_tool_index(state), do: state
+
+  defp cached_descriptors(state, name) do
+    case Map.fetch(state.tool_schema_index, name) do
+      {:ok, descriptors} ->
+        order = Enum.reject(state.tool_schema_order, &(&1 == name)) ++ [name]
+        {descriptors, %{state | tool_schema_order: order}}
+
+      :error ->
+        {[], state}
+    end
+  end
+
+  defp selected_descriptors(state, name, nil) do
+    {descriptors, state} = cached_descriptors(state, name)
+    {:ok, descriptors, state}
+  end
+
+  defp selected_descriptors(state, _name, input_schema) do
+    case ToolRouting.descriptors(input_schema) do
+      {:ok, descriptors} -> {:ok, descriptors, state}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp recognized_custom_header_mismatch?(error, descriptors) do
+    error.code == Error.header_mismatch_code() and
+      Enum.any?(descriptors, fn descriptor ->
+        error.data
+        |> inspect()
+        |> String.downcase()
+        |> String.contains?("mcp-param-#{String.downcase(descriptor.header)}")
+      end)
+  end
+
   defp input_required?(result), do: Map.get(result, "resultType") == MRTR.result_type()
 
   # Fulfil the requested inputs and retry the original tools/call carrying the
   # server's requestState + the resolved inputResponses (SEP-2322).
-  defp resume_mrtr(result, from, name, arguments, state) do
+  defp resume_mrtr(
+         result,
+         from,
+         name,
+         arguments,
+         refresh_attempted?,
+         descriptors,
+         state
+       ) do
     responses = state.on_input_required.(Map.get(result, "inputRequests"))
 
     params =
@@ -397,9 +576,17 @@ defmodule MCP.Client do
       |> with_meta(state)
 
     {id, state} = next_id(state)
-    send_request(state, id, Methods.tools_call(), params)
+    send_request(state, id, Methods.tools_call(), params, routing_headers: descriptors)
     timeout_ref = schedule_timeout(id, state.request_timeout)
-    {:noreply, put_pending(state, id, from, timeout_ref, {:tool_call, name, arguments})}
+
+    {:noreply,
+     put_pending(
+       state,
+       id,
+       from,
+       timeout_ref,
+       {:tool_call, name, arguments, refresh_attempted?, descriptors}
+     )}
   end
 
   # --- Notifications ---
@@ -420,9 +607,9 @@ defmodule MCP.Client do
 
   # --- Sending ---
 
-  defp send_rpc(state, from, method, params, kind \\ :call) do
+  defp send_rpc(state, from, method, params, kind \\ :call, transport_opts \\ []) do
     {id, state} = next_id(state)
-    send_request(state, id, method, with_meta(params, state))
+    send_request(state, id, method, with_meta(params, state), transport_opts)
     timeout_ref = schedule_timeout(id, state.request_timeout)
     {:noreply, put_pending(state, id, from, timeout_ref, kind)}
   end
@@ -440,11 +627,14 @@ defmodule MCP.Client do
     Map.put(params, "_meta", meta)
   end
 
-  defp send_request(state, id, method, params) do
-    state.transport_module.send_message(
-      state.transport_pid,
-      encode(Request.new(id, method, params))
-    )
+  defp send_request(state, id, method, params, opts) do
+    message = encode(Request.new(id, method, params))
+
+    if function_exported?(state.transport_module, :send_message, 3) do
+      state.transport_module.send_message(state.transport_pid, message, opts)
+    else
+      state.transport_module.send_message(state.transport_pid, message)
+    end
   end
 
   defp send_notification(state, method, params) do
@@ -493,6 +683,14 @@ defmodule MCP.Client do
   end
 
   defp default_info, do: %{name: "mcp_elixir_sdk", version: "1.0.0"}
+
+  defp validate_tool_schema_limit(opts) do
+    limit = Keyword.get(opts, :tool_schema_limit, 1_024)
+
+    if is_integer(limit) and limit >= 0,
+      do: :ok,
+      else: {:error, {:invalid_tool_schema_limit, limit}}
+  end
 
   defp do_close(state) do
     if state.transport_pid, do: state.transport_module.close(state.transport_pid)

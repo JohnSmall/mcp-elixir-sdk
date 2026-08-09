@@ -90,6 +90,15 @@ defmodule MCP.ClientTest do
       assert is_pid(transport)
       assert Client.status(client) == :ready
     end
+
+    test "rejects a negative tool schema limit at startup" do
+      assert {:error, {:invalid_tool_schema_limit, -1}} =
+               Client.start_link(
+                 transport: {MockTransport, []},
+                 client_info: %{name: "test-client", version: "0.1.0"},
+                 tool_schema_limit: -1
+               )
+    end
   end
 
   describe "connect/1 (server/discover)" do
@@ -177,6 +186,124 @@ defmodule MCP.ClientTest do
       assert hd(result["tools"])["name"] == "echo"
     end
 
+    test "list_tools excludes only the tool with x-mcp-header in a forbidden location" do
+      {client, transport} = start_client()
+      do_connect(client, transport)
+
+      task = Task.async(fn -> Client.list_tools(client) end)
+      req = last_after_connect(transport, 1)
+
+      valid = %{
+        "name" => "weather",
+        "inputSchema" => %{
+          "type" => "object",
+          "properties" => %{
+            "region" => %{"type" => "string", "x-mcp-header" => "Region"}
+          }
+        }
+      }
+
+      invalid = %{
+        "name" => "batch_weather",
+        "inputSchema" => %{
+          "type" => "object",
+          "properties" => %{
+            "regions" => %{
+              "type" => "array",
+              "items" => %{"type" => "string", "x-mcp-header" => "Region"}
+            }
+          }
+        }
+      }
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => req["id"],
+        "result" => %{"tools" => [valid, invalid]}
+      })
+
+      assert {:ok, %{"tools" => [^valid]}} = Task.await(task)
+    end
+
+    test "list_tools excludes a tool whose x-mcp-header name is not an HTTP token" do
+      {client, transport} = start_client()
+      do_connect(client, transport)
+
+      task = Task.async(fn -> Client.list_tools(client) end)
+      req = last_after_connect(transport, 1)
+
+      invalid = %{
+        "name" => "weather",
+        "inputSchema" => %{
+          "type" => "object",
+          "properties" => %{
+            "region" => %{"type" => "string", "x-mcp-header" => "Bad Header"}
+          }
+        }
+      }
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => req["id"],
+        "result" => %{"tools" => [invalid]}
+      })
+
+      assert {:ok, %{"tools" => []}} = Task.await(task)
+    end
+
+    test "list_tools excludes a tool with case-insensitively duplicate header names" do
+      {client, transport} = start_client()
+      do_connect(client, transport)
+
+      task = Task.async(fn -> Client.list_tools(client) end)
+      req = last_after_connect(transport, 1)
+
+      invalid = %{
+        "name" => "weather",
+        "inputSchema" => %{
+          "type" => "object",
+          "properties" => %{
+            "region" => %{"type" => "string", "x-mcp-header" => "Region"},
+            "fallback" => %{"type" => "string", "x-mcp-header" => "REGION"}
+          }
+        }
+      }
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => req["id"],
+        "result" => %{"tools" => [invalid]}
+      })
+
+      assert {:ok, %{"tools" => []}} = Task.await(task)
+    end
+
+    test "list_tools excludes a tool whose annotated property has an unsupported type" do
+      {client, transport} = start_client()
+      do_connect(client, transport)
+
+      task = Task.async(fn -> Client.list_tools(client) end)
+      req = last_after_connect(transport, 1)
+
+      invalid = %{
+        "name" => "weather",
+        "inputSchema" => %{
+          "type" => "object",
+          "properties" => %{
+            "temperature" => %{"type" => "number", "x-mcp-header" => "Temperature"}
+          }
+        }
+      }
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => req["id"],
+        "result" => %{"tools" => [invalid]}
+      })
+
+      assert {:ok, %{"tools" => []}} = Task.await(task)
+    end
+
     test "call_tool sends name and arguments" do
       {client, transport} = start_client()
       do_connect(client, transport)
@@ -195,6 +322,209 @@ defmodule MCP.ClientTest do
 
       {:ok, result} = Task.await(task)
       assert hd(result["content"])["text"] == "hi"
+    end
+
+    test "call_tool passes cached validated header descriptors to a capable transport" do
+      {client, transport} = start_client()
+      do_connect(client, transport)
+
+      list_task = Task.async(fn -> Client.list_tools(client) end)
+      list_req = last_after_connect(transport, 1)
+
+      tool = %{
+        "name" => "weather",
+        "inputSchema" => %{
+          "type" => "object",
+          "properties" => %{
+            "region" => %{"type" => "string", "x-mcp-header" => "Region"}
+          }
+        }
+      }
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => list_req["id"],
+        "result" => %{"tools" => [tool]}
+      })
+
+      assert {:ok, %{"tools" => [^tool]}} = Task.await(list_task)
+
+      call_task =
+        Task.async(fn -> Client.call_tool(client, "weather", %{"region" => "us-east"}) end)
+
+      call_req = last_after_connect(transport, 2)
+
+      assert MockTransport.last_send_options(transport) == [
+               routing_headers: [%{header: "Region", path: ["region"], type: "string"}]
+             ]
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => call_req["id"],
+        "result" => %{"content" => []}
+      })
+
+      assert {:ok, %{"content" => []}} = Task.await(call_task)
+    end
+
+    test "call_tool accepts an explicit input schema without populating the catalog first" do
+      {client, transport} = start_client()
+      do_connect(client, transport)
+
+      schema = %{
+        "type" => "object",
+        "properties" => %{
+          "region" => %{"type" => "string", "x-mcp-header" => "Region"}
+        }
+      }
+
+      task =
+        Task.async(fn ->
+          Client.call_tool(client, "weather", %{"region" => "east"}, input_schema: schema)
+        end)
+
+      req = last_after_connect(transport, 1)
+
+      assert MockTransport.last_send_options(transport) == [
+               routing_headers: [%{header: "Region", path: ["region"], type: "string"}]
+             ]
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => req["id"],
+        "result" => %{"content" => []}
+      })
+
+      assert {:ok, %{"content" => []}} = Task.await(task)
+    end
+
+    test "tool schema index evicts the least recently indexed tool at its configured bound" do
+      {client, transport} = start_client(tool_schema_limit: 1)
+      do_connect(client, transport)
+
+      list_task = Task.async(fn -> Client.list_tools(client) end)
+      list_req = last_after_connect(transport, 1)
+
+      tool = fn name, header ->
+        %{
+          "name" => name,
+          "inputSchema" => %{
+            "type" => "object",
+            "properties" => %{
+              "value" => %{"type" => "string", "x-mcp-header" => header}
+            }
+          }
+        }
+      end
+
+      first = tool.("first", "First")
+      second = tool.("second", "Second")
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => list_req["id"],
+        "result" => %{"tools" => [first, second]}
+      })
+
+      assert {:ok, _result} = Task.await(list_task)
+
+      first_task = Task.async(fn -> Client.call_tool(client, "first", %{"value" => "a"}) end)
+      first_req = last_after_connect(transport, 2)
+      assert MockTransport.last_send_options(transport) == [routing_headers: []]
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => first_req["id"],
+        "result" => %{"content" => []}
+      })
+
+      assert {:ok, _result} = Task.await(first_task)
+
+      second_task = Task.async(fn -> Client.call_tool(client, "second", %{"value" => "b"}) end)
+      second_req = last_after_connect(transport, 3)
+
+      assert MockTransport.last_send_options(transport) == [
+               routing_headers: [%{header: "Second", path: ["value"], type: "string"}]
+             ]
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => second_req["id"],
+        "result" => %{"content" => []}
+      })
+
+      assert {:ok, _result} = Task.await(second_task)
+    end
+
+    test "recognized custom HeaderMismatch refreshes schemas and retries the call only once" do
+      {client, transport} = start_client()
+      do_connect(client, transport)
+
+      tool = fn header ->
+        %{
+          "name" => "weather",
+          "inputSchema" => %{
+            "type" => "object",
+            "properties" => %{
+              "region" => %{"type" => "string", "x-mcp-header" => header}
+            }
+          }
+        }
+      end
+
+      list_task = Task.async(fn -> Client.list_tools(client) end)
+      list_req = last_after_connect(transport, 1)
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => list_req["id"],
+        "result" => %{"tools" => [tool.("Region")]}
+      })
+
+      assert {:ok, _result} = Task.await(list_task)
+
+      call_task = Task.async(fn -> Client.call_tool(client, "weather", %{"region" => "east"}) end)
+      first_call = last_after_connect(transport, 2)
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => first_call["id"],
+        "error" => %{
+          "code" => -32_020,
+          "message" => "Header mismatch",
+          "data" => "mcp-param-region mismatch"
+        }
+      })
+
+      refresh = last_after_connect(transport, 3)
+      assert refresh["method"] == "tools/list"
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => refresh["id"],
+        "result" => %{"tools" => [tool.("Zone")]}
+      })
+
+      retry = last_after_connect(transport, 4)
+      assert retry["method"] == "tools/call"
+
+      assert MockTransport.last_send_options(transport) == [
+               routing_headers: [%{header: "Zone", path: ["region"], type: "string"}]
+             ]
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => retry["id"],
+        "error" => %{
+          "code" => -32_020,
+          "message" => "Header mismatch",
+          "data" => "mcp-param-zone mismatch"
+        }
+      })
+
+      assert {:error, error} = Task.await(call_task)
+      assert error.code == -32_020
+      assert length(MockTransport.sent_messages(transport)) == 5
     end
 
     test "call_tool surfaces an error response" do

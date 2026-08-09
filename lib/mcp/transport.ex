@@ -30,6 +30,9 @@ defmodule MCP.Transport do
   Sends a JSON-RPC message (as a map) through the transport.
   """
   @callback send_message(pid :: pid(), message()) :: :ok | {:error, term()}
+  @callback send_message(pid :: pid(), message(), opts()) :: :ok | {:error, term()}
+
+  @optional_callbacks send_message: 3
 
   @doc """
   Closes the transport, releasing all resources.

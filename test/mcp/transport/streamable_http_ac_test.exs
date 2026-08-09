@@ -77,8 +77,12 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
       [
         {"content-type", "application/json"},
         {"accept", "application/json"},
-        {"origin", origin}
+        {"origin", origin},
+        {"mcp-protocol-version",
+         get_in(params, ["_meta", "io.modelcontextprotocol/protocolVersion"])},
+        {"mcp-method", method}
       ] ++
+        routing_name_header(method, params) ++
         if(role, do: [{"x-test-role", role}], else: []) ++
         Keyword.get(opts, :headers, [])
 
@@ -90,6 +94,18 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
   defp result(resp), do: resp.body["result"]
   defp error(resp), do: resp.body["error"]
   defp tool_text(resp), do: result(resp)["content"] |> hd() |> Map.get("text")
+
+  defp routing_name_header(method, params) do
+    target =
+      case method do
+        "tools/call" -> Map.get(params, "name")
+        "prompts/get" -> Map.get(params, "name")
+        "resources/read" -> Map.get(params, "uri")
+        _method -> nil
+      end
+
+    if target, do: [{"mcp-name", target}], else: []
+  end
 
   # ======================================================================
   # AC PORT MATRIX — AC1–AC8 + AC3′

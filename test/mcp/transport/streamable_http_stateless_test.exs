@@ -35,6 +35,11 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
       |> put_req_header("accept", "application/json")
       |> put_req_header("origin", "http://localhost")
 
+    base =
+      message
+      |> standard_headers()
+      |> Enum.reduce(base, fn {k, v}, c -> put_req_header(c, k, v) end)
+
     headers
     |> Enum.reduce(base, fn {k, v}, c -> put_req_header(c, k, v) end)
     |> mutate.()
@@ -45,10 +50,29 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
   defp error(conn), do: conn.resp_body |> Jason.decode!() |> Map.get("error")
   defp with_meta(params), do: Map.put(params, "_meta", @meta)
 
+  defp standard_headers(message) do
+    method = Map.get(message, "method")
+    params = Map.get(message, "params", %{})
+    version = get_in(params, ["_meta", "io.modelcontextprotocol/protocolVersion"])
+
+    []
+    |> maybe_header("mcp-protocol-version", version)
+    |> maybe_header("mcp-method", method)
+    |> maybe_header("mcp-name", routing_target(method, params))
+  end
+
+  defp routing_target("tools/call", params), do: Map.get(params, "name")
+  defp routing_target("prompts/get", params), do: Map.get(params, "name")
+  defp routing_target("resources/read", params), do: Map.get(params, "uri")
+  defp routing_target(_method, _params), do: nil
+
+  defp maybe_header(headers, _name, nil), do: headers
+  defp maybe_header(headers, name, value), do: [{name, value} | headers]
+
   # --- lifecycle (no handshake, no session) ---
 
   test "server/discover returns the schema-shaped result with no version gate" do
-    conn = post(opts(), rpc("server/discover", %{}))
+    conn = post(opts(), rpc("server/discover", with_meta(%{})))
     r = result(conn)
     assert conn.status == 200
     assert r["supportedVersions"] == [@version]
@@ -75,15 +99,19 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert r["cacheScope"] == "public"
   end
 
-  test "a request without a protocolVersion _meta fails fast (-32022)" do
+  test "a request without protocol routing metadata fails header validation (-32020)" do
     conn = post(opts(), rpc("tools/call", %{"name" => "whoami"}))
-    assert error(conn)["code"] == -32_022
+    assert conn.status == 400
+    assert error(conn)["code"] == -32_020
   end
 
   test "initialize is gone → -32022; ping/logging.setLevel → -32601" do
-    assert error(post(opts(), rpc("initialize", %{})))["code"] == -32_022
-    assert error(post(opts(), rpc("ping", %{})))["code"] == -32_601
-    assert error(post(opts(), rpc("logging/setLevel", %{"level" => "info"})))["code"] == -32_601
+    assert error(post(opts(), rpc("initialize", with_meta(%{}))))["code"] == -32_022
+    assert error(post(opts(), rpc("ping", with_meta(%{}))))["code"] == -32_601
+
+    assert error(post(opts(), rpc("logging/setLevel", with_meta(%{"level" => "info"}))))[
+             "code"
+           ] == -32_601
   end
 
   # --- routing headers (SEP-2243) ---
@@ -100,6 +128,195 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     msg = rpc("tools/call", with_meta(%{"name" => "whoami", "arguments" => %{}}))
     bad = post(opts(), msg, [{"mcp-name", "other"}])
     assert error(bad)["code"] == -32_020
+  end
+
+  test "required routing headers cannot be omitted" do
+    message = rpc("tools/call", with_meta(%{"name" => "whoami", "arguments" => %{}}))
+
+    for header <- ["mcp-protocol-version", "mcp-method", "mcp-name"] do
+      conn = post(opts(), message, [], &delete_req_header(&1, header))
+
+      assert conn.status == 400
+      assert error(conn)["code"] == -32_020
+      assert error(conn)["data"] =~ header
+    end
+  end
+
+  test "Mcp-Protocol-Version must match the request metadata" do
+    conn =
+      post(opts(), rpc("tools/list", with_meta(%{})), [
+        {"mcp-protocol-version", "2099-01-01"}
+      ])
+
+    assert conn.status == 400
+    assert error(conn)["code"] == -32_020
+  end
+
+  test "a malformed but internally matching protocol version is HeaderMismatch" do
+    meta = %{"io.modelcontextprotocol/protocolVersion" => "not-a-date"}
+    message = rpc("tools/list", %{"_meta" => meta})
+
+    conn = post(opts(), message)
+
+    assert conn.status == 400
+    assert error(conn)["code"] == -32_020
+  end
+
+  test "a well-formed but unsupported protocol version reaches dispatch" do
+    meta = %{"io.modelcontextprotocol/protocolVersion" => "2099-01-01"}
+    message = rpc("tools/list", %{"_meta" => meta})
+
+    conn = post(opts(), message)
+
+    assert conn.status == 400
+    assert error(conn)["code"] == -32_022
+  end
+
+  test "Mcp-Name decodes the Base64 sentinel before comparison" do
+    message = rpc("resources/read", with_meta(%{"uri" => " padded "}))
+    encoded = "=?base64?IHBhZGRlZCA=?="
+
+    conn = post(opts(), message, [{"mcp-name", encoded}])
+
+    assert conn.status == 200
+    assert hd(result(conn)["contents"])["uri"] == " padded "
+  end
+
+  test "a malformed Base64-sentinel Mcp-Name is rejected even when its text matches" do
+    malformed = "=?base64?not-valid!?="
+    message = rpc("resources/read", with_meta(%{"uri" => malformed}))
+
+    conn = post(opts(), message, [{"mcp-name", malformed}])
+
+    assert conn.status == 400
+    assert error(conn)["code"] == -32_020
+  end
+
+  test "JSON-RPC responses are not treated as requests requiring routing headers" do
+    conn = post(opts(), %{"jsonrpc" => "2.0", "id" => 1, "result" => %{}})
+
+    assert conn.status == 202
+    assert conn.resp_body == ""
+  end
+
+  test "a recognized custom routing header is required and must match the tool argument" do
+    schema = %{
+      "type" => "object",
+      "properties" => %{
+        "region" => %{"type" => "string", "x-mcp-header" => "Region"}
+      }
+    }
+
+    plug_opts = opts(tool_schemas: %{"whoami" => schema})
+
+    message =
+      rpc(
+        "tools/call",
+        with_meta(%{"name" => "whoami", "arguments" => %{"region" => "us-east"}})
+      )
+
+    missing = post(plug_opts, message)
+    mismatch = post(plug_opts, message, [{"mcp-param-region", "us-west"}])
+    matching = post(plug_opts, message, [{"mcp-param-region", "us-east"}])
+
+    assert missing.status == 400
+    assert error(missing)["code"] == -32_020
+    assert error(missing)["data"] =~ "mcp-param-region"
+    assert mismatch.status == 400
+    assert error(mismatch)["code"] == -32_020
+    assert matching.status == 200
+  end
+
+  test "a malformed Base64-sentinel custom routing header is rejected" do
+    schema = %{
+      "type" => "object",
+      "properties" => %{
+        "region" => %{"type" => "string", "x-mcp-header" => "Region"}
+      }
+    }
+
+    message =
+      rpc(
+        "tools/call",
+        with_meta(%{"name" => "whoami", "arguments" => %{"region" => "north"}})
+      )
+
+    conn =
+      post(
+        opts(tool_schemas: %{"whoami" => schema}),
+        message,
+        [{"mcp-param-region", "=?base64?not-valid!?="}]
+      )
+
+    assert conn.status == 400
+    assert error(conn)["code"] == -32_020
+  end
+
+  test "custom routing headers decode nested values and compare integers numerically" do
+    schema = %{
+      "type" => "object",
+      "properties" => %{
+        "route" => %{
+          "type" => "object",
+          "properties" => %{
+            "region" => %{"type" => "string", "x-mcp-header" => "Region"}
+          }
+        },
+        "fresh" => %{"type" => "boolean", "x-mcp-header" => "Fresh"},
+        "limit" => %{"type" => "integer", "x-mcp-header" => "Limit"}
+      }
+    }
+
+    message =
+      rpc(
+        "tools/call",
+        with_meta(%{
+          "name" => "whoami",
+          "arguments" => %{"route" => %{"region" => "北"}, "fresh" => false, "limit" => 42}
+        })
+      )
+
+    conn =
+      post(opts(tool_schemas: %{"whoami" => schema}), message, [
+        {"mcp-param-region", "=?base64?5YyX?="},
+        {"mcp-param-fresh", "false"},
+        {"mcp-param-limit", "042"}
+      ])
+
+    assert conn.status == 200
+  end
+
+  test "the tool-schema resolver runs after identity resolution" do
+    test_pid = self()
+
+    resolver = fn name, identity ->
+      send(test_pid, {:schema_resolved, name, identity})
+
+      %{
+        "type" => "object",
+        "properties" => %{
+          "region" => %{"type" => "string", "x-mcp-header" => "Region"}
+        }
+      }
+    end
+
+    plug_opts =
+      opts(
+        handler_opts: fn conn -> [identity: conn.assigns[:role]] end,
+        tool_schemas: resolver
+      )
+
+    message =
+      rpc(
+        "tools/call",
+        with_meta(%{"name" => "whoami", "arguments" => %{"region" => "us-east"}})
+      )
+
+    conn =
+      post(plug_opts, message, [{"mcp-param-region", "us-east"}], &assign(&1, :role, "PM"))
+
+    assert conn.status == 200
+    assert_receive {:schema_resolved, "whoami", "PM"}
   end
 
   # SEP-2243 (F1): for resources/read the Mcp-Name target is params.uri.
@@ -299,7 +516,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
       # is self-contained. Round-robin the sequence across both and assert
       # identical results — proving there is no session affinity.
       sequence = [
-        {"server/discover", %{}},
+        {"server/discover", with_meta(%{})},
         {"tools/list", with_meta(%{})},
         {"tools/call", with_meta(%{"name" => "whoami", "arguments" => %{}})},
         {"resources/read", with_meta(%{"uri" => "mem://res"})}
@@ -333,13 +550,15 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
   end
 
   defp http_post(url, method, params) do
-    body = Jason.encode!(%{"jsonrpc" => "2.0", "id" => 1, "method" => method, "params" => params})
+    message = %{"jsonrpc" => "2.0", "id" => 1, "method" => method, "params" => params}
+    body = Jason.encode!(message)
 
-    headers = [
-      {"content-type", "application/json"},
-      {"accept", "application/json"},
-      {"origin", "http://localhost"}
-    ]
+    headers =
+      [
+        {"content-type", "application/json"},
+        {"accept", "application/json"},
+        {"origin", "http://localhost"}
+      ] ++ standard_headers(message)
 
     {:ok, resp} = Req.post(url, body: body, headers: headers)
     resp

@@ -24,7 +24,7 @@ defmodule MCP.Protocol.Types.Tool do
           title: String.t() | nil,
           description: String.t() | nil,
           input_schema: map(),
-          output_schema: map() | nil,
+          output_schema: map() | boolean() | nil,
           annotations: ToolAnnotations.t() | nil,
           icons: [Icon.t()] | nil,
           meta: map() | nil
@@ -36,12 +36,18 @@ defmodule MCP.Protocol.Types.Tool do
       name: Map.fetch!(map, "name"),
       title: Map.get(map, "title"),
       description: Map.get(map, "description"),
-      input_schema: Map.fetch!(map, "inputSchema"),
+      input_schema: map |> Map.fetch!("inputSchema") |> validate_input_schema!(),
       output_schema: Map.get(map, "outputSchema"),
       annotations: map |> Map.get("annotations") |> parse_annotations(),
       icons: map |> Map.get("icons") |> parse_icons(),
       meta: Map.get(map, "_meta")
     }
+  end
+
+  defp validate_input_schema!(%{"type" => "object"} = schema), do: schema
+
+  defp validate_input_schema!(_schema) do
+    raise ArgumentError, "inputSchema root must have type object"
   end
 
   defp parse_annotations(nil), do: nil

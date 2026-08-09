@@ -23,15 +23,16 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     1. **Enforcement** — localhost/Origin (and any host auth) runs first, on
        every request, before the identity factory (MC-5 / AC7). A rejected
        request never runs the factory.
-    2. **Decode + routing headers** — parse the JSON-RPC body; validate any
-       `Mcp-Method` / `Mcp-Name` routing headers against it (SEP-2243) —
-       mismatch → `-32020`.
+    2. **Decode + standard routing headers** — parse the JSON-RPC body; validate
+       `Mcp-Method` / `Mcp-Name` against it (SEP-2243) — mismatch → `-32020`.
     3. **Identity resolution** — the `:handler_opts` factory is evaluated
        against *this request's* `conn` (or the static keyword's `:identity`);
        the result populates `ToolContext.identity`, never from `params`
        (MC-2/Comment B, MC-3, MC-4). Factory failure → controlled `-32603`,
        no dispatch (MC-6).
-    4. **Dispatch** — `Dispatch.dispatch(message, ctx, config)`.
+    4. **Custom routing headers** — resolve the selected tool schema using the
+       authenticated identity and validate recognized `Mcp-Param-*` values.
+    5. **Dispatch** — `Dispatch.dispatch(message, ctx, config)`.
 
   ## Options
 
@@ -67,6 +68,12 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     * `:enable_json_response` — return `application/json` instead of SSE for
       request/response (default: false).
     * `:protocol_version` — advertised version (default: the stateless core's).
+    * `:tool_schemas` — either `%{tool_name => input_schema}` or a
+      `(tool_name, identity -> input_schema | nil)` resolver. Static schemas
+      are compiled and validated at mount. The resolver runs after identity
+      resolution, allowing identity-dependent catalogs without invoking
+      `handle_list_tools/3` as a routing side effect. It must return the same
+      selected schema that the handler advertises from `tools/list`.
 
   ## Security
 
@@ -85,7 +92,8 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   alias MCP.Protocol
   alias MCP.Protocol.Error
-  alias MCP.Protocol.Messages.Notification
+  alias MCP.Protocol.Messages.{Notification, Response}
+  alias MCP.Protocol.ToolRouting
   alias MCP.Server.{Config, Dispatch, ToolContext}
   alias MCP.Transport.SSE
 
@@ -100,6 +108,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     :handler_opts,
     :enable_json_response,
     :protocol_version,
+    :tool_schemas,
     :config
   ]
 
@@ -125,6 +134,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     handler_opts = validate_handler_opts!(Keyword.get(opts, :handler_opts, []))
     enable_json_response = Keyword.get(opts, :enable_json_response, false)
     protocol_version = Keyword.get(opts, :protocol_version, Dispatch.protocol_version())
+    tool_schemas = compile_tool_schemas!(Keyword.get(opts, :tool_schemas, %{}))
 
     # Build the immutable dispatch config once. Only the non-identity static
     # base reaches Handler.init/1; per-request identity rides ToolContext.
@@ -145,6 +155,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
       handler_opts: handler_opts,
       enable_json_response: enable_json_response,
       protocol_version: protocol_version,
+      tool_schemas: tool_schemas,
       config: dispatch_config
     }
   end
@@ -176,6 +187,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
          {:ok, message} <- Jason.decode(body),
          :ok <- check_routing_headers(conn, message),
          {:ok, identity} <- resolve_identity(config.handler_opts, conn),
+         :ok <- check_custom_routing_headers(conn, message, config.tool_schemas, identity),
          {:ok, decoded} <- Protocol.decode_message(message) do
       dispatch(conn, config, decoded, message, identity)
     else
@@ -205,6 +217,13 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
           inspect(reason)
         )
     end
+  end
+
+  # The stateless core issues no server-to-client requests, so a response has
+  # nothing to correlate. It is still a valid routing-header-free JSON-RPC
+  # message and receives the same empty acknowledgment as on stdio.
+  defp dispatch(conn, _config, %Response{}, _raw_message, _identity) do
+    Plug.Conn.send_resp(conn, 202, "")
   end
 
   defp dispatch(conn, config, decoded, raw_message, identity) do
@@ -255,26 +274,87 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   # --- Routing headers (SEP-2243) ---
 
-  # `Mcp-Method` must match the body method; `Mcp-Name` (when present) must
-  # match the request's **method-appropriate** target (SEP-2243, §"Mcp-Name":
+  # Routing headers are required on JSON-RPC requests. They must match the
+  # request body, and `Mcp-Name` must decode to the request's
+  # **method-appropriate** target (SEP-2243, §"Mcp-Name":
   # `params.name` for `tools/call`/`prompts/get`, `params.uri` for
   # `resources/read`). Enables gateways to route without inspecting the body.
-  defp check_routing_headers(conn, message) do
-    method = Map.get(message, "method")
-    header_method = first_header(conn, "mcp-method")
-    header_name = first_header(conn, "mcp-name")
-    target = routing_target(method, Map.get(message, "params"))
+  defp check_routing_headers(conn, %{"id" => _id, "method" => method} = message) do
+    params = Map.get(message, "params", %{})
+    version = get_in(params, ["_meta", "io.modelcontextprotocol/protocolVersion"])
 
-    cond do
-      header_method && header_method != method ->
-        {:error, {:routing_mismatch, "Mcp-Method #{header_method} != #{inspect(method)}"}}
-
-      header_name && target && header_name != target ->
-        {:error, {:routing_mismatch, "Mcp-Name #{header_name} != #{inspect(target)}"}}
-
-      true ->
-        :ok
+    with {:ok, header_version} <- required_header(conn, "mcp-protocol-version"),
+         :ok <- valid_protocol_version_header(header_version),
+         :ok <- matching_header("mcp-protocol-version", header_version, version),
+         {:ok, header_method} <- required_header(conn, "mcp-method"),
+         :ok <- matching_header("mcp-method", header_method, method) do
+      check_name_header(conn, method, params)
     end
+  end
+
+  defp check_routing_headers(_conn, _message), do: :ok
+
+  defp required_header(conn, name) do
+    case first_header(conn, name) do
+      nil -> {:error, {:routing_mismatch, "missing required #{name} header"}}
+      value -> {:ok, value}
+    end
+  end
+
+  defp matching_header(_name, value, value), do: :ok
+
+  defp matching_header(name, header_value, body_value) do
+    {:error,
+     {:routing_mismatch, "#{name} #{inspect(header_value)} != body value #{inspect(body_value)}"}}
+  end
+
+  defp valid_protocol_version_header(value) do
+    case Date.from_iso8601(value) do
+      {:ok, _date} -> :ok
+      {:error, _reason} -> {:error, {:routing_mismatch, "malformed mcp-protocol-version"}}
+    end
+  end
+
+  defp check_name_header(conn, method, params)
+       when method in ["tools/call", "prompts/get", "resources/read"] do
+    target = routing_target(method, params)
+
+    with {:ok, header_name} <- required_header(conn, "mcp-name"),
+         {:ok, decoded_name} <- decode_header_value(header_name) do
+      matching_header("mcp-name", decoded_name, target)
+    end
+  end
+
+  defp check_name_header(conn, _method, _params) do
+    case first_header(conn, "mcp-name") do
+      nil -> :ok
+      value -> {:error, {:routing_mismatch, "unexpected mcp-name header #{inspect(value)}"}}
+    end
+  end
+
+  defp decode_header_value("=?base64?" <> encoded_with_suffix) do
+    with true <- String.ends_with?(encoded_with_suffix, "?="),
+         encoded <- binary_part(encoded_with_suffix, 0, byte_size(encoded_with_suffix) - 2),
+         {:ok, decoded} <- Base.decode64(encoded),
+         true <- String.valid?(decoded) do
+      {:ok, decoded}
+    else
+      _ -> {:error, {:routing_mismatch, "invalid Base64-sentinel mcp-name header"}}
+    end
+  end
+
+  defp decode_header_value(value) do
+    if plain_header_value?(value) do
+      {:ok, value}
+    else
+      {:error, {:routing_mismatch, "invalid plain mcp-name header"}}
+    end
+  end
+
+  defp plain_header_value?(value) do
+    String.valid?(value) and
+      String.trim(value) == value and
+      Enum.all?(:binary.bin_to_list(value), &(&1 == 0x09 or &1 in 0x20..0x7E))
   end
 
   # SEP-2243: the `Mcp-Name` target is the method-appropriate field —
@@ -289,6 +369,102 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   end
 
   defp routing_target(_method, _params), do: nil
+
+  defp check_custom_routing_headers(
+         conn,
+         %{"method" => "tools/call", "params" => params},
+         tool_schemas,
+         identity
+       )
+       when is_map(params) do
+    name = Map.get(params, "name")
+    arguments = Map.get(params, "arguments", %{})
+
+    with {:ok, descriptors} <- resolve_tool_descriptors(tool_schemas, name, identity),
+         do: validate_custom_descriptors(conn, arguments, descriptors)
+  end
+
+  defp check_custom_routing_headers(_conn, _message, _tool_schemas, _identity), do: :ok
+
+  defp validate_custom_descriptors(conn, arguments, descriptors) do
+    Enum.reduce_while(descriptors, :ok, fn descriptor, :ok ->
+      case check_custom_header(conn, arguments, descriptor) do
+        :ok -> {:cont, :ok}
+        {:error, _reason} = error -> {:halt, error}
+      end
+    end)
+  end
+
+  defp check_custom_header(conn, arguments, descriptor) do
+    header_name = "mcp-param-#{String.downcase(descriptor.header)}"
+    header_value = first_header(conn, header_name)
+
+    case ToolRouting.argument_value(arguments, descriptor) do
+      :missing when is_nil(header_value) ->
+        :ok
+
+      :missing ->
+        routing_mismatch("unexpected #{header_name} header")
+
+      {:ok, _expected} when is_nil(header_value) ->
+        routing_mismatch("missing required #{header_name} header")
+
+      {:ok, expected} ->
+        with {:ok, decoded} <- decode_header_value(header_value) do
+          matching_custom_header(header_name, decoded, expected, descriptor.type)
+        end
+
+      {:error, reason} ->
+        routing_mismatch("invalid #{header_name} argument: #{reason}")
+    end
+  end
+
+  defp matching_custom_header(name, header_value, body_value, "integer") do
+    with {header_integer, ""} <- Integer.parse(header_value),
+         {body_integer, ""} <- Integer.parse(body_value),
+         true <- header_integer == body_integer do
+      :ok
+    else
+      _ -> matching_header(name, header_value, body_value)
+    end
+  end
+
+  defp matching_custom_header(name, header_value, body_value, _type),
+    do: matching_header(name, header_value, body_value)
+
+  defp resolve_tool_descriptors(tool_schemas, name, _identity) when is_map(tool_schemas),
+    do: {:ok, Map.get(tool_schemas, name, [])}
+
+  defp resolve_tool_descriptors(resolver, name, identity) when is_function(resolver, 2) do
+    case resolver.(name, identity) do
+      nil -> {:ok, []}
+      schema -> ToolRouting.descriptors(schema)
+    end
+  rescue
+    exception -> {:error, {:factory_failed, {:raised, exception, __STACKTRACE__}}}
+  end
+
+  defp routing_mismatch(detail), do: {:error, {:routing_mismatch, detail}}
+
+  defp compile_tool_schemas!(resolver) when is_function(resolver, 2), do: resolver
+
+  defp compile_tool_schemas!(schemas) when is_map(schemas) do
+    Map.new(schemas, fn {name, schema} ->
+      case ToolRouting.descriptors(schema) do
+        {:ok, descriptors} ->
+          {name, descriptors}
+
+        {:error, reason} ->
+          raise ArgumentError,
+                "invalid tool schema for #{inspect(name)}: #{inspect(reason)}"
+      end
+    end)
+  end
+
+  defp compile_tool_schemas!(other) do
+    raise ArgumentError,
+          "tool_schemas must be a map or a 2-arity function, got: #{inspect(other)}"
+  end
 
   # --- Per-request identity resolution (MC-2/Comment B) ---
 
@@ -354,20 +530,28 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   # --- Response shaping ---
 
   defp send_response(conn, config, response, notifications) do
+    status = response_status(response)
+
     if config.enable_json_response do
-      send_json_response(conn, response)
+      send_json_response(conn, response, status)
     else
-      send_sse_response(conn, response, notifications)
+      send_sse_response(conn, response, notifications, status)
     end
   end
 
-  defp send_json_response(conn, response) do
+  defp response_status(%{"error" => %{"code" => code}})
+       when code == -32_022,
+       do: 400
+
+  defp response_status(_response), do: 200
+
+  defp send_json_response(conn, response, status) do
     conn
     |> Plug.Conn.put_resp_content_type("application/json")
-    |> Plug.Conn.send_resp(200, Jason.encode!(response))
+    |> Plug.Conn.send_resp(status, Jason.encode!(response))
   end
 
-  defp send_sse_response(conn, response, notifications) do
+  defp send_sse_response(conn, response, notifications, status) do
     body =
       (notifications ++ [response])
       |> Enum.map_join(&SSE.encode_message/1)
@@ -375,7 +559,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     conn
     |> Plug.Conn.put_resp_content_type("text/event-stream")
     |> Plug.Conn.put_resp_header("cache-control", "no-cache")
-    |> Plug.Conn.send_resp(200, body)
+    |> Plug.Conn.send_resp(status, body)
   end
 
   defp send_json_error(conn, http_status, code, message, data) do

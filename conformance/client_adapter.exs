@@ -38,6 +38,22 @@ defmodule MCP.Conformance.ClientAdapter do
     Client.close(client)
   end
 
+  defp run_scenario("http-standard-headers", url) do
+    {:ok, client} = start_client(url)
+    {:ok, _result} = Client.connect(client)
+
+    {:ok, %{"tools" => [tool | _]}} = Client.list_tools(client)
+    {:ok, _result} = Client.call_tool(client, tool["name"], %{})
+
+    {:ok, %{"resources" => [resource | _]}} = Client.list_resources(client)
+    {:ok, _result} = Client.read_resource(client, resource["uri"])
+
+    {:ok, %{"prompts" => [prompt | _]}} = Client.list_prompts(client)
+    {:ok, _result} = Client.get_prompt(client, prompt["name"], %{})
+
+    Client.close(client)
+  end
+
   defp run_scenario(scenario, _url) do
     IO.puts("Unknown scenario: #{scenario}")
     System.halt(1)
@@ -45,10 +61,9 @@ defmodule MCP.Conformance.ClientAdapter do
 
   defp start_client(url) do
     Client.start_link(
-      transport:
-        {MCP.Transport.StreamableHTTP.Client, url: url, headers: []},
+      transport: {MCP.Transport.StreamableHTTP.Client, url: url, headers: []},
       client_info: %{name: "mcp_elixir_sdk_conformance", version: "1.0.0"},
-      on_sampling: fn params ->
+      on_sampling: fn _params ->
         {:ok,
          %{
            "role" => "assistant",
@@ -60,8 +75,9 @@ defmodule MCP.Conformance.ClientAdapter do
       on_roots_list: fn _params ->
         {:ok, %{"roots" => [%{"uri" => "file:///conformance", "name" => "conformance"}]}}
       end,
-      on_elicitation: fn params ->
-        {:ok, %{"action" => "accept", "content" => %{"username" => "test", "email" => "test@test.com"}}}
+      on_elicitation: fn _params ->
+        {:ok,
+         %{"action" => "accept", "content" => %{"username" => "test", "email" => "test@test.com"}}}
       end
     )
   end

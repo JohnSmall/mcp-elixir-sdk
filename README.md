@@ -17,7 +17,17 @@ Provides both **client** and **server** implementations with pluggable transport
 
 ## Protocol Version
 
-Implements MCP specification **2025-11-25**.
+Targets the MCP **2026-07-28 stateless core**.
+
+> **2.0 development:** `main` is currently migrating to the stateless MCP
+> `2026-07-28` core. The released 1.x usage below remains historical until the
+> 2.0 documentation cutover. Current engineering requirements and verified
+> progress start in [`docs/sdk-2.0/meta-plan.md`](docs/sdk-2.0/meta-plan.md),
+> with the companion
+> [specifications](docs/sdk-2.0/specifications.md),
+> [contracts](docs/sdk-2.0/contracts.md),
+> [types](docs/sdk-2.0/types.md), and
+> [runtime models](docs/sdk-2.0/runtime-models.md).
 
 ## Installation
 
@@ -407,10 +417,10 @@ copy-pasteable, covering stdio and Streamable HTTP for both client and server.
 
 ## Documentation
 
-- [MCP Specification (2025-11-25)](https://modelcontextprotocol.io/specification/2025-11-25)
+- [MCP Specification (2026-07-28)](https://modelcontextprotocol.io/specification/2026-07-28)
 - [Architecture](docs/architecture.md) — module map, data flow, transport design
-- [Onboarding](https://github.com/JohnSmall/mcp-elixir-sdk/blob/main/docs/onboarding.md) — full context for contributors
-- [Architecture Decision Records (ADRs)](https://github.com/JohnSmall/mcp-elixir-sdk/tree/main/docs/adr) — project decision records
+- [Onboarding](https://github.com/jmagar/mcp-elixir-sdk/blob/main/docs/onboarding.md) — full context for contributors
+- [Architecture Decision Records (ADRs)](https://github.com/jmagar/mcp-elixir-sdk/tree/main/docs/adr) — project decision records
 
 ## License
 

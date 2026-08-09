@@ -26,6 +26,7 @@ defmodule MCP.Transport.StreamableHTTP.Client do
 
   require Logger
 
+  alias MCP.Protocol.ToolRouting
   alias MCP.Transport.SSE
 
   @behaviour MCP.Transport
@@ -49,7 +50,12 @@ defmodule MCP.Transport.StreamableHTTP.Client do
 
   @impl MCP.Transport
   def send_message(pid, message) when is_map(message) do
-    GenServer.call(pid, {:send_message, message}, 60_000)
+    send_message(pid, message, [])
+  end
+
+  @impl MCP.Transport
+  def send_message(pid, message, opts) when is_map(message) and is_list(opts) do
+    GenServer.call(pid, {:send_message, message, opts}, 60_000)
   end
 
   @impl MCP.Transport
@@ -68,20 +74,26 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     protocol_version = Keyword.get(opts, :protocol_version, @protocol_version)
     extra_headers = Keyword.get(opts, :headers, [])
 
-    state = %__MODULE__{
-      owner: owner,
-      url: url,
-      protocol_version: protocol_version,
-      extra_headers: extra_headers
-    }
+    case reserved_extra_header(extra_headers) do
+      nil ->
+        state = %__MODULE__{
+          owner: owner,
+          url: url,
+          protocol_version: protocol_version,
+          extra_headers: extra_headers
+        }
 
-    {:ok, state}
+        {:ok, state}
+
+      name ->
+        {:stop, {:reserved_extra_header, name}}
+    end
   end
 
   @impl GenServer
-  def handle_call({:send_message, message}, _from, state) do
+  def handle_call({:send_message, message, opts}, _from, state) do
     # Send HTTP POST with the JSON-RPC message
-    case do_post(state, message) do
+    case do_post(state, message, opts) do
       {:ok, new_state} ->
         {:reply, :ok, new_state}
 
@@ -148,8 +160,14 @@ defmodule MCP.Transport.StreamableHTTP.Client do
 
   # --- Private helpers ---
 
-  defp do_post(state, message) do
-    headers = build_headers(state)
+  defp do_post(state, message, opts) do
+    case build_headers(state, message, opts) do
+      {:ok, headers} -> post(state, message, headers)
+      {:error, _reason} = error -> error
+    end
+  end
+
+  defp post(state, message, headers) do
     body = Jason.encode!(message)
 
     case Req.post(state.url, body: body, headers: headers, receive_timeout: 60_000) do
@@ -188,12 +206,100 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     end
   end
 
-  defp build_headers(state) do
-    [
-      {"content-type", "application/json"},
-      {"accept", "application/json, text/event-stream"},
-      {"mcp-protocol-version", state.protocol_version}
-    ] ++ state.extra_headers
+  defp build_headers(state, message, opts) do
+    with {:ok, custom_headers} <-
+           custom_routing_headers(message, Keyword.get(opts, :routing_headers, [])) do
+      {:ok,
+       [
+         {"content-type", "application/json"},
+         {"accept", "application/json, text/event-stream"},
+         {"mcp-protocol-version", request_protocol_version(message, state.protocol_version)}
+       ] ++ routing_headers(message) ++ custom_headers ++ state.extra_headers}
+    end
+  end
+
+  defp request_protocol_version(message, fallback) do
+    get_in(message, ["params", "_meta", "io.modelcontextprotocol/protocolVersion"]) || fallback
+  end
+
+  defp routing_headers(%{"method" => method} = message) do
+    [{"mcp-method", method}] ++ routing_name_header(method, Map.get(message, "params"))
+  end
+
+  defp routing_headers(_message), do: []
+
+  defp routing_name_header(method, params) when is_map(params) do
+    target =
+      case method do
+        "tools/call" -> Map.get(params, "name")
+        "prompts/get" -> Map.get(params, "name")
+        "resources/read" -> Map.get(params, "uri")
+        _method -> nil
+      end
+
+    if target, do: [{"mcp-name", encode_header_value(target)}], else: []
+  end
+
+  defp routing_name_header(_method, _params), do: []
+
+  defp custom_routing_headers(%{"params" => %{"arguments" => arguments}}, descriptors)
+       when is_map(arguments) do
+    Enum.reduce_while(descriptors, {:ok, []}, fn descriptor, {:ok, headers} ->
+      name = "mcp-param-#{String.downcase(descriptor.header)}"
+
+      case ToolRouting.argument_value(arguments, descriptor) do
+        :missing ->
+          {:cont, {:ok, headers}}
+
+        {:ok, value} ->
+          {:cont, {:ok, headers ++ [{name, encode_header_value(value)}]}}
+
+        {:error, reason} ->
+          {:halt, {:error, {:invalid_routing_argument, name, reason}}}
+      end
+    end)
+  end
+
+  defp custom_routing_headers(_message, _descriptors), do: {:ok, []}
+
+  defp encode_header_value(value) when is_binary(value) do
+    if plain_header_value?(value) do
+      value
+    else
+      "=?base64?#{Base.encode64(value)}?="
+    end
+  end
+
+  defp plain_header_value?(value) do
+    safe_bytes? =
+      value
+      |> :binary.bin_to_list()
+      |> Enum.all?(&(&1 == 0x09 or &1 in 0x20..0x7E))
+
+    safe_bytes? and value == String.trim(value) and not sentinel_shaped?(value)
+  end
+
+  defp sentinel_shaped?(value) do
+    String.starts_with?(value, "=?base64?") and String.ends_with?(value, "?=")
+  end
+
+  defp reserved_extra_header(headers) do
+    Enum.find_value(headers, fn
+      {name, _value} when is_binary(name) -> if reserved_header?(name), do: name
+      _header -> nil
+    end)
+  end
+
+  defp reserved_header?(name) do
+    normalized = String.downcase(name)
+
+    normalized in [
+      "content-type",
+      "accept",
+      "mcp-protocol-version",
+      "mcp-method",
+      "mcp-name"
+    ] or String.starts_with?(normalized, "mcp-param-")
   end
 
   defp get_content_type(headers) do
