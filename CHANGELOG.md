@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Full `2025-11-25` compatibility alongside `2026-07-28`: bounded client
+- Core `2025-11-25` compatibility alongside `2026-07-28`: bounded client
   negotiation fallback, initialize/initialized, legacy Streamable HTTP
   sessions, GET SSE server requests, session DELETE, resource subscriptions,
   logging, roots, sampling, elicitation, ping, and legacy notifications.
@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   lossless JSON Schema 2020-12, complete JSON structured-content values, W3C
   trace metadata, and schema-directed routing headers.
 - Pinned official conformance adapters, scenario ledger, and CI release gates.
+  The official 2025 server requirements denominator is covered; client
+  compatibility evidence currently combines the official initialize scenario
+  with the local cross-transport matrix rather than claiming a full official
+  client denominator.
 
 ### Changed
 
@@ -46,6 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Identity is resolved per authenticated HTTP request or once at stdio launch
   and is carried only in `ToolContext`; model-controlled arguments and metadata
   cannot override it.
+- Stateful HTTP sessions are principal-bound, supervised, capacity-limited,
+  and reclaimed on idle/absolute expiry or endpoint shutdown.
 - Request metadata, routing headers, extension values, cache policy, queue
   bounds, and tool routing annotations are validated at their boundaries.
 

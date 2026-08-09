@@ -269,6 +269,18 @@ defmodule MCP.ClientLifecycleTest do
     assert Client.status(client) == :ready
   end
 
+  test "subscription worker exit cannot crash the client after transport loss" do
+    {client, transport, handle} = start_mock_subscription()
+    client_ref = Process.monitor(client)
+
+    GenServer.stop(transport, :normal)
+    assert :ok = SubscriptionHandle.close(handle)
+    _ = :sys.get_state(client)
+
+    refute_receive {:DOWN, ^client_ref, :process, ^client, _reason}, 100
+    assert Client.status(client) == :ready
+  end
+
   test "malformed final subscription result fails only that subscription" do
     {client, transport, handle} = start_mock_subscription()
     id = handle.id

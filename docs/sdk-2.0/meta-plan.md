@@ -36,7 +36,7 @@ them.
 | S4 JSON Schema 2020-12 | Verified | Server pending scenario **8/8**; client preservation **9/9**; no network `$ref` dereference **1/1** | — | Merge/release decision |
 | S5 Client/server wiring + conformance | Verified | **367** local tests; all **120** scored server checks pass with no warnings; required client matrix **63/63** | S1-S4 | Merge/release decision |
 | S6 Release hardening | Verified | Final Lavra review remediated; Credo/Dialyzer/audit/docs/Hex gates are clean; CI dependencies and conformance tooling are integrity-pinned | S1-S5 | Merge/release decision |
-| S7 Dual-era compatibility | Verified | 2025 server denominator **81/81**; 2026 stateless initialization **30/30**; explicit and negotiated legacy client integration; **379** local tests | S1-S6 | Merge/release decision |
+| S7 Dual-era compatibility | Verified | 2025 server denominator **81/81**; 2026 stateless initialization **30/30**; explicit and negotiated legacy client integration; **414** local tests | S1-S6 | Merge/release decision |
 
 All six implementation slices and the final adversarial remediation are
 committed, pushed, and verified by hosted CI run
@@ -482,10 +482,13 @@ clients, legacy server sessions on owner-based and HTTP transports, independent
 server requests, resource/logging callbacks, notifications, and strict
 protocol-mode isolation. The initial compatibility suite was red in three
 places. After lifecycle hardening, bounded session queues, and stale-session
-cleanup, the full suite reached **379 tests, 0 failures**. The official 2025
+cleanup and the post-implementation adversarial hardening pass, the full suite
+reached **414 tests, 0 failures**. The official 2025
 server requirements denominator passed **81/81**; the isolated 2026 stateless
 server scenario passed **30/30**. Explicit legacy selection and negotiated
 downgrade are both covered by real-transport SDK client integration tests.
+The 2025 client claim remains deliberately narrower: one official initialize
+scenario plus the local cross-transport compatibility matrix.
 
 ## Current evidence anchors
 

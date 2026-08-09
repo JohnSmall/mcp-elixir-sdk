@@ -29,6 +29,7 @@ defmodule MCP.Server.Connection do
   require Logger
 
   alias MCP.Protocol
+  alias MCP.Protocol.Capabilities.{ClientCapabilities, ElicitationCapabilities}
   alias MCP.Protocol.Error
   alias MCP.Protocol.Messages.{Notification, Request, Response}
   alias MCP.Protocol.Messages.Subscriptions.{ListenParams, ListenResult}
@@ -45,6 +46,8 @@ defmodule MCP.Server.Connection do
   }
 
   @subscription_id_key "io.modelcontextprotocol/subscriptionId"
+  @legacy_mrtr_max_inputs 32
+  @legacy_mrtr_concurrency 8
 
   defstruct [
     :transport_module,
@@ -104,34 +107,39 @@ defmodule MCP.Server.Connection do
   def request_elicitation(server, params, timeout \\ 60_000),
     do: request_client(server, Methods.elicitation_create(), params, timeout)
 
-  defp request_client(server, method, params, timeout),
-    do: GenServer.call(server, {:request_client, method, params, timeout}, :infinity)
+  defp request_client(server, method, params, timeout) do
+    if valid_timeout?(timeout) do
+      GenServer.call(server, {:request_client, method, params, timeout}, :infinity)
+    else
+      {:error, {:invalid_timeout, timeout}}
+    end
+  end
 
   @doc "Notifies a legacy client that the tool list changed."
   def notify_tools_changed(server),
-    do: GenServer.cast(server, {:legacy_notify, Methods.tools_list_changed(), nil})
+    do: GenServer.call(server, {:legacy_notify, Methods.tools_list_changed(), nil})
 
   @doc "Notifies a legacy client that the resource list changed."
   def notify_resources_changed(server),
-    do: GenServer.cast(server, {:legacy_notify, Methods.resources_list_changed(), nil})
+    do: GenServer.call(server, {:legacy_notify, Methods.resources_list_changed(), nil})
 
   @doc "Notifies a legacy client that one resource changed."
   def notify_resource_updated(server, uri),
-    do: GenServer.cast(server, {:legacy_notify, Methods.resources_updated(), %{"uri" => uri}})
+    do: GenServer.call(server, {:legacy_notify, Methods.resources_updated(), %{"uri" => uri}})
 
   @doc "Notifies a legacy client that the prompt list changed."
   def notify_prompts_changed(server),
-    do: GenServer.cast(server, {:legacy_notify, Methods.prompts_list_changed(), nil})
+    do: GenServer.call(server, {:legacy_notify, Methods.prompts_list_changed(), nil})
 
   @doc "Sends a legacy logging notification when allowed by the negotiated level."
   def log(server, level, data, logger_name \\ nil),
-    do: GenServer.cast(server, {:legacy_log, level, data, logger_name})
+    do: GenServer.call(server, {:legacy_log, level, data, logger_name})
 
   @doc "Sends a legacy progress notification."
   def send_progress(server, progress_token, progress, total \\ nil) do
     params = %{"progressToken" => progress_token, "progress" => progress}
     params = if is_nil(total), do: params, else: Map.put(params, "total", total)
-    GenServer.cast(server, {:legacy_notify, Methods.progress(), params})
+    GenServer.call(server, {:legacy_notify, Methods.progress(), params})
   end
 
   # --- GenServer callbacks ---
@@ -153,8 +161,9 @@ defmodule MCP.Server.Connection do
       |> Keyword.put(:handler_opts, handler_opts)
       |> Keyword.put(:subscriptions_enabled, subscriptions_enabled)
 
-    with {:ok, task_supervisor} <- Task.Supervisor.start_link(),
-         :ok <- validate_subscription_options(opts),
+    with :ok <- validate_subscription_options(opts),
+         :ok <- validate_request_timeout(Keyword.get(opts, :request_timeout, 30_000)),
+         {:ok, task_supervisor} <- Task.Supervisor.start_link(),
          {:ok, config} <- Config.build(handler_module, config_opts),
          {:ok, module, pid} <- start_transport(transport_spec) do
       {:ok,
@@ -200,19 +209,58 @@ defmodule MCP.Server.Connection do
   end
 
   def handle_call(
+        {:legacy_notify, method, params},
+        _from,
+        %{protocol_mode: :legacy, legacy_status: :ready} = state
+      ) do
+    {:reply, send_legacy_notification(state, method, params), state}
+  end
+
+  def handle_call({:legacy_notify, _method, _params}, _from, state),
+    do: {:reply, {:error, :legacy_client_not_ready}, state}
+
+  def handle_call(
+        {:legacy_log, level, data, logger_name},
+        _from,
+        %{protocol_mode: :legacy, legacy_status: :ready} = state
+      ) do
+    cond do
+      not valid_log_level?(level) ->
+        {:reply, {:error, :invalid_log_level}, state}
+
+      log_level_allowed?(level, state.legacy_log_level) ->
+        params = %{"level" => level, "data" => data}
+        params = if is_nil(logger_name), do: params, else: Map.put(params, "logger", logger_name)
+        {:reply, send_legacy_notification(state, Methods.logging_message(), params), state}
+
+      true ->
+        {:reply, :ok, state}
+    end
+  end
+
+  def handle_call({:legacy_log, _level, _data, _logger_name}, _from, state),
+    do: {:reply, {:error, :legacy_client_not_ready}, state}
+
+  def handle_call(
         {:request_client, method, params, timeout},
         from,
         %{protocol_mode: :legacy, legacy_status: :ready} = state
       ) do
-    timeout = timeout || state.request_timeout
-    id = state.next_id
-    message = Request.new(id, method, params) |> Jason.encode!() |> Jason.decode!()
-
-    case state.transport_module.send_message(state.transport_pid, message) do
+    case require_client_capability(method, params, state.legacy_client_capabilities) do
       :ok ->
-        timeout_ref = Process.send_after(self(), {:client_request_timeout, id}, timeout)
-        pending = Map.put(state.pending_client_requests, id, {from, timeout_ref})
-        {:noreply, %{state | next_id: id + 1, pending_client_requests: pending}}
+        id = state.next_id
+        message = Request.new(id, method, params) |> Jason.encode!() |> Jason.decode!()
+
+        case state.transport_module.send_message(state.transport_pid, message) do
+          :ok ->
+            timeout_ref = Process.send_after(self(), {:client_request_timeout, id}, timeout)
+            monitor_ref = Process.monitor(elem(from, 0))
+            pending = Map.put(state.pending_client_requests, id, {from, timeout_ref, monitor_ref})
+            {:noreply, %{state | next_id: id + 1, pending_client_requests: pending}}
+
+          {:error, reason} ->
+            {:reply, {:error, reason}, state}
+        end
 
       {:error, reason} ->
         {:reply, {:error, reason}, state}
@@ -221,32 +269,6 @@ defmodule MCP.Server.Connection do
 
   def handle_call({:request_client, _method, _params, _timeout}, _from, state),
     do: {:reply, {:error, :legacy_client_not_ready}, state}
-
-  @impl GenServer
-  def handle_cast(
-        {:legacy_notify, method, params},
-        %{protocol_mode: :legacy, legacy_status: :ready} = state
-      ) do
-    send_legacy_notification(state, method, params)
-    {:noreply, state}
-  end
-
-  def handle_cast({:legacy_notify, _method, _params}, state), do: {:noreply, state}
-
-  def handle_cast(
-        {:legacy_log, level, data, logger_name},
-        %{protocol_mode: :legacy, legacy_status: :ready} = state
-      ) do
-    if log_level_allowed?(level, state.legacy_log_level) do
-      params = %{"level" => level, "data" => data}
-      params = if is_nil(logger_name), do: params, else: Map.put(params, "logger", logger_name)
-      send_legacy_notification(state, Methods.logging_message(), params)
-    end
-
-    {:noreply, state}
-  end
-
-  def handle_cast({:legacy_log, _level, _data, _logger_name}, state), do: {:noreply, state}
 
   @impl GenServer
   def handle_info({:mcp_message, message}, state),
@@ -258,7 +280,8 @@ defmodule MCP.Server.Connection do
 
   def handle_info({:client_request_timeout, id}, state) do
     case Map.pop(state.pending_client_requests, id) do
-      {{from, _timeout_ref}, pending} ->
+      {{from, _timeout_ref, monitor_ref}, pending} ->
+        Process.demonitor(monitor_ref, [:flush])
         GenServer.reply(from, {:error, :timeout})
         {:noreply, %{state | pending_client_requests: pending}}
 
@@ -286,7 +309,7 @@ defmodule MCP.Server.Connection do
   def handle_info({:DOWN, ref, :process, worker, reason}, state) do
     case subscription_by_monitor(state.subscriptions, ref, worker) do
       nil ->
-        {:noreply, state}
+        {:noreply, remove_pending_client_request(state, ref)}
 
       {id, _subscription} when reason == :normal ->
         {:noreply, remove_subscription(state, id)}
@@ -335,12 +358,19 @@ defmodule MCP.Server.Connection do
 
   defp handle_decoded_message(
          {:ok, %Notification{method: "notifications/cancelled"} = notification},
-         state
+         %{protocol_mode: :stateless} = state
        ),
        do: cancel_subscription(notification, state)
 
+  defp handle_decoded_message(
+         {:ok, %Notification{}},
+         %{protocol_mode: mode} = state
+       )
+       when mode in [:undetermined, :legacy],
+       do: {:noreply, state}
+
   defp handle_decoded_message({:ok, %Notification{} = notification}, state),
-    do: dispatch(notification, nil, %{state | protocol_mode: :stateless})
+    do: dispatch(notification, nil, state)
 
   defp handle_decoded_message({:ok, %Response{} = response}, state),
     do: handle_client_response(response, state)
@@ -352,8 +382,9 @@ defmodule MCP.Server.Connection do
 
   defp handle_client_response(%Response{id: id} = response, state) do
     case Map.pop(state.pending_client_requests, id) do
-      {{from, timeout_ref}, pending} ->
+      {{from, timeout_ref, monitor_ref}, pending} ->
         Process.cancel_timer(timeout_ref)
+        Process.demonitor(monitor_ref, [:flush])
         reply = if response.error, do: {:error, response.error}, else: {:ok, response.result}
         GenServer.reply(from, reply)
         {:noreply, %{state | pending_client_requests: pending}}
@@ -375,6 +406,7 @@ defmodule MCP.Server.Connection do
            %{
              state
              | protocol_mode: :legacy,
+               legacy_status: :initialized,
                legacy_client_info: initialize.client_info,
                legacy_client_capabilities: initialize.capabilities
            }}
@@ -391,8 +423,10 @@ defmodule MCP.Server.Connection do
   defp initialize_legacy(%Request{id: id}, state),
     do: send_protocol_error(state, id, Error.invalid_request("Protocol mode already selected"))
 
-  defp initialize_legacy_notification(%{protocol_mode: :legacy, legacy_status: :waiting} = state),
-    do: {:noreply, %{state | legacy_status: :ready}}
+  defp initialize_legacy_notification(
+         %{protocol_mode: :legacy, legacy_status: :initialized} = state
+       ),
+       do: {:noreply, %{state | legacy_status: :ready}}
 
   defp initialize_legacy_notification(%{protocol_mode: :legacy} = state), do: {:noreply, state}
 
@@ -417,7 +451,7 @@ defmodule MCP.Server.Connection do
   defp dispatch_legacy(%Request{} = request, state) do
     context = %ToolContext{
       request_id: request.id,
-      meta: Map.get(request.params || %{}, "_meta"),
+      meta: request_meta(request.params),
       identity: state.identity,
       reply_sink: reply_sink(state, request.id)
     }
@@ -428,9 +462,26 @@ defmodule MCP.Server.Connection do
         {:noreply, update_legacy_request_state(state, request, response)}
 
       {:input_required, requests, request_state} ->
-        case resolve_legacy_inputs(state.task_supervisor, request, requests, request_state) do
+        case resolve_legacy_inputs(
+               state.task_supervisor,
+               request,
+               requests,
+               request_state,
+               state.request_timeout
+             ) do
           {:ok, _pid} ->
             {:noreply, state}
+
+          {:error, {:too_many_input_requests, _count, _limit} = reason} ->
+            send_protocol_error(
+              state,
+              request.id,
+              Error.invalid_params(%{
+                "reason" => "too_many_input_requests",
+                "count" => elem(reason, 1),
+                "limit" => elem(reason, 2)
+              })
+            )
 
           {:error, reason} ->
             send_protocol_error(
@@ -445,27 +496,64 @@ defmodule MCP.Server.Connection do
     end
   end
 
-  defp resolve_legacy_inputs(task_supervisor, request, requests, request_state) do
+  defp resolve_legacy_inputs(task_supervisor, request, requests, request_state, timeout) do
     server = self()
 
-    Task.Supervisor.start_child(task_supervisor, fn ->
-      server
-      |> collect_legacy_inputs(requests)
-      |> report_legacy_inputs(server, request, request_state)
+    if map_size(requests) <= @legacy_mrtr_max_inputs do
+      Task.Supervisor.start_child(task_supervisor, fn ->
+        task_supervisor
+        |> collect_legacy_inputs(server, requests, timeout)
+        |> report_legacy_inputs(server, request, request_state)
+      end)
+    else
+      {:error, {:too_many_input_requests, map_size(requests), @legacy_mrtr_max_inputs}}
+    end
+  end
+
+  defp collect_legacy_inputs(task_supervisor, server, requests, timeout) do
+    deadline = System.monotonic_time(:millisecond) + timeout
+
+    task_supervisor
+    |> Task.Supervisor.async_stream_nolink(
+      requests,
+      fn {key, input_request} -> resolve_legacy_input(server, key, input_request, deadline) end,
+      max_concurrency: @legacy_mrtr_concurrency,
+      ordered: false,
+      timeout: timeout,
+      on_timeout: :kill_task
+    )
+    |> Enum.reduce_while({:ok, %{}}, fn
+      {:ok, {:ok, key, response}}, {:ok, responses} ->
+        {:cont, {:ok, Map.put(responses, key, response)}}
+
+      {:ok, {:error, reason}}, _responses ->
+        {:halt, {:error, reason}}
+
+      {:exit, reason}, _responses ->
+        {:halt, {:error, reason}}
     end)
   end
 
-  defp collect_legacy_inputs(server, requests) do
-    Enum.reduce_while(requests, {:ok, %{}}, fn {key, input_request}, {:ok, responses} ->
-      method = Map.get(input_request, "method")
-      params = Map.get(input_request, "params", %{})
+  defp resolve_legacy_input(server, key, input_request, deadline) when is_map(input_request) do
+    method = Map.get(input_request, "method")
+    params = Map.get(input_request, "params", %{})
+    remaining = deadline - System.monotonic_time(:millisecond)
 
-      case request_client(server, method, params, 60_000) do
-        {:ok, response} -> {:cont, {:ok, Map.put(responses, key, response)}}
-        {:error, reason} -> {:halt, {:error, reason}}
+    if remaining > 0 do
+      case request_client(server, method, params, remaining) do
+        {:ok, response} -> {:ok, key, response}
+        {:error, reason} -> {:error, reason}
       end
-    end)
+    else
+      {:error, :timeout}
+    end
   end
+
+  defp resolve_legacy_input(_server, _key, _input_request, _timeout),
+    do: {:error, :input_request_must_be_an_object}
+
+  defp request_meta(params) when is_map(params), do: Map.get(params, "_meta")
+  defp request_meta(_params), do: nil
 
   defp report_legacy_inputs({:ok, responses}, server, request, request_state),
     do: send(server, {:legacy_inputs_resolved, request, responses, request_state})
@@ -478,18 +566,38 @@ defmodule MCP.Server.Connection do
   defp maybe_put_request_state(params, request_state),
     do: Map.put(params, "requestState", request_state)
 
-  defp stateless_request?(%Request{params: params}) do
-    get_in(params || %{}, ["_meta", "io.modelcontextprotocol/protocolVersion"]) ==
-      Dispatch.protocol_version()
-  end
+  defp stateless_request?(%Request{
+         params: %{
+           "_meta" => %{
+             "io.modelcontextprotocol/protocolVersion" => protocol_version
+           }
+         }
+       }),
+       do: protocol_version == Dispatch.protocol_version()
+
+  defp stateless_request?(%Request{}), do: false
 
   defp fail_pending_client_requests(state, reason) do
-    Enum.each(state.pending_client_requests, fn {_id, {from, timeout_ref}} ->
+    Enum.each(state.pending_client_requests, fn {_id, {from, timeout_ref, monitor_ref}} ->
       Process.cancel_timer(timeout_ref)
+      Process.demonitor(monitor_ref, [:flush])
       GenServer.reply(from, {:error, reason})
     end)
 
     %{state | pending_client_requests: %{}}
+  end
+
+  defp remove_pending_client_request(state, monitor_ref) do
+    case Enum.find(state.pending_client_requests, fn {_id, {_from, _timer, ref}} ->
+           ref == monitor_ref
+         end) do
+      {id, {_from, timeout_ref, ^monitor_ref}} ->
+        Process.cancel_timer(timeout_ref)
+        %{state | pending_client_requests: Map.delete(state.pending_client_requests, id)}
+
+      nil ->
+        state
+    end
   end
 
   defp update_legacy_request_state(
@@ -512,6 +620,77 @@ defmodule MCP.Server.Connection do
     minimum_index = Enum.find_index(levels, &(&1 == minimum))
     is_integer(level_index) and is_integer(minimum_index) and level_index >= minimum_index
   end
+
+  defp valid_log_level?(level),
+    do: level in ~w(debug info notice warning error critical alert emergency)
+
+  defp valid_timeout?(timeout), do: is_integer(timeout) and timeout > 0
+
+  defp validate_request_timeout(timeout) do
+    if valid_timeout?(timeout),
+      do: :ok,
+      else: {:error, {:invalid_request_timeout, timeout}}
+  end
+
+  defp require_client_capability(
+         method,
+         params,
+         %ClientCapabilities{} = capabilities
+       ) do
+    cond do
+      method == Methods.sampling_create_message() and is_nil(capabilities.sampling) ->
+        {:error, Error.missing_required_client_capability("sampling")}
+
+      method == Methods.roots_list() and is_nil(capabilities.roots) ->
+        {:error, Error.missing_required_client_capability("roots")}
+
+      method == Methods.elicitation_create() ->
+        require_elicitation_capability(params, capabilities.elicitation)
+
+      method in [
+        Methods.sampling_create_message(),
+        Methods.roots_list(),
+        Methods.elicitation_create()
+      ] ->
+        :ok
+
+      true ->
+        {:error, Error.missing_required_client_capability(method)}
+    end
+  end
+
+  defp require_client_capability(method, _params, _capabilities),
+    do: {:error, Error.missing_required_client_capability(method)}
+
+  defp require_elicitation_capability(
+         %{"mode" => "url"},
+         %ElicitationCapabilities{url: url}
+       )
+       when not is_nil(url),
+       do: :ok
+
+  defp require_elicitation_capability(
+         params,
+         %ElicitationCapabilities{form: form}
+       )
+       when not is_nil(form) do
+    if is_map(params) and Map.get(params, "mode") in [nil, "form"],
+      do: :ok,
+      else: {:error, Error.missing_required_client_capability("elicitation")}
+  end
+
+  defp require_elicitation_capability(
+         params,
+         %ElicitationCapabilities{form: nil, url: nil}
+       )
+       when is_map(params) do
+    if Map.get(params, "mode") in [nil, "form"],
+      do: :ok,
+      else: {:error, Error.missing_required_client_capability("elicitation")}
+  end
+
+  defp require_elicitation_capability(_params, _capabilities),
+    do: {:error, Error.missing_required_client_capability("elicitation")}
 
   defp dispatch(message, request_id, state) do
     ctx = %ToolContext{

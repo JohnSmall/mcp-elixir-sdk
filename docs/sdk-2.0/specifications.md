@@ -42,7 +42,8 @@ Every slice preserves these invariants:
 3. Authenticated identity comes from the transport pipeline and is never read
    from model-controlled request arguments.
 4. Streamable HTTP sends no `Mcp-Session-Id` for 2026. For 2025 it requires a
-   session ID after initialize and supports GET SSE plus session DELETE.
+   session ID after initialize, revalidates the authenticated principal on
+   every session request, and supports GET SSE plus session DELETE.
 5. 2026 server-to-client input uses MRTR; 2025 uses correlated independent
    JSON-RPC requests over its connection or session SSE channel.
 6. Unknown fields survive decode/encode only at schema-defined extensibility
@@ -73,8 +74,17 @@ Every slice preserves these invariants:
   mixed-era traffic.
 - Legacy HTTP MUST implement initialize/initialized, `Mcp-Session-Id`, POST,
   GET SSE server messages, and DELETE cleanup.
+- Legacy HTTP sessions MUST be supervised, principal-bound, capacity-limited,
+  and reclaimed by idle/absolute expiry. Failed initialize MUST NOT publish or
+  retain a session.
+- A current HTTP client MUST treat a conforming HTTP 400 unsupported-version
+  JSON-RPC response as eligible for its single fallback, and MUST perform one
+  bounded reinitialization after an expired-session HTTP 404.
 - Legacy server/client surfaces MUST cover ping, roots, sampling, elicitation,
   resource subscriptions, logging, progress, and list-change notifications.
+- Both peers MUST reject unnegotiated server-request capabilities, bound
+  callback concurrency/deadlines, and preserve the selected protocol mode
+  across notifications.
 - Compatibility metadata injected by an internal adapter MUST NOT be visible to
   consumer handlers or emitted to legacy peers.
 

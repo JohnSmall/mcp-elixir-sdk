@@ -21,7 +21,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   ## Per-request pipeline (strict order)
 
-    1. **Enforcement** — localhost/Origin (and any host auth) runs first, on
+    1. **Enforcement** — configured Host/Origin policy (and any host auth) runs first, on
        every request, before the identity factory (MC-5 / AC7). A rejected
        request never runs the factory.
     2. **Decode + request metadata** — parse the JSON-RPC body and validate the
@@ -46,8 +46,9 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
       — see the security warning on `MCP.Server.Config.build/2`.
     * `:handler_opts` — static `keyword()` **or** a `(Plug.Conn.t() ->
       keyword())` factory. The factory is evaluated **per request** for 2026,
-      and once at session initialization for 2025. Its `:identity` populates
-      the request context for that request or negotiated session.
+      and at session initialization plus every session-bound request for 2025.
+      The initialized identity is fingerprinted and subsequent requests must
+      resolve to the same principal before the session is dispatched.
       The static form's `:identity` is used as a constant. (The non-identity
       base is passed once to `Handler.init/1` at mount.)
 
@@ -74,6 +75,26 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     * `:max_body_length` — maximum accepted POST body size in bytes (default:
       `8_000_000`). Larger or multi-chunk bodies are rejected with HTTP 413
       before JSON decoding.
+    * `:allowed_hosts` — exact canonical host names accepted by the endpoint.
+      Defaults to localhost names only. Configure the Phoenix endpoint host
+      explicitly for a deployed gateway, for example `["tower.example"]`.
+    * `:allowed_origins` — HTTP(S) scheme/host origins accepted when an
+      `Origin` header is present; ports are normalized so local ephemeral ports
+      remain usable. Defaults to loopback HTTP/HTTPS origins. Non-browser
+      clients may omit `Origin`, but every request must still have an allowed
+      Host.
+    * `:legacy_session_limit` and `:legacy_sessions_per_identity` — endpoint
+      and authenticated-principal session caps (defaults: 1,024 and 16).
+    * `:legacy_session_idle_timeout` and `:legacy_session_absolute_timeout` —
+      stateful-session expiry in milliseconds (defaults: 15 minutes and 24
+      hours). Expiry terminates both owned session processes.
+    * `:legacy_session_manager` — registered runtime manager name. The SDK
+      application starts the default manager; custom managers must be
+      supervised by the host application.
+    * `:legacy_endpoint_owner` — registered process name monitored for endpoint
+      shutdown (default: `MCPElixirSDK.Supervisor`). A Phoenix deployment
+      should set this to its endpoint's registered name so stopping that
+      endpoint immediately reclaims its legacy sessions.
     * `:protocol_version` — advertised version (default: the stateless core's).
     * `:tool_schemas` — either `%{tool_name => input_schema}` or a
       `(tool_name, identity -> input_schema | nil)` resolver. Static schemas
@@ -107,6 +128,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   alias MCP.Server.{Config, Dispatch, LegacyDispatch, SubscriptionWorker, ToolContext}
   alias MCP.Transport.SSE
   alias MCP.Transport.StreamableHTTP.LegacySession
+  alias MCP.Transport.StreamableHTTP.LegacySessionManager
 
   @typedoc """
   Options threaded into the handler's identity resolution: a static keyword
@@ -127,8 +149,16 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     :subscription_queue_limit,
     :subscription_keepalive_interval,
     :max_body_length,
-    :legacy_sessions,
+    :legacy_session_manager,
+    :legacy_endpoint_id,
+    :legacy_endpoint_owner,
+    :legacy_session_limit,
+    :legacy_sessions_per_identity,
+    :legacy_session_idle_timeout,
+    :legacy_session_absolute_timeout,
     :legacy_sse_timeout,
+    :allowed_hosts,
+    :allowed_origins,
     :config
   ]
 
@@ -137,6 +167,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   # reference the real key (a module attribute used before definition resolves
   # to nil — Ruling 7 fix must not silently no-op).
   @notifications_key :mcp_plug_notifications
+  @localhost_patterns ~w(localhost 127.0.0.1 ::1)
 
   @doc """
   Creates a Plug configuration tuple suitable for Bandit.
@@ -162,6 +193,27 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     subscription_keepalive_interval = Keyword.get(opts, :subscription_keepalive_interval, 15_000)
     max_body_length = Keyword.get(opts, :max_body_length, 8_000_000)
     legacy_sse_timeout = Keyword.get(opts, :legacy_sse_timeout, 25_000)
+    legacy_session_manager = Keyword.get(opts, :legacy_session_manager, LegacySessionManager)
+    legacy_endpoint_id = Keyword.get(opts, :legacy_endpoint_id, UUID.uuid4())
+    legacy_endpoint_owner = Keyword.get(opts, :legacy_endpoint_owner, MCPElixirSDK.Supervisor)
+    legacy_session_limit = Keyword.get(opts, :legacy_session_limit, 1_024)
+    legacy_sessions_per_identity = Keyword.get(opts, :legacy_sessions_per_identity, 16)
+    legacy_session_idle_timeout = Keyword.get(opts, :legacy_session_idle_timeout, 15 * 60_000)
+
+    legacy_session_absolute_timeout =
+      Keyword.get(opts, :legacy_session_absolute_timeout, 24 * 60 * 60_000)
+
+    allowed_hosts = Keyword.get(opts, :allowed_hosts, @localhost_patterns)
+
+    allowed_origins =
+      Keyword.get(opts, :allowed_origins, [
+        "http://localhost",
+        "https://localhost",
+        "http://127.0.0.1",
+        "https://127.0.0.1",
+        "http://[::1]",
+        "https://[::1]"
+      ])
 
     unless is_integer(max_body_length) and max_body_length > 0 do
       raise ArgumentError, ":max_body_length must be a positive integer"
@@ -170,6 +222,13 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     unless is_integer(legacy_sse_timeout) and legacy_sse_timeout > 0 do
       raise ArgumentError, ":legacy_sse_timeout must be a positive integer"
     end
+
+    validate_positive_integer!(legacy_session_limit, :legacy_session_limit)
+    validate_positive_integer!(legacy_sessions_per_identity, :legacy_sessions_per_identity)
+    validate_positive_integer!(legacy_session_idle_timeout, :legacy_session_idle_timeout)
+    validate_positive_integer!(legacy_session_absolute_timeout, :legacy_session_absolute_timeout)
+    validate_string_list!(allowed_hosts, :allowed_hosts)
+    validate_origin_list!(allowed_origins)
 
     validate_subscription_options!(
       subscription_supervisor,
@@ -196,8 +255,6 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
         {:error, reason} -> raise "MCP Plug: handler init failed: #{inspect(reason)}"
       end
 
-    legacy_sessions = :ets.new(:mcp_legacy_sessions, [:set, :public])
-
     %__MODULE__{
       server_mod: server_mod,
       server_opts: server_opts,
@@ -211,8 +268,16 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
       subscription_queue_limit: subscription_queue_limit,
       subscription_keepalive_interval: subscription_keepalive_interval,
       max_body_length: max_body_length,
-      legacy_sessions: legacy_sessions,
+      legacy_session_manager: legacy_session_manager,
+      legacy_endpoint_id: legacy_endpoint_id,
+      legacy_endpoint_owner: legacy_endpoint_owner,
+      legacy_session_limit: legacy_session_limit,
+      legacy_sessions_per_identity: legacy_sessions_per_identity,
+      legacy_session_idle_timeout: legacy_session_idle_timeout,
+      legacy_session_absolute_timeout: legacy_session_absolute_timeout,
       legacy_sse_timeout: legacy_sse_timeout,
+      allowed_hosts: allowed_hosts,
+      allowed_origins: allowed_origins,
       config: dispatch_config
     }
   end
@@ -220,7 +285,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   @impl Plug
   def call(conn, config) do
     # Step 1 — enforcement precedes everything (MC-5 / AC7).
-    if localhost_request?(conn) do
+    if allowed_request?(conn, config) do
       route_method(conn, config)
     else
       conn
@@ -232,10 +297,9 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   @doc "Returns active legacy session IDs and their server connection pids."
   @spec legacy_sessions(%__MODULE__{}) :: [{String.t(), pid()}]
   def legacy_sessions(%__MODULE__{} = config) do
-    :ets.tab2list(config.legacy_sessions)
-    |> Enum.map(fn {session_id, session} -> {session_id, session.server} end)
-  rescue
-    ArgumentError -> []
+    LegacySessionManager.list(config.legacy_session_manager, config.legacy_endpoint_id)
+  catch
+    :exit, _reason -> []
   end
 
   defp route_method(conn, config) do
@@ -373,16 +437,19 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   defp handle_legacy_post(conn, config, %{"method" => "initialize"} = message) do
     with {:ok, %Request{}} <- Protocol.decode_message(message),
+         :ok <- reject_initialize_session_header(conn),
          {:ok, handler_opts} <- resolve_handler_options(config.handler_opts, conn),
-         {:ok, session, response, notifications} <-
-           start_and_initialize_legacy(config, handler_opts, message) do
-      session_id = UUID.uuid4()
-
-      true = :ets.insert(config.legacy_sessions, {session_id, session})
-
-      conn
-      |> Plug.Conn.put_resp_header("mcp-session-id", session_id)
-      |> send_response(config, response, notifications)
+         identity = Keyword.get(handler_opts, :identity),
+         {:ok, session_id, response, notifications} <-
+           start_and_initialize_legacy(config, handler_opts, identity, message) do
+      if Map.has_key?(response, "result") do
+        conn
+        |> Plug.Conn.put_resp_header("mcp-session-id", session_id)
+        |> send_response(config, response, notifications)
+      else
+        delete_legacy_session(config, session_id)
+        send_response(conn, config, response, notifications)
+      end
     else
       {:error, {:factory_failed, reason}} ->
         Logger.error("MCP Plug: legacy handler_opts factory failed: #{inspect(reason)}")
@@ -393,6 +460,16 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
           Error.internal_error_code(),
           "Internal error",
           "handler_opts factory error",
+          Map.get(message, "id")
+        )
+
+      {:error, reason} when reason in [:session_limit, :identity_limit, :endpoint_unavailable] ->
+        send_json_error(
+          conn,
+          503,
+          Error.internal_error_code(),
+          "Session capacity reached",
+          Atom.to_string(reason),
           Map.get(message, "id")
         )
 
@@ -412,10 +489,13 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     session_id = first_header(conn, "mcp-session-id")
 
     with :ok <- validate_legacy_protocol_header(conn),
-         {:ok, session} <- legacy_session(config, session_id) do
+         {:ok, identity} <- resolve_identity(config.handler_opts, conn),
+         {:ok, session} <- legacy_session(config, session_id, identity) do
       dispatch_legacy_http(conn, config, message, session)
     else
+      {:error, {:factory_failed, reason}} -> legacy_identity_resolution_error(conn, reason)
       {:error, detail} -> legacy_protocol_header_error(conn, message, detail)
+      {:identity_error, _detail} -> Plug.Conn.send_resp(conn, 403, "Forbidden")
       :error -> send_json_error(conn, 404, -32_000, "Session not found", session_id)
     end
   end
@@ -454,12 +534,14 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     session_id = first_header(conn, "mcp-session-id")
 
     with :ok <- validate_legacy_protocol_header(conn),
-         {:ok, session} <- legacy_session(config, session_id) do
-      LegacySession.close(session)
-      true = :ets.delete(config.legacy_sessions, session_id)
+         {:ok, identity} <- resolve_identity(config.handler_opts, conn),
+         {:ok, _session} <- legacy_session(config, session_id, identity) do
+      delete_legacy_session(config, session_id)
       Plug.Conn.send_resp(conn, 200, "")
     else
+      {:error, {:factory_failed, reason}} -> legacy_identity_resolution_error(conn, reason)
       {:error, detail} -> legacy_protocol_header_error(conn, %{}, detail)
+      {:identity_error, _detail} -> Plug.Conn.send_resp(conn, 403, "Forbidden")
       :error -> send_json_error(conn, 404, -32_000, "Session not found", session_id)
     end
   end
@@ -485,23 +567,34 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     )
   end
 
-  defp legacy_session(_config, nil), do: :error
+  defp legacy_identity_resolution_error(conn, reason) do
+    Logger.error("MCP Plug: legacy identity resolution failed: #{inspect(reason)}")
+    send_json_error(conn, 500, Error.internal_error_code(), "Internal error", nil)
+  end
 
-  defp legacy_session(config, session_id) do
-    case :ets.lookup(config.legacy_sessions, session_id) do
-      [{^session_id, session}] ->
-        if Process.alive?(session.server) and Process.alive?(session.transport) do
-          {:ok, session}
-        else
-          :ets.delete(config.legacy_sessions, session_id)
-          :error
-        end
+  defp legacy_session(_config, nil, _identity), do: :error
 
-      [] ->
-        :error
+  defp legacy_session(config, session_id, identity) do
+    case LegacySessionManager.lookup(
+           config.legacy_session_manager,
+           config.legacy_endpoint_id,
+           session_id,
+           identity
+         ) do
+      {:ok, session} -> {:ok, session}
+      {:error, :identity_mismatch} -> {:identity_error, :identity_mismatch}
+      :error -> :error
     end
-  rescue
-    ArgumentError -> :error
+  catch
+    :exit, _reason -> :error
+  end
+
+  defp delete_legacy_session(config, session_id) do
+    LegacySessionManager.delete(
+      config.legacy_session_manager,
+      config.legacy_endpoint_id,
+      session_id
+    )
   end
 
   defp resolve_handler_options(handler_opts, conn) when is_function(handler_opts, 1) do
@@ -523,21 +616,37 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   defp resolve_handler_options(handler_opts, _conn) when is_list(handler_opts),
     do: {:ok, handler_opts}
 
-  defp start_legacy_session(config, handler_opts) do
+  defp start_legacy_session(config, handler_opts, identity) do
     server_opts =
       Keyword.take(config.server_opts, [:server_info, :instructions, :request_timeout])
 
-    LegacySession.start(config.server_mod, handler_opts, server_opts)
+    limits = [
+      session_limit: config.legacy_session_limit,
+      per_identity_limit: config.legacy_sessions_per_identity,
+      idle_timeout: config.legacy_session_idle_timeout,
+      absolute_timeout: config.legacy_session_absolute_timeout,
+      endpoint_owner: config.legacy_endpoint_owner
+    ]
+
+    LegacySessionManager.create(
+      config.legacy_session_manager,
+      config.legacy_endpoint_id,
+      identity,
+      config.server_mod,
+      handler_opts,
+      server_opts,
+      limits
+    )
   end
 
-  defp start_and_initialize_legacy(config, handler_opts, message) do
-    with {:ok, session} <- start_legacy_session(config, handler_opts) do
+  defp start_and_initialize_legacy(config, handler_opts, identity, message) do
+    with {:ok, session_id, session} <- start_legacy_session(config, handler_opts, identity) do
       case LegacySession.deliver(session, message, config.legacy_sse_timeout) do
         {:ok, response, notifications} ->
-          {:ok, session, response, notifications}
+          {:ok, session_id, response, notifications}
 
         {:error, reason} ->
-          LegacySession.close(session)
+          delete_legacy_session(config, session_id)
           {:error, reason}
       end
     end
@@ -638,7 +747,8 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   defp handle_legacy_get(conn, config, session_id) do
     with :ok <- validate_legacy_protocol_header(conn),
-         {:ok, session} <- legacy_session(config, session_id) do
+         {:ok, identity} <- resolve_identity(config.handler_opts, conn),
+         {:ok, session} <- legacy_session(config, session_id, identity) do
       body =
         case LegacySession.next_event(session, config.legacy_sse_timeout) do
           {:ok, message} -> SSE.encode_message(message)
@@ -651,7 +761,9 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
       |> Plug.Conn.put_resp_header("cache-control", "no-cache")
       |> Plug.Conn.send_resp(200, body)
     else
+      {:error, {:factory_failed, reason}} -> legacy_identity_resolution_error(conn, reason)
       {:error, detail} -> legacy_protocol_header_error(conn, %{}, detail)
+      {:identity_error, _detail} -> Plug.Conn.send_resp(conn, 403, "Forbidden")
       :error -> send_json_error(conn, 404, -32_000, "Session not found", session_id)
     end
   end
@@ -1124,27 +1236,69 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     |> Enum.any?(&String.contains?(&1, "text/event-stream"))
   end
 
-  @localhost_patterns ~w(localhost 127.0.0.1 [::1])
-
-  defp localhost_request?(conn) do
-    origin = Plug.Conn.get_req_header(conn, "origin")
-    host = Plug.Conn.get_req_header(conn, "host")
-
-    local_header?(origin) && local_header?(host)
+  defp allowed_request?(conn, config) do
+    host_allowed?(conn, config.allowed_hosts) and origin_allowed?(conn, config.allowed_origins)
   end
 
-  defp local_header?([]), do: true
-  defp local_header?([value]), do: localhost_value?(value)
-  defp local_header?(_multiple_values), do: false
+  defp host_allowed?(conn, allowed_hosts) do
+    case Plug.Conn.get_req_header(conn, "host") do
+      [] -> normalize_host(conn.host) in allowed_hosts
+      [value] -> normalize_host(value) in allowed_hosts
+      _multiple -> false
+    end
+  end
 
-  defp localhost_value?(value) do
-    host_part =
-      value
-      |> String.replace(~r{^https?://}, "")
-      |> String.split("/")
-      |> hd()
+  defp origin_allowed?(conn, allowed_origins) do
+    case Plug.Conn.get_req_header(conn, "origin") do
+      [] ->
+        true
 
-    host_without_port = String.replace(host_part, ~r{:\d+$}, "")
-    host_without_port in @localhost_patterns
+      [value] ->
+        key = origin_key(value)
+        not is_nil(key) and key in Enum.map(allowed_origins, &origin_key/1)
+
+      _multiple ->
+        false
+    end
+  end
+
+  defp origin_key(value) do
+    case URI.parse(value) do
+      %URI{scheme: scheme, host: host} when scheme in ["http", "https"] and is_binary(host) ->
+        "#{scheme}://#{String.downcase(host)}"
+
+      _invalid ->
+        nil
+    end
+  end
+
+  defp normalize_host(value) do
+    value
+    |> String.replace(~r/^\[(.*)\](?::\d+)?$/, "\\1")
+    |> String.replace(~r/:\d+$/, "")
+  end
+
+  defp reject_initialize_session_header(conn) do
+    if first_header(conn, "mcp-session-id"),
+      do: {:error, :initialize_must_not_include_session_id},
+      else: :ok
+  end
+
+  defp validate_positive_integer!(value, name) do
+    unless is_integer(value) and value > 0,
+      do: raise(ArgumentError, ":#{name} must be a positive integer")
+  end
+
+  defp validate_string_list!(value, name) do
+    unless is_list(value) and Enum.all?(value, &is_binary/1),
+      do: raise(ArgumentError, ":#{name} must be a list of strings")
+  end
+
+  defp validate_origin_list!(origins) do
+    validate_string_list!(origins, :allowed_origins)
+
+    unless Enum.all?(origins, &(not is_nil(origin_key(&1)))) do
+      raise ArgumentError, ":allowed_origins must contain only HTTP or HTTPS origins"
+    end
   end
 end

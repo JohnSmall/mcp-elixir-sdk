@@ -108,7 +108,10 @@ launch.
 `MCP.Transport.StreamableHTTP.Plug` builds immutable server config at mount.
 For 2026 it dispatches each POST independently and runs its `handler_opts`
 factory per request after upstream authentication. For 2025 it runs the factory
-once at initialize and binds that identity to the new legacy session. HTTP
+at initialize, fingerprints that authenticated identity, and re-runs it on
+every POST, GET, and DELETE before constant-time comparison with the session
+binding. A supervised runtime manager owns the session process pair, endpoint
+and per-principal capacity, idle/absolute expiry, and endpoint cleanup. HTTP
 subscriptions retain only their individual response stream.
 
 `MCP.Transport.StreamableHTTP.Client` emits `MCP-Protocol-Version`,

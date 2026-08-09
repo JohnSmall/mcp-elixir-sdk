@@ -27,7 +27,7 @@ defmodule MCPElixirSDK.MixProject do
 
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:crypto, :logger],
       mod: {MCPElixirSDK.Application, []}
     ]
   end
@@ -126,6 +126,7 @@ defmodule MCPElixirSDK.MixProject do
           MCP.Transport.Stdio,
           MCP.Transport.SSE,
           MCP.Transport.StreamableHTTP.Client,
+          MCP.Transport.StreamableHTTP.LegacySessionManager,
           MCP.Transport.StreamableHTTP.Plug
         ]
       ],

@@ -216,7 +216,7 @@ defmodule MCP.DualProtocolCompatibilityTest do
 
     conn =
       :post
-      |> Plug.Test.conn("/mcp", Jason.encode!(stateless))
+      |> Plug.Test.conn("http://localhost/mcp", Jason.encode!(stateless))
       |> Plug.Conn.put_req_header("content-type", "application/json")
       |> Plug.Conn.put_req_header("accept", "application/json")
       |> Plug.Conn.put_req_header("origin", "http://localhost")
@@ -230,7 +230,7 @@ defmodule MCP.DualProtocolCompatibilityTest do
     wrong_version =
       :post
       |> Plug.Test.conn(
-        "/mcp",
+        "http://localhost/mcp",
         Jason.encode!(%{"jsonrpc" => "2.0", "id" => 4, "method" => "tools/list"})
       )
       |> Plug.Conn.put_req_header("content-type", "application/json")
@@ -553,7 +553,7 @@ defmodule MCP.DualProtocolCompatibilityTest do
   defp legacy_http_post(config, message, session_id \\ nil) do
     conn =
       :post
-      |> Plug.Test.conn("/mcp", Jason.encode!(message))
+      |> Plug.Test.conn("http://localhost/mcp", Jason.encode!(message))
       |> Plug.Conn.put_req_header("content-type", "application/json")
       |> Plug.Conn.put_req_header("accept", "application/json")
       |> Plug.Conn.put_req_header("origin", "http://localhost")

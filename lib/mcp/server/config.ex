@@ -30,7 +30,6 @@ defmodule MCP.Server.Config do
 
   alias MCP.Protocol.Capabilities.{
     CompletionCapabilities,
-    LoggingCapabilities,
     PromptCapabilities,
     ResourceCapabilities,
     ServerCapabilities,
@@ -118,15 +117,13 @@ defmodule MCP.Server.Config do
         if({:handle_list_prompts, 3} in callbacks,
           do: %PromptCapabilities{list_changed: enabled(list_changed?)}
         ),
-      completions: if({:handle_complete, 4} in callbacks, do: %CompletionCapabilities{}),
-      logging: if({:handle_set_log_level, 3} in callbacks, do: %LoggingCapabilities{})
+      completions: if({:handle_complete, 4} in callbacks, do: %CompletionCapabilities{})
     }
   end
 
   defp detect_resource_capabilities(callbacks, list_changed?) do
-    if {:handle_list_resources, 3} in callbacks or {:handle_subscribe, 3} in callbacks do
+    if {:handle_list_resources, 3} in callbacks do
       %ResourceCapabilities{
-        subscribe: if({:handle_subscribe, 3} in callbacks, do: true),
         list_changed: enabled(list_changed?)
       }
     end

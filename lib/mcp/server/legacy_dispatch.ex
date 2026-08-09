@@ -8,6 +8,7 @@ defmodule MCP.Server.LegacyDispatch do
   members from responses sent to older peers.
   """
 
+  alias MCP.Protocol.Capabilities.{LoggingCapabilities, ResourceCapabilities}
   alias MCP.Protocol.Messages.{Initialize, Request}
   alias MCP.Server.{Dispatch, ToolContext}
 
@@ -30,7 +31,7 @@ defmodule MCP.Server.LegacyDispatch do
       result =
         Initialize.Result.to_map(%Initialize.Result{
           protocol_version: @protocol_version,
-          capabilities: config.capabilities,
+          capabilities: legacy_capabilities(config),
           server_info: config.server_info,
           instructions: config.instructions
         })
@@ -56,39 +57,54 @@ defmodule MCP.Server.LegacyDispatch do
         %Request{id: id, method: "resources/subscribe", params: params},
         context,
         config
-      ),
-      do:
-        legacy_callback(
-          id,
-          :handle_subscribe,
-          [Map.get(params || %{}, "uri", "")],
-          context,
-          config
-        )
+      ) do
+    with {:ok, params} <- params_object(params),
+         {:ok, uri} <- required_nonempty_string(params, "uri") do
+      legacy_callback(
+        id,
+        :handle_subscribe,
+        [uri],
+        context,
+        config
+      )
+    else
+      {:error, reason} -> {:reply, error(id, -32_602, "Invalid params", reason)}
+    end
+  end
 
   def dispatch(
         %Request{id: id, method: "resources/unsubscribe", params: params},
         context,
         config
-      ),
-      do:
-        legacy_callback(
-          id,
-          :handle_unsubscribe,
-          [Map.get(params || %{}, "uri", "")],
-          context,
-          config
-        )
-
-  def dispatch(%Request{id: id, method: "logging/setLevel", params: params}, context, config),
-    do:
+      ) do
+    with {:ok, params} <- params_object(params),
+         {:ok, uri} <- required_nonempty_string(params, "uri") do
       legacy_callback(
         id,
-        :handle_set_log_level,
-        [Map.get(params || %{}, "level", "info")],
+        :handle_unsubscribe,
+        [uri],
         context,
         config
       )
+    else
+      {:error, reason} -> {:reply, error(id, -32_602, "Invalid params", reason)}
+    end
+  end
+
+  def dispatch(%Request{id: id, method: "logging/setLevel", params: params}, context, config) do
+    with {:ok, params} <- params_object(params),
+         {:ok, level} <- logging_level(params) do
+      legacy_callback(
+        id,
+        :handle_set_log_level,
+        [level],
+        context,
+        config
+      )
+    else
+      {:error, reason} -> {:reply, error(id, -32_602, "Invalid params", reason)}
+    end
+  end
 
   def dispatch(%Request{} = request, %ToolContext{} = context, config) do
     params = request.params || %{}
@@ -135,6 +151,47 @@ defmodule MCP.Server.LegacyDispatch do
   end
 
   defp success(id, result), do: %{"jsonrpc" => "2.0", "id" => id, "result" => result}
+
+  defp legacy_capabilities(config) do
+    callbacks = config.handler_module.__info__(:functions)
+
+    subscribe? =
+      {:handle_subscribe, 3} in callbacks and {:handle_unsubscribe, 3} in callbacks
+
+    resources =
+      case config.capabilities.resources do
+        nil when subscribe? -> %ResourceCapabilities{subscribe: true}
+        nil -> nil
+        resources -> %{resources | subscribe: if(subscribe?, do: true)}
+      end
+
+    %{
+      config.capabilities
+      | resources: resources,
+        logging: if({:handle_set_log_level, 3} in callbacks, do: %LoggingCapabilities{})
+    }
+  end
+
+  defp params_object(params) when is_map(params), do: {:ok, params}
+  defp params_object(_params), do: {:error, "params must be an object"}
+
+  defp required_nonempty_string(params, key) do
+    case Map.fetch(params, key) do
+      {:ok, value} when is_binary(value) and value != "" -> {:ok, value}
+      {:ok, _value} -> {:error, "#{key} must be a non-empty string"}
+      :error -> {:error, "#{key} is required"}
+    end
+  end
+
+  defp logging_level(params) do
+    with {:ok, level} <- required_nonempty_string(params, "level"),
+         true <- level in ~w(debug info notice warning error critical alert emergency) do
+      {:ok, level}
+    else
+      false -> {:error, "level is not a valid logging level"}
+      {:error, reason} -> {:error, reason}
+    end
+  end
 
   defp legacy_callback(id, callback, arguments, context, config) do
     module = config.handler_module

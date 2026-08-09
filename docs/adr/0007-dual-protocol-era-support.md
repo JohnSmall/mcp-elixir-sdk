@@ -37,9 +37,10 @@ isolated behind versioned runtime paths.
    initialize request selects the legacy state machine; a stateless request
    selects the 2026 dispatcher. Modes cannot be mixed afterward.
 5. The Streamable HTTP Plug serves both modes at one endpoint. Legacy sessions
-   bind identity at initialize, mint `Mcp-Session-Id`, reuse it on POST/GET,
-   expose an SSE channel for server requests, and terminate via DELETE. The
-   2026 path remains independently serviceable without session affinity.
+   bind identity at initialize, mint `Mcp-Session-Id`, re-authenticate and
+   compare the bound principal on every POST/GET/DELETE, expose an SSE channel
+   for server requests, and terminate via DELETE. The 2026 path remains
+   independently serviceable without session affinity.
 6. Legacy responses omit 2026-only `resultType`, `ttlMs`, and `cacheScope`
    members. Stateless responses retain them.
 7. Legacy resource subscriptions, logging controls, list-change/resource
@@ -47,8 +48,9 @@ isolated behind versioned runtime paths.
    available only on the legacy path. Unified subscriptions and MRTR remain
    available only on the stateless path.
 8. Authorization identity is never taken from wire arguments or `_meta` in
-   either mode. The legacy HTTP identity factory runs once at initialize; the
-   stateless factory runs per request.
+   either mode. The legacy HTTP identity factory establishes the binding at
+   initialize and is re-evaluated on every session request; the stateless
+   factory runs per request.
 
 ## Consequences
 
@@ -56,6 +58,8 @@ isolated behind versioned runtime paths.
   down to older servers without pinning the 1.x package.
 - Legacy HTTP requires bounded server-side session state and therefore does
   not inherit the no-affinity property of the 2026 path.
+- The SDK supervisor owns the default legacy session manager. Endpoint and
+  per-principal quotas plus idle/absolute expiry make abandoned state finite.
 - Conformance is measured separately for each revision and each client/server
   transport role. A green 2026 matrix does not imply 2025 conformance, or vice
   versa.

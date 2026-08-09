@@ -23,6 +23,7 @@ flowchart LR
     ClientSubs["Client subscription workers"]
     ServerSubs["Server subscription workers"]
     LegacySession["2025 HTTP session runtime"]
+    LegacyManager["Supervised legacy session manager"]
     CallbackTasks["Supervised host callbacks"]
 
     Host --> Client
@@ -36,13 +37,16 @@ flowchart LR
     Host --> ServerSubs
     Client --> CallbackTasks
     ServerSubs --> Handler
-    Plug --> LegacySession
+    Host --> LegacyManager
+    Plug --> LegacyManager
+    LegacyManager --> LegacySession
     LegacySession --> Dispatch
 ```
 
-The library application currently starts an empty supervisor. Consumers own
-their client/server processes through their own supervision trees. Tests start
-processes with `start_supervised!/1` so ownership and cleanup are deterministic.
+The library application supervises the default legacy HTTP session manager.
+Consumers own their client/server and subscription processes through their own
+supervision trees. Tests start custom runtime owners with `start_supervised!/1`
+so ownership and cleanup are deterministic.
 
 ## M1 — Client process
 
@@ -157,11 +161,14 @@ a best-effort DELETE.
 ## M2a — Legacy HTTP session runtime
 
 Each `Mcp-Session-Id` maps to one `MCP.Server.Connection` and one
-`LegacySession` transport. The runtime owns pending POST callers, a bounded-by-
-consumption SSE event queue, one SSE waiter, and correlated server-to-client
-requests. Owner death or DELETE fails all waiters and closes the connection.
-Initialize failure closes the partially created runtime; transport loss fails
-pending callers rather than leaving them until their deadlines.
+`LegacySession` transport under `LegacySessionManager`. The manager stores only
+an authenticated-identity fingerprint, enforces endpoint and per-principal
+capacity, refreshes idle activity after an authenticated lookup, and reclaims
+sessions at idle or absolute expiry. The transport bounds pending POST callers,
+request-scoped notifications, its SSE event queue, and the single SSE waiter.
+Caller death, timeout, manager shutdown, process failure, or DELETE removes
+waiters and closes both processes. Initialize failure never publishes a session
+ID and closes the partially created runtime.
 
 ## M3 — Stdio transport
 

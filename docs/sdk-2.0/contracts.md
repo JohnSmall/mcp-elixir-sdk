@@ -36,9 +36,12 @@ For 2026 Streamable HTTP:
 
 For 2025 Streamable HTTP, initialize mints `Mcp-Session-Id`; later POST and GET
 requests require it, GET carries queued server messages as SSE, and DELETE
-closes the session. The bound identity and handler configuration are resolved
-once at initialize. One endpoint may serve both eras, but one session or
-owner-based connection may never mix them.
+closes the session. Handler configuration and the identity binding are created
+at initialize; the identity factory is then re-evaluated on every POST, GET,
+and DELETE and compared with the stored fingerprint before lookup/delivery.
+The supervised manager applies endpoint/per-principal caps and idle/absolute
+expiry. One endpoint may serve both eras, but one session or owner-based
+connection may never mix them.
 
 For stdio, each JSON-RPC object is one newline-delimited frame. Subscription
 messages share the same channel and are correlated by request/subscription ID.
@@ -139,6 +142,9 @@ stdio launch opts  -> fixed identity      -> ToolContext.identity -> handler
 ```
 
 - HTTP resolves identity independently for every request.
+- A 2025 session stores an identity fingerprint, not a bearer authorization;
+  every session-bound HTTP request must authenticate as the same principal or
+  fail with 403 before dispatch.
 - Stdio/in-process may resolve a launch-static identity once.
 - `params`, tool `arguments`, `_meta`, and routing headers are never identity
   sources.
@@ -170,8 +176,10 @@ The 2.0 path never falls back to a legacy callback arity.
 
 The 2026 path rejects `initialize`. The client prefers `server/discover`, then
 makes one bounded fallback to a 2025 initialize only when discovery is missing
-or the peer's unsupported-version response advertises 2025. Explicit legacy
-configuration initializes directly. Other errors never trigger fallback.
+or the peer's unsupported-version response (including an HTTP 400 carrying
+that JSON-RPC error) advertises 2025. Explicit legacy configuration initializes
+directly. An expired legacy HTTP session permits one reinitialize-and-retry;
+the retry cannot recurse. Other errors never trigger fallback.
 
 ## C6 — Handler callbacks
 

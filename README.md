@@ -171,6 +171,9 @@ plug =
       extensions: %{"com.example/audit" => %{"version" => 1}}
     ],
     enable_json_response: false,
+    allowed_hosts: ["mcp.example.com"],
+    allowed_origins: ["https://app.example.com"],
+    legacy_endpoint_owner: MyAppWeb.Endpoint,
     tool_schemas: %{
       "add" => %{"type" => "object", "properties" => %{}}
     }
@@ -183,10 +186,18 @@ Place authentication Plugs before the MCP Plug. A dynamic `handler_opts`
 factory may read authenticated `conn.assigns` and return an `:identity`; never
 derive identity from raw headers or tool arguments.
 
+Set `allowed_hosts:` to the canonical Phoenix endpoint host and
+`allowed_origins:` to trusted browser origins. Loopback values are the secure
+development defaults. A legacy session fingerprints its initialization
+principal and re-resolves authentication on every POST, GET, and DELETE;
+presenting the session ID under another principal returns 403.
+
 The same endpoint accepts both wire eras. Stateless 2026 POSTs have no session.
 Legacy 2025 initialize responses mint `Mcp-Session-Id`; subsequent POST/GET
 requests require it, server-to-client requests flow over GET SSE, and DELETE
 terminates the session. A connection selects one era and cannot mix them.
+Legacy session processes are owned by the SDK application supervisor, bounded
+globally and per principal, and reclaimed by idle and absolute expiry.
 
 HTTP server subscriptions additionally require a duplicate `Registry` and a
 `DynamicSupervisor`. Pass both as `subscription_registry:` and

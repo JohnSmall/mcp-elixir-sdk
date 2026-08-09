@@ -38,6 +38,9 @@ defmodule MCP.Transport.StreamableHTTP.Client do
   @behaviour MCP.Transport
 
   @protocol_version "2026-07-28"
+  @default_legacy_sse_retry_limit 3
+  @default_legacy_sse_retry_backoff 50
+  @default_legacy_sse_retry_max_backoff 1_000
 
   defstruct [
     :owner,
@@ -49,6 +52,9 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     :task_supervisor,
     :legacy_sse_task,
     :legacy_sse_ref,
+    :legacy_sse_retry_limit,
+    :legacy_sse_retry_backoff,
+    :legacy_sse_retry_max_backoff,
     post_tasks: %{},
     subscriptions: %{}
   ]
@@ -73,6 +79,13 @@ defmodule MCP.Transport.StreamableHTTP.Client do
   @impl MCP.Transport
   def close(pid) do
     GenServer.call(pid, :close)
+  catch
+    :exit, _ -> :ok
+  end
+
+  @doc false
+  def reset_session(pid) do
+    GenServer.call(pid, :reset_session)
   catch
     :exit, _ -> :ok
   end
@@ -108,7 +121,17 @@ defmodule MCP.Transport.StreamableHTTP.Client do
           url: url,
           protocol_version: protocol_version,
           extra_headers: extra_headers,
-          task_supervisor: task_supervisor
+          task_supervisor: task_supervisor,
+          legacy_sse_retry_limit:
+            Keyword.get(opts, :legacy_sse_retry_limit, @default_legacy_sse_retry_limit),
+          legacy_sse_retry_backoff:
+            Keyword.get(opts, :legacy_sse_retry_backoff, @default_legacy_sse_retry_backoff),
+          legacy_sse_retry_max_backoff:
+            Keyword.get(
+              opts,
+              :legacy_sse_retry_max_backoff,
+              @default_legacy_sse_retry_max_backoff
+            )
         }
 
         {:ok, state}
@@ -160,6 +183,11 @@ defmodule MCP.Transport.StreamableHTTP.Client do
       when is_binary(session_id) and is_binary(protocol_version) do
     state = %{state | session_id: session_id, protocol_version: protocol_version}
     {:reply, :ok, start_legacy_sse_listener(state)}
+  end
+
+  def handle_call(:reset_session, _from, state) do
+    asynchronously_terminate_legacy_session(state)
+    {:reply, :ok, clear_legacy_session(state)}
   end
 
   def handle_call(:close, _from, state) do
@@ -238,6 +266,12 @@ defmodule MCP.Transport.StreamableHTTP.Client do
         Process.demonitor(ref, [:flush])
         Process.demonitor(operation.caller_ref, [:flush])
         GenServer.reply(operation.from, normalize_post_result(result))
+
+        state =
+          if result == {:error, :session_expired},
+            do: clear_legacy_session(state),
+            else: state
+
         {:noreply, %{state | post_tasks: post_tasks}}
     end
   end
@@ -364,10 +398,15 @@ defmodule MCP.Transport.StreamableHTTP.Client do
   defp handle_non_success_response(state, status, headers, body) do
     Logger.warning("MCP StreamableHTTP Client: HTTP #{status}: #{inspect(body)}")
 
-    if String.contains?(get_content_type(headers), "text/event-stream") do
-      deliver_sse_error_response(state, status, body)
-    else
-      deliver_json_error_response(state, status, body)
+    cond do
+      status == 404 and is_binary(state.session_id) ->
+        {:error, :session_expired}
+
+      String.contains?(get_content_type(headers), "text/event-stream") ->
+        deliver_sse_error_response(state, status, body)
+
+      true ->
+        deliver_json_error_response(state, status, body)
     end
   end
 
@@ -590,11 +629,16 @@ defmodule MCP.Transport.StreamableHTTP.Client do
       _ = Task.Supervisor.terminate_child(state.task_supervisor, subscription.task)
     end)
 
-    terminate_legacy_session(state)
+    asynchronously_terminate_legacy_session(state)
     :ok
   end
 
-  defp bind_response_session(transport, message, fallback_version, headers) do
+  defp bind_response_session(
+         transport,
+         %{"method" => "initialize"} = message,
+         fallback_version,
+         headers
+       ) do
     case get_header(headers, "mcp-session-id") do
       nil ->
         :ok
@@ -604,6 +648,8 @@ defmodule MCP.Transport.StreamableHTTP.Client do
         GenServer.call(transport, {:bind_session, session_id, protocol_version})
     end
   end
+
+  defp bind_response_session(_transport, _message, _fallback_version, _headers), do: :ok
 
   defp session_headers(%{session_id: nil}), do: []
   defp session_headers(%{session_id: session_id}), do: [{"mcp-session-id", session_id}]
@@ -628,26 +674,58 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     end
   end
 
+  defp asynchronously_terminate_legacy_session(%{session_id: nil}), do: :ok
+
+  defp asynchronously_terminate_legacy_session(state) do
+    cleanup = %{
+      url: state.url,
+      protocol_version: state.protocol_version,
+      session_id: state.session_id
+    }
+
+    {:ok, _pid} = Task.start(fn -> terminate_legacy_session(cleanup) end)
+    :ok
+  end
+
+  defp clear_legacy_session(state) do
+    if state.legacy_sse_task do
+      Process.demonitor(state.legacy_sse_ref, [:flush])
+      Process.exit(state.legacy_sse_task, :kill)
+    end
+
+    %{state | session_id: nil, legacy_sse_task: nil, legacy_sse_ref: nil}
+  end
+
   defp start_legacy_sse_listener(%{legacy_sse_task: task} = state) when is_pid(task), do: state
 
   defp start_legacy_sse_listener(state) do
-    transport = self()
-
     {:ok, task} =
       Task.Supervisor.start_child(state.task_supervisor, fn ->
         legacy_sse_loop(
-          transport,
+          state.owner,
           state.url,
           state.session_id,
           state.protocol_version,
-          state.extra_headers
+          state.extra_headers,
+          state.legacy_sse_retry_limit,
+          state.legacy_sse_retry_backoff,
+          state.legacy_sse_retry_max_backoff
         )
       end)
 
     %{state | legacy_sse_task: task, legacy_sse_ref: Process.monitor(task)}
   end
 
-  defp legacy_sse_loop(transport, url, session_id, protocol_version, extra_headers) do
+  defp legacy_sse_loop(
+         owner,
+         url,
+         session_id,
+         protocol_version,
+         extra_headers,
+         retries_left,
+         backoff,
+         max_backoff
+       ) do
     headers =
       [
         {"accept", "text/event-stream"},
@@ -655,21 +733,88 @@ defmodule MCP.Transport.StreamableHTTP.Client do
         {"mcp-protocol-version", protocol_version}
       ] ++ extra_headers
 
-    case Req.get(url, headers: headers, receive_timeout: 60_000) do
-      {:ok, %Req.Response{status: 200, body: body}} when is_binary(body) ->
-        send(transport, {:legacy_sse_response, body})
-        legacy_sse_loop(transport, url, session_id, protocol_version, extra_headers)
+    result =
+      case Req.get(url, headers: headers, into: :self, receive_timeout: :infinity) do
+        {:ok, %Req.Response{status: 200} = response} ->
+          consume_legacy_sse_stream(owner, response, SSE.new_parser())
 
-      {:ok, %Req.Response{status: 404}} ->
+        {:ok, %Req.Response{status: 404}} ->
+          :session_expired
+
+        {:ok, %Req.Response{status: status}} ->
+          {:error, {:http_status, status}}
+
+        {:error, reason} ->
+          {:error, reason}
+      end
+
+    case result do
+      :session_expired ->
         :ok
 
-      {:ok, %Req.Response{status: status}} ->
-        Logger.warning("MCP legacy SSE GET returned HTTP #{status}")
+      _result when retries_left <= 0 ->
         :ok
 
-      {:error, reason} ->
-        Logger.warning("MCP legacy SSE GET failed: #{inspect(reason)}")
-        :ok
+      _result ->
+        wait_legacy_retry(backoff)
+
+        legacy_sse_loop(
+          owner,
+          url,
+          session_id,
+          protocol_version,
+          extra_headers,
+          retries_left - 1,
+          min(backoff * 2, max_backoff),
+          max_backoff
+        )
+    end
+  end
+
+  defp consume_legacy_sse_stream(owner, response, parser) do
+    receive do
+      message ->
+        case Req.parse_message(response, message) do
+          {:ok, chunks} -> consume_legacy_sse_chunks(owner, response, parser, chunks)
+          {:error, reason} -> {:error, reason}
+          :unknown -> consume_legacy_sse_stream(owner, response, parser)
+        end
+    end
+  end
+
+  defp consume_legacy_sse_chunks(owner, response, parser, chunks) do
+    Enum.reduce_while(chunks, {:continue, parser}, fn
+      {:data, data}, {:continue, current_parser} ->
+        {events, next_parser} = SSE.feed(current_parser, data)
+        deliver_legacy_sse_events(owner, events)
+        {:cont, {:continue, next_parser}}
+
+      :done, {:continue, current_parser} ->
+        {:halt, {:done, current_parser}}
+
+      {:trailers, _trailers}, accumulator ->
+        {:cont, accumulator}
+    end)
+    |> case do
+      {:continue, next_parser} -> consume_legacy_sse_stream(owner, response, next_parser)
+      {:done, _parser} -> :eof
+    end
+  end
+
+  defp deliver_legacy_sse_events(owner, events) do
+    Enum.each(events, fn event ->
+      case Map.get(event, :data) do
+        data when is_binary(data) and data != "" -> deliver_decoded(owner, data)
+        _empty -> :ok
+      end
+    end)
+  end
+
+  defp wait_legacy_retry(delay) do
+    receive do
+      :stop -> :ok
+    after
+      delay -> :ok
     end
   end
 

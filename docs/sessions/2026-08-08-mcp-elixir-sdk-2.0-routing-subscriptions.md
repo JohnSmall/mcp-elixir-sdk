@@ -231,3 +231,38 @@ The dual-era implementation is locally verified but still requires the
 requested post-push Lavra review. Any actionable review findings must be fixed,
 retested, committed, and pushed before this branch is considered ready for a
 merge decision.
+
+## 2026-08-09 post-push Lavra remediation
+
+The requested touched-file review completed across protocol, security,
+runtime/OTP, performance, data-integrity, simplicity, history, and
+agent-native boundaries. All actionable findings were converted into failing
+regressions before remediation.
+
+Closed work includes compile-safe Phoenix Plug options; supervised and
+principal-bound legacy sessions with endpoint/per-principal quotas,
+idle/absolute expiry, endpoint-owner cleanup, and bounded waiters; configurable
+canonical Host/Origin policy; atomic/idempotent client negotiation and rollback;
+HTTP 400 downgrade plus one-shot 404 recovery; incremental/restarting SSE;
+negotiated server-request capability checks; bounded callback and MRTR work;
+mode-isolated notifications; malformed legacy parameter handling; and truthful
+release evidence. A full sequential run also surfaced and fixed a cleanup race
+where a dead transport could crash the client while a subscription worker was
+terminating.
+
+Final evidence after remediation:
+
+| Command | Actual | Status |
+| --- | --- | --- |
+| `mix test --seed 0 --max-cases 1` | 414 tests, 0 failures | Pass |
+| Focused adversarial regression matrix | 45 tests, 0 failures | Pass |
+| `mix compile --warnings-as-errors` | Compilation succeeded | Pass |
+| `mix credo --strict` | No issues | Pass |
+| `mix dialyzer` | 0 errors | Pass |
+| `mix docs` and `mix hex.build` | Documentation and package generated | Pass |
+| Official server requirements `2025-11-25` | 81 passed, 0 failed | Pass |
+| Official `server-stateless` scenario `2026-07-28` | 30 passed, 0 failed | Pass |
+
+The official 2025 client evidence is intentionally reported as one initialize
+scenario plus the local cross-transport matrix; it is not presented as a full
+official client denominator.
