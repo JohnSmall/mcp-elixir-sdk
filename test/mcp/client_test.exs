@@ -172,7 +172,7 @@ defmodule MCP.ClientTest do
       assert {:ok, %{protocol_version: "2026-07-28"}} = Task.await(task)
     end
 
-    test "does not negotiate down to an unsupported protocol revision" do
+    test "negotiates down to the supported 2025-11-25 protocol revision" do
       {client, transport} = start_client()
       task = Task.async(fn -> Client.connect(client) end)
       [first] = wait_for_sent(transport, 1)
@@ -187,8 +187,22 @@ defmodule MCP.ClientTest do
         }
       })
 
-      assert {:error, %{code: -32_022}} = Task.await(task)
-      assert length(MockTransport.sent_messages(transport)) == 1
+      [_discover, initialize] = wait_for_sent(transport, 2)
+      assert initialize["method"] == "initialize"
+      assert initialize["params"]["protocolVersion"] == "2025-11-25"
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => initialize["id"],
+        "result" => %{
+          "protocolVersion" => "2025-11-25",
+          "capabilities" => %{},
+          "serverInfo" => @server_info
+        }
+      })
+
+      assert {:ok, %{protocol_version: "2025-11-25"}} = Task.await(task)
+      assert length(MockTransport.sent_messages(transport)) == 3
       assert Client.status(client) == :ready
     end
 

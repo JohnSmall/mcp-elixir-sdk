@@ -7,6 +7,7 @@ defmodule MCP.Protocol do
   alias MCP.Protocol.Messages.{Notification, Request, Response}
 
   @protocol_version "2026-07-28"
+  @supported_versions ["2026-07-28", "2025-11-25"]
   @jsonrpc_version "2.0"
 
   @type json_value ::
@@ -22,6 +23,10 @@ defmodule MCP.Protocol do
   """
   @spec protocol_version() :: String.t()
   def protocol_version, do: @protocol_version
+
+  @doc "Returns every supported MCP revision, newest/preferred first."
+  @spec supported_versions() :: [String.t(), ...]
+  def supported_versions, do: @supported_versions
 
   @doc """
   Returns the JSON-RPC version.

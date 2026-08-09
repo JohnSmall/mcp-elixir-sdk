@@ -1,16 +1,18 @@
 # MCP Elixir SDK
 
 An OTP-native Elixir client and server SDK for the Model Context Protocol. The
-2.0 line targets the stateless `2026-07-28` protocol revision and supports
-stdio/in-process and Streamable HTTP transports.
+2.0 line supports both the stateful `2025-11-25` and stateless `2026-07-28`
+protocol revisions over stdio/in-process and Streamable HTTP transports.
 
-> `2.0.0-dev.1` is a prerelease. It is a breaking cutover from the stateful
-> 1.x API and does not negotiate older protocol revisions.
+> `2.0.0-dev.1` is a prerelease. Its handler API is a breaking cutover from
+> 1.x, while its wire protocol remains compatible with `2025-11-25` peers.
 
 ## What 2.0 provides
 
-- Stateless requests: `server/discover` replaces the initialize/session
-  handshake and required client metadata accompanies every request.
+- Dual protocol selection: clients prefer `2026-07-28` and perform one bounded
+  fallback to the `2025-11-25` initialize handshake when the peer requires it.
+- Version-isolated lifecycles: 2026 requests use `server/discover` and
+  per-request metadata; 2025 requests use initialize/initialized and a session.
 - OTP ownership: clients and stdio connections are GenServers; long-lived
   subscription workers run under consumer-supplied supervisors.
 - Tools, resources, prompts, completions, extensions, and MRTR input-required
@@ -65,7 +67,10 @@ Streamable HTTP uses the optional `Req`, `Plug`, and `Bandit` dependencies.
 :ok = MCP.Client.close(client)
 ```
 
-`connect/2` performs `server/discover`; it does not create a protocol session.
+`connect/2` prefers `server/discover`. If the peer reports only `2025-11-25`
+support (or does not implement discovery), it initializes a legacy session and
+sends `notifications/initialized`. Pass `protocol_version: "2025-11-25"` to
+start directly in that mode.
 Each operation has one end-to-end deadline covering transport work, schema
 refresh, and any MRTR resolver invocation. Cache hints are returned to the
 caller but results are never cached by the SDK.
@@ -177,6 +182,11 @@ plug =
 Place authentication Plugs before the MCP Plug. A dynamic `handler_opts`
 factory may read authenticated `conn.assigns` and return an `:identity`; never
 derive identity from raw headers or tool arguments.
+
+The same endpoint accepts both wire eras. Stateless 2026 POSTs have no session.
+Legacy 2025 initialize responses mint `Mcp-Session-Id`; subsequent POST/GET
+requests require it, server-to-client requests flow over GET SSE, and DELETE
+terminates the session. A connection selects one era and cannot mix them.
 
 HTTP server subscriptions additionally require a duplicate `Registry` and a
 `DynamicSupervisor`. Pass both as `subscription_registry:` and

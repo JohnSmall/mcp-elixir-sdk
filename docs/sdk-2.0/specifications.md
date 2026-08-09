@@ -1,7 +1,7 @@
 # MCP Elixir SDK 2.0 Specifications
 
 **Status:** Active engineering specification
-**Target:** MCP core `2026-07-28`, client and server
+**Target:** MCP core `2026-07-28` and `2025-11-25`, client and server
 **Baseline:** `2.0.0-dev.1` at `2b34b32`
 **Progress source:** [meta-plan.md](meta-plan.md)
 
@@ -18,7 +18,8 @@ the meta-plan.
 ## Scope
 
 The 2.0 release targets the complete MCP `2026-07-28` **core** specification on
-both client and server sides. It excludes the authorization profile and the
+both client and server sides and full wire compatibility with the
+`2025-11-25` core. It excludes the authorization profile and the
 extension-track implementations themselves. The core extensions-negotiation
 surface remains in scope because clients and servers must be able to advertise
 extension identifiers and settings even when this SDK does not implement those
@@ -29,21 +30,21 @@ The following are deferred from 2.0:
 - OAuth 2.1 authorization-profile implementation.
 - Tasks, MCP Apps, and other extension-specific methods.
 - Persistence, job execution, databases, or an Ecto model layer.
-- Compatibility negotiation down to `2025-11-25`.
 
 ## System invariants
 
 Every slice preserves these invariants:
 
-1. Every request, including `server/discover`, is self-describing through
-   `_meta` and can be served by any instance; there is no MCP session affinity.
+1. Every 2026 request, including `server/discover`, is self-describing through
+   `_meta` and can be served by any instance; 2025 sessions remain affine.
 2. `server/discover` is supported, but a client is not required to call it
    before another method.
 3. Authenticated identity comes from the transport pipeline and is never read
    from model-controlled request arguments.
-4. Streamable HTTP sends no `Mcp-Session-Id` and performs no session DELETE.
-5. Server-to-client input uses MRTR. A subscription stream carries
-   notifications, never independent server-to-client JSON-RPC requests.
+4. Streamable HTTP sends no `Mcp-Session-Id` for 2026. For 2025 it requires a
+   session ID after initialize and supports GET SSE plus session DELETE.
+5. 2026 server-to-client input uses MRTR; 2025 uses correlated independent
+   JSON-RPC requests over its connection or session SSE channel.
 6. Unknown fields survive decode/encode only at schema-defined extensibility
    points: `_meta`, request params, result and capability objects, JSON Schema
    values, and extension settings. Closed protocol objects may reject unknown
@@ -61,6 +62,21 @@ Every slice preserves these invariants:
 | S4 | JSON Schema 2020-12 | Tool schemas and structured results preserve the full permitted JSON value space without narrowing |
 | S5 | Complete client/server wiring and conformance | Client exposes S2-S4, deliberately performs no result caching in 2.0, completes lifecycle/handler migrations, and all in-scope scenarios pass |
 | S6 | Release hardening | Dependencies, static analysis, docs, package contents, and release claims are verified from the built artifact |
+| S7 | Dual-era compatibility correction | Client fallback, server mode isolation, legacy sessions and callbacks, cross-transport tests, and both version matrices pass |
+
+## S7 — Dual protocol-era compatibility
+
+- Clients MUST prefer `2026-07-28` and make at most one fallback to
+  `2025-11-25` when discovery is unavailable or the server advertises it.
+- Explicit `protocol_version: "2025-11-25"` MUST initialize directly.
+- A server connection/session MUST select exactly one protocol era and reject
+  mixed-era traffic.
+- Legacy HTTP MUST implement initialize/initialized, `Mcp-Session-Id`, POST,
+  GET SSE server messages, and DELETE cleanup.
+- Legacy server/client surfaces MUST cover ping, roots, sampling, elicitation,
+  resource subscriptions, logging, progress, and list-change notifications.
+- Compatibility metadata injected by an internal adapter MUST NOT be visible to
+  consumer handlers or emitted to legacy peers.
 
 ## S1 — Streamable HTTP routing headers
 

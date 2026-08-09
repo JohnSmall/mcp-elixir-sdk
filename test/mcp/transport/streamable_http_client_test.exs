@@ -1,7 +1,7 @@
 defmodule MCP.Transport.StreamableHTTPClientTest do
   use ExUnit.Case, async: true
 
-  alias MCP.Test.{DelayedResponsePlug, HTTPResponsePlug}
+  alias MCP.Test.{DelayedResponsePlug, HTTPResponsePlug, LegacySessionCapturePlug}
   alias MCP.Test.RequestCapturePlug
   alias MCP.Transport.StreamableHTTP.Client
 
@@ -105,6 +105,46 @@ defmodule MCP.Transport.StreamableHTTPClientTest do
     headers = send_and_capture(client, "tools/list", %{})
 
     assert header(headers, "x-tenant") == "acme"
+  end
+
+  test "legacy initialize binds both session id and negotiated protocol version" do
+    bandit =
+      start_supervised!(
+        {Bandit, plug: {LegacySessionCapturePlug, test_pid: self()}, ip: {127, 0, 0, 1}, port: 0},
+        id: :legacy_session_capture_bandit
+      )
+
+    {:ok, {_address, port}} = ThousandIsland.listener_info(bandit)
+
+    client =
+      start_supervised!(
+        Supervisor.child_spec(
+          {Client, owner: self(), url: "http://127.0.0.1:#{port}/mcp"},
+          id: :legacy_session_capture_client
+        )
+      )
+
+    initialize = %{
+      "jsonrpc" => "2.0",
+      "id" => 1,
+      "method" => "initialize",
+      "params" => %{
+        "protocolVersion" => "2025-11-25",
+        "capabilities" => %{},
+        "clientInfo" => %{"name" => "client", "version" => "1.0.0"}
+      }
+    }
+
+    assert :ok = Client.send_message(client, initialize)
+    assert_receive {:legacy_captured_request, first_headers, ^initialize}
+    assert header(first_headers, "mcp-protocol-version") == "2025-11-25"
+    assert_receive {:mcp_message, %{"id" => 1}}
+
+    initialized = %{"jsonrpc" => "2.0", "method" => "notifications/initialized"}
+    assert :ok = Client.send_message(client, initialized)
+    assert_receive {:legacy_captured_request, next_headers, ^initialized}
+    assert header(next_headers, "mcp-session-id") == "legacy-session"
+    assert header(next_headers, "mcp-protocol-version") == "2025-11-25"
   end
 
   test "does not add method or name routing headers to JSON-RPC responses", %{client: client} do

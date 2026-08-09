@@ -1,7 +1,8 @@
 # MCP Elixir SDK 2.0 Types
 
 **Status:** Normative target shapes with current gaps identified
-**Wire source:** MCP `2026-07-28` schema pinned at `5f5440b`
+**Wire source:** MCP `2026-07-28` schema pinned at `5f5440b`, plus the
+`2025-11-25` core compatibility schema
 **Contracts:** [contracts.md](contracts.md)
 
 This document owns protocol and public-domain type shapes. It does not own OTP
@@ -20,6 +21,8 @@ and explicit conversion functions or `Jason.Encoder` implementations.
 @type json_object :: %{required(String.t()) => json_value()}
 @type request_id :: String.t() | integer()
 @type cursor :: String.t() | nil
+@type protocol_version :: "2026-07-28" | "2025-11-25"
+@type protocol_mode :: :stateless | :legacy
 @type extra_fields :: %{optional(String.t()) => json_value()}
 ```
 
@@ -64,6 +67,11 @@ not database identifiers.
 
 The `raw` map is canonical for preservation. Parsed fields are conveniences;
 they do not authorize deletion of unknown keys.
+
+Legacy initialize types retain `protocolVersion`, `capabilities`,
+`clientInfo`/`serverInfo`, and optional instructions in their 2025 wire shape.
+The internal legacy adapter may add 2026 metadata only for dispatch validation;
+that data is neither part of the legacy type nor visible to handlers.
 
 Reserved keys used by 2.0:
 

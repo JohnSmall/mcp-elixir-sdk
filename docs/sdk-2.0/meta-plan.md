@@ -7,7 +7,8 @@
 (`2.0.0-dev.1`)
 **Published implementation head:** `431866b` on `codex/mcp-routing-headers`
 
-This is the single progress tracker for the six-slice 2.0 effort. It records
+This is the single progress tracker for the original six-slice 2.0 effort and
+the S7 compatibility correction. It records
 work that can be proven from the repository or a named command. Requirements
 live in [specifications.md](specifications.md); this file does not redefine
 them.
@@ -35,6 +36,7 @@ them.
 | S4 JSON Schema 2020-12 | Verified | Server pending scenario **8/8**; client preservation **9/9**; no network `$ref` dereference **1/1** | — | Merge/release decision |
 | S5 Client/server wiring + conformance | Verified | **367** local tests; all **120** scored server checks pass with no warnings; required client matrix **63/63** | S1-S4 | Merge/release decision |
 | S6 Release hardening | Verified | Final Lavra review remediated; Credo/Dialyzer/audit/docs/Hex gates are clean; CI dependencies and conformance tooling are integrity-pinned | S1-S5 | Merge/release decision |
+| S7 Dual-era compatibility | Verified | 2025 server denominator **81/81**; 2026 stateless initialization **30/30**; explicit and negotiated legacy client integration; **379** local tests | S1-S6 | Merge/release decision |
 
 All six implementation slices and the final adversarial remediation are
 committed, pushed, and verified by hosted CI run
@@ -459,7 +461,7 @@ and regression-tested or recorded as an explicit, enumerated scope exclusion:
 
 | Review area | Closed findings |
 | --- | --- |
-| Protocol | Subscription preflight/version bypass; missing `resources/read` MRTR; forbidden down-negotiation; malformed discovery and `_meta`; structured tool results; duplicate JSON keys; object-only `outputSchema`; false `listChanged`; invalid continuation types |
+| Protocol | Subscription preflight/version bypass; missing `resources/read` MRTR; formerly forbidden down-negotiation (superseded by S7); malformed discovery and `_meta`; structured tool results; duplicate JSON keys; object-only `outputSchema`; false `listChanged`; invalid continuation types |
 | OTP/runtime | Invalid call/handle timeouts; handler raise/throw/exit containment; HTTP head-of-line blocking; orphaned subscription requests; stdio overflow terminal delivery; bounded notification execution; malformed subscription frames; async subscription opens; immutable subscription configuration validation |
 | Backpressure | Subscription stream delivery now waits for synchronous bounded-worker admission; overflow cancels the stream and preserves `:queue_overflow` as the consumer-visible terminal reason |
 | HTTP/security | Bounded request bodies with controlled 413 responses; duplicate Host/Origin rejection; caller-owned POST cancellation; no result-cache or identity-boundary regression |
@@ -471,6 +473,19 @@ warnings-as-errors compilation pass. Hosted CI run
 [`31304324703`](https://github.com/jmagar/mcp-elixir-sdk/actions/runs/31304324703)
 repeated the runtime matrix, static-analysis, package, advisory, and official
 conformance gates successfully.
+
+### 2026-08-09 S7 compatibility correction
+
+The hard requirement for current-package `2025-11-25` support superseded the
+earlier cutover-only decision. S7 restores explicit and negotiated legacy
+clients, legacy server sessions on owner-based and HTTP transports, independent
+server requests, resource/logging callbacks, notifications, and strict
+protocol-mode isolation. The initial compatibility suite was red in three
+places. After lifecycle hardening, bounded session queues, and stale-session
+cleanup, the full suite reached **379 tests, 0 failures**. The official 2025
+server requirements denominator passed **81/81**; the isolated 2026 stateless
+server scenario passed **30/30**. Explicit legacy selection and negotiated
+downgrade are both covered by real-transport SDK client integration tests.
 
 ## Current evidence anchors
 

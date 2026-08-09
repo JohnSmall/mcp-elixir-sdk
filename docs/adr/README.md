@@ -18,22 +18,27 @@ WP pin Global v2 · Methodology pin Global v1.
 | ADR | Title | Status | Supersedes | Superseded by |
 | --- | --- | --- | --- | --- |
 | [ADR-001](0001-target-2025-11-25-defer-2026-07-28.md) | Target MCP spec revision 2025-11-25 only; defer 2026-07-28 | Accepted (retroactive) · **deferral superseded** | — | ADR-002 (deferral only) |
-| [ADR-002](0002-adopt-2026-07-28-stateless-core-migration.md) | Adopt MCP 2026-07-28; migrate transport to the stateless core (2.0.0) | **Accepted** (2026-07-20) | ADR-001 (the deferral) | — |
-| [ADR-003](0003-2.0.0-conformance-scope.md) | 2.0.0 conformance scope — core only, authorization profile excluded, client held to the same bar | **Accepted** (2026-08-02) | — | — |
+| [ADR-002](0002-adopt-2026-07-28-stateless-core-migration.md) | Adopt MCP 2026-07-28; migrate transport to the stateless core (2.0.0) | **Accepted** (2026-07-20) | ADR-001 (the deferral) | ADR-007 (sub-decisions 1 and 5 only) |
+| [ADR-003](0003-2.0.0-conformance-scope.md) | 2.0.0 conformance scope — core only, authorization profile excluded, client held to the same bar | **Accepted** (2026-08-02) | — | ADR-007 (item 5 only) |
 | [ADR-004](0004-immutable-handler-launch-configuration.md) | Treat handler launch configuration as immutable | **Accepted** (2026-08-08) | — | — |
 | [ADR-005](0005-consumer-owned-subscription-supervision.md) | Use consumer-owned supervision for subscriptions | **Accepted** (2026-08-08) | — | — |
 | [ADR-006](0006-no-client-result-cache-in-2.0.md) | Do not cache MCP results in the 2.0 client | **Accepted** (2026-08-08) | — | — |
+| [ADR-007](0007-dual-protocol-era-support.md) | Support both 2025-11-25 and 2026-07-28 in the 2.0 SDK | **Accepted** (2026-08-09) | ADR-002 items 1 and 5; ADR-003 item 5 | — |
 
-**Next ADR number: ADR-007.**
+**Next ADR number: ADR-008.**
 
-ADR-002 supersedes **only the deferral** in ADR-001, not the whole decision: ADR-001's choice to _ship_
-1.1.0 against 2025-11-25 stands and is already released. ADR-002 governs what comes next — adopt
-2026-07-28, package-level cutover to 2.0.0, EMFA rides the migration.
+ADR-002 supersedes **only the deferral** in ADR-001, not the whole decision:
+ADR-001's choice to ship 1.1.0 against 2025-11-25 stands. ADR-007 then
+supersedes ADR-002's package-level cutover and requires 2.0 to support both
+2025-11-25 and 2026-07-28.
 
-ADR-003 **refines** ADR-002 sub-decisions 3 and 4 (it supersedes nothing): it fixes the denominator of
-ADR-002's "in its entirety" conformance commitment — 2.0.0 targets the **core specification** on
-server _and_ client, **excluding** the authorization profile and the extension track, with the claim
-worded to that scope.
+ADR-003 fixes the conformance denominator: 2.0 targets the **core
+specification** on server and client, excluding the authorization profile and
+extension track. ADR-007 preserves that scope for both supported versions.
+
+ADR-007 supersedes the package-hard-cutover clauses in ADR-002 and ADR-003.
+Both protocol eras now ship in 2.0, with separate lifecycle and transport
+paths and separate conformance evidence.
 
 ADRs 004–006 record the durable 2.0 implementation choices accepted after the SDK-document adversarial
 review: immutable handler launch configuration, consumer-owned subscription supervision, and no client

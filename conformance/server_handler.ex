@@ -17,6 +17,15 @@ defmodule MCP.Conformance.ServerHandler do
   @impl true
   def init(_opts), do: {:ok, %{}}
 
+  @impl true
+  def handle_set_log_level(_level, _ctx, _config), do: :ok
+
+  @impl true
+  def handle_subscribe(_uri, _ctx, _config), do: :ok
+
+  @impl true
+  def handle_unsubscribe(_uri, _ctx, _config), do: :ok
+
   # --- Tools ---
 
   @impl true
@@ -472,6 +481,70 @@ defmodule MCP.Conformance.ServerHandler do
 
   def handle_call_tool("test_sampling", _args, %{input: %{responses: responses}}, _config) do
     {:ok, [%{"type" => "text", "text" => "LLM response: #{inspect(responses["sampling"])}"}]}
+  end
+
+  def handle_call_tool("test_elicitation_sep1034_defaults", _args, %{input: nil}, _config) do
+    request = %{
+      "method" => "elicitation/create",
+      "params" => %{
+        "message" => "Provide values with defaults",
+        "requestedSchema" => %{
+          "type" => "object",
+          "properties" => %{
+            "name" => %{"type" => "string", "default" => "John Doe"},
+            "age" => %{"type" => "integer", "default" => 30},
+            "score" => %{"type" => "number", "default" => 95.5},
+            "status" => %{
+              "type" => "string",
+              "enum" => ["active", "inactive", "pending"],
+              "default" => "active"
+            },
+            "verified" => %{"type" => "boolean", "default" => true}
+          }
+        }
+      }
+    }
+
+    {:input_required, %{"elicitation" => request}, "elicitation-defaults-state"}
+  end
+
+  def handle_call_tool("test_elicitation_sep1330_enums", _args, %{input: nil}, _config) do
+    choices = [
+      %{"const" => "value1", "title" => "First Option"},
+      %{"const" => "value2", "title" => "Second Option"}
+    ]
+
+    request = %{
+      "method" => "elicitation/create",
+      "params" => %{
+        "message" => "Choose enum values",
+        "requestedSchema" => %{
+          "type" => "object",
+          "properties" => %{
+            "untitledSingle" => %{
+              "type" => "string",
+              "enum" => ["option1", "option2", "option3"]
+            },
+            "titledSingle" => %{"type" => "string", "oneOf" => choices},
+            "legacyEnum" => %{
+              "type" => "string",
+              "enum" => ["opt1", "opt2", "opt3"],
+              "enumNames" => ["Option One", "Option Two", "Option Three"]
+            },
+            "untitledMulti" => %{
+              "type" => "array",
+              "items" => %{
+                "type" => "string",
+                "enum" => ["option1", "option2", "option3"]
+              }
+            },
+            "titledMulti" => %{"type" => "array", "items" => %{"anyOf" => choices}}
+          }
+        }
+      }
+    }
+
+    {:input_required, %{"elicitation" => request}, "elicitation-enums-state"}
   end
 
   def handle_call_tool(name, args, %{input: nil}, _config)

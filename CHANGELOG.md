@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Full `2025-11-25` compatibility alongside `2026-07-28`: bounded client
+  negotiation fallback, initialize/initialized, legacy Streamable HTTP
+  sessions, GET SSE server requests, session DELETE, resource subscriptions,
+  logging, roots, sampling, elicitation, ping, and legacy notifications.
 - Stateless MCP `2026-07-28` client/server core with per-request metadata and
   `server/discover`.
 - OTP-supervised stdio and Streamable HTTP subscriptions with explicit handles,
@@ -20,17 +24,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Streamable HTTP selects a protocol mode per request/session: stateless 2026
+  traffic remains sessionless while 2025 traffic is isolated in an OTP-owned
+  session connection.
 - `MCP.Server.Handler` callbacks receive `ToolContext` and immutable launch
   configuration; callback results no longer replace handler state.
 - `MCP.Server.Connection` replaces the removed per-session `MCP.Server` API.
 - The request deadline now covers transport send, schema refresh, and MRTR
   resolver work. Callback failures are isolated to their request.
 
-### Removed
+### Removed (original 2.0 cutover; legacy removals superseded above)
 
-- The initialize/session handshake, legacy resource subscription methods, and
-  held-open server-to-client sampling/elicitation requests.
-- Protocol negotiation with `2025-11-25` and older revisions.
+- The original cutover removed initialize/session handling, legacy resource
+  subscriptions, held-open server requests, and protocol negotiation. The
+  `2025-11-25` portions of that removal are restored by the dual-era
+  compatibility entry above; revisions older than `2025-11-25` remain absent.
 - Client result caching. Cache metadata remains visible to consumers.
 
 ### Security

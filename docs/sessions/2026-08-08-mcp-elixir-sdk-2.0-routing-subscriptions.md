@@ -175,3 +175,59 @@ The branch remains development-only and is not merged into `main`. Rollback is n
 1. Commit and push the completed adversarial remediation.
 2. Continue S2 transport wiring for `listen_subscriptions` over stdio and HTTP.
 3. Add official client/server subscription scenarios before marking S2 verified.
+
+## 2026-08-09 dual-era compatibility correction
+
+### User request and outcome
+
+The user identified `2025-11-25` backward compatibility as a hard requirement
+for SDK 2.0. The implementation now supports both `2026-07-28` and
+`2025-11-25` on client and server, with one bounded client downgrade, strict
+mode isolation, and version-specific wire dispatch.
+
+### Implementation
+
+- Added `MCP.Server.LegacyDispatch` and the stateful Streamable HTTP
+  `LegacySession` transport, including initialize/initialized, session IDs,
+  SSE GET, POST correlation, DELETE, independent server requests, and bounded
+  event queues.
+- Restored legacy client APIs and callbacks for ping, resource subscriptions,
+  roots, sampling, elicitation, and notifications while preserving the 2026
+  stateless core.
+- Added handler callbacks for subscription ownership and logging level, stale
+  session cleanup, continuation-worker failure handling, and explicit legacy
+  identity binding.
+- Added ADR-007 plus updated specifications, contracts, types, runtime models,
+  architecture, tooling, changelog, README, and the machine-readable 2025
+  conformance ledger.
+
+### Verification evidence
+
+| Command | Actual | Status |
+| --- | --- | --- |
+| `mix test --seed 0` | 379 tests, 0 failures | Pass |
+| `mix compile --warnings-as-errors` | Compilation succeeded | Pass |
+| `mix credo --strict` | 1377 functions/modules, no issues | Pass |
+| `mix dialyzer` | 0 errors | Pass |
+| `mix docs` and `mix hex.build` | Documentation and package generated | Pass |
+| Official server requirements `2025-11-25` | 81 passed, 0 failed | Pass |
+| Official `server-stateless` scenario `2026-07-28` | 30 passed, 0 failed | Pass |
+
+### Repository maintenance
+
+- No `docs/plans` directory or Beads database was present, so no plan or
+  tracker state was changed.
+- The repository has one worktree on `codex/mcp-routing-headers`; no worktree or
+  branch cleanup was safe or necessary.
+- Current documentation contradicted the restored compatibility requirement in
+  several places; those stale claims were superseded or corrected.
+- The quick-push manifest detector found no Cargo, npm, or Python primary
+  manifest, so it made no automatic version bump. The Mix package remains
+  `2.0.0-dev.1`.
+
+### Remaining work
+
+The dual-era implementation is locally verified but still requires the
+requested post-push Lavra review. Any actionable review findings must be fixed,
+retested, committed, and pushed before this branch is considered ready for a
+merge decision.

@@ -24,7 +24,7 @@ decoded maps to its owner as `{:mcp_message, map()}` and reports terminal loss
 as `{:mcp_transport_closed, reason}`. Closing is idempotent from the caller's
 perspective.
 
-For 2.0 Streamable HTTP:
+For 2026 Streamable HTTP:
 
 - Request/response traffic uses POST with JSON or SSE responses.
 - `MCP-Protocol-Version` is `2026-07-28` and matches the request body's
@@ -33,6 +33,12 @@ For 2.0 Streamable HTTP:
 - No `Mcp-Session-Id`, session DELETE, or unsolicited GET notification stream
   exists.
 - Only `subscriptions/listen` owns a long-lived notification response stream.
+
+For 2025 Streamable HTTP, initialize mints `Mcp-Session-Id`; later POST and GET
+requests require it, GET carries queued server messages as SSE, and DELETE
+closes the session. The bound identity and handler configuration are resolved
+once at initialize. One endpoint may serve both eras, but one session or
+owner-based connection may never mix them.
 
 For stdio, each JSON-RPC object is one newline-delimited frame. Subscription
 messages share the same channel and are correlated by request/subscription ID.
@@ -162,8 +168,10 @@ separately supervised process referenced by that launch value. A
 context-bearing handler callback is required for every identity-capable method.
 The 2.0 path never falls back to a legacy callback arity.
 
-`initialize` returns unsupported-protocol behavior. Removed methods do not
-silently negotiate a legacy session.
+The 2026 path rejects `initialize`. The client prefers `server/discover`, then
+makes one bounded fallback to a 2025 initialize only when discovery is missing
+or the peer's unsupported-version response advertises 2025. Explicit legacy
+configuration initializes directly. Other errors never trigger fallback.
 
 ## C6 — Handler callbacks
 

@@ -20,6 +20,12 @@ defmodule MCP.Transport.StreamableHTTP.Client do
   DELETE on close (SEP-2567). Every POST is self-contained — the per-request
   `_meta` (protocol version, client identity/capabilities) is placed on the
   JSON-RPC message by `MCP.Client`, so any server instance can service it.
+
+  ## Stateful compatibility (2025-11-25)
+
+  An initialize response binds `Mcp-Session-Id`. Later requests reuse it, a
+  supervised GET SSE listener receives server messages, and close performs a
+  best-effort session DELETE.
   """
 
   use GenServer
@@ -38,8 +44,11 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     :owner_ref,
     :url,
     :protocol_version,
+    :session_id,
     :extra_headers,
     :task_supervisor,
+    :legacy_sse_task,
+    :legacy_sse_ref,
     post_tasks: %{},
     subscriptions: %{}
   ]
@@ -147,9 +156,16 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     end
   end
 
+  def handle_call({:bind_session, session_id, protocol_version}, _from, state)
+      when is_binary(session_id) and is_binary(protocol_version) do
+    state = %{state | session_id: session_id, protocol_version: protocol_version}
+    {:reply, :ok, start_legacy_sse_listener(state)}
+  end
+
   def handle_call(:close, _from, state) do
     do_close(state)
-    {:stop, :normal, :ok, state}
+
+    {:stop, :normal, :ok, %{state | session_id: nil, legacy_sse_task: nil, legacy_sse_ref: nil}}
   end
 
   @impl GenServer
@@ -208,6 +224,11 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     end
   end
 
+  def handle_info({:legacy_sse_response, body}, state) when is_binary(body) do
+    {:ok, state} = parse_sse_body(state, body)
+    {:noreply, state}
+  end
+
   def handle_info({ref, result}, state) when is_reference(ref) do
     case Map.pop(state.post_tasks, ref) do
       {nil, _post_tasks} ->
@@ -233,6 +254,13 @@ defmodule MCP.Transport.StreamableHTTP.Client do
 
   def handle_info({:DOWN, ref, :process, task, reason}, state) do
     cond do
+      ref == state.legacy_sse_ref and task == state.legacy_sse_task ->
+        if reason not in [:normal, :shutdown] do
+          Logger.warning("MCP legacy SSE listener stopped: #{inspect(reason)}")
+        end
+
+        {:noreply, %{state | legacy_sse_task: nil, legacy_sse_ref: nil}}
+
       Map.has_key?(state.post_tasks, ref) ->
         fail_post_task(state, ref, reason)
 
@@ -265,8 +293,12 @@ defmodule MCP.Transport.StreamableHTTP.Client do
   # --- Private helpers ---
 
   defp start_post_task(state, from, message, headers) do
+    transport = self()
+
     task =
-      Task.Supervisor.async_nolink(state.task_supervisor, fn -> post(state, message, headers) end)
+      Task.Supervisor.async_nolink(state.task_supervisor, fn ->
+        post(transport, state, message, headers)
+      end)
 
     caller_ref = Process.monitor(elem(from, 0))
 
@@ -291,12 +323,13 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     {:noreply, %{state | post_tasks: post_tasks}}
   end
 
-  defp post(state, message, headers) do
+  defp post(transport, state, message, headers) do
     body = Jason.encode!(message)
 
     case Req.post(state.url, body: body, headers: headers, receive_timeout: 60_000) do
       {:ok, %Req.Response{status: status, headers: resp_headers, body: resp_body}}
       when status in [200, 201] ->
+        bind_response_session(transport, message, state.protocol_version, resp_headers)
         content_type = get_content_type(resp_headers)
 
         cond do
@@ -391,12 +424,15 @@ defmodule MCP.Transport.StreamableHTTP.Client do
          {"content-type", "application/json"},
          {"accept", "application/json, text/event-stream"},
          {"mcp-protocol-version", request_protocol_version(message, state.protocol_version)}
-       ] ++ routing_headers(message) ++ custom_headers ++ state.extra_headers}
+       ] ++
+         session_headers(state) ++
+         routing_headers(message) ++ custom_headers ++ state.extra_headers}
     end
   end
 
   defp request_protocol_version(message, fallback) do
-    get_in(message, ["params", "_meta", "io.modelcontextprotocol/protocolVersion"]) || fallback
+    get_in(message, ["params", "_meta", "io.modelcontextprotocol/protocolVersion"]) ||
+      get_in(message, ["params", "protocolVersion"]) || fallback
   end
 
   defp routing_headers(%{"method" => method} = message) do
@@ -475,7 +511,8 @@ defmodule MCP.Transport.StreamableHTTP.Client do
       "accept",
       "mcp-protocol-version",
       "mcp-method",
-      "mcp-name"
+      "mcp-name",
+      "mcp-session-id"
     ] or String.starts_with?(normalized, "mcp-param-")
   end
 
@@ -535,6 +572,14 @@ defmodule MCP.Transport.StreamableHTTP.Client do
   end
 
   defp do_close(state) do
+    if state.legacy_sse_task do
+      Process.demonitor(state.legacy_sse_ref, [:flush])
+      # A long-polling Req task can take seconds to unwind through a supervised
+      # shutdown. The listener owns no state, so an untrappable exit makes
+      # close deterministic while the supervisor reaps the child.
+      Process.exit(state.legacy_sse_task, :kill)
+    end
+
     Enum.each(state.post_tasks, fn {_ref, operation} ->
       Process.demonitor(operation.caller_ref, [:flush])
       _ = Task.Supervisor.terminate_child(state.task_supervisor, operation.task_pid)
@@ -545,8 +590,87 @@ defmodule MCP.Transport.StreamableHTTP.Client do
       _ = Task.Supervisor.terminate_child(state.task_supervisor, subscription.task)
     end)
 
-    # Stateless: no session to terminate, so no DELETE is issued (SEP-2567).
+    terminate_legacy_session(state)
     :ok
+  end
+
+  defp bind_response_session(transport, message, fallback_version, headers) do
+    case get_header(headers, "mcp-session-id") do
+      nil ->
+        :ok
+
+      session_id ->
+        protocol_version = request_protocol_version(message, fallback_version)
+        GenServer.call(transport, {:bind_session, session_id, protocol_version})
+    end
+  end
+
+  defp session_headers(%{session_id: nil}), do: []
+  defp session_headers(%{session_id: session_id}), do: [{"mcp-session-id", session_id}]
+
+  defp terminate_legacy_session(%{session_id: nil}), do: :ok
+
+  defp terminate_legacy_session(state) do
+    headers = [
+      {"mcp-protocol-version", state.protocol_version},
+      {"mcp-session-id", state.session_id}
+    ]
+
+    case Req.delete(state.url, headers: headers, receive_timeout: 10_000) do
+      {:ok, %Req.Response{status: status}} when status in [200, 202, 204, 404] ->
+        :ok
+
+      {:ok, %Req.Response{status: status}} ->
+        Logger.debug("MCP session DELETE returned HTTP #{status}")
+
+      {:error, reason} ->
+        Logger.debug("MCP session DELETE failed: #{inspect(reason)}")
+    end
+  end
+
+  defp start_legacy_sse_listener(%{legacy_sse_task: task} = state) when is_pid(task), do: state
+
+  defp start_legacy_sse_listener(state) do
+    transport = self()
+
+    {:ok, task} =
+      Task.Supervisor.start_child(state.task_supervisor, fn ->
+        legacy_sse_loop(
+          transport,
+          state.url,
+          state.session_id,
+          state.protocol_version,
+          state.extra_headers
+        )
+      end)
+
+    %{state | legacy_sse_task: task, legacy_sse_ref: Process.monitor(task)}
+  end
+
+  defp legacy_sse_loop(transport, url, session_id, protocol_version, extra_headers) do
+    headers =
+      [
+        {"accept", "text/event-stream"},
+        {"mcp-session-id", session_id},
+        {"mcp-protocol-version", protocol_version}
+      ] ++ extra_headers
+
+    case Req.get(url, headers: headers, receive_timeout: 60_000) do
+      {:ok, %Req.Response{status: 200, body: body}} when is_binary(body) ->
+        send(transport, {:legacy_sse_response, body})
+        legacy_sse_loop(transport, url, session_id, protocol_version, extra_headers)
+
+      {:ok, %Req.Response{status: 404}} ->
+        :ok
+
+      {:ok, %Req.Response{status: status}} ->
+        Logger.warning("MCP legacy SSE GET returned HTTP #{status}")
+        :ok
+
+      {:error, reason} ->
+        Logger.warning("MCP legacy SSE GET failed: #{inspect(reason)}")
+        :ok
+    end
   end
 
   defp start_subscription_task(state, id, message, headers) do

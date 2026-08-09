@@ -67,6 +67,21 @@ defmodule MCP.Server.Handler do
               {:ok, honored :: MCP.Protocol.Types.SubscriptionFilter.t()}
               | {:error, code :: integer(), message :: String.t()}
 
+  @callback handle_subscribe(String.t(), context(), handler_config()) ::
+              :ok
+              | {:ok}
+              | {:error, code :: integer(), message :: String.t()}
+
+  @callback handle_unsubscribe(String.t(), context(), handler_config()) ::
+              :ok
+              | {:ok}
+              | {:error, code :: integer(), message :: String.t()}
+
+  @callback handle_set_log_level(String.t(), context(), handler_config()) ::
+              :ok
+              | {:ok}
+              | {:error, code :: integer(), message :: String.t()}
+
   @optional_callbacks [
     handle_list_tools: 3,
     handle_call_tool: 4,
@@ -76,6 +91,9 @@ defmodule MCP.Server.Handler do
     handle_list_prompts: 3,
     handle_get_prompt: 4,
     handle_complete: 4,
-    handle_listen_subscriptions: 3
+    handle_listen_subscriptions: 3,
+    handle_subscribe: 3,
+    handle_unsubscribe: 3,
+    handle_set_log_level: 3
   ]
 end

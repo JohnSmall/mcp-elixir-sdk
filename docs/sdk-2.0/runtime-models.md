@@ -22,6 +22,7 @@ flowchart LR
     Handler["Consumer handler"]
     ClientSubs["Client subscription workers"]
     ServerSubs["Server subscription workers"]
+    LegacySession["2025 HTTP session runtime"]
     CallbackTasks["Supervised host callbacks"]
 
     Host --> Client
@@ -35,6 +36,8 @@ flowchart LR
     Host --> ServerSubs
     Client --> CallbackTasks
     ServerSubs --> Handler
+    Plug --> LegacySession
+    LegacySession --> Dispatch
 ```
 
 The library application currently starts an empty supervisor. Consumers own
@@ -52,7 +55,7 @@ Its important current state is:
   transport_pid: pid(),
   client_info: MCP.Protocol.Types.Implementation.t(),
   client_capabilities: MCP.Protocol.Capabilities.ClientCapabilities.t(),
-  protocol_version: "2026-07-28",
+  protocol_version: "2026-07-28" | "2025-11-25",
   status: :ready | :closed,
   server_capabilities: map() | nil,
   server_info: map() | nil,
@@ -64,9 +67,10 @@ Its important current state is:
 }
 ```
 
-There is no initializing/negotiating session state in 2.0. `connect/2` performs
-optional `server/discover` and enriches introspection fields; ordinary requests
-are valid without a negotiated session.
+In 2026 mode, `connect/2` performs optional discovery and ordinary requests are
+valid without a session. In 2025 mode it owns initialize/initialized state,
+negotiated capabilities, and server-request handlers. Automatic selection is a
+single bounded transition from preferred discovery to legacy initialize.
 
 ### Implemented lifecycle invariants
 
@@ -145,6 +149,19 @@ Long-lived subscription responses use supervised tasks. Delivery is
 acknowledged end-to-end from stream parser through the client subscription
 worker, so the configured queue limit also bounds upstream parsing and mailbox
 growth rather than merely bounding the final worker queue.
+
+For 2025 HTTP, the client transport also owns a supervised GET SSE listener
+bound to the negotiated session ID. Closing stops the listener before issuing
+a best-effort DELETE.
+
+## M2a — Legacy HTTP session runtime
+
+Each `Mcp-Session-Id` maps to one `MCP.Server.Connection` and one
+`LegacySession` transport. The runtime owns pending POST callers, a bounded-by-
+consumption SSE event queue, one SSE waiter, and correlated server-to-client
+requests. Owner death or DELETE fails all waiters and closes the connection.
+Initialize failure closes the partially created runtime; transport loss fails
+pending callers rather than leaving them until their deadlines.
 
 ## M3 — Stdio transport
 

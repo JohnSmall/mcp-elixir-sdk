@@ -34,13 +34,17 @@ Start the server adapter:
 mix run --no-halt conformance/server_adapter.exs 43001
 ```
 
-Then run the release denominator:
+Then run both server release denominators:
 
 ```bash
 npm ci --ignore-scripts
 npx --no-install conformance server \
   --url http://127.0.0.1:43001/mcp \
   --requirements 2026-07-28
+
+npx --no-install conformance server \
+  --url http://127.0.0.1:43001/mcp \
+  --requirements 2025-11-25
 ```
 
 Client scenarios invoke the checked-in adapter, for example:
@@ -52,8 +56,9 @@ npx --no-install conformance client \
   --spec-version 2026-07-28
 ```
 
-`conformance/scenarios.json` records which scenarios are release-required,
-which pass, and which auth scenarios are outside the current SDK transport
+`conformance/scenarios.json` records the 2026 release matrix and
+`conformance/compatibility-2025-11-25.json` records the legacy compatibility
+denominator. Authorization-profile scenarios remain outside the SDK transport
 scope. Do not replace the pin with `latest` in release evidence.
 
 ## Package inspection

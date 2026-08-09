@@ -1,8 +1,22 @@
 # Architecture
 
-MCP Elixir SDK 2.0 is an OTP-native implementation of the stateless MCP
-`2026-07-28` core. There is no initialize handshake, protocol session, ETS
-session router, or per-session handler state.
+MCP Elixir SDK 2.0 is an OTP-native dual-era implementation of MCP
+`2025-11-25` and `2026-07-28`. Stateless 2026 dispatch remains sessionless;
+legacy 2025 traffic uses an isolated initialize/session adapter. There is no
+client-side result cache or mutable per-request handler configuration.
+
+## Protocol selection
+
+Clients prefer `2026-07-28` discovery and make one bounded fallback to the
+`2025-11-25` initialize handshake when discovery is unavailable or the server
+advertises only the legacy revision. Servers choose a mode on the first valid
+request. A connection never changes modes.
+
+The 2026 path validates per-request metadata and routes directly to stateless
+dispatch. The 2025 path owns negotiated capabilities, session identity,
+logging level, subscriptions, pending server-to-client requests, and SSE event
+delivery. `MCP.Server.LegacyDispatch` adapts legacy envelopes to the immutable
+handler contract without exposing injected compatibility metadata to handlers.
 
 ## Runtime topology
 
@@ -91,9 +105,10 @@ launch.
 
 ### Streamable HTTP
 
-`MCP.Transport.StreamableHTTP.Plug` builds immutable server config at mount and
-dispatches each POST independently. Its `handler_opts` factory runs per request
-after upstream authentication and may read trusted `conn.assigns`. HTTP
+`MCP.Transport.StreamableHTTP.Plug` builds immutable server config at mount.
+For 2026 it dispatches each POST independently and runs its `handler_opts`
+factory per request after upstream authentication. For 2025 it runs the factory
+once at initialize and binds that identity to the new legacy session. HTTP
 subscriptions retain only their individual response stream.
 
 `MCP.Transport.StreamableHTTP.Client` emits `MCP-Protocol-Version`,
@@ -119,12 +134,10 @@ Invariants:
 
 ## MRTR
 
-Server-to-client sampling, elicitation, and roots work is represented as
-`InputRequiredResult`. `inputRequests` and `inputResponses` are string-keyed
-maps. The client invokes its resolver outside the GenServer, then retries the
-original request with a fresh JSON-RPC id, the exact opaque `requestState` when
-present, and the response map. No independent JSON-RPC request is emitted on a
-response stream.
+In 2026, server-to-client sampling, elicitation, and roots work is represented
+as `InputRequiredResult`; the client resolves it outside the GenServer and
+retries using MRTR. In 2025, these operations are independent correlated
+JSON-RPC requests on the owner transport or legacy session GET SSE channel.
 
 ## Protocol representation
 

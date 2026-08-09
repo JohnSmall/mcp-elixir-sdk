@@ -220,7 +220,8 @@ defmodule MCP.SubscriptionsHTTPIntegrationTest do
     assert Registry.lookup(context.registry, {:mcp_subscriptions, :http_test}) == []
   end
 
-  test "unsupported subscription protocol version is rejected before authorization", context do
+  test "legacy subscription request without a negotiated session is rejected before authorization",
+       context do
     request =
       78
       |> listen_request()
@@ -238,8 +239,8 @@ defmodule MCP.SubscriptionsHTTPIntegrationTest do
     assert {:ok, response} =
              Req.post(context.url, body: Jason.encode!(request), headers: headers)
 
-    assert response.status == 400
-    assert response.body["error"]["code"] == -32_022
+    assert response.status == 404
+    assert response.body["error"]["message"] == "Session not found"
     refute_receive {:subscription_authorized, 78, _identity}
     assert Registry.lookup(context.registry, {:mcp_subscriptions, :http_test}) == []
   end

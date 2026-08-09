@@ -1,13 +1,11 @@
 defmodule MCP.Server.Connection do
   @moduledoc """
-  Stateless per-request driver for **owner-based** transports (stdio,
-  in-process/`BridgeTransport`) in the MCP 2026-07-28 core.
+  Dual-era connection driver for **owner-based** transports (stdio and
+  in-process/`BridgeTransport`).
 
-  This is the conn-less analogue of `MCP.Transport.StreamableHTTP.Plug`: a thin
-  GenServer that owns a transport, receives decoded messages, builds one
-  per-request `MCP.Server.ToolContext`, and drives `MCP.Server.Dispatch`. It is
-  the stateless successor to the retired per-session `MCP.Server` GenServer —
-  **no `initialize` handshake, no `:ready` gate, no session** (SEP-2575/2567).
+  The first protocol request selects either the 2026 stateless dispatcher or
+  the 2025 initialize/session state machine. Modes cannot be mixed. Both paths
+  use one immutable handler configuration and per-request `ToolContext`.
 
   ## Identity (PO Comment B — stdio/in-process)
 
@@ -34,8 +32,17 @@ defmodule MCP.Server.Connection do
   alias MCP.Protocol.Error
   alias MCP.Protocol.Messages.{Notification, Request, Response}
   alias MCP.Protocol.Messages.Subscriptions.{ListenParams, ListenResult}
+  alias MCP.Protocol.Methods
   alias MCP.Protocol.Types.SubscriptionFilter
-  alias MCP.Server.{Config, Dispatch, SubscriptionRegistry, SubscriptionWorker, ToolContext}
+
+  alias MCP.Server.{
+    Config,
+    Dispatch,
+    LegacyDispatch,
+    SubscriptionRegistry,
+    SubscriptionWorker,
+    ToolContext
+  }
 
   @subscription_id_key "io.modelcontextprotocol/subscriptionId"
 
@@ -47,6 +54,15 @@ defmodule MCP.Server.Connection do
     :subscription_supervisor,
     :subscription_registry,
     :subscription_endpoint,
+    :protocol_mode,
+    :legacy_status,
+    :legacy_client_info,
+    :legacy_client_capabilities,
+    :legacy_log_level,
+    :next_id,
+    :pending_client_requests,
+    :request_timeout,
+    :task_supervisor,
     subscription_queue_limit: 256,
     subscriptions: %{}
   ]
@@ -76,6 +92,48 @@ defmodule MCP.Server.Connection do
     GenServer.call(server, {:close_subscription, request_id})
   end
 
+  @doc "Requests sampling from a negotiated MCP 2025-11-25 client."
+  def request_sampling(server, params, timeout \\ 60_000),
+    do: request_client(server, Methods.sampling_create_message(), params, timeout)
+
+  @doc "Requests roots from a negotiated MCP 2025-11-25 client."
+  def request_roots(server, timeout \\ 30_000),
+    do: request_client(server, Methods.roots_list(), %{}, timeout)
+
+  @doc "Requests elicitation from a negotiated MCP 2025-11-25 client."
+  def request_elicitation(server, params, timeout \\ 60_000),
+    do: request_client(server, Methods.elicitation_create(), params, timeout)
+
+  defp request_client(server, method, params, timeout),
+    do: GenServer.call(server, {:request_client, method, params, timeout}, :infinity)
+
+  @doc "Notifies a legacy client that the tool list changed."
+  def notify_tools_changed(server),
+    do: GenServer.cast(server, {:legacy_notify, Methods.tools_list_changed(), nil})
+
+  @doc "Notifies a legacy client that the resource list changed."
+  def notify_resources_changed(server),
+    do: GenServer.cast(server, {:legacy_notify, Methods.resources_list_changed(), nil})
+
+  @doc "Notifies a legacy client that one resource changed."
+  def notify_resource_updated(server, uri),
+    do: GenServer.cast(server, {:legacy_notify, Methods.resources_updated(), %{"uri" => uri}})
+
+  @doc "Notifies a legacy client that the prompt list changed."
+  def notify_prompts_changed(server),
+    do: GenServer.cast(server, {:legacy_notify, Methods.prompts_list_changed(), nil})
+
+  @doc "Sends a legacy logging notification when allowed by the negotiated level."
+  def log(server, level, data, logger_name \\ nil),
+    do: GenServer.cast(server, {:legacy_log, level, data, logger_name})
+
+  @doc "Sends a legacy progress notification."
+  def send_progress(server, progress_token, progress, total \\ nil) do
+    params = %{"progressToken" => progress_token, "progress" => progress}
+    params = if is_nil(total), do: params, else: Map.put(params, "total", total)
+    GenServer.cast(server, {:legacy_notify, Methods.progress(), params})
+  end
+
   # --- GenServer callbacks ---
 
   @impl GenServer
@@ -95,7 +153,8 @@ defmodule MCP.Server.Connection do
       |> Keyword.put(:handler_opts, handler_opts)
       |> Keyword.put(:subscriptions_enabled, subscriptions_enabled)
 
-    with :ok <- validate_subscription_options(opts),
+    with {:ok, task_supervisor} <- Task.Supervisor.start_link(),
+         :ok <- validate_subscription_options(opts),
          {:ok, config} <- Config.build(handler_module, config_opts),
          {:ok, module, pid} <- start_transport(transport_spec) do
       {:ok,
@@ -108,6 +167,13 @@ defmodule MCP.Server.Connection do
          subscription_registry: Keyword.get(opts, :subscription_registry),
          subscription_endpoint: Keyword.get(opts, :subscription_endpoint, self()),
          subscription_queue_limit: Keyword.get(opts, :subscription_queue_limit, 256),
+         protocol_mode: :undetermined,
+         legacy_status: :waiting,
+         legacy_log_level: "info",
+         next_id: 1,
+         pending_client_requests: %{},
+         request_timeout: Keyword.get(opts, :request_timeout, 30_000),
+         task_supervisor: task_supervisor,
          subscriptions: %{}
        }}
     else
@@ -119,7 +185,7 @@ defmodule MCP.Server.Connection do
   def handle_call(:get_transport, _from, state), do: {:reply, state.transport_pid, state}
 
   def handle_call(:close, _from, state) do
-    state = close_all_subscriptions(state)
+    state = state |> fail_pending_client_requests(:closed) |> close_all_subscriptions()
     if state.transport_pid, do: state.transport_module.close(state.transport_pid)
     {:stop, :normal, :ok, state}
   catch
@@ -133,33 +199,85 @@ defmodule MCP.Server.Connection do
     end
   end
 
+  def handle_call(
+        {:request_client, method, params, timeout},
+        from,
+        %{protocol_mode: :legacy, legacy_status: :ready} = state
+      ) do
+    timeout = timeout || state.request_timeout
+    id = state.next_id
+    message = Request.new(id, method, params) |> Jason.encode!() |> Jason.decode!()
+
+    case state.transport_module.send_message(state.transport_pid, message) do
+      :ok ->
+        timeout_ref = Process.send_after(self(), {:client_request_timeout, id}, timeout)
+        pending = Map.put(state.pending_client_requests, id, {from, timeout_ref})
+        {:noreply, %{state | next_id: id + 1, pending_client_requests: pending}}
+
+      {:error, reason} ->
+        {:reply, {:error, reason}, state}
+    end
+  end
+
+  def handle_call({:request_client, _method, _params, _timeout}, _from, state),
+    do: {:reply, {:error, :legacy_client_not_ready}, state}
+
   @impl GenServer
-  def handle_info({:mcp_message, message}, state) do
-    case Protocol.decode_message(message) do
-      {:ok, %Request{method: "subscriptions/listen"} = request} ->
-        open_subscription(request, state)
+  def handle_cast(
+        {:legacy_notify, method, params},
+        %{protocol_mode: :legacy, legacy_status: :ready} = state
+      ) do
+    send_legacy_notification(state, method, params)
+    {:noreply, state}
+  end
 
-      {:ok, %Request{} = request} ->
-        dispatch(request, request.id, state)
+  def handle_cast({:legacy_notify, _method, _params}, state), do: {:noreply, state}
 
-      {:ok, %Notification{method: "notifications/cancelled"} = notification} ->
-        cancel_subscription(notification, state)
+  def handle_cast(
+        {:legacy_log, level, data, logger_name},
+        %{protocol_mode: :legacy, legacy_status: :ready} = state
+      ) do
+    if log_level_allowed?(level, state.legacy_log_level) do
+      params = %{"level" => level, "data" => data}
+      params = if is_nil(logger_name), do: params, else: Map.put(params, "logger", logger_name)
+      send_legacy_notification(state, Methods.logging_message(), params)
+    end
 
-      {:ok, %Notification{} = notification} ->
-        dispatch(notification, nil, state)
+    {:noreply, state}
+  end
 
-      # Responses are only relevant to server→client requests, which the
-      # stateless core does not make (server→client input rides MRTR). Ignore.
-      {:ok, %Response{}} ->
-        {:noreply, state}
+  def handle_cast({:legacy_log, _level, _data, _logger_name}, state), do: {:noreply, state}
 
-      {:error, error} ->
-        Logger.warning("MCP.Server.Connection: failed to decode message: #{inspect(error)}")
+  @impl GenServer
+  def handle_info({:mcp_message, message}, state),
+    do: message |> Protocol.decode_message() |> handle_decoded_message(state)
+
+  def handle_info({:mcp_transport_closed, reason}, state) do
+    {:stop, :normal, fail_pending_client_requests(state, {:transport_closed, reason})}
+  end
+
+  def handle_info({:client_request_timeout, id}, state) do
+    case Map.pop(state.pending_client_requests, id) do
+      {{from, _timeout_ref}, pending} ->
+        GenServer.reply(from, {:error, :timeout})
+        {:noreply, %{state | pending_client_requests: pending}}
+
+      {nil, _pending} ->
         {:noreply, state}
     end
   end
 
-  def handle_info({:mcp_transport_closed, _reason}, state), do: {:stop, :normal, state}
+  def handle_info({:legacy_inputs_resolved, request, responses, request_state}, state) do
+    params =
+      (request.params || %{})
+      |> Map.put("inputResponses", responses)
+      |> maybe_put_request_state(request_state)
+
+    dispatch_legacy(%{request | params: params}, state)
+  end
+
+  def handle_info({:legacy_inputs_failed, id, reason}, state),
+    do: send_protocol_error(state, id, Error.internal_error(%{"reason" => inspect(reason)}))
 
   def handle_info({:mcp_subscription_ready, id, worker}, state) do
     deliver_subscription_message(id, worker, state)
@@ -191,12 +309,216 @@ defmodule MCP.Server.Connection do
 
   # --- Internals ---
 
+  defp handle_decoded_message({:ok, %Request{method: "initialize"} = request}, state),
+    do: initialize_legacy(request, state)
+
+  defp handle_decoded_message(
+         {:ok, %Request{method: "subscriptions/listen"} = request},
+         %{protocol_mode: :legacy} = state
+       ),
+       do: dispatch_legacy(request, state)
+
+  defp handle_decoded_message(
+         {:ok, %Request{method: "subscriptions/listen"} = request},
+         state
+       ),
+       do: open_subscription(request, %{state | protocol_mode: :stateless})
+
+  defp handle_decoded_message({:ok, %Request{} = request}, state),
+    do: dispatch_versioned(request, state)
+
+  defp handle_decoded_message(
+         {:ok, %Notification{method: "notifications/initialized"}},
+         state
+       ),
+       do: initialize_legacy_notification(state)
+
+  defp handle_decoded_message(
+         {:ok, %Notification{method: "notifications/cancelled"} = notification},
+         state
+       ),
+       do: cancel_subscription(notification, state)
+
+  defp handle_decoded_message({:ok, %Notification{} = notification}, state),
+    do: dispatch(notification, nil, %{state | protocol_mode: :stateless})
+
+  defp handle_decoded_message({:ok, %Response{} = response}, state),
+    do: handle_client_response(response, state)
+
+  defp handle_decoded_message({:error, error}, state) do
+    Logger.warning("MCP.Server.Connection: failed to decode message: #{inspect(error)}")
+    {:noreply, state}
+  end
+
+  defp handle_client_response(%Response{id: id} = response, state) do
+    case Map.pop(state.pending_client_requests, id) do
+      {{from, timeout_ref}, pending} ->
+        Process.cancel_timer(timeout_ref)
+        reply = if response.error, do: {:error, response.error}, else: {:ok, response.result}
+        GenServer.reply(from, reply)
+        {:noreply, %{state | pending_client_requests: pending}}
+
+      {nil, _pending} ->
+        Logger.warning("MCP.Server.Connection: response for unknown request id=#{inspect(id)}")
+        {:noreply, state}
+    end
+  end
+
+  defp initialize_legacy(%Request{id: id} = request, %{protocol_mode: mode} = state)
+       when mode in [:undetermined, :legacy] do
+    if state.legacy_status == :waiting do
+      case LegacyDispatch.initialize(request, state.config) do
+        {:ok, response, initialize} ->
+          state.transport_module.send_message(state.transport_pid, response)
+
+          {:noreply,
+           %{
+             state
+             | protocol_mode: :legacy,
+               legacy_client_info: initialize.client_info,
+               legacy_client_capabilities: initialize.capabilities
+           }}
+
+        {:error, response} ->
+          state.transport_module.send_message(state.transport_pid, response)
+          {:noreply, state}
+      end
+    else
+      send_protocol_error(state, id, Error.invalid_request("Already initialized"))
+    end
+  end
+
+  defp initialize_legacy(%Request{id: id}, state),
+    do: send_protocol_error(state, id, Error.invalid_request("Protocol mode already selected"))
+
+  defp initialize_legacy_notification(%{protocol_mode: :legacy, legacy_status: :waiting} = state),
+    do: {:noreply, %{state | legacy_status: :ready}}
+
+  defp initialize_legacy_notification(%{protocol_mode: :legacy} = state), do: {:noreply, state}
+
+  defp initialize_legacy_notification(state),
+    do: dispatch(%Notification{method: "notifications/initialized", params: nil}, nil, state)
+
+  defp dispatch_versioned(%Request{id: id} = request, %{protocol_mode: :legacy} = state) do
+    if stateless_request?(request) do
+      send_protocol_error(state, id, Error.invalid_request("Protocol mode already selected"))
+    else
+      dispatch_legacy(request, state)
+    end
+  end
+
+  defp dispatch_versioned(request, state),
+    do: dispatch(request, request.id, %{state | protocol_mode: :stateless})
+
+  defp dispatch_legacy(%Request{id: id}, %{legacy_status: status} = state)
+       when status != :ready,
+       do: send_protocol_error(state, id, Error.invalid_request("Server not initialized"))
+
+  defp dispatch_legacy(%Request{} = request, state) do
+    context = %ToolContext{
+      request_id: request.id,
+      meta: Map.get(request.params || %{}, "_meta"),
+      identity: state.identity,
+      reply_sink: reply_sink(state, request.id)
+    }
+
+    case LegacyDispatch.dispatch(request, context, state.config) do
+      {:reply, response} ->
+        state.transport_module.send_message(state.transport_pid, response)
+        {:noreply, update_legacy_request_state(state, request, response)}
+
+      {:input_required, requests, request_state} ->
+        case resolve_legacy_inputs(state.task_supervisor, request, requests, request_state) do
+          {:ok, _pid} ->
+            {:noreply, state}
+
+          {:error, reason} ->
+            send_protocol_error(
+              state,
+              request.id,
+              Error.internal_error(%{
+                "message" => "Unable to start legacy input request",
+                "reason" => inspect(reason)
+              })
+            )
+        end
+    end
+  end
+
+  defp resolve_legacy_inputs(task_supervisor, request, requests, request_state) do
+    server = self()
+
+    Task.Supervisor.start_child(task_supervisor, fn ->
+      server
+      |> collect_legacy_inputs(requests)
+      |> report_legacy_inputs(server, request, request_state)
+    end)
+  end
+
+  defp collect_legacy_inputs(server, requests) do
+    Enum.reduce_while(requests, {:ok, %{}}, fn {key, input_request}, {:ok, responses} ->
+      method = Map.get(input_request, "method")
+      params = Map.get(input_request, "params", %{})
+
+      case request_client(server, method, params, 60_000) do
+        {:ok, response} -> {:cont, {:ok, Map.put(responses, key, response)}}
+        {:error, reason} -> {:halt, {:error, reason}}
+      end
+    end)
+  end
+
+  defp report_legacy_inputs({:ok, responses}, server, request, request_state),
+    do: send(server, {:legacy_inputs_resolved, request, responses, request_state})
+
+  defp report_legacy_inputs({:error, reason}, server, request, _request_state),
+    do: send(server, {:legacy_inputs_failed, request.id, reason})
+
+  defp maybe_put_request_state(params, nil), do: Map.delete(params, "requestState")
+
+  defp maybe_put_request_state(params, request_state),
+    do: Map.put(params, "requestState", request_state)
+
+  defp stateless_request?(%Request{params: params}) do
+    get_in(params || %{}, ["_meta", "io.modelcontextprotocol/protocolVersion"]) ==
+      Dispatch.protocol_version()
+  end
+
+  defp fail_pending_client_requests(state, reason) do
+    Enum.each(state.pending_client_requests, fn {_id, {from, timeout_ref}} ->
+      Process.cancel_timer(timeout_ref)
+      GenServer.reply(from, {:error, reason})
+    end)
+
+    %{state | pending_client_requests: %{}}
+  end
+
+  defp update_legacy_request_state(
+         state,
+         %Request{method: "logging/setLevel", params: params},
+         %{"result" => _result}
+       ),
+       do: %{state | legacy_log_level: Map.get(params || %{}, "level", "info")}
+
+  defp update_legacy_request_state(state, _request, _response), do: state
+
+  defp send_legacy_notification(state, method, params) do
+    message = Notification.new(method, params) |> Jason.encode!() |> Jason.decode!()
+    state.transport_module.send_message(state.transport_pid, message)
+  end
+
+  defp log_level_allowed?(level, minimum) do
+    levels = ~w(debug info notice warning error critical alert emergency)
+    level_index = Enum.find_index(levels, &(&1 == level))
+    minimum_index = Enum.find_index(levels, &(&1 == minimum))
+    is_integer(level_index) and is_integer(minimum_index) and level_index >= minimum_index
+  end
+
   defp dispatch(message, request_id, state) do
     ctx = %ToolContext{
       request_id: request_id,
       meta: extract_meta(message),
       identity: state.identity,
-      reply_sink: reply_sink(state)
+      reply_sink: reply_sink(state, request_id)
     }
 
     case Dispatch.dispatch(message, ctx, state.config) do
@@ -292,7 +614,7 @@ defmodule MCP.Server.Connection do
         request_id: id,
         meta: Map.get(params || %{}, "_meta"),
         identity: state.identity,
-        reply_sink: reply_sink(state)
+        reply_sink: reply_sink(state, id)
       }
 
       case module.handle_listen_subscriptions(requested, context, state.config.handler_state) do
@@ -435,12 +757,20 @@ defmodule MCP.Server.Connection do
 
   # Per-request notification emitter: writes straight to the transport (no
   # GenServer round-trip — dispatch runs in this process synchronously).
-  defp reply_sink(state) do
+  defp reply_sink(state, request_id) do
     transport_module = state.transport_module
     transport_pid = state.transport_pid
 
     fn method, params ->
-      transport_module.send_message(transport_pid, Notification.new(method, params) |> encode())
+      message = Notification.new(method, params) |> encode()
+
+      if state.protocol_mode == :legacy and
+           function_exported?(transport_module, :send_request_notification, 3) do
+        transport_module.send_request_notification(transport_pid, request_id, message)
+      else
+        transport_module.send_message(transport_pid, message)
+      end
+
       :ok
     end
   end

@@ -120,7 +120,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert error(conn)["code"] == -32_602
   end
 
-  test "initialize/ping/logging.setLevel are gone → -32601 and HTTP 404" do
+  test "legacy methods cannot be mixed into a 2026 stateless request" do
     initialize = post(opts(), rpc("initialize", with_meta(%{})))
     assert initialize.status == 404
     assert error(initialize)["code"] == -32_601
@@ -561,14 +561,14 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
   # --- transport errors ---
 
-  test "DELETE is not allowed (405); parse error → -32700" do
+  test "DELETE requires the legacy version and session headers; parse error → -32700" do
     del =
       conn(:delete, "http://localhost/")
       |> put_req_header("origin", "http://localhost")
       |> MCPPlug.call(opts())
 
-    assert del.status == 405
-    assert get_resp_header(del, "allow") == ["GET, POST"]
+    assert del.status == 400
+    assert error(del)["message"] == "Unsupported protocol version"
 
     bad =
       :post

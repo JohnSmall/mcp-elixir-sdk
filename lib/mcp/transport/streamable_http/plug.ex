@@ -1,17 +1,18 @@
 defmodule MCP.Transport.StreamableHTTP.Plug do
   @moduledoc """
-  Stateless Plug endpoint for the MCP Streamable HTTP transport (2026-07-28).
+  Dual-era Plug endpoint for the MCP Streamable HTTP transport.
 
-  A thin **per-request driver** for `MCP.Server.Dispatch`: there is no
+  The preferred 2026 path is a thin **per-request driver** for
+  `MCP.Server.Dispatch`: there is no
   `initialize` handshake, no `Mcp-Session-Id`, and no session affinity — any
   request is serviceable by any instance behind a round-robin balancer
   (SEP-2575 / SEP-2567). The dispatch `config` is built once at `init/1`; every
   request builds its own `MCP.Server.ToolContext` and calls `Dispatch`.
 
-  Handles `POST` (JSON-RPC request/response) and returns `application/json` or
-  `text/event-stream` per the client's `Accept`. `GET` opens an (empty) event
-  stream; server→client messages only flow while a client request is being
-  processed (SEP-2260), so there is no standing session stream to feed it.
+  The compatibility 2025 path creates an isolated OTP session at initialize,
+  requires `Mcp-Session-Id` afterward, serves server messages via GET SSE, and
+  closes on DELETE. Both paths share the endpoint without sharing lifecycle
+  state.
 
   ## Usage
 
@@ -44,8 +45,9 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
       no-store default on identity-dependent results, set `cacheScope: "private"`
       — see the security warning on `MCP.Server.Config.build/2`.
     * `:handler_opts` — static `keyword()` **or** a `(Plug.Conn.t() ->
-      keyword())` factory. The factory is evaluated **per request** against the
-      request's `conn` and its `:identity` populates the per-request context.
+      keyword())` factory. The factory is evaluated **per request** for 2026,
+      and once at session initialization for 2025. Its `:identity` populates
+      the request context for that request or negotiated session.
       The static form's `:identity` is used as a constant. (The non-identity
       base is passed once to `Handler.init/1` at mount.)
 
@@ -102,8 +104,9 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   alias MCP.Protocol.Meta
   alias MCP.Protocol.ToolRouting
   alias MCP.Protocol.Types.SubscriptionFilter
-  alias MCP.Server.{Config, Dispatch, SubscriptionWorker, ToolContext}
+  alias MCP.Server.{Config, Dispatch, LegacyDispatch, SubscriptionWorker, ToolContext}
   alias MCP.Transport.SSE
+  alias MCP.Transport.StreamableHTTP.LegacySession
 
   @typedoc """
   Options threaded into the handler's identity resolution: a static keyword
@@ -113,6 +116,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   defstruct [
     :server_mod,
+    :server_opts,
     :handler_opts,
     :enable_json_response,
     :protocol_version,
@@ -123,6 +127,8 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     :subscription_queue_limit,
     :subscription_keepalive_interval,
     :max_body_length,
+    :legacy_sessions,
+    :legacy_sse_timeout,
     :config
   ]
 
@@ -155,9 +161,14 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     subscription_queue_limit = Keyword.get(opts, :subscription_queue_limit, 256)
     subscription_keepalive_interval = Keyword.get(opts, :subscription_keepalive_interval, 15_000)
     max_body_length = Keyword.get(opts, :max_body_length, 8_000_000)
+    legacy_sse_timeout = Keyword.get(opts, :legacy_sse_timeout, 25_000)
 
     unless is_integer(max_body_length) and max_body_length > 0 do
       raise ArgumentError, ":max_body_length must be a positive integer"
+    end
+
+    unless is_integer(legacy_sse_timeout) and legacy_sse_timeout > 0 do
+      raise ArgumentError, ":legacy_sse_timeout must be a positive integer"
     end
 
     validate_subscription_options!(
@@ -185,8 +196,11 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
         {:error, reason} -> raise "MCP Plug: handler init failed: #{inspect(reason)}"
       end
 
+    legacy_sessions = :ets.new(:mcp_legacy_sessions, [:set, :public])
+
     %__MODULE__{
       server_mod: server_mod,
+      server_opts: server_opts,
       handler_opts: handler_opts,
       enable_json_response: enable_json_response,
       protocol_version: protocol_version,
@@ -197,6 +211,8 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
       subscription_queue_limit: subscription_queue_limit,
       subscription_keepalive_interval: subscription_keepalive_interval,
       max_body_length: max_body_length,
+      legacy_sessions: legacy_sessions,
+      legacy_sse_timeout: legacy_sse_timeout,
       config: dispatch_config
     }
   end
@@ -213,10 +229,20 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     end
   end
 
+  @doc "Returns active legacy session IDs and their server connection pids."
+  @spec legacy_sessions(%__MODULE__{}) :: [{String.t(), pid()}]
+  def legacy_sessions(%__MODULE__{} = config) do
+    :ets.tab2list(config.legacy_sessions)
+    |> Enum.map(fn {session_id, session} -> {session_id, session.server} end)
+  rescue
+    ArgumentError -> []
+  end
+
   defp route_method(conn, config) do
     case conn.method do
       "POST" -> handle_post(conn, config)
-      "GET" -> handle_get(conn)
+      "GET" -> handle_get(conn, config)
+      "DELETE" -> handle_legacy_delete(conn, config)
       _ -> method_not_allowed(conn)
     end
   end
@@ -256,6 +282,30 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   end
 
   defp handle_decoded_post(conn, config, message) when is_map(message) do
+    cond do
+      stateless_initialize?(conn, message) ->
+        send_json_error(
+          conn,
+          404,
+          Error.method_not_found_code(),
+          "Method not found",
+          "initialize is not part of 2026-07-28",
+          Map.get(message, "id")
+        )
+
+      legacy_request?(conn, message) ->
+        handle_legacy_post(conn, config, message)
+
+      true ->
+        handle_stateless_post(conn, config, message)
+    end
+  end
+
+  defp handle_decoded_post(conn, _config, _message) do
+    send_json_error(conn, 400, Error.invalid_request_code(), "Invalid request", "expected object")
+  end
+
+  defp handle_stateless_post(conn, config, message) do
     with :ok <- validate_message_shape(message),
          :ok <- validate_required_request_meta(message),
          :ok <- check_routing_headers(conn, message),
@@ -308,8 +358,189 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     end
   end
 
-  defp handle_decoded_post(conn, _config, _message) do
-    send_json_error(conn, 400, Error.invalid_request_code(), "Invalid request", "expected object")
+  defp legacy_request?(conn, message) do
+    first_header(conn, "mcp-protocol-version") == LegacyDispatch.protocol_version() or
+      (Map.get(message, "method") == "initialize" and
+         is_nil(first_header(conn, "mcp-protocol-version"))) or
+      not is_nil(first_header(conn, "mcp-session-id"))
+  end
+
+  defp stateless_initialize?(conn, %{"method" => "initialize"}) do
+    first_header(conn, "mcp-protocol-version") == Dispatch.protocol_version()
+  end
+
+  defp stateless_initialize?(_conn, _message), do: false
+
+  defp handle_legacy_post(conn, config, %{"method" => "initialize"} = message) do
+    with {:ok, %Request{}} <- Protocol.decode_message(message),
+         {:ok, handler_opts} <- resolve_handler_options(config.handler_opts, conn),
+         {:ok, session, response, notifications} <-
+           start_and_initialize_legacy(config, handler_opts, message) do
+      session_id = UUID.uuid4()
+
+      true = :ets.insert(config.legacy_sessions, {session_id, session})
+
+      conn
+      |> Plug.Conn.put_resp_header("mcp-session-id", session_id)
+      |> send_response(config, response, notifications)
+    else
+      {:error, {:factory_failed, reason}} ->
+        Logger.error("MCP Plug: legacy handler_opts factory failed: #{inspect(reason)}")
+
+        send_json_error(
+          conn,
+          500,
+          Error.internal_error_code(),
+          "Internal error",
+          "handler_opts factory error",
+          Map.get(message, "id")
+        )
+
+      {:error, reason} ->
+        send_json_error(
+          conn,
+          400,
+          Error.invalid_request_code(),
+          "Invalid request",
+          inspect(reason),
+          Map.get(message, "id")
+        )
+    end
+  end
+
+  defp handle_legacy_post(conn, config, message) do
+    session_id = first_header(conn, "mcp-session-id")
+
+    with :ok <- validate_legacy_protocol_header(conn),
+         {:ok, session} <- legacy_session(config, session_id) do
+      dispatch_legacy_http(conn, config, message, session)
+    else
+      {:error, detail} -> legacy_protocol_header_error(conn, message, detail)
+      :error -> send_json_error(conn, 404, -32_000, "Session not found", session_id)
+    end
+  end
+
+  defp dispatch_legacy_http(conn, config, message, session) do
+    case LegacySession.deliver(session, message, config.legacy_sse_timeout) do
+      {:ok, response, notifications} ->
+        send_response(conn, config, response, notifications)
+
+      :accepted ->
+        Plug.Conn.send_resp(conn, 202, "")
+
+      {:error, :timeout} ->
+        send_json_error(
+          conn,
+          504,
+          Error.internal_error_code(),
+          "Request timeout",
+          "legacy session did not respond",
+          Map.get(message, "id")
+        )
+
+      {:error, reason} ->
+        send_json_error(
+          conn,
+          400,
+          Error.invalid_request_code(),
+          "Invalid request",
+          inspect(reason),
+          Map.get(message, "id")
+        )
+    end
+  end
+
+  defp handle_legacy_delete(conn, config) do
+    session_id = first_header(conn, "mcp-session-id")
+
+    with :ok <- validate_legacy_protocol_header(conn),
+         {:ok, session} <- legacy_session(config, session_id) do
+      LegacySession.close(session)
+      true = :ets.delete(config.legacy_sessions, session_id)
+      Plug.Conn.send_resp(conn, 200, "")
+    else
+      {:error, detail} -> legacy_protocol_header_error(conn, %{}, detail)
+      :error -> send_json_error(conn, 404, -32_000, "Session not found", session_id)
+    end
+  end
+
+  defp validate_legacy_protocol_header(conn) do
+    legacy_version = LegacyDispatch.protocol_version()
+
+    case first_header(conn, "mcp-protocol-version") do
+      ^legacy_version -> :ok
+      nil -> {:error, "missing MCP-Protocol-Version"}
+      version -> {:error, "unsupported MCP-Protocol-Version: #{inspect(version)}"}
+    end
+  end
+
+  defp legacy_protocol_header_error(conn, message, detail) do
+    send_json_error(
+      conn,
+      400,
+      Error.unsupported_protocol_version_code(),
+      "Unsupported protocol version",
+      detail,
+      Map.get(message, "id")
+    )
+  end
+
+  defp legacy_session(_config, nil), do: :error
+
+  defp legacy_session(config, session_id) do
+    case :ets.lookup(config.legacy_sessions, session_id) do
+      [{^session_id, session}] ->
+        if Process.alive?(session.server) and Process.alive?(session.transport) do
+          {:ok, session}
+        else
+          :ets.delete(config.legacy_sessions, session_id)
+          :error
+        end
+
+      [] ->
+        :error
+    end
+  rescue
+    ArgumentError -> :error
+  end
+
+  defp resolve_handler_options(handler_opts, conn) when is_function(handler_opts, 1) do
+    case handler_opts.(conn) do
+      opts when is_list(opts) ->
+        if Keyword.keyword?(opts),
+          do: {:ok, opts},
+          else: {:error, {:factory_failed, :not_keyword}}
+
+      _other ->
+        {:error, {:factory_failed, :not_keyword}}
+    end
+  rescue
+    exception -> {:error, {:factory_failed, {:raised, exception, __STACKTRACE__}}}
+  catch
+    kind, reason -> {:error, {:factory_failed, {kind, reason}}}
+  end
+
+  defp resolve_handler_options(handler_opts, _conn) when is_list(handler_opts),
+    do: {:ok, handler_opts}
+
+  defp start_legacy_session(config, handler_opts) do
+    server_opts =
+      Keyword.take(config.server_opts, [:server_info, :instructions, :request_timeout])
+
+    LegacySession.start(config.server_mod, handler_opts, server_opts)
+  end
+
+  defp start_and_initialize_legacy(config, handler_opts, message) do
+    with {:ok, session} <- start_legacy_session(config, handler_opts) do
+      case LegacySession.deliver(session, message, config.legacy_sse_timeout) do
+        {:ok, response, notifications} ->
+          {:ok, session, response, notifications}
+
+        {:error, reason} ->
+          LegacySession.close(session)
+          {:error, reason}
+      end
+    end
   end
 
   defp validate_message_shape(%{"method" => method} = message) when is_binary(method) do
@@ -394,15 +625,42 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   # --- GET: empty event stream (no standing session stream in stateless mode) ---
 
-  defp handle_get(conn) do
+  defp handle_get(conn, config) do
     if accepts_sse?(conn) do
-      conn
-      |> Plug.Conn.put_resp_content_type("text/event-stream")
-      |> Plug.Conn.put_resp_header("cache-control", "no-cache")
-      |> Plug.Conn.send_resp(200, "")
+      case first_header(conn, "mcp-session-id") do
+        nil -> send_empty_sse(conn)
+        session_id -> handle_legacy_get(conn, config, session_id)
+      end
     else
       send_json_error(conn, 406, -32_000, "Not Acceptable", "Must accept text/event-stream")
     end
+  end
+
+  defp handle_legacy_get(conn, config, session_id) do
+    with :ok <- validate_legacy_protocol_header(conn),
+         {:ok, session} <- legacy_session(config, session_id) do
+      body =
+        case LegacySession.next_event(session, config.legacy_sse_timeout) do
+          {:ok, message} -> SSE.encode_message(message)
+          {:error, :timeout} -> ""
+          {:error, _reason} -> ""
+        end
+
+      conn
+      |> Plug.Conn.put_resp_content_type("text/event-stream")
+      |> Plug.Conn.put_resp_header("cache-control", "no-cache")
+      |> Plug.Conn.send_resp(200, body)
+    else
+      {:error, detail} -> legacy_protocol_header_error(conn, %{}, detail)
+      :error -> send_json_error(conn, 404, -32_000, "Session not found", session_id)
+    end
+  end
+
+  defp send_empty_sse(conn) do
+    conn
+    |> Plug.Conn.put_resp_content_type("text/event-stream")
+    |> Plug.Conn.put_resp_header("cache-control", "no-cache")
+    |> Plug.Conn.send_resp(200, "")
   end
 
   # --- Routing headers (SEP-2243) ---
@@ -847,7 +1105,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   defp method_not_allowed(conn) do
     conn
-    |> Plug.Conn.put_resp_header("allow", "GET, POST")
+    |> Plug.Conn.put_resp_header("allow", "GET, POST, DELETE")
     |> Plug.Conn.send_resp(405, "")
   end
 

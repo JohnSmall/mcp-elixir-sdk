@@ -40,7 +40,10 @@ defmodule MCPElixirSDK.MixProject do
       licenses: ["MIT"],
       links: %{
         "GitHub" => @source_url,
-        "MCP Specification" => "https://modelcontextprotocol.io/specification/2026-07-28",
+        "MCP 2026-07-28 Specification" =>
+          "https://modelcontextprotocol.io/specification/2026-07-28",
+        "MCP 2025-11-25 Specification" =>
+          "https://modelcontextprotocol.io/specification/2025-11-25",
         "Examples" => "#{@source_url}#server-handler"
       },
       files:
@@ -74,6 +77,9 @@ defmodule MCPElixirSDK.MixProject do
         ],
         "docs/adr/0006-no-client-result-cache-in-2.0.md": [
           title: "ADR-006 No Client Result Cache"
+        ],
+        "docs/adr/0007-dual-protocol-era-support.md": [
+          title: "ADR-007 Dual Protocol Support"
         ]
       ],
       groups_for_extras: [
@@ -92,7 +98,8 @@ defmodule MCPElixirSDK.MixProject do
           "docs/adr/0003-2.0.0-conformance-scope.md",
           "docs/adr/0004-immutable-handler-launch-configuration.md",
           "docs/adr/0005-consumer-owned-subscription-supervision.md",
-          "docs/adr/0006-no-client-result-cache-in-2.0.md"
+          "docs/adr/0006-no-client-result-cache-in-2.0.md",
+          "docs/adr/0007-dual-protocol-era-support.md"
         ],
         Reference: ["CHANGELOG.md", "LICENSE", "usage-rules.md"]
       ],

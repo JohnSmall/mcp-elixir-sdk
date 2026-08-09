@@ -1,8 +1,9 @@
 # Onboarding Guide: MCP Elixir SDK
 
 > **Archived 1.x onboarding record.** The initialization/session lifecycle
-> below documents the retired `2025-11-25` implementation. New contributors
-> must use the [current README](../README.md),
+> below is historical 1.x design material, not the current 2.0 implementation.
+> Version 2.0 again supports the `2025-11-25` wire lifecycle through its
+> isolated compatibility layer. New contributors must use the [current README](../README.md),
 > [architecture](architecture.md), and
 > [development tooling guide](dev-tooling.md) for SDK 2.0.
 
