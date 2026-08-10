@@ -241,3 +241,101 @@ real items). Diff figure also reconciled: the committed `9522ef7` is **431 inser
 deletions** over 7 files (two-dot and three-dot agree, merge-base is `da1fe64`); the close-out's
 "+419" was measured before the final amend that added a 12-line test and was not refreshed.
 **Priority Hint:** n/a (in-ticket correction) · **Blocking?:** Was (merge-gate) — resolved · **Suggested Jira Ticket?:** n/a
+
+---
+
+## MES-26 — Dependency advisory audit (2026-08-08; corrected 2026-08-09)
+
+Read-only audit on `main` @ `9a233c0` (tag `2.0.0-dev.2`), per PO policy Overrides A11.
+**Corrected 2026-08-09 (correction round 1)** in response to Codex REJECT (257523725): the
+`bandit` target moves 1.11.1 → 1.12.1 (1.11.1 is itself advisory-bearing). Canonical
+deliverable: MES-26 audit page (257818626, v2 + correction-response child). `mix.lock` sha256
+`957e291a7a61f98e77aef4d12e241a5c8d017913369c330cd2e98e9e44878f9e` unchanged before/during/
+after the audit, cycle-1 and correction-round (C4) — no dependency mutated. **Nothing was
+remediated; this ticket measures.**
+
+### Finding: affected set = 5 packages / 22 advisories (enumerated, not counted — C1)
+**Description:** `mix hex.audit` (hex 2.5.0) reports advisories against `req` (2), `plug` (4),
+`bandit` (7), `hpax` (1), `mint` (8) — **22 total, by counting rows**. The /plan's §0.1 stated
+counts summed to 20 (plug written as 3, bandit as 6); the enumerated ids are 4 and 7. Corrected
+here and in the deliverable per A2d. Denominator matches Codex's incidental five packages, now
+verified by full enumeration.
+
+### Finding: a clearing version exists for every advisory (branch (a) covers all — field 6)
+**Description:** Lowest **clean** targets (≥ every fixed event AND itself advisory-free):
+`req` 0.5.17→**0.6.1** (0.x minor); `plug` 1.19.1→**1.19.5** (patch, within 1.19.x);
+`bandit` 1.10.2→**1.12.1** (minor); `hpax` 1.0.3→**1.0.4** (patch, transitive); `mint`
+1.7.1→**1.9.3** (minor, transitive; allowed by finch `~> 1.7`, no override). A11 branch (b)
+is therefore **not required by this remediation**; it is a forward concern only.
+**Correction (round 1):** the earlier `bandit` target 1.11.1 cleared the 7 locked advisories
+but is itself advisory-bearing — EEF-CVE-2026-65623 (GHSA-vg8x-66vg-5pxh) affects bandit from
+1.11.0 before 1.12.1 (i.e. 1.11.0, 1.11.1, 1.12.0). Lowest clean target is **1.12.1** (1.11.1
+and 1.12.0 both rejected; verified lowest, not merely clean — A6-2). 65623 does **not** affect
+locked 1.10.2, so `mix hex.audit` correctly omits it and the locked-tree denominator stays 22
+(A6-5).
+
+### Finding: bandit's clearing bump moves behaviour under the HTTP/SSE surface (trigger 2 — strengthened)
+**Description:** bandit 1.10.2→**1.12.1** (corrected endpoint) changelog (verbatim), every
+intervening release: 1.10.3 "Improve http2 sendfile streaming" / "Detect client disconnect on
+timeout"; 1.10.4 `{:shutdown, :disconnected}` WebSocket result code; 1.11.0 `max_frame_size`
+default `:infinity`→8MB, new `max_inflate_ratio`/`max_fragmented_message_size`, "Zero length
+non-fin continuation frames are now disallowed", "Multiple content-length fields in an HTTP/1
+request are now disallowed"; 1.11.1 "large chunked request bodies" + "request trailers"; 1.12.0
+"Incorporate changes from Thousand Island 1.5, improving the separation of local GenServer
+timeouts and network facing timeouts" + mixed-case Transfer-Encoding + HTTP/1 body-read
+internals; 1.12.1 fragmented-WebSocket DoS fix (CVE-2026-65623). These sit directly beneath the
+transport MES-15 builds a long-lived SSE stream on. **Sequencing trade-off for the PM→PO
+(A11/AC4): bandit remediation should precede MES-15, or MES-15 must build against post-1.12.1
+behaviour.** More transport behaviour moves than the cycle-1 read showed, so the conclusion is
+**strengthened**. plug 1.19.5 is a low-risk patch; mint's streaming change is client-side; hpax
+is a pure fix. **Trigger 2 read from the changelog, not pre-judged.**
+
+### Finding: the corrected resolved tree is clean (A6-1 — thousand_island)
+**Description:** bandit 1.12.1 requires `thousand_island ~> 1.5`; locked is 1.4.3, which would
+resolve to **1.5.0** under the corrected target — a version never in the 22-advisory
+denominator. OSV lists **no advisories** for `thousand_island` (checked 2026-08-09), so 1.5.0 is
+clean. No other package's resolved version changes because of the bandit bump, and no new
+package is introduced (plug/hpax already in the remediation set; websock `~> 0.5` unchanged).
+Determined by constraint analysis + OSV — **no resolver run, `mix.lock` untouched (T4 clear)**.
+A clean-target check is not a clean-tree check; the tree is clean. **T3 does not fire.**
+
+### Finding: trigger 1 corrected — the ignore mechanism exists in hex ≥ 2.5.1, not only in mix_audit
+**Description:** The /plan asserted "no ignore mechanism in the runnable tool." Corrected: hex
+**2.5.1** (changelog 2026-07-09) added `ignore_advisories`/`ignore_retirements` in the `mix.exs`
+`:hex` block (or `HEX_IGNORE_ADVISORIES`/`HEX_IGNORE_RETIREMENTS` env vars). The installed hex
+is **2.5.0** — one patch behind — so branch (b) is unavailable *as installed*, but a **hex
+toolchain upgrade to ≥2.5.1 (developer/CI, not a project dependency, not in the 2.0.0 artefact)**
+supplies it natively — cheaper than adopting `mix_audit`. Trigger 1's substance (policy has one
+usable branch on the installed toolchain today) holds; the remedy is trivial. Escalated to PO.
+
+### Finding: the two gate tools' advisory data sources cannot be shown equal or different from docs (C2)
+**Description:** `mix_audit` documents its source ("elixir-security-advisories repository hosted
+on GitHub"). `mix hex.audit` names **no** source in its task docs or the hex CHANGELOG (both
+"SOURCE NOT NAMED"). Advisories carry `EEF-CVE-*` ids (Erlang Ecosystem Foundation) with
+osv.dev links — circumstantial, not a documented-source quote. **Per C2, no equivalence or
+difference is asserted.** If the PO needs denominator certainty for the gate-tool choice, it
+requires empirically running both tools (needs installing `mix_audit` — remediation scope).
+
+### Note: severity labels differ between hex.audit and osv.dev for five advisories (C2-adjacent)
+**Description:** hex.audit vs an osv.dev CVSS-vector reading diverge on qualitative severity for
+`req`-49756, `plug`-56813, `bandit`-42788, `mint`-48861, `mint`-59246. The deliverable reports
+hex.audit's label (gate tool of record) plus the osv CVSS vector verbatim, asserting no label of
+its own. Evidence that source choice affects classification, not only membership.
+
+### Gate command (AC5) — established, not added
+**Description:** `mix hex.audit` is available (hex 2.5.0), read-only, **exits 1 today**. `mix
+deps.audit` (`mix_audit`) is **not installed** (`task could not be found`). The dependency-audit
+gate lands with the MES-25 remediation, never before (A9/A11.5) — a gate failing on `main`
+blocks every subsequent DoD.
+**Priority Hint:** n/a (analysis) · **Blocking?:** No · **Suggested Jira Ticket?:** remediation under epic MES-25 (bandit before MES-15); dependency-audit gate = MES-27; hex ≥2.5.1 upgrade for branch (b) = MES-28; PO decision on gate tool
+
+### Note: this close-out commit has no independent reviewer (CO-3 / PA-2)
+**Description:** This `[MES-26]` docs-only commit lands **after** Codex's ACCEPT (re-review
+260505601), so nothing independently verifies it — the same class as the ADR ticketless
+landings and `da1fe64`. Per the interim D1 remedy (PA-2), it goes onto **MES-28's reviewer
+checklist**, which must confirm: single-parent; subject `[MES-26] <title>`; **exactly two
+paths** (`docs/sprint_4_issues.md` and `.gitignore`); **no version bump; no tag**; `mix.lock`
+untouched. **Third demonstration of PA-2** (after the ADR-001/002/003 landings and `da1fe64`
+verified at MES-14). The `.gitignore` change adds `node_modules/` and `package*.json` (Codex's
+tooling, left on disk, now ignored).
+**Priority Hint:** n/a (process) · **Blocking?:** No · **Suggested Jira Ticket?:** MES-28 reviewer checklist
