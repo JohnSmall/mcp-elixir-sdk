@@ -339,3 +339,73 @@ untouched. **Third demonstration of PA-2** (after the ADR-001/002/003 landings a
 verified at MES-14). The `.gitignore` change adds `node_modules/` and `package*.json` (Codex's
 tooling, left on disk, now ignored).
 **Priority Hint:** n/a (process) · **Blocking?:** No · **Suggested Jira Ticket?:** MES-28 reviewer checklist
+
+---
+
+## MES-28 — hex archive upgrade 2.5.0 → 2.5.1 (make A11 branch (b) implementable); advisory delta (2026-08-10)
+
+Toolchain-only + measurement, per PO ruling 2026-08-06. Deliverable: MES-28 deliverable
+(child of in-flight 261029889); ratified /plan 259817542 (C1–C6). Read at `main` @ `f900111`.
+`mix.lock` sha256 `957e291a7a61f98e77aef4d12e241a5c8d017913369c330cd2e98e9e44878f9e`
+**unchanged before/during/after** (guarded around the upgrade and every audit run — T2 clear).
+No `mix.exs` deps change, no version bump, no tag (D4 toolchain-only). No advisory was
+ignore-listed (branch (a) covers all 22).
+
+### AC1 — hex upgraded to 2.5.1
+`mix hex --version`: **before `Hex v2.5.0`**, **after `Hex v2.5.1`** (`mix local.hex --force`;
+archive `~/.mix/archives/hex-2.5.1` created). Toolchain archive — not in `mix.exs` deps,
+`mix.lock`, or the 2.0.0 artefact.
+
+### AC3 / C3 — advisory delta = ∅ (the finding that could have unravelled MES-26/27)
+Full raw `mix hex.audit` captured at both 2.5.0 and 2.5.1. Ids derived from raw text
+(format-robust, not a `grep EEF-CVE`); **extracted id count == reported row count = 22 at
+each version.** Set diff empty both directions; **the two raw outputs are byte-identical** —
+so **neither the advisory set nor the rendering changed.** **MES-26's 22-advisory denominator
+and MES-27's target table stand at 2.5.1.** Exit 1 at both (22 active). **T1 does not fire.**
+
+### AC4 / A6-3 / C2 — the ignore mechanism works, and the exit code tracks the remaining set
+Three measurements (C2b), exit code the signal:
+- **0 ignored →** exit 1, 22 active, 0 ignored (baseline).
+- **21 ignored →** exit 1, **1 active** (`EEF-CVE-2026-8468` left un-ignored), 21 ignored — the decisive case: the exit code tracks the **remaining** advisories, not "ignore is set." **T3 does not fire.**
+- **22 ignored →** **exit 0**, 0 active, 22 ignored — branch (b) clears the gate.
+
+- **C2a:** the `:hex` block form (`hex: [ignore_advisories: ["EEF-CVE-2026-49755"]]` in `mix.exs` project config) and `HEX_IGNORE_ADVISORIES` produce **identical** output for the same id — env var is a valid proxy; the `:hex` block is branch (b)'s durable, version-controlled form. The all-22/21 runs used the env var (no repo state to revert).
+- **C2c:** the throwaway `:hex` block was reverted (`git checkout -- mix.exs`); a re-run **restored the baseline exactly** (exit 1 / 22 active / 0 ignored).
+- **Id-form agnostic:** EEF-CVE, CVE, and GHSA id forms all produce identical ignore behaviour.
+- **A6-4 (failure mode):** a misspelled/non-existent id is **not silently accepted** — hex warns `ignore_advisories entry "…" … does not match any advisory for the locked dependencies and can be removed` (exit 1, nothing ignored). A typo cannot masquerade as an applied policy.
+
+### C6 — ignore scope (from hex 2.5.1 source, not docs)
+`lib/mix/tasks/hex.audit.ex` @ v2.5.1 reads `Hex.State.fetch!(:ignore_advisories)`, splits via
+the shared `Hex.Ignores.split_advisories`, and sets exit 1 on the **non-ignored** set only.
+`lib/hex/registry/server.ex` @ v2.5.1 has **no ignore-config reference** — advisory metadata is
+cached/fetched but not ignore-filtered at the registry layer. **Scope: `ignore_advisories`
+affects `mix hex.audit` (the gate MES-27 adds); it does NOT suppress advisories in
+`deps.get`/`deps.update`.** Docs and source agree. Established without running deps resolution
+(T2/T4-safe).
+
+### A6-1 / C1 — target 2.5.1 is clean (retirement AND advisory)
+2.5.1 is the **lowest** hex with `ignore_advisories` (2.5.0 has none) **and** the **latest**
+release (`v2.5.1 [Latest]`, 2026-07-09; v2.5.2 is unreleased `-dev`), **not yanked/retired**,
+no later fix/revert. **C1:** OSV package query for the `hex` package (2026-08-10) — **no
+advisories for `hex` at 2.5.0 or 2.5.1**; upgrading is not adopting an advisory-bearing tool.
+
+### AC2 / C4 / C5 — hex is unpinned; no CI (re-confirming A9, not a new finding)
+No pin exists in-repo: `.tool-versions`, `Dockerfile`, `.github/` (absent entirely),
+`.gitlab-ci.yml`, `.circleci/`, `asdf`/`mise`/`nix`, setup scripts — all absent (each named).
+Per **C5** this **re-confirms Overrides A9** (established MES-14 V1, 2026-08-10): there is no CI
+and no `mix` gate alias, so **all six gates are DoD gates run per ticket on the reviewer's
+checklist — not automation.** Per **C4** the toolchain **pin obligation is placed on MES-27's
+DoD** (a gate whose tool version is unpinned is not reproducible); MES-28 reports the absence,
+does not add a pin (new scope; MES-28 is deliberately cheap).
+
+### Triggers — none fired
+T1 (set differs) ✗ — delta ∅. T2 (`mix.lock` changes) ✗ — sha256 unchanged throughout. T3
+(ignoring doesn't clear exit code) ✗ — 22-ignored → exit 0, 21-ignored → exit 1. T4 (deps
+change/bump) ✗ — only a throwaway `:hex` project-config entry, reverted; no deps/version touch.
+
+### PA-2 — the `[MES-26]` commit `f900111` rides on THIS ticket's reviewer checklist (CO-3)
+`f900111` landed after Codex's MES-26 verdict; **Codex verifies it, not CC.** Checklist: single
+parent `9a233c0` · subject `[MES-26] <title>` · exactly two paths (`docs/sprint_4_issues.md`,
+`.gitignore`) · no `mix.exs` bump · no tag · `mix.lock` untouched · present on `origin/main`
+(pushed 2026-08-10). PA-2's third demonstration.
+**Priority Hint:** n/a (toolchain) · **Blocking?:** unblocks MES-27 · **Suggested Jira Ticket?:** MES-27 (gate + pin), MES-15
