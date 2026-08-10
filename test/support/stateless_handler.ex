@@ -86,9 +86,10 @@ defmodule MCP.Test.StatelessHandler do
     {:ok, [%{"type" => "text", "text" => id_str(ctx)}]}
   end
 
-  # Ruling 7 regression: emit an identity-bearing notification, then RAISE.
-  # Proves the transport clears its per-request notification collector even when
-  # the handler crashes, so no residue leaks into the next same-process request.
+  # Ruling 7 regression (MES-14): emit an identity-bearing notification, then
+  # RAISE. Proves a prior request's per-request notification collector is
+  # unreachable to the next same-process request even when the handler crashes,
+  # so no residue leaks into another principal's response.
   def handle_call_tool("emit_then_raise", _args, %ToolContext{} = ctx, _state) do
     ToolContext.log(ctx, "info", %{"identity" => id_str(ctx)})
     raise "boom after emitting a notification"

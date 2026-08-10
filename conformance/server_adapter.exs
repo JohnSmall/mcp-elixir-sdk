@@ -32,7 +32,7 @@ port =
 plug =
   MCP.Transport.StreamableHTTP.Plug.new(
     server_mod: MCP.Conformance.ServerHandler,
-    server_opts: [server_info: %{name: "mcp-elixir-sdk", version: "2.0.0-dev.1"}],
+    server_opts: [server_info: %{name: "mcp-elixir-sdk", version: "2.0.0-dev.2"}],
     enable_json_response: false,
     protocol_version: "2026-07-28",
     subscription_registry: MCP.Conformance.SubscriptionRegistry,

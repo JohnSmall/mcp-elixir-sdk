@@ -4,7 +4,7 @@ An OTP-native Elixir client and server SDK for the Model Context Protocol. The
 2.0 line supports both the stateful `2025-11-25` and stateless `2026-07-28`
 protocol revisions over stdio/in-process and Streamable HTTP transports.
 
-> `2.0.0-dev.1` is a prerelease. Its handler API is a breaking cutover from
+> `2.0.0-dev.2` is a prerelease. Its handler API is a breaking cutover from
 > 1.x, while its wire protocol remains compatible with `2025-11-25` peers.
 
 ## What 2.0 provides

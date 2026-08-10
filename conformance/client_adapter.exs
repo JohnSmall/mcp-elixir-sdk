@@ -102,7 +102,7 @@ defmodule MCP.Conformance.ClientAdapter do
     Client.start_link(
       transport: {MCP.Transport.StreamableHTTP.Client, url: url, headers: []},
       protocol_version: protocol_version,
-      client_info: %{name: "mcp_elixir_sdk_conformance", version: "2.0.0-dev.1"},
+      client_info: %{name: "mcp_elixir_sdk_conformance", version: "2.0.0-dev.2"},
       client_capabilities: %{
         "sampling" => %{},
         "elicitation" => %{},

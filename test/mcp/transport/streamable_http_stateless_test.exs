@@ -538,6 +538,32 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert log =~ "handler_opts factory failed"
   end
 
+  # MC-6 regression (correction round 1): a collector that fails to START must
+  # take the controlled internal-error path, NOT crash on an unguarded match.
+  # Before the fix, `dispatch/5` did `{:ok, collector} = start_link()`, so an
+  # {:error, _} start raised MatchError — MC-6 unsatisfied while the /plan and
+  # AC5 claimed it satisfied. The `collector_start` seam makes Codex's manual
+  # injection a permanent test (A7); shown FAILING against the unguarded match
+  # and passing here.
+  test "MC-6 — a collector that fails to start fails cleanly (-32603), no handler invoked" do
+    plug_opts =
+      opts(collector_start: fn -> {:error, :injected_collector_failure_secret} end)
+
+    {conn, log} =
+      with_log(fn ->
+        post(plug_opts, rpc("tools/call", with_meta(%{"name" => "whoami"})))
+      end)
+
+    assert conn.status == 500
+    assert error(conn)["code"] == -32_603
+    # No handler ran: the response is the controlled error, not a tool result.
+    refute conn.resp_body =~ "resultType"
+    # The internal reason is logged server-side, never returned to the client.
+    refute conn.resp_body =~ "injected_collector_failure_secret"
+    assert log =~ "notification collector failed to start"
+    assert log =~ "injected_collector_failure_secret"
+  end
+
   # --- MRTR round-trip (SEP-2322) ---
 
   test "tools/call input-required → retry with requestState → completion" do

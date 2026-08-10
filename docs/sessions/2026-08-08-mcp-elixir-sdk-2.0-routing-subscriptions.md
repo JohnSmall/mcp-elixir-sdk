@@ -283,7 +283,8 @@ and hardening scope and were included in the final branch commit.
 The canonical precommit alias now runs formatting, warnings-as-errors
 compilation, the seed-zero test suite, Credo, Dialyzer, documentation and Hex
 package builds, Hex dependency auditing, unused-dependency detection, Git
-whitespace validation, and both conformance-ledger JSON checks. The existing
-`2.0.0-dev.1` prerelease version was retained because this repository's primary
-manifest is `mix.exs` and the quick-push workflow does not define an automatic
-Mix/Hex prerelease version transition.
+whitespace validation, and both conformance-ledger JSON checks. Merging the two
+new upstream commits advanced the package to `2.0.0-dev.2`; the README,
+changelog, and conformance adapter identities were synchronized to that version.
+The resolved merge passed the combined 69-test protocol/collector matrix and
+the full `mix precommit` gate with 428 tests and zero failures.

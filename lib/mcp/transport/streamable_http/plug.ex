@@ -112,6 +112,24 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   into a handler callback. A factory that raises or returns a non-keyword
   yields a clean `-32603` (HTTP 500) with no handler invoked; the detail is
   logged server-side and never returned to the client.
+
+  ### Cache-scope footgun warning
+
+  When `handler_opts` resolves a per-caller identity **and** `:cache_defaults`
+  would stamp `ttlMs > 0` with `cacheScope: "public"` onto the cacheable
+  list/read results, `init/1` logs a one-time warning: identity-dependent data
+  authorised for a shared cache can be served across principals. Set a
+  `"private"` scope (or keep `ttlMs` at 0) for identity-dependent results.
+
+  The warning is emitted from `init/1`, so it fires **once per configuration,
+  never per request**. Note the surfacing depends on when your deployment runs
+  `init/1`: `Bandit`/`Plug.Cowboy` started with `plug: {#{inspect(__MODULE__)},
+  opts}` call it at **server startup** (the warning reaches the runtime log —
+  this SDK's documented shape). A module-based pipeline that mounts this plug
+  with `plug_init_mode: :compile` (a Phoenix production default) runs `init/1`
+  at **compile time**, so the warning would appear in the build log instead;
+  set `plug_init_mode: :runtime`, or prefer the Bandit `plug: {Module, opts}`
+  form, if you mount it that way.
   """
 
   @behaviour Plug
@@ -120,12 +138,21 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   alias MCP.Protocol
   alias MCP.Protocol.Error
-  alias MCP.Protocol.Messages.{Notification, Request, Response}
+  alias MCP.Protocol.Messages.{Request, Response}
   alias MCP.Protocol.Messages.Subscriptions.ListenParams
   alias MCP.Protocol.Meta
   alias MCP.Protocol.ToolRouting
   alias MCP.Protocol.Types.SubscriptionFilter
-  alias MCP.Server.{Config, Dispatch, LegacyDispatch, SubscriptionWorker, ToolContext}
+
+  alias MCP.Server.{
+    Config,
+    Dispatch,
+    LegacyDispatch,
+    NotificationCollector,
+    SubscriptionWorker,
+    ToolContext
+  }
+
   alias MCP.Transport.SSE
   alias MCP.Transport.StreamableHTTP.LegacySession
   alias MCP.Transport.StreamableHTTP.LegacySessionManager
@@ -159,16 +186,11 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     :legacy_sse_timeout,
     :allowed_hosts,
     :allowed_origins,
-    :config
+    :config,
+    :collector_start
   ]
 
-  # Per-request notification collector key (process-local). Declared here, above
-  # its first use in `dispatch/5`, so the security clears in `dispatch/5`
-  # reference the real key (a module attribute used before definition resolves
-  # to nil — Ruling 7 fix must not silently no-op).
-  @notifications_key :mcp_plug_notifications
   @localhost_patterns ~w(localhost 127.0.0.1 ::1)
-
   @doc """
   Creates a Plug configuration tuple suitable for Bandit.
   """
@@ -237,6 +259,17 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
       subscription_keepalive_interval
     )
 
+    # Injectable per-request collector start (MES-14 MC-6). Defaults to the real
+    # collector; a 0-arity fun returning `{:ok, pid} | {:error, reason}`. The
+    # seam exists so the MC-6 clean-failure path (a collector that fails to
+    # start) is exercised by a permanent test rather than a manual injection.
+    collector_start = Keyword.get(opts, :collector_start, &NotificationCollector.start_link/0)
+
+    # AC7 (MES-14): config-time cache-scope footgun warning. init/1 runs once
+    # per plug configuration (call/2 has no path here), so this emits at most
+    # once regardless of request volume.
+    warn_if_public_cache_of_identity_scoped(handler_opts, server_opts)
+
     # Build the immutable dispatch config once. Only the non-identity static
     # base reaches Handler.init/1; per-request identity rides ToolContext.
     static_base = if is_function(handler_opts), do: [], else: handler_opts
@@ -278,7 +311,8 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
       legacy_sse_timeout: legacy_sse_timeout,
       allowed_hosts: allowed_hosts,
       allowed_origins: allowed_origins,
-      config: dispatch_config
+      config: dispatch_config,
+      collector_start: collector_start
     }
   end
 
@@ -682,6 +716,15 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   defp validate_required_request_meta(_message), do: :ok
 
+  # Starts the per-request notification collector, mapping a start failure to a
+  # controlled error rather than crashing on an unguarded match.
+  defp start_collector(start_fun) do
+    case start_fun.() do
+      {:ok, _collector} = ok -> ok
+      {:error, reason} -> {:error, {:collector_start_failed, reason}}
+    end
+  end
+
   # The stateless core issues no server-to-client requests, so a response has
   # nothing to correlate. It is still a valid routing-header-free JSON-RPC
   # message and receives the same empty acknowledgment as on stdio.
@@ -700,35 +743,51 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   end
 
   defp dispatch(conn, config, decoded, raw_message, identity) do
-    # Security (Ruling 7): the notification collector is process-local, and a
-    # request process may be reused. Clear any residue at request START so a
-    # prior request's notifications can never survive INTO this one, and wrap
-    # dispatch in an `after` so a *raising* handler cannot leave residue behind
-    # for the NEXT request. Belt and braces: either guard alone suffices; both
-    # together mean no code path can flush one principal's notifications into
-    # another principal's response.
-    Process.delete(@notifications_key)
+    case start_collector(config.collector_start) do
+      {:ok, collector} ->
+        dispatch(conn, config, decoded, raw_message, identity, collector)
 
-    request_id = Map.get(raw_message, "id")
+      {:error, {:collector_start_failed, reason}} ->
+        Logger.error("MCP Plug: notification collector failed to start: #{inspect(reason)}")
 
+        send_json_error(
+          conn,
+          500,
+          Error.internal_error_code(),
+          "Internal error",
+          "notification collector unavailable",
+          Map.get(raw_message, "id")
+        )
+    end
+  end
+
+  defp dispatch(conn, config, decoded, raw_message, identity, collector) do
+    # The notification collector is a per-request process (MES-14): its pid is
+    # held only by this request's reply_sink closure on `ctx`. No later request
+    # can name it, so a prior request's notifications are unaddressable — not
+    # merely cleared (AC2, reachability-bounded). This replaces the Sprint 3
+    # process-dictionary collector whose process-keyed slot leaked across
+    # same-process requests (evidence-log I10). `start_link` (in the with-chain)
+    # links the collector to this request process, so it dies with a crashing
+    # request; `stop/1` in the `after` is prompt cleanup, not the safety
+    # guarantee.
     ctx = %ToolContext{
-      request_id: request_id,
+      request_id: Map.get(raw_message, "id"),
       meta: get_in(raw_message, ["params", "_meta"]),
       identity: identity,
-      reply_sink: notification_collector()
+      reply_sink: fn method, params -> NotificationCollector.push(collector, method, params) end
     }
 
     try do
       case Dispatch.dispatch(decoded, ctx, config.config) do
         {:reply, response} ->
-          notifications = take_notifications()
-          send_response(conn, config, response, notifications)
+          send_response(conn, config, response, NotificationCollector.drain(collector))
 
         :noreply ->
           Plug.Conn.send_resp(conn, 202, "")
       end
     after
-      Process.delete(@notifications_key)
+      NotificationCollector.stop(collector)
     end
   end
 
@@ -1043,17 +1102,25 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     module = config.config.handler_module
 
     if function_exported?(module, :handle_listen_subscriptions, 3) do
-      context = %ToolContext{
-        request_id: id,
-        meta: Map.get(params || %{}, "_meta"),
-        identity: identity,
-        reply_sink: notification_collector()
-      }
+      with {:ok, collector} <- start_collector(config.collector_start) do
+        context = %ToolContext{
+          request_id: id,
+          meta: Map.get(params || %{}, "_meta"),
+          identity: identity,
+          reply_sink: fn method, callback_params ->
+            NotificationCollector.push(collector, method, callback_params)
+          end
+        }
 
-      case module.handle_listen_subscriptions(requested, context, config.config.handler_state) do
-        {:ok, %SubscriptionFilter{} = honored} -> {:ok, honored}
-        {:error, code, message} -> {:error, %Error{code: code, message: message}}
-        other -> {:error, {:invalid_subscription_callback_result, other}}
+        try do
+          case module.handle_listen_subscriptions(requested, context, config.config.handler_state) do
+            {:ok, %SubscriptionFilter{} = honored} -> {:ok, honored}
+            {:error, code, message} -> {:error, %Error{code: code, message: message}}
+            other -> {:error, {:invalid_subscription_callback_result, other}}
+          end
+        after
+          NotificationCollector.stop(collector)
+        end
       end
     else
       {:error, Error.method_not_found("subscriptions/listen")}
@@ -1143,28 +1210,38 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
             "(Plug.Conn.t() -> keyword()), got: #{inspect(other)}"
   end
 
-  # --- Notification collection (per-request, process-local) ---
+  # --- AC7: config-time cache-scope footgun warning (once, never per request) ---
 
-  # dispatch runs synchronously in this request process, so a handler emitting
-  # progress/logging calls this sink inline; collected notifications are flushed
-  # as SSE events before the final result. (JSON mode is single-response.) The
-  # `@notifications_key` attribute is declared near the top of the module so the
-  # security clears in `dispatch/5` bind the real key (see Ruling 7).
-  defp notification_collector do
-    key = @notifications_key
+  # Fires only when the handler resolves a per-caller identity AND the effective
+  # :cache_defaults would stamp ttlMs > 0 with cacheScope "public" onto the
+  # cacheable list/read results — i.e. identity-dependent data authorised for a
+  # shared cache. Safe configurations (no identity resolution; private scope;
+  # or ttlMs 0, the default) emit nothing.
+  defp warn_if_public_cache_of_identity_scoped(handler_opts, server_opts) do
+    {ttl_ms, cache_scope} = Keyword.get(server_opts, :cache_defaults, {0, "public"})
 
-    fn method, params ->
-      encoded = Jason.decode!(Jason.encode!(Notification.new(method, params)))
-      Process.put(key, [encoded | Process.get(key, [])])
-      :ok
+    if identity_scoped?(handler_opts) and ttl_ms > 0 and cache_scope == "public" do
+      Logger.warning(
+        "MCP.Transport.StreamableHTTP.Plug: identity-dependent responses may be cached " <>
+          "publicly — handler_opts resolves a per-caller identity while :cache_defaults is " <>
+          ~s|{#{ttl_ms}, "public"} (ttlMs > 0, public scope). Cacheable list/read results | <>
+          "carrying caller-specific data can then be served from a shared cache across " <>
+          ~s|principals. Set cache_defaults to a "private" scope (e.g. {#{ttl_ms}, "private"}) | <>
+          "— or keep ttlMs at 0 — for identity-dependent results. See MCP.Server.Config.build/2."
+      )
     end
+
+    :ok
   end
 
-  defp take_notifications do
-    notifications = @notifications_key |> Process.get([]) |> Enum.reverse()
-    Process.delete(@notifications_key)
-    notifications
-  end
+  # "Configured to resolve identity" = a per-request factory, or a static
+  # keyword carrying a non-nil :identity.
+  defp identity_scoped?(handler_opts) when is_function(handler_opts, 1), do: true
+
+  defp identity_scoped?(handler_opts) when is_list(handler_opts),
+    do: not is_nil(Keyword.get(handler_opts, :identity))
+
+  defp identity_scoped?(_), do: false
 
   # --- Response shaping ---
 
