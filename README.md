@@ -207,6 +207,9 @@ HTTP server subscriptions additionally require a duplicate `Registry` and a
 ## Development and verification
 
 ```text
+mix precommit
+
+# Individual gates
 mix format --check-formatted
 mix test
 mix credo --strict

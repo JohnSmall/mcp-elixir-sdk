@@ -10,6 +10,14 @@ Run these from the repository root:
 
 ```bash
 mix deps.get
+mix precommit
+```
+
+`mix precommit` is the canonical local gate. It runs the following checks in
+the same deterministic order on every invocation; CI keeps them as separate
+steps so a hosted failure names the failed check directly:
+
+```bash
 mix format --check-formatted
 mix compile --warnings-as-errors
 mix test --seed 0
@@ -17,8 +25,11 @@ mix credo --strict
 mix dialyzer
 mix docs
 mix hex.build
+mix hex.audit
 mix deps.unlock --check-unused
 git diff --check
+jq empty conformance/scenarios.json
+jq empty conformance/compatibility-2025-11-25.json
 ```
 
 Do not use sleeps to coordinate process tests. Start owned processes with

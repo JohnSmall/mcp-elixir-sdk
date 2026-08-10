@@ -178,13 +178,27 @@ defmodule MCP.SubscriptionsHTTPIntegrationTest do
     assert :sys.get_state(transport).subscriptions == %{}
   end
 
-  defp await_terminal_subscription(_worker, 0), do: {:error, :timeout}
+  defp await_terminal_subscription(worker, timeout) do
+    deadline = System.monotonic_time(:millisecond) + timeout
+    await_terminal_subscription_until(worker, deadline)
+  end
 
-  defp await_terminal_subscription(worker, attempts) do
+  defp await_terminal_subscription_until(worker, deadline) do
     if :sys.get_state(worker).terminal? do
       :ok
     else
-      await_terminal_subscription(worker, attempts - 1)
+      wait_for_terminal_subscription(worker, deadline)
+    end
+  end
+
+  defp wait_for_terminal_subscription(worker, deadline) do
+    if System.monotonic_time(:millisecond) >= deadline do
+      {:error, :timeout}
+    else
+      receive do
+      after
+        1 -> await_terminal_subscription_until(worker, deadline)
+      end
     end
   end
 

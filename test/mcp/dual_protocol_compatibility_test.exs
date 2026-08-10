@@ -366,6 +366,8 @@ defmodule MCP.DualProtocolCompatibilityTest do
       assert {:ok, %{}} = Task.await(request)
     end
 
+    previous_count = length(MockTransport.sent_messages(transport))
+
     MockTransport.inject(transport, %{
       "jsonrpc" => "2.0",
       "id" => 99,
@@ -374,8 +376,9 @@ defmodule MCP.DualProtocolCompatibilityTest do
     })
 
     assert_receive {:sampling_called, %{"messages" => []}}
-    _ = :sys.get_state(client)
-    response = MockTransport.last_sent(transport)
+    {:ok, messages} = MockTransport.await_sent(transport, previous_count + 1)
+    response = Enum.find(messages, &(&1["id"] == 99))
+    assert response
     assert response["id"] == 99
     assert response["result"]["model"] == "test"
 

@@ -266,3 +266,24 @@ Final evidence after remediation:
 The official 2025 client evidence is intentionally reported as one initialize
 scenario plus the local cross-transport matrix; it is not presented as a full
 official client denominator.
+
+## 2026-08-09 final branch publication
+
+Before creating the upstream pull request, the final dirty-set audit found four
+coherent follow-up changes: a canonical `mix precommit` alias, matching README
+and development-tooling guidance, and a deterministic legacy callback-response
+assertion that waits for the expected outbound message instead of sampling the
+transport's last message. The first full precommit run then reproduced an HTTP
+subscription test race: its `2_000` timeout was implemented as a busy-loop
+attempt count and could expire in roughly 20 milliseconds. The helper now uses
+a monotonic deadline and condition wait; the focused overflow case passed 50
+consecutive runs afterward. These changes are part of the same compatibility
+and hardening scope and were included in the final branch commit.
+
+The canonical precommit alias now runs formatting, warnings-as-errors
+compilation, the seed-zero test suite, Credo, Dialyzer, documentation and Hex
+package builds, Hex dependency auditing, unused-dependency detection, Git
+whitespace validation, and both conformance-ledger JSON checks. The existing
+`2.0.0-dev.1` prerelease version was retained because this repository's primary
+manifest is `mix.exs` and the quick-push workflow does not define an automatic
+Mix/Hex prerelease version transition.

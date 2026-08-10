@@ -12,6 +12,7 @@ defmodule MCPElixirSDK.MixProject do
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
       deps: deps(),
+      aliases: aliases(),
       dialyzer: [plt_add_apps: [:ex_unit]],
 
       # Hex
@@ -151,5 +152,37 @@ defmodule MCPElixirSDK.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false}
     ]
+  end
+
+  defp aliases do
+    [precommit: &precommit/1]
+  end
+
+  defp precommit(_args) do
+    [
+      {"mix", ["format", "--check-formatted"]},
+      {"mix", ["compile", "--warnings-as-errors"]},
+      {"mix", ["test", "--seed", "0"]},
+      {"mix", ["credo", "--strict"]},
+      {"mix", ["dialyzer"]},
+      {"mix", ["docs"]},
+      {"mix", ["hex.build"]},
+      {"mix", ["hex.audit"]},
+      {"mix", ["deps.unlock", "--check-unused"]},
+      {"git", ["diff", "--check"]},
+      {"jq", ["empty", "conformance/scenarios.json"]},
+      {"jq", ["empty", "conformance/compatibility-2025-11-25.json"]}
+    ]
+    |> Enum.each(&run_command!/1)
+  end
+
+  defp run_command!({executable, args}) do
+    command = Enum.join([executable | args], " ")
+    Mix.shell().info([:cyan, "==> ", :reset, command])
+
+    case System.cmd(executable, args, into: IO.stream(), stderr_to_stdout: true) do
+      {_, 0} -> :ok
+      {_, status} -> Mix.raise("#{command} exited with status #{status}")
+    end
   end
 end
