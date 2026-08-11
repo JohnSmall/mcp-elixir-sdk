@@ -34,7 +34,7 @@ Every ticket's Definition of Done runs **six** gates, each individually, all gre
 3. `mix credo`
 4. `mix dialyzer`
 5. `mix test`
-6. `mix hex.audit` — the dependency-advisory gate (added by MES-27 under advisory policy A11; took the set from five to six)
+6. `mix hex.audit` **run as the two-step self-validating procedure below** (positive control + audit) — the dependency-advisory gate (added by MES-27 under advisory policy A11; took the set from five to six). **A bare `mix hex.audit` is not sufficient — see the named limitation below.**
 
 `mix deps.get` is setup, not a gate.
 
@@ -53,14 +53,51 @@ them.**
   check is `mix hex --version` meeting the minimum. This guarantees nobody runs the
   gate *below* the floor without noticing; it does **not** prevent drift *above* it,
   and a future hex could change the gate's behaviour.
-- **Data source / staleness.** `mix hex.audit` reads advisory & retirement data from
-  the **local registry cache** (`Registry.open`/`Registry.prefetch`), refreshed by
-  `mix deps.get`/`deps.update` (subject to Hex's cooldown). It has **no staleness
-  warning** — a stale local snapshot audits silently. Run `mix deps.get` before the
-  gate so the registry is current.
-- **Offline.** The gate **runs offline** (verified: `HEX_OFFLINE=1 mix hex.audit`
-  exits 0) against local data — it does not fail closed, so an offline run audits
-  against whatever the last refresh cached.
+- **Known limitation — false-green on incomplete local advisory data.** `mix hex.audit`
+  reads advisory & retirement data from the **local registry cache**
+  (`Registry.open`/`Registry.prefetch`), refreshed by `mix deps.get`/`deps.update`
+  (subject to Hex's cooldown). Confirmed from hex 2.5.1 source: the advisory lookup
+  returns `nil` for a missing entry (no error, no refetch), and offline `prefetch`
+  checks only package **presence**, not advisory-data **completeness**. So a stale or
+  incomplete local snapshot — package rows present, advisory rows missing — makes
+  `mix hex.audit` **exit 0 while advisories are actually outstanding**. It emits no
+  staleness warning and **runs offline** (`HEX_OFFLINE=1 mix hex.audit` exits 0), so it
+  does not fail closed on its own, and **no native flag forces an advisory refresh**
+  (`HEX_NO_CACHE=1` does not — verified). A bare `mix hex.audit` green is therefore not
+  trustworthy by itself, and a prose "run `mix deps.get` first" is a rule, not a gate.
+
+- **Compensating control — a positive control INSIDE the gate.** Run gate 6 as two
+  steps; it passes only if 6a passes **and** 6b exits 0. 6a proves the local advisory
+  DB can flag a **known** advisory before 6b's green is trusted (A7c applied to the
+  gate). `hpax` 1.0.3 is a dependency-free known-vulnerable reference, and the throwaway
+  project shares this machine's `~/.hex`, so 6a validates the exact advisory data 6b
+  relies on; if that data is incomplete, 6a reports nothing and the gate fails closed.
+
+  ```bash
+  # Gate 6a — positive control: the advisory DB MUST flag a known-vulnerable reference.
+  pc=$(mktemp -d)
+  cat > "$pc/mix.exs" <<'EX'
+  defmodule GatePC.MixProject do
+    use Mix.Project
+    def project, do: [app: :gate_pc, version: "0.0.0", deps: [{:hpax, "1.0.3"}]]
+  end
+  EX
+  cat > "$pc/mix.lock" <<'LK'
+  %{
+    "hpax": {:hex, :hpax, "1.0.3", "ed67ef51ad4df91e75cc6a1494f851850c0bd98ebc0be6e81b026e765ee535aa", [:mix], [], "hexpm", "8eab6e1cfa8d5918c2ce4ba43588e894af35dbd8e91e6e55c817bca5847df34a"},
+  }
+  LK
+  ( cd "$pc" && mix deps.get >/dev/null 2>&1 && mix hex.audit 2>&1 | grep -q "EEF-CVE-2026-58226" ) \
+    || { echo "GATE 6 FAILS: advisory data incomplete (hpax 1.0.3 / EEF-CVE-2026-58226 not flagged)"; rm -rf "$pc"; exit 1; }
+  rm -rf "$pc"
+
+  # Gate 6b — the real audit on THIS project. Must exit 0.
+  mix hex.audit
+  ```
+
+  Verified 2026-08-11: 6a flags `EEF-CVE-2026-58226` and fails (nonzero) when the known
+  advisory is absent; 6b exits 0 on the remediated tree. If a future hex bounds this
+  natively (a fail-closed refresh mode), gate 6 can drop back to a bare invocation.
 
 ## Key Documentation
 
