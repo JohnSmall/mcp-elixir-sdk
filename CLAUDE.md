@@ -25,6 +25,43 @@ mix credo
 mix dialyzer
 ```
 
+## Definition-of-Done Gates
+
+Every ticket's Definition of Done runs **six** gates, each individually, all green:
+
+1. `mix format --check-formatted`
+2. `mix compile --warnings-as-errors`
+3. `mix credo`
+4. `mix dialyzer`
+5. `mix test`
+6. `mix hex.audit` — the dependency-advisory gate (added by MES-27 under advisory policy A11; took the set from five to six)
+
+`mix deps.get` is setup, not a gate.
+
+**These are DoD gates, not automation.** There is no CI in this repository — no
+`.github/workflows`, no `mix` gate alias. Every one of the six is run per ticket and
+checked on the reviewer's merge-gate checklist. **Do not assume CI enforces any of
+them.**
+
+**Gate 6 (`mix hex.audit`) — reproducibility and behaviour.**
+
+- **Toolchain minimum (not a pin).** The hex archive is a Mix archive, not an
+  asdf/mise tool, so no `.tool-versions`/declarative mechanism binds its version.
+  The documented **minimum is hex ≥ 2.5.1** (the version whose advisory results and
+  branch-(b) ignore mechanism are verified). Install an exact version with
+  `mix local.hex 2.5.1 --force` (`mix local.hex [version]` is documented). The DoD
+  check is `mix hex --version` meeting the minimum. This guarantees nobody runs the
+  gate *below* the floor without noticing; it does **not** prevent drift *above* it,
+  and a future hex could change the gate's behaviour.
+- **Data source / staleness.** `mix hex.audit` reads advisory & retirement data from
+  the **local registry cache** (`Registry.open`/`Registry.prefetch`), refreshed by
+  `mix deps.get`/`deps.update` (subject to Hex's cooldown). It has **no staleness
+  warning** — a stale local snapshot audits silently. Run `mix deps.get` before the
+  gate so the registry is current.
+- **Offline.** The gate **runs offline** (verified: `HEX_OFFLINE=1 mix hex.audit`
+  exits 0) against local data — it does not fail closed, so an offline run audits
+  against whatever the last refresh cached.
+
 ## Key Documentation
 
 - **PRD**: `docs/prd.md` — Requirements, protocol features, design decisions

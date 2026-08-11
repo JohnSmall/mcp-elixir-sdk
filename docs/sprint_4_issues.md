@@ -409,3 +409,99 @@ parent `9a233c0` · subject `[MES-26] <title>` · exactly two paths (`docs/sprin
 `.gitignore`) · no `mix.exs` bump · no tag · `mix.lock` untouched · present on `origin/main`
 (pushed 2026-08-10). PA-2's third demonstration.
 **Priority Hint:** n/a (toolchain) · **Blocking?:** unblocks MES-27 · **Suggested Jira Ticket?:** MES-27 (gate + pin), MES-15
+
+---
+
+## MES-27 — clear all 22 Hex advisories to lowest-clean targets; add the dependency-audit gate (2026-08-11)
+
+Branch remediation across five packages, `mix.exs` `2.0.0-dev.2 → 2.0.0-dev.3`, sixth gate
+recorded in `CLAUDE.md`. Deliverable: Confluence 262242305 child. Full detail there; findings
+below.
+
+### AC1 / AC2 — five named packages at exact lowest-clean targets; all 22 cleared, audit exit 0
+Resolver landed each named package at its lowest-clean target (not latest — PO ruling):
+`bandit 1.10.2→1.12.1` · `plug 1.19.1→1.19.5` · `req 0.5.17→0.6.1` · `mint 1.7.1→1.9.3` ·
+`hpax 1.0.3→1.0.4`, plus `thousand_island 1.4.3→1.5.0` (forced by bandit `~> 1.5`). Latest
+versions (plug 1.20.x, req 0.7.2, bandit 1.12.x) were **avoided** by temporary exact-pin
+resolution, then constraints reverted so no consumer floor was raised (C6). `mix hex.audit`
+after: **exit 0**, all 22 cleared by **branch (a)** bumps — **none by package removal** (A6-4:
+26 packages before and after; all five present). Denominator (C4): the 22 were measured
+**twice** — at `9a233c0` under hex 2.5.0 and at `d697093` under hex 2.5.1, `mix.lock`
+byte-identical across both — two agreeing measurements, not one current + one stale.
+
+### A7c — the AC2 green is instrument-verified, not a false green
+The post-bump audit printed `Error opening ETS file …/cache.ets: :badfile` (hex's ephemeral
+HTTP cache, not the advisory source) yet exited 0. Instrument check: baseline lock + `deps.get`
++ audit **re-reports all 22** (exit 1); target lock + `deps.get` + audit reports **0** (exit 0).
+The green is real.
+
+### AC3 / A6-1 — the resolver moved 10 packages; the derivation predicted 1
+Full `mix.lock` diff (named-only `mix deps.update`, **no `--all`** — C5): 5 advisory-driven +
+`thousand_island` (forced, derivation-**confirmed**) + **4 unpredicted cascades** —
+`finch 0.21.0→0.22.0`, `jason 1.4.4→1.4.5`, `plug_crypto 2.1.1→2.2.0`, `telemetry 1.3.0→1.4.2`
+— shared transitives re-resolved when the named subtrees unlocked. Constraint analysis
+under-predicted by four; the observed diff governs. All 10 changed versions OSV-clean.
+
+### AC4 / A7c — OSV cross-check of the whole tree, with a positive control
+All **26** post-bump package/versions queried against OSV (`api.osv.dev/v1/querybatch`,
+2026-08-11T12:09:57Z): **zero** vulns each. Positive control `bandit@1.10.2` on the same
+endpoint returned **14 records** — the nulls are real, not an unrun query. **T6 does not fire**
+(no in-range advisory OSV reports that hex.audit missed).
+
+### C6 — the shipped constraint floor still admits advisory-bearing versions (report, don't fix)
+`mix.lock` is not shipped; `mix.exs` constraints are, and all five are `optional: true`. The
+floors are **unchanged** (not raised — raising is release-scope, PO): `req ~> 0.5` admits
+0.5.0 (EEF-CVE-2026-49755) · `plug ~> 1.16` admits 1.16.0 (all four plug CVEs) · `bandit ~> 1.5`
+admits 1.5.0 (six of seven bandit CVEs) — OSV-confirmed 2026-08-11T12:10:35Z. A consumer
+resolving fresh against 2.0.0 can still pull a vulnerable version; the lock-scoped gate cannot
+see this. `mint`/`hpax` have no direct constraint. **PO-visible at release (Sprint 5).**
+
+### AC5 — per-package behavioural attribution (no grouped "no impact")
+`bandit`: SDK runs it as an **HTTP/1 server** (POST + JSON/SSE), no WebSocket, no sendfile.
+Exercised/served-path hardening: chunked request-body cap (CVE-2026-39803), request trailers
+(39806), mixed-case Transfer-Encoding, internal HTTP/1 body-read, multiple content-length
+(39805). Not exercised: all WebSocket items (inflate 39804, continuation 42786, fragmented
+**65623**, max_frame_size), sendfile, HTTP/2 frame-size (42788). CVE-2026-39807 (scheme from
+transport): SDK does **not** read `conn.scheme` — unaffected either way.
+`req` (client, **NOT exercised** — A6-3): 0.6.0 dropped auto archive/CSV decoding (**JSON
+decode stays on by default**; SDK only handles JSON + SSE, and decodes both by hand); 0.6.0
+multipart fix (SDK uses no multipart); **0.6.1 made decompression opt-in** (`compressed: true`,
+which the SDK does not set) — for conformant peers (uncompressed JSON/SSE) behaviour is
+identical, so the SDK's own public API is unchanged. **T4 assessed not-fired**; the one residual
+(a peer that force-compresses `application/json` would no longer be transparently decompressed)
+is a latent capability change, never a specified/tested SDK behaviour — flagged for Codex.
+`thousand_island 1.5.0`: timeout isolation (network timeouts enforced despite mailbox traffic)
+→ MES-15 (AC9).
+
+### AC6 / A6-3 — suite green unchanged, and what green does NOT cover
+`mix test`: **225 tests, 0 failures**, no test or `lib/` file touched (**T2 does not fire**).
+But the suite exercises only the **server** transport (Bandit + Plug end-to-end, HTTP/1;
+`thousand_island` transitively). It does **not** exercise the **client** path: no test drives
+`StreamableHTTP.Client` (`Req.post`), and no HTTP/2 anywhere — so **`req`, `mint`, `hpax`,
+`finch` have no test coverage**. The green says nothing about them; OSV + changelog attribution
+(AC4/AC5) carry those four, not the suite.
+
+### AC7 — hex toolchain: documented minimum + DoD check, honestly not a pin
+No declarative mechanism binds a Mix archive (no `.tool-versions`/asdf — confirmed). Documented
+minimum **hex ≥ 2.5.1**, actionable via `mix local.hex 2.5.1 --force` (`mix local.hex [version]`
+is documented), DoD check `mix hex --version`. Recorded in `CLAUDE.md`. Guarantees nobody runs
+the gate below the floor unnoticed; does **not** prevent drift above it — stated as such.
+
+### AC8 / A6-5 / A6-6 — sixth gate added last, in CLAUDE.md; staleness & offline behaviour
+Six gates enumerated in `CLAUDE.md` (`format`, `compile --warnings-as-errors`, `credo`,
+`dialyzer`, `test`, `hex.audit`), stated **DoD gates, not automation** (no CI). Added only after
+AC2 green, so it never lands red. **A6-5:** `hex.audit` reads advisories from the local registry
+(`Registry.open`/`prefetch`, hex 2.5.1 source) with **no staleness warning** — a stale snapshot
+audits silently; refresh via `deps.get`. **A6-6:** it **runs offline** (`HEX_OFFLINE=1
+mix hex.audit` → exit 0), auditing against local data, not failing closed.
+
+### Gates — all six green on the branch
+`format` ✓ · `compile --warnings-as-errors` ✓ · `credo` ✓ (no issues) · `dialyzer` ✓ (0 errors)
+· `test` ✓ (225/0) · `hex.audit` ✓ (exit 0, instrument-verified).
+
+### Triggers — none fired
+T1 (audit ≠ 0) ✗ · T2 (test/`lib` change) ✗ · T3 (advisory-bearing package in post-bump tree) ✗
+· T4 (req changes SDK's own public API) ✗ (assessed; decompression residual flagged) · T5 (gate
+not reproducible) ✗ · T6 (OSV finds what hex.audit missed) ✗. Branch (b) not used — not chosen.
+
+**Priority Hint:** high (unblocks MES-15) · **Blocking?:** blocks MES-15 · **Suggested Jira Ticket?:** MES-27; C6 floor-raise → Sprint 5 release decision (PO)
