@@ -53,51 +53,72 @@ them.**
   check is `mix hex --version` meeting the minimum. This guarantees nobody runs the
   gate *below* the floor without noticing; it does **not** prevent drift *above* it,
   and a future hex could change the gate's behaviour.
-- **Known limitation — false-green on incomplete local advisory data.** `mix hex.audit`
+- **Known limitation 1 — false-green on ABSENT/CORRUPT advisory data.** `mix hex.audit`
   reads advisory & retirement data from the **local registry cache**
-  (`Registry.open`/`Registry.prefetch`), refreshed by `mix deps.get`/`deps.update`
-  (subject to Hex's cooldown). Confirmed from hex 2.5.1 source: the advisory lookup
-  returns `nil` for a missing entry (no error, no refetch), and offline `prefetch`
-  checks only package **presence**, not advisory-data **completeness**. So a stale or
-  incomplete local snapshot — package rows present, advisory rows missing — makes
-  `mix hex.audit` **exit 0 while advisories are actually outstanding**. It emits no
-  staleness warning and **runs offline** (`HEX_OFFLINE=1 mix hex.audit` exits 0), so it
-  does not fail closed on its own, and **no native flag forces an advisory refresh**
-  (`HEX_NO_CACHE=1` does not — verified). A bare `mix hex.audit` green is therefore not
-  trustworthy by itself, and a prose "run `mix deps.get` first" is a rule, not a gate.
+  (`Registry.open`/`Registry.prefetch`). Confirmed from hex 2.5.1 source: the advisory
+  lookup returns `nil` for a missing key (no error, no refetch), and offline `prefetch`
+  checks only package **presence**, not advisory-data **completeness** — and it is
+  **per-package**, so one package's advisory rows can be absent while another's are
+  intact. So an incomplete/corrupt snapshot makes `mix hex.audit` **exit 0 while
+  advisories are outstanding**, with no warning; it **runs offline** (`HEX_OFFLINE=1`
+  exits 0) and **no native flag forces a refresh** (`HEX_NO_CACHE=1` does not — verified).
+  A bare `mix hex.audit` green is not trustworthy by itself. **Compensated by the
+  baseline-lock sentinel (6a) below.**
 
-- **Compensating control — a positive control INSIDE the gate.** Run gate 6 as two
-  steps; it passes only if 6a passes **and** 6b exits 0. 6a proves the local advisory
-  DB can flag a **known** advisory before 6b's green is trusted (A7c applied to the
-  gate). `hpax` 1.0.3 is a dependency-free known-vulnerable reference, and the throwaway
-  project shares this machine's `~/.hex`, so 6a validates the exact advisory data 6b
-  relies on; if that data is incomplete, 6a reports nothing and the gate fails closed.
+- **Known limitation 2 — the gate detects ABSENCE/CORRUPTION, NOT STALENESS, and no
+  local mechanism can fix that.** A **complete-but-old** registry that still contains the
+  sentinel data passes 6a and 6b while missing every advisory published since the
+  snapshot — and staleness is likelier than absence. hex offers no freshness/refresh
+  guarantee, so **do not add one here** (claiming a bound that does not hold would be
+  worse). **This obligation is discharged elsewhere:** a release must not treat a green
+  `mix hex.audit` as publish-blocking evidence on its own — it runs the
+  **freshness-independent** whole-tree OSV cross-check with a positive control (this
+  ticket's AC4), which queries an external feed live and cannot be stale-green. Owned by
+  **MES-19** (release conformance/gating).
+
+- **Compensating control (6a) — a baseline-lock sentinel INSIDE the gate.** Run gate 6
+  as two steps; it passes only if 6a passes **and** 6b exits 0 (A7c applied to the gate).
+  6a audits the **pre-remediation baseline lock at `d697093`** (sourced from git) and
+  requires **all 22 known advisory ids** to be reported — validating advisory rows for
+  **every package that has ever carried an advisory in this tree** (`bandit`, `plug`,
+  `req`, `mint`, `hpax`), not a single-package sentinel. It asserts a **superset** ("all
+  22 present"), never "exactly 22", so a *new* advisory against a baseline version does
+  not false-red the gate. **Irreducible residual:** `jason`, `telemetry` and
+  `plug_crypto` have never carried an advisory, so nothing whose absence is detectable
+  can sentinel-validate them — that gap is real and permanent, but far narrower than a
+  one-package sentinel.
 
   ```bash
-  # Gate 6a — positive control: the advisory DB MUST flag a known-vulnerable reference.
+  # Gate 6a — baseline-lock sentinel: require ALL 22 known advisory ids (superset).
+  # Capture output BEFORE matching (pipefail-safe — no `grep -q` in a pipe); `|| true`
+  # because the baseline audit exits 1 by design (it HAS advisories) and that expected
+  # nonzero must not abort a `set -e` run. Verified positive+negative under normal AND
+  # `set -euo pipefail`.
+  KNOWN_IDS="EEF-CVE-2026-8468 EEF-CVE-2026-39803 EEF-CVE-2026-39804 EEF-CVE-2026-39805 EEF-CVE-2026-39806 EEF-CVE-2026-39807 EEF-CVE-2026-42786 EEF-CVE-2026-42788 EEF-CVE-2026-48861 EEF-CVE-2026-48862 EEF-CVE-2026-49753 EEF-CVE-2026-49754 EEF-CVE-2026-49755 EEF-CVE-2026-49756 EEF-CVE-2026-54892 EEF-CVE-2026-56810 EEF-CVE-2026-56813 EEF-CVE-2026-56814 EEF-CVE-2026-58226 EEF-CVE-2026-58229 EEF-CVE-2026-59246 EEF-CVE-2026-59249"
   pc=$(mktemp -d)
-  cat > "$pc/mix.exs" <<'EX'
-  defmodule GatePC.MixProject do
-    use Mix.Project
-    def project, do: [app: :gate_pc, version: "0.0.0", deps: [{:hpax, "1.0.3"}]]
-  end
-  EX
-  cat > "$pc/mix.lock" <<'LK'
-  %{
-    "hpax": {:hex, :hpax, "1.0.3", "ed67ef51ad4df91e75cc6a1494f851850c0bd98ebc0be6e81b026e765ee535aa", [:mix], [], "hexpm", "8eab6e1cfa8d5918c2ce4ba43588e894af35dbd8e91e6e55c817bca5847df34a"},
-  }
-  LK
-  ( cd "$pc" && mix deps.get >/dev/null 2>&1 && mix hex.audit 2>&1 | grep -q "EEF-CVE-2026-58226" ) \
-    || { echo "GATE 6 FAILS: advisory data incomplete (hpax 1.0.3 / EEF-CVE-2026-58226 not flagged)"; rm -rf "$pc"; exit 1; }
+  git show d697093:mix.exs  > "$pc/mix.exs"
+  git show d697093:mix.lock > "$pc/mix.lock"
+  audit_out=$( cd "$pc" && { mix deps.get >/dev/null 2>&1 || true; mix hex.audit 2>&1 || true; } )
   rm -rf "$pc"
+  missing=""
+  for id in $KNOWN_IDS; do case "$audit_out" in *"$id"*) : ;; *) missing="$missing $id" ;; esac; done
+  if [ -n "$missing" ]; then
+    echo "GATE 6 FAILS: baseline sentinel missing $(echo $missing | wc -w) of 22 known advisory ids:$missing"
+    echo "  Verify each missing id at https://osv.dev BEFORE assuming local cache corruption:"
+    echo "   many/all missing together => local advisory data broken/absent (run 'mix deps.get' or rebuild ~/.hex)"
+    echo "   exactly one missing alone  => advisory likely withdrawn/renumbered upstream (update KNOWN_IDS, not the cache)"
+    exit 1
+  fi
 
   # Gate 6b — the real audit on THIS project. Must exit 0.
   mix hex.audit
   ```
 
-  Verified 2026-08-11: 6a flags `EEF-CVE-2026-58226` and fails (nonzero) when the known
-  advisory is absent; 6b exits 0 on the remediated tree. If a future hex bounds this
-  natively (a fail-closed refresh mode), gate 6 can drop back to a bare invocation.
+  Verified 2026-08-12: 6a PASSes on the current registry and FAILs (naming the missing
+  ids) when a package's advisory rows are stripped from a synthesised cache — shown for
+  `bandit` (7 missing) and `plug` (4 missing) — under both ordinary and
+  `set -euo pipefail` shells. If a future hex adds a fail-closed freshness mode, gate 6
+  can simplify toward a bare invocation.
 
 ## Key Documentation
 
