@@ -505,3 +505,32 @@ T1 (audit ≠ 0) ✗ · T2 (test/`lib` change) ✗ · T3 (advisory-bearing packa
 not reproducible) ✗ · T6 (OSV finds what hex.audit missed) ✗. Branch (b) not used — not chosen.
 
 **Priority Hint:** high (unblocks MES-15) · **Blocking?:** blocks MES-15 · **Suggested Jira Ticket?:** MES-27; C6 floor-raise → Sprint 5 release decision (PO)
+
+### MES-27 correction round 3 (CR-11 + CR-3/CR-4-req/CR-5, 2026-08-13) — CC/CODE_CREATOR
+
+PO ruled T7 = option (c): `req` stays 0.6.1; the client sends `accept-encoding: identity`
+and fails cleanly on an unexpected `content-encoding`. **CR-11** (`lib/` + `test/`
+sanctioned): observed-request evidence first — req 0.6.1 sets no `accept-encoding` by
+default (server saw `[]`), exposes response `content-encoding` (does not strip it at
+`compressed: false`), and `identity` is legal (RFC 9110 §12.5.3, "synonym for no
+encoding"). Client now sends `accept-encoding: identity` and a guard **before the
+content-type branch** (covers JSON **and** SSE — one outbound call site, `Req.post`;
+the GET SSE stream is unimplemented → MES-15) returns `{:error,
+{:unexpected_content_encoding, coding}}` for any non-`identity` coding, matching the
+transport's `{:error, {tag, …}}` convention. **A7 discriminating regression** (first
+test to drive the client path — A6-3): asserts the exact tuple; FAILS at `95115ec`
+(`{:json_decode_error, …}`), passes after. **CR-11.4 (conformance, honest):** MCP
+2026-07-28 Streamable HTTP is silent on content coding (A4), so RFC 9110 governs; §12.5.3
+makes honoring `Accept-Encoding` a **SHOULD not a MUST** — a compressing peer is
+**discouraged, not non-conformant**. **T9 does not fire**; MES-19 wording → "deliberate,
+documented client limitation." **CR-3:** the four cascades held at baseline (`finch`
+0.21.0, `jason` 1.4.4, `plug_crypto` 2.1.1, `telemetry` 1.3.0); `mix deps.get` accepts
+them; diff vs `d697093` is now the minimal **6** packages; held `finch` 0.21.0 admits
+`mint` 1.9.3 (`~> 1.6.2 or ~> 1.7`). **CR-4-req:** 49755 (decompression bomb) was
+peer-reachable at 0.5.17's auto-decode — residual after 0.6.1 + CR-11 is **none** (SDK
+neither requests nor decodes coding); 49756 (multipart injection) is not constructible
+(SDK builds no multipart). **CR-5 re-exec** at the corrected head: audit exit 0 / all 22
+clear; whole-tree OSV 0 hits + positive control `bandit@1.10.2` 14 records
+(2026-08-13T10:44:59Z); six gates green incl. gate-6 two-step; `mix test` **230/0**;
+`mix.lock` sha `0b469b90…`; `mix.exs` unchanged `2.0.0-dev.3`, no tag.
+**Priority Hint:** high · **Blocking?:** blocks MES-15 · **Suggested Jira Ticket?:** MES-27; MES-19 (conformance wording); MES-15 (client HTTP/2 + GET-SSE guard)
