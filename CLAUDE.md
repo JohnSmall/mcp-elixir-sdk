@@ -62,8 +62,11 @@ them.**
   intact. So an incomplete/corrupt snapshot makes `mix hex.audit` **exit 0 while
   advisories are outstanding**, with no warning; it **runs offline** (`HEX_OFFLINE=1`
   exits 0) and **no native flag forces a refresh** (`HEX_NO_CACHE=1` does not — verified).
-  A bare `mix hex.audit` green is not trustworthy by itself. **Compensated by the
-  baseline-lock sentinel (6a) below.**
+  A bare `mix hex.audit` green is not trustworthy by itself. The baseline-lock
+  sentinel (6a) **narrows** this limitation to the five advisory-bearing packages —
+  it does **not** compensate for it; **21 of 26 packages remain unvalidated** (see
+  the residual under 6a). The freshness-independent compensating control is the live
+  whole-tree OSV cross-check, owned by MES-19.
 
 - **Known limitation 2 — the gate detects ABSENCE/CORRUPTION, NOT STALENESS, and no
   local mechanism can fix that.** A **complete-but-old** registry that still contains the
@@ -83,10 +86,30 @@ them.**
   **every package that has ever carried an advisory in this tree** (`bandit`, `plug`,
   `req`, `mint`, `hpax`), not a single-package sentinel. It asserts a **superset** ("all
   22 present"), never "exactly 22", so a *new* advisory against a baseline version does
-  not false-red the gate. **Irreducible residual:** `jason`, `telemetry` and
-  `plug_crypto` have never carried an advisory, so nothing whose absence is detectable
-  can sentinel-validate them — that gap is real and permanent, but far narrower than a
-  one-package sentinel.
+  not false-red the gate.
+
+  **What 6a does NOT cover — the residual, stated by enumeration (A2d).** 6a
+  validates advisory rows only for the **five** packages that carry the 22 baseline
+  ids (`bandit`, `hpax`, `mint`, `plug`, `req`). For every **other** package in the
+  tree, limitation 1 is untouched: if that package acquires an advisory and its local
+  cache rows are absent, 6a passes and 6b exits 0 over an outstanding advisory
+  (demonstrated on `thousand_island` 1.5.0). The residual is therefore **21 of the 26
+  locked packages**, not three: `bunt`, `credo`, `dialyxir`, `earmark_parser`,
+  `elixir_uuid`, `erlex`, `ex_doc`, `file_system`, **`finch`**, `jason`, `makeup`,
+  `makeup_elixir`, `makeup_erlang`, `mime`, `nimble_options`, `nimble_parsec`,
+  `nimble_pool`, `plug_crypto`, `telemetry`, **`thousand_island`**, `websock`.
+  **`finch` and `thousand_island` are runtime deps on the transport path this SDK
+  uses** — the residual is not confined to dev/build tooling.
+
+  This is **irreducible for the sentinel**: a package that has never carried an
+  advisory has nothing whose absence is detectable, so no sentinel can validate it
+  (attempting to would be the AC7 error — claiming a bound that does not hold). The
+  compensating control that *does* cover the remainder is the **live whole-tree OSV
+  cross-check** (this ticket's AC4), which queries an external feed and so is not
+  limited to what the local cache happens to hold. It is **owned by MES-19** for
+  release. Whether that OSV check should also join the per-ticket gate 6 is a policy
+  question (it would make the gate network-dependent, against the offline finding
+  above) — **PA-9, the PO's, not decided here.**
 
   ```bash
   # Gate 6a — baseline-lock sentinel: require ALL 22 known advisory ids (superset).

@@ -534,3 +534,28 @@ clear; whole-tree OSV 0 hits + positive control `bandit@1.10.2` 14 records
 (2026-08-13T10:44:59Z); six gates green incl. gate-6 two-step; `mix test` **230/0**;
 `mix.lock` sha `0b469b90…`; `mix.exs` unchanged `2.0.0-dev.3`, no tag.
 **Priority Hint:** high · **Blocking?:** blocks MES-15 · **Suggested Jira Ticket?:** MES-27; MES-19 (conformance wording); MES-15 (client HTTP/2 + GET-SSE guard)
+
+### MES-27 correction round 4 (CR-12…CR-16, 2026-08-15) — CC/CODE_CREATOR
+
+Reviewer (now Claude Code) returned APPROVE-WITH-CORRECTIONS with two blocking finds
+from its own probes. **CR-12 (blocking):** the guard read only the first
+`content-encoding` value (`get_header/2`), so `identity` then `gzip` on **separate
+field lines** (RFC 9110 §5.3 = comma form; §8.4 codings in applied order — the natural
+ordering) still gave `{:json_decode_error, …}` at `a6bd999`, byte-identical to pre-fix.
+Fixed with a new `get_header_values/2` accessor (get_header/2 untouched — shared with
+content-type; **T11 does not fire**); `unexpected_content_encoding/1` now flattens all
+values. Sixth/seventh tests cover both orderings; the identity-then-gzip one FAILS at
+`a6bd999` (A7 discriminating). **CR-13 (blocking):** CLAUDE.md's "irreducible residual"
+said 3 packages; enumeration gives **21 of 26** (named; incl. runtime `finch` and
+`thousand_island`). Corrected: 6a **narrows** limitation 1 to the five advisory-bearing
+packages, does not compensate; the compensating control is the live whole-tree OSV
+cross-check (AC4, owned by MES-19); did NOT extend the sentinel (AC7 error), and PA-9
+(OSV in the per-ticket gate) is the PO's. **CR-15:** cite §8.4/§8.4.1 for the response
+`Content-Encoding` (§8.4 says `identity` SHOULD NOT appear — tolerating it is deliberate
+leniency), §12.5.3 for request `Accept-Encoding`; documented (not changed) that a
+caller-supplied `accept-encoding` in `:headers` is **appended** and would hard-fail the
+client. **CR-14/CR-16:** MES-15 forward note refresh + round-3 line-number fix
+(Confluence). C7 correction is the PM's (PM-18). **Re-exec:** six gates green incl.
+gate-6 two-step; **232/0**; mix.lock unchanged (`0b469b90…`, no dep change); mix.exs
+`2.0.0-dev.3`, no tag.
+**Priority Hint:** high · **Blocking?:** blocks MES-15 · **Suggested Jira Ticket?:** MES-27; MES-15; MES-19

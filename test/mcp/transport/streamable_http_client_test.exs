@@ -24,27 +24,35 @@ defmodule MCP.Transport.StreamableHTTP.ClientTest do
 
     def call(conn, agent) do
       Agent.update(agent, fn _ -> get_req_header(conn, "accept-encoding") end)
-      {ct, ce, body} = response_for(conn.request_path)
+      {ct, ce_list, body} = response_for(conn.request_path)
+      conn = put_resp_header(conn, "content-type", ct)
+      # Append each content-encoding as its OWN field line (put_resp_header would
+      # dedupe). This lets a route emit duplicate content-encoding lines, the CR-12
+      # wire form (RFC 9110 §5.3) the first-value-only guard walked past.
+      conn = %{
+        conn
+        | resp_headers: conn.resp_headers ++ Enum.map(ce_list, &{"content-encoding", &1})
+      }
 
-      conn
-      |> put_resp_header("content-type", ct)
-      |> maybe_encoding(ce)
-      |> send_resp(200, body)
+      send_resp(conn, 200, body)
     end
-
-    defp maybe_encoding(conn, nil), do: conn
-    defp maybe_encoding(conn, ce), do: put_resp_header(conn, "content-encoding", ce)
 
     @json Jason.encode!(%{"jsonrpc" => "2.0", "id" => 1, "result" => %{"ok" => true}})
 
-    # content-type, content-encoding (nil = none), body
-    defp response_for("/gzip-json"), do: {"application/json", "gzip", :zlib.gzip(@json)}
+    # content-type, content-encoding value list (one entry per field line), body
+    defp response_for("/gzip-json"), do: {"application/json", ["gzip"], :zlib.gzip(@json)}
 
     defp response_for("/gzip-sse"),
-      do: {"text/event-stream", "gzip", :zlib.gzip("data: " <> @json <> "\n\n")}
+      do: {"text/event-stream", ["gzip"], :zlib.gzip("data: " <> @json <> "\n\n")}
 
-    defp response_for("/identity-json"), do: {"application/json", "identity", @json}
-    defp response_for("/plain-json"), do: {"application/json", nil, @json}
+    defp response_for("/identity-json"), do: {"application/json", ["identity"], @json}
+    defp response_for("/plain-json"), do: {"application/json", [], @json}
+    # CR-12: two separate content-encoding field lines, both orderings.
+    defp response_for("/dup-identity-gzip"),
+      do: {"application/json", ["identity", "gzip"], :zlib.gzip(@json)}
+
+    defp response_for("/dup-gzip-identity"),
+      do: {"application/json", ["gzip", "identity"], :zlib.gzip(@json)}
   end
 
   setup do
@@ -109,5 +117,26 @@ defmodule MCP.Transport.StreamableHTTP.ClientTest do
     pid = start_client(port, "/plain-json")
     assert :ok = Client.send_message(pid, %{"jsonrpc" => "2.0", "id" => 1})
     assert_receive {:mcp_message, %{"result" => %{"ok" => true}}}, 2_000
+  end
+
+  # CR-12 (RFC 9110 §5.3/§8.4): duplicate content-encoding field lines are
+  # semantically identical to the comma form. `identity` then `gzip` on separate
+  # lines is the natural applied order; at a6bd999 (first-value-only) it produced
+  # {:json_decode_error, …} — byte-identical to pre-fix. This is the DISCRIMINATING
+  # sixth test; it FAILS at a6bd999.
+  test "CR-12: duplicate lines identity-then-gzip fail cleanly, not json_decode", %{port: port} do
+    pid = start_client(port, "/dup-identity-gzip")
+
+    assert {:error, {:unexpected_content_encoding, "gzip"}} =
+             Client.send_message(pid, %{"jsonrpc" => "2.0", "id" => 1})
+  end
+
+  # The other ordering — caught by luck at a6bd999 (gzip is the first value), but
+  # asserted so a future refactor cannot silently drop it (both orderings covered).
+  test "CR-12: duplicate lines gzip-then-identity fail cleanly", %{port: port} do
+    pid = start_client(port, "/dup-gzip-identity")
+
+    assert {:error, {:unexpected_content_encoding, "gzip"}} =
+             Client.send_message(pid, %{"jsonrpc" => "2.0", "id" => 1})
   end
 end

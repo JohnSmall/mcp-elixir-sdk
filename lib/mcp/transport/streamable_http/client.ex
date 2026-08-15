@@ -23,18 +23,31 @@ defmodule MCP.Transport.StreamableHTTP.Client do
 
   ## Content coding
 
-  The client sends `accept-encoding: identity` on every request and **does not
-  decode compressed response bodies**. Automatic decompression in the underlying
-  HTTP library is opt-in and unbounded (a decompression-bomb DoS,
-  `EEF-CVE-2026-49755`), so this SDK declines content coding rather than enabling
-  it. MCP 2026-07-28's Streamable HTTP transport does not specify content coding,
-  and RFC 9110 §12.5.3 treats `identity` as "no encoding"; a peer that returns a
-  `content-encoding` other than `identity` anyway (permitted but discouraged —
-  §12.5.3 is a SHOULD, not a MUST) is **failed cleanly** with
-  `{:error, {:unexpected_content_encoding, coding}}`, not mis-decoded. This is a
-  deliberate, documented client limitation, not a claim that such a peer is
-  non-conformant. (Bounded decompression as an opt-in is a possible future
-  enhancement.)
+  The client sets `accept-encoding: identity` (RFC 9110 §12.5.3 — a request's
+  `Accept-Encoding`; `identity` means "no encoding") and **does not decode
+  compressed response bodies**. Automatic decompression in the underlying HTTP
+  library is opt-in and unbounded (a decompression-bomb DoS, `EEF-CVE-2026-49755`),
+  so this SDK declines content coding rather than enabling it. MCP 2026-07-28's
+  Streamable HTTP transport does not specify content coding.
+
+  A response whose `content-encoding` (RFC 9110 §8.4) carries any coding other than
+  `identity` — across all field lines, compared case-insensitively per §8.4.1 — is
+  **failed cleanly** with `{:error, {:unexpected_content_encoding, coding}}`, not
+  mis-decoded. Tolerating a literal `identity` in a response is deliberate leniency:
+  §8.4 says `identity` SHOULD NOT appear in a response's `Content-Encoding`, so a
+  compliant peer never sends it, but accepting it harms nothing. This is a
+  deliberate, documented client limitation, **not** a claim that a compressing peer
+  is non-conformant (honoring `Accept-Encoding` is a §12.5.3 SHOULD, not a MUST).
+  (Bounded decompression as an opt-in is a possible future enhancement.)
+
+  > #### Caller-supplied `accept-encoding` breaks the client {: .warning}
+  >
+  > A `:headers` entry is **appended** to the SDK's own headers, not merged over
+  > them — so `headers: [{"accept-encoding", "gzip"}]` makes the client advertise
+  > `identity, gzip`. A peer that honors it returns `gzip`, which the guard then
+  > refuses to decode, **hard-failing every request**. Do not set `accept-encoding`
+  > in `:headers`. (The security posture is unaffected — the guard still refuses to
+  > decode — so this is a documented constraint, not a decode path.)
   """
 
   use GenServer
@@ -213,23 +226,33 @@ defmodule MCP.Transport.StreamableHTTP.Client do
 
   # Returns the non-`identity` content coding(s) on a response as a string, or
   # `nil` when the body carries no coding — `content-encoding` absent, empty, or
-  # `identity` (all legal; RFC 9110 §12.5.3 defines `identity` as "no encoding").
+  # `identity` (RFC 9110 §8.4 defines the `Content-Encoding` response header;
+  # §8.4.1 makes codings case-insensitive; §5.3 makes multiple field lines
+  # semantically identical to the comma form). It therefore reads **every** value
+  # for the header (not just the first) and flattens the comma form within each —
+  # `identity` and `gzip` on separate lines is the natural applied order and must
+  # be caught exactly like `identity, gzip` on one line.
   defp unexpected_content_encoding(headers) do
-    case get_header(headers, "content-encoding") do
-      nil ->
-        nil
+    codings =
+      headers
+      |> get_header_values("content-encoding")
+      |> Enum.flat_map(&String.split(&1, ","))
+      |> Enum.map(&String.trim/1)
+      |> Enum.reject(&(&1 == "" or String.downcase(&1) == "identity"))
 
-      value ->
-        codings =
-          value
-          |> String.split(",")
-          |> Enum.map(&String.trim/1)
-          |> Enum.reject(&(&1 == "" or String.downcase(&1) == "identity"))
+    case codings do
+      [] -> nil
+      list -> Enum.join(list, ", ")
+    end
+  end
 
-        case codings do
-          [] -> nil
-          list -> Enum.join(list, ", ")
-        end
+  # All values for a header. Req represents headers as `%{name => [values]}`, one
+  # element per field line. Separate from `get_header/2` (first-value-wins), which
+  # is shared with `content-type` where a single value is the right reading.
+  defp get_header_values(headers, name) do
+    case headers do
+      %{^name => values} when is_list(values) -> values
+      _ -> []
     end
   end
 
