@@ -20,6 +20,34 @@ defmodule MCP.Transport.StreamableHTTP.Client do
   DELETE on close (SEP-2567). Every POST is self-contained — the per-request
   `_meta` (protocol version, client identity/capabilities) is placed on the
   JSON-RPC message by `MCP.Client`, so any server instance can service it.
+
+  ## Content coding
+
+  The client sets `accept-encoding: identity` (RFC 9110 §12.5.3 — a request's
+  `Accept-Encoding`; `identity` means "no encoding") and **does not decode
+  compressed response bodies**. Automatic decompression in the underlying HTTP
+  library is opt-in and unbounded (a decompression-bomb DoS, `EEF-CVE-2026-49755`),
+  so this SDK declines content coding rather than enabling it. MCP 2026-07-28's
+  Streamable HTTP transport does not specify content coding.
+
+  A response whose `content-encoding` (RFC 9110 §8.4) carries any coding other than
+  `identity` — across all field lines, compared case-insensitively per §8.4.1 — is
+  **failed cleanly** with `{:error, {:unexpected_content_encoding, coding}}`, not
+  mis-decoded. Tolerating a literal `identity` in a response is deliberate leniency:
+  §8.4 says `identity` SHOULD NOT appear in a response's `Content-Encoding`, so a
+  compliant peer never sends it, but accepting it harms nothing. This is a
+  deliberate, documented client limitation, **not** a claim that a compressing peer
+  is non-conformant (honoring `Accept-Encoding` is a §12.5.3 SHOULD, not a MUST).
+  (Bounded decompression as an opt-in is a possible future enhancement.)
+
+  > #### Caller-supplied `accept-encoding` breaks the client {: .warning}
+  >
+  > A `:headers` entry is **appended** to the SDK's own headers, not merged over
+  > them — so `headers: [{"accept-encoding", "gzip"}]` makes the client advertise
+  > `identity, gzip`. A peer that honors it returns `gzip`, which the guard then
+  > refuses to decode, **hard-failing every request**. Do not set `accept-encoding`
+  > in `:headers`. (The security posture is unaffected — the guard still refuses to
+  > decode — so this is a documented constraint, not a decode path.)
   """
 
   use GenServer
@@ -155,21 +183,12 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     case Req.post(state.url, body: body, headers: headers, receive_timeout: 60_000) do
       {:ok, %Req.Response{status: status, headers: resp_headers, body: resp_body}}
       when status in [200, 201] ->
-        content_type = get_content_type(resp_headers)
-
-        cond do
-          String.contains?(content_type, "text/event-stream") ->
-            # Parse SSE events from the response body
-            parse_sse_body(state, resp_body)
-
-          String.contains?(content_type, "application/json") ->
-            # Single JSON response
-            deliver_json_response(state, resp_body)
-
-          true ->
-            Logger.warning("MCP StreamableHTTP Client: unexpected content-type: #{content_type}")
-
-            {:ok, state}
+        # The content-encoding guard sits before the content-type branch, so it
+        # covers the JSON and SSE paths alike (the GET SSE stream is unimplemented;
+        # when added it must reuse this guard).
+        case unexpected_content_encoding(resp_headers) do
+          nil -> deliver_by_content_type(state, resp_headers, resp_body)
+          coding -> reject_content_encoding(coding)
         end
 
       {:ok, %Req.Response{status: 202}} ->
@@ -192,6 +211,11 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     [
       {"content-type", "application/json"},
       {"accept", "application/json, text/event-stream"},
+      # Request no content coding. `identity` is a synonym for "no encoding"
+      # (RFC 9110 §12.5.3); the SDK does not decode compressed response bodies
+      # (req's decompression is opt-in and unbounded — a decompression-bomb DoS,
+      # EEF-CVE-2026-49755), so it declines coding rather than enabling it.
+      {"accept-encoding", "identity"},
       {"mcp-protocol-version", state.protocol_version}
     ] ++ state.extra_headers
   end
@@ -200,12 +224,75 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     get_header(headers, "content-type") || ""
   end
 
+  # Returns the non-`identity` content coding(s) on a response as a string, or
+  # `nil` when the body carries no coding — `content-encoding` absent, empty, or
+  # `identity` (RFC 9110 §8.4 defines the `Content-Encoding` response header;
+  # §8.4.1 makes codings case-insensitive; §5.3 makes multiple field lines
+  # semantically identical to the comma form). It therefore reads **every** value
+  # for the header (not just the first) and flattens the comma form within each —
+  # `identity` and `gzip` on separate lines is the natural applied order and must
+  # be caught exactly like `identity, gzip` on one line.
+  defp unexpected_content_encoding(headers) do
+    codings =
+      headers
+      |> get_header_values("content-encoding")
+      |> Enum.flat_map(&String.split(&1, ","))
+      |> Enum.map(&String.trim/1)
+      |> Enum.reject(&(&1 == "" or String.downcase(&1) == "identity"))
+
+    case codings do
+      [] -> nil
+      list -> Enum.join(list, ", ")
+    end
+  end
+
+  # All values for a header. Req represents headers as `%{name => [values]}`, one
+  # element per field line. Separate from `get_header/2` (first-value-wins), which
+  # is shared with `content-type` where a single value is the right reading.
+  defp get_header_values(headers, name) do
+    case headers do
+      %{^name => values} when is_list(values) -> values
+      _ -> []
+    end
+  end
+
   defp get_header(headers, name) do
     # Req returns headers as a map of %{name => [values]}
     case headers do
       %{^name => [value | _]} -> value
       _ -> nil
     end
+  end
+
+  defp deliver_by_content_type(state, resp_headers, body) do
+    content_type = get_content_type(resp_headers)
+
+    cond do
+      String.contains?(content_type, "text/event-stream") ->
+        # Parse SSE events from the response body
+        parse_sse_body(state, body)
+
+      String.contains?(content_type, "application/json") ->
+        # Single JSON response
+        deliver_json_response(state, body)
+
+      true ->
+        Logger.warning("MCP StreamableHTTP Client: unexpected content-type: #{content_type}")
+        {:ok, state}
+    end
+  end
+
+  # The SDK sends `accept-encoding: identity` (build_headers/1) and does not decode
+  # response bodies. A peer that returns a content coding anyway — permitted but
+  # discouraged by RFC 9110 §12.5.3, a SHOULD not a MUST — is failed cleanly with a
+  # coding-naming error rather than mis-decoded into a confusing `:json_decode_error`.
+  defp reject_content_encoding(coding) do
+    Logger.warning(
+      "MCP StreamableHTTP Client: unexpected content-encoding #{inspect(coding)} " <>
+        "(the SDK sends accept-encoding: identity and does not decode response bodies)"
+    )
+
+    {:error, {:unexpected_content_encoding, coding}}
   end
 
   defp parse_sse_body(state, body) when is_binary(body) do
