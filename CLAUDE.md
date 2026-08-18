@@ -15,6 +15,48 @@ MCP is an open protocol that enables standardized integration between LLM applic
 - `adk_ex` at `/workspace/elixir_code/adk_ex/` — Elixir ADK (Agent Development Kit). Will use `mcp_elixir_sdk` client via an `ADK.Tool.McpToolset` adapter.
 - `adk_ex_ecto` at `/workspace/elixir_code/adk_ex_ecto/` — Ecto-backed sessions for ADK.
 
+## Working Procedure — seat-based (in force from the MES-27 cutover, 2026-08-16)
+
+This project is worked by three **Claude Code CLI seats** — `PM`, `CODE_CREATOR`, `CODE_REVIEWER`
+— running in one container, **sharing this clone** but holding **separate contexts**, executing
+**strict-sequentially** (one ticket in flight). Flow is mediated **PM→CC→PM→CR→PM**; a seat acts on
+a ticket only when the **assignee is its own service account**.
+
+**The canonical procedure lives on Confluence, not here — link, never paraphrase:**
+- MES overrides (binding for this project): [Working Procedure Overrides — MCP_Elixir_SDK (MES) 250052681](https://vidhya-trading.atlassian.net/wiki/spaces/ElixirMCPS/pages/250052681)
+- Wrapper tool contract: [Tool Surface — Comment Tools 195592193](https://vidhya-trading.atlassian.net/wiki/spaces/EMFA/pages/195592193) · [Issue Tools 259391492](https://vidhya-trading.atlassian.net/wiki/spaces/EMFA/pages/259391492)
+- Seat mechanics / baton / commit model: [Active EMFA Workflow Overrides 249659395](https://vidhya-trading.atlassian.net/wiki/spaces/EMFA/pages/249659395)
+
+**All ticket information is on the Jira ticket — no Confluence in-flight pages** (Global Rule #10
+superseded locally by MES **D5**):
+- **Brief** → the ticket **body** (`jira_set_description`, PM-only).
+- **Plan, close-out, review, findings** → ticket **comments**, split per MES **A13** / EMFA
+  Override 6 (~15k chars, each part valid standalone ADF, back-linked to its predecessor).
+- **Turn + baton** → `jira_handoff` (posts the comment **and** sets the assignee in one call).
+  **The assignee is the baton** — never resolve a turn by scanning comment mentions.
+- **Queue** → `jira_my_queue` (`project: "MES"`). **Transitions** → `jira_transition` (PM-only,
+  server-enforced); discover moves with `jira_transitions`, never copy ids. **Terminal unassign**
+  → Rovo, PM-only (no wrapper primitive).
+- Wrapper tools are surfaced under short names via tool-search — search for the name and use the
+  fully-qualified result; never construct it.
+
+**Commits (EMFA Override 9).** Each seat commits under its **own** service-account identity
+(`../wp_scripts/seat_identity.sh` derives `GIT_AUTHOR_*`/`GIT_COMMITTER_*` from `EMFA_${SEAT}_EMAIL`; read a
+commit's author off the commit object, never off `.git/config`). The **PM authors the squash-merge**
+as `Project-Manager` after the merge gate — writing the `mix.exs` version in that commit and
+collecting `Co-authored-by:` trailers for other contributing seats
+(`emfa_coauthor_trailers main..{TICKET_KEY}`). Branches are bare `{TICKET_KEY}` (no slug),
+local-only. Versioning stays **D4** (`2.0.0-dev.N`, one bump per merge) — EMFA's Override 8 is
+**not** adopted here.
+
+**Wrapper wiring.** The wrapper is reached as an MCP server declared in `.mcp.json` (HTTP,
+`${EMFA_WRAPPER_URL}/mcp`, per-seat `Bearer ${EMFA_SEAT_INBOUND}`). Seats are launched by the shared
+harness in the **sibling `../wp_scripts/` repo** (a separate, version-pinned, project-agnostic
+checkout — not vendored here): `../wp_scripts/startup_claude.sh <SEAT>` or the polling
+`../wp_scripts/seat_loop.sh MES <SEAT> claude`. The harness reads no repo files and is consumed
+read-only; pin it by tag (`git -C ../wp_scripts checkout <ver>`; the on-disk version is in
+`../wp_scripts/VERSION`), never edit it in place.
+
 ## Quick Start
 
 ```bash

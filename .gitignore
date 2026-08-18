@@ -11,3 +11,6 @@ mcp_elixir_sdk-*.tar
 /node_modules/
 package.json
 package-lock.json
+.claude
+.mcp.json
+
