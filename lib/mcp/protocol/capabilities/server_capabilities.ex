@@ -12,7 +12,7 @@ defmodule MCP.Protocol.Capabilities.ServerCapabilities do
   }
 
   @derive Jason.Encoder
-  defstruct [:tools, :resources, :prompts, :logging, :completions, :experimental]
+  defstruct [:tools, :resources, :prompts, :logging, :completions, :experimental, :extensions]
 
   @type t :: %__MODULE__{
           tools: ToolCapabilities.t() | nil,
@@ -20,7 +20,8 @@ defmodule MCP.Protocol.Capabilities.ServerCapabilities do
           prompts: PromptCapabilities.t() | nil,
           logging: LoggingCapabilities.t() | nil,
           completions: CompletionCapabilities.t() | nil,
-          experimental: map() | nil
+          experimental: map() | nil,
+          extensions: map() | nil
         }
 
   @spec from_map(map()) :: t()
@@ -31,7 +32,8 @@ defmodule MCP.Protocol.Capabilities.ServerCapabilities do
       prompts: map |> Map.get("prompts") |> parse_cap(PromptCapabilities),
       logging: map |> Map.get("logging") |> parse_cap(LoggingCapabilities),
       completions: map |> Map.get("completions") |> parse_cap(CompletionCapabilities),
-      experimental: Map.get(map, "experimental")
+      experimental: Map.get(map, "experimental"),
+      extensions: Map.get(map, "extensions")
     }
   end
 

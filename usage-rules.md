@@ -219,6 +219,34 @@ end
 
 8. **JSON-RPC 2.0 compliance.** All messages are valid JSON-RPC 2.0. IDs are unique per session, never null.
 
+9. **Extensions (SEP-2133) — this SDK supports none, and that is a behaviour.** The
+   negotiation surface is two optional map fields, one on each capabilities object
+   (`extensions`, schema.ts:785 client / :882 server) — no negotiation message, no handshake,
+   no registry. Do not confuse it with `experimental`: `experimental` is free-form, while
+   `extensions` keys are identifiers that MUST carry a mandatory prefix.
+   - **Supported extensions: none.** The list is empty (SEP-2133:99 asks SDK documentation to
+     state it). The field is **absent** from `server/discover` unless you declare something —
+     absent, not `{}`, because `{}` would claim "I do extensions, none of them".
+   - **A peer offering extensions you do not support is not an error.** `versioning.mdx:121-124`
+     puts the graceful-degradation obligation on the *supporting* party; supporting zero makes
+     you the non-supporting party, so such requests are serviced normally. Do not add a
+     rejection path.
+   - **To declare one you have implemented:** server side, `MCP.Server.Config.build/2`'s
+     `:extensions` option (launch-static); client side, `:extensions` on the
+     `%ClientCapabilities{}` you pass to `MCP.Client` (stamped into every request's `_meta`).
+     `:client_capabilities` takes **that struct and nothing else** — unlike its neighbour
+     `:client_info`, a plain map is not accepted, it is discarded whole with a warning.
+     Both are checked **where you declare them**, at launch: an identifier that violates the
+     naming rules, or settings that would not encode as a JSON object, are dropped, never
+     advertised, and named in a `Logger.warning` — so a typo costs you an unadvertised
+     extension and a log line, never a server that will not start and never a failure at
+     request time. **If you declared an extension and do not see it on the wire, read the
+     warning your server logged at startup.**
+   - **To read a client's declaration in a handler:**
+     `MCP.Protocol.Extensions.from_meta(ctx.meta)` — per request, cached never. These are
+     **self-asserted declarations, never identity**: they say what the peer *supports*, and
+     MUST NOT gate access to anything. Caller identity is `ctx.identity` and nothing else.
+
 ## Common Error Codes
 
 | Code | Meaning |

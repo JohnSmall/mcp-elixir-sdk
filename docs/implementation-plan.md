@@ -64,8 +64,10 @@ git clone https://github.com/modelcontextprotocol/conformance /workspace/samples
   - JSON serialization: `to_map/1` and `from_map/1` for each type (snake_case internal, camelCase wire)
 
 - [x] **1.4** Define capability structs (`lib/mcp/protocol/capabilities/`)
-  - `MCP.Protocol.Capabilities.ServerCapabilities` — tools, resources, prompts, logging, completions, experimental
-  - `MCP.Protocol.Capabilities.ClientCapabilities` — roots, sampling, elicitation, experimental
+  - `MCP.Protocol.Capabilities.ServerCapabilities` — tools, resources, prompts, logging, completions, experimental, extensions
+  - `MCP.Protocol.Capabilities.ClientCapabilities` — roots, sampling, elicitation, experimental, extensions
+  - `extensions` (SEP-2133) added under MES-16; it is a **different field** from `experimental`
+    and carries a mandatory-prefix naming rule. This SDK supports zero extensions.
   - Each sub-capability as a nested map (e.g., tools: %{listChanged: true})
   - `to_map/1` and `from_map/1` for wire format
 

@@ -1278,3 +1278,482 @@ per the PM's fence:** cleanup against process kill (needs a monitor); the h2 cav
 `supported_subscriptions/0` input validation; `architecture.md` and the MES-9 drift in
 `usage-rules.md` (MES-30); the non-map-body 500 (MES-31).
 **Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+---
+
+## MES-16 — Extensions negotiation surface (SEP-2133), negotiation only, zero extensions (2026-08-19)
+
+Epic MES-22. Gap register **J1**. Scope contract: ADR-003 sub-decisions 1 and 2 — the
+*negotiation surface* is core and in; specific extensions (Tasks SEP-2663, MCP Apps) are
+extension-track and out. All citations below are to the published-final `2026-07-28` schema at
+commit `5f5440bb26a62e2cf3440b92da5a667efa03b267` (`schema/2026-07-28/schema.ts`, md5
+`48a009165e07f6732e38baf91291de87`) and to spec pages at the same pin — never to the ticket brief.
+
+### Decision/Finding: D-1 — SEP-2133 is stale on the envelope; the schema is not, and the mapping is written upstream
+
+**Description:** `seps/2133-extensions.md:121`/`:150` describe advertising extensions in the
+`initialize` request/response, with worked examples carrying `"protocolVersion": "2025-06-18"` — a
+handshake SEP-2575 removed in the revision we target. A future reader hits the SEP first, so the
+divergence is recorded rather than left to be re-discovered.
+
+| | SEP-2133 (stale) | Schema + versioned spec at the pin (normative) |
+|---|---|---|
+| client declares | `:121`, in the `initialize` request | per request in `_meta["io.modelcontextprotocol/clientCapabilities"]` — `schema.ts:91-98`, Required, *"Servers MUST NOT infer capabilities from prior requests"*; `docs/extensions/overview.mdx:120` |
+| server declares | `:150`, in the `initialize` response | in the `server/discover` result's `capabilities` — `schema.ts:678-687`; `docs/extensions/overview.mdx:152` |
+| the field itself | `:117` map of identifier → settings; `:26` mandatory prefix | `extensions?: { [key: string]: JSONObject }` — `schema.ts:785` (client), `:882` (server). **Agrees with the SEP.** |
+
+**The divergence is confined to the envelope the map rides in.** The map's own shape and naming
+rules are identical in both texts, which is why this is a recording obligation and not a design
+fork. **Resolution:** implement the schema, leave the SEP alone, record both citations.
+
+**And the mapping was already written down upstream** — `docs/extensions/overview.mdx:114-179`
+("Negotiation"), with current `2026-07-28` examples, plus `schema.ts:91-98` stating the
+replacement mechanism normatively. The brief framed writing it as the first deliverable; it was
+"record and cite", not "invent" (see C-2). The risk the brief named — building against a handshake
+that does not exist — was retired by upstream text rather than by our inference.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Finding: C-1, C-2, C-3 — three PM-brief claims did not survive, and the method is the finding
+
+**Description:** The `/plan` re-derived every citation instead of trusting the brief, and three
+claims failed. The PM verified all three independently and amended the ticket body before
+implementation. **The facts matter less than what they have in common.**
+
+**All three were NEGATIVE claims — "there is no X", "nobody has written Y", "Z never reaches W" —
+and each was stated at the width of the *topic* but checked at the width of a *grep* (A2c).
+A2d's own extension says negative results are exactly where enumeration gets dropped.**
+
+- **C-1** — brief: *"there is no versioned spec page for extensions at the pin."* False.
+  `docs/specification/2026-07-28/basic/versioning.mdx:80-124` is a section headed **Extension
+  Negotiation** carrying RFC-2119 MUSTs — the mandatory-prefix MUST at `:86-87`, the
+  graceful-degradation MUST at `:121-124`. **The method error: filenames were enumerated and a
+  conclusion was drawn about coverage. A section inside a differently-named page is invisible to
+  that check.**
+- **C-2** — brief: *"nobody has written that mapping down."* False, and written in a file the
+  brief's author had already downloaded and read: `schema.ts:91-98`. **The method error: the file
+  was grepped for "extension", which found the two fields and never reached `RequestMetaObject`.
+  A grep answers the question you typed, not the question you have.**
+- **C-3** — brief: *"the `%Meta{}` never reaches `ToolContext` and never reaches a handler."* Half
+  true, and the load-bearing half false. True: the parsed `%Meta{}` struct is built at
+  `dispatch.ex:146`, used only for the version gate, discarded. **False: that the data is
+  dropped.** The raw `_meta` map travels a second path and reaches every identity-capable callback
+  as `ctx.meta` — `tool_context.ex:84` (typed `map() | nil`), populated at `plug.ex:396` and
+  `connection.ex:133,210`. **The method error: "the parsed struct is discarded" was read as "the
+  data is dropped"; two different objects, one conclusion.**
+
+**Consequence:** all three made the ticket *smaller*. C-2 turned the first deliverable from invent
+into cite; C-3 removed the threading change entirely, and with it any new MC-4 adjudication — the
+client-composed channel beside `ctx.identity` already existed and was accepted when `ctx.meta` was
+added. The useful sentence for a later reader is not "the brief was wrong about a spec page"; it
+is **"a filename enumeration cannot answer a coverage question, and a negative claim is only as
+wide as the check that produced it."**
+**Priority Hint:** high (method, reusable) · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Finding: F-2 — no conformance scenario exercises extensions negotiation, and MES-19's J1 claim rests entirely on this ticket's tests
+
+**Description:** Measured first-hand rather than inherited from MES-13.
+`@modelcontextprotocol/conformance@0.2.0-alpha.10`, `list --spec-version 2026-07-28` returns **74**
+scenarios: **40 server**, **32 client** (25 `auth/*` + 7 core), **2 authorization-server**. This
+reproduces `sprint_4_issues.md:47-52` exactly. **Zero of the 74 exercise extensions negotiation** —
+no scenario name in the 74 contains "extension" or "negotiat" at all, and the only near-match by
+name is `input-required-result-capability-check`, which is MRTR (SEP-2322), not SEP-2133.
+
+**Why that negative is true for our scope rather than true by luck.** The nearest real match is
+`tasks-capability-negotiation`, which *does* negotiate through the `extensions` map — it is the
+only scenario in the whole 106-scenario catalogue whose name mentions negotiation. It is tagged
+**`[extension]`**, not `[2026-07-28]`, so it is outside the 74; and passing it requires
+implementing Tasks, which is out per ADR-003 #2. Left unstated, "no extensions-negotiation
+scenarios" would read as "the harness has no interest in this", when the truth is "the harness
+tests it only behind an extension we deliberately do not implement".
+
+**Consequence:** MES-19's J1 evidence rests **entirely** on the tests written under this ticket. No
+external suite corroborates it, and no future harness run will, unless Tasks comes into scope.
+**Priority Hint:** high (MES-19 input) · **Blocking?:** No · **Suggested Jira Ticket?:** No (MES-19 owns it)
+
+### Correction (A2d): the "16 Tasks-extension scenarios" count at `sprint_4_issues.md:52` is superseded
+
+**Description:** Appended rather than edited in place, per the file's role as the permanent record.
+**`docs/sprint_4_issues.md:52` (MES-13's alpha entry) says "16 Tasks-extension … scenarios". The
+count of 16 is right; the attribution is not.** The 16 `[extension]`-tagged scenarios are
+**10 `tasks-*` plus 6 `auth/*`**, enumerated:
+
+- `tasks-*` (10): `tasks-lifecycle`, `tasks-capability-negotiation`, `tasks-wire-fields`,
+  `tasks-request-state-removal`, `tasks-mrtr-input`, `tasks-request-headers`,
+  `tasks-dispatch-and-envelope`, `tasks-status-notifications`, `tasks-required-task-error`,
+  `tasks-mrtr-composition`.
+- `auth/*` (6): `auth/client-credentials-jwt`, `auth/client-credentials-basic`,
+  `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`.
+
+Six of the 16 are therefore **authorization**-track (out per ADR-003 #3), not Tasks (out per
+ADR-003 #2). Both are out of scope, so nothing downstream changes — which is exactly why an
+un-enumerated count survives unchallenged.
+
+**Second precision point, discovered while re-measuring.** MES-13 recorded `extension` as a valid
+`--spec-version` value in 0.1.16. **It is not valid in 0.2.0-alpha.10:** `list --spec-version
+extension` returns *"Unknown spec version: extension. Valid versions: 2025-03-26, 2025-06-18,
+2025-11-25, 2026-07-28 (or 'draft' as an alias for 2026-07-28)"*. The `[extension]` tag still
+appears in the bare `list` output, so the 16 are discovered there and are **not** selectable as a
+spec version. Anyone reproducing this count with the 0.1.16 invocation will get an error, not a
+smaller number.
+**Priority Hint:** low · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Decision: validation is enforced OUTBOUND and deliberately NOT enforced INBOUND
+
+**Description:** `MCP.Protocol.Extensions` implements the key rules from `schema.ts:39-49`
+(`valid_meta_key?/1`, the general rule with an optional prefix) and `schema.ts:779-780`/`:876-877`
+(`valid_identifier?/1` = the general rule **plus** a mandatory prefix — the one place an extension
+identifier is stricter than a `_meta` key generally).
+
+- **Outbound** (`normalise/1`, on our own declarations at `MCP.Server.Config.build/2` and
+  `MCP.Client`'s `:client_capabilities`) — invalid identifiers and non-object settings are
+  **dropped**, and an empty result becomes `nil`, i.e. **absent** from the wire rather than `{}`.
+  This follows `Subscriptions.normalise/1`'s unknown-key posture rather than establishing a second
+  convention: a declaration that cannot be honoured, dropped, leaves a wire that tells the truth.
+- **Inbound** (`from_meta/1`, reading a peer's declarations) — **not validated, and never an
+  error.** Two reasons, both cited. `versioning.mdx:121-124` puts the graceful-degradation
+  obligation on the **supporting** party, and we support zero, so rejecting would be over-building
+  against the spec. And silently rewriting a peer's claim would misreport what the peer said. A
+  shape guard only (non-object → `%{}`), so a handler is never handed a crash; a key we would
+  refuse to emit still reaches the handler verbatim.
+
+**Reserved prefixes (`schema.ts:45`) are classified, never blocked, in either direction.**
+Declaring support for an *official* extension **is** a reserved-prefix identifier —
+`io.modelcontextprotocol/tasks` is the schema's own `ServerCapabilities` example — and on the wire
+that is indistinguishable from inventing a private extension under a reserved prefix. The
+reservation governs who may **define** an identifier, not who may **declare support for** one, so a
+block would break the common legitimate case and a warning would fire on it every time.
+`reserved_prefix?/1` ships as a documented predicate the SDK itself does not act on.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Decision: zero-by-default is structural, and the two lifetimes are kept apart by shape
+
+**Description:** `seps/2133-extensions.md:99` requires extensions to be "disabled by default and
+require explicit opt-in". Met by construction, not by a default value someone can forget:
+`Config.detect_capabilities/2` never sets the field (extension support is **declared, never
+detected** — there is nothing in a handler's shape to infer it from), and the nil-dropping
+capability encoders make absence automatic. This is the same absent-not-false convention MES-15
+established for undeliverable capabilities.
+
+**The two lifetimes are different and the API does not imply otherwise.** The server's set is a
+`build/2` key beside `:instructions` and `:server_info` — unmistakably launch-static, frozen at
+`init/1`, which is honest because a server's supported set does not vary per request. The client's
+is read through `from_meta/1`, whose *argument* is that request's `ctx.meta`; nothing is cached
+between requests, so `schema.ts:96` ("Servers MUST NOT infer capabilities from prior requests")
+holds by shape rather than by discipline. **No config-lifetime change was made, so there is nothing
+to report under that heading.**
+**Priority Hint:** low · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Decision: `extensions` is not `experimental`, and the handler-visible read is not identity
+
+**Description:** `experimental` (`schema.ts:720` client / `:797` server) is free-form
+"experimental, non-standard capabilities"; `extensions` (`:785`/`:882`) carries SEP-2133
+identifiers with a mandatory prefix. `experimental` was already a field on both structs, parsed
+inbound and never emitted, so reusing it would have looked like tidiness and been wrong. They are
+separate fields, separate parse lines, separate wire keys, proved 2×2 (encode and decode × both
+capability objects) with each test asserting the value lands under its own key **and** refuting its
+appearance under the other.
+
+**`from_meta/1` creates no new client-controlled channel** — `ctx.meta` already carried the raw
+client `_meta` (C-3), so MC-1…MC-7 are satisfied without adaptation and no new MC-4 adjudication
+arises. **The hazard the PM's item 6 pointed at survives its own false premise, and is addressed
+anyway:** a handler author who has just learned to read client capability data off the context is
+one step from gating access on it. The accessor's `@doc` therefore opens with the rule rather than
+burying it — extension declarations are client-composed and self-asserted, they say what a peer
+*supports* and never who it *is*, and they MUST NOT gate access to anything; caller identity is
+`ctx.identity` alone. Anchored to `schema.ts:85-88`'s own warning that self-reported `clientInfo`
+is "not verified by the protocol" and servers "SHOULD NOT rely on it for security decisions", so it
+is the spec's stance and not a house rule. A test asserts a client declaration shaped to look like
+identity cannot influence `ctx.identity`.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Correction (A2a): two doc sites enumerated the capability fields without `extensions`
+
+**Description:** `docs/prd.md:146-147` (§5.2 Capability Types) and
+`docs/implementation-plan.md:67-68` (task 1.4) both listed the server and client capability fields
+and omitted `extensions` — pre-`2026-07-28` lists. Corrected in place (they are living
+specifications rather than a permanent record, unlike this file), each noting that `extensions` is
+a different field from `experimental` and that this SDK supports zero. `usage-rules.md` gains the
+supported-extensions list SEP-2133:99 asks for; **the list is empty, and saying so is the point.**
+**Priority Hint:** low · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Finding: F-1 — an oversized request body crashes instead of being refused (owner: MES-31)
+
+**Description:** Surfaced while adjudicating "untrusted, unbounded input". `plug.ex:320` calls
+`Plug.Conn.read_body(conn)` with no options inside a `with` chain whose `else` (`:327-369`) has
+five clauses, all 2-tuples beginning `:error`. `read_body/2` returns `{:more, partial, conn}` when
+the body exceeds its `:length` (Plug's default, 8 MB); that 3-tuple matches no clause, so the
+`with` raises `WithClauseError` — a 500 where a clean 413 or `-32600` belongs. The bound is 8 MB,
+inherited from Plug rather than chosen, and exceeding it fails loudly in the wrong way.
+
+**Confidence, carried verbatim:** established by reading the code and Plug's documented return
+contract; **not demonstrated with a failing test**, so it is reported as a defect to confirm, not
+one confirmed. It does not block MES-16 — this ticket adds **no retention**: `from_meta/1` reads
+through `ctx.meta` and copies nothing, so the answer to "does storing extension data change the
+bound?" is **no**. **Owner: MES-31**, ruled by the PM — the same class as its existing two (non-map
+body, `plug.ex:310`; by-position params, `:396`), all three on `handle_post/2`'s entry path, each
+found by a question about something else. MES-31's DoD owes the demonstration.
+**Priority Hint:** low · **Blocking?:** No · **Suggested Jira Ticket?:** MES-31 (recorded)
+
+### Mechanics: A7 in its own words, and one deviation from the ratified plan
+
+**A7 — every test written here is a positive control, and not one is a caught regression.** A
+regression test earns its name by failing at a pre-fix SHA. None of these can: "extension" occurred
+**zero** times in `lib/`, `test/` and `conformance/` before this ticket (re-counted, not inherited).
+This is entirely new surface, so there is no pre-fix behaviour to regress from, and **none of them
+is described as a caught regression anywhere.**
+
+The assertions most flattering to themselves — the absence assertions (T1, T2) and the no-error
+assertions (T10, T11) — pass trivially against a codebase that does nothing. Each was therefore
+demonstrated **red against a deliberately-wrong fixture at the pre-code SHA**, in a scratch file
+run before any `lib/` change existed and deleted afterwards: 6 controls, 6 failures, covering the
+absence assertion against a present key and against a present-and-empty key, the no-error assertion
+against a genuinely erroring `tools/call` and `tools/list`, the extensions/experimental separation
+assertion against a value planted under `experimental`, and the client-side omission assertion
+against a declared key. The presence halves are kept permanently in the suite (T3, T4, the
+2×2), so each trivially-passing assertion has a live counterpart that would go red if the
+implementation stopped discriminating.
+
+**Deviation from the ratified plan, reported rather than absorbed:** the plan's file list named
+`config.ex` but not `client.ex` for outbound validation. Outbound normalisation is applied on
+**both** sides — `MCP.Client.init/1` normalises the consumer-supplied
+`%ClientCapabilities{}.extensions` exactly as `Config.build/2` does the server's. D-4 states the
+guarantee as "our own declarations are validated"; applying it to one direction only would have
+left the guarantee false on the other, which is the over-claim class this project treats as a
+defect. Also: `from_meta/1` is typed `%{optional(String.t()) => term()}` rather than the plan's
+`=> map()`, because inbound data is deliberately **not** validated — typing the values as objects
+would claim a bound the function does not enforce.
+
+**Sizing, as reported before implementation and as it turned out:** smaller than briefed, and it
+stayed smaller. One new module, ~11 lines across four existing files, and **no changes to
+`dispatch.ex`, `plug.ex`, `connection.ex` or `tool_context.ex`** — no threading change, no
+config-lifetime change, no new handler-visible channel, no new error path, no transport change.
+`-32021 MissingRequiredClientCapability` (`error.ex:101-107`) still has zero call sites and, per
+the graceful-degradation ruling, should keep them.
+
+**Gates.** All six run individually after the last change; gate 6 as the two-step 6a+6b procedure,
+never bare; `mix hex --version` = 2.5.1, at the floor. Branch `MES-16` under the CC service
+identity. No version bump and no tag — still `2.0.0-dev.4` on `main`; `2.0.0-dev.5` is the PM's to
+write in the squash-merge.
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### MES-16 correction round 1 (P1–P6, 2026-08-19) — CC/CODE_CREATOR
+
+Review verdict BLOCKING on R-1; the PM accepted the finding and issued a frozen six-item contract
+(P1–P6, comment 24426) with P1 as the blocker and P2–P6 riding along because they are the same
+files open once. Everything below is at the round-1 tip, on top of `29046c1`, which is **not**
+amended — the re-review needs to see the delta.
+
+**The lesson worth keeping, because it is not about regexes.** R-1 was found by probing the
+identifier strings **between** the schema's worked examples — the region where neither the
+implementation nor its tests had to think, because both were derived from the same five strings.
+**A test suite built from the spec's own examples inherits the spec's blind spots**, and it does so
+invisibly: the suite was green, comprehensive-looking, and could not tell a working validator from
+a leaky one. The reviewer's mutation run (MUT-C) is the measurement of that — breaking
+`normalise/1` so it stopped dropping invalid identifiers turned 7 tests red, but making it accept a
+trailing newline turned **none** red. The generalisation for later tickets: when a validator is
+written from a spec's examples, the cases worth writing are the ones the spec never wrote down.
+
+**P1 (blocking) — `^…$` accepted a trailing newline, so a MUST-violating identifier reached the
+wire.** In PCRE `$` also matches immediately before a final `\n`, so `@prefix_regex` and
+`@name_regex` (`extensions.ex:114`, `:120` at `29046c1`) admitted a `\n` at the end of either
+segment. `valid_identifier?("io.example/tasks\n")` was `true`, `normalise/1` passed it through, and
+`server/discover` advertised `{"extensions":{"io.example/tasks\n":{}}}` — against schema.ts:48-49,
+"MUST start and end with an alphanumeric character". Only `\n` slipped through (`\r` was already
+refused), which is the tell that the fault was the **anchor** and not the character class. Fixed by
+anchoring both patterns `\A … \z`, which match only at the true ends of the string.
+
+Two things make this worth blocking on an input nobody types. First, the module's own moduledoc
+says `normalise/1` *"is the only point at which the SDK could help a consumer emit a key that
+violates a MUST"* — an **absolute** claim, false for this class, in the one function the whole
+ticket exists to provide; that is the over-claim class this project logs as a defect. Second it
+compounds: `valid_meta_key?/1` ships explicitly as *"the primitive"* for a later ticket to wire into
+general `_meta` handling, where the input is **peer**-controlled rather than consumer-controlled. A
+leaky primitive left in place now is a leaky validator on hostile input later, and the seam was
+deliberate, so the fix belongs with the seam.
+
+Closed in the same window: **`valid_meta_key?("") == true`**. schema.ts:48's *"unless empty"*
+licenses an empty **name** after a prefix (`"com.example/"` is a valid key, and stays one); it does
+not license a key that is empty in its entirety, which has no prefix and no name. Unreachable for
+extensions today — `valid_identifier?("")` was already `false` for want of a slash — but it is in
+the same advertised primitive.
+
+**A7b — the new cases demonstrated red against the unfixed regexes.** With the tests in place and
+only the two anchors and the `[""]` clause reverted: **3 failures**, exactly one per new case, each
+failing on the newline/empty assertion while the `\r` control in the same test passed. That last
+detail is the discriminating part: a fix that had merely widened a character class would have
+turned the `\r` control red too. Restored, suite green.
+
+**P2 — R-2 + R-3 ruled together as one property: nothing a consumer puts in `:extensions` may fail
+later than the call that normalises it.** Two failures of that property existed. (a) A settings
+value that is a map but not a **JSON object** (`%{"t" => {1, 2}}`) survived `is_map/1`, was
+advertised, and then raised `Protocol.UndefinedError` out of Jason on **every** `server/discover`,
+forever — a launch-time mistake surfacing at an unrelated place and time, to someone who cannot fix
+it. (b) A **struct** passed as the whole `:extensions` value passed `is_map/1` and raised out of the
+`for` comprehension inside `Config.build/2` itself, because a struct has no `Enumerable`.
+
+One posture now covers all of it — **drop, warn, never raise, never defer**: a malformed identifier,
+an unencodable settings value, and a wrong-shaped `:extensions` value are each dropped and named in
+a `Logger.warning` carrying the identifier, the reason, **and the seam** (`MCP.Server.Config.build/2
+:extensions` or `MCP.Client.start_link/1 :client_capabilities`). Not raising is deliberate: raising
+would turn a typo in one identifier into a server that will not start. Dropping keeps the wire
+truthful, which is what D-4 promised; the warning supplies the diagnosability that dropping alone
+loses — the difference between a five-minute and a five-hour diagnosis of "my server never
+advertises the extension I implemented".
+
+Objecthood is now decided by **the encoder that will actually have to do it** — `is_map/1` **and**
+`Jason.encode/1` returning `{:ok, _}` — rather than by `is_map/1` alone. Verified while choosing the
+mechanism: `Jason.encode/1` **returns** `{:error, %Protocol.UndefinedError{}}` rather than raising,
+for tuples, pids and structs with no encoder, nested and top-level alike, so the predicate is total
+on any term and needs no `rescue`. **Corrected in round 2 (R-7): this did NOT make the module doc
+claim true — it made it true of the *un*encodable half only.** "Encodes" and "is an object" are
+different properties and the predicate checked the wrong one; the claim was made true in round 2,
+by checking the encoding rather than the type. The round-1 sentence claiming otherwise is the
+over-claim class this project logs as a defect, committed in the entry recording a fix for it. **This is also where the `Subscriptions` precedent stops transferring** (R-3, answering
+CC's own round-0 question): a *peer's* malformed key has no channel back to whoever made it, so
+dropping silently is the only truthful option there; a *consumer's* declaration is launch config in
+a process the consumer is starting, so there **is** a channel, and using it is obligatory.
+
+**P3 — R-4: the empty/absent collapse is inbound, deliberate, and now stated.** Outbound the module
+is emphatic that `%{}` and absent are different claims; `from_meta/1` collapses them, and a peer
+sending `"extensions": {}`, a peer omitting the key, and a peer sending something malformed all
+read as `%{}`. The collapse is kept — we support zero, so all three are peers whose extensions we do
+not support, and distinguishing them would be complexity with no consumer — but a reader told forty
+lines earlier that the distinction carries meaning is entitled to know it is dropped on the way back
+in. Said on `from_meta/1`, and the missing `{}` half is now asserted beside the omission half.
+
+**P4 — R-6: a test name that asserted a property its assertion did not test.** `test "T10 — the
+result is byte-identical …"` compares two **decoded** Elixir maps with `==`; nothing on that path is
+serialised and map equality is key-order-insensitive, so it is not a byte comparison and could not
+be one. In a project that logs over-claims as defects, that is the same error in miniature. Renamed
+to "identical to"; the substance was sound and is unchanged (the reviewer confirmed independently
+that it can discriminate — the two calls differ in `ctx.meta`, and the compared value is a whole
+JSON-RPC response).
+
+**P5 — R-5: the CHANGELOG entry, an open gap rather than a deviation.** CC asked whether to add one
+and the PM's "yes" post-dated the close-out by five minutes. Added as an *Added* bullet under
+`## [Unreleased]`, naming `MCP.Protocol.Extensions` and both options. The file's own defer-to-release
+convention is overridden **with the reason recorded in the file**: that convention was written for
+internal changes, and this ticket adds **public API**, which is precisely what a consumer scans a
+CHANGELOG for.
+
+**P6 — the two silent decisions in the reserved classifier, now stated.** The reviewer probed
+between the schema's worked examples and found no defect but two undecided corners.
+`io.ModelContextProtocol/tasks` is **not** classified reserved: schema.ts:45 is silent on case and
+reverse-DNS labels are conventionally case-insensitive, so the other reading is available. A
+**single-label** prefix (`mcp/thing`) is not reserved either: :45 is written about the *second*
+label, and a rule about a label that is not there does not fire. Behaviour is **unchanged** — the
+SDK never acts on the predicate — but it ships for consumers to make their own judgement with, and
+this is the answer they get, so both are now on `reserved_prefix?/1` and the case decision is pinned
+by a test so the doc cannot drift from it.
+
+**Test delta, per item (A2d).** 12 new tests, plus 7 new assertions inside 2 existing tests: P1 —
+3 newline assertions in *label rules*, 4 in *name rules*, 1 new empty-string test (3 red pre-fix);
+P2 — 5 new tests (2 unit drop cases, warning-content, warning-silence, plus the client-seam
+"unencodable value never reaches the wire") and 4 new end-to-end tests in
+`extensions_negotiation_test.exs` asserting the property as `Jason.encode!/1` over a real
+`server/discover` response; P3 — 1 new test; P6 — 1 new test. Two existing files gained
+`@moduletag :capture_log` because the drop-and-warn posture makes deliberately-bad fixtures log by
+design.
+
+**Priority Hint:** high · **Blocking?:** No (closes the blocker) · **Suggested Jira Ticket?:** No
+
+### MES-16 correction round 2 (Q1–Q5, 2026-08-19) — CC/CODE_CREATOR
+
+Re-review verdict BLOCKING on two: **R-7**, a defect the PM found in round 1's own P2 fix, and
+**R-8**, the reviewer working PM item 3 and answering it yes. The PM issued a frozen five-item
+contract (Q1–Q5, comment 24430) with a ruling on the R-8 repair. Third commit on `MES-16`; neither
+`29046c1` nor `57d49a0` amended.
+
+**The lesson, and it now has three instances rather than one.** R-1, R-7 and R-8 are the **same
+defect**: a guarantee stated at the width of the *intent* and checked at the width of a *proxy for
+it*. An **anchor** stood in for "the whole string" (R-1); **encodability** stood in for
+"is a JSON object" (R-7); a **struct pattern** stood in for "the value a consumer passed" (R-8).
+Each proxy is correct on the cases anyone had thought to write down and comes apart just outside
+them. What makes it actionable rather than a slogan is the measurement, and it is the same in all
+three: **the full suite stayed green with the fix applied** — MUT-C for R-1, the reviewer's
+`362 tests, 0 failures` under the corrected predicate for R-7, and for R-8 the 27 pre-existing
+client tests that were green *with* the bypass and are green without it. "Tests pass" did not discriminate *once* across three defects in one ticket. A suite
+written from the failure modes already named cannot see the next one; the case that discriminates
+has to be written deliberately, and each of these three was found by a human reading the predicate
+against the property, not by running anything.
+
+**Q1 / R-7 (blocking) — encodability is not objecthood, and the gap is reachable from stdlib.**
+`json_object?/1` asked `is_map/1` **and** "does `Jason.encode/1` return `{:ok, _}`?" and called the
+answer "is it a JSON object?". Those come apart on any struct whose encoder emits a non-object, and
+it takes **no custom `Jason.Encoder`** to reach one: `Jason.encode(~D[2026-08-19])` is
+`{:ok, "\"2026-08-19\""}`, a JSON **string**, and `%Time{}`, `%NaiveDateTime{}` and `%DateTime{}`
+behave identically. Such a value was KEPT and advertised — `{"com.example/date":"2026-08-19"}` on
+the server seam and inside `_meta` on the client seam — against schema.ts:785/:882, which type the
+field `{ [key: string]: JSONObject }` (`JSONObject` at :12). Fixed by checking the **encoding**
+rather than the type: `match?({:ok, "{" <> _rest}, Jason.encode(settings))`. Narrowing the doc claim
+instead was available and was rejected by the reviewer and the PM for the right reason — it would
+have made the prose honest and left the SDK putting a schema-violating value on the wire at the one
+seam whose stated job is to stop that. **The asymmetry the round-1 entry argued for survives**: a
+struct that *derives* `Jason.Encoder` encodes to `{…}`, so it really is a JSON object and is still
+kept. That is now a test, so "drop non-objects" cannot quietly become "drop every struct" — a rule
+about Elixir types rather than about JSON.
+
+**Q2 / R-8 (blocking) — the guarantee had a door round the side of the code implementing it.**
+`normalise_extensions/1` matched `%ClientCapabilities{}` and passed **everything else** through
+untouched (`client.ex:508`), into state and then into `encode/1` on every request. Both halves of
+round 1's property failed there, and both were driven end to end rather than read: a plain map
+`%{"extensions" => %{"no-prefix" => %{}}}` put a MUST-violating identifier on the wire with no drop
+and no warning (R-1's class), and `%{"extensions" => %{"com.example/x" => %{"t" => {1,2}}}}` let
+`start_link/1` return `{:ok, pid}` and then killed the client with `Protocol.UndefinedError` on its
+**first** request (R-2's class — the deferred failure the whole property exists to rule out).
+
+The trap is that **the neighbouring option invites the input**: `:client_info` accepts
+`%Implementation{}` *or* a plain map and converts it, and `build_client_info/1` sits eleven lines
+from the pass-through in the same `init/1` literal. Mirroring that leniency was the tempting repair
+and the PM ruled against it: `%Implementation{}` has two fields a map can supply in full, while
+`%ClientCapabilities{}` has five, so a conversion keeping the keys it recognised would trade a known
+loud failure for a **fresh silent drop** — the exact class this ticket has spent two rounds closing.
+Ruling taken as issued: **discard the whole value, warn naming what was lost, fall back to
+`%ClientCapabilities{}`** — drop/warn/never raise/never defer, one level up from
+`Extensions.normalise/2`. The latitude to convert instead was conditional on the conversion being
+total, and `ClientCapabilities.from_map/1` is not: it reads string keys only and keeps just the five
+it knows. The asymmetry with `:client_info` is now documented on the option itself and in
+`usage-rules.md`, because an undocumented asymmetry *is* the trap.
+
+**Q3 — the seven false absolutes, re-read after the fixes rather than re-worded.** The reviewer
+swept twelve doc absolutes and found seven false, every one of them falsified by R-7 or R-8 rather
+than by a third thing. All seven now hold with the code fixed: `extensions.ex:76` ("the only point",
+= R-9, which needed no separate work), `:82-89` ("nothing may fail later" / "everything is checked
+here"), `:74-75` ("settings values that would not encode as a JSON object"), `usage-rules.md` item 9
+("never a failure at request time"), the CHANGELOG *Added* bullet, and this file's round-1 claim
+(corrected in place above). One was **not** repaired by the code and had to be rewritten:
+`extensions.ex:275-278` said the settings value is "a map that `Jason.encode/1` can encode — *i.e.*
+it really will be a JSON object", and **that "i.e." is the defect itself**, the false inference
+written into the documentation. It now states the check (the encoding begins with `{`) and both
+ways a value can fail it, rather than the consequence someone hoped the check had.
+
+**Q4 — R-10, R-11, R-12.** R-10: 500 dropped declarations made a single **42,004-byte** log line,
+the bulk being one reason string repeated per entry. Now grouped by reason and capped at 10 named
+identifiers per reason — and **the line says how many it elided**, because a truncated list that
+does not admit it truncated is the silent-drop class wearing a different hat (measured: the same 500
+now produce a **341-byte** line ending `(+490 more, not listed)`). R-11: the `Enum.reverse/1`
+restored the order of a reduce over a **map**, whose iteration order is arbitrary — the reviewer's
+1..500 run came out starting at `bad-127` — so it was restoring an order that never existed.
+Replaced with a sort, which is an order the code can actually promise, and pinned by a test. R-12:
+the empty-string decision was attributed to schema.ts:48 as though the schema settled it. It does
+not — read literally, prefix-optional plus "unless empty" licenses `""` as much as it licenses
+`"com.example/"`. **Refusing `""` is an interpretive narrowing we chose**, and the honest ground is
+the reasoning already on the code: there is nothing there to name anything. Behaviour unchanged in
+all three.
+
+**A7b — each fix demonstrated red against exactly its own pre-fix mechanism, one at a time.**
+Three separate runs, each reverting one mechanism with all the tests and the other two fixes in
+place: the predicate → **2 failures**, both new R-7 cases (module-level and end-to-end), nothing
+else; the client catch-all → **2 failures**, both new R-8 cases, the second one by the linked client
+process actually dying, which is the defect rather than an assertion about it; `warn_dropped/2` →
+**2 failures**, the cap test and the ordering test. The struct-derives-`Jason.Encoder` control
+stayed green in the first run, which is what distinguishes "the check got tighter" from "the check
+started banning structs".
+
+**Test delta (A2d).** 362 → 369 (+7), 0 failures: R-7 — 1 unit drop test (4 stdlib date/time
+structs), 1 kept-struct control, 1 end-to-end `server/discover` test asserting every advertised
+settings value is an object after a real `Jason` round trip; R-8 — 2 client tests (the identifier
+that must not reach the wire + the warning naming the discard; the first request that must not kill
+the client); R-10/R-11 — 1 cap test, 1 ordering test.
+
+**Priority Hint:** high · **Blocking?:** No (closes both blockers) · **Suggested Jira Ticket?:** No

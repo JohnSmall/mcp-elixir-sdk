@@ -143,8 +143,15 @@ The ADK integration is a thin adapter: `ADK.Tool.McpToolset` wraps `MCP.Client` 
 
 | Side | Capabilities |
 |------|-------------|
-| Server | tools, resources, prompts, logging, completions, experimental |
-| Client | roots, sampling, elicitation, experimental |
+| Server | tools, resources, prompts, logging, completions, experimental, extensions |
+| Client | roots, sampling, elicitation, experimental, extensions |
+
+`extensions` (SEP-2133, schema.ts:785 client / :882 server) is **not** `experimental`.
+`experimental` is free-form; `extensions` keys are extension identifiers that MUST carry a
+mandatory prefix. This SDK implements **no extension** — the field exists so the negotiation
+surface is handled correctly while supporting zero, and so a consumer can declare an extension
+it has implemented itself. See `MCP.Protocol.Extensions`. (Corrected under MES-16: this table
+predated `2026-07-28` and omitted `extensions` on both sides.)
 
 ### 5.3 Sampling Types
 

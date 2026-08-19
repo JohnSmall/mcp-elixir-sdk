@@ -32,7 +32,19 @@ defmodule MCP.Client do
 
     * `:transport` — `{module, opts}` transport spec (started here, owner = self)
     * `:client_info` — `%Implementation{}` or `%{name:, version:}`
-    * `:client_capabilities` — `%ClientCapabilities{}` (advertised in `_meta`)
+    * `:client_capabilities` — a `%ClientCapabilities{}` (advertised in
+      `_meta`), and **only** that struct. Note the asymmetry with its
+      neighbour `:client_info`, which also accepts a plain map: anything here
+      that is not a `%ClientCapabilities{}` is **discarded whole** with a
+      `Logger.warning` naming what was lost, and the default
+      `%ClientCapabilities{}` is used. Converting a map instead would have to
+      drop silently whatever it did not recognise, and a silent drop is the one
+      thing this option is not allowed to do.
+      Its `:extensions` (SEP-2133, schema.ts:785) are validated on the way out
+      by `MCP.Protocol.Extensions.normalise/2` — anything it cannot put on the
+      wire is dropped here and named in a `Logger.warning`, never deferred to
+      a request. This SDK implements no extension, so the field is empty unless
+      you declare one you implement.
     * `:protocol_version` — advertised version (default: the stateless core's)
     * `:notification_handler` — pid or `(method, params -> any)` for server
       notifications
@@ -46,6 +58,7 @@ defmodule MCP.Client do
 
   alias MCP.Protocol
   alias MCP.Protocol.Capabilities.ClientCapabilities
+  alias MCP.Protocol.Extensions
   alias MCP.Protocol.Messages.{Discover, MRTR, Notification, Request, Response}
   alias MCP.Protocol.Methods
   alias MCP.Protocol.Types.Implementation
@@ -184,7 +197,8 @@ defmodule MCP.Client do
 
     state = %__MODULE__{
       client_info: build_client_info(Keyword.get(opts, :client_info, default_info())),
-      client_capabilities: Keyword.get(opts, :client_capabilities, %ClientCapabilities{}),
+      client_capabilities:
+        build_client_capabilities(Keyword.get(opts, :client_capabilities, %ClientCapabilities{})),
       protocol_version: Keyword.get(opts, :protocol_version, @protocol_version),
       status: :ready,
       notification_handler: Keyword.get(opts, :notification_handler),
@@ -481,6 +495,52 @@ defmodule MCP.Client do
       {:ok, pid} -> {:ok, module, pid}
       {:error, reason} -> {:error, reason}
     end
+  end
+
+  # Outbound extension declarations are validated here, at the one seam where a
+  # consumer's `:client_capabilities` becomes something this SDK puts on the
+  # wire. Invalid identifiers are dropped and an empty result becomes absent,
+  # exactly as `MCP.Server.Config.build/2` does for the server's own
+  # declaration — the SDK's outbound guarantee has to hold in both directions
+  # or it is not a guarantee. Inbound declarations are never touched.
+  defp build_client_capabilities(%ClientCapabilities{} = capabilities) do
+    normalised =
+      Extensions.normalise(capabilities.extensions,
+        source: "MCP.Client.start_link/1 `:client_capabilities` extensions"
+      )
+
+    %{capabilities | extensions: normalised}
+  end
+
+  # Anything else is DISCARDED, loudly (MES-16 round 2, R-8). This clause used
+  # to be `do: capabilities` — a pass-through, which meant a non-struct
+  # `:client_capabilities` went into state untouched and straight to `encode/1`
+  # on every request. Both halves of the round-1 property failed on that path:
+  # a MUST-violating identifier reached the wire with no drop and no warning,
+  # and an unencodable settings value let `start_link/1` succeed and then
+  # killed the client on its FIRST request — the deferred failure the property
+  # exists to rule out.
+  #
+  # A consumer is led here by the neighbour eleven lines below: `:client_info`
+  # accepts `%Implementation{}` OR a plain map, so a plain map looks like the
+  # house style. Mirroring that leniency was the tempting repair and is NOT
+  # what this does. `%Implementation{}` has two fields a map can supply in
+  # full; `%ClientCapabilities{}` has five, and a conversion that kept the keys
+  # it recognised and dropped the rest would trade a known loud failure for a
+  # fresh silent one. So: discard, warn, name what was lost, carry on with the
+  # default — drop/warn/never raise/never defer, one level up from
+  # `Extensions.normalise/2` and the same posture.
+  defp build_client_capabilities(other) do
+    Logger.warning(
+      "MCP client capabilities — MCP.Client.start_link/1 `:client_capabilities`: expected a " <>
+        "%MCP.Protocol.Capabilities.ClientCapabilities{}, got " <>
+        "#{inspect(other, limit: 5, printable_limit: 120)}. The WHOLE value is DISCARDED and " <>
+        "NOTHING it declared (roots, sampling, elicitation, experimental, extensions) is " <>
+        "advertised; the default %ClientCapabilities{} is used instead. Unlike `:client_info`, " <>
+        "this option does not accept a plain map."
+    )
+
+    %ClientCapabilities{}
   end
 
   defp build_client_info(%Implementation{} = impl), do: impl

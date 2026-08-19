@@ -9,10 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 The 2.0.0 line is a rewrite against MCP **2026-07-28**: no `initialize` handshake, no
 session, every request self-contained. The entries below cover `subscriptions/listen`
-(MES-15); the rest of the 2.0.0 changes are logged per ticket in `docs/sprint_4_issues.md`
-and will be consolidated here at release.
+(MES-15) and the extensions negotiation surface (MES-16); the rest of the 2.0.0 changes
+are logged per ticket in `docs/sprint_4_issues.md` and will be consolidated here at
+release. Public API additions are recorded here as they land rather than deferred to
+release — a consumer scans a CHANGELOG for exactly that.
 
 ### Added
+- **Extensions negotiation (SEP-2133)** — `MCP.Protocol.Extensions`, and an `extensions`
+  field on both `ClientCapabilities` (schema.ts:785) and `ServerCapabilities`
+  (schema.ts:882), parsed inbound and emitted outbound. **This SDK implements no
+  extension**, and that is the behaviour: the negotiation surface is handled correctly
+  while supporting zero, so a peer offering extensions we do not support is serviced
+  normally and is never an error. Declare an extension you have implemented yourself with
+  the new `MCP.Server.Config.build/2` option **`:extensions`** (launch-static, reaches the
+  wire via `server/discover`) or with **`:client_capabilities`**' `:extensions` field on
+  `MCP.Client.start_link/1` (stamped into every request's `_meta`, per schema.ts:91-98).
+  Both are validated where they are declared — an identifier that violates the `_meta`
+  naming rules, or settings that do not encode *to a JSON object* (`%Date{}` encodes to a
+  JSON string, and is not one), are dropped and named in a `Logger.warning` rather than
+  reaching the wire or failing later. `:client_capabilities` accepts a
+  `%ClientCapabilities{}` and nothing else: unlike `:client_info`, a plain map is not
+  converted, it is discarded whole with a warning naming what was lost. Undeclared, the
+  field is **absent** from the wire, not `{}`. `MCP.Protocol.Extensions.from_meta/1` reads
+  a peer's declaration off `ctx.meta`; those declarations are self-asserted and must never
+  gate access — identity comes from `ctx.identity` alone.
 - **`subscriptions/listen`** — the long-lived notification stream that replaces *both* the
   removed GET SSE endpoint and the removed `resources/subscribe` / `resources/unsubscribe`
   pair. A POST is answered with an SSE stream held open: the

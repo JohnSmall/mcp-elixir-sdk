@@ -43,6 +43,7 @@ defmodule MCP.Server.Config do
     ToolCapabilities
   }
 
+  alias MCP.Protocol.Extensions
   alias MCP.Protocol.Types.Implementation
   alias MCP.Server.Dispatch
 
@@ -59,6 +60,19 @@ defmodule MCP.Server.Config do
       (`tools/list`, `resources/list`, `resources/read`, etc. via
       `CacheableResult`, SEP-2549). Defaults to `{0, "public"}` — **no-store**,
       so nothing is cached and there is no cross-principal cache exposure.
+    * `:extensions` — MCP extensions (SEP-2133) this server supports, as
+      `%{identifier => settings_object}` (schema.ts:882). Default `nil`:
+      **this SDK implements no extension**, and a server declares one only
+      because its handler implements it. Normalised by
+      `MCP.Protocol.Extensions.normalise/2` — invalid identifiers and settings
+      that would not encode as a JSON object are **dropped here, named in a
+      `Logger.warning`, and never advertised**, so a mistake in this option
+      cannot surface later than this call; an empty result is absent from the
+      wire rather than `{}`. **Launch-static**, like `:instructions` and
+      `:server_info`: a server's supported set does not vary per request. The
+      *client's* set does, and is read per request from that request's `_meta`
+      via `MCP.Protocol.Extensions.from_meta/1` — the two lifetimes are
+      different and this SDK keeps them apart.
 
   > #### Security — cache scope on identity-dependent results {: .warning}
   >
@@ -86,7 +100,10 @@ defmodule MCP.Server.Config do
            handler_module: handler_module,
            handler_state: handler_state,
            server_info: build_server_info(Keyword.get(opts, :server_info, default_info())),
-           capabilities: detect_capabilities(handler_module, streaming: streaming),
+           capabilities:
+             handler_module
+             |> detect_capabilities(streaming: streaming)
+             |> declare_extensions(Keyword.get(opts, :extensions)),
            instructions: Keyword.get(opts, :instructions),
            protocol_version: Dispatch.protocol_version(),
            cache_defaults: Keyword.get(opts, :cache_defaults, {0, "public"}),
@@ -189,6 +206,19 @@ defmodule MCP.Server.Config do
     else
       @implied_subscriptions
     end
+  end
+
+  # Extension support is DECLARED, never detected. There is nothing in a
+  # handler's shape to infer it from — an extension is a wire contract, not a
+  # callback arity — so inferring one would be the same over-claim
+  # `detect_capabilities/2` exists to prevent. Undeclared leaves the field
+  # `nil`, which the encoder drops, so zero-by-default is structural rather
+  # than a default value someone can forget (seps/2133-extensions.md:99).
+  defp declare_extensions(%ServerCapabilities{} = capabilities, declared) do
+    normalised =
+      Extensions.normalise(declared, source: "MCP.Server.Config.build/2 `:extensions`")
+
+    %{capabilities | extensions: normalised}
   end
 
   defp build_server_info(%Implementation{} = impl), do: impl

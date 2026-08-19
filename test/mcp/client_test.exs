@@ -10,6 +10,8 @@ defmodule MCP.ClientTest do
   """
   use ExUnit.Case, async: true
 
+  import ExUnit.CaptureLog
+
   alias MCP.Client
   alias MCP.Test.MockTransport
 
@@ -444,6 +446,214 @@ defmodule MCP.ClientTest do
 
       assert {:ok, _} = Task.await(t1)
       assert {:ok, _} = Task.await(t2)
+    end
+  end
+
+  # MES-16 — the client half of the SEP-2133 negotiation surface: what a client
+  # stamps into its per-request `_meta`, and what it does with what a server
+  # advertises.
+  #
+  # A7: positive controls, not caught regressions. `extensions` did not exist in
+  # this codebase before MES-16, so nothing here can fail at a pre-fix SHA. T5
+  # (omission) and T4 (presence) are each other's deliberately-wrong fixture:
+  # they differ only in whether anything is declared, so neither can pass
+  # trivially while the other holds.
+  describe "extensions negotiation (SEP-2133) — T4, T5, T15" do
+    alias MCP.Protocol.Capabilities.ClientCapabilities
+
+    @extensions %{"io.modelcontextprotocol/tasks" => %{}}
+    @capabilities_key "io.modelcontextprotocol/clientCapabilities"
+
+    # T4. schema.ts:91-98 — the client's capabilities ride EVERY request's
+    # `_meta`, per request, because there is no handshake to declare them once.
+    test "T4 — a declared extension is stamped into every request's _meta" do
+      {client, transport} =
+        start_client(client_capabilities: %ClientCapabilities{extensions: @extensions})
+
+      do_connect(client, transport)
+      Task.async(fn -> Client.list_tools(client) end)
+      request = last_after_connect(transport, 1)
+
+      assert request["params"]["_meta"][@capabilities_key]["extensions"] == @extensions
+    end
+
+    test "T4 — and into the server/discover probe itself" do
+      {client, transport} =
+        start_client(client_capabilities: %ClientCapabilities{extensions: @extensions})
+
+      Task.async(fn -> Client.connect(client) end)
+      [discover] = wait_for_sent(transport, 1)
+
+      assert discover["params"]["_meta"][@capabilities_key]["extensions"] == @extensions
+    end
+
+    # T5. Absent, not `{}` — the default client declares nothing at all.
+    test "T5 — the key is omitted entirely when nothing is declared" do
+      {client, transport} = start_client()
+
+      Task.async(fn -> Client.connect(client) end)
+      [discover] = wait_for_sent(transport, 1)
+
+      capabilities = discover["params"]["_meta"][@capabilities_key]
+      assert is_map(capabilities)
+      refute Map.has_key?(capabilities, "extensions")
+    end
+
+    # Outbound validation applies on the client side too: the SDK's "we never
+    # emit an identifier that violates schema.ts:779-780" guarantee has to hold
+    # in both directions or it is not a guarantee.
+    @tag :capture_log
+    test "an invalid identifier is dropped on the way out; an all-invalid declaration vanishes" do
+      {client, transport} =
+        start_client(
+          client_capabilities: %ClientCapabilities{
+            extensions: %{"com.example/kept" => %{}, "no-prefix" => %{}}
+          }
+        )
+
+      Task.async(fn -> Client.connect(client) end)
+      [discover] = wait_for_sent(transport, 1)
+
+      assert discover["params"]["_meta"][@capabilities_key]["extensions"] ==
+               %{"com.example/kept" => %{}}
+
+      {client2, transport2} =
+        start_client(client_capabilities: %ClientCapabilities{extensions: %{"bad" => %{}}})
+
+      Task.async(fn -> Client.connect(client2) end)
+      [discover2] = wait_for_sent(transport2, 1)
+
+      refute Map.has_key?(discover2["params"]["_meta"][@capabilities_key], "extensions")
+    end
+
+    # T15. The client direction of "handle the map correctly while supporting
+    # zero": a server's advertised extensions must survive the round trip
+    # instead of being silently discarded by `ServerCapabilities.from_map/1`,
+    # which keeps only the keys it knows.
+    test "T15 — a server's advertised extensions are surfaced, not discarded" do
+      {client, transport} = start_client()
+      task = Task.async(fn -> Client.connect(client) end)
+      [discover] = wait_for_sent(transport, 1)
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => discover["id"],
+        "result" => %{
+          "supportedVersions" => ["2026-07-28"],
+          "capabilities" => Map.put(@server_capabilities, "extensions", @extensions),
+          "resultType" => "complete",
+          "ttlMs" => 0,
+          "cacheScope" => "public",
+          "_meta" => %{"io.modelcontextprotocol/serverInfo" => @server_info}
+        }
+      })
+
+      {:ok, result} = Task.await(task)
+
+      assert result.server_capabilities.extensions == @extensions
+      assert Client.server_capabilities(client).extensions == @extensions
+    end
+
+    # Inbound is never validated: a server may advertise whatever it likes and
+    # the client reports it verbatim rather than rewriting the peer's claim.
+    test "a server's malformed advertisement is reported verbatim, not rewritten" do
+      {client, transport} = start_client()
+      task = Task.async(fn -> Client.connect(client) end)
+      [discover] = wait_for_sent(transport, 1)
+
+      malformed = %{"no-prefix" => %{}}
+
+      MockTransport.inject(transport, %{
+        "jsonrpc" => "2.0",
+        "id" => discover["id"],
+        "result" => %{
+          "supportedVersions" => ["2026-07-28"],
+          "capabilities" => Map.put(@server_capabilities, "extensions", malformed),
+          "resultType" => "complete",
+          "ttlMs" => 0,
+          "cacheScope" => "public",
+          "_meta" => %{"io.modelcontextprotocol/serverInfo" => @server_info}
+        }
+      })
+
+      {:ok, result} = Task.await(task)
+      assert result.server_capabilities.extensions == malformed
+    end
+
+    # R-2 (round 1), the client half of the same property: nothing a consumer
+    # puts in `:client_capabilities` may fail later than `start_link/1`. A
+    # settings value the JSON encoder cannot handle used to survive
+    # normalisation here too, and would then have failed when the transport
+    # came to serialise the request — arbitrarily far from the launch config
+    # that caused it. It is dropped at the seam, named in a warning, and the
+    # request that follows is well-formed and encodable.
+    @tag :capture_log
+    test "an unencodable settings value never reaches the wire (dropped at start_link)" do
+      {client, transport} =
+        start_client(
+          client_capabilities: %ClientCapabilities{
+            extensions: %{"com.example/kept" => %{}, "com.example/tuple" => %{"t" => {1, 2}}}
+          }
+        )
+
+      Task.async(fn -> Client.connect(client) end)
+      [discover] = wait_for_sent(transport, 1)
+
+      assert discover["params"]["_meta"][@capabilities_key]["extensions"] ==
+               %{"com.example/kept" => %{}}
+
+      assert is_binary(Jason.encode!(discover))
+    end
+
+    # R-8 (round 2). The round-1 guarantee was stated about `:client_capabilities`
+    # and checked about `%ClientCapabilities{}`: the normalising clause matched
+    # the struct and a catch-all passed EVERYTHING ELSE through untouched, into
+    # state and then into `encode/1` on every request. So a plain map — which
+    # the neighbouring `:client_info` option does accept, which is how a
+    # consumer arrives at one — bypassed the seam entirely.
+    #
+    # This half is R-1's class: a MUST-violating identifier on the wire, no
+    # drop, no warning. The value is now discarded whole and the default used,
+    # so the identifier cannot appear.
+    test "R-8 — a non-struct :client_capabilities is discarded, not passed through" do
+      log =
+        capture_log(fn ->
+          {client, transport} =
+            start_client(client_capabilities: %{"extensions" => %{"no-prefix" => %{}}})
+
+          Task.async(fn -> Client.connect(client) end)
+          [discover] = wait_for_sent(transport, 1)
+
+          capabilities = discover["params"]["_meta"][@capabilities_key]
+          assert capabilities == %{}
+          refute Map.has_key?(capabilities, "extensions")
+        end)
+
+      # Discarding a consumer's whole capabilities value is a real loss, so the
+      # warning has to say that rather than merely note a type mismatch.
+      assert log =~ "`:client_capabilities`"
+      assert log =~ "DISCARDED"
+      assert log =~ "extensions"
+    end
+
+    # The other half of R-8, and the one that costs a process: `start_link/1`
+    # accepted this and the FIRST request then raised `Protocol.UndefinedError`
+    # out of `Jason` inside `with_meta/2`, killing the client — the deferred
+    # failure the round-1 property exists to rule out, reachable through a
+    # bypass of the code that implements it.
+    @tag :capture_log
+    test "R-8 — and the first request no longer kills the client" do
+      {client, transport} =
+        start_client(
+          client_capabilities: %{"extensions" => %{"com.example/x" => %{"t" => {1, 2}}}}
+        )
+
+      Task.async(fn -> Client.connect(client) end)
+      [discover] = wait_for_sent(transport, 1)
+
+      assert is_binary(Jason.encode!(discover))
+      assert Process.alive?(client)
+      assert Client.status(client) == :ready
     end
   end
 end

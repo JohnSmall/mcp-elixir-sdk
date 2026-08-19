@@ -10,13 +10,14 @@ defmodule MCP.Protocol.Capabilities.ClientCapabilities do
   }
 
   @derive Jason.Encoder
-  defstruct [:roots, :sampling, :elicitation, :experimental]
+  defstruct [:roots, :sampling, :elicitation, :experimental, :extensions]
 
   @type t :: %__MODULE__{
           roots: RootCapabilities.t() | nil,
           sampling: SamplingCapabilities.t() | nil,
           elicitation: ElicitationCapabilities.t() | nil,
-          experimental: map() | nil
+          experimental: map() | nil,
+          extensions: map() | nil
         }
 
   @spec from_map(map()) :: t()
@@ -25,7 +26,8 @@ defmodule MCP.Protocol.Capabilities.ClientCapabilities do
       roots: map |> Map.get("roots") |> parse_cap(RootCapabilities),
       sampling: map |> Map.get("sampling") |> parse_cap(SamplingCapabilities),
       elicitation: map |> Map.get("elicitation") |> parse_cap(ElicitationCapabilities),
-      experimental: Map.get(map, "experimental")
+      experimental: Map.get(map, "experimental"),
+      extensions: Map.get(map, "extensions")
     }
   end
 
