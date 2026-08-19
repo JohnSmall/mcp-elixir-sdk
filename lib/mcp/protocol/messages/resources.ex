@@ -130,44 +130,6 @@ defmodule MCP.Protocol.Messages.Resources do
     end
   end
 
-  defmodule SubscribeParams do
-    @moduledoc """
-    Parameters for `resources/subscribe`.
-    """
-
-    @derive Jason.Encoder
-    defstruct [:uri, :meta]
-
-    @type t :: %__MODULE__{uri: String.t(), meta: map() | nil}
-
-    @spec from_map(map()) :: t()
-    def from_map(map) when is_map(map) do
-      %__MODULE__{
-        uri: Map.fetch!(map, "uri"),
-        meta: Map.get(map, "_meta")
-      }
-    end
-  end
-
-  defmodule UnsubscribeParams do
-    @moduledoc """
-    Parameters for `resources/unsubscribe`.
-    """
-
-    @derive Jason.Encoder
-    defstruct [:uri, :meta]
-
-    @type t :: %__MODULE__{uri: String.t(), meta: map() | nil}
-
-    @spec from_map(map()) :: t()
-    def from_map(map) when is_map(map) do
-      %__MODULE__{
-        uri: Map.fetch!(map, "uri"),
-        meta: Map.get(map, "_meta")
-      }
-    end
-  end
-
   defmodule ListTemplatesParams do
     @moduledoc """
     Parameters for `resources/templates/list`.

@@ -390,8 +390,9 @@ capabilities based on which callbacks your handler implements.
 | `handle_call_tool/4` | `tools/call` | tools (async, with ToolContext) |
 | `handle_list_resources/2` | `resources/list` | resources |
 | `handle_read_resource/2` | `resources/read` | resources |
-| `handle_subscribe/2` | `resources/subscribe` | resources.subscribe |
-| `handle_unsubscribe/2` | `resources/unsubscribe` | resources.subscribe |
+| `handle_listen/3` | `subscriptions/listen` | tools/prompts/resources `listChanged` (with a streaming driver) |
+| `handle_listen_closed/3` | — | (stream teardown hook) |
+| `supported_subscriptions/0` | — | resources.subscribe (declared, never inferred) |
 | `handle_list_resource_templates/2` | `resources/templates/list` | resources |
 | `handle_list_prompts/2` | `prompts/list` | prompts |
 | `handle_get_prompt/3` | `prompts/get` | prompts |

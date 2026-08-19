@@ -10,13 +10,21 @@ defmodule MCP.Protocol.MethodsTest do
     assert Methods.tools_call() == "tools/call"
     assert Methods.resources_list() == "resources/list"
     assert Methods.resources_read() == "resources/read"
-    assert Methods.resources_subscribe() == "resources/subscribe"
-    assert Methods.resources_unsubscribe() == "resources/unsubscribe"
     assert Methods.resources_templates_list() == "resources/templates/list"
     assert Methods.prompts_list() == "prompts/list"
     assert Methods.prompts_get() == "prompts/get"
     assert Methods.logging_set_level() == "logging/setLevel"
     assert Methods.completion_complete() == "completion/complete"
+    assert Methods.subscriptions_listen() == "subscriptions/listen"
+  end
+
+  test "resources/subscribe and resources/unsubscribe are gone, not renamed" do
+    # Retired with the rest of the subscribe surface (MES-15): 2026-07-28
+    # replaces both RPCs with the resourceSubscriptions field of a
+    # subscriptions/listen filter (schema.ts:1286-1288). Asserted as an absence
+    # so a future reader re-adding a constant has to argue with a test.
+    refute function_exported?(Methods, :resources_subscribe, 0)
+    refute function_exported?(Methods, :resources_unsubscribe, 0)
   end
 
   test "server-to-client request methods" do

@@ -7,11 +7,41 @@ defmodule MCP.Server.Dispatch do
   message. There is no `initialize` handshake, no `:ready` gate, and no
   session — every request stands alone (SEP-2575 / SEP-2567).
 
-  ## Contract (fixed here for MES-9)
+  ## Contract
 
       dispatch(message, context, config)
         :: {:reply, response_map, handler_state}
          | {:noreply, handler_state}
+         | {:stream, MCP.Server.Subscription.t(), handler_state}
+         | {:listen_refused, response_map, handler_state}
+
+  The third shape is MES-15's `subscriptions/listen`: the driver must hold the
+  response open, write `subscription.ack` first, and then write frames until
+  the stream ends.
+
+  The fourth is the same method **refused by the handler**
+  (`handle_listen/3` returning `{:error, ...}`). It carries an ordinary error
+  response the driver sends exactly like a `{:reply, ...}` — it is a separate
+  shape only because of what else the driver owes: `handle_listen/3` *ran*, and
+  was handed a live `context.stream_sink`, so the driver must tear the
+  subscription down and tell the handler, precisely as it does when a stream it
+  did open ends. The two cases a driver must NOT treat that way — a malformed
+  filter, and a deployment that does not stream — never reach the handler and
+  stay `{:reply, ...}`. Distinguishing them from outside the dispatch would
+  mean re-deriving its routing decisions from the response, so the dispatch
+  says which happened instead.
+
+  > #### A driver opts in; it is never surprised {: .warning}
+  >
+  > `{:stream, ...}` and `{:listen_refused, ...}` are returned **only** when
+  > `config.streaming` is true — which a driver sets to say it can hold a
+  > response open. A driver that does not set it gets `-32601` for
+  > `subscriptions/listen` and can never receive either, so adding them cannot
+  > turn a missing `case` clause into a runtime `FunctionClauseError`. That
+  > guarantee extends to third-party drivers this project never compiles, which
+  > is why the flag exists rather than the contract simply widening. Both
+  > shapes are gated on the *same* flag, so a driver that already handles
+  > `{:stream, ...}` has one clause to add and no new condition to check.
 
   * `message` — a decoded `MCP.Protocol.Messages.Request` or `Notification`.
   * `context` — the per-request `MCP.Server.ToolContext` carrying `:identity`,
@@ -39,8 +69,10 @@ defmodule MCP.Server.Dispatch do
   """
 
   alias MCP.Protocol.Error
-  alias MCP.Protocol.Messages.{Discover, MRTR, Notification, Request}
+  alias MCP.Protocol.Messages.{Discover, MRTR, Notification, Request, Subscriptions}
   alias MCP.Protocol.Meta
+  alias MCP.Protocol.Methods
+  alias MCP.Server.Subscription
   alias MCP.Server.ToolContext
 
   # Conservative caching policy default (SEP-2549): no-store (ttlMs 0), public
@@ -54,15 +86,27 @@ defmodule MCP.Server.Dispatch do
 
   @type config :: %{optional(atom()) => term()}
   @type result ::
-          {:reply, map(), term()} | {:noreply, term()}
+          {:reply, map(), term()}
+          | {:noreply, term()}
+          | {:stream, Subscription.t(), term()}
+          | {:listen_refused, map(), term()}
 
   @spec dispatch(Request.t() | Notification.t(), ToolContext.t(), config()) :: result()
   def dispatch(%Request{id: id, method: method, params: params}, %ToolContext{} = ctx, config) do
-    handle_request(method, id, params, ctx, config)
+    handle_request(method, id, params, seal_stream_sink(ctx, method), config)
   end
 
   def dispatch(%Notification{method: method, params: params}, %ToolContext{} = ctx, config) do
-    handle_notification(method, params, ctx, config)
+    handle_notification(method, params, seal_stream_sink(ctx, nil), config)
+  end
+
+  # The stream sink is reachable ONLY from the listen open callback. Clearing it
+  # here — once, for every other method, present and future — is what makes
+  # "a request-scoped notification cannot reach a listen stream" a property of
+  # the dispatch rather than of each route remembering to do it. A new route
+  # added later inherits the guarantee without knowing it exists.
+  defp seal_stream_sink(ctx, method) do
+    if method == Methods.subscriptions_listen(), do: ctx, else: %{ctx | stream_sink: nil}
   end
 
   # --- Removed methods: stateless behaviour, no legacy path ---
@@ -252,8 +296,89 @@ defmodule MCP.Server.Dispatch do
     )
   end
 
+  # --- subscriptions/listen: the long-lived notification stream ---
+
+  defp route("subscriptions/listen", id, params, ctx, config) do
+    if Map.get(config, :streaming, false) do
+      listen(id, params, ctx, config)
+    else
+      # This deployment cannot hold a response stream open (HTTP JSON mode,
+      # or a driver that has not opted in), and the listen response IS an SSE
+      # stream — there is no conforming way to render it as a single JSON
+      # body (streamable-http.mdx:107-113, :217-234). So the honest answer is
+      # an explicit refusal rather than a stream that silently delivers
+      # nothing.
+      #
+      # -32601 rather than a new code: -32020..-32099 is reserved for the
+      # spec and off limits, and allocating from the implementation-defined
+      # -32000..-32019 range would invent SDK-private semantics no client
+      # understands. -32601 is already what this endpoint returns for a
+      # method it does not implement, and is what the spec's own
+      # compatibility guidance treats as the "not supported" signal
+      # (stdio.mdx:131-141). It is honest only because such a deployment also
+      # advertises no subscription capability (MCP.Server.Config), so a
+      # conforming client never calls this here in the first place.
+      reply(id, Error.method_not_found("subscriptions/listen"), config)
+    end
+  end
+
   defp route(method, id, _params, _ctx, config) do
     reply(id, Error.method_not_found(method), config)
+  end
+
+  defp listen(id, params, ctx, config) do
+    case Subscriptions.parse_filter(params) do
+      {:ok, requested} ->
+        open_subscription(id, requested, ctx, config)
+
+      {:error, reason} ->
+        # `notifications` is REQUIRED (schema.ts:1301) even though every field
+        # inside it is optional, so an absent one is a malformed request while
+        # an empty `{}` is a legal "subscribe to nothing".
+        reply(
+          id,
+          Error.invalid_params("subscriptions/listen requires params.notifications (#{reason})"),
+          config
+        )
+    end
+  end
+
+  defp open_subscription(id, requested, ctx, config) do
+    mod = config.handler_module
+
+    if function_exported?(mod, :handle_listen, 3) do
+      case mod.handle_listen(requested, ctx, config.handler_state) do
+        {:ok, handler_honoured, state} ->
+          {:stream, Subscription.new(id, narrow(requested, handler_honoured, config)), state}
+
+        # Not `{:reply, ...}`: the handler ran and holds a sink, so the driver
+        # owes it the same teardown a closed stream gets. See the contract note
+        # in the moduledoc.
+        {:error, code, message, state} ->
+          {:listen_refused, error_response(id, %Error{code: code, message: message}), state}
+      end
+    else
+      reply(id, Error.method_not_found("subscriptions/listen"), config)
+    end
+  end
+
+  # The honoured set is the intersection of three INDEPENDENT narrowings, so no
+  # single one of them can widen it:
+  #
+  #   1. what the client asked for  — the MUST NOT at subscriptions.mdx:14-16;
+  #   2. what the handler agreed to — the per-principal authorization decision;
+  #   3. what the server advertises — so the acknowledgment can never claim more
+  #      than `server/discover` did, which is what keeps the two honest about
+  #      each other rather than merely both plausible.
+  #
+  # Applying (3) here rather than trusting the handler also means a handler that
+  # over-returns is corrected rather than believed.
+  defp narrow(requested, handler_honoured, config) do
+    advertised = Subscriptions.permitted_by(Map.get(config, :capabilities))
+
+    requested
+    |> Subscriptions.intersect(handler_honoured)
+    |> Subscriptions.restrict_to_advertised(advertised)
   end
 
   # --- Notifications (SDK-internal; never dispatched to consumer callbacks) ---

@@ -18,6 +18,12 @@ defmodule MCP.Protocol.Meta do
       the removed `logging/setLevel` control method (the Logging feature itself
       is retained-deprecated).
 
+  Key written here (response/notification side):
+
+    * `io.modelcontextprotocol/subscriptionId` — the `subscriptions/listen`
+      request id a streamed message belongs to. See `subscription_id_key/0` and
+      `MCP.Protocol.Messages.Subscriptions`.
+
   ## W3C Trace Context passthrough (SEP-414)
 
   Distributed-tracing propagation rides `_meta` under the standard W3C key
@@ -36,6 +42,13 @@ defmodule MCP.Protocol.Meta do
   @client_info_key "io.modelcontextprotocol/clientInfo"
   @client_capabilities_key "io.modelcontextprotocol/clientCapabilities"
   @log_level_key "io.modelcontextprotocol/logLevel"
+
+  # Response/notification side: identifies the subscriptions/listen stream a
+  # message was delivered on. REQUIRED on every message the server sends on a
+  # listen stream (schema.ts:120-133 for notifications, :1326-1335 for the
+  # closing result); optional on NotificationMetaObject precisely because
+  # notifications NOT delivered on a stream omit it (schema.ts:126-129).
+  @subscription_id_key "io.modelcontextprotocol/subscriptionId"
 
   # W3C Trace Context (SEP-414) — standard header names carried in _meta.
   @traceparent_key "traceparent"
@@ -65,6 +78,7 @@ defmodule MCP.Protocol.Meta do
   def client_info_key, do: @client_info_key
   def client_capabilities_key, do: @client_capabilities_key
   def log_level_key, do: @log_level_key
+  def subscription_id_key, do: @subscription_id_key
   def trace_keys, do: @trace_keys
 
   @doc """

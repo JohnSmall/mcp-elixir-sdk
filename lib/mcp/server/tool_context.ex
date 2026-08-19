@@ -26,6 +26,43 @@ defmodule MCP.Server.ToolContext do
   (`requestState` / `inputResponses`) before invoking the tool handler. It is
   handler-continuation data, orthogonal to identity.
 
+  ## The `:stream_sink` field (subscription-stream emitter) — NOT `:reply_sink`
+
+  `:stream_sink` is the emitter for a `subscriptions/listen` stream, and it is
+  a **different field with a different lifetime** rather than a second mode of
+  `:reply_sink`. That separation is what makes the spec's two stream MUST NOTs
+  structural:
+
+    * It is `nil` on every context except the one passed to
+      `c:MCP.Server.Handler.handle_listen/3`. `MCP.Server.Dispatch` strips it
+      once, for every other method, so a tool/resource/prompt callback has no
+      value to emit through — a request-scoped notification cannot reach a
+      listen stream even if a handler tries.
+    * It writes to the process holding the stream and is never a
+      `MCP.Server.NotificationCollector`, so a listen stream cannot be drained
+      into some other request's response, and cannot be stopped by one.
+
+  > #### Correction (review F4, round 1) {: .warning}
+  >
+  > This paragraph used to add "so the request path's `drain/1` + `stop/1` has
+  > nothing to act on". **That was false.** The HTTP driver starts a collector
+  > for *every* POST, a `subscriptions/listen` included, and drains and stops
+  > it — `warn_dropped_request_scoped/2` exists precisely because it can have
+  > collected something (a handler emitting through `:reply_sink` during
+  > `handle_listen/3`). The claim overreached the code in the safe direction,
+  > which is why nothing broke.
+  >
+  > The true property, and the one the driver actually relies on: **the
+  > collector's lifetime ends strictly before the stream's**, so the two can
+  > never overlap. The collector is drained and stopped *before* the stream is
+  > opened, deliberately — a subscription can be open for an hour, and holding
+  > a per-request process for it would be a leak measured in hours.
+
+  Unlike `:reply_sink`, it may be called from **any** process and at any later
+  time: a handler stores it during `handle_listen/3` and emits from wherever
+  its change events actually arrive. It returns `:ok`, or `{:error, :closed}`
+  once the stream is gone — see `stream/3`.
+
   ## The `:reply_sink` field (per-request notification emitter)
 
   The stateless core removes the per-session server GenServer, so a handler can
@@ -44,7 +81,7 @@ defmodule MCP.Server.ToolContext do
   removed (they depended on the deleted per-session GenServer).
   """
 
-  defstruct [:request_id, :meta, :identity, :input, :reply_sink]
+  defstruct [:request_id, :meta, :identity, :input, :reply_sink, :stream_sink]
 
   @type input :: %{request_state: binary(), responses: term()} | nil
 
@@ -53,7 +90,8 @@ defmodule MCP.Server.ToolContext do
           meta: map() | nil,
           identity: term() | nil,
           input: input(),
-          reply_sink: (String.t(), map() -> :ok) | nil
+          reply_sink: (String.t(), map() -> :ok) | nil,
+          stream_sink: (String.t(), map() -> :ok | {:error, :closed}) | nil
         }
 
   @doc """
@@ -100,4 +138,38 @@ defmodule MCP.Server.ToolContext do
   end
 
   defp get_progress_token(_ctx), do: 0
+
+  @doc """
+  Emits a notification onto this context's `subscriptions/listen` stream.
+
+  Available only inside `c:MCP.Server.Handler.handle_listen/3` (elsewhere
+  `:stream_sink` is `nil` and this is a no-op returning `{:error, :no_stream}`
+  — deliberately distinguishable from `{:error, :closed}`, since "there was
+  never a stream here" and "the client went away" are different bugs).
+
+  The notification is filtered against the subscription's honoured set before
+  it reaches the wire, so an unrequested or request-scoped type is dropped
+  rather than sent (`MCP.Server.Subscription.frame/3`). A `:ok` return
+  therefore means "accepted for delivery", not "the client asked for this".
+
+  `params` keys may be **strings or atoms**, uniformly across every
+  notification type, and the choice changes nothing: both encode to the same
+  wire bytes, and the one filter that reads a field out of `params` — the URI
+  check on `notifications/resources/updated` — reads it under either. Nothing
+  is dropped on account of key style. (Before this was uniform, an atom-keyed
+  `%{uri: …}` was dropped by that filter while this function still answered
+  `:ok` — review F6.)
+
+  Returns `{:error, :closed}` once the stream has ended. That check is
+  inherently racy — the peer can vanish immediately after it returns `:ok` —
+  so it is a promptness aid, not a delivery guarantee. The delivery guarantee
+  the spec actually requires (nothing further after a close) is enforced by the
+  stream owner, which stops writing, not by callers checking first.
+  """
+  @spec stream(t(), String.t(), map()) :: :ok | {:error, :closed | :no_stream}
+  def stream(%__MODULE__{stream_sink: sink}, method, params) when is_function(sink, 2) do
+    sink.(method, params)
+  end
+
+  def stream(%__MODULE__{}, _method, _params), do: {:error, :no_stream}
 end

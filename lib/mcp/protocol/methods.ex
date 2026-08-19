@@ -12,13 +12,17 @@ defmodule MCP.Protocol.Methods do
   def tools_call, do: "tools/call"
   def resources_list, do: "resources/list"
   def resources_read, do: "resources/read"
-  def resources_subscribe, do: "resources/subscribe"
-  def resources_unsubscribe, do: "resources/unsubscribe"
   def resources_templates_list, do: "resources/templates/list"
   def prompts_list, do: "prompts/list"
   def prompts_get, do: "prompts/get"
   def logging_set_level, do: "logging/setLevel"
   def completion_complete, do: "completion/complete"
+
+  # subscriptions/listen opens a long-lived notification stream. It replaces
+  # BOTH the removed GET SSE endpoint and the removed resources/subscribe +
+  # resources/unsubscribe pair (schema.ts:1313-1317; the replacement is stated
+  # at schema.ts:1286-1288, "Replaces the former `resources/subscribe` RPC").
+  def subscriptions_listen, do: "subscriptions/listen"
 
   # Request methods (server → client)
   def sampling_create_message, do: "sampling/createMessage"
@@ -34,5 +38,10 @@ defmodule MCP.Protocol.Methods do
   def resources_list_changed, do: "notifications/resources/list_changed"
   def resources_updated, do: "notifications/resources/updated"
   def prompts_list_changed, do: "notifications/prompts/list_changed"
+
+  # The first message on any subscriptions/listen stream, reporting the subset
+  # of the requested filter the server agreed to honour (schema.ts:1398-1401).
+  def subscriptions_acknowledged, do: "notifications/subscriptions/acknowledged"
+
   def roots_list_changed, do: "notifications/roots/list_changed"
 end

@@ -87,12 +87,12 @@ The ADK integration is a thin adapter: `ADK.Tool.McpToolset` wraps `MCP.Client` 
 | Feature | MCP Method | Priority |
 |---------|-----------|----------|
 | **Tools** | `tools/list`, `tools/call` | P0 — Core |
-| **Resources** | `resources/list`, `resources/read`, `resources/subscribe`, `resources/templates/list` | P0 — Core |
+| **Resources** | `resources/list`, `resources/read`, `resources/templates/list` | P0 — Core |
 | **Prompts** | `prompts/list`, `prompts/get` | P0 — Core |
 | **Logging** | `logging/setLevel`, `notifications/message` | P1 |
 | **Completions** | `completion/complete` | P2 |
 | **Pagination** | `cursor`/`nextCursor` on list operations | P1 |
-| **Change notifications** | `notifications/tools/list_changed`, etc. | P1 |
+| **Change notifications** | `subscriptions/listen` → `notifications/tools/list_changed`, `notifications/resources/updated`, etc. | P1 |
 
 ### 4.2 Client Features (client provides to server)
 

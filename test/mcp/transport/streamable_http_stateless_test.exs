@@ -250,15 +250,24 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
   # --- transport errors ---
 
-  test "DELETE is not allowed (405); parse error → -32700" do
-    del =
-      conn(:delete, "http://localhost/")
-      |> put_req_header("origin", "http://localhost")
-      |> MCPPlug.call(opts())
+  test "GET and DELETE are not allowed (405), and allow names only POST" do
+    # Ruling 2 (MES-15): no backward compatibility. GET previously answered 200
+    # with an empty text/event-stream — a vestige of the standing stream Sprint 3
+    # removed — and `allow` advertised a method that is now refused. Both are
+    # gone; 405 is also what the spec SHOULDs (streamable-http.mdx:683-684).
+    for method <- [:get, :delete] do
+      response =
+        conn(method, "http://localhost/")
+        |> put_req_header("origin", "http://localhost")
+        |> put_req_header("accept", "text/event-stream")
+        |> MCPPlug.call(opts())
 
-    assert del.status == 405
-    assert get_resp_header(del, "allow") == ["GET, POST"]
+      assert response.status == 405, "#{method} should be refused"
+      assert get_resp_header(response, "allow") == ["POST"]
+    end
+  end
 
+  test "a malformed body is a parse error → -32700" do
     bad =
       :post
       |> conn("http://localhost/", "not json")

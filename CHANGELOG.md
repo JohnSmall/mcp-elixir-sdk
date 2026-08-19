@@ -5,6 +5,94 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] — 2.0.0 (the 2026-07-28 stateless core)
+
+The 2.0.0 line is a rewrite against MCP **2026-07-28**: no `initialize` handshake, no
+session, every request self-contained. The entries below cover `subscriptions/listen`
+(MES-15); the rest of the 2.0.0 changes are logged per ticket in `docs/sprint_4_issues.md`
+and will be consolidated here at release.
+
+### Added
+- **`subscriptions/listen`** — the long-lived notification stream that replaces *both* the
+  removed GET SSE endpoint and the removed `resources/subscribe` / `resources/unsubscribe`
+  pair. A POST is answered with an SSE stream held open: the
+  `notifications/subscriptions/acknowledged` frame first, then the notification types the
+  client opted in to. **Server-side, HTTP transport only** — stdio is a separate ticket, and
+  `MCP.Transport.StreamableHTTP.Client` cannot yet consume a held-open stream.
+- Handler callbacks `handle_listen/3`, `handle_listen_closed/3` and the static
+  `supported_subscriptions/0` capability declaration (all optional).
+- `MCP.Server.ToolContext.stream/3` and the `:stream_sink` field, for emitting onto a
+  subscription stream from any process.
+- Plug options `:max_stream_lifetime` (default 1 hour) and `:keepalive_interval`
+  (default 15 s).
+- `MCP.Transport.SSE.comment/0` — the bare SSE comment line used as a keep-alive.
+
+### Changed
+- **Driver contract (breaking for custom transport drivers).** `MCP.Server.Dispatch.dispatch/3`
+  gained **two** new return shapes: `{:stream, %MCP.Server.Subscription{}, state}` and
+  `{:listen_refused, response, state}`. Both are returned **only** when the dispatch config
+  carries `streaming: true`, which a driver sets to declare it can hold a response open — so an
+  existing driver that does not set it can never receive either and needs no change. If you *do*
+  opt in, handle both: for `{:stream, …}` write `subscription.ack`, then frames via
+  `MCP.Server.Subscription.frame/3`, then either the graceful close response or, after a peer
+  close, nothing at all; `{:listen_refused, …}` carries an ordinary error response to send. The
+  second shape exists because of what a driver owes on it: `handle_listen/3` *ran* and was handed
+  a live `stream_sink`, so the driver must tear the subscription down and call
+  `handle_listen_closed/3`, exactly as it does when a stream it opened ends. **Whatever your
+  driver does, do it on every exit** — and establish it **around the whole lifecycle, including
+  the `dispatch/3` call itself**, not per branch. A `handle_listen/3` that raises never returns a
+  value for you to branch on, and it has already been handed a live sink; so has a listen whose
+  stream-start raises rather than returning an error. Enumerating branches misses both. The exits
+  are refusal, a raising `handle_listen/3`, stream-start failure, a raising stream start, graceful
+  close, peer close, and an exception in the stream loop — but the count is the check, not the
+  mechanism.
+- `MCP.Server.Config.detect_capabilities/1` is now `/2`, taking `streaming:`. The arity-1 form
+  still works and assumes `streaming: false`.
+- Notification `params` given to `MCP.Server.ToolContext.stream/3` may use **string or atom**
+  keys, uniformly: the URI check on `notifications/resources/updated` reads either, so nothing is
+  dropped on account of key style.
+
+### Fixed
+- **A server no longer advertises `listChanged` capabilities it cannot deliver.** Previously
+  `tools`, `resources` and `prompts` were advertised with `listChanged: true` whenever the
+  corresponding list callback existed, even though no mechanism to send such a notification had
+  existed since the standing GET stream was removed. The claim now requires a channel: a
+  streaming driver *and* a handler implementing `handle_listen/3`. `resources.subscribe`
+  additionally requires an explicit `supported_subscriptions/0` declaration.
+
+### Removed
+- `GET` on the MCP endpoint. It returned `200` with an empty `text/event-stream`; it is now
+  `405`, and the `allow` header names `POST` only. No backward-compatibility accommodations for
+  pre-2026-07-28 clients are implemented: no `Mcp-Session-Id`, no `Last-Event-ID` resumption.
+- `MCP.Protocol.Methods.resources_subscribe/0` and `resources_unsubscribe/0`,
+  `MCP.Protocol.Messages.Resources.SubscribeParams` and `UnsubscribeParams`, and the
+  `handle_subscribe/2` / `handle_unsubscribe/2` handler callbacks. Use `subscriptions/listen`
+  with a `resourceSubscriptions` filter. `ServerCapabilities.resources.subscribe` is **kept** —
+  it is how a server advertises that it honours that filter field.
+
+### Known limitations
+- A subscription stream is **per node**. Notifications reach a client only when the handler
+  emits them on the instance holding that client's stream; distributing change events across
+  instances is the consumer's responsibility. A deliberate deferral, not a gap to be filled by
+  a future patch release.
+- **Identity is resolved once, at stream open**, and stays bound for the stream's life. A
+  principal revoked mid-stream keeps learning *that* a subscribed URI changed — never its
+  content — until the stream closes. Bounded by `:max_stream_lifetime`.
+- A client that TCP half-closes without fully closing is indistinguishable from a healthy quiet
+  client; its stream is reclaimed by `:max_stream_lifetime` rather than by close detection.
+- **`handle_listen_closed/3` over-tells rather than under-tells.** The teardown obligation is
+  armed for any `subscriptions/listen` request before anything that can fail has run, so a
+  request that raises inside the SDK's dispatch *above* the `handle_listen/3` call calls the
+  callback for a subscription that never opened. Deliberate: the alternative is arming after the
+  call that can fail, which loses the exits that matter. Treat an unrecognised `subscription_id`
+  as a no-op.
+- **Subscription teardown does not survive process kill.** `handle_listen_closed/3` runs when the
+  request unwinds — a `raise`, a `throw`, a self-initiated `exit` — and **not** when the
+  connection process is terminated by a signal (`Process.exit(pid, :kill)`, or a supervisor
+  shutdown). Measured on the Bandit driver, not inferred. Closing it needs a monitoring process
+  the SDK does not have; if a handler's registrations must survive that, hold them somewhere that
+  outlives the request and reaps them itself.
+
 ## [1.1.0] - 2026-07-12
 
 ### Added

@@ -88,6 +88,9 @@ git clone https://github.com/modelcontextprotocol/conformance /workspace/samples
   - `initialize.ex`: InitializeParams (protocolVersion, capabilities, clientInfo), InitializeResult (protocolVersion, capabilities, serverInfo, instructions)
   - `tools.ex`: ListToolsParams (cursor), ListToolsResult (tools, nextCursor), CallToolParams (name, arguments), CallToolResult (content, structuredContent, isError)
   - `resources.ex`: ListResourcesParams, ListResourcesResult, ReadResourceParams, ReadResourceResult, SubscribeParams, UnsubscribeParams, ListResourceTemplatesParams, ListResourceTemplatesResult
+    - *Superseded (MES-15, 2026-08-19): `SubscribeParams` / `UnsubscribeParams` are removed —
+      `resources/subscribe` and `resources/unsubscribe` do not exist in 2026-07-28. Their
+      replacement is the `resourceSubscriptions` field of a `subscriptions/listen` filter.*
   - `prompts.ex`: ListPromptsParams, ListPromptsResult, GetPromptParams, GetPromptResult (description, messages)
   - `sampling.ex`: CreateMessageParams (messages, modelPreferences, systemPrompt, maxTokens, etc.), CreateMessageResult (role, content, model, stopReason)
   - `roots.ex`: ListRootsResult (roots list with uri + name)
@@ -201,6 +204,9 @@ mix dialyzer
   - `list_tools/2`, `call_tool/3-4`, `list_resources/2`, `read_resource/2-3`,
     `list_resource_templates/2`, `subscribe_resource/2-3`, `unsubscribe_resource/2-3`,
     `list_prompts/2`, `get_prompt/3-4`, `ping/1-2`, `close/1`
+  - *Superseded (MES-15, 2026-08-19): `subscribe_resource` / `unsubscribe_resource` target
+    removed methods. Client-side `subscriptions/listen` is MES-18 and needs an incremental
+    streaming path the client does not yet have.*
   - Helper accessors: `transport/1`, `status/1`, `server_capabilities/1`, `server_info/1`
   - All operations use GenServer.call with configurable timeout
 
@@ -242,6 +248,9 @@ mix dialyzer
     handle_read_resource/2, handle_subscribe/2, handle_unsubscribe/2,
     handle_list_resource_templates/2, handle_list_prompts/2, handle_get_prompt/3,
     handle_complete/3, handle_set_log_level/2
+    - *Superseded (MES-15, 2026-08-19): `handle_subscribe/2` and `handle_unsubscribe/2` are
+      removed. The subscription callbacks are now `handle_listen/3`, `handle_listen_closed/3`
+      and the static `supported_subscriptions/0` declaration.*
   - All callbacks use `@optional_callbacks` — server auto-detects capabilities
 
 - [x] **4.2** Implement server GenServer (`lib/mcp/server.ex`) — DONE

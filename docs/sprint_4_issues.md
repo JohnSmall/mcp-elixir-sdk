@@ -111,9 +111,31 @@ schema before implementation** — this is precisely the surface the D4 re-pin m
 **Evidence (Note C — literally reproducible; 6 hunks total, the two below are the
 `subscriptions/listen` ones; the four `_meta` doc-link path changes are omitted):**
 
+> **Reproduction-path correction (MES-15, 2026-08-19).** The recipe below originally
+> named `github.com/modelcontextprotocol/specification`. That repo is **not gone** — it
+> **reproduces today**, because GitHub serves a 301 rename redirect and git follows it:
+>
+> ```
+> $ git ls-remote https://github.com/modelcontextprotocol/specification.git HEAD
+> 4df2d6b6e3588efb46e7542d98498e5c630a0a86    HEAD          # exit 0
+> $ curl -sI https://github.com/modelcontextprotocol/specification | head -1
+> HTTP/2 301                                                 # -> /modelcontextprotocol
+> ```
+>
+> The defect is **fragility, not breakage**: the path survives only by that rename
+> redirect, which GitHub withdraws the moment anyone re-creates the old name — at which
+> point every future ticket inheriting this A4 reproduction path silently clones the
+> wrong repository. The canonical path is
+> `github.com/modelcontextprotocol/modelcontextprotocol`, used below. For a single-file
+> read, no clone is needed:
+>
+> ```
+> https://raw.githubusercontent.com/modelcontextprotocol/modelcontextprotocol/<SHA>/<path>
+> ```
+
 ```
 $ git clone --filter=blob:none --no-checkout \
-    https://github.com/modelcontextprotocol/specification.git && cd specification
+    https://github.com/modelcontextprotocol/modelcontextprotocol.git && cd modelcontextprotocol
 $ git diff 7634684382c3d14cf7e9f14073fe40a2d8ace3fa:schema/draft/schema.ts \
            5f5440bb26a62e2cf3440b92da5a667efa03b267:schema/2026-07-28/schema.ts
 
@@ -559,3 +581,700 @@ client. **CR-14/CR-16:** MES-15 forward note refresh + round-3 line-number fix
 gate-6 two-step; **232/0**; mix.lock unchanged (`0b469b90…`, no dep change); mix.exs
 `2.0.0-dev.3`, no tag.
 **Priority Hint:** high · **Blocking?:** blocks MES-15 · **Suggested Jira Ticket?:** MES-27; MES-15; MES-19
+
+---
+
+## MES-15 — `subscriptions/listen`, the missing core method (server-side, HTTP) (2026-08-19)
+
+Canonical narrative: PM dispatch [24322], /plan parts 1–3 [24324] [24325] [24326], C1 spike
+report [24361], PM ratification [24360] (RATIFIED WITH CONDITIONS C1–C7). Branch `MES-15` off
+`5cf1c23`. **Re-scoped at ratification:** stdio → **MES-29** (backlog), client-side → **MES-18**
+(already owned it). DoD bullet 5's stdio half moved with the work, and epic MES-21's exit
+condition 3 was narrowed to match.
+
+### Decision: the gap is real and the capability was lost, not migrated (gap-register D2)
+**Description:** Sprint 3 executed D2's DELETE — the GET SSE endpoint and the
+`resources/subscribe` / `resources/unsubscribe` pair — but no Sprint 3 brief named the
+replacement, so `subscriptions/listen` was never implemented. Resource-subscription capability
+has therefore been **absent from a required core method** since that sprint. This ticket adds
+it for the HTTP transport, server side.
+**Resolution:** `MCP.Protocol.Messages.Subscriptions` (wire shapes), `MCP.Server.Subscription`
+(a live subscription + `frame/3`), handler callbacks `handle_listen/3`, `handle_listen_closed/3`
+and `supported_subscriptions/0`, `ToolContext.stream_sink` + `ToolContext.stream/3`, a third
+`Dispatch` return shape `{:stream, subscription, state}`, and the HTTP stream loop.
+**Priority Hint:** high · **Blocking?:** last open item in epic MES-21's exit condition ·
+**Suggested Jira Ticket?:** MES-15; MES-29 (stdio); MES-18 (client)
+
+### Finding (D-1, corrects the brief): the A4 clone recipe is FRAGILE, not broken
+**Description:** The brief stated that `docs/sprint_4_issues.md:115-118`'s clone recipe names a
+repo path that **404s**. Run end to end, it **reproduces**: `git ls-remote` on
+`.../specification.git` exits 0 and `git clone` succeeds, because GitHub serves a 301 rename
+redirect that git follows (`curl -sI` → `301 → /modelcontextprotocol`). The real defect is that
+the path survives only by that courtesy redirect, which is withdrawn the moment anyone
+re-creates the old name — silently cloning the wrong repository for every future ticket that
+inherits this reproduction path.
+**Resolution:** recipe corrected to the canonical
+`github.com/modelcontextprotocol/modelcontextprotocol`, with the raw-URL form documented for
+single-file reads and the `ls-remote` evidence recorded **as "fragile", not "404"** (C6).
+Writing 404 into the permanent record would have propagated an unverified claim.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No (corrected here)
+
+### Finding (D-2, spec divergence): two normative texts give two stdio teardown mechanisms
+**Description:** `schema.ts:637` states that on stdio the **server** also sends
+`notifications/cancelled`, "solely to terminate a `subscriptions/listen` stream". But
+`subscriptions.mdx:128-153` gives exactly one server-initiated teardown signal — the listen
+**response** — and builds the client's clean-close-versus-drop discrimination on the
+response/no-response asymmetry. Two normative texts at the same pinned commit, two mechanisms.
+**Resolution (PO ruling, RECORD ONLY):** implement the response; do **not** emit a server-side
+`notifications/cancelled`; do not raise upstream. Recorded here so **MES-19** can revisit it
+when the conformance claim is drafted — the record is what makes that possible.
+**Priority Hint:** low · **Blocking?:** No · **Suggested Jira Ticket?:** MES-19 (conformance wording)
+
+### Finding (D-3, corrects PM adversarial item 9): `ResourceCapabilities.subscribe` is STARTED, not retired
+**Description:** Adversarial item 9 invited retiring the dead subscribe surface wholesale. But
+`ServerCapabilities.resources.subscribe` **survives into the final schema** (`schema.ts:846-855`,
+field at `:850`) with a dedicated example, "Resources — subscription to individual resource
+updates (only)" (`:837-838`): it is how a server advertises that it honours
+`resourceSubscriptions`. Nine sites are dead and go; this one field goes live.
+**Resolution (deletions ledgered — content preserved at pinned SHA `5cf1c23`, not file-in-tree):**
+`methods.ex` `resources_subscribe/0` + `resources_unsubscribe/0`; `resources.ex`
+`SubscribeParams` + `UnsubscribeParams`; `handler.ex` `handle_subscribe/2` +
+`handle_unsubscribe/2` and their two `@optional_callbacks` entries;
+`conformance/server_handler.ex` two implementations + its now-dead `subscriptions:` state field.
+Tests updated (`methods_test.exs`, `resources_test.exs`) to assert the **absences**, so re-adding
+one has to argue with a test. Retained: `ResourceCapabilities.subscribe` and the client-side
+capability-parsing tests (`initialize_test.exs`, `capabilities_test.exs`).
+**Correction to my own enumeration (A2d).** The /plan listed **5** doc claims to correct
+(`prd.md:90`; `onboarding.md:85`, `:451`; `implementation-plan.md:90`, `:202`, `:242`). Grepping
+the retired names after the code change found **8 sites across two further files the plan's
+enumeration missed**: `architecture.md:240-241` (client API map), `:318` (dispatch map), `:339-340`
+(behaviour listing), `:395` (capability auto-detection), and `README.md:393-394` (two callback-table
+rows). All corrected. Recorded rather than quietly widened, because an enumeration that was wrong
+once is the thing a reader needs to know about.
+**Not corrected, and deliberately so:** `docs/architecture.md` carries much broader **pre-existing**
+drift — it still describes the `initialize` handshake, the `:ready` gate and per-session server
+state, all removed in MES-9. Rewriting it is a separate piece of work with its own review; only the
+subscribe-surface claims this ticket retires were touched. Flagged so the drift has a witness.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Defect on `main` (C3, sanctioned scope A9): three advertised capabilities the SDK cannot deliver
+**Description:** `Config.detect_capabilities/1` set `listChanged: true` for tools, resources and
+prompts whenever the corresponding list callback existed. Since Sprint 3 deleted the standing GET
+stream there has been **no mechanism anywhere in `lib/`** by which a `list_changed` notification
+could reach a client — `grep -rn list_changed lib/` returns only the method-name constants and
+the capability structs. `main` therefore advertised three capabilities it could not honour, to
+every client, on every `server/discover`. **Independent of this ticket**, and found from a
+question about something else.
+**Resolution:** own commit, own before/after evidence. `detect_capabilities/2` gates each claim
+on the deployment actually having a channel: `:streaming` (declared by the driver — the Plug says
+`not enable_json_response`, `MCP.Server.Connection` says `false`) **and** `handle_listen/3` on the
+handler. An undeliverable capability is `nil`, not `false`, so it is **absent** from the wire
+rather than present-and-false. `resources.subscribe` is never inferred — it requires the explicit
+`supported_subscriptions/0` declaration, because inferring it would reproduce the same over-claim.
+**A7 evidence (regression, not positive control):** the "cross-SHA regression" case calls
+`detect_capabilities/1`, callable unchanged on both sides, and fails at `main` with a plain
+assertion error — `left: true, right: nil`.
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No (fixed here)
+
+### Spike S-1 (C1, stop-and-escalate point): Thousand Island 1.5.0 does NOT kill a write-only long-lived request
+**Description:** MES-27 moved Thousand Island to 1.5.0 — whose headline change is improved
+isolation between network and GenServer timeouts — directly underneath this stream. If an idle
+**read** timeout fired on a request that only ever writes, every long-lived stream would be killed
+spuriously, and a keep-alive interval chosen to dodge it would be a workaround wearing a design's
+clothes. Probed, not assumed.
+**Result — PASS.** Bandit 1.12.1 / TI 1.5.0, `read_timeout: 1000` (60× below Bandit's default), 20
+chunks at 300 ms intervals, zero inbound bytes after the request line: **20/20 arrive** over 7 s,
+i.e. six consecutive read-timeout windows survived. Mechanism, from
+`deps/thousand_island/lib/thousand_island/handler.ex`: `handle_data/3` runs **synchronously**
+inside `handle_info({:tcp,...})` (`:407-408`), and `handle_continuation/2` — which cancels the read
+timer and flushes an already-delivered `:read_timeout` (`:557-568`, `:578-579`) — runs only on its
+return; the only consumer is `handle_info(:read_timeout, ...)` (`:427`), unreachable while inside
+the callback. A timer firing mid-stream queues and is discarded. **The read timeout governs the
+gap between requests, not the duration of one.**
+**Bound, not overclaimed (A2c):** established for HTTP/1 with the body already read. **Not**
+established, because not probed: HTTP/2 (Bandit's h2 handler multiplexes and does return to the
+loop), and a listen request with an unread body — which cannot arise on our path because params
+are read and validated before the stream starts. That is now a design constraint, recorded in code.
+**Priority Hint:** high · **Blocking?:** No (gate cleared) · **Suggested Jira Ticket?:** No
+
+### Spike S-2: the orphan-detection bound, measured — and one case it cannot see
+**Description:** How many `Plug.Conn.chunk/2` calls succeed after the peer goes away? That number
+is the bound the docs quote, so it was measured rather than asserted.
+**Result (three probes; a negative result enumerates too, A2d):**
+
+| Client teardown | Result | Reading |
+|---|---|---|
+| `shutdown(:write)` — half-close | **all 50 writes succeed** | Correct: a half-close is "I have finished sending", not cancellation. |
+| `close/1`, 100 ms settle | `{:error, :closed}` on write **1** | Zero chunks absorbed. |
+| `close/1`, 0 ms settle | `{:error, :closed}` on write **1** | Same with no settling delay. |
+
+So orphan detection costs **one write, and that write is the keep-alive** — bounded by the
+keep-alive interval plus a round trip rather than unbounded. Two qualifications, both of which
+changed what was implemented: the measurement is **loopback**, so a real network adds an RTT (docs
+say "one to two intervals", and the cancellation test asserts a **window**, not a write count — an
+exact-count assertion would encode a loopback artefact); and **a half-closing client is invisible
+to us indefinitely**, which is precisely the case `:max_stream_lifetime` catches. That is a second,
+independent justification for R-2's finite default, beyond bounding identity freshness.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Limitation (C2, identity residual): identity is frozen at stream open
+**Description:** MC-1…MC-7 constrain identity **sharing**, not **duration** — MC-3 forbids identity
+being "cached, shared, or reused *across requests or instances*" and names the AC6′/round-robin
+guarantee as its purpose. A listen stream is **one** request whose context no second request can
+obtain, so the distinguishing test returns no and there is no MC violation (PM ratification R-3:
+an uncovered case, not a violation; no A1). But no MC says anything about credential **expiry or
+revocation during a request**, because until now no request lasted long enough for it to matter.
+**The residual, stated rather than read as compliance:** a principal revoked mid-stream keeps
+learning **that** a subscribed URI changed — never **what** it now says, since
+`notifications/resources/updated` carries a URI and nothing else (`schema.ts:1409-1418`), and
+reading it still costs a fresh `resources/read` under a freshly resolved identity — until the
+stream closes. Bounded by `:max_stream_lifetime` (default **1 h**, PO ruling R-2) and by
+`handle_listen/3`'s open-time decision about which URIs this principal may observe at all.
+**Authorization is open-time only**, by design: the honoured-subset return *is* the authorization
+hook, because a second place to say no is a second place to forget to. Documented on the
+`handle_listen/3` callback and in the Plug moduledoc — where a consumer actually meets it — not
+only here (I14: a residual living only in a Jira comment is a finding with no owner).
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Boundary (PO Ruling 1): multi-instance fan-out is the consumer's responsibility
+**Description:** Notifications reach a client only when the handler emits them **on the node
+holding that client's stream**. A change on instance B does not appear on a stream held by
+instance A. No fan-out seam, no broadcast dependency, no new public API.
+**Resolution:** stated in the Plug moduledoc as a **deliberate deferral** — the 2026-07-28 core is
+specifically stateless and a long-lived stream is the one thing in it genuinely pinned to a node;
+it is acknowledged that this forgoes something Elixir would serve better than most runtimes — and
+made **executable** (a documented boundary with no test is an unverified claim, A2c). The test runs
+two independent Bandit instances in SSE mode and asserts (i) a change emitted on B does **not**
+appear on A's stream within a bounded window, **and** (ii) the positive control: the same
+notification emitted on A's own sink **does** arrive. Without (ii), (i) passes just as happily on a
+completely broken stream.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Decision (adversarial item 1 / R-4): JSON mode refuses `subscriptions/listen` with `-32601`
+**Description:** With `enable_json_response: true` there is no way to hold a stream open, and the
+listen response **is** an SSE stream (`streamable-http.mdx:107-113`, `:217-234`) — so there is no
+conforming way to render it as a single JSON body. A silent black hole was rejected.
+**Resolution:** `-32601`. `-32020..-32099` is spec-reserved and off limits; allocating from the
+implementation-defined `-32000..-32019` range would invent SDK-private semantics no client
+understands. `-32601` is already what this endpoint returns for an unimplemented method and is what
+the spec's own compatibility guidance treats as the "not supported" signal (`stdio.mdx:131-141`).
+**Declining to allocate a code was the call.** It is honest only because such a deployment also
+advertises **no** subscription capability, so a conforming client never calls it — which is why the
+C3 fix and this refusal are one decision, not two.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Decision (adversarial item 2): the dispatch contract widened without being able to break a driver
+**Description:** A third return shape breaks a two-shape contract both drivers match exhaustively.
+A missing `case` clause is a **runtime** `FunctionClauseError` — not a compile error, and dialyzer
+does not flag runtime case exhaustiveness — so the risk is real and is not caught by any gate.
+**Resolution:** `{:stream, ...}` is returned **only** when `config.streaming` is true, a flag a
+driver sets to declare it can hold a response open. A driver that does not set it gets `-32601` and
+can **never receive the shape**, so the guarantee extends to third-party drivers this project never
+compiles. `MCP.Server.Connection` declares `streaming: false` (stdio is MES-29) and additionally
+carries an explicit, loud rejection clause: the alternative to an explicit refusal is a
+`FunctionClauseError`, and a stream opened then silently dropped looks to a client exactly like a
+working subscription that never fires.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** MES-29 (flips it to true)
+
+### Decision (adversarial item 3): sink separation is structural, not disciplinary
+**Description:** Sprint 3's cross-request identity leak (I10) came from plumbing that trusted its
+callers. Both directions must be impossible, not merely untested.
+**Resolution (three separate constructions, not one rule applied three times):** (1)
+`MCP.Server.Dispatch` clears `ctx.stream_sink` **once, for every method other than
+`subscriptions/listen`**, so a tool/resource/prompt callback has no value to emit through and
+routes added later inherit the guarantee without knowing it exists — a handler that tries gets
+`{:error, :no_stream}`. (2) `Subscription.frame/3` is the single place a message becomes a stream
+frame, and **both** stream MUST NOTs are the *same* rule there: no `SubscriptionFilter` key maps to
+`notifications/progress` or `notifications/message`, so a request-scoped type can never enter an
+honoured set — there is no second check to forget. (3) The listen path starts **no**
+`NotificationCollector`, so the request path's `drain/1` + `stop/1` has nothing to act on; the two
+sinks are two fields with disjoint lifetimes, not two modes of one. Notifications emitted via
+`reply_sink` *during* `handle_listen/3` are discarded with a **loud warning** — a silently
+swallowed notification looks to the handler author exactly like a delivered one.
+**CORRECTION (review F4, correction round 1, 2026-08-19) — construction (3) as written above is
+FALSE, and is left standing rather than quietly edited because this file is the permanent record.**
+`plug.ex` starts a `NotificationCollector` for **every** POST, a `subscriptions/listen` included,
+and drains and stops it; the loud warning named in the same sentence is the proof, since there
+would be nothing to warn about if no collector had collected. The claim overreached the code in
+the **safe** direction, which is why nothing broke and why no test caught it. **The true property,
+which does hold and is what the driver relies on:** the collector's lifetime ends **strictly
+before** the stream's — it is drained and stopped *before* the stream is opened, deliberately,
+because a subscription can be open for an hour and holding a per-request process for it would be a
+leak measured in hours. So the two cannot overlap. Corrected in the same three places the false
+version appeared: this entry, the `MCP.Server.ToolContext` moduledoc, and the close-out comment.
+The test that was supposed to guard the claim could not fail (see the round-1 entry below); it has
+been replaced by one that asserts the true property end to end, with a deliberate break shown
+turning it red.
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Decision (adversarial item 7): the SSE encoder could not emit a keep-alive; the parser was already correct
+**Description:** `SSE.encode_event/1` unconditionally appends a `data:` line (`sse.ex:141-151`), so
+it **cannot** produce the bare comment line the spec encourages on long-lived streams
+(`streamable-http.mdx:145-155`, whose own example is `:\r\n`). The parser side was already right:
+`parse_field(":" <> _rest, acc), do: acc` (`sse.ex:154`).
+**Resolution:** new `SSE.comment/0`. Both directions tested — the encoder emits it, and the parser
+ignores one arriving **between two events** mid-stream. The end-to-end keep-alive test reads the
+**raw de-chunked payload**, not parsed events: the parser discards comment lines by design, so
+asserting through it would pass identically whether or not a single keep-alive was ever written.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Verified-benign (CC-1): response compression over a long-lived stream needs no change
+**Description:** Bandit compresses chunked responses, which could in principle stall SSE delivery.
+**Result:** for a streamable response `gzip`/`zstd` fall through to identity (the literal `false`
+streamable argument, `bandit/compression.ex:88-100`), while `deflate` is used with
+`:zlib.deflate(_, _, :sync)` **per chunk** (`:102-108`) — a per-chunk flush, so delivery is not
+stalled. Our own client is unaffected: it sends `accept-encoding: identity` (`client.ex:216-218`,
+MES-27). **Considered and rejected:** forcing `cache-control: no-transform` to disable compression
+(`compression.ex:65-70`) — it would disable it for the ordinary POST path too. Recorded so the next
+reader does not re-derive it.
+**Priority Hint:** low · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Limitation (CC-2, forward to MES-18): `MCP.Client` cannot consume a listen stream
+**Description:** `streamable_http/client.ex:299-300` parses a **complete** SSE body
+(`SSE.feed(SSE.new_parser(), body)`) returned by a blocking `Req` call — there is no incremental
+path, so it can never receive a second message on a held-open stream. Separately, its moduledoc
+claimed it "optionally opens a GET SSE stream", which its own inline comment already contradicted
+(A2a).
+**Resolution:** moduledoc corrected here (in scope, cheap, and it was a false claim); a streaming
+client path is **MES-18**, which already owned client-side listen. The end-to-end tests therefore
+use a raw `:gen_tcp` client — also the only way to control FIN timing, which T-9 and T-12 need.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** MES-18
+
+### Transferred to MES-29 (CC-3): `notifications/cancelled` has no plumbing at all
+**Description:** `dispatch.ex` returns `{:noreply, state}` for every unrecognised notification, so
+stdio cancellation is currently **swallowed**. This is new work rather than a modification.
+**Resolution:** transferred with the stdio half of the ticket, to **MES-29**, which also owns the
+shared-channel subscription registry, per-subscription-id ack ordering, the interleaving/ordering
+tests, and the no-state-across-reconnect statement (`stdio.mdx:109-115`,
+`subscriptions.mdx:159-161`). An obligation that transfers arrives with an owner (A8).
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** MES-29
+
+### Evidence (C4): which tests are regressions and which are positive controls
+**Description:** A7b requires this to be stated per test rather than left to read as a caught
+regression.
+**Regressions (fail at a pre-fix SHA for the right reason):** `capability_honesty_test.exs` only —
+the C3 defect predates this ticket. Demonstrated failing at `main` with `left: true, right: nil`.
+**Positive controls (the observability seam is new; nothing to regress):** every test in
+`subscriptions_dispatch_test.exs` and `subscriptions_stream_test.exs`. `subscriptions/listen` did
+not exist before, so there is no SHA at which they could fail for the right reason.
+**How the positive controls were shown capable of failing** — **six** deliberate breaks against
+the finished implementation, each confirming the *right* tests go red, enumerated one per break:
+(1) filter disabled in `frame/3` → 5 failures, all MUST NOT tests; (2) keep-alive frame never
+written → the keep-alive + teardown tests; (3) `close_frame` writes on `:peer_closed` → the
+close-asymmetry test; (4) `stream_sink` not stripped by Dispatch → the sink-separation test; (5)
+ack deferred until after the loop → 6 failures including the ordering test; (6) teardown callback
+skipped on stream-start failure → the MC-6 test. **CORRECTED in correction round 1 (review F7):
+this sentence said "five" while the close-out table it was written from listed six — (6) was the
+missing row.** A grouped count with no per-item enumeration behind it is exactly the A2d error, and
+it was findable only by holding the two reports side by side (A3). **Three assertions were rewritten during that check because they were weaker than
+their names claimed:** the ack-ordering test *raced* the ack rather than ordering against it (fixed
+by having the handler emit **inside** `handle_listen/3`); the keep-alive test asserted only that
+the stream survived and never looked for a keep-alive frame; and the abrupt-close test asserted
+teardown rather than the asymmetry (fixed by extracting the decision into
+`Subscription.close_frame/2`, since end to end it is **not** observable — once the peer is gone,
+"sent nothing" and "tried and failed" are indistinguishable from outside).
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### MES-15 correction round 1 (K1–K7, 2026-08-19) — CC/CODE_CREATOR
+
+Review verdict BLOCKING on F1 and F2; PM accepted all seven findings and issued a frozen
+seven-item contract (K1–K7, comment 24366). C1, C2, C3, C5, C6, C7 were discharged at review;
+C4 was discharged **in form and incomplete in substance**, which K2 closes.
+
+**K1 / F1+F2 (blocking) — teardown was reachable from two of the exits, not all of them.**
+`release_stream/1` and `notify_listen_closed/4` were called only from inside `open_stream/7`, so
+a listen **refused** by the handler (`{:error, code, message, state}`) and a **raise anywhere in
+the stream loop** ran neither: the handler was left holding a sink it had been given, and
+`ToolContext.stream/3` went on answering `:ok` — on the one ticket whose theme is not claiming
+what you cannot deliver. On HTTP/1 keep-alive the `{:mcp_stream, …}` messages then accumulated in
+the Bandit connection process, which outlives the request, for the life of the connection.
+**This is the same defect `145f4cb` was written to fix, on a neighbouring branch of the same
+function** — finding one instance of a shape and fixing only that instance, which is the A2c error
+in structural form. Fixed as a property over exits rather than as two patches: **five exits,
+enumerated in the code at the `subscriptions/listen` section header, all reaching one idempotent
+`teardown/4`** — (1) handler refusal, (2) stream-start failure, (3) lifetime expiry, (4) peer
+close, (5) an exception anywhere in the loop. (3) and (4) are one code path differing only in what
+goes on the wire; they are counted separately because what is being counted is ways **out**, not
+close reasons. There is no sixth for a server-initiated `:shutdown` — this driver cannot yet
+initiate one, and saying otherwise would be a padded count. (5) is an `after` around the whole
+stream lifecycle, which is what makes the enumeration a **property** rather than a checklist: an
+exit nobody named still unwinds through it. `teardown/4` is safe to call twice — `release_stream/1`
+already was, and the handler notification is claimed exactly once through a second `:atomics` slot
+via `compare_exchange` — so every exit calls it without needing to know whether another already
+has.
+**Contract change, and why it is not the driver's to infer:** `MCP.Server.Dispatch` gains a fourth
+return shape, `{:listen_refused, response, state}`, **gated on the same `config.streaming` flag as
+`{:stream, …}`** so the "a driver opts in; it is never surprised" guarantee is unchanged and a
+driver that already handles `{:stream, …}` has one clause to add and no new condition to check.
+It exists because the driver must distinguish a listen the handler **refused** (it ran, it holds a
+sink, it is owed a teardown) from the two refusals that never reach the handler — a malformed
+filter, and a non-streaming deployment — which are owed nothing: telling a handler that a
+subscription closed when it never opened is the same class of false claim, pointed the other way.
+Deriving that distinction from the response would mean re-deriving the dispatch's routing decisions
+outside the dispatch, from an error code a handler is free to choose itself.
+**A7b (new seams, failing direction demonstrated against the unfixed tree at `145f4cb`):** refusal
+test → `assert_receive {:listen_closed, "refuse-me", "denied"}` fails, "no matching message after
+2000ms, the process mailbox is empty"; raise test → same on `{:listen_closed, "raises", _}`. With
+the first assertion removed so the second could be reached, **both** show
+`assert {:error, :closed} = sink.(…)` failing with `right: :ok`. Both halves, both paths. These are
+positive controls shown capable of failing, **not** caught regressions.
+**Priority Hint:** high · **Blocking?:** was blocking · **Suggested Jira Ticket?:** No
+**CORRECTED in correction round 2 (review R1) — the count above is wrong and the shape it argues
+for is wrong.** There are **seven** exits, not five: a `handle_listen/3` that raises after
+capturing the sink, and a `:stream_start` that raises rather than returning `{:error, _}`, were
+neither listed nor covered. The paragraph above is left standing because the reasoning error in it
+is the useful part: "fixed as a property over exits rather than as two patches" was still a fix
+per **branch**, and a branch only exists once `Dispatch.dispatch/3` has returned a value to branch
+on — so no amount of enumerating branches could ever have reached the two exits that raise before
+there is one. See the round-2 entry below. (fixed here)
+
+**K2 / F4 — a false structural claim in three places, and a test that could not fail.**
+"The listen path starts no `NotificationCollector`" is false: `plug.ex:389` starts one for **every**
+POST, a listen included, and `:404-407` drains and stops it — `warn_dropped_request_scoped/2` exists
+precisely because it can have collected something. The claim overreached the code in the **safe**
+direction, which is why nothing broke. Corrected in all three places it appeared: the
+`MCP.Server.ToolContext` moduledoc, the adversarial-item-3 entry above (**by appended note, not by
+quiet edit** — this file is the permanent record, and a false claim silently deleted from it teaches
+the next reader nothing), and the close-out comment. The **true** property, which the plug's own
+comment already stated correctly: the collector's lifetime ends **strictly before** the stream's, so
+the two cannot overlap.
+T-7's first case could not fail — `refute is_pid(sub.honoured)` on a filter map, `assert
+%Subscription{} = sub` after it had already matched, and an `assert_raise FunctionClauseError` on
+`NotificationCollector.drain(sub.id)` that asserted a fact about the collector's own guard. All
+three pass unchanged against an implementation that starts a collector, which is the implementation.
+Replaced by an end-to-end test of the true property, in the driver where it lives, with a **positive
+control** (the same sink DID reach a live collector during `handle_listen/3` — the driver drained
+exactly one notification out of it and warned) and shown red under a deliberate break (collector not
+stopped before the stream opens): *"Expected to catch exit, got nothing"*.
+**This was the fourth weak assertion in the ticket.** Three were found by the author and reported;
+this one was found by the reviewer, **under the claim the author had flagged as least testable by
+its own tests**. The instinct was right and did not save it: the tests written by whoever wrote the
+construction were the ones that could not catch it.
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+**K3 / F3 — `usage-rules.md` ships in the Hex package, and three of its claims are now false.**
+It is in `mix.exs:47`'s package `files` and `:58`/`:63`'s docs `extras`, and it is the file aimed at
+**AI agents consuming this SDK** — so a false claim there is shipped instruction, not stale prose.
+Corrected: `:133-134` (`handle_subscribe/2` / `handle_unsubscribe/2` listed live with signatures →
+replaced by the surface that exists, `handle_listen/3`, `handle_listen_closed/3`,
+`supported_subscriptions/0`); `:199` ("GET for SSE listening" → there is no GET endpoint, GET is
+405); `:214` ("the server only advertises capabilities for callbacks your handler implements" — the
+exact rule C3 replaced → a callback is necessary and not sufficient).
+**Not corrected here, and it is a fence rather than an oversight:** `:199`'s `Mcp-Session-Id` half
+and `:203`'s "always call `connect/1` first" are pre-existing **MES-9** drift. **`usage-rules.md` is
+hereby added to MES-30's file list** (alongside `architecture.md`, `prd.md`, `onboarding.md`,
+`implementation-plan.md`) so the obligation arrives with an owner (A8) rather than being left in a
+review comment.
+**The enumeration went 5 → 13 → 16, and why is more useful to a later reader than the number:** the
+third pass found more **because it was a different grep, not a better one** (the reviewer's own
+observation, kept in its words). The first was the /plan's list of doc sites; the second re-grepped
+the retired callback names after the code change and found 8 more across `architecture.md` and
+`README.md`; the third reached `usage-rules.md` — a **shipped** doc that sits in neither `docs/`
+nor the source tree, so the first two questions were never going to touch it. An enumeration is
+only as wide as the question that generated it, which is why "I grepped again" is worth less to a
+later reader than **what** was asked the third time.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** MES-30 (inherits `usage-rules.md`)
+
+**K4 / F5 — C3 removed the SDK's over-claim and handed the same failure mode to the consumer.**
+"Ack ⊆ advertised" is structural and enforced (`restrict_to_advertised/2`, T-5). "Advertised ⊆
+honourable" **cannot** be: `supported_subscriptions/0` is static and zero-arity, `handle_listen/3`'s
+answer is per-request and per-principal, so at the moment the declaration is read there is no
+request and no principal to compare it against. **The unenforceability is the acceptable answer; its
+absence from the repo was not.** The callback doc now says the SDK takes the declaration on trust,
+and states what a handler declaring `resourceSubscriptions` and then refusing every URI leaves
+`server/discover` advertising.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+**K5 / F6 — a silent drop behind an `:ok`.** `Subscription.uri_allowed?/3` read
+`Map.get(params, "uri")`, so a `notifications/resources/updated` emitted with atom-keyed params
+(`%{uri: …}`) was dropped while the sink answered `:ok`. Every **other** notification type is
+indifferent to key style, because `Jason` encodes both to identical wire bytes — so this was an
+asymmetric footgun on one type, not a uniform rule anyone could learn. Of the two mechanisms the PM
+offered (accept both styles, or reject atom keys loudly), this takes the one that makes the
+behaviour **uniform**: the filter is now as indifferent as the encoder. Stated in the `stream/3`
+doc where a handler author meets it. The test asserts **both** directions — an atom-keyed allowed
+URI is framed **and** an atom-keyed disallowed one is still dropped — so the fix cannot have
+widened the filter into "atom keys bypass the check".
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+**K6 / F7 — two count corrections, and the control that caught both.** (1) The close-out's
+`+2969/-150` was the diffstat at `091b9d7`, one commit early; the tip at review was `+3036/-150`.
+Quoted from the final tip with its SHA in the hand-back. (2) The "five deliberate breaks" sentence
+in the C4 evidence entry above is corrected to **six**, per-item enumerated — the MC-6 row was the
+missing one. **Both were findable only by holding two reports side by side**, which is exactly the
+cheap cross-report control A3 names as owned by nobody; this ticket is now two more instances of it
+working, in a ticket that already carried per-item enumeration as an explicit DoD bullet.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+**K7 — mechanics.** All six gates re-run individually **after** the corrections (a gate result from
+before a code change is not evidence about the tree being handed back); `mix hex --version` still
+`2.5.1`, above the floor. Corrections land as their own commits on branch `MES-15`; the six reviewed
+commits are neither amended nor rebased, so the re-review can see exactly what changed. No version
+bump and no tag — still `2.0.0-dev.4`, the PM's to write, one increment for the whole ticket
+regardless of correction rounds (D4, as clarified at MES-14). No pre-granted merge gate: this goes
+back to the CODE_REVIEWER, because a fix to a found defect is written by the party now most
+convinced the failure is understood.
+**Out of scope and left alone, so the fence is explicit:** the h2 caveat (MES-19), the
+`supported_subscriptions/0` input validation (fails loudly at boot), `architecture.md` and the MES-9
+drift in `usage-rules.md` (MES-30).
+**One thing surfaced while fixing K1 and is REPORTED here rather than absorbed silently, because
+the contract does not grow while you are inside it:** the context handed to
+`handle_listen_closed/3` carried a live `:reply_sink` pointing at a collector the driver had
+**already stopped**. `NotificationCollector.push/3` is an `Agent.update` — a `GenServer.call` — so
+a handler emitting from its own teardown callback did not get "dropped", it **exited** with
+`{:noproc, {GenServer, :call, …}}`; `notify_listen_closed/4` rescues but does not catch exits, so
+that took the request process with it. The comment sitting on that line claimed the opposite ("a
+handler that emits from here is dropped"), which makes it a false claim in code as well as a crash
+path. Pre-existing on the stream exits, but **K1 makes it newly reachable on the refusal exit,
+where it would land before the refusal response is written and turn a clean `-32xxx` into a dropped
+connection** — a regression this round would have introduced. Fixed in the same commit (both sinks
+`nil`, the callback doc says so, and a test asserts it), *and* flagged here and in the hand-back so
+the PM can rule it out of scope and revert it if it judges the fence tighter than that. Evidence
+against the unfixed sink: `right: {:exit, {:noproc, {GenServer, :call, …}}}`.
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+
+### MES-15 correction round 2 (L1–L4, 2026-08-19) — CC/CODE_CREATOR
+
+Re-review verdict BLOCKING on **R1 alone**; K2–K7 discharged and frozen. PM contract L1–L4
+(comment 24370). R2 and R3 ride along in the same code.
+
+**L1 / R1 (blocking) — the exit count was wrong for the third time, and the count was the finding.**
+The PM's contract said six exits, the executor said five with a reason the PM accepted, and the
+reviewer counted against the code and found **seven** — two of them running less than the full
+teardown, one of them running neither call. Three parties, and the two who were confident were
+wrong in the same direction. **The reason it was findable at all is that round 1 put the
+enumeration in the code with an invitation to check it against the source; a count nobody can
+check is a claim, a count next to the code it describes is a test.** That property is kept, with
+the number corrected and the history of the number stated in situ (four → five → seven).
+
+The two missed exits — probed by the reviewer, reproduced here as tests:
+
+| Probe | Before | After |
+|---|---|---|
+| `handle_listen/3` raises after capturing the sink | wire 500, `handle_listen_closed/3` **not** called, sink still answering `:ok` | 500 unchanged; callback called; sink `{:error, :closed}` |
+| a custom `:stream_start` raises instead of returning `{:error, _}` | `release_stream/1` ran, `handle_listen_closed/3` **not** called | both halves run |
+
+**The diagnosis is F1's, one level up, and it is structural rather than arithmetic.** Round 1
+moved teardown from "reachable from two branches" to "reachable from five branches" and called it
+a property. It was not: a branch is chosen from a value `Dispatch.dispatch/3` must return in order
+to exist, so an exit that raises *before* that return has no branch to be reached from. **Fixed by
+establishing teardown ONCE around the whole listen lifecycle** — a `try/after` in `dispatch/6`
+that opens **before** the dispatch call, which is the seam the reviewer named. The seven exits are
+still enumerated at the section header, but they are now documentation of a shape rather than the
+mechanism: 2, 4 and any eighth nobody has thought of are covered by construction. The four exits
+that also tear down explicitly keep doing so — that buys nothing for reachability and buys the
+handler a more accurate `state` than the pre-request one the bracket can offer.
+
+**The one thing the bracket cannot do by construction: know whether `handle_listen/3` ran.** The
+obligation is armed for any `subscriptions/listen` request before anything can fail, and cleared
+**only** by a return value that proves the handler never ran — `{:reply, …}` (JSON mode's -32601,
+a malformed or absent filter's -32602, no `handle_listen/3` exported) or `{:noreply, …}` (a listen
+sent as a notification). `MCP.Server.Dispatch` returns those for a listen only from above the
+handler call, so the clearing is exact; a **raise** leaves it armed. That is deliberately
+conservative and it is an over-approximation: a raise inside dispatch but above the handler call
+would notify a handler that never ran. Over-telling costs one `handle_listen_closed/3` for an id
+the handler can recognise as unknown; under-telling is a leak nothing else reaps — and the PM's
+ruling picks the same tie-break ("a raise is *it ran*"). **The guard against over-telling is a
+test in its own right** (`a listen answered ABOVE the handler is owed no teardown callback`),
+without which the fix could have passed by simply always notifying.
+
+> **Appended in correction round 3 (review R4) — two sentences above were not true when written,
+> and neither is quietly edited.** (1) *"armed for any `subscriptions/listen` request"* was
+> **simply mis-stated**: it described the predicate that was intended, not the one that was
+> written. `listen_request?/1` read `Map.get(raw_message, "method")`, which arms for a strictly
+> **wider** class than "a listen request" — a message that is not a request at all arms it too.
+> M1 makes the code match the sentence rather than the sentence match the code. (2) *"an id the
+> handler can recognise as unknown"* was **wrong about the cost, and M1 repairs the cost**: the id
+> is whatever the client put in the message, so before M1 it could name a subscription that was
+> live on another connection. After M1 the over-approximation is reachable only through a raise
+> inside `MCP.Server.Dispatch` above the handler call — an SDK-internal fault, not a message a
+> stranger can post. **Residual, stated rather than left to be inferred:** subscription ids are
+> client-chosen JSON-RPC ids, so "an id the handler can recognise as unknown" describes the
+> ordinary case and is not a guarantee the SDK can make. That is now said in the shipped
+> `handle_listen_closed/3` doc (R5), not only here.
+
+**A7b (new seams; failing direction demonstrated against the unfixed tree at `c4b6578`, with
+`lib/` alone reverted so the new tests ran against the old driver):** raise-in-`handle_listen`
+test → `assert_receive {:listen_closed, "raise-in-listen", "alice"}` fails, "no matching message
+after 2000ms"; with that assertion removed so the next could be reached,
+`assert {:error, :closed} = sink.(…)` fails with `right: :ok` — **both** halves. Stream-start-raise
+test → `assert_receive {:listen_closed, "start-raises", _}` fails the same way; its sink assertion
+**passed** at the unfixed tree, because `release_stream/1` did run there. That is the reviewer's
+"half the property", reproduced rather than restated, and it is recorded because a test whose two
+assertions had different failing directions is evidence about the defect's shape. The
+owed-nothing guard test **passes at the unfixed tree** by construction — it guards against a
+regression this round could have introduced, not against the defect it fixed. These are positive
+controls shown capable of failing, **not** caught regressions.
+**Priority Hint:** high · **Blocking?:** was blocking · **Suggested Jira Ticket?:** No
+
+**L2 / R2 — an `after` is not a catch-all, and the code said it was.** The claim, not the
+behaviour, is the defect. Measured by the reviewer and not re-derived here: `after` runs for
+`raise`, `throw` and a self-initiated `exit`, and **not** for termination by signal — confirmed
+against the real driver by killing the Bandit connection process holding a live stream
+(`handle_listen_closed/3` not called, sink still `:ok`). Guaranteeing cleanup against a kill needs
+a monitoring process, which is construction, not a correction round; **the PM ruled the wording is
+what changes.** Narrowed in all three places the claim is made: the `subscriptions/listen` section
+comment in `plug.ex`, the shipped `handle_listen_closed/3` callback doc (a `.warning` admonition
+naming the one exit it is not called on, plus the pre-request-`state` consequence), and a new
+CHANGELOG *Known limitations* bullet. Written in the same voice as S-1's HTTP/1-only bound: the
+bound is stated, the reason it cannot be closed here is stated, and what a handler should do
+instead is stated. **Claiming a bound that does not hold is the one error this ticket has been
+most careful about everywhere else, and it should not survive in its own cleanup code.**
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+**L3 / R3 — a fault in the handler's teardown callback must not change what the client receives.**
+The residue of `c4b6578`, the round's own least-scrutinised commit. `notify_listen_closed/4`
+rescues but does not catch **exits**, and on the refusal exit `teardown/4` ran *before*
+`send_response/4` — so a handler whose `handle_listen_closed/3` exits for its own reasons (a call
+to a process the handler owns and has lost, not to anything the SDK gave it) turned a clean
+`-32603` refusal into a bare 500 with an empty body. Fixed both ways, deliberately: the guard now
+catches exits and throws as well as rescuing (that is the property, and it holds on every exit),
+and the refusal and stream-start-failure exits write the response **before** telling the handler
+(defence in depth, and the ordering `close_stream/7` already used for the stream exits). The test
+asserts the wire outcome and carries a **positive control** — the callback really did exit, and
+the driver logged it — without which a callback that quietly succeeded would satisfy it just as
+happily.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+**L4 — two recordings, no behaviour change.** (1) The T-7 replacement asserts
+`catch_exit {:noproc, _}`, coupling it to `NotificationCollector.push/3` being a `call`; if push
+ever became a `cast` the test would go red while the ordering property it guards still held.
+Brittle in the **safe** direction — a false red on a refactor, never a false green — so it is
+noted in situ and left as written. (2) On a **refused** listen, request-scoped notifications
+emitted during `handle_listen/3` ride the refusal response rather than being dropped with a
+warning, because `warn_dropped_request_scoped/2` is reached only from `open_stream/7`. That is
+correct — no stream opened, so the response stream is exactly where they belong — and the rule is
+"not on a listen stream", not "not on this request". Recorded next to the warning itself so the
+next reader does not read the asymmetry as an inconsistency.
+**Priority Hint:** low · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+**Mechanics.** All six gates re-run individually **after** the last code change; `mix hex --version`
+above the 2.5.1 floor. New commits on `MES-15` under the CC service identity; the thirteen existing
+commits are neither amended nor rebased, so the re-review sees the delta. No version bump and no
+tag — still `2.0.0-dev.4`, the PM's to write, one increment for the ticket regardless of rounds.
+**Out of scope and left alone, per the PM's fence:** cleanup against process kill (needs a
+monitor — L2 is a wording fix); the h2 caveat (MES-19); `supported_subscriptions/0` input
+validation; `architecture.md` and the MES-9 drift in `usage-rules.md` (MES-30).
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### MES-15 correction round 3 (M1–M3, 2026-08-19) — CC/CODE_CREATOR
+
+Re-review verdict BLOCKING on **R4 alone**; L1–L4 discharged and frozen — the reviewer confirms
+the round-2 bracket is established at the right seam and went looking for an eighth and a ninth
+exit, both of which the bracket ate. PM contract M1–M3 (comment 24374). **The bracket was right;
+the predicate deciding whether the bracket owed anything was not.**
+
+**M1 / R4 (blocking) — the thing that ARMS the obligation was not the thing that decides the
+request is a listen.** `listen_request?/1` read `Map.get(raw_message, "method")` — a string in the
+undecoded map. `MCP.Protocol.decode_message/1` classifies by **shape**, and its `cond` tests
+Response (`id` + `result`/`error`) **before** Request (`id` + `method`), so a message carrying all
+three decodes as a `%Response{}`, for which `MCP.Server.Dispatch` has no clause at all. It armed,
+raised a `FunctionClauseError` above every routing decision, and the bracket's `after` paid
+`handle_listen_closed/3` with a **client-chosen** subscription id.
+
+| Probe | At `0f12936` | After M1 |
+|---|---|---|
+| POST `{"jsonrpc":"2.0","id":"victim-sub-42","result":{},"method":"subscriptions/listen"}` | wire 500; `handle_listen/3` never routed, never reached; **`handle_listen_closed("victim-sub-42")` called** | 500 unchanged; no teardown callback |
+| the SAME message with `"method":"tools/list"` (the control — the method string is the only difference) | 500; no teardown callback | unchanged |
+| two connections, one instance: A holds a genuine live `sub-A`; B posts the crafted message with id `sub-A` | **`handle_listen_closed("sub-A")` fired on B's request** while A's stream stayed live and A's own sink still answered `:ok` | no teardown callback; A's stream still delivers; teardown for `sub-A` arrives only when A closes |
+
+**Why this was blocking and the round-2 over-approximation was not.** The PM's ruling covers a
+raise *inside* `Dispatch`, above the handler call, on a genuine listen request, and it was priced
+on a specific cost — "one `handle_listen_closed/3` for an id the handler can recognise as
+unknown". That price did not hold: **the id is whatever the client put in the message**, so it can
+be one that is currently live, on someone else's connection. The SDK told a handler a
+subscription had closed while it was open, on a stranger's say-so, and its own sink for that
+subscription disagreed. The previous two defects in this ticket needed a buggy handler; **this one
+needed a client.** It is also round 1's own principle — "telling a handler its subscription closed
+when it never opened is the same false claim pointed the other way" — broken in the other
+direction, and the guard test written for exactly that principle **passed**, because the hole is
+upstream of every branch that test can see.
+
+**Fixed by arming off the DECODED message:** `listen_request?/1` now matches
+`%MCP.Protocol.Messages.Request{method: method}` with a `false` fallback, called as
+`listen_request?(decoded)`. `decoded` is produced by `handle_post/2`'s `with`-chain strictly
+before `dispatch/6` is entered, **so nothing of R1's arm-before-anything-can-fail property is
+given up** — the arm still happens before the first thing that can fail. What changes is only
+*what* it is armed from: the driver's answer to "is this a listen?" is now the same one `Dispatch`
+will act on, so nothing arms an obligation that routing will not honour. One consequence recorded
+in situ: a listen sent as a **notification** now never arms at all, so the `{:noreply, _}` clause's
+clear is defence in depth rather than a live path — correct either way, and the comment there says
+which it is instead of describing a path that no longer exists.
+
+**A7 in its ORDINARY form — these two are CAUGHT REGRESSIONS, not positive controls, and they are
+kept in their own `describe` so they cannot be read as part of the round-1/round-2 control set.**
+R4 is a defect present at `0f12936`; both tests were demonstrated failing against it with `lib/`
+alone reverted:
+
+* *a Response-shaped message naming the method is not a listen (R4)* → `refute_receive
+  {:listen_closed, "crafted-listen", _}` fails with **"Unexpectedly received message
+  `{:listen_closed, "crafted-listen", "alice"}`"**. With that first refutation removed so the rest
+  of the test could be reached, the run **passes** at `0f12936` — which isolates the defect to the
+  method string: the identical message with `"method":"tools/list"` fires nothing, and the
+  positive control (a genuine listen that raises) is received.
+* *a second client cannot tear down a live subscription it does not own (R4)* → `refute_receive
+  {:listen_closed, "sub-A", _}` fails with **"Unexpectedly received message `{:listen_closed,
+  "sub-A", "alice"}`"** — on client B's request, while A's stream is live. This is the one that
+  shows the reach. Its positive control is that the same teardown **does** arrive for `sub-A` when
+  A itself closes, so the refutation cannot pass by the callback being unreachable in the fixture.
+
+**Priority Hint:** high · **Blocking?:** was blocking · **Suggested Jira Ticket?:** No
+
+**M2 / R5 — the bound was recorded where the SDK's authors read it, not where the people it
+constrains read it.** The over-approximation was stated honestly in a **private** comment on
+`arm_listen_teardown/1`. The **shipped** `@doc` on `handle_listen_closed/3` — what a handler
+author actually reads — said the callback is "called on every exit from a `subscriptions/listen`
+request" and never warned that it can arrive for a subscription that never opened. Round 2 added a
+`.warning` naming the one exit the callback is **not** called on; there was no counterpart naming
+the case where it **is** called and should not be. Both directions are now stated, in the callback
+doc and as a CHANGELOG *Known limitations* bullet, together with what a handler should do about
+it: the id is the listen request's JSON-RPC id, **chosen by the client**, so treat an unrecognised
+id as a no-op and make teardown idempotent. This applies **after** M1: the residual the PM ruled
+acceptable survives the fix, and it is precisely the bound the doc owes its reader.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+**M3 — the round-2 entry is corrected by appending, above.** Which of its two statements the fix
+repairs and which was simply mis-stated is stated there rather than here, so the correction sits
+where the false sentence is. **The finding worth carrying forward is not the fix — it is the
+question that found it:** *is the thing that arms an obligation the same thing that decides the
+request is the kind that owes it?* Round 1 asked "which branches reach teardown", round 2 asked
+"is teardown reachable from a branch at all", and both were about the **discharging** side. R4 is
+the **arming** side, and no amount of care on the discharge side could see it — the guard test
+built for the exact principle R4 violates passes, because it can only observe branches, and the
+defect is upstream of all of them.
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+**Found while fixing M1 (in-family, this ticket's own artifact): the R3 test is FLAKY at
+`0f12936`, and it is a race in the test, not in the SDK.** `a handler-side exit in teardown does
+not replace the refusal response (R3)` fails on `assert log =~ "handle_listen_closed/3 exit:"`
+with `left: ""` — reproduced on the **untouched branch tip** at seeds 0 and 1, passing at seed 2,
+so it predates this round's changes and is not caused by them. Diagnosis: `Req.post!` returns as
+soon as the response body is complete, and the driver runs teardown — and logs — **after** writing
+the response, so the line the test asserts on can land after the `capture_log/1` block has already
+ended. The callback assertion passes; only the log capture loses the race. Fixed in the test, not
+in the driver: the request goes over the file's raw client with `Connection: close` and reads to
+EOF, which makes the socket close a signal that the plug has **returned** (hence after teardown),
+followed by `Logger.flush/0` inside the block. Seeds 0–5 now green, including the two that failed.
+**A flaky test is a claim that is sometimes not checked**, and this one guards the R3 property the
+PM ruled on last round; reported rather than absorbed, in the same shape as round 2's in-family
+find.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+**Not fixed here, and it has an owner: MES-31 (backlog).** A non-map JSON body — a batch array, a
+bare string, a number, `null` — returns 500 rather than a `-32600` 400, because
+`check_routing_headers/2` calls `Map.get/2` on it before `decode_message/1` ever runs
+(`BadMapError`). Found by the reviewer while discharging the PM's item 6, **verified pre-existing
+on `main`** (`plug.ex:310`; `git diff main..0f12936` matches `check_routing_headers` zero times),
+and ruled by the PM to be MES-31 rather than absorbed into this ticket. Recorded here so the
+ticket that owns it is named next to the finding.
+**Priority Hint:** low · **Blocking?:** No · **Suggested Jira Ticket?:** MES-31 (raised)
+
+**Mechanics.** All six gates re-run individually **after** the last code change; `mix hex --version`
+above the 2.5.1 floor. New commits on `MES-15` under the CC service identity; the fourteen existing
+commits are neither amended nor rebased. No version bump and no tag — still `2.0.0-dev.4`, the
+PM's to write, one increment for the ticket regardless of rounds. **Out of scope and left alone,
+per the PM's fence:** cleanup against process kill (needs a monitor); the h2 caveat (MES-19);
+`supported_subscriptions/0` input validation; `architecture.md` and the MES-9 drift in
+`usage-rules.md` (MES-30); the non-map-body 500 (MES-31).
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No

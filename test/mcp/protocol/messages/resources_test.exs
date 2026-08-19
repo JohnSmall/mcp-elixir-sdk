@@ -81,10 +81,13 @@ defmodule MCP.Protocol.Messages.ResourcesTest do
     end
   end
 
-  describe "SubscribeParams" do
-    test "from_map/1 parses subscribe params" do
-      params = Resources.SubscribeParams.from_map(%{"uri" => "file:///a.txt"})
-      assert params.uri == "file:///a.txt"
+  describe "the retired subscribe surface" do
+    test "SubscribeParams and UnsubscribeParams no longer exist" do
+      # resources/subscribe and resources/unsubscribe are removed in 2026-07-28;
+      # their params structs went with them (MES-15). Kept as an assertion
+      # rather than deleted silently, so the retirement is a checked fact.
+      refute Code.ensure_loaded?(Resources.SubscribeParams)
+      refute Code.ensure_loaded?(Resources.UnsubscribeParams)
     end
   end
 end

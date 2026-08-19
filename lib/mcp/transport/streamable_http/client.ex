@@ -3,8 +3,19 @@ defmodule MCP.Transport.StreamableHTTP.Client do
   Streamable HTTP client transport for MCP.
 
   Sends JSON-RPC messages via HTTP POST and receives responses as either
-  `application/json` or `text/event-stream` (SSE). Optionally opens a
-  GET SSE stream for server-initiated messages.
+  `application/json` or `text/event-stream` (SSE).
+
+  > #### It cannot consume a long-lived stream {: .warning}
+  >
+  > This transport parses a **complete** SSE body returned by a blocking
+  > request, so it can read a batch of notifications followed by a response,
+  > but it can never receive a second message on a stream that stays open. A
+  > `subscriptions/listen` stream is therefore not consumable by this client —
+  > incremental client-side streaming is MES-18.
+  >
+  > An earlier version of this paragraph claimed the client "optionally opens a
+  > GET SSE stream for server-initiated messages". It does not, and the server
+  > no longer offers a GET endpoint to open.
 
   ## Options
 
@@ -184,8 +195,8 @@ defmodule MCP.Transport.StreamableHTTP.Client do
       {:ok, %Req.Response{status: status, headers: resp_headers, body: resp_body}}
       when status in [200, 201] ->
         # The content-encoding guard sits before the content-type branch, so it
-        # covers the JSON and SSE paths alike (the GET SSE stream is unimplemented;
-        # when added it must reuse this guard).
+        # covers the JSON and SSE paths alike. When incremental stream reading
+        # is added (MES-18) it must reuse this guard.
         case unexpected_content_encoding(resp_headers) do
           nil -> deliver_by_content_type(state, resp_headers, resp_body)
           coding -> reject_content_encoding(coding)

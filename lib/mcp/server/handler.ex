@@ -91,18 +91,6 @@ defmodule MCP.Server.Handler do
               | {:error, code :: integer(), message :: String.t(), state()}
 
   @doc """
-  Subscribe to resource updates. Called on `resources/subscribe`.
-  """
-  @callback handle_subscribe(uri :: String.t(), state()) ::
-              {:ok, state()} | {:error, code :: integer(), message :: String.t(), state()}
-
-  @doc """
-  Unsubscribe from resource updates. Called on `resources/unsubscribe`.
-  """
-  @callback handle_unsubscribe(uri :: String.t(), state()) ::
-              {:ok, state()} | {:error, code :: integer(), message :: String.t(), state()}
-
-  @doc """
   Return a list of resource templates. Called on `resources/templates/list`.
   """
   @callback handle_list_resource_templates(cursor(), state()) ::
@@ -181,6 +169,141 @@ defmodule MCP.Server.Handler do
   @callback handle_complete(ref :: map(), argument :: map(), context(), state()) ::
               {:ok, completion :: map(), state()}
 
+  # --- Subscriptions (2026-07-28 `subscriptions/listen`) ---
+
+  @doc """
+  Open a notification subscription. Called on `subscriptions/listen`.
+
+  Replaces the removed `resources/subscribe` / `resources/unsubscribe` pair and
+  the removed GET SSE endpoint: one long-lived request carries every kind of
+  server-initiated change notification the client opts in to.
+
+  Identity-capable, and therefore inheriting MC-1…MC-6 (see
+  `docs/stateless-identity-threading-design-spec.md`). `context.identity` is
+  the pipeline-established principal; the requested `filter` arrives in
+  `params` and is **model-reachable data**, so it is a request, never a grant.
+
+  ## Returning the honoured subset IS the authorization hook
+
+  Return `{:ok, honoured_filter, state}` where `honoured_filter` is the subset
+  of `filter` this principal may actually observe. A URI this caller may not
+  watch is simply absent from it, and the acknowledgment — which reports the
+  honoured subset, not the requested one — tells the client so. There is no
+  second authorization callback, because a second place to say no is a second
+  place to forget to.
+
+  **The check is made once, at open.** A principal whose access is revoked
+  mid-stream keeps learning *that* a subscribed URI changed — never its
+  content, since `notifications/resources/updated` carries a URI and nothing
+  else (schema.ts:1409-1418), and reading it still costs a fresh
+  `resources/read` under a freshly resolved identity. `:max_stream_lifetime`
+  bounds how long that lasts. This is a stated limitation, not an oversight; a
+  handler wanting per-emission checks can simply decline to emit.
+
+  Return `{:error, code, message, state}` to refuse the subscription outright.
+
+  `context.stream_sink` is live for the duration of this callback: store it
+  (see `MCP.Server.ToolContext.stream/3`) to emit notifications later, from any
+  process. Anything emitted before the acknowledgment reaches the wire is
+  queued, never reordered ahead of it.
+  """
+  @callback handle_listen(
+              filter :: map(),
+              context(),
+              state()
+            ) ::
+              {:ok, honoured :: map(), state()}
+              | {:error, code :: integer(), message :: String.t(), state()}
+
+  @doc """
+  A subscription has ended. Called after the stream closes, for any reason —
+  client disconnect, server teardown, or lifetime expiry.
+
+  Exists so the *handler* can drop the sink it stored in `handle_listen/3`.
+  Without it the SDK leaks nothing but every handler leaks a stale entry per
+  subscription, which is the same bug one layer up. The return value is
+  ignored; the stream is already gone.
+
+  **Called on every exit from a `subscriptions/listen` request**, not only the
+  ones that opened a stream: a handler that ran `handle_listen/3` and was handed
+  a sink is told when that sink dies, including when the listen was *refused*,
+  when the stream could not be started at all, and when `handle_listen/3`
+  itself raised — a callback that raised after capturing the sink still ran,
+  and may still hold a registration nothing else will reap.
+
+  > #### The one exit it is not called on {: .warning}
+  >
+  > A transport driver establishes this callback by unwinding the request, so
+  > it runs for a `raise`, a `throw` or a self-initiated `exit`, and **not** for
+  > a process killed by a signal from outside — `Process.exit(pid, :kill)`, or
+  > a supervisor shutting the connection down. Measured on the HTTP driver, not
+  > assumed. Guaranteeing cleanup against a kill needs a monitoring process the
+  > SDK does not have; if your handler's registrations must survive that, hold
+  > them somewhere that can outlive the request and reap them itself.
+  >
+  > On the exits where the request crashed rather than returned, the `state`
+  > passed here is the handler's **pre-request** state: there is no return value
+  > from which a newer one could have been carried.
+
+  > #### And one case where it IS called and should not be {: .warning}
+  >
+  > The obligation is armed for **any** `subscriptions/listen` request, before
+  > anything that could fail has run, so a request that raises inside the SDK's
+  > own dispatch *above* the `handle_listen/3` call pays this callback for a
+  > subscription that never opened — the driver cannot know at that point
+  > whether your handler ran, and it errs towards telling you rather than
+  > silently not. The `subscription_id` you are handed is the listen request's
+  > JSON-RPC id, chosen by the client that sent it, so treat an id you do not
+  > recognise as a no-op and make your teardown idempotent.
+
+  **The context has no channels.** Both `:stream_sink` and `:reply_sink` are
+  `nil` — the stream is over, and the request-scoped notification collector was
+  drained and stopped before the stream ever opened. Anything emitted from here
+  goes nowhere; drop your state and return.
+  """
+  @callback handle_listen_closed(subscription_id :: term(), context(), state()) :: any()
+
+  @doc """
+  Declare which `SubscriptionFilter` keys this handler can ever honour.
+
+  A **static** declaration, read once by `MCP.Server.Config.detect_capabilities/2`
+  to decide what the server advertises — as distinct from `handle_listen/3`'s
+  per-request, per-principal answer. Valid keys are
+  `MCP.Protocol.Messages.Subscriptions.filter_keys/0`.
+
+  When not implemented, the three `listChanged` keys are implied (they need
+  only a channel, which `handle_listen/3` supplies) and `resourceSubscriptions`
+  is not — per-URI resource watching is extra machinery that must be declared
+  rather than assumed. Implement this to advertise `resources.subscribe`, or to
+  advertise less than the default.
+
+  > #### The SDK takes this declaration on trust {: .warning}
+  >
+  > Two containments are involved and only one of them is enforced.
+  >
+  > **Enforced:** the acknowledgment can never claim more than `server/discover`
+  > advertised. `MCP.Server.Dispatch` intersects what the client asked for, what
+  > `handle_listen/3` returned, and what this declaration permits, so a handler
+  > that over-returns is corrected rather than believed.
+  >
+  > **Not enforceable, and stated here rather than left to be discovered:**
+  > that what you declare is what you will actually honour. This callback is
+  > **static and zero-arity**; `handle_listen/3`'s answer is per-request and
+  > per-principal. No check can compare them, because at the moment this is
+  > read there is no request and no principal to compare against. So a handler
+  > declaring `resourceSubscriptions` and then refusing every URI leaves
+  > `server/discover` advertising a capability the server will not honour —
+  > exactly the over-claim the SDK stopped making about itself when
+  > `detect_capabilities/2` started gating each claim on a channel to honour it
+  > on. Removing the SDK's own over-claim handed you the same failure mode; it
+  > should not have handed it to you silently.
+  >
+  > Declare the keys you can honour for **some** principal, and say no to the
+  > rest per-request by narrowing the honoured subset. Declaring a key you can
+  > never honour for anyone is a false advertisement no gate will catch.
+  """
+  @callback supported_subscriptions() :: [String.t()]
+
   @optional_callbacks [
     handle_list_tools: 2,
     handle_list_tools: 3,
@@ -190,8 +313,6 @@ defmodule MCP.Server.Handler do
     handle_list_resources: 3,
     handle_read_resource: 2,
     handle_read_resource: 3,
-    handle_subscribe: 2,
-    handle_unsubscribe: 2,
     handle_list_resource_templates: 2,
     handle_list_resource_templates: 3,
     handle_list_prompts: 2,
@@ -200,6 +321,9 @@ defmodule MCP.Server.Handler do
     handle_get_prompt: 4,
     handle_complete: 3,
     handle_complete: 4,
-    handle_set_log_level: 2
+    handle_set_log_level: 2,
+    handle_listen: 3,
+    handle_listen_closed: 3,
+    supported_subscriptions: 0
   ]
 end

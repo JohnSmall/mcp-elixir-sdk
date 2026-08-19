@@ -17,7 +17,6 @@ defmodule MCP.Conformance.ServerHandler do
   def init(_opts) do
     {:ok,
      %{
-       subscriptions: [],
        log_level: nil
      }}
   end
@@ -426,16 +425,6 @@ defmodule MCP.Conformance.ServerHandler do
 
   def handle_read_resource(uri, state) do
     {:error, -32_002, "Resource not found: #{uri}", state}
-  end
-
-  @impl true
-  def handle_subscribe(uri, state) do
-    {:ok, %{state | subscriptions: [uri | state.subscriptions]}}
-  end
-
-  @impl true
-  def handle_unsubscribe(uri, state) do
-    {:ok, %{state | subscriptions: List.delete(state.subscriptions, uri)}}
   end
 
   @impl true

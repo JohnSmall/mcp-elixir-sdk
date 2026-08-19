@@ -82,7 +82,8 @@ git clone https://github.com/modelcontextprotocol/conformance /workspace/samples
 | Feature | Methods | Description |
 |---------|---------|-------------|
 | **Tools** | `tools/list`, `tools/call` | Functions the LLM can call. Model-controlled. |
-| **Resources** | `resources/list`, `resources/read`, `resources/subscribe`, `resources/templates/list` | Data/context for the LLM. Application-controlled. |
+| **Resources** | `resources/list`, `resources/read`, `resources/templates/list` | Data/context for the LLM. Application-controlled. |
+| **Subscriptions** | `subscriptions/listen` | One long-lived stream carrying every opted-in change notification. Replaces both the removed GET SSE endpoint and the removed `resources/subscribe` / `resources/unsubscribe` pair. |
 | **Prompts** | `prompts/list`, `prompts/get` | Templates for user interactions. User-controlled. |
 | **Logging** | `logging/setLevel`, `notifications/message` | Server sends log messages to client. |
 | **Completions** | `completion/complete` | Argument auto-completion hints. |
@@ -444,7 +445,7 @@ Tools, resources, and prompts can return multiple content types:
 
 ## 14. Capability Negotiation Reference
 
-### Server Capabilities (declared in initialize response)
+### Server Capabilities (returned by `server/discover`)
 ```elixir
 %{
   tools: %{listChanged: true},           # Supports tools + change notifications
@@ -454,6 +455,15 @@ Tools, resources, and prompts can return multiple content types:
   completions: %{}                        # Supports auto-completion
 }
 ```
+
+**A `listChanged` or `subscribe` capability is EARNED, not inferred from a callback.**
+`MCP.Server.Config.detect_capabilities/2` advertises them only when the deployment can
+actually deliver on them: a driver that can hold a stream open (`streaming: true` — SSE mode,
+not `enable_json_response`) **and** a handler implementing `handle_listen/3`.
+`resources.subscribe` additionally requires the handler to declare `"resourceSubscriptions"`
+from `supported_subscriptions/0`. A capability that cannot be delivered is **absent** from the
+map rather than present-and-`false`. So the shape above is what a fully-equipped server sends;
+a JSON-mode server sends `%{tools: %{}, resources: %{}, prompts: %{}, completions: %{}}`.
 
 ### Client Capabilities (declared in initialize request)
 ```elixir

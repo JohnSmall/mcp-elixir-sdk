@@ -237,8 +237,6 @@ MCP.Client (GenServer)
   |     list_resources/2     → resources/list
   |     read_resource/2-3    → resources/read
   |     list_resource_templates/2 → resources/templates/list
-  |     subscribe_resource/2-3    → resources/subscribe
-  |     unsubscribe_resource/2-3  → resources/unsubscribe
   |     list_prompts/2       → prompts/list
   |     get_prompt/3-4       → prompts/get
   |     ping/1-2             → ping (works pre-init)
@@ -315,7 +313,7 @@ MCP.Server (GenServer)
   |     ping → empty response (works pre-init)
   |     tools/list, tools/call → dispatch to handler
   |     resources/list, resources/read → dispatch to handler
-  |     resources/subscribe, resources/unsubscribe → dispatch to handler
+  |     subscriptions/listen → open a notification stream (HTTP only)
   |     resources/templates/list → dispatch to handler
   |     prompts/list, prompts/get → dispatch to handler
   |     completion/complete → dispatch to handler
@@ -336,8 +334,9 @@ handler module exports via `__info__(:functions)`.
 @callback handle_call_tool(name, arguments, context, state) :: {:ok, content, state} | {:error, code, msg, state}  # async (Phase 7)
 @callback handle_list_resources(cursor, state) :: {:ok, resources, next_cursor, state}
 @callback handle_read_resource(uri, state) :: {:ok, contents, state} | {:error, code, msg, state}
-@callback handle_subscribe(uri, state) :: {:ok, state} | {:error, code, msg, state}
-@callback handle_unsubscribe(uri, state) :: {:ok, state} | {:error, code, msg, state}
+@callback handle_listen(filter, context, state) :: {:ok, honoured, state} | {:error, code, msg, state}
+@callback handle_listen_closed(subscription_id, context, state) :: any()
+@callback supported_subscriptions() :: [String.t()]
 @callback handle_list_resource_templates(cursor, state) :: {:ok, templates, next_cursor, state}
 @callback handle_list_prompts(cursor, state) :: {:ok, prompts, next_cursor, state}
 @callback handle_get_prompt(name, arguments, state) :: {:ok, result, state} | {:error, code, msg, state}
@@ -390,12 +389,18 @@ Key components:
 
 The server inspects `handler_module.__info__(:functions)` to detect which
 callbacks are implemented, then builds `%ServerCapabilities{}` accordingly:
-- `handle_list_tools/2` → tools capability (with listChanged)
-- `handle_list_resources/2` → resources capability (with listChanged)
-- `handle_subscribe/2` → resources.subscribe capability
-- `handle_list_prompts/2` → prompts capability (with listChanged)
+- `handle_list_tools/2` → tools capability
+- `handle_list_resources/2` → resources capability
+- `handle_list_prompts/2` → prompts capability
 - `handle_set_log_level/2` → logging capability
 - `handle_complete/3` → completions capability
+
+**Notification capabilities are not auto-detected — they are earned** (MES-15). A
+`listChanged` claim needs a channel to honour it on, which a list callback's presence does not
+imply, so `Config.detect_capabilities/2` requires *both* a driver that can hold a stream open
+(`streaming: true`) *and* a handler implementing `handle_listen/3`. `resources.subscribe`
+requires the handler to declare `"resourceSubscriptions"` from `supported_subscriptions/0`; it
+is never inferred. A capability that cannot be delivered is absent from the map, not `false`.
 
 ---
 

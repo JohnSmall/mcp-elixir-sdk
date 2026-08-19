@@ -31,6 +31,7 @@ defmodule MCP.Server.Connection do
   require Logger
 
   alias MCP.Protocol
+  alias MCP.Protocol.Error
   alias MCP.Protocol.Messages.{Notification, Request, Response}
   alias MCP.Server.{Config, Dispatch, ToolContext}
 
@@ -63,7 +64,15 @@ defmodule MCP.Server.Connection do
     {handler_module, handler_opts} = handler_spec
 
     identity = Keyword.get(opts, :identity, Keyword.get(handler_opts, :identity))
-    config_opts = Keyword.put(opts, :handler_opts, handler_opts)
+
+    # stdio/in-process subscription streams are MES-29, not this driver's
+    # capability today. Declaring `streaming: false` is what makes that honest:
+    # nothing list-changed is advertised over this transport, and dispatch
+    # cannot hand this driver a streaming result (see `handle_stream_result/2`).
+    config_opts =
+      opts
+      |> Keyword.put(:handler_opts, handler_opts)
+      |> Keyword.put_new(:streaming, false)
 
     with {:ok, config} <- Config.build(handler_module, config_opts),
          {:ok, module, pid} <- start_transport(transport_spec) do
@@ -133,7 +142,55 @@ defmodule MCP.Server.Connection do
 
       {:noreply, _handler_state} ->
         {:noreply, state}
+
+      # Unreachable for the same reason as `{:stream, ...}` below, and by the
+      # same flag: a handler refusal of a listen can only arise after
+      # `handle_listen/3` ran, which needs `streaming: true`. Answered like any
+      # other reply — the refusal response IS the right thing to put on the
+      # wire, and there is no stream on this driver to tear down.
+      {:listen_refused, response, _handler_state} ->
+        state.transport_module.send_message(state.transport_pid, response)
+        {:noreply, state}
+
+      {:stream, subscription, _handler_state} ->
+        reject_stream(subscription, request_id, state)
     end
+  end
+
+  # Unreachable by construction: this driver declares `streaming: false`, and
+  # `MCP.Server.Dispatch` returns `{:stream, ...}` only when that flag is true —
+  # so a `subscriptions/listen` request here is answered -32601 long before it
+  # gets this far. The clause exists anyway because the alternative to an
+  # explicit rejection is a FunctionClauseError, which the compiler does not
+  # catch and dialyzer does not flag: a `case` is exhaustive at runtime or not
+  # at all. It is deliberately loud rather than silent — a stream that was
+  # opened and then dropped without a word would look to the client exactly
+  # like a working subscription that never fires.
+  #
+  # MES-29 replaces this with real stdio subscription support (shared-channel
+  # registry, per-subscription-id ack ordering, notifications/cancelled
+  # teardown). Until then this transport genuinely does not have the feature,
+  # and says so.
+  defp reject_stream(subscription, request_id, state) do
+    Logger.error(
+      "MCP.Server.Connection: received a streaming dispatch result for subscription " <>
+        "#{inspect(subscription.id)}, but this driver declares streaming: false. " <>
+        "Refusing the subscription. This indicates the dispatch config was built " <>
+        "with :streaming true for an owner-based transport."
+    )
+
+    response = %{
+      "jsonrpc" => "2.0",
+      "id" => request_id,
+      "error" => %{
+        "code" => Error.method_not_found("subscriptions/listen").code,
+        "message" => "Method not found",
+        "data" => "subscriptions/listen is not supported by this transport"
+      }
+    }
+
+    state.transport_module.send_message(state.transport_pid, response)
+    {:noreply, state}
   end
 
   # Per-request notification emitter: writes straight to the transport (no

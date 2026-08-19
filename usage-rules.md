@@ -130,8 +130,9 @@ end
 | `handle_get_prompt/3` | 3 | `{:ok, result, state}` or `{:error, code, message, state}` |
 | `handle_complete/3` | 3 | `{:ok, completion, state}` |
 | `handle_set_log_level/2` | 2 | `{:ok, state}` |
-| `handle_subscribe/2` | 2 | `{:ok, state}` or `{:error, code, message, state}` |
-| `handle_unsubscribe/2` | 2 | `{:ok, state}` or `{:error, code, message, state}` |
+| `handle_listen/3` | 3 | `{:ok, honoured_filter, state}` or `{:error, code, message, state}` |
+| `handle_listen_closed/3` | 3 | ignored (the stream is already gone) |
+| `supported_subscriptions/0` | 0 | `["toolsListChanged", ...]` — which filter keys you can honour |
 | `handle_list_resource_templates/2` | 2 | `{:ok, templates, next_cursor, state}` |
 
 ### Starting a Server
@@ -196,7 +197,9 @@ end
 - Client: `{MCP.Transport.StreamableHTTP.Client, url: "http://host:port/mcp"}`
 - Server: Use `MCP.Transport.StreamableHTTP.Plug` with Bandit (see above)
 - Requires `:req`, `:plug`, and `:bandit` dependencies.
-- Uses POST for sending, GET for SSE listening, `MCP-Session-Id` header for stateful sessions.
+- Uses POST for sending. **There is no GET endpoint** — `GET` is `405`. A POST response is either
+  JSON or an SSE stream, and a `subscriptions/listen` POST is answered with an SSE stream held
+  open. `MCP-Session-Id` header for stateful sessions.
 
 ## Critical Gotchas
 
@@ -212,7 +215,7 @@ end
 
 6. **Error tuples include state.** All error returns are `{:error, code, message, state}` — don't forget to return the handler state.
 
-7. **Capability auto-detection.** The server only advertises capabilities for callbacks your handler implements. No need to configure capabilities manually.
+7. **Capability auto-detection — a callback is necessary, not sufficient.** The server advertises a capability only when the deployment can actually honour it: the three `listChanged` claims need a callback **and** a transport that can hold a stream open (SSE-mode HTTP, plus `handle_listen/3` on your handler), because there is no other channel a change notification can travel on. `resources.subscribe` is never inferred at all — declare it with `supported_subscriptions/0`. An undeliverable capability is **absent** from `server/discover`, not present-and-false. No need to configure capabilities manually.
 
 8. **JSON-RPC 2.0 compliance.** All messages are valid JSON-RPC 2.0. IDs are unique per session, never null.
 

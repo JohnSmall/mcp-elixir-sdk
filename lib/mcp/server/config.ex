@@ -18,8 +18,15 @@ defmodule MCP.Server.Config do
         capabilities: ServerCapabilities.t(),
         instructions: String.t() | nil,
         protocol_version: String.t(),
-        cache_defaults: {non_neg_integer(), String.t()}
+        cache_defaults: {non_neg_integer(), String.t()},
+        streaming: boolean()
       }
+
+  `:streaming` records whether the **driver** can hold a response stream open
+  (`MCP.Transport.StreamableHTTP.Plug` in SSE mode: yes; in
+  `enable_json_response` mode: no). It gates both what the server advertises
+  (see `detect_capabilities/2`) and whether `MCP.Server.Dispatch` will ever
+  return a streaming result to that driver.
 
   `handler.init/1` is called once with the **static** handler options
   (non-identity launch config such as `region:`). The HTTP per-request identity
@@ -46,6 +53,8 @@ defmodule MCP.Server.Config do
 
   ## Options of note
 
+    * `:streaming` — whether the calling driver can hold a response stream open
+      (default `false`). See the `config` shape above.
     * `:cache_defaults` — `{ttl_ms, cache_scope}` applied to cacheable results
       (`tools/list`, `resources/list`, `resources/read`, etc. via
       `CacheableResult`, SEP-2549). Defaults to `{0, "public"}` — **no-store**,
@@ -68,6 +77,8 @@ defmodule MCP.Server.Config do
   def build(handler_module, opts) do
     handler_opts = Keyword.get(opts, :handler_opts, [])
 
+    streaming = Keyword.get(opts, :streaming, false)
+
     case handler_module.init(handler_opts) do
       {:ok, handler_state} ->
         {:ok,
@@ -75,10 +86,11 @@ defmodule MCP.Server.Config do
            handler_module: handler_module,
            handler_state: handler_state,
            server_info: build_server_info(Keyword.get(opts, :server_info, default_info())),
-           capabilities: detect_capabilities(handler_module),
+           capabilities: detect_capabilities(handler_module, streaming: streaming),
            instructions: Keyword.get(opts, :instructions),
            protocol_version: Dispatch.protocol_version(),
-           cache_defaults: Keyword.get(opts, :cache_defaults, {0, "public"})
+           cache_defaults: Keyword.get(opts, :cache_defaults, {0, "public"}),
+           streaming: streaming
          }}
 
       {:error, reason} ->
@@ -86,23 +98,96 @@ defmodule MCP.Server.Config do
     end
   end
 
-  @doc "Detects server capabilities from the handler's stateless (context-bearing) callback arities."
-  @spec detect_capabilities(module()) :: ServerCapabilities.t()
-  def detect_capabilities(handler_module) do
+  @doc """
+  Detects server capabilities from the handler's stateless (context-bearing)
+  callback arities and from whether this deployment can actually deliver
+  server-initiated notifications.
+
+  ## Why `:streaming` is part of capability detection
+
+  A capability is a **claim**, and a claim the deployment cannot honour is a
+  defect whether or not anything downstream notices. `listChanged: true` says
+  "I will tell you when this list changes"; delivering on it requires a
+  *channel* to say it on. In the 2026-07-28 stateless core the only such
+  channel is a `subscriptions/listen` stream, which requires both
+
+    * a driver that can hold a stream open (`:streaming`), and
+    * a handler that implements `c:MCP.Server.Handler.handle_listen/3`, since
+      the SDK never invents notifications of its own.
+
+  Neither is inferable from a list callback's presence, so both are checked
+  here. A handler with `handle_list_tools/3` behind a JSON-mode driver
+  advertises no `tools.listChanged` — correctly, because that deployment has
+  no way to send one.
+
+  ## `resources.subscribe` is declared, never inferred
+
+  The three `listChanged` capabilities follow from having the corresponding
+  list callback: nothing beyond a channel is needed to emit them. Per-URI
+  resource watching (`resourceSubscriptions`, the successor to the removed
+  `resources/subscribe` RPC — schema.ts:1287, :846-855) is extra machinery a
+  handler either has or does not, so it is advertised only when the handler
+  **says so** via the optional `c:MCP.Server.Handler.supported_subscriptions/0`
+  declaration. Inferring it would reproduce exactly the over-claim this
+  function exists to prevent.
+
+  ## Options
+
+    * `:streaming` — whether the calling driver can hold a response stream
+      open. Default `false`, the safe direction: a driver that does not say it
+      can stream is assumed unable to, so nothing is over-claimed by omission.
+  """
+  @spec detect_capabilities(module(), keyword()) :: ServerCapabilities.t()
+  def detect_capabilities(handler_module, opts \\ []) do
     callbacks = handler_module.__info__(:functions)
+    deliverable? = Keyword.get(opts, :streaming, false) and {:handle_listen, 3} in callbacks
+    declared = declared_subscriptions(handler_module, callbacks)
 
     %ServerCapabilities{
-      tools: if({:handle_list_tools, 3} in callbacks, do: %ToolCapabilities{list_changed: true}),
-      resources: detect_resource_capabilities(callbacks),
+      tools:
+        if({:handle_list_tools, 3} in callbacks,
+          do: %ToolCapabilities{
+            list_changed: honoured(deliverable?, declared, "toolsListChanged")
+          }
+        ),
+      resources: detect_resource_capabilities(callbacks, deliverable?, declared),
       prompts:
-        if({:handle_list_prompts, 3} in callbacks, do: %PromptCapabilities{list_changed: true}),
+        if({:handle_list_prompts, 3} in callbacks,
+          do: %PromptCapabilities{
+            list_changed: honoured(deliverable?, declared, "promptsListChanged")
+          }
+        ),
       completions: if({:handle_complete, 4} in callbacks, do: %CompletionCapabilities{})
     }
   end
 
-  defp detect_resource_capabilities(callbacks) do
+  defp detect_resource_capabilities(callbacks, deliverable?, declared) do
     if {:handle_list_resources, 3} in callbacks do
-      %ResourceCapabilities{list_changed: true}
+      %ResourceCapabilities{
+        list_changed: honoured(deliverable?, declared, "resourcesListChanged"),
+        subscribe: honoured(deliverable?, declared, "resourceSubscriptions")
+      }
+    end
+  end
+
+  # `nil` rather than `false` for a capability we cannot deliver: the encoder
+  # drops nil keys, so the capability is *absent* from the wire rather than
+  # present-and-false. Absent is the honest shape — "I make no such claim" —
+  # and it is what a server without the feature has always sent.
+  defp honoured(deliverable?, declared, key) do
+    if deliverable? and key in declared, do: true
+  end
+
+  # The filter keys a handler declares it can honour. Absent the optional
+  # declaration, the three list-changed keys are implied (they need only a
+  # channel) and `resourceSubscriptions` is not (it needs per-URI watching).
+  @implied_subscriptions ["toolsListChanged", "promptsListChanged", "resourcesListChanged"]
+
+  defp declared_subscriptions(handler_module, callbacks) do
+    if {:supported_subscriptions, 0} in callbacks do
+      handler_module.supported_subscriptions()
+    else
+      @implied_subscriptions
     end
   end
 

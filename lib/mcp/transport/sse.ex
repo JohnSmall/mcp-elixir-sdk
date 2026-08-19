@@ -79,6 +79,28 @@ defmodule MCP.Transport.SSE do
   end
 
   @doc """
+  Returns a bare SSE **comment line** — the keep-alive frame.
+
+  Per the SSE specification any line beginning with a colon is a comment
+  carrying no event data, and clients must ignore it rather than treat it as
+  malformed input. The 2026-07-28 transport encourages emitting one
+  periodically on long-lived streams — in particular a `subscriptions/listen`
+  response stream — so intermediaries and client idle timeouts do not close a
+  connection during a quiet period (streamable-http.mdx:145-155, whose own
+  example is `:\r\n`).
+
+  This exists because `encode_event/1` **cannot** produce one: it always
+  appends a `data:` line (see `add_data_field/2`), which is correct for an
+  event and wrong for a comment. Our own parser already ignores comments —
+  `parse_field(":" <> _rest, acc)` — so the two directions agree.
+
+      iex> MCP.Transport.SSE.comment()
+      ":\r\n"
+  """
+  @spec comment() :: String.t()
+  def comment, do: ":\r\n"
+
+  @doc """
   Decodes an SSE event string into an event map.
 
   Parses the standard SSE fields (event, id, data, retry) from the
