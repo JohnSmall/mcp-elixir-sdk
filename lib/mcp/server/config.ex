@@ -19,6 +19,7 @@ defmodule MCP.Server.Config do
         instructions: String.t() | nil,
         protocol_version: String.t(),
         cache_defaults: {non_neg_integer(), String.t()},
+        tool_order: :name | :handler,
         streaming: boolean()
       }
 
@@ -60,6 +61,9 @@ defmodule MCP.Server.Config do
       (`tools/list`, `resources/list`, `resources/read`, etc. via
       `CacheableResult`, SEP-2549). Defaults to `{0, "public"}` — **no-store**,
       so nothing is cached and there is no cross-principal cache exposure.
+    * `:tool_order` — how `tools/list` orders the tools your handler returned.
+      `:name` (default) sorts each response by the tool's `"name"`; `:handler`
+      passes your order through verbatim. See the section below.
     * `:extensions` — MCP extensions (SEP-2133) this server supports, as
       `%{identifier => settings_object}` (schema.ts:882). Default `nil`:
       **this SDK implements no extension**, and a server declares one only
@@ -86,6 +90,35 @@ defmodule MCP.Server.Config do
   > author-responsibility boundary), so this is a configuration guarantee you
   > own. The shipped default (`{0, "public"}`) is safe because nothing is
   > stored.
+
+  ## `:tool_order` — what the default guarantees, and what it does not
+
+  `server/tools.mdx` (2026-07-28) makes deterministic `tools/list` ordering a
+  **SHOULD**, and states the requirement as *stability*, not sortedness: *"the
+  same ordering across requests when the underlying set of tools has not
+  changed"*. A curated, non-alphabetical order that never changes already
+  satisfies it.
+
+  So this is an option and not an unconditional sort. `:name` is the default
+  because it closes the requirement for the handler who never considered
+  ordering — a registry backed by an unordered store, whose iteration order
+  depends on how it was populated. That is the realistic case under the
+  2026-07-28 stateless core, where any instance behind a balancer may serve any
+  request: two instances holding the identical tool set can disagree on its
+  order, and a client's tool-list cache is invalidated by which instance
+  answered. `:handler` preserves a curated order rather than silently
+  overriding one that was already conformant — the same reason
+  `MCP.Server.Handler` declines to enforce the `outputSchema` SHOULD against
+  you.
+
+  > #### The bound {: .info}
+  >
+  > The guarantee is **deterministic within each response, given a
+  > deterministic page** — not "this SDK makes your listing deterministic".
+  > `tools/list` is paginated and the sort is applied per response: sorting a
+  > page does not make the concatenated listing sorted, and if your own paging
+  > returns different page *contents* per request, per-page sorting neither
+  > fixes that nor reveals it. Deterministic paging remains yours.
   """
   @spec build(module(), keyword()) :: {:ok, map()} | {:error, term()}
   def build(handler_module, opts) do
@@ -107,6 +140,7 @@ defmodule MCP.Server.Config do
            instructions: Keyword.get(opts, :instructions),
            protocol_version: Dispatch.protocol_version(),
            cache_defaults: Keyword.get(opts, :cache_defaults, {0, "public"}),
+           tool_order: tool_order(Keyword.get(opts, :tool_order, :name)),
            streaming: streaming
          }}
 
@@ -219,6 +253,25 @@ defmodule MCP.Server.Config do
       Extensions.normalise(declared, source: "MCP.Server.Config.build/2 `:extensions`")
 
     %{capabilities | extensions: normalised}
+  end
+
+  # `:tool_order` is validated here, at config-build time, for the same reason
+  # `:extensions` is: a mistake in this option must not be able to surface later
+  # than this call. An unrecognised value falls back to the default rather than
+  # raising — the failure mode of a typo should be "you got the safe default and
+  # were told", not "your server would not start".
+  defp tool_order(order) when order in [:name, :handler], do: order
+
+  defp tool_order(other) do
+    require Logger
+
+    Logger.warning("""
+    MCP.Server.Config.build/2: unrecognised `:tool_order` #{inspect(other)}; \
+    expected :name or :handler. Falling back to :name (sort each tools/list \
+    response by tool name).\
+    """)
+
+    :name
   end
 
   defp build_server_info(%Implementation{} = impl), do: impl

@@ -5,7 +5,7 @@
 
 ## What This Package Does
 
-`mcp_elixir_sdk` is an Elixir SDK for the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) — an open protocol for integrating LLM applications with external data sources and tools. It provides both **client** and **server** implementations with pluggable transports. Protocol version: **2025-11-25**.
+`mcp_elixir_sdk` is an Elixir SDK for the [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) — an open protocol for integrating LLM applications with external data sources and tools. It provides both **client** and **server** implementations with pluggable transports. Protocol version: **2026-07-28** — the stateless core, with no `initialize` handshake and no session. 2025-11-25 is **not** supported on this line; it is what the published `1.x` releases on Hex implement.
 
 Public modules live under the `MCP.*` namespace (e.g. `MCP.Client`, `MCP.Server`).
 
@@ -38,7 +38,7 @@ Always provide `:transport` and `:client_info`:
 
 ### Connection Lifecycle
 
-You **must** call `connect/1` before any other operation. It performs the MCP initialization handshake:
+`connect/1` probes the server with `server/discover` — the stateless replacement for the removed `initialize` handshake. It is **discovery, not a precondition**: measured on this line, `MCP.Client.list_tools/1` succeeds with no prior `connect/1`. Call it when you want the server's info and capabilities before you use them:
 
 ```elixir
 {:ok, info} = MCP.Client.connect(client)
@@ -51,7 +51,7 @@ Call `MCP.Client.close/1` when done.
 
 | Function | Purpose |
 |----------|---------|
-| `connect/1` | Initialize handshake (required first) |
+| `connect/1` | `server/discover` probe — returns server info and capabilities (not a precondition) |
 | `list_tools/1,2` | List server tools (with optional cursor) |
 | `call_tool/3,4` | Call a tool by name with arguments |
 | `list_resources/1,2` | List server resources |
@@ -252,7 +252,7 @@ end
 
 ## Critical Gotchas
 
-1. **Always call `connect/1` first.** No operations work before the initialization handshake completes (except ping).
+1. **`connect/1` is discovery, not a gate — and this changed at 2026-07-28.** There is no `initialize` handshake to complete, and the client is `:ready` from `start_link/1`. Measured: `list_tools/1` returns `{:ok, …}` with no prior `connect/1`. Call it anyway when your code branches on `server_capabilities/1` or `server_info/1`, which are populated by it.
 
 2. **Sampling over HTTP times out.** When using `ToolContext.request_sampling/2` over Streamable HTTP, the client's `Req.post` blocks until the SSE stream completes, so the client cannot respond to the sampling request. The server's `request_timeout` (default 30s) returns `{:error, :timeout}`. **Always handle the error case.** Sampling works correctly over stdio.
 
@@ -266,7 +266,7 @@ end
 
 7. **Capability auto-detection — a callback is necessary, not sufficient.** The server advertises a capability only when the deployment can actually honour it: the three `listChanged` claims need a callback **and** a transport that can hold a stream open (SSE-mode HTTP, plus `handle_listen/3` on your handler), because there is no other channel a change notification can travel on. `resources.subscribe` is never inferred at all — declare it with `supported_subscriptions/0`. An undeliverable capability is **absent** from `server/discover`, not present-and-false. No need to configure capabilities manually.
 
-8. **JSON-RPC 2.0 compliance.** All messages are valid JSON-RPC 2.0. IDs are unique per session, never null.
+8. **JSON-RPC 2.0 compliance.** All messages are valid JSON-RPC 2.0. IDs are unique per client, never null — there is no session to scope them to.
 
 9. **Extensions (SEP-2133) — this SDK supports none, and that is a behaviour.** The
    negotiation surface is two optional map fields, one on each capabilities object

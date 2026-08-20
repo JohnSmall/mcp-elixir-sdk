@@ -37,6 +37,17 @@ defmodule MCP.Server.Handler do
   validates either one. Three consequences are policy, not accident, and each
   is stated here so it is a decision rather than an omission:
 
+  > #### One exception, and it is to the *list*, never to a tool {: .info}
+  >
+  > "Verbatim" covers every tool map's **contents**. It no longer covers the
+  > **order of the list**: by default `tools/list` sorts each response by tool
+  > name, because `server/tools.mdx` (2026-07-28) makes deterministic ordering a
+  > SHOULD and a handler backed by an unordered store does not meet it. No tool
+  > map is altered, none is added or dropped — only the sequence changes. Set
+  > `tool_order: :handler` on `MCP.Server.Config.build/2` to keep your order,
+  > which is the right choice if it is curated and stable (a stable curated
+  > order is itself conformant — the SHOULD is about stability, not sortedness).
+
   * **Arguments are not validated against `inputSchema`.** `c:handle_call_tool/3,4`
     receives the peer's `arguments` map exactly as decoded — nothing is
     re-ordered, coerced, defaulted or `$ref`-expanded on the way in. Validating

@@ -15,6 +15,22 @@ release. Public API additions are recorded here as they land rather than deferre
 release — a consumer scans a CHANGELOG for exactly that.
 
 ### Added
+- **Deterministic `tools/list` ordering** — `MCP.Server.Config.build/2` gains **`:tool_order`**.
+  The default, **`:name`**, sorts each `tools/list` response by the tool's `"name"`;
+  **`:handler`** passes your order through verbatim. `server/tools.mdx` (2026-07-28) makes
+  deterministic ordering a **SHOULD** and states it as *stability* — *"the same ordering
+  across requests when the underlying set of tools has not changed"* — not sortedness, so a
+  curated non-alphabetical order is already conformant and `:handler` exists to preserve it
+  rather than override it. The default closes the requirement for a registry backed by an
+  unordered store, whose iteration order depends on how it was populated: under the
+  2026-07-28 stateless core any instance behind a balancer may serve any request, so two
+  instances holding the identical tool set can otherwise disagree on its order and
+  invalidate a client's tool-list cache. **The bound, stated because it is not obvious:**
+  the guarantee is *deterministic within each response, given a deterministic page*. The
+  sort is applied per response and `tools/list` is paginated — it does not make a paginated
+  listing deterministic when your own paging is not. This is a behaviour change in a major
+  version: if you relied on `tools/list` echoing your handler's order, set
+  `tool_order: :handler`.
 - **Extensions negotiation (SEP-2133)** — `MCP.Protocol.Extensions`, and an `extensions`
   field on both `ClientCapabilities` (schema.ts:785) and `ServerCapabilities`
   (schema.ts:882), parsed inbound and emitted outbound. **This SDK implements no

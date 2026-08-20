@@ -4,20 +4,21 @@ Elixir SDK for the [Model Context Protocol](https://modelcontextprotocol.io/) (M
 
 Provides both **client** and **server** implementations with pluggable transports (stdio, Streamable HTTP).
 
-**100% conformance** with the official MCP test suite (Tier 1).
-
 ## Features
 
 - **MCP Client** — connect to any MCP server, discover and call tools, read resources, use prompts
 - **MCP Server** — expose tools, resources, and prompts to MCP clients via a Handler behaviour
 - **Transports** — stdio (subprocess) and Streamable HTTP (POST + SSE)
-- **Full protocol support** — initialization handshake, capability negotiation, notifications, pagination
+- **Full protocol support** — per-request protocol/capability context, notifications, pagination
 - **Async tool execution** — tools can send log messages, progress updates, and make bidirectional requests (sampling, elicitation) during execution
-- **Conformance tested** — 30/30 scenarios, 40/40 checks against the official MCP conformance suite
 
 ## Protocol Version
 
-Implements MCP specification **2025-11-25**.
+This is the **2.0.0 line** — currently unreleased (`2.0.0-dev.N`) — and it implements MCP
+specification **2026-07-28**, the stateless core. It does **not** support 2025-11-25: there is no
+`initialize` handshake and no session, and an old-shape request fails fast with
+`UnsupportedProtocolVersion` (`-32022`) rather than negotiating down. The **published
+1.x line** on Hex (latest `1.1.0`) is the one that implements **2025-11-25**; see `CHANGELOG.md`.
 
 ## Installation
 
@@ -60,7 +61,8 @@ process and communicates via stdin/stdout.
   client_info: %{name: "my_app", version: "1.0.0"}
 )
 
-# Perform the initialization handshake
+# Optional: probe the server via `server/discover`. 2026-07-28 has no `initialize`
+# handshake — this is discovery, not a precondition for the calls below.
 {:ok, info} = MCP.Client.connect(client)
 IO.puts("Connected to #{info.server_info.name} #{info.server_info.version}")
 
@@ -117,7 +119,7 @@ requests (sampling, elicitation).
   end
 )
 
-# Connect and use the server
+# Optional discovery probe (`server/discover`) — not a gate on the calls below
 {:ok, _info} = MCP.Client.connect(client)
 
 # Use pagination helpers to list all tools across pages
@@ -350,15 +352,23 @@ plug_config = MCP.Transport.StreamableHTTP.Plug.init(
 IO.puts("MCP server running at http://localhost:8080/mcp")
 ```
 
-> **Client handshake (Streamable HTTP).** Each session's server starts in the
-> `:waiting` state and becomes `:ready` only after the client sends the
-> `notifications/initialized` notification. A client MUST drive the handshake in
-> order: **`initialize` → `notifications/initialized` → `tools/call`** (each
-> request after `initialize` carries the `MCP-Session-Id` header from the
-> `initialize` response). Skipping the `notifications/initialized` step and going
-> straight to `tools/call` is rejected with "Server not initialized" and is the
-> most common integration mistake. `MCP.Client.connect/1` performs this handshake
-> for you; a raw HTTP client must send it explicitly.
+> **There is no client handshake (Streamable HTTP).** The 2026-07-28 core is stateless
+> (SEP-2575/2567): no `initialize`, no `notifications/initialized`, no `:waiting`/`:ready`
+> gate on the server, and **no `Mcp-Session-Id`** — the header does not exist on this line
+> and nothing on either side reads or writes it. A raw HTTP client may POST `tools/call` as
+> its very first request. What each request must carry instead is its own context: the
+> protocol version, client info and client capabilities in per-request `_meta` under
+> `io.modelcontextprotocol/*`. A missing or unsupported version is **not** negotiated down —
+> it fails fast with `-32022`. Because no request depends on a previous one, any instance
+> behind a round-robin balancer can serve any request.
+>
+> `MCP.Client.connect/1` sends `server/discover`, the stateless replacement for the removed
+> handshake. It is **discovery, not a gate**: `MCP.Client.list_tools/1` works with no prior
+> `connect/1`. Call it when you want `server_info/1` or `server_capabilities/1` populated
+> before you branch on them.
+>
+> *(The published `1.x` line on Hex does drive the 2025-11-25 handshake and does carry a
+> session header. This README documents the 2.0.0 line only — see `CHANGELOG.md`.)*
 
 ### Sampling over HTTP
 
@@ -408,7 +418,8 @@ copy-pasteable, covering stdio and Streamable HTTP for both client and server.
 
 ## Documentation
 
-- [MCP Specification (2025-11-25)](https://modelcontextprotocol.io/specification/2025-11-25)
+- [MCP Specification (2026-07-28)](https://modelcontextprotocol.io/specification/2026-07-28) — the revision the unreleased 2.0.0 line implements
+- [MCP Specification (2025-11-25)](https://modelcontextprotocol.io/specification/2025-11-25) — the revision the published 1.x line implements
 - [Architecture](docs/architecture.md) — module map, data flow, transport design
 - [Onboarding](https://github.com/JohnSmall/mcp-elixir-sdk/blob/main/docs/onboarding.md) — full context for contributors
 - [Architecture Decision Records (ADRs)](https://github.com/JohnSmall/mcp-elixir-sdk/tree/main/docs/adr) — project decision records

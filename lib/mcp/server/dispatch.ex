@@ -180,6 +180,7 @@ defmodule MCP.Server.Dispatch do
       [cursor],
       fn
         {:ok, tools, next_cursor, state} ->
+          tools = order_tools(tools, config)
           {cacheable(list_result("tools", tools, next_cursor), config), state}
       end,
       id
@@ -452,6 +453,33 @@ defmodule MCP.Server.Dispatch do
   end
 
   # --- Result/response helpers ---
+
+  # Gap-register E2 — `server/tools.mdx:71-74` (2026-07-28): servers SHOULD
+  # return tools in a deterministic order, glossed by the spec itself as "the
+  # same ordering across requests when the underlying set of tools has not
+  # changed". That is a STABILITY rule; alphabetical is sufficient, not
+  # necessary, which is why `:handler` exists (see `MCP.Server.Config`).
+  #
+  # THE BOUND, and it belongs here rather than only in the docs: this is applied
+  # per RESPONSE. It makes each page deterministic given a deterministic page.
+  # It does NOT make a paginated listing deterministic when the handler's own
+  # paging is not — per-page sorting neither fixes that nor reveals it.
+  #
+  # A tool with no usable `"name"` sorts last and keeps the handler's relative
+  # order among its peers (`sort_by/3` is stable), because dropping or raising
+  # on it would turn a listing defect into an outage.
+  defp order_tools(tools, config) when is_list(tools) do
+    case Map.get(config, :tool_order, :name) do
+      :handler -> tools
+      _ -> Enum.sort_by(tools, &tool_sort_key/1)
+    end
+  end
+
+  defp order_tools(tools, _config), do: tools
+
+  defp tool_sort_key(%{"name" => name}) when is_binary(name), do: {0, name}
+  defp tool_sort_key(%{name: name}) when is_binary(name), do: {0, name}
+  defp tool_sort_key(_), do: {1, ""}
 
   defp list_result(key, items, next_cursor) do
     base = %{key => items}

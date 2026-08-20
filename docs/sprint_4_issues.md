@@ -4445,8 +4445,22 @@ gap-register walk, **(4)** the conformance-claim wording, drafted and **not publ
 
 Plan on the ticket in five parts (comments 24507–24511); ratified by the PM in two parts (24512,
 24513). Six ratification items were ruled — **RAT-5 overruled**, so the whole-tree OSV cross-check
-runs here rather than at release; **item 3 expanded 29 → 36 rows**; the register-adjacent scope
+runs in this sprint rather than at release (executed on **MES-49** after the split); **item 3
+expanded 29 → 36 rows**; the register-adjacent scope
 additions (README excision, ADR-003 amendment) are sanctioned scope under A9.
+
+**The split, and what actually landed where (PM contract, comment 24529).** At 09:12 the PM cut
+three sub-tasks off this parent. **MES-49** — confirm the measurement, plus RAT-5's OSV cross-check
+— landed on its own branch from `7480f2f` and **merges separately**; the late split took for that
+one, and its entry follows this one. **MES-48** (E2, deterministic `tools/list` ordering) and
+**MES-47** (the README excision) did **not**: both were already committed on this branch before the
+split — `07a8b26` and `45054d1` — and the PM retires them as delivered here rather than re-cutting
+reviewed work into two extra merges. **Two of the three sub-tasks merge inside this ticket's squash;
+one does not**, said in those words so the board neither implies extra merges nor hides the real one.
+And MES-47's excision was **incomplete until CODE_REVIEWER found it**: it removed *100% conformance
+(Tier 1)* and left a wrong-*revision* implementation claim standing in the same paragraph, in
+`README.md` and in a fourth shipped file nobody had looked at (round 2, below). MES-47 is retired as
+delivered by `45054d1` **plus** its completion in `d158e68`, not by `45054d1` alone.
 
 ### Pre-run prediction — committed before the harness was started
 
@@ -4517,6 +4531,1103 @@ but *the tree I am measuring is not the tree MES-24 measured*.
 of `7480f2f`, so inheriting it would be defensible. But the 29 is the figure with the largest blast
 radius in deliverable 4, and inheriting the subtrahend for a number about to be certified is the
 exact shape this sprint keeps finding. It is a 25-line script and one run.
+
+### Item 1 and RAT-5 — de-duplicated into the MES-49 entry (PM contract, comment 24529)
+
+Deliverable 1's two halves — the measurement at the release commit, and the whole-tree OSV
+cross-check — were **run twice**: here on this branch (`9d662ab`, 08:31 UTC), and again on the
+sub-task the PM split out afterwards (`4edd6d8`, 09:00 UTC). Two independent runs that agree check
+for check is worth having. **Two copies of the same measurement in the A8 record is not**, and the PM
+ruled the sub-task's copy the surviving one. Deleted here rather than summarised, because a summary
+of a measurement beside the measurement is a second place for the figures to drift.
+
+**The record is under the heading `## MES-49 — Confirm the measurement at the release commit;
+whole-tree OSV cross-check` in this file.** Cited by heading and deliberately *not* by line number:
+a line number into an append-only log is stale the next time anybody appends to it, and every figure
+this ticket certifies would then point somewhere else.
+
+**What left this entry, enumerated, so the de-duplication is not silently a deletion (A2d):**
+
+| dropped from here | where it lives in the MES-49 entry |
+|---|---|
+| the axis-by-axis measurement table and its **zero** delta against MES-24 | `### Part A — the measurement at 7480f2f, adjudicated` |
+| the refuted all-scenario client census, and the stale-artefact adjudication that settled it | `#### The refuted row, at full strength, and it is not the SDK` |
+| the re-run null **server** control (6/37) and the `null ⊆ ours` superset check that makes the subtraction legal | `### Part A — the measurement at 7480f2f, adjudicated` |
+| `--timeout` pinned on the leg that has it, and named as absent on the leg that does not | `#### --timeout: pinned where it exists, and named where it does not` |
+| **C-2** — there is no comparable baseline, so "what moved" answers *nothing, and nothing could have* | `#### C-2 — there is no comparable baseline, and this report says so` |
+| **C-3** — the old-revision bucket, re-derived against the frozen set and found **empty** | `#### C-3 — the old-revision exclusion, re-derived against the frozen set, and found empty` |
+| **RAT-5** — the OSV cross-check, its positive control, Sprint 5's re-run obligation, and the unchanged 21-of-26 gate-6 residual | `### Part B — RAT-5, the whole-tree OSV cross-check, with its positive control` |
+
+Two of those — the `--timeout` reading and the stale-artefact refutation — were **first recorded on
+this branch** and independently re-derived on the sub-task half an hour later. Saying so is the point
+of the table: de-duplication moves the record, and it should not quietly move the provenance with it.
+
+**And one control the MES-49 entry has that this one never had: the null CLIENT.** It is why the
+claim draft below now reads **5 of 7** and not 6 of 7 — see *Round 3* at the end of this entry.
+
+**The pre-run prediction commit is dropped from this branch outright.** `498f7b1` is on `main` as
+MES-49's `b4c2f9c`, cherry-picked with its author date `07:56:30 UTC` preserved; `git diff 498f7b1
+b4c2f9c` is empty — verified by the PM and re-verified here immediately before the drop. The
+prediction text is anchored outside git on MES-19 comment **24509** (07:43:31 UTC) in any case, so
+what was predicted does not depend on which branch carries the commit.
+
+#### The one finding that stays here, because the MES-49 entry cites it by name
+
+Three of the repeat client runs were invoked with the harness's cwd rather than the project's.
+`mix run` outside a Mix project cannot start the adapter — and the harness **said nothing**. It
+produced a full 39-scenario sheet, 39 saved `checks.json`, a plausible check census
+(13 S / 83 F / 17 SKIPPED / 1 INFO) and a scored figure of **2/32**.
+
+**A misconfigured run and a measured gap are the same shape on the result sheet.** 2/32 does not
+announce itself as *"your adapter never started"*; it reads exactly like a poor implementation.
+Recorded as a **control**: it discriminates the measurement apparatus, not the SDK — and it is why
+every figure in the surviving record is quoted with its invocation and cwd attached. MES-49 then
+reproduced that census check for check **on purpose**, with a null client whose entire body is
+`exit 0`, which is what turned an accident into a control.
+
+### Item 2 — E2, deterministic `tools/list` ordering. The only code.
+
+**Normative anchor (A4).** `docs/specification/2026-07-28/server/tools.mdx:71-74` at pin
+`5f5440bb26a62e2cf3440b92da5a667efa03b267`, md5 `c302125aae381e9be1feb96305341d4b` (verified today
+against the local `/tmp/spec2026` pin **and** re-fetched from `raw.githubusercontent.com` at that
+commit, both md5s identical — see RAT-4 below):
+
+> Servers **SHOULD** return tools in a deterministic order (i.e., the same ordering across requests
+> when the underlying set of tools has not changed). Deterministic ordering enables clients to
+> reliably cache the tool list and improves LLM prompt cache hit rates when tools are included in
+> model context.
+
+**It is a stability rule, not a sortedness rule.** Alphabetical is *sufficient* and is not
+*necessary*: a curated order that never changes already conforms. That governs the whole item and it
+is why the PM's brief calling E2 "an obvious one-line implementation" was withdrawn at RAT-1 — an
+unconditional sort implements one sufficient way of meeting the SHOULD while overriding another way
+that already meets it, which is precisely what `handler.ex:57-61` refuses to do for `outputSchema`
+two callbacks away.
+
+**Shape (RAT-1, ratified):** `MCP.Server.Config` gains `:tool_order` — `:name` by default (sort each
+response by the tool's `"name"`), `:handler` to pass the handler's order through verbatim. Sort
+applied in `dispatch.ex` between the handler's return and `list_result/3`. Config-time validation
+follows the `:extensions` precedent: an unrecognised value warns and falls back to `:name` rather
+than refusing to start.
+
+**The bound, in the code and the docs and this row — not only in the report.** The guarantee is
+*deterministic within each **response**, given a deterministic page*. `tools/list` is paginated and
+the sort is per response: sorting a page does not make a concatenated listing sorted, and if the
+handler's own paging returns different page *contents* per request, per-page sorting neither fixes
+that nor reveals it. Written as "this SDK makes your listing deterministic" it would be a claim
+wider than its check, in the ticket about claims wider than their checks.
+
+#### The trap, which is real, and which my own plan walked into
+
+The plan named the risk correctly — *the SDK introduces no ordering nondeterminism today, so a test
+against an already-deterministic handler is a green that cannot go red* — and then proposed a
+fixture that would have been exactly that. **Measured before writing a line** (`/tmp/mes19/ets_probe.exs`):
+
+```text
+tab2list, 50 reads of ONE UNCHANGED :set table          -> 1 distinct order
+Map.keys, 50 reads of a 24-key map                      -> 1 distinct order
+Map.keys, two maps, same keys, different insertion       -> IDENTICAL
+20 :set tables, same keys, SHUFFLED insertion            -> 4 distinct orders
+```
+
+So "list twice from an ETS set" **cannot go red**, and the `Map`-backed registry is not a source of
+nondeterminism at this size either. The realistic violation is across **differently-populated**
+registries — which is the **2026-07-28 stateless core's own deployment model**: any instance behind a
+round-robin balancer may serve any request, so two instances holding the identical tool set can
+disagree on its order and invalidate the client's tool-list cache. That is the harm `tools.mdx:73-74`
+names, and it is what the fixture models.
+
+Pinned deterministic pair: forward vs reversed insertion of the same 24 names, reproducible across
+BEAM restarts (`tool_20`/`tool_11` transpose at index 9, `tool_23`/`tool_7` at index 19).
+
+#### A7 — the arms, controls labelled as controls
+
+```text
+RED (before the fix, saved at /tmp/mes19/e2-RED.txt)          8 tests, 3 failures
+  SUBJECT two instances                    left/right differ at indices 9 and 19
+  SUBJECT default order is by name         left = ETS order, right = sorted
+  BOUND   per-page sort                    page returned in ETS order
+
+GREEN (after the fix)                                         8 tests, 0 failures
+
+MUTANT — source mutation, `order_tools/2` call site disabled   8 tests, 3 failures
+  exactly the three E2-sensitive arms go red again; GUARD and both controls stay
+  green. The test is sensitive to THIS mechanism, not to something incidental
+  about the fixture.                        (saved at /tmp/mes19/e2-MUTANT.txt)
+
+MUTANT (in-tree, permanent) — `:tool_order = :handler` on both instances
+  reproduces the pre-fix divergence inside the suite, so the falsifiability
+  evidence runs on every `mix test` rather than living in a shell transcript.
+
+GUARD — the fixture precondition, asserted
+  the two population orders MUST actually diverge. If a future ERTS makes them
+  agree, the SUBJECT arm would start passing for a reason unrelated to the SDK;
+  the guard fails loudly instead of passing vacuously.
+
+CONTROL-1 — :tool_order = :handler with a curated non-alphabetical order
+  order survives to the wire unchanged -> the default is what does the work and
+  the escape hatch is real, not decorative.
+
+CONTROL-2 (DISCRIMINATES NOTHING, and is labelled so in the test name itself)
+  an already-deterministic handler under default config: green before AND after.
+  Present so that nobody can quote it as evidence for E2.
+```
+
+#### Harness coverage: zero, and it is now *measured* zero rather than read zero
+
+The plan established by grepping alpha.11's `dist/index.js` that no ordering check exists — the
+`tools-list` family is `tools-list`, `tools-list-caching-hints`,
+`tools-list-changed-on-subscription`, `tools-list-gate`, and none reads order. That is reading. The
+run makes it a measurement:
+
+```text
+tools-list scenario, PRE-E2  first five: test_simple_text, test_image_content, …   sorted? False
+tools-list scenario, POST-E2 first five: json_schema_2020_12_tool, test_audio…     sorted? True
+scenario verdict lines, PRE vs POST:     IDENTICAL — not one verdict moved
+scored figures, PRE vs POST:             35/37, 33/37, 98 S / 19 F / 2 W — identical
+```
+
+**The wire behaviour demonstrably changed, observed by the harness in its own artefact, and the
+score did not move by one check.** "Added code, number went up" is not available here, and its
+absence is stated rather than left implied. E2's row cites this file's mutation arm and nothing else.
+
+#### RAT-4 — the negative claim, verified against the documents that would have carried the positive
+
+E2 is scoped to tools because **the spec** scopes it there, and that is a negative claim about
+`prompts/list` and `resources/list`. The local pin holds only `server/tools.mdx`, so asserting the
+absence from it would have been asserting an absence from a document that does not contain the
+subject. Both pages fetched at the same commit:
+
+```text
+POSITIVE CONTROL  server/tools.mdx    @5f5440bb -> md5 c302125aae381e9be1feb96305341d4b
+                  == the local pin's md5. The fetch path returns THIS revision,
+                  not a redirect, a 404 page or main.
+server/prompts.mdx   @5f5440bb -> md5 5b4a22a4ec8413f2a0e117186b327d60  (336 lines, 9490 B)
+server/resources.mdx @5f5440bb -> md5 5b2993e19109d73138c78803edfba6cc  (435 lines, 12958 B)
+
+grep -i 'deterministic|order' :  tools.mdx -> 2 hits (:71, :72)
+                                 prompts.mdx   -> ZERO
+                                 resources.mdx -> ZERO
+```
+
+**Scoping E2 to tools is the spec's scoping, not ours.** Anyone re-checking these two citations on a
+fresh container must fetch them first — the pin does not contain them.
+
+### Item 3 — the gap-register walk. 36 rows. The sprint's exit criterion.
+
+**Scope: 29 + 7 = 36, PM-ratified.** D1 v5 (Confluence 239861761) has **29** rows — A1–A6, B1–B4,
+C1–C3, D1–D4, E1–E2, F1–F4, G1, the §H `_meta` block (one row, seven prefixed keys), I1–I2, J1, K1.
+**It is a server-side register and does not contain the client series at all**; CG1–CG7 come from
+MES-13's D3 finding, and MES-18 recorded in as many words that "CG7 was absent from the gap
+register". ADR-003 sub-decision 4 holds the client to the server's bar, so walking 29 and calling the
+register closed would be a claim wider than its check **inside the sprint's own exit criterion**. The
+two registers' provenance is labelled separately below so no CG row is later read as having been in
+D1 v5.
+
+**Method — RULING 4 applied per row, not quoted at the top.** Four fields. The third does the work.
+
+1. **Verdict** — implemented / implemented on unfalsifiable evidence / deliberately excluded (ADR-003
+   sub-decision cited) / outstanding.
+2. **Evidence** — the specific test, check id or measurement, cited to file or scenario.
+3. **Could that evidence have gone red?** A mutation that turns it red, or a plain statement that
+   its checks cannot distinguish our implementation from its absence. **A row whose answer is "no"
+   is NOT marked implemented** — it is marked *implemented on unfalsifiable evidence*, which is a
+   different promise and reads as one.
+4. **If outstanding** — owner, ticket key, and **raised** vs **scheduled**.
+
+**Field 4's answer is uniform and unflattering, and is not softened.** Measured by JQL, not by
+opening tickets one at a time: the thirteen escalation tickets (MES-29, 32, 35, 36, 38, 39, 40, 41,
+42, 43, 44, 45, 46) are **all `To Do` with no sprint** — `status = "To Do" AND sprint is EMPTY`
+returns **13**, i.e. all of them — and `sprint in ("MES Sprint 5")` returns **0 issues**. So
+**thirteen raised, none scheduled**, and no row can honestly be marked scheduled today. Per the PM's
+RAT-3 ruling the DoD bullet means *has a named owner ticket*, not *is in the sprint*; reading it the
+second way would make the sprint unclosable until the next sprint is planned, which is circular.
+A consumer is entitled to the difference between the two promises, so both words appear.
+
+#### Register 1 — D1 v5 (server-side), 29 rows
+
+| # | Requirement | Verdict | Evidence | Could it have gone red? | Owner |
+|---|---|---|---|---|---|
+| A1 | `initialize`/`initialized` handshake removed (SEP-2575) | implemented | `dispatch.ex:131-139` answers `-32022`; `streamable_http_stateless_test.exs` | **yes** — `server-stateless` `…404-initialize` FAILS today, so the path is demonstrably driven (it fails on the *transport status*, not on the removal) | — |
+| A2 | Per-request version / client caps / client info via prefixed `_meta` | implemented | `meta.ex:41-44`; `dispatch.ex:162-168` gate; `meta_test.exs` | **yes** — `sep-2575-request-meta-*` checks are positive and three of them FAIL today on the status mapping | — |
+| A3 | `server/discover` advertises versions, capabilities, identity | implemented | `dispatch.ex:148-158`; `discover.ex` | **yes** — the null control fails `server-stateless`'s discover checks; we pass them | — |
+| A4 | `ping` removed | implemented | `dispatch.ex:141-144` | **yes** — `…404-ping` FAILS on the status mapping, so the method is probed | — |
+| A5 | `logging/setLevel` removed; level per request via `_meta` | **implemented (removal); OUTSTANDING (the `_meta` half)** | removal: `dispatch.ex:141-144`. `io.modelcontextprotocol/logLevel` is *parsed* (`meta.ex:44`) but the **client never writes it** — `client.ex:821-829` `with_meta/2` is a closed three-key map | removal **yes** (`…404-logging-setlevel` probes it). The write half: **no scenario anywhere** | **MES-32**, raised, **not scheduled** |
+| A6 | Old-shape requests fail fast `-32022` | implemented | `dispatch.ex:167`; `error.ex:18` | **yes** — `sep-2575-server-unsupported-version-error` FAILS today (R6: we answer `-32022` where the referee wants `-32601`+404) | PO call at release |
+| B1 | Session + `Mcp-Session-Id` removed (SEP-2567) | implemented | `plug.ex:6,29-30` — no session handling exists | **partly** — the `server-stateless` scenario would notice a session header; but *absence* is the safe direction, so this is close to a negative check | — |
+| B2 | Server becomes request-scoped | implemented | `MCP.Server.Dispatch` is a pure per-request function; `dispatch_test.exs` | **yes** — every scored scenario drives it | — |
+| B3 | Cross-call state = server-minted state handles (SEP-2567) | implemented | `state_handle_test.exs`; `conformance_request_state_test.exs` | **yes** — `input-required-result-tampered-state` and `-request-state` both drive it and both would fail on a forged handle | — |
+| B4 | Identity MUST NOT use the state-handle mechanism | implemented | `dispatch_test.exs` MC-4 (a spoofed `identity` arg never reaches `ctx.identity`) | **yes** — MC-4 is a positive assertion with an adversarial input | — |
+| C1 | **MRTR** (SEP-2322): `InputRequiredResult` replaces held-open server→client requests | **OUTSTANDING, bounded** — *the register marks this CONFORMANT and it is not* | refuted server-side by `input-required-result-non-tool-request` **0/2**, and client-side by MES-18's D-1. SEP-2322 makes `InputRequiredResult` **universal**; we implement it on `tools/call` alone | **yes, and it went red** | **MES-43**, raised, **not scheduled** |
+| C2 | Server-initiated requests only while processing a client request (SEP-2260) | implemented **by construction** | there is no server-initiated request path left at all — MRTR replaced it | **no — the property holds because the feature is absent.** Nothing can distinguish us from an implementation that never considered the rule | — |
+| C3 | `resultType` required on every result | implemented | `dispatch.ex:489-490` | **yes** — `input-required-result-result-type` is positive and drives it | — |
+| D1 | Routing headers `Mcp-Method`/`Mcp-Name`; custom headers via `x-mcp-header` (SEP-2243) | **implemented (client + server read); OUTSTANDING (server-side `Mcp-Param-*` validation, trailing OWS)** | client: `streamable_http/client.ex:44-60,146`; mirroring: `header_mirror.ex`. Scored evidence: `http-standard-headers` 9/9, `http-custom-headers` 18/18, `http-invalid-tool-headers` 11/11 | **yes** — MES-24 showed `http-invalid-tool-headers` scoring 11/11 with the MUST switched off until the drive was made falsifiable; it is falsifiable now | **MES-45**, raised, **not scheduled** |
+| D2 | `subscriptions/listen` replaces the GET SSE endpoint and `resources/(un)subscribe` | **implemented, HTTP server-side only** | `subscriptions_dispatch_test.exs`, `subscriptions_stream_test.exs` | **weakly.** P-4 was partly refuted — five checks do drive it — but with `broadcast/2` a no-op, two degrade to WARNING and a third stays SUCCESS on the ack frame alone. **The honest count is ONE positive FAILURE-capable check on the entire subscriptions surface**, and this row carries that number, not the five | stdio **MES-29**; client **MES-38**; both raised, **neither scheduled** |
+| D3 | SSE resumability removed (no `Last-Event-ID`, no event ids) | implemented | `plug.ex:30,671` — no resumption path exists | **no — negative by construction.** An implementation that never had resumability scores identically | — |
+| D4 | localhost / Origin enforcement carried forward | implemented | `plug.ex:301-306,1049` | **yes** — `dns-rebinding-protection` requires a 4xx on `evil.example.com` *and* a 2xx on localhost; the null control **fails** it | — |
+| E1 | `ttlMs` + `cacheScope` REQUIRED on the five cacheable results (SEP-2549) | implemented | `dispatch.ex:492-501`; `streamable_http_cache_scope_warning_test.exs` | **yes** — `caching` is 7 positive checks across all five endpoints; the null control fails 6 of them | — |
+| E2 | Deterministic `tools/list` ordering (**SHOULD**) | **implemented — this ticket** | `test/mcp/server/tool_order_test.exs`; `dispatch.ex` `order_tools/2` | **yes — by mutation, and by nothing else.** alpha.11 has **zero** ordering checks in either leg; measured, not merely read (the wire order changed from unsorted to sorted and not one scored verdict moved). The row cites the mutation arm and the harness contributes nothing in either direction | — |
+| F1 | Reserved range `-32020..-32099`; policy | implemented | `error.ex:12,46` | **no — a policy statement in a doc comment.** No check anywhere tests that we *refrain* from using the range | — |
+| F2 | `-32020` / `-32021` / `-32022` | implemented | `error.ex:16-18` | **yes** — `sep-2575-server-rejects-undeclared-capability` observes our `-32021` (and FAILS on the transport status, R1) | — |
+| F3 | Resource-not-found `-32002 → -32602` (SEP-2164) | implemented | `error.ex:52,125`; `error_test.exs` | **yes** — `sep-2164-error-code` is positive; **but** the sibling `sep-2164-data-uri` is **WARNING against us today** (see the two-greens note below) | — |
+| F4 | `-32042` url-elicitation helper removed | implemented | `error.ex:22,27` — helper absent | **no — negative.** Absence is not observable by any check | — |
+| G1 | Remove `elicitationId` + `notifications/elicitation/complete` + `-32042`; URL-mode **retained** | implemented | `elicitation.ex:18` | **no — negative for the removals.** The retained half (`mode`/`url`, `elicitation.url`) has no scored scenario either | — |
+| §H | Seven prefixed `_meta` keys | **implemented ×5, OUTSTANDING ×2** | present: `protocolVersion`, `clientCapabilities`, `clientInfo`, `serverInfo`, `subscriptionId` (`meta.ex:41-52`). **Absent on the write side: `logLevel` and the three SEP-414 trace keys** — `meta.ex:54-57` *defines* `traceparent`/`tracestate`/`baggage` and nothing writes them; `client.ex:821-829` is a closed three-key map | the five present: **yes** (`request-metadata` 8/8, positive). The two absent: **no scenario exists** | **MES-32**, raised, **not scheduled** |
+| I1 | Roots / Sampling / Logging deprecated, functional in-window | implemented | `handler.ex:242-245` | **no — a documentation annotation.** Nothing tests that a deprecation notice exists | — |
+| I2 | HTTP+SSE transport & `includeContext` reclassified | implemented | `plug.ex` is Streamable HTTP only | **no — negative** | — |
+| J1 | Extensions negotiation surface, core, supporting **zero** extensions (SEP-2133) | **implemented on unfalsifiable evidence (harness); implemented on our own tests** | `extensions.ex`; `extensions_test.exs`, `extensions_negotiation_test.exs`, `capabilities_test.exs` | **no, from the harness — and this is permanent, not a gap waiting to close.** **Zero** checks in either leg touch extensions; the row leaves **no result-file row at all**. Our own tests are falsifiable and are the only evidence that will ever exist unless the suite adds a scenario | — |
+| K1 | JSON Schema 2020-12 for tool schemas (SEP-2106/1613) | implemented, **server and client** | `json_schema_2020_12_test.exs`; `client_tool_schemas_test.exs` | **yes, and it earns ZERO scoring credit.** Server `json-schema-2020-12` is 8/8 but `not_scored` (`reason: pending`); client `json-schema-2020-12-preservation` is 9/9 but `not_scored` (`added-after-release`). Measured and uncounted — a *different kind of zero* from J1's, which leaves no row at all | — |
+
+#### Register 2 — the CG client series (MES-13 D3; **never in D1 v5**), 7 rows
+
+| # | Requirement | Verdict | Evidence | Could it have gone red? | Owner |
+|---|---|---|---|---|---|
+| CG1 | Client transport omits `Mcp-Method`/`Mcp-Name` on POST (SEP-2243) | implemented — MES-18 | `routing_headers_test.exs` T-CG1a/b/c; scored `http-standard-headers` 9/9 + 2 SKIPPED | **yes** — MES-18 ran the reverting mutation | — |
+| CG2 | Client-side wiring of extensions negotiation | implemented — MES-18; **and the register entry was stale in the OPPOSITE direction** | `discover.ex:74` → `server_capabilities.ex:36`; `MCP.Client` stores and exposes it. It was **functionally closed, evidentially open** — taken at face value MES-18 would have built a parser that already exists | **no, from the harness** — zero checks, as J1 | — |
+| CG3 | Client-side `subscriptions/listen` stream consumption | **OUTSTANDING, in full** | not implemented. `streamable_http/client.ex:120-129` POSTs synchronously inside the GenServer, so a held-open stream would block the whole transport | **no scenario exists** — no client `subscriptions/listen` scenario in alpha.11's client list **or** its `not_scored` block, so deferring it costs the figure nothing and the figure says nothing about it | **MES-38**, raised, **not scheduled** |
+| CG4 | `$ref` never dereferenced (SEP-2106 security MUST NOT) | **implemented on unfalsifiable evidence** | `client_conformance_test.exs` T-CG4 canary; scored `json-schema-ref-no-deref` 1/1 | **NO — and this is the clearest instance in the register.** The single check is **negative**: a client with no `$ref` handling at all scores the same SUCCESS. MES-24 restated its own row 7 to say exactly this, and MES-18 admitted the T-CG4 canary is likewise unguarded. **The property holds because a feature is missing** | — |
+| CG5 | Client honours `ttlMs` / `cacheScope` | **OUTSTANDING** | `discover.ex:77-78` parses both; **no store exists** | no scenario | **MES-39**, raised, **not scheduled**. *(Not MES-9 — MES-9 is `Done` in a closed sprint, and a deferral to a finished ticket reads as owned and cannot act. MES-39's own body instructs this ticket in those words.)* |
+| CG6 | Client writes trace-context `_meta` (SEP-414) | **OUTSTANDING** | `meta.ex:54-57` defines the three W3C keys; nothing writes them. The write side is `with_meta/2`'s closed three-key map — which is MES-32's defect | no scenario | **MES-32**, raised, **not scheduled** |
+| CG7 | `x-mcp-header` / `Mcp-Param-*` mirroring, client side | implemented — MES-18 | `header_mirror.ex`; `header_mirror_test.exs` (all ten of alpha.11's invalid-tool classes named); scored `http-custom-headers` 18/18, `http-invalid-tool-headers` 11/11 | **yes — by mutation.** With CG7's exclusion switched off, `http-invalid-tool-headers` went 1/11 FAILED. **Three of the six annotation constraints earn no harness credit at all** (`number`-exclusion, integer safe range, static reachability) and are ours alone | — |
+
+#### Two rows that are decisions, not gaps (carried-in ruling — not re-derived, not routed to MES-43)
+
+| | Behaviour | Status |
+|---|---|---|
+| **R3** | `server/discover` has **no version gate** | a **documented SDK decision the referee contradicts**. Arrives as a **decision requiring a PO call at release** |
+| **R6** | `initialize` answers **`-32022`**, not `-32601` + HTTP 404 | same |
+
+Both are consumer-visible whichever way the PO rules, so both are named in the claim draft.
+
+#### The two greens over unmet SHOULDs — adversarial item 3, answered
+
+`sep-2164-resource-not-found` and `input-required-result-ignore-extra-params` each **pass while
+carrying a WARNING the harness raised against us**, and both are inside the 35. **Position: the claim
+can stand over them, but only with a sentence saying so.** A SHOULD is not a MUST — but "we pass"
+over a SHOULD the referee itself recorded as unmet needs stating, not least because **which verdict
+you read decides it**: the same two are ✗ under the client single-scenario reducer and ✓ under the
+server summary and the `--requirements` exit code. Quoting **35** without that sentence is the single
+most quotable-back-at-us thing available, so the sentence is in the draft, not only here.
+
+#### Walk outcome
+
+```text
+36 rows walked  =  29 (D1 v5, server)  +  7 (CG series, client)
+
+                                        D1 v5    CG    TOTAL
+  implemented, falsifiable evidence        16      2      18
+  implemented ON UNFALSIFIABLE EVIDENCE     8      2      10   <- a different promise, and it reads as one
+  implemented in part, rest outstanding     4      0       4   (A5, D1, D2, §H)
+  OUTSTANDING in full                       1      3       4   (C1/MRTR, CG3, CG5, CG6)
+  deliberately excluded (sub-decision)      0      0       0   <- see below
+                                          ----   ----   -----
+                                            29      7      36
+
+  decisions requiring a PO call at release   2   (R3, R6 — rows in neither register; recorded, not re-derived)
+
+OUTSTANDING ITEMS (the 4 whole rows + the 4 remainders of the part-done rows) = 8
+  with a named owner ticket                8/8   C1->MES-43 · CG3->MES-38 · CG5->MES-39 · CG6->MES-32
+                                                 A5->MES-32 · D1->MES-45 · D2->MES-29+MES-38 · §H->MES-32
+  SCHEDULED                                0/8
+rows with NO owner, needing a new ticket     0   <- nothing for the PM to raise at close-out
+```
+
+**Zero rows are "deliberately excluded".** ADR-003 sub-decision 1 puts the *entire* core register in
+scope and sub-decision 4 holds the client to the same bar, so there was no sub-decision available to
+cite for an exclusion — and sub-decision 5's exclusion clause is the one C-3 found empty and
+recommends recording as superseded. **A register walk that produced no exclusions is the correct
+outcome here, and it is stated rather than left as an absence.**
+
+**Ten rows carry `implemented on unfalsifiable evidence`** — C2, D3, F1, F4, G1, I1, I2, J1 in D1
+v5, and CG2, CG4 in the client series. (E2 is *not* among them: it is unfalsifiable from the
+**harness's** side and falsifiable from ours, by mutation — which is exactly the distinction the
+verdict is for.)
+
+**The plan named three of the ten before the walk** — CG4, and J1/CG2 as a pair — and predicted the
+walk would **add** to the list rather than confirm it. **It added seven: C2, D3, F1, F4, G1, I1,
+I2.** Every one of the seven is a *removal* or a *policy statement*: absence is not observable, so no
+check can distinguish us from an implementation that never considered the requirement. That is the
+same "reading gets you halfway, running the control gets you the rest" result MES-24 obtained from
+the null implementation, arriving one ticket later in a different medium.
+
+### Item 4 — the conformance-claim wording. **DRAFT. NOT PUBLISHED.**
+
+Smallest deliverable, largest blast radius, and the only artefact here that outlives the harness
+version it was measured against. Drafted to ADR-003 sub-decision 6, landing per **C-4** in the repo
+and on the ticket rather than as a Confluence child page. **Published by Sprint 5's release ticket,
+which owns the wording under ADR-003.** It is reproduced here in full and is not in `README.md`.
+
+---
+
+> #### DRAFT — MCP conformance statement for `mcp_elixir_sdk` 2.0.0
+> *Not published. Sprint 5's release ticket owns publication and the PO owes the final wording.*
+>
+> **Scope.** This release targets the **core** specification of MCP **2026-07-28** — the stateless
+> core — on both the server and the client side. **The authorization profile is not implemented**
+> (client OAuth 2.1 and the revision's client-side auth-hardening SEPs). **The extension track is
+> not implemented** (Tasks, MCP Apps); the extensions *negotiation surface* is core and is
+> implemented, supporting **zero** extensions. **2025-11-25 is not supported on either side** — an
+> old-shape request fails fast with `UnsupportedProtocolVersion` (`-32022`) and nothing negotiates
+> down.
+>
+> **What the claim rests on.** Our own ported acceptance suite. **Nobody has certified this SDK**,
+> and nothing here should be read as certification by the MCP conformance project.
+>
+> **Supporting evidence, and what it is worth.** Measured against
+> `@modelcontextprotocol/conformance@**0.2.0-alpha.11**` — a **pre-release** — using the frozen
+> `2026-07-28` requirement set. All three axes, because no single one of them is the number:
+>
+> * **35 of 37** scored server scenarios pass under the harness's `--requirements` exit rule, which
+>   fails a scenario only on a FAILURE.
+> * **33 of 37** under the harness's own stricter reducer, in which a WARNING also fails.
+> * **29 of 37** are scenarios a **null implementation does not also pass** — a 25-line server
+>   answering `-32601` to everything scores 6 of 37 against the same suite. The 29 is *a
+>   conservative floor on scenario-level evidence contributed beyond a minimal valid-envelope null,
+>   not a conformance-rate estimate.* It is not "29/37" and it is not a pass rate.
+> * On the client side, **8 of 32** scored scenarios pass — of which **25 of the 32 are `auth/*`
+>   scenarios for the authorization profile this release does not implement**. That 8 means nothing
+>   until **two independent subtractions** have been applied to it. They are independent in the strict
+>   sense: they remove **different** scenarios, and they compose.
+>
+>   ```text
+>   8 of 32  harness-reported scored passes
+>     −2     the two scenarios a NULL CLIENT also passes — auth/resource-mismatch and
+>            http-standard-headers. (Control: a client whose entire body is `exit 0`,
+>            handed the mock server's URL and doing nothing with it, scores 2/32.)
+>   6 of 32  scored AND discriminating, whole-suite axis
+>
+>   Restricted to the 7 core (non-auth/*) scenarios, which is where a consumer of this
+>   release actually lives:
+>
+>   7 of 7   core, AS DRIVEN by our conformance adapter
+>     −1  A  DRIVE POLICY — request-metadata survives only because the adapter carries on
+>            driving after MCP.Client.connect/1 has already returned an error, and a real
+>            consumer stops at a failed connect
+>     −1  B  NULL-PASSABLE — http-standard-headers is passed by the exit-0 null client,
+>            because the scenario SKIPs every method that is never exercised
+>   5 of 7   survives BOTH:  tools_call · sep-2322-client-request-state ·
+>            http-custom-headers · http-invalid-tool-headers · json-schema-ref-no-deref
+>
+>   A alone -> 6 of 7.   B alone -> 6 of 7.   TWO DIFFERENT SIXES, and a reader cannot
+>   tell them apart from the figure. Neither may be quoted bare.
+>   ```
+>
+>   **5 of 7 is the figure a consumer should read.** It is what survives **these two named
+>   discounts** — it is **not** a demonstration that each of the five discriminates; showing that
+>   would need a stricter null client, and none was built. 7 of 7 is a property of the adapter's
+>   drive policy, not of this SDK; each 6 of 7 is true only of the one subtraction it names. The two
+>   discounts are not nested — the null client fails `request-metadata`, so B does not contain A.
+>   This gives the client leg **the same null-subtraction treatment the server leg's 29 already has**,
+>   *in addition to* the drive-policy axis rather than instead of it; applying one treatment to one
+>   leg and the other treatment to the other, in parallel bullets, was itself a claim wider than its
+>   check (Round 3, below).
+>
+> **What the figures do not cover, stated because a zero is easy to read as a pass.**
+> Two of this release's features earn **no scored credit at all, for two different reasons**:
+> JSON Schema 2020-12 support (SEP-2106) **was measured** — 8/8 server, 9/9 client — and both
+> scenarios are `not_scored`, so the work counts for nothing in any figure above; the **extensions
+> negotiation surface** (SEP-2133) is not measured at all — no scenario in either direction touches
+> it, so it leaves no row on the result sheet in any direction. Those are different kinds of zero
+> and neither is evidence of anything.
+>
+> **Two scored passes sit over a SHOULD the referee recorded as unmet.**
+> `sep-2164-resource-not-found` and `input-required-result-ignore-extra-params` each pass while
+> carrying a WARNING raised against this implementation, and both are inside the 35. A SHOULD is not
+> a MUST and the claim stands over them — but which verdict you read decides it, so it is said here
+> rather than left inside the number.
+>
+> **Known limits a consumer will meet.**
+> * **Multi Round-Trip Requests (SEP-2322) are implemented on `tools/call` only.** SEP-2322 makes
+>   `InputRequiredResult` universal; a non-tool request that needs input does not get it.
+> * **A JSON-RPC error carried on an HTTP 4xx is discarded by the client**, which makes `-32020`
+>   header-mismatch recovery unreachable over Streamable HTTP.
+> * **No server-side `Mcp-Param-*` validation**, and trailing whitespace is not trimmed from
+>   routing headers.
+> * **`subscriptions/listen` is server-side, HTTP transport only.** No stdio support and no
+>   client-side stream consumption.
+> * **`server/discover` has no protocol-version gate**, and **`initialize` answers `-32022`** rather
+>   than `-32601` with an HTTP 404. Both are deliberate, documented decisions on which the
+>   conformance harness takes the other view.
+> * **The HTTP/2 surface is a real, unconditional exposure**, not an unused protocol path: Bandit
+>   sniffs the cleartext HTTP/2 prior-knowledge preface whenever HTTP/2 is enabled and this SDK
+>   disables it nowhere, including its own port-8080 example. The `bandit` 1.12.1 floor hardens it.
+> * **Content coding: the client sends `accept-encoding: identity`** and fails cleanly and
+>   structurally on an unexpected `content-encoding`. RFC 9110 §12.5.3 permits a peer to send a
+>   coded response regardless, so this is a **deliberate documented limit**, not an omission.
+>
+> **The referee moves and this claim does not.** Scenario **membership** is frozen by the
+> requirement set; scenario **implementations and check ids are not**, and `alpha.11` will move.
+> Concretely: `checkMcpNameHeader` is dormant today only because every alpha.11 fixture name happens
+> to be header-safe — one non-safe fixture name in a later alpha turns this SDK's spec-correct
+> encoding red with no change to its code. That is what "supporting evidence, not certification"
+> means in practice, and it is why every figure above carries its harness version.
+
+---
+
+#### Two obligations the draft carries to Sprint 5's release ticket
+
+1. **The published 1.x docs still carry the false claim — on all FOUR released versions, not one.**
+   MES-19 removed it from the repo (see RAT-2 below), but **`v1.0.0`, `v1.0.1`, `v1.0.2` and
+   `v1.1.0` are all on Hex carrying it** (measured, A2d — `git show <tag>:README.md` finds
+   *"100% conformance … (Tier 1)"* at `:7` and *"Conformance tested — 30/30 scenarios, 40/40
+   checks"* at `:16` in **each** of the four), and `README.md` is `main: "readme"`, so it is the
+   HexDocs landing page of **every one** of them. Deleting lines from the repo **does not retract a
+   published page**. Retracting or superseding those four published doc sets is a **named obligation
+   on the release ticket**, and writing "the false claim has been removed" without that qualifier
+   would itself be a claim wider than its check.
+2. **A green `mix hex.audit` is not publish-blocking evidence on its own.** The whole-tree OSV
+   cross-check with its positive control was run for this sprint on **MES-49** (RAT-5) against
+   **today's** lock. A run today
+   certifies today's lock and nothing else, so **Sprint 5 must re-run it against the final locked
+   tree at publish**.
+
+#### The draft, attacked. Six targets named in the plan before drafting, so easier ones could not be substituted.
+
+| | Target | Verdict |
+|---|---|---|
+| a | "35 of 37" quoted anywhere without the other two axes | **cut** — all three axes appear in one bullet list; there is no sentence in which 35 stands alone |
+| b | any sentence a reader could take as *"the conformance project tested us"* | **cut** — "Nobody has certified this SDK" is its own sentence, before any figure |
+| c | any phrasing under which 2020-12 or extensions reads as harness-verified | **cut, and the two are deliberately not collapsed** — one was measured and counts for nothing, the other is not measured at all |
+| d | "conformant" applied to MRTR, true only of `tools/call` | **cut** — MRTR appears only in *Known limits*, with the bound |
+| e | any client claim without its `auth/*` denominator | **cut** — 8/32 is never written without "25 of the 32 are `auth/*`". **Amended twice, and both amendments are recorded rather than the row being silently rewritten.** *Round 2 (CR BLOCKING 1): the first draft quoted the core subset as **7/7**, the **as-driven** axis, and the fix published **6 of 7** on a drive-policy subtraction. Round 3 (PM, comment 24529): that 6 of 7 and MES-49's independently-derived 6 of 7 are **different sets** — the bullet now carries **both** subtractions by name and publishes **5 of 7** as what survives both. The row's own target was never the defect either time: it names a denominator problem, and neither amendment was one.* |
+| f | **"conformance tested" as a bare phrase** | **cut — and this is the finding.** That exact phrase is in the README **today** (RAT-2) |
+
+**Sentences cut rather than softened.** An unqualified headline figure was drafted and removed; there
+is no "conformance tested" phrase and no Tier claim in the draft, because a tier is a claim about
+*rate* and every rate here needs three axes to be true.
+
+### RAT-2 — the false conformance claim that was shipping, and the bound on removing it
+
+**This is the finding I did not expect to make while planning a ticket about drafting an honest
+claim.** Adversarial item 1 says the claim wording is the only thing a stranger ever reads. A
+stranger reading this package today read:
+
+```text
+README.md:7   **100% conformance** with the official MCP test suite (Tier 1).
+README.md:14  - **Full protocol support** - initialization handshake, capability
+                negotiation, notifications, pagination
+README.md:16  - **Conformance tested** - 30/30 scenarios, 40/40 checks against the
+                official MCP conformance suite
+README.md:20  Implements MCP specification **2025-11-25**.
+docs/architecture.md:7   - **Status**: Phase 7 Complete - 100% Conformance (Tier 1)
+mix.exs:41               links "MCP Specification" -> .../specification/2025-11-25
+```
+
+Both `README.md` and `docs/architecture.md` are in the hex package's `files:` list (`mix.exs:46-47`)
+and `README.md` is `main: "readme"` in `defp docs` (`mix.exs:51-53`) — **it is the HexDocs landing
+page**. So the unqualified "100% conformance (Tier 1)" that ADR-003 forbids was not a risk being
+drafted against; it was **the status quo, on the shelf, on the page a consumer lands on**. Against
+the 2026-07-28 measurement it is false three times over: not 100%, not Tier 1, not that suite. Line
+14 advertises an `initialize` handshake this revision **deletes**.
+
+**The ruling (PM, RAT-2, sanctioned scope A9): removing a known-false claim is not publishing a new
+one.** ADR-003 gives the release ticket ownership of *what we assert*; it does not oblige anyone to
+preserve what has been measured to be false. The DoD's "drafted, not published" constrains the *new*
+claim and says nothing about the old one.
+
+Removed at this ticket: `README.md:7`, `:14` (reworded to the per-request context that replaced the
+handshake), `:16`, `:20`, `docs/architecture.md:7`, the `mix.exs` package link, and — added at CR
+round 2 — five stale-revision claims in `usage-rules.md`, which ships in `files:` **and** is a
+HexDocs `extra`.
+**CHANGELOG 1.x entries stay — history.** *The `:20` rewrite was incomplete on the first pass and was
+finished after CR round 2 — see the CR round 2 section at the end of this entry.*
+
+> **THE BOUND, and it is the class this sprint keeps catching.** **Four released versions are on Hex
+> carrying that README** — `v1.0.0`, `v1.0.1`, `v1.0.2` and `v1.1.0` — and because `mix.exs` sets
+> `main: "readme"`, that README is the HexDocs landing page of **each** of them. **Deleting the lines
+> from the repo does not retract a published page.** MES-19's excision is **forward-looking only**;
+> writing "the false claim has been removed" without that qualifier would be a claim wider than its
+> check, in the ticket whose subject is claims wider than their checks. Retracting or superseding
+> those four published doc sets is a **named obligation on Sprint 5's release ticket**, and it is in
+> the claim draft above rather than in a footnote.
+>
+> *Corrected at CR round 2: this bound was first written as **v1.0.0 only**, which was itself
+> narrower than the fact — the same error one direction down. Measured, not assumed:*
+>
+> ```text
+> git show v1.0.0:README.md | grep -n "100% conformance\|Conformance tested"   -> :7, :16
+> git show v1.0.1:README.md | grep -n "100% conformance\|Conformance tested"   -> :7, :16
+> git show v1.0.2:README.md | grep -n "100% conformance\|Conformance tested"   -> :7, :16
+> git show v1.1.0:README.md | grep -n "100% conformance\|Conformance tested"   -> :7, :16
+> ```
+
+*Eight tickets of this sprint were spent finding claims wider than their checks. The widest one was
+on the front page of the package the whole time.*
+
+### RAT-5 — the whole-tree OSV cross-check
+
+Run, with its positive control, and **recorded in the MES-49 entry** under the heading
+`### Part B — RAT-5, the whole-tree OSV cross-check, with its positive control`. See the
+de-duplication note under *Item 1 and RAT-5* above for why one copy and not two. Sprint 5's
+obligation to re-run it against the **final locked tree at publish** is carried in the claim draft's
+obligation 2, and the unchanged gate-6 residual — **21 unvalidated of 26** — is restated in the gates
+block below rather than left to a green.
+
+### A2d — the empties, enumerated. Nothing is absorbed into a denominator.
+
+**Adversarial item 6.** Anything that cannot be measured — no scenario exists, no adapter surface, a
+harness limitation — is named and classified, negatives included. "Not run" absorbed silently into a
+denominator is the failure mode the published claim cannot survive.
+
+| class | count | enumerated |
+|---|---|---|
+| Client scored scenarios for the **authorization profile this release does not implement** | **25** | `auth/` + `metadata-default`, `metadata-var1`, `metadata-var2`, `metadata-var3`, `basic-cimd`, `scope-from-www-authenticate`, `scope-from-scopes-supported`, `scope-omitted-when-undefined`, `scope-step-up`, `scope-retry-limit`, `token-endpoint-auth-basic`, `token-endpoint-auth-post`, `token-endpoint-auth-none`, `pre-registration`, `resource-mismatch`, `offline-access-scope`, `offline-access-not-supported`, `authorization-server-migration`, `iss-supported`, `iss-not-advertised`, `iss-supported-missing`, `iss-wrong-issuer`, `iss-unexpected`, `iss-normalized`, `metadata-issuer-mismatch` |
+| Client `not_scored` — `extension` | **6** | `auth/client-credentials-jwt`, `auth/client-credentials-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer` |
+| Client `not_scored` — `added-after-release` | **1** | `json-schema-2020-12-preservation` (9/9 SUCCESS, counts for nothing) |
+| Server `not_scored` — `pending` | **3** | `json-schema-2020-12` (8/8), `http-header-validation` (9 S/3 F/2 W), `http-custom-header-server-validation` (4 S/6 F). **These are present in `requirements/2026-07-28.yaml:183-197` as `not_scored, reason: pending` — they are NOT "absent from the scored list".** Same conclusion, different mechanism; "run and reported, never counted" and "absent" are different claims about the same zero |
+| Server `not_scored` — `extension` (tasks suite) | **10** | `tasks-lifecycle`, `-capability-negotiation`, `-wire-fields`, `-request-state-removal`, `-mrtr-input`, `-request-headers`, `-dispatch-and-envelope`, `-status-notifications`, `-required-task-error`, `-mrtr-composition` — 12 SUCCESS / 30 FAILURE / 1 SKIPPED |
+| Scored **server** scenarios a **null implementation also passes** | **6** | `server-sse-multiple-streams`, `sep-2164-resource-not-found`, `input-required-result-missing-input-response`, `input-required-result-unsupported-methods`, `input-required-result-ignore-extra-params`, `input-required-result-validate-input`. Re-measured here, not inherited |
+| Scored **client** scenarios a **null client also passes** — the subtrahend behind *5 of 7* | **2** | `auth/resource-mismatch`, `http-standard-headers`. Measured on **MES-49**, not here: a client whose entire body is `exit 0` scores 2/32. Only `http-standard-headers` is inside the core 7, which is what makes it discount **B** |
+| Core client scenarios discounted for **drive policy** rather than for scoring | **1** | `request-metadata` — discount **A**. It passes as driven and goes red under the counterfactual arm that stops at a failed `MCP.Client.connect/1` (MES-24, run by CODE_REVIEWER). Disjoint from the row above, which is why 5 of 7 and not 6 |
+| Register rows that leave **no result-file row at all**, in either direction | **4** | J1 / CG2 (extensions negotiation), CG3 (client `subscriptions/listen` — no scenario in the client list *or* its `not_scored` block), **E2 (new with this ticket)**, CG5/CG6 (client cache-honouring, trace context) |
+| Register rows marked implemented on evidence that **cannot go red** | **10** | C2, D3, F1, F4, G1, I1, I2, J1, CG2, CG4 — see the walk |
+| Scenarios in the null-control run that produced **no `checks.json` at all** | **1** | `tasks-capability-negotiation` aborted with `JsonRpcError: Method not found` before any check. `not_scored`, so it touches no figure — named because a missing artefact and a passing one are not the same absence |
+| Server-leg `--timeout` headroom | **n/a** | **the flag does not exist on `conformance server`.** Named rather than silently omitted; the server leg spawns no `mix` per scenario, so it is not exposed to the contention the flag is for |
+
+### Gates — all six, individually
+
+Run **after the rebase onto `main` at `bc130a8`**, in this seat's own `git worktree`
+(`/tmp/cc-mes19-gates`, detached at the rebased tip) and never in the shared clone — a
+concurrent seat can move the shared clone's branch mid-run, which is exactly what F-11 in the
+MES-49 entry caught. A rebase is a different tree, so the gates are re-run even though CR asked
+for none, and then run once more on the branch tip as handed back — the figures below are that
+final run, not the mid-rebase one.
+
+```text
+mix hex --version                     Hex v2.5.1  (>= the 2.5.1 floor; checked FIRST because the
+                                                   container has been observed resetting to 2.5.0)
+1. mix format --check-formatted       PASS  rc=0
+2. mix compile --warnings-as-errors   PASS  rc=0
+3. mix credo                          PASS  rc=0 — 1107 mods/funs, no issues, 121 files
+4. mix dialyzer                       PASS  rc=0 — Total errors: 0, Skipped: 0
+5. mix test                           PASS  rc=0 — 13 doctests, 566 tests, 0 failures
+                                      + 20-seed sweep, 20/20 green, WITH A CONTROL THAT FIRED
+6a. baseline-lock sentinel @ d697093  PASS — 22 of 22 known advisory ids present
+                                      + negative control: FIRED (7 missing when bandit's rows
+                                        are stripped from the captured output)
+6b. mix hex.audit                     PASS  rc=0 — "No retired or security advisory packages found"
+```
+
+**566 is the predicted number, not a discovered one.** The PM predicted 566 before the run — 558 on
+MES-49, which has no E2, plus E2's 8 — and 566 is what ran. Stated because a figure that matches a
+prediction made in advance is worth more than the same figure quoted after the fact.
+
+**Gate 5's sweep has a control, because 20 greens from a harness that cannot go red are 20 pieces of
+nothing.** Both traps the PM named were checked by construction rather than by care:
+
+```text
+CONTROL ARM (must go RED or the sweep is void):
+  MIX_ENV=dev mix test --seed 1   ->  rc=1  RED
+  "MCP.Test.ExtrasStruct.__struct__/1 is undefined"
+  (elixirc_paths drops test/support outside :test, so the suite cannot compile)
+
+The rc-capture shape used throughout, and the one it avoids:
+  out=$(cmd 2>&1); rc=$?      <- rc of cmd            USED
+  cmd 2>&1 | tail -1; rc=$?   <- rc of TAIL, always 0  NOT USED
+```
+
+The control fires, so a red seed would have been reported red. Seeds: 0, 1, 7, 42, 99, 137, 256,
+512, 1024, 2718, 3141, 4096, 5150, 6180, 7777, 8191, 9001, 12345, 31337, 65535 — **20 arms, 20
+green, 566 tests each.** And per the standing bound: a clean sweep is **corroboration, not proof**;
+the evidence for E2 is the mechanism plus item 2's mutation arm, not the sweep.
+
+**Gate 6a's negative control fires too**, and it is the same shape: the sentinel is a "did the local
+cache answer" check, so a sentinel that cannot report a miss proves nothing. Stripping `bandit`'s
+seven ids from the captured baseline output makes 6a report **7 missing of 22** and fail — so the
+22-of-22 above is a positive result rather than an unfalsifiable one.
+
+**The gate-6 residual is unchanged and is said out loud rather than letting a green stand alone:
+21 unvalidated of 26.** No dependency moved on this branch — `mix.lock` is untouched — so the
+baseline-lock sentinel still validates advisory rows only for the five packages that have ever
+carried an advisory in this tree (`bandit`, `hpax`, `mint`, `plug`, `req`), and the other 21,
+including the runtime deps `finch` and `thousand_island`, are covered not by gate 6 but by the live
+whole-tree OSV cross-check in the MES-49 entry.
+
+**Gate 1 and gate 2 are blind to `conformance/`** — `.formatter.exs` inputs are `{config,lib,test}/**`
+and `elixirc_paths` is `["lib"]` (`mix.exs:34-35`). That is **MES-46** and is not closed here. This
+ticket changed nothing under `conformance/`, so no manual arm was needed.
+
+**How gate 5 differs from MES-24, and it is worth stating.** On both MES-24 legs gate 5 was a
+*positive control* that discriminated nothing about the work — no `lib/` change, no `test/` change.
+Here it is **real evidence**: item 2 puts its change in `lib/` and its test in `test/`, and the
+mutation arm shows the test failing when the mechanism is disabled. The other 558 tests remain the
+positive control they have always been, and are labelled as such.
+
+### What this ticket found, and the tripwire
+
+**The tripwire did not trip.** The PM grew this ticket at ratification — four deliverables plus the
+README excision, the ADR amendment, the OSV run and a 36-row walk — and said so, with an A1 escalation
+standing by if it stopped converging or if the walk changed what the claim could say. Neither
+happened: the walk sharpened the claim (ten unfalsifiable rows, up from three named in advance) but
+changed nothing it was able to assert, and every deliverable landed. **Recorded because a tripwire
+that is never reported on is not a control.**
+
+**Six things this ticket found that reading would not have.**
+
+1. **The false claim was already shipping.** Found while planning how to draft an honest one. The
+   widest claim-wider-than-its-check in the sprint was the front page of the package.
+2. **My own E2 fixture would have been a green that cannot go red** — the exact trap the plan named
+   one paragraph earlier. An unchanged ETS `:set` reads back in one order every time; only
+   differently-*populated* registries diverge. Measured before a line was written.
+3. **Two different numbers were both called "6 of 7"** — this branch's drive-policy figure and
+   MES-49's null-passable figure subtract *different* scenarios from the same seven. The honest
+   figure is **5 of 7**, and it was reachable only by reading two units' evidence side by side
+   (Round 3). Neither unit could have found it alone, and it is recorded as a property of the
+   mediation rather than as anyone's miss.
+4. **A misconfigured client run is indistinguishable from a bad implementation** — 2/32, a full
+   39-scenario sheet, 39 saved artefacts, no error. Discovered by making the mistake; MES-49 later
+   reproduced the same census on purpose with a null client.
+5. **The false claim ships on FOUR released versions, not one** — `v1.0.0`, `v1.0.1`, `v1.0.2`,
+   `v1.1.0`, each with its own HexDocs landing page. **The one error this sprint found that ran the
+   other way**: a claim *narrower* than the fact, which understated a live Sprint 5 obligation by a
+   factor of four. Found only because correcting `README.md` forced the question *which* published
+   line implements 2025-11-25.
+6. **E2 changes the wire and moves the score by zero checks** — observed in the harness's own
+   artefact (`tools/list` unsorted → sorted, every verdict identical). "Added code, number went up"
+   was not available, and that is stated rather than implied.
+
+**Two findings that were on this list are no longer on it, and that is de-duplication rather than
+retraction.** `--timeout` does not exist on `conformance server` (F-10 is dischargeable on one leg),
+and MES-24's not-scored client census was computed over a **stale artefact** (settled by running the
+leg four times, not by re-reading it; no scored figure moves). Both were first recorded on this
+branch and both are now in the MES-49 entry, which is the surviving record of the measurement — see
+*Item 1 and RAT-5* above.
+
+**Sprint 4 exit criterion: MET.** 36 of 36 register rows walked and marked; every outstanding item
+owned by a named ticket; **thirteen raised, none scheduled**, said in those words because the
+difference is a different promise to a consumer.
+
+### CR round 2 — two BLOCKING wording defects, and both were in what the claim SAYS
+
+CODE_REVIEWER reviewed `9d662ab` and blocked on two defects, neither of them in the diff's code. The
+PM had told CR not to re-run the six gates and to spend the budget on the wording; **both findings
+came from the wording, which is the outcome that instruction was aiming at.** The amendment below is
+docs-only — no `lib/`, `test/`, `mix.exs` or `mix.lock` change — and CR asked for no gate re-run.
+
+**BLOCKING 1 — the draft widened the client figure back to 7/7.** The client bullet said *"Of the 7
+remaining core scenarios, **7 pass**"*. That is the **as-driven** axis. It contradicted this same
+the pre-run prediction section of this same entry, and the measurement record, both of which
+preserve MES-24's three-axis distinction: **8/32** harness-reported, **7/32** driven-and-passing, and
+a core figure under a consumer-realistic drive. *(Cited by section rather than by the line numbers
+this paragraph originally carried: the de-duplication and the rebase both moved them, which is the
+argument for never citing an append-only log by line.)* The attack table's row (e) then certified the wrong shape by saying "the
+7/7 carries its own denominator" — a denominator is not the defect; **the axis is**.
+
+**How the defect got in, because that is the reusable part.** My own plan named target (e) as *"any
+client claim without its `auth/*` denominator"*, and I checked the draft against exactly that. The
+draft passes target (e): 8/32 never appears without the 25. **The target was too narrow.** 6/7 is not
+a denominator problem — 7/7 and 6/7 share a denominator — it is the drive-policy axis, which
+MES-24's BLOCKING 1 established and which my attack list did not name. **A pre-named attack list
+bounds substitution; it does not bound blindness**, and this is a measured instance of the
+difference.
+
+Fixed in the client bullet of the draft above: all three client axes appeared in the one bullet,
+each subtraction with its reason (`auth/resource-mismatch` is a purely negative check with nothing
+behind it; `request-metadata` survives **only** because the adapter carries on past a failed
+`MCP.Client.connect/1` — the counterfactual that licenses that *only* is cited in Round 3), and the
+bullet said which figure a consumer should read: **6 of 7**.
+
+**That fix was itself incomplete, and Round 3 below supersedes this paragraph.** The 6 of 7 it
+published is the drive-policy set; MES-49's null-client control produces a *different* 6 of 7 by
+subtracting a different scenario, and the figure that survives both is **5 of 7**. What stands from
+round 2 is the diagnosis — the axis, not the denominator, was the defect — and the diagnosis is what
+round 3 extended. Row (e) of the attack table records both amendments.
+
+**BLOCKING 2 — `README.md` still carried an unqualified 2025-11-25 implementation claim.** RAT-2's
+excision reworded `README.md:20` to mention the unreleased 2.0.0 line but left the *leading* sentence
+unqualified — `README.md:17` read **"Implements MCP specification 2025-11-25."** and only then said
+2.0.0 targets 2026-07-28 — and `README.md:409` still linked an **unqualified** *MCP Specification
+(2025-11-25)* while `mix.exs:43` had already been moved to 2026-07-28. On the 2.0.0 branch that is a
+claim the draft itself contradicts under `#### DRAFT — MCP conformance statement for
+mcp_elixir_sdk 2.0.0`, in its **Scope** paragraph (*"2025-11-25 is not supported on either side"*).
+
+**This is the same class RAT-2 is about, one revision along.** RAT-2 caught *100% conformance (Tier
+1)*; what it left behind was a wrong-revision implementation claim in the same paragraph. Fixed: the
+Protocol Version section now leads with the 2.0.0 line implementing **2026-07-28**, states plainly
+that 2025-11-25 is **not** supported and fails fast with `-32022` rather than negotiating down, and
+attributes 2025-11-25 to the **published 1.x line** (latest `1.1.0`); the Documentation list now
+carries **both** specification links, each labelled with the line it belongs to.
+
+**A third defect, found while fixing the second, and it runs the other way.** Writing the corrected
+Protocol Version section forced me to say *which* published line implements 2025-11-25 — so I checked
+what is actually on Hex instead of reusing the phrase already in the entry. **Four released versions
+carry the false claim, not one.** RAT-2's bound and the claim draft's obligation 1 both said
+*v1.0.0*; `v1.0.0`, `v1.0.1`, `v1.0.2` and `v1.1.0` each carry *"100% conformance … (Tier 1)"* at
+`README.md:7` and *"Conformance tested — 30/30 scenarios, 40/40 checks"* at `:16`, and `mix.exs` sets
+`main: "readme"`, so each has its own HexDocs landing page carrying it. **This one is a claim
+NARROWER than the fact** — the mirror image of everything else this sprint caught, and it understates
+a live obligation on Sprint 5 by a factor of four. Both statements are corrected above, with the four
+`git show <tag>:README.md` greps recorded so the count is checkable rather than asserted.
+
+**A fourth defect, in the third shipped doc — `usage-rules.md`, which nobody had looked at.** CR's
+BLOCKING 2 named `README.md`. RAT-2's excision had covered `README.md`, `docs/architecture.md` and
+`mix.exs`. **`mix.exs:46-47` ships a fourth consumer-visible file** — `usage-rules.md` — and
+`defp docs` lists it as an `extra`, so it is on HexDocs too. It was **half-migrated**: `:245-246`,
+`:251-252` and `:272-275` had been rewritten for 2026-07-28 (MES-18 even left a note in the text),
+while five claims from the previous revision were untouched and one of them **contradicted a line
+in the same file**:
+
+| line | claim as it stood | why it is wrong on this line |
+|---|---|---|
+| `:8` | *"Protocol version: **2025-11-25**"* | the same defect CR blocked on in `README.md:17`, in a file that also ships; contradicted by `:245` in the same file |
+| `:41` | *"You **must** call `connect/1` before any other operation. It performs the MCP initialization handshake"* | there is no `initialize` handshake at 2026-07-28, and the precondition is false — **measured**, below |
+| `:54` | table row *"`connect/1` \| Initialize handshake (required first)"* | same, in the operations table |
+| `:255` | gotcha 1, *"No operations work before the initialization handshake completes (except ping)"* | **measured false** |
+| `:269` | *"IDs are unique per session"* | there is no session; `:245` says so eight lines earlier |
+
+**The precondition was measured, not reasoned about** — a throwaway probe against the in-process
+`BridgeTransport` pair, run and then deleted (it is not in the diff; the finding is):
+
+```text
+PROBE status-before                => :ready          # MCP.Client.start_link/1 alone
+PROBE list_tools-without-connect   => {:ok, %{"tools" => [%{"name" => "echo", ...}], ...}}
+```
+
+`lib/mcp/client.ex:267` sets `status: :ready` in `init/1`, so `connect/1` gates nothing; its `@doc`
+at `:139-141` already called itself a `server/discover` probe. **The code was migrated and the
+usage rules were not.** The bounded claim is what is now written: *measured, `list_tools/1` succeeds
+with no prior `connect/1`* — not the wider "no operation requires it", which one probe does not
+support.
+
+*Scope note, flagged rather than buried: CR asked for a narrow amendment on `README.md` and I
+changed a second shipped doc. The reason is that fixing only `README.md` would have left the
+identical wrong-revision claim one file over, on a page HexDocs also publishes — which is the exact
+argument CR made about `README.md:409`. **PM: this is mine to own if you judge it out of scope.***
+
+**The bound itself is unchanged and worth restating.** This is still a repo-only correction: neither
+RAT-2 nor this amendment retracts a published page. That obligation stays named on Sprint 5's release
+ticket, in the claim draft above — now sized at four doc sets.
+
+### Round 3 — the PM's correction contract (comment 24529): two different sixes, and the honest figure is 5 of 7
+
+**This is the important one, and neither unit could have seen it alone.** Round 2 fixed the 7/7 axis
+by subtracting `request-metadata` on a **drive-policy** argument and published **6 of 7**. On a
+different branch, on a sub-task this seat had already handed off, MES-49 built the **null client**
+this entry never had — a file whose entire body is `#!/bin/sh` and `exit 0`, handed the mock server's
+URL and doing nothing with it — and subtracted `http-standard-headers` on a **null-passable**
+argument, arriving independently at **6 of 7**.
+
+**Two different sets, the same name.** The PM verified from both units' saved artefacts that the two
+discounted scenarios are distinct, that both sit inside the core 7, and that they compose:
+
+```text
+core (non-auth/*) scenarios, all 7:
+  tools_call   request-metadata   sep-2322-client-request-state   http-standard-headers
+  http-custom-headers   http-invalid-tool-headers   json-schema-ref-no-deref
+
+DISCOUNT A (drive policy)   this branch, round 2   -> removes request-metadata
+DISCOUNT B (null-passable)  MES-49's control       -> removes http-standard-headers
+
+survives A only : 6 of 7      <- what round 2 published
+survives B only : 6 of 7      <- what MES-49 measured
+survives BOTH   : 5 of 7   -> tools_call, sep-2322-client-request-state,
+                              http-custom-headers, http-invalid-tool-headers,
+                              json-schema-ref-no-deref
+```
+
+The two are **independent, not nested**: the null client scores 2/32 and passes exactly
+`auth/resource-mismatch` and `http-standard-headers`, so it **fails** `request-metadata`. A is
+therefore not a special case of B, and the composition is legal.
+
+**Why this is a defect and not a rounding argument.** The round-2 draft said *"6 of 7 is the figure a
+consumer should read"*, and three bullets above it the server leg's **29** is a **null-subtraction**
+figure. So the draft applied null-subtraction to the server and drive-policy to the client, in
+parallel bullets, in the same voice — as though they were the same treatment. **That is a claim
+stated wider than its check, one level up from the one CR caught, and it was inside the fix for the
+one CR caught.** The client bullet now carries both subtractions by name, publishes **5 of 7** as
+what survives both, keeps 7 of 7 and each 6 of 7 visible and labelled with *which* scenario it drops,
+and gives the client leg the same null-subtraction treatment the server leg already had — in addition
+to the drive-policy axis, not instead of it. **No bare "6 of 7" remains in the draft.**
+
+#### How it was found, and it is a different mechanism from round 2's
+
+Round 2's lesson was: **a pre-named attack list bounds substitution; it does not bound blindness.**
+This is its **second instance inside one hour** — and the difference worth recording is *how* the
+second one surfaced.
+
+**Correction, round 4 (CR BLOCKING 2, upheld by the PM against the PM's own instruction).** What
+stood here said *neither unit could have found it by re-reading its own evidence*, and that MES-49
+did not have this branch's drive-policy analysis because that analysis was written in round 2, after
+MES-49 was handed off. **That was written to the PM's contract 24529 item 2 and it is false.** CR
+attacked it, the PM checked CR's citations rather than accepting them, and so did this seat. The
+drive-policy discount was **already in this same file, in MES-24's own entry, on `main`, before
+MES-49's entry was written**:
+
+```text
+docs/sprint_4_issues.md:3114        "the `request-metadata` 8/8 is contingent on a DRIVE POLICY"
+docs/sprint_4_issues.md:3294        heading: "...core is 6/7 under a consumer-realistic drive"
+docs/sprint_4_issues.md:3272-3300   the mechanism, with CR's counterfactual arm
+docs/sprint_4_issues.md:3374-3393   the per-scenario table: request-metadata -> "PARTLY"
+
+git log main -- docs/sprint_4_issues.md
+  7480f2f  08-20 07:29  [MES-24]   <- the entry above lands on main
+  bc130a8  08-20 09:41  [MES-49]   <- MES-49's entry, written after it
+```
+
+The heading at `:3294` states Discount A's conclusion — *6/7* — in as many words, two hours before
+MES-49's entry. So the record is this:
+
+- **The null-client half (Discount B) was genuinely local.** It did not exist as evidence anywhere
+  until MES-49 built and ran the `exit 0` control on another branch; no amount of re-reading would
+  have produced it.
+- **The drive-policy half (Discount A) was already recorded and simply not cross-read.** It was on
+  `main`, in this file, under a heading that names the figure. This branch's round-2 write-up was
+  new prose over an old fact, not a new finding.
+
+**Those two halves want different fixes and collapsing them flattered everyone, including this
+seat.** Locality argues for the mediation — a split that makes work tractable also makes each half's
+evidence local, and a cross-read is the only thing that sees between the halves. An unread record
+argues something less comfortable and not fixable by mediation: **`docs/sprint_4_issues.md` is
+growing faster than anyone re-reads it**, so a fact can be correctly written down, survive review,
+and still be absent from the next unit's reasoning. The first is a process property; the second is a
+scale problem, and this file is now 5.4k lines.
+
+**It was still found by cross-reading two units' evidence rather than by either unit auditing
+itself** — that part holds. What does not hold is the exoneration attached to it. Recorded here in
+the shape CR forced, not the shape the PM first asked for; the PM has said so on the ticket
+(comment 24581 item 2) and asked explicitly that it not be softened back.
+
+#### The word "only", checked rather than assumed (the PM's one open question)
+
+The draft says `request-metadata` passes **only** because the adapter carries on driving after
+`MCP.Client.connect/1` has returned an error. The PM took the mechanism as established from MES-24's
+lineage but flagged that *only* is doing real work in a consumer-facing sentence: support it or
+weaken it. **It is supported by a counterfactual arm that was actually run**, not by reading
+`drive/2`. Under the heading `### Finding (BLOCKING 1, CR): that 8/8 is manufactured by the DRIVE
+POLICY, not only by the SDK` in the MES-24 entry of this file:
+
+```text
+SUBJECT (adapter as committed)      8 checks, 8 SUCCESS             -> OVERALL: PASSED
+CONTROL (stop when connect errors)  7 SUCCESS + 1 WARNING           -> OVERALL: FAILED
+Same SDK, same commit, same fixture.   (arm run by CODE_REVIEWER on MES-24, not re-run here)
+```
+
+Remove the carry-on and the scenario goes red. That is what licenses *only*, and the bound is stated
+with it rather than left implicit: **this fixture, at `@modelcontextprotocol/conformance@0.2.0-alpha.11`**
+— the same pre-release caveat every other figure in the draft carries, and a later alpha may
+re-implement the fixture. Kept at full strength, because the falsifier exists and was run; not
+widened past the arm that supports it.
+
+#### The scope questions the PM ruled, recorded with their outcomes
+
+| raised in round 2 | ruling (comment 24529) |
+|---|---|
+| `usage-rules.md` amended beyond CR's `README.md` ask | **ALLOWED — kept.** The PM checked rather than took it: `mix.exs:47` ships it in `files:` and `:58` lists it as a HexDocs `extra` under `groups_for_extras`, so it is consumer-visible on exactly the same footing as `README.md` and RAT-2's bound reaches it. Fixing only `README.md` would have relocated CR's own defect one file over |
+| no CHANGELOG entry for the claim excision | **OMISSION UPHELD — do not add one.** RAT-2 licenses *removing* a false claim, not publishing a new sentence about our conformance posture; ADR-003 sub-decision 6 routes that wording to Sprint 5's release ticket |
+| the false claim ships on **four** released versions, not one | **ACCEPTED**, and verified independently by the PM: `v1.0.0`, `v1.0.1`, `v1.0.2` and `v1.1.0` each carry both lines in their own README. Four published HexDocs landing pages, not one. The four `git show <tag>:README.md` greps stay in the record so the count is checkable rather than asserted |
+| the same stale claim in `docs/prd.md`, `docs/onboarding.md`, `docs/implementation-plan.md` | **OUT OF SCOPE here, and not this seat's to raise.** Repo-internal: not in `mix.exs` `files:`, not HexDocs extras, so RAT-2's consumer-visible bound does not reach them. Still false, and a contributor reads them — **the PM raises the ticket**. Named rather than left |
+
+Also out of scope by the same contract and stated so the absences are not mistaken for coverage: no
+code; no re-run of either conformance leg (MES-49 ran them twice and the PM re-adjudicated both from
+artefacts); no new controls — including the stricter null client that would be needed to discount the
+remaining five, which is **not** built here; no ADR edits beyond `45054d1`. **MES-50** (shared-clone
+concurrency) and **MES-51** (artefact provenance) are the PM's and are raised.
+
+#### Rebase and de-duplication, as executed
+
+```text
+git diff 498f7b1 b4c2f9c            -> empty  (re-verified immediately before the drop)
+git rebase --onto main 498f7b1 MES-19
+
+498f7b1  Pre-run prediction              DROPPED — it is on main as MES-49's b4c2f9c
+07a8b26 -> a909b1c  E2 (MES-48)          clean
+45054d1 -> 6a915d7  RAT-2 + ADR (MES-47) clean
+9d662ab -> bf2ef39  the big entry        conflict, resolved
+d158e68 -> c0c542c  CR round 2           conflict, resolved
+d357bc4 -> e3044bd  round 3              conflict, resolved   <- the REBASED tip; this is the
+                                                                 one the content check below
+                                                                 compares against d357bc4
+
+then, on top of the rebase (no further rebase — nothing to rebase onto):
+e3044bd -> f62eb9c  round-3 write-up appended after the rebase. Docs only,
+                    +95/-14 in docs/sprint_4_issues.md.  f62eb9c IS the tip handed
+                    to CR, and the tip the PM ran the merge gate on.
+f62eb9c -> HEAD     round 4 (this section). Docs only.
+```
+
+**The row above used to stop at `e3044bd` and call it "this round"** (CR's non-blocking cleanup 2,
+upheld). `e3044bd` was the intermediate content-check tip and `f62eb9c` the tip actually handed
+back, so the table named a hash that was not the deliverable — the exact failure mode a provenance
+table exists to prevent. Corrected rather than explained away.
+
+**All three conflicts were the same conflict**, and it is worth naming because the shape recurs
+whenever two branches append to one log: both branches append at the identical point in
+`docs/sprint_4_issues.md`, so every hunk of mine landed on top of MES-49's entry rather than before
+it. Resolved the same way each time — **MES-19's content first, MES-49's entry after it, so each
+ticket's entry is contiguous** — and verified structurally rather than by eye: `git diff main --
+docs/sprint_4_issues.md` for the first of the three is **639 insertions, 0 deletions**, i.e. a pure
+insertion that removes nothing of MES-49's, and `c0c542c` reproduces `d158e68`'s stat exactly
+(149 insertions / 28 deletions, same three files).
+
+**But a matching diffstat is the weaker check, so it is not the one relied on.** The check that
+settles it compares the *content*: extract everything from `## MES-19` to the `## MES-49` heading
+out of the pre-rebase tip `d357bc4` and out of the rebased tip `e3044bd`, and diff the two. The
+result is **byte-identical apart from two blank lines and the `---` separator** that now divides
+this entry from MES-49's. Nothing in this entry was dropped, reordered or reworded by the conflict
+resolutions. (The one place a diffstat *did* wobble — `e3044bd` reads 231/162 where `d357bc4` read
+230/163 — is that blank line, and it is an artefact of how diff aligned an unchanged paragraph, not
+a content change. The content check is what proves that; the stat could not have.)
+
+`mix.exs` now carries `@version "2.0.0-dev.9"` **from main, untouched by this branch** — MES-49's
+D4 bump. This ticket's bump is the PM's to write in the squash-merge.
+
+
+### Round 4 — CR's three BLOCKINGs, all upheld by the PM, all fixed (contract 24581)
+
+Docs only. No code, no conformance re-runs, no new instruments. One of the three (item 2) was a
+defect in **the PM's own instruction**, and the correction is written against the PM rather than
+around it — see *How it was found*, above, which is the fix for item 2 and is deliberately placed
+in the section it corrects rather than appended here where it would read as an afterthought.
+
+#### Item 1 — `README.md` instructed the 2025-11-25 handshake. The CLASS, enumerated (A2d)
+
+RAT-2 has now been "complete" three times, and each round fixed exactly what was pointed at:
+round 1 removed the Tier-1 claim; round 2 fixed the revision line and `:409` after CR found them;
+round 4 fixes handshake instructions after CR found those. So this round does not fix the two hits
+CR named — it **greps the whole class across every consumer-visible surface and adjudicates every
+hit, keeps included**. The count is not the deliverable; the table is.
+
+**Class terms grepped** (case-insensitive): `handshake`, `initiali[sz]`, `notifications/initialized`,
+`session`, `Mcp-Session-Id`, `:waiting`, `:ready`, `Server not initialized`.
+
+**Provenance of the one positive claim the replacement text makes.** The new blockquote asserts
+`list_tools/1` works with no prior `connect/1`. That is **carried in, not re-measured this round**:
+it was measured on this branch in round 2 with a throwaway probe (commit message of `c0c542c` —
+*"client is `:ready` from `start_link/1`; `list_tools/1` returns `{:ok, …}` with no prior
+`connect/1`"*), and it is corroborated structurally by `lib/mcp/client.ex:267`, where `init/1` sets
+`status: :ready` before any request is sent. Everything else the replacement says is a **negative**
+— what the line does not have — and each negative is stated in `lib/` at the sites enumerated in
+row 17. Labelled rather than left to look like this round's measurement (A7).
+
+**Surfaces grepped, and why exactly these.** The bound is the PM's own round-2 ruling test —
+consumer-visible = shipped in `mix.exs` `files:` (`:47`) or a HexDocs `extra` (`:54-60`). That is
+`README.md`, `usage-rules.md`, `CHANGELOG.md`, `docs/architecture.md`, `LICENSE`, `lib/`. Grepping
+only the two files CR named would have repeated the instance-fixing this item exists to stop.
+
+| # | Hit (pre-fix line) | Adjudication |
+|---|---|---|
+| 1 | `README.md:19` — "no `initialize` handshake and no session, and an old-shape request fails fast with `-32022`" | **KEEP.** Correct negative; this is the sentence the other two contradicted |
+| 2 | `README.md:64` — `# Perform the initialization handshake` | **FIXED.** Now: optional `server/discover` probe, "discovery, not a precondition" |
+| 3 | `README.md:121` — `# Connect and use the server` | **FIXED**, and CR did not name it. Not a handshake claim, but it tells a reader `connect/1` is a step before use, which is the same false precondition in softer words. Now: "Optional discovery probe (`server/discover`) — not a gate on the calls below" |
+| 4 | `README.md:354-362` — the nine-line `> **Client handshake (Streamable HTTP).**` blockquote | **REPLACED.** It carried a MUST, an ordering, a header this revision does not have, `:waiting`/`:ready`, "Server not initialized", and "`MCP.Client.connect/1` performs this handshake for you". Replaced with the stateless model stated positively: what a request carries instead (`_meta` under `io.modelcontextprotocol/*`), `-32022` fails fast rather than negotiating down, no request depends on a previous one, and `connect/1` is discovery. A closing parenthetical points 1.x readers at `CHANGELOG.md` so the removal does not read as "the handshake never existed" |
+| 5-11 | `usage-rules.md:8, 41, 245, 246, 255, 269, 273` | **KEEP, all seven.** Every one is already a correct negative or a correct statement of the stateless model (`:41` "discovery, not a precondition"; `:245` "There is **no `MCP-Session-Id`**"; `:255` "the client is `:ready` from `start_link/1`"). Round 2 fixed this file; this grep confirms it rather than assuming it |
+| 12 | `CHANGELOG.md:10` — "no `initialize` handshake, no session" | **KEEP.** Correct negative, in the `[Unreleased] — 2.0.0` section |
+| 13 | `CHANGELOG.md:102` — "no `Mcp-Session-Id`, no `Last-Event-ID` resumption" | **KEEP.** Correct negative, under `### Removed` |
+| 14 | `CHANGELOG.md:159-161` — "documented the required client handshake ordering … stays `:waiting`" | **KEEP.** This is the `[1.1.0]` entry and it is a true statement about what 1.1.0 shipped. A changelog that rewrote its own history to match the current line would be the worse defect |
+| 15 | `CHANGELOG.md:222` — "Initialization handshake and capability auto-detection" | **KEEP.** Under `## [0.1.0] - 2025-02-08` (`:213`), not `[1.0.0]` — checked rather than assumed. Same reason |
+| 16 | `docs/architecture.md` — 33 in-class hits over 548 lines | **NOT FIXED, and named rather than left.** See below. This is the one adjudication in this table that is a judgement rather than a reading |
+| 17 | `lib/**` — **42 hits**, counted not estimated | **36 KEEP, 6 NAMED across 3 files (not fixed — `lib/` is code, A9).** 36 + 6 = 42; the keeps split three ways. **28** are *correct negatives* stating the stateless model (`client.ex:6,141,819`, `dispatch.ex:5,7,8,66,135,419`, `connection.ex:9,10`, `plug.ex:6,29`, `streamable_http/client.ex:97,611`, `meta.ex:5,7`, `methods.ex:9`, `extensions.ex:13,24,25,31`, `discover.ex:5`, `config.ex:6`, `tool_context.ex:9,68,81`, `state_handle.ex:6`), and the rest are **live identifiers, not claims** — `methods.ex:7` `def initialize` and `dispatch.ex:131` still exist because the method name must be *recognised in order to be rejected* (`-32022`, `dispatch.ex:135`), `methods.ex:33`/`dispatch.ex:418` because `notifications/initialized` is *tolerated as a no-op*, `client.ex:213/267/349` because `:ready` is the client's own status atom and still real (**7** such). One is neither — `handler.ex:81` *"Initialize handler state"*, the ordinary English verb (28 + 7 + 1 = 36). **A grep cannot tell a token from a claim; that is why this column exists.** The three non-keeps: `messages/initialize.ex:1,3,8,51` (below), and `capabilities/server_capabilities.ex:3` + `capabilities/client_capabilities.ex:3`, both reading *"declared … during initialization"* — there is no initialization on this line; both are public modules and both ship to HexDocs |
+
+**Item 16, stated at its real strength because it is the weakest cell in the table.**
+`docs/architecture.md` ships in `mix.exs` `files:` and is a HexDocs extra under *Guides*, so it is
+consumer-visible on the same footing as `README.md`. It still carries the 2025-11-25 model
+throughout: `MCP-Session-Id: <sid>` and `MCP-Protocol-Version: 2025-11-25` in the transport diagram
+(`:171-172`), an ETS session registry (`:171`, `:186`, `:202`), `DELETE → terminate session`
+(`:169`, `:174`, `:182`), the `:waiting`/`:ready` state machine (`:286`, `:312`), and at `:205-209`
+a *"clients MUST drive `initialize → notifications/initialized → tools/call`"* bullet that is
+word-for-word the defect CR found in `README.md`.
+
+**Why it is nevertheless not the same defect, and this is the argument to attack.** README asserted
+2026-07-28 at `:19` and then instructed 2025-11-25 at `:354` **with nothing between them saying
+which line the reader was in** — one page, two incompatible clients. `docs/architecture.md` declares
+its scope in its own first eight lines — `**Version**: 1.0.2`, `**Protocol**: MCP 2025-11-25`, and
+`**Status**: … Superseded by the unreleased 2.0.0 stateless-core rewrite` (that Status line is this
+branch's own `6a915d7`). A reader is told which line the document describes before reading a word of
+it, so its handshake prose is *consistent with its declared scope* rather than contradicting a claim
+on the same page.
+
+**That is a real distinction and it is also a convenient one, so: it does not make the document
+correct.** A document that describes 1.0.2 while shipping inside 2.0.0's docs is a rewrite waiting
+to be owned, and nobody owns it — it is not in this round's four items, it is not in A9's named
+exclusions (`prd.md`, `onboarding.md`, `implementation-plan.md` → MES-52), and it is not
+`README.md`. It is left **unfixed and named** rather than half-fixed: patching the four instruction
+bullets while the diagrams above them still draw a session registry would produce inside
+`architecture.md` exactly the two-readings-one-page defect this item is fixing in `README.md`.
+**Routed to the PM: either widen MES-52 to cover it or raise it, before 2.0.0 publishes.** This seat
+did not silently expand scope to a 548-line rewrite, and did not silently drop it either.
+
+**Item 17's non-keeps, and the first is not a docs defect at all — it is a shipped module.**
+`lib/mcp/protocol/messages/initialize.ex` defines `MCP.Protocol.Messages.Initialize` (plus nested
+`Params` and `Result`) with the `@moduledoc` *"Message types for the MCP initialize handshake."*
+The 2.0.0 line has no `initialize` handshake, and the module is **referenced nowhere in `lib/`** —
+checked: `grep -rn "Messages.Initialize" lib/` outside its own file returns nothing. It is a public
+module, so `ex_doc` publishes it: a consumer browsing 2.0.0's HexDocs finds documented message types
+for a handshake this line rejects with `-32022`. Not fixed here, because deleting a public module is
+**code** and a breaking removal that needs its own `CHANGELOG` `### Removed` entry — precisely what
+this round's A9 excludes. **Named for the PM to route.** It is also the sharper form of the general
+point: the grep for a *class of claim* found a hit that is not prose, and the fix for it is not an
+edit.
+
+The other two are one word each and could not be more different in cost:
+`MCP.Protocol.Capabilities.ServerCapabilities` and `…ClientCapabilities` both open *"Capabilities
+declared by an MCP {server,client} during initialization"* (`server_capabilities.ex:3`,
+`client_capabilities.ex:3`). Both modules are load-bearing on this line — capabilities are still
+declared, just **per request in `_meta`** rather than once at a handshake — so the modules stay and
+only the sentence is wrong. Left unfixed **solely** because `lib/` is code and this round is docs
+only; if the PM would rather have them in, they are a one-line change each and this seat will take
+them in round 5 or in whatever ticket picks up the two above.
+
+#### Item 3 — the caveat now travels with the figure
+
+The draft said **"5 of 7 is the figure a consumer should read"** at `:4915`; the caveat that a
+stricter null client would be needed to discount the remaining five, and was not built, sat at
+`:5385-5388` in the round-3 audit prose — **outside the blockquote**. CR's point is the one that
+matters: the blockquote is the part that gets lifted into a README at release and the audit prose is
+not, so a caveat at that distance is a caveat that will not be published with the figure.
+
+One sentence now sits inside the blockquote, immediately after the claim it bounds: *it is what
+survives these two named discounts — it is not a demonstration that each of the five discriminates;
+showing that would need a stricter null client, and none was built.* Short enough to survive being
+quoted, which was the constraint. The audit-prose copy at `:5385-5388` stays where it is; the point
+was that the caveat must travel with the figure, not that it must travel only there.
+
+#### Item 4 — the two non-blocking cleanups
+
+- **Trailing whitespace, `docs/sprint_4_issues.md:4789` (the CG5 register row).** Removed.
+  `git diff --check bc130a8..HEAD` was exiting 2 on it. Worth one line of record: **gate 1 cannot
+  catch this** — `.formatter.exs` `inputs:` is `{config,lib,test}/**`, so every markdown file in the
+  repo is outside the formatter's reach. Another green that does not cover the thing, which is this
+  ticket's recurring subject. `git diff --check main..HEAD` is run explicitly this round for that
+  reason and is recorded with the gates below.
+- **The rebase provenance table named a hash that was not the deliverable.** `:5402` read
+  `d357bc4 -> e3044bd  this round` while the tip handed to CR was `f62eb9c`. `e3044bd` was the
+  intermediate content-check tip — the round-3 write-up was appended on top of it, `+95/-14`, docs
+  only — and both hashes belong in the table for different reasons: `e3044bd` is what the
+  byte-identity content check compares against `d357bc4`, and `f62eb9c` is what was reviewed. The
+  table now carries the full chain through to this round's commit.
+
+
+#### Round 4 gates, run individually in this seat's own worktree (`/tmp/cc-mes19-r4`, detached at `f62eb9c`)
+
+| Gate | Command | Result |
+|---|---|---|
+| — | `mix hex --version` | `Hex v2.5.1` — meets the ≥ 2.5.1 floor, checked before gate 6 rather than after |
+| 1 | `mix format --check-formatted` | `rc=0` |
+| 2 | `mix compile --warnings-as-errors` | `rc=0` |
+| 3 | `mix credo` | `rc=0` — 1107 mods/funs, no issues |
+| 4 | `mix dialyzer` | `rc=0` — `Total errors: 0, Skipped: 0, Unnecessary Skips: 0` |
+| 5 | `mix test` | `rc=0` — **13 doctests, 566 tests, 0 failures**. 566 is the PM's pre-run prediction and this round changed no code, so it had to be 566; it was |
+| 5+ | 20-seed sweep: `0 1 7 13 42 99 101 256 512 777 1024 2048 3141 4096 5555 8192 12345 31337 65535 99999` | all `rc=0`, all `566 tests, 0 failures` |
+| 5c | **Control** — `MIX_ENV=dev mix test --seed 1` | **`rc=1`, RED as required** (`json_schema_2020_12_test.exs:358` fails to load in `dev`). Proves the harness captures a nonzero rc |
+| 6a | baseline-lock sentinel at `d697093` | **PASS — all 22 known advisory ids present** |
+| 6b | `mix hex.audit` | `rc=0` — "No retired or security advisory packages found" |
+| + | `git diff --check main..HEAD` | `rc=0`. Added explicitly this round per the PM, because gate 1 is blind to markdown |
+
+**The sweep's first attempt was written in the broken shape, and that is recorded rather than
+quietly re-run.** The first pass captured the seed's result as `out=$(mix test --seed $s 2>&1 | tail
+-2 | tr '\n' ' '); rc=$?` — and `$?` after a **pipeline** is the exit status of `tr`, which is
+always 0. Twenty seeds reported `rc=0` and **every one of those twenty numbers was meaningless**:
+that harness could not have reported a failure. It was re-run with the status taken directly from
+`mix test` (redirecting to a file rather than piping), and only that second table is above. This is
+the exact trap the PM named in comment 24577 item 2 — and it caught this seat one round after being
+told about it, in the same file that argues a green is only as good as its instrument.
+
+**What the sweep is worth, stated at its own bound (the PM's round-3 question, answer unchanged).**
+The control fires for a *different reason* than the sweep exists to catch: it proves the rc capture
+works, not that the suite would go red under an unlucky order. No test in this suite is known to be
+order-sensitive, and nothing here was mutated to make one. So the 20 clean seeds are
+**corroboration, not proof** — the standing bound, restated rather than assumed, and this round has
+no code in it for a seed to reorder anyway.
 
 ---
 

@@ -4,7 +4,7 @@
 - **Project**: MCP Elixir SDK (Hex package `mcp_elixir_sdk`)
 - **Version**: 1.0.2
 - **Date**: 2026-02-09
-- **Status**: Phase 7 Complete — 100% Conformance (Tier 1)
+- **Status**: Phase 7 complete (1.0.2 line). Superseded by the unreleased 2.0.0 stateless-core rewrite.
 - **Protocol**: MCP 2025-11-25
 
 ---
