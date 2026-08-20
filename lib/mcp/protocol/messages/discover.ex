@@ -18,8 +18,13 @@ defmodule MCP.Protocol.Messages.Discover do
     * `CacheableResult extends Result` adds **`ttlMs`** / **`cacheScope`**
       (schema.ts:1094/1109); `Result` carries **`resultType`** (`"complete" |
       "input_required" | string`). These three are **structural fields** here;
-      caching **semantics/policy** are MES-9 scope, so this SDK emits structural
-      defaults (`resultType: "complete"`, `ttlMs: 0`, `cacheScope: "public"`).
+      caching **semantics/policy** are **MES-39** scope, so this SDK emits
+      structural defaults (`resultType: "complete"`, `ttlMs: 0`,
+      `cacheScope: "public"`) and honours neither field on the client side.
+      (This line named MES-9 until MES-18. MES-9 closed on 2026-07-28, so the
+      deferral pointed at a ticket that could not act — an owner that reads as
+      present in a register walk and is not. Checking "something names a
+      ticket" is not checking "that ticket can still act".)
     * Server identity is under **`_meta["io.modelcontextprotocol/serverInfo"]`**
       (example `DiscoverResult/server-capabilities-discovery.json`), *not* a
       top-level `serverInfo`.

@@ -46,6 +46,21 @@ defmodule MCP.Transport.Stdio do
     GenServer.call(pid, {:send_message, message})
   end
 
+  @doc """
+  Sends a message, **ignoring** per-message transport options.
+
+  The only option defined today is `:headers` (SEP-2243 `Mcp-Param-*`
+  mirroring), and stdio has no headers to put it on. Ignoring it is not a
+  shortcut but the spec's own allowance — "Clients using other transports
+  (e.g., stdio) MAY ignore `x-mcp-header` annotations entirely"
+  (`server/tools.mdx:367-368`). Implementing the callback rather than omitting
+  it keeps the client's send path uniform across transports.
+  """
+  @impl MCP.Transport
+  def send_message(pid, message, _opts) when is_map(message) do
+    send_message(pid, message)
+  end
+
   @impl MCP.Transport
   def close(pid) do
     GenServer.call(pid, :close)

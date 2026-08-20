@@ -869,10 +869,25 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   # match the request's **method-appropriate** target (SEP-2243, §"Mcp-Name":
   # `params.name` for `tools/call`/`prompts/get`, `params.uri` for
   # `resources/read`). Enables gateways to route without inspecting the body.
+  # `Mcp-Name` is compared AFTER Base64-sentinel decoding. Servers "MUST decode
+  # an encoded `Mcp-Name` or `Mcp-Param-{Name}` value before comparing it to
+  # the corresponding request body value" (`streamable-http.mdx:501-504`), and
+  # a client "MUST" encode a name that is not header-safe (`:486-492`) — tool
+  # and prompt names are only SHOULD-constrained to header-safe characters, so
+  # a non-ASCII name is legitimate.
+  #
+  # This was unreachable until MES-18: our client sent no `Mcp-Name` at all, so
+  # nothing ever arrived encoded. The moment CG1 landed it became a
+  # deterministic self-rejection — our own conformant client refused by our own
+  # server with -32020 on any non-header-safe tool name — which is why the fix
+  # rides the ticket that made it reachable rather than MES-35, which owns the
+  # `Mcp-Param-*` half. The distinction is not the ticket boundary but the
+  # breakage: this server never compares `Mcp-Param-*` at all, so no
+  # self-incompatibility exists there to fix.
   defp check_routing_headers(conn, message) do
     method = Map.get(message, "method")
     header_method = first_header(conn, "mcp-method")
-    header_name = first_header(conn, "mcp-name")
+    header_name = decode_header_name(first_header(conn, "mcp-name"))
     target = routing_target(method, Map.get(message, "params"))
 
     cond do
@@ -886,6 +901,9 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
         :ok
     end
   end
+
+  defp decode_header_name(nil), do: nil
+  defp decode_header_name(value), do: MCP.Protocol.HeaderMirror.decode_value(value)
 
   # SEP-2243: the `Mcp-Name` target is the method-appropriate field —
   # `params.name` for tool/prompt calls, `params.uri` for resource reads.

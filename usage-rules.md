@@ -61,7 +61,50 @@ Call `MCP.Client.close/1` when done.
 | `list_all_tools/1` | Auto-paginate all tools |
 | `list_all_resources/1` | Auto-paginate all resources |
 | `list_all_prompts/1` | Auto-paginate all prompts |
+| `excluded_tools/1` | Tools dropped from the last `tools/list`, with the reason |
 | `close/1` | Disconnect and clean up |
+
+### Custom headers from tool parameters (SEP-2243)
+
+Over Streamable HTTP the client mirrors `x-mcp-header`-annotated arguments into
+`Mcp-Param-*` headers. Two rules follow from it:
+
+**`list_tools/2` may return fewer tools than the server sent.** A tool whose
+annotations break the SEP-2243 constraints **must** be excluded — one malformed
+definition must not take the valid tools with it. Nothing errors, so ask:
+
+```elixir
+{:ok, %{"tools" => tools}} = MCP.Client.list_tools(client)
+MCP.Client.excluded_tools(client)
+#=> [{"broken_tool", "x-mcp-header \"Bad Name\" is not an HTTP field-name token ..."}]
+```
+
+**List before you call, if the tool has annotations.** Mirroring needs the
+tool's `inputSchema`, which the client caches from `tools/list`. Calling a tool
+it has never listed sends no `Mcp-Param-*` headers and logs a warning. That is
+recoverable — a `-32020` HeaderMismatch makes the client refresh and retry once
+— but the round trip is avoidable by listing first.
+
+### Rotating credentials
+
+`:headers` is static, captured once at `start_link/1`. For a credential that
+expires, use `:header_provider`, called per request:
+
+```elixir
+{MCP.Transport.StreamableHTTP.Client,
+ url: "http://host:port/mcp",
+ header_provider: fn -> [{"authorization", "Bearer " <> MyApp.Token.current()}] end,
+ header_provider_timeout: 5_000}
+```
+
+The provider runs in a separate, **unlinked** process with a bounded wait — not
+a `Task`, because `Task.async/1` links and a killed provider would come back
+down the link into a transport that does not trap exits. If it raises, exits, is
+killed outright, returns something that is not a list of `{binary, binary}`, or
+hangs, **that request** fails with
+`{:error, {:header_provider_failed, reason}}` and the transport stays up. Do not put `mcp-method`, `mcp-name` or `mcp-protocol-version` in
+either option — the SDK derives those from each message, and `:headers` entries
+are appended rather than merged.
 
 ### Client Feature Callbacks
 
@@ -199,7 +242,13 @@ end
 - Requires `:req`, `:plug`, and `:bandit` dependencies.
 - Uses POST for sending. **There is no GET endpoint** — `GET` is `405`. A POST response is either
   JSON or an SSE stream, and a `subscriptions/listen` POST is answered with an SSE stream held
-  open. `MCP-Session-Id` header for stateful sessions.
+  open. There is **no `MCP-Session-Id`**: the 2026-07-28 core is stateless (SEP-2567), and every
+  request carries its own `_meta`. (This line claimed the session header until MES-18.)
+- Every POST carries the SEP-2243 routing headers `Mcp-Method` and — for `tools/call`,
+  `prompts/get` and `resources/read` — `Mcp-Name`, so a gateway can route without reading the
+  body. A name that is not header-safe is carried Base64-encoded as `=?base64?...?=`.
+- The client transport **cannot consume a held-open stream**: it parses a complete SSE body from
+  a blocking request. Client-side `subscriptions/listen` is MES-38.
 
 ## Critical Gotchas
 

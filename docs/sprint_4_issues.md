@@ -2245,6 +2245,52 @@ the case that varies the contents is the discriminating one, and the empty-of-ev
 the control, not the test.
 **Priority Hint:** high (method, reusable) · **Blocking?:** No · **Suggested Jira Ticket?:** No
 
+### Finding: the header provider had to be UNLINKED, and the failure contract said so before the code did
+
+**Description:** The ratified contract promised that a misbehaving `:header_provider` fails *that
+request* and never the transport. The first implementation used `Task.async/1`, which **links** —
+and this transport does not trap exits, so a provider process killed outright would have travelled
+the link and taken the transport (and `MCP.Client` behind it) down, in exactly the case the contract
+excludes. `catch` covers raise/throw/exit; only an unlinked process also covers a kill. Rewritten as
+`spawn_monitor/1` with a selective `receive` on our own ref and monitor — selective so it cannot
+swallow an unrelated message from the GenServer's mailbox.
+
+**Mutation run:** restoring `Task.async/1` turns exactly one test red — "a provider process killed
+outright still only fails the request" — and nothing else. The claim was written down before it was
+true, which is how it got checked.
+
+### Finding: the seed sweep caught a flaky TEST — the instrument, not the behaviour
+
+**Description:** Gate 5's sweep found `"a miss warns ONCE per tool name"` red on roughly half of
+seeds. `capture_log/1` captures the **global** logger, so in an `async: true` suite it also sees the
+identical cache-miss warning emitted by *other* tests for *their* tools; counting the generic phrase
+measured the suite's concurrency rather than this client's behaviour. Fixed by counting a tool name
+unique to the test. Two other log assertions in async files were tightened the same way, for the
+milder failure of passing for the wrong reason.
+
+**Worth recording because it is the sprint's own pattern once more, this time in a test:** a claim
+("this warned once") checked at a width larger than the claim ("this phrase appeared once anywhere
+in the suite's logs"). A single-seed run would have shipped it, and it is precisely what the sweep
+exists to find.
+
+### Gates — all six run individually at the final tip
+
+```text
+1  mix format --check-formatted        clean
+2  mix compile --force --warnings-as-errors   clean (69 files)
+3  mix credo                           1087 mods/funs, found no issues
+4  mix dialyzer                        Total errors: 0, Skipped: 0, Unnecessary Skips: 0
+5  mix test                            13 doctests, 541 tests, 0 failures
+                                       + two disjoint 20-seed sweeps, 40/40 green
+                                         (17/23/88/314/777/1601/2024/3607/4242/5000/
+                                          6180/7777/8888/9999/10007/11235/12321/
+                                          13337/14400/16180, and the earlier set)
+6  mix hex --version                   Hex v2.5.1  (>= 2.5.1 floor met)
+   6a baseline sentinel @ d697093      PASS — all 22 known advisory ids present
+   6b mix hex.audit                    "No retired or security advisory packages
+                                        found", exit 0
+```
+
 ### Gate 6 — unchanged residual
 
 **Description:** No dependency was added, so `mix.lock` is untouched and **MES-27's 6a residual is
@@ -2579,4 +2625,472 @@ whose fields are named like `call_tool_extras/0`, which is the thing round 1 had
 
 **Gate 6 residual: unchanged.** No dependency was added and `mix.lock` is untouched, so MES-27's 6a
 residual stays at **21 unvalidated of 26** packages.
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+## MES-18 — Client-side core conformance closure (2026-08-20)
+
+Epic MES-23. Gap register items **CG1, CG2, CG4, CG7**, plus four defects the register does not
+contain and the deferred rotating-bearer item. All citations are to the pinned spec commit
+`5f5440bb26a62e2cf3440b92da5a667efa03b267` — `server/tools.mdx` (md5
+`c302125aae381e9be1feb96305341d4b`), `basic/transports/streamable-http.mdx`, `basic/index.mdx` (md5
+`1b680a56e96533ff28f6eac07bd51bdc`), `basic/versioning.mdx` (md5 `6b2476585e9e10e1b4c3706a832f5fb5`)
+— and to the conformance harness **pinned at `@modelcontextprotocol/conformance@0.2.0-alpha.11`**,
+never to "the alpha": it moved from `alpha.10` to `alpha.11` between MES-13 and this ticket.
+
+`basic/versioning.mdx` was **not** in the local `/tmp/spec2026` pin and was fetched from
+`raw.githubusercontent.com` at the same commit during this ticket, as `basic/index.mdx` was during
+planning. Anyone re-checking those two citations on a fresh container must fetch them first.
+
+### Decision: the sizing outcome and the A1 split boundary — CG3 leaves, everything else stays
+
+**Description:** The register's "MES-18 is one-ticket-sized" verdict predated CG7 and three landed
+tickets, so it was re-derived rather than inherited. By volume the whole set fits: ~3000–3200
+insertions estimated against MES-15's 4410 actual. **That measurement argues against a split and is
+recorded here because it does.** The split was requested and ratified on a different ground —
+contract count. CG7 changes the `MCP.Transport` behaviour once (a per-message header channel); CG3
+would change it again and differently (a long-lived, non-blocking request that outlives the call
+that started it), because `handle_call({:send_message, ...})` at
+`streamable_http/client.ex:120-129` performs the POST **synchronously inside the GenServer**, so a
+held-open stream blocks the whole transport and every other request on that client. CG3 is a second
+execution mode, not incremental parsing.
+
+**Boundary:** out of MES-18 is *client-side `subscriptions/listen` stream consumption, in full*.
+Nothing else moved; everything on the request/response path stayed. **Owner: MES-38**, ruled a new
+ticket rather than folded into MES-29 (stdio listen) — a ticket spanning two transports and two
+roles has the same review problem the split was granted to avoid. Whichever of MES-38/MES-29 lands
+first extracts the shared demux-by-`subscriptionId`. CG3 is also the only item worth **zero** scored
+credit — no client scenario for `subscriptions/listen` exists in alpha.11's client list or its
+`not_scored` block — so deferring it costs the conformance number nothing.
+
+Two stale in-tree pointers to the old owner were corrected:
+`streamable_http/client.ex:8-18` and `:275` now say MES-38.
+
+### Decision: the CG7 ruling, and the `Mcp-Name` / `Mcp-Param` distinction
+
+**Description:** CG7 (`x-mcp-header`) was absent from the gap register and is **2 of the 7** scored
+core client scenarios; the PM ruled its client half in on ADR-003 sub-decision 4's standing
+authority. Implemented as `MCP.Protocol.HeaderMirror`, derived from `tools.mdx:346-368` and
+`streamable-http.mdx:371-545` — **not** from the harness fixtures, which are narrower than the spec.
+
+**A2d — what is IN: all six annotation constraints and all four encoding rules. What is OUT:
+nothing.** Three of the six earn **no harness credit** and are ours alone: `number`-exclusion, the
+integer safe range, and static reachability. The alpha.11 fixture's ten invalid tools (its own `Ua`
+map, read first-hand) cover only four classes — not-empty (1), primitive-only (3), uniqueness (2),
+charset (4) — and each of those ten is named in a test in `header_mirror_test.exs`, so the
+harness-covered subset is checkable rather than asserted. This confirms MES-35's "the
+harness-derived list was narrower than the spec" from the fixture itself.
+
+**The server-side `Mcp-Name` Base64 decode landed HERE, and `Mcp-Param-*` decode did not.** The rule
+applied is not a ticket boundary but a breakage: `streamable-http.mdx:501-504` requires a server to
+decode an encoded `Mcp-Name` before comparing it to the body, and `plug.ex:882-883` compared raw.
+That was dead code while our client sent no `Mcp-Name`; the moment CG1 landed it became a
+**deterministic self-rejection** — our own conformant client refused by our own server with `-32020`
+on any non-header-safe tool name. `Mcp-Param-*` decode stays with **MES-35** because this server
+never compares those headers at all (zero occurrences in `lib/`): no comparison, no
+self-incompatibility, no urgency. `Mcp-Name` is in because it breaks; `Mcp-Param` is out because it
+does not.
+
+The self-rejection was **demonstrated, not argued**: reverting the one-line decode with the new
+tests in place turns `self_compatibility_test.exs` red twice, including the end-to-end
+client→server call, with HTTP 400 / `-32020`.
+
+### Finding: four defects on the path of scored scenarios, two of them refuting the register
+
+**Description:** None of these are in the register or the brief; three sit on scenarios the register
+calls conformant or unexamined.
+
+- **D-1 — MRTR is NOT conformant; the register's `CONFORMANT` verdict is refuted.** `client.ex:409`
+  put `requestState` unconditionally, so a server that sent none got a **present key holding JSON
+  `null`** on the retry. The `sep-2322-client-no-state-omitted` check tests presence
+  (`n !== undefined`) and JSON `null` decodes to JS `null`, which is `!== undefined` — so
+  `sep-2322-client-request-state`, one of the seven, failed. **A register entry marked done that is
+  not done is more expensive than one marked open: nobody would ever have looked.**
+- **D-2 — transport send failures were discarded.** `send_request/4` ignored `send_message/2`'s
+  return value and registered the request as pending regardless, so an HTTP 400, a refused
+  connection or a rejected content-coding all became `{:error, :timeout}` after the full 30s, with
+  the real reason only in a log line. A conformance defect and not merely an ergonomic one: a
+  scenario that rejects the first request and waits for a retry gets a 30-second stall instead, and
+  **a client timeout fails a scenario outright**.
+- **D-3 — `request-metadata` was not the free pass the register implied.** The scenario rejects the
+  **first** request — whatever it is — with `-32022` and seeds
+  `sep-2575-client-retry-supported-version` at WARNING, and **a WARNING fails the scenario**
+  (`overallFailure` disjoins `s>0` in the harness's own reducer). Left alone the check stays WARNING
+  and the 30s stall from D-2 risks the client timeout as well. **C-1 discharged:** the retry is
+  required by normative text, not by a check name — `basic/versioning.mdx:69-71`, "The client
+  **SHOULD** select a mutually supported version from the `supported` list and retry the request, or
+  surface an error to the user if no compatible version exists." The retry is gated on an
+  intersection with `@supported_versions`, which holds the stateless core alone, so ADR-003
+  sub-decision 5 is untouched: it can never reach for 2025-11-25.
+- **D-4 — the protocol version was configured twice and could diverge.** The header came from the
+  transport's `:protocol_version`, the body `_meta` from `MCP.Client`'s, and `start_transport/1`
+  forwarded only `:owner`. Latent (the defaults agreed) but a MUST
+  (`streamable-http.mdx:255-259`) and a precondition of D-3: after a retry changes the version the
+  header must change with it. Fixed structurally — the transport now derives the header from the
+  message's own `_meta`, falling back to its configured default. One source of truth, so lockstep is
+  no longer a thing two modules have to remember.
+
+### Correction: two register entries are wrong, in opposite directions (for MES-19)
+
+**Description:** MES-19 walks the register item by item, so both belong there rather than only here.
+
+1. **CG2 is stale in the OPPOSITE direction from the brief's reading.** The brief said the inbound
+   half was absent because `discover.ex` contains no "extensions". True grep, wrong file:
+   `Discover.Result.from_map/1` delegates at `discover.ex:74` to `ServerCapabilities.from_map/1`,
+   which parses it (`server_capabilities.ex:36`), and `MCP.Client` stores and exposes it. CG2 was
+   **functionally closed, evidentially open** — had the brief been taken at face value, this ticket
+   would have built a parser that already exists. It now has tests and a doc line.
+2. **CG3's register entry and the MRTR entry disagree with reality in opposite ways:** MRTR is
+   marked CONFORMANT and is not (D-1 above).
+
+Also for MES-19, on mechanism rather than conclusion: the sibling server scenarios
+(`http-header-validation`, `http-custom-header-server-validation`, `json-schema-2020-12`) **are**
+present in alpha.11's `requirements/2026-07-28.yaml` as `not_scored` with `reason: pending`
+(`:183-197`) — they are not "absent from the scored list". Same conclusion (no server-side scoring
+credit), different mechanism; "run and reported, never counted" and "absent" are different claims
+about the same zero.
+
+### Decision: CG5 and CG6 deferred, with owners that can act
+
+**Description:** Both are SHOULD-level and earn zero scored credit; both are adjudicated rather than
+left silent.
+
+- **CG5 (`ttlMs`/`cacheScope`) → MES-39.** `discover.ex:77-78` parses both; no store exists. The
+  deferral originally cited MES-9, read off `discover.ex:20-22`'s own moduledoc — and **MES-9 is
+  `Done`, resolved, in the closed Sprint 3**. A deferral to a finished ticket reads as owned in a
+  register walk and cannot act. The general form is worth carrying: *"there is an owner" checked at
+  the width of "something names a ticket" rather than "that ticket can still act".* Neither seat got
+  it from the moduledoc; it took reading the issue's status. The stale prose is fixed in this
+  commit.
+- **CG6 (trace-context `_meta`) → MES-32.** `meta.ex:53-57` defines the three W3C keys and nothing
+  writes them; the write side is `with_meta/2`'s closed three-key map, which is MES-32's defect.
+  CG6 has exactly two implementations: add a fourth hard-coded key to a function whose defect is
+  that its key set is closed, or fix MES-32 first and then CG6 is ~10 lines. MES-32 owns both and
+  is cheaper for doing them together.
+
+### Decision (C-2): the cache-miss and staleness policy, decided rather than defaulted
+
+**Description:** `Mcp-Param-*` mirroring needs the tool's `inputSchema`, which only `MCP.Client`
+holds, so `call_tool/4` can only mirror for tools this client has listed. A miss is a **normal
+event**: nothing in this SDK requires `tools/list` first and the protocol is stateless.
+
+The chosen policy is **announce, then recover through the spec's own path**, and explicitly **not**
+an implicit list (which would spend a round trip on every cold call whether or not the tool has
+annotations) and **not** an error (which would break working code):
+
+1. On a miss the call goes out unmirrored and logs a warning naming the tool, **once per name**.
+   Without it the request is indistinguishable on the wire from a tool that has no annotations —
+   F-9's shape again.
+2. If the server actually needed the headers it answers `-32020`, and the client then does what
+   `streamable-http.mdx:533-539` prescribes: refresh via `tools/list` and retry the call **once**.
+   The same mechanism covers a **stale** cached schema, which has no local signal at all and is the
+   half a miss-only policy cannot reach.
+
+**Stated bound (A2d):** the refresh fetches the **first page only**. A tool on a later page is not
+found, the retry goes out unmirrored, and the server's second rejection reaches the caller —
+correct, one round trip more expensive than necessary, and not silent. A failed refresh surfaces
+the **original** `-32020`, not the refresh's error: the caller asked for a `tools/call`.
+
+**The pagination trap, separately:** a cursor-bearing `tools/list` is a page, not a listing, and
+`list_all_tools/2` walks `nextCursor`. Replacing the cache per response would leave it holding only
+the last page and every earlier tool would silently stop mirroring. Rule: **reset on a cursor-less
+request, merge on a cursor-bearing one** — applied to the excluded-tools record too.
+
+### Decision: tool exclusion is visible, and the encoder is the safety boundary
+
+**Description:** Two adversarial items with real answers.
+
+**Exclusion (F-9 again).** `tools.mdx:360-366` requires a client to exclude a tool whose
+`x-mcp-header` annotations are invalid, so `list_tools/2` can return fewer tools than the server
+sent with no error. The spec asks for a log line (SHOULD); this does that **and** exposes
+`MCP.Client.excluded_tools/1` returning `[{name, reason}]`, so an operator can *ask* where their
+tool went instead of grepping for a line that may have scrolled away.
+
+**Injection.** `x-mcp-header` puts model-controlled values into HTTP headers by design. Sanitisation
+does not happen before or after the Base64 step — **the Base64 step *is* the safety decision**:
+convert to string → test safety (every octet 0x20–0x7E, no leading/trailing whitespace, not
+sentinel-shaped) → emit as-is or replace wholesale with the sentinel. There is no branch on which an
+unsafe octet reaches the transport, so CR/LF request-splitting is closed **structurally** rather
+than by a filter a later edit could reorder. The SDK does **not** rely on Finch or Mint rejecting a
+bad value — that would be the unguarded-property mistake one layer down. A second, independent gate:
+header *names* are validated at `tools/list` time and an invalid one excludes the whole tool, so a
+hostile name never reaches assembly. Critical Rule 6 is untouched — identity still comes only from
+the transport pipeline; what crosses here is tool *arguments*.
+
+Horizontal tab (0x09) is treated as **unsafe** and encoded, though RFC 9110 admits it in a field
+value: a tab is not "safely represented as a plain ASCII header value" and encoding costs nothing.
+The harness's own predicate agrees.
+
+### Decision: CG4 needs no production code, and gets a test anyway
+
+**Description:** `basic/index.mdx:299-310` — "Implementations **MUST NOT** automatically
+dereference `$ref` values that resolve to a network URI." It is a **prohibition, not a capability**,
+and the scored scenario inverts on a canary counter (FAILURE iff the canary was hit). We satisfy it
+**by construction of an absence**: nothing in `lib/` walks a schema, `Jason` is a pure codec with no
+socket, and `Req` only fetches the URL it is handed — only ever `state.url`. That is not luck, but
+it is **unguarded**: the property holds because a feature is missing. T-CG4 therefore stands a
+canary HTTP server up, serves an `inputSchema` whose `profile` is a `$ref` at it, runs
+`list_tools` + `call_tool`, and asserts zero hits — plus a **control on the control** proving the
+canary registers a hit when one is made, because an instrument that silently no-ops reports the same
+thing as a clean tree.
+
+**Zero production code, zero dependency, and the largest cost item in the original brief evaporates.**
+
+### The scenario-mapped prediction (DoD item 2)
+
+Every row presupposes MES-24 ships an adapter that drives the method under test; today
+`conformance/client_adapter.exs` routes only `initialize` (which does not exist in the stateless
+core) and an old `tools-call`. Where a row's risk is adapter-shaped rather than client-shaped it is
+said in the row.
+
+| # | Scenario | Before | After | CG / item | Proving test |
+|---|---|---|---|---|---|
+| 1 | `tools_call` | PASS | **PASS** | CG1 + CG7 | `self_compatibility_test.exs` end-to-end; `routing_headers_test.exs` |
+| 2 | `request-metadata` | **FAIL** | **PASS** | D-2, D-3, D-4 | `client_defects_test.exs` D-3 (one-shot retry), D-4 (lockstep), D-2 (propagation) |
+| 3 | `sep-2322-client-request-state` | **FAIL** | **PASS** | D-1 | `client_defects_test.exs` D-1 (absent, null, echoed) |
+| 4 | `http-standard-headers` | FAIL | **PASS** | CG1 | `routing_headers_test.exs` T-CG1a/b/c |
+| 5 | `http-custom-headers` | FAIL | **PASS** | CG7 | `header_mirror_test.exs` (fixture vector); `routing_headers_test.exs` end-to-end |
+| 6 | `http-invalid-tool-headers` | FAIL | **PASS** | CG7 | `header_mirror_test.exs` (ten fixture classes); `client_tool_schemas_test.exs` (exclusion) |
+| 7 | `json-schema-ref-no-deref` | PASS | **PASS** | CG4 (no code) | `client_conformance_test.exs` T-CG4 canary |
+
+**NAMED PREDICTION RISK — row 4 is the one to look at hardest (C-3, carried verbatim from the
+plan).** alpha.11's `http-standard-headers` fixture still serves `mcp-session-id` and handles
+`initialize`, so it cannot be determined from source alone whether the runner drives it at the
+stateless wire. If it does not, the scenario is an ADR-003 sub-decision 5 **expected failure** and
+this PASS is wrong. **MES-24 settles it by running it; this ticket cannot.** What *is* settled: our
+not sending `initialize` is harmless, because those rows go SKIPPED and SKIPPED is excluded from the
+denominator entirely.
+
+Two scoring facts from the harness's own reducer that change how these rows should be read: **a
+WARNING fails a scenario** (it is a disjunct of `overallFailure`), and **a client timeout fails one
+outright**, independent of every check.
+
+### A7 evidence — which tests are caught regressions and which are positive controls
+
+**Exactly two are genuine caught regressions**, both written against the unfixed tree at `2829769`,
+run there, and observed to fail for the stated reason before any fix was made:
+
+| Test | Observed failure at `2829769` |
+|---|---|
+| T-D1 `client_defects_test.exs` | `retry params carried nil under a PRESENT requestState key` — and the null-variant clause too |
+| T-D2 `client_defects_test.exs` | `left: {:error, {:transport_send_failed, {:http_error, 400, _}}}` / `right: {:error, :timeout}` |
+
+**Everything else is a positive control and is labelled as one in its own file** — T-CG1a/b/c,
+T-CG7val, T-CG7enc, T-CG4, T-CG2, T-D3, T-D4, the exclusion/cache tests and the rotating-bearer
+tests. None of that surface existed at `2829769`, so "the suite is green" discriminates nothing
+about it, and it is not offered as if it did.
+
+One test is neither, and is labelled as a third thing: the **reachability control** in
+`self_compatibility_test.exs`. It cannot be a regression against `2829769` (the client sent no
+`Mcp-Name`, so the server's raw comparison was unreachable) but it *is* discriminating against the
+intermediate state where CG1 has landed and W2 has not. **Mutation run:** reverting
+`decode_header_name/1` turns exactly two tests red — the reachability control (400 instead of 200)
+and the end-to-end client→server call — and nothing else.
+
+### Test delta (A2d)
+
+446 → **541 (+95)**, 9 → **13 doctests (+4)**, 0 failures. Per file: `header_mirror_test.exs` +34
+(+4 doctests, which are the spec's own encoding-examples table); `routing_headers_test.exs` +22;
+`client_defects_test.exs` +14; `client_tool_schemas_test.exs` +13; `client_conformance_test.exs` +6;
+`self_compatibility_test.exs` +6. No test was removed. `MCP.Test.MockTransport` gained a
+`:send_result` failure mode (D-2 needs a transport that refuses), per-message opts recording (the
+CG7 seam), and `send_message/3`.
+
+**One transcription error caught by a doctest, recorded because it is the shape this project keeps
+finding:** the sentinel example was first written `PT9iYXNlNjQvbGl0ZXJhbD89`; the spec table at
+`streamable-http.mdx:518` says `PT9iYXNlNjQ/bGl0ZXJhbD89`. The implementation was right and the
+citation was wrong — a claim checked at the width of what was remembered rather than what was read.
+
+### Gate 6 — unchanged residual
+
+**No dependency was added** and `mix.lock` is untouched, so MES-27's 6a residual stays at **21
+unvalidated of 26** packages. CG7 needs only `Base` from stdlib; CG4 needs nothing (it is a
+prohibition); the header provider needs only `spawn_monitor/1` and `receive`, both stdlib. (This
+line first read "the header provider needs only `Task`" — corrected in the correction round below,
+where M-3 records why that word is not a nit.)
+
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### MES-18 correction round (M-1–M-4, 2026-08-20) — CC/CODE_CREATOR
+
+Review verdict **NON-BLOCKING, recommend merge** — with R-3 named as something the reviewer "would
+not merge without". The PM resolved that tension toward one short round and issued a **frozen**
+four-item contract (M-1–M-4, comment 24474), overruling CR's *severity reasoning* on R-1 while
+accepting their measurement. Everything below is on top of `29297be`, which is **not** amended. No
+version bump, no tag; still `2.0.0-dev.6`, the PM's at the squash.
+
+**The round's own finding, and it is this sprint's recurring one wearing a third set of clothes.**
+CR classified R-1 non-blocking because "the class is pre-existing and unchanged by this ticket".
+That is a true statement about the *class* and it does not settle the question, which is what **this
+change did to this path**: on `main` a `tools/list` answered `"result": null` fell to the generic
+`finish_response/4` and returned `{:ok, nil}`; on this branch the same bytes raised `BadMapError`
+inside the GenServer and took the client, every other pending request and the linked transport down.
+A severity assessed at the width of the class rather than the width of the change — the same shape
+as the claim/evidence-width mode logged eight times above, now in a *review verdict* rather than in
+code or a test.
+
+**M-1 — a malformed `tools/list` result fails the REQUEST, not the client** (`client.ex:564`).
+`protocol.ex:63` classifies any message carrying `id` + the `result` **key** as a Response, so a
+non-object under it decodes cleanly and reaches the `{:list_tools, _}` clause. That clause now
+carries `when is_map(result)`, and a new clause below it logs and replies
+`{:error, {:malformed_result, result}}`.
+
+```text
+tools/list answered with            29297be                      round
+  "result": null                    ** (BadMapError) client DOWN  {:error, {:malformed_result, nil}}
+  "result": "oops"                  ** (BadMapError) client DOWN  {:error, {:malformed_result, "oops"}}
+  caller                            EXIT (not {:error, _})        an ordinary error reply
+  other pending requests            lost with the GenServer       unaffected
+  tool caches                       n/a                           untouched (not read as "no tools")
+```
+
+The reply is an **error, not `{:ok, nil}`** — restoring `main`'s benign value would leave the caller
+unable to distinguish "the server sent something unusable" from "the server has no tools", which is
+F-9's shape and the very defect this ticket spent D-2 on. **Deliberately NOT widened** to the rest of
+the class per the contract: `tools/call`'s `input_required?/1` at `:602` and its siblings are
+**MES-42**'s.
+
+**Reported, not fixed (contract freeze).** The `{:refresh_for_retry, entry, _error}` clause at
+`client.ex:579` (`29297be`) does the same unguarded `Map.get(result, "tools")`, and unlike `:602` it
+is code **this ticket added** — so it is *not* purely another instance of a pre-existing class, and
+MES-42's scope should say so. **Measured at the round's tip**, so it is not an inference from the
+shape of the code: a server that answers `-32020` and then answers the refresh with `"result": null`
+still kills the client, M-1's guard notwithstanding.
+
+```text
+call_tool -> -32020 -> refresh answered "result": null
+  ** (BadMapError) Map.get(nil, "tools", nil)
+      lib/mcp/client.ex:602: MCP.Client.finish_response/4   <- the refresh clause
+  client alive afterwards? false      caller got: an EXIT, not {:error, _}
+```
+
+Not widened into, per the freeze — a class-wide defensive sweep inside a correction round is how a
+short round stops being short. **The PM subsequently amended the contract to include it: it is M-5,
+in the round-2 entry below.**
+
+**M-2 — the warn-once record shares the cache's GENERATION** (`client.ex:851`).
+`mirror_misses_warned` is a statement about the *current* cache ("we have already told the operator
+about this name"), so it now resets in the cursor-less clause of `update_tool_cache/4` and is left
+alone in the merge clause. CR measured the defect end to end; both halves are now tests.
+
+```text
+warn -> list [t] -> list [] (cursor-less) -> call t     29297be SILENT   round WARNS
+warn -> list [other] (cursor-BEARING)     -> call t     29297be silent   round silent (unchanged)
+```
+
+The second row is the reason the fix is not "reset it everywhere": a page merges rather than
+replaces, so re-arming there would make `list_all_tools/2` re-warn once per page walked.
+
+**M-3 — two public statements documented the contract this ticket's own finding 1 REJECTED**
+(`streamable_http/client.ex:69`, `usage-rules.md:100`, plus the `Gate 6` line of the entry above,
+found while editing it). Both said the header provider "runs in a `Task` with a bounded timeout".
+It does not, and **the link is the defect**: `Task.async/1` links, this transport does not trap
+exits, and a killed provider comes back down the link. The wrong version was in the moduledoc, in
+the user-facing rules and in the PM's own ratification while only a private comment 325 lines from
+the code carried the right one — so a maintainer "tidying" `spawn_monitor/1` into a `Task` would be
+**following the documentation** and would reintroduce a proven process-death defect. That is why a
+wording change gates a merge here and an ordinary doc nit would not.
+
+**Mutation, run for this round rather than inherited** — swap the `spawn_monitor/1` for
+`Task.async/1` and 2 tests go red, both with `** (EXIT ...) killed` arriving through the link: the
+killed-provider test (`routing_headers_test.exs:429`) and the hanging-provider test (`:459`). The
+doc now states that mutation, so the next reader can re-run the thing the sentence rests on.
+
+**M-4 — the one `capture_log` assertion the round-1 sweep did not reach**
+(`client_tool_schemas_test.exs:100`). `assert log =~ "bad"` is a three-character substring against
+the **global** logger in an `async: true` file — finding 2's mechanism, milder failure mode: it
+passes for the wrong reason rather than going seed-dependently red. Now
+`assert log =~ ~s(EXCLUDING tool "bad" from tools/list)`.
+
+**Discriminating mutation (the first one chosen did not discriminate, and that is recorded rather
+than tidied away).** Deleting the name from the warning entirely reddens *both* the old and the new
+assertion — the reason string contains only capitalised `"Bad"` — so it proves nothing about the
+tightening. The mutation that separates them is a warning naming the **wrong** tool:
+
+```text
+warning names          assert log =~ "bad"    assert log =~ ~s(EXCLUDING tool "bad" ...)
+  "bad" (correct)      PASS                   PASS
+  no name at all       fail                   fail
+  "bad_other"          PASS  <-- wrong reason fail
+```
+
+**R-5's relocation, and my named risk was on the wrong row.** C-3 named row 4
+(`http-standard-headers`) as the row to watch hardest, on the grounds that alpha.11's fixture still
+serves `mcp-session-id` and handles `initialize`, and said it could not be settled from source. CR
+settled it from source (`@modelcontextprotocol/conformance@0.2.0-alpha.11`, `dist/index.js`): row 4
+pushes **SKIPPED** for each method the client never exercises — free, exactly as C-3 said SKIPPED
+is — while rows 5 (`http-custom-headers`) and 6 (`http-invalid-tool-headers`) push **FAILURE** for
+each check never emitted. So an un-exercised check **fails closed** on the two rows I did not flag and
+degrades harmlessly on the one I did. Every row's predicted PASS still stands on the behaviour;
+what moves is where the adapter risk lives. **Recorded on MES-24 by the PM**, because a later run
+cannot recover it: row 5 needs the adapter to call `test_custom_headers` *and*
+`test_custom_headers_null`, row 6 needs a `tools/list` *and* a call to `valid_tool`. The method
+point is the one worth keeping: a risk assessed at "which row is hardest to reason about" rather
+than "which row fails worst when the assumption breaks" — the same width error as R-1's severity,
+made by the author instead of the reviewer.
+
+**Test delta.** 541 → **545 (+4)**, 13 doctests unchanged, 0 failures. All four are in
+`client_tool_schemas_test.exs`: two for M-1 (null result, string result) and two for M-2 (the reset
+re-arms, the merge does not). **All four are positive controls for behaviour that did not exist at
+`29297be`** — but each was run against `29297be`'s logic by mutation and observed to fail for the
+stated reason, so they discriminate rather than merely pass. No test was removed; M-4 tightened one
+in place. No production dependency, no `mix.lock` change, so **MES-27's 6a residual stays at 21
+unvalidated of 26**.
+
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### MES-18 correction round 2 (M-5, 2026-08-20) — CC/CODE_CREATOR
+
+**The reusable part of this item is the exchange, not the guard clause.** M-1's round found a second
+instance of the same defect *inside M-1's own subject*, on the `-32020` refresh path. The contract
+was frozen at four items, so it was **reported and not fixed** (comment 24475, quoted evidence and
+all) — and the PM then **amended the contract** (comment 24476) rather than the author widening it.
+That is the division of labour the freeze exists to produce: the seat that finds something under a
+freeze reports it; the seat that owns the scope decides whether the freeze moves.
+
+The PM's stated reason for moving it is the same rule they used to overrule CR's severity on R-1,
+applied to themselves: *"the class is pre-existing" is a claim about the class; the check that
+matters is what this ticket did to this path*. M-1's path existed on `main` and was merely benign
+there; **this path does not exist on `main` at all** — the `-32020` recovery is this ticket's. So
+merging would have meant refusing to ship a client-kill on a path this ticket *worsened* while
+shipping one on a path this ticket *created*, purely because the contract was written before the
+second was known. The amendment is declared **final**: anything further in this class, including a
+third instance of the same guard, goes to a ticket.
+
+**M-5 — the refresh clause, guarded the same way** (`client.ex:596`). `{:refresh_for_retry, entry,
+original_error}` now carries `when is_map(result)`; a new clause below it logs and replies. Scope
+held to that one clause: `input_required?/1` at `:602` and every other sibling remain **MES-42**'s.
+
+```text
+call_tool -> -32020 -> refresh answered   145efb7                       round 2
+  "result": null                          ** (BadMapError) client DOWN  an error reply
+  caller                                  EXIT (not {:error, _})        {:error, {:malformed_refresh_result, nil, %Error{code: -32020}}}
+  other pending requests                  lost with the GenServer       unaffected
+  the retry                               never sent (client dead)      abandoned deliberately; 3 messages total
+  tool caches                             n/a                           untouched (a cursor-less refresh RESETS)
+```
+
+**Which error the caller sees, chosen rather than fallen into.** Two rules in this file pull opposite
+ways and the reply satisfies both instead of dropping one. `route_response/3`'s failed-refresh clause
+surfaces the **original** `-32020`, because "tools/list also failed" answers a different question than
+the caller asked. But the PM's constraint is that "the refresh came back unusable" must not be
+**indistinguishable** from "the refresh found no tools" — and that second case ends in a bare
+`-32020` from the server's *second* rejection one round trip later (the existing "a SECOND -32020 is
+surfaced" test shows exactly that shape). A bare `-32020` here would therefore collapse the two. So
+the reply carries **both**: the tag naming the refresh as malformed, the term that arrived, and the
+caller's own true answer. The tag is `:malformed_refresh_result`, deliberately **not** M-1's
+`:malformed_result`: that one failed the request the *caller* made, this one failed a request the
+*client* made on their behalf, and a caller matching on the M-1 tag should not silently absorb it.
+
+**Discriminating mutation.** Remove `when is_map(result)` from the refresh clause and exactly one
+test goes red — the new one — with `** (BadMapError) Map.get(nil, "tools", nil)` at
+`lib/mcp/client.ex:602` arriving as an `(EXIT from ...)`, i.e. the caller loses the client rather
+than receiving an error. The compiler also warns the new clause "cannot match", which is the
+mutation announcing itself. 17 other tests in the file stay green, so the test pins this clause and
+not the file's general behaviour.
+
+**Test delta.** 545 → **546 (+1)**, 13 doctests unchanged, 0 failures. **A positive control** — the
+`-32020` recovery it exercises did not exist at `2829769` — but run against `145efb7`'s logic by the
+mutation above and observed to fail for the stated reason. No production dependency, no `mix.lock`
+change, so **MES-27's 6a residual stays at 21 unvalidated of 26**.
+
 **Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No

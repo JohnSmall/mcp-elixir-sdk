@@ -11,7 +11,11 @@ defmodule MCP.Transport.StreamableHTTP.Client do
   > request, so it can read a batch of notifications followed by a response,
   > but it can never receive a second message on a stream that stays open. A
   > `subscriptions/listen` stream is therefore not consumable by this client —
-  > incremental client-side streaming is MES-18.
+  > incremental client-side streaming is **MES-38**. (It was MES-18's until
+  > that ticket's sizing split it out: consuming a held-open stream needs a
+  > second execution mode for this transport, because `handle_call/3` performs
+  > the POST synchronously inside the GenServer and a held-open response would
+  > block every other request on the same client.)
   >
   > An earlier version of this paragraph claimed the client "optionally opens a
   > GET SSE stream for server-initiated messages". It does not, and the server
@@ -22,8 +26,71 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     * `:owner` (required) — pid to receive `{:mcp_message, map}` and
       `{:mcp_transport_closed, reason}` messages
     * `:url` (required) — the MCP endpoint URL (e.g., "http://localhost:8080/mcp")
-    * `:headers` — extra HTTP headers to include on all requests
-    * `:protocol_version` — MCP protocol version (default: the stateless core's)
+    * `:headers` — extra HTTP headers to include on all requests. **Static**,
+      captured at `start_link/1`; for a credential that rotates use
+      `:header_provider`.
+    * `:header_provider` — a 0-arity function called **per request**, returning
+      `[{name, value}]` to append to that request's headers. This is the
+      rotating-bearer seam: a token that expires between requests cannot be
+      supplied through `:headers`, which is read once. See
+      "Header provider failure contract" below.
+    * `:header_provider_timeout` — ms to wait for `:header_provider` before
+      failing the request (default: 5_000)
+    * `:protocol_version` — MCP protocol version used when a message carries no
+      version of its own (default: the stateless core's)
+
+  ## Routing headers (SEP-2243)
+
+  Every POST carries `Mcp-Method`, and the three name-bearing methods carry
+  `Mcp-Name` — `params.name` for `tools/call` and `prompts/get`, `params.uri`
+  for `resources/read` (`streamable-http.mdx:286-292`). Both are **REQUIRED
+  for compliance**; they let a gateway route without parsing the body.
+
+  A name outside the header-safe set is carried with the Base64 sentinel
+  (`streamable-http.mdx:486-492`) — tool and prompt names are only
+  SHOULD-constrained to header-safe characters, so a non-ASCII name is
+  legitimate and must still be routable.
+
+  Both headers are derived from the **same message map** that is serialised
+  into the body, inside one function call, so they cannot drift from it.
+
+  > #### Do not put a routing header in `:headers` {: .warning}
+  >
+  > `:headers` entries are appended, not merged, so a caller-supplied
+  > `mcp-method`/`mcp-name`/`mcp-protocol-version` produces two field lines for
+  > that name. A server taking the first sees the SDK's; an intermediary taking
+  > the last may see the caller's, and the two disagreeing is exactly what
+  > `-32020` exists to catch. `start_link/1` logs a warning naming the header.
+
+  ## Header provider failure contract
+
+  The provider runs on the request path of a transport that `MCP.Client` links
+  to, so an unhandled failure there would take the client down with it. It is
+  therefore run in a **separate, unlinked process** (`spawn_monitor/1`) with a
+  bounded wait, and every outcome is turned into a failed **request**, never a
+  failed transport:
+
+    * raise / throw / exit → `{:error, {:header_provider_failed, reason}}`
+    * a return value that is not a list of `{binary, binary}` →
+      `{:error, {:header_provider_failed, {:invalid_headers, term}}}`, with no
+      partial use of a half-valid list
+    * no answer within `:header_provider_timeout` →
+      `{:error, {:header_provider_failed, :timeout}}`
+
+  A hang is the case `try` cannot catch, and it is the one that matters most:
+  `send_message/2` is a synchronous `GenServer.call`, so without a bound a
+  hung provider would block this transport *and* `MCP.Client` behind it.
+
+  > #### Not a `Task` — the link is the defect {: .warning}
+  >
+  > `Task.async/1` **links**, and this transport does not trap exits, so a
+  > provider process killed outright (`Process.exit(pid, :kill)`, which `catch`
+  > cannot intercept) would come back down the link and take the transport with
+  > it — the exact outcome this contract promises cannot happen. That is
+  > measured, not argued: swapping the `spawn_monitor/1` for `Task.async/1`
+  > turns the killed-provider and hanging-provider tests red, both with
+  > `** (EXIT ...) killed` reaching the test process through the link. Do not
+  > "tidy" it back into a `Task`.
 
   ## Stateless (2026-07-28)
 
@@ -65,17 +132,26 @@ defmodule MCP.Transport.StreamableHTTP.Client do
 
   require Logger
 
+  alias MCP.Protocol.HeaderMirror
   alias MCP.Transport.SSE
 
   @behaviour MCP.Transport
 
   @protocol_version "2026-07-28"
+  @protocol_version_meta_key "io.modelcontextprotocol/protocolVersion"
+  @default_header_provider_timeout 5_000
+
+  # Headers the SDK derives from the message itself. A caller-supplied copy of
+  # any of these can only disagree with the body.
+  @reserved_headers ~w(mcp-method mcp-name mcp-protocol-version)
 
   defstruct [
     :owner,
     :url,
     :protocol_version,
     :extra_headers,
+    :header_provider,
+    :header_provider_timeout,
     :sse_task
   ]
 
@@ -88,7 +164,12 @@ defmodule MCP.Transport.StreamableHTTP.Client do
 
   @impl MCP.Transport
   def send_message(pid, message) when is_map(message) do
-    GenServer.call(pid, {:send_message, message}, 60_000)
+    send_message(pid, message, [])
+  end
+
+  @impl MCP.Transport
+  def send_message(pid, message, opts) when is_map(message) and is_list(opts) do
+    GenServer.call(pid, {:send_message, message, opts}, 60_000)
   end
 
   @impl MCP.Transport
@@ -107,20 +188,25 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     protocol_version = Keyword.get(opts, :protocol_version, @protocol_version)
     extra_headers = Keyword.get(opts, :headers, [])
 
+    warn_on_reserved_headers(extra_headers)
+
     state = %__MODULE__{
       owner: owner,
       url: url,
       protocol_version: protocol_version,
-      extra_headers: extra_headers
+      extra_headers: extra_headers,
+      header_provider: Keyword.get(opts, :header_provider),
+      header_provider_timeout:
+        Keyword.get(opts, :header_provider_timeout, @default_header_provider_timeout)
     }
 
     {:ok, state}
   end
 
   @impl GenServer
-  def handle_call({:send_message, message}, _from, state) do
+  def handle_call({:send_message, message, opts}, _from, state) do
     # Send HTTP POST with the JSON-RPC message
-    case do_post(state, message) do
+    case do_post(state, message, opts) do
       {:ok, new_state} ->
         {:reply, :ok, new_state}
 
@@ -187,8 +273,14 @@ defmodule MCP.Transport.StreamableHTTP.Client do
 
   # --- Private helpers ---
 
-  defp do_post(state, message) do
-    headers = build_headers(state)
+  defp do_post(state, message, opts) do
+    case request_headers(state, message, opts) do
+      {:ok, headers} -> do_post_with_headers(state, message, headers)
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp do_post_with_headers(state, message, headers) do
     body = Jason.encode!(message)
 
     case Req.post(state.url, body: body, headers: headers, receive_timeout: 60_000) do
@@ -196,7 +288,7 @@ defmodule MCP.Transport.StreamableHTTP.Client do
       when status in [200, 201] ->
         # The content-encoding guard sits before the content-type branch, so it
         # covers the JSON and SSE paths alike. When incremental stream reading
-        # is added (MES-18) it must reuse this guard.
+        # is added (MES-38) it must reuse this guard.
         case unexpected_content_encoding(resp_headers) do
           nil -> deliver_by_content_type(state, resp_headers, resp_body)
           coding -> reject_content_encoding(coding)
@@ -218,7 +310,31 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     end
   end
 
-  defp build_headers(state) do
+  # The full header list for one request: the SDK's own, the routing headers
+  # derived from this message, the per-message `:headers` opt (Mcp-Param-*),
+  # the static `:headers`, and finally the provider's.
+  defp request_headers(state, message, opts) do
+    case provider_headers(state) do
+      {:ok, provided} ->
+        {:ok,
+         build_headers(state, message) ++
+           Keyword.get(opts, :headers, []) ++ state.extra_headers ++ provided}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  @doc """
+  The SDK-derived headers for one message: content negotiation, the protocol
+  version, and the SEP-2243 routing headers.
+
+  Public so that the version/`_meta` lockstep can be asserted directly rather
+  than inferred from a captured request; it is not part of the transport
+  contract.
+  """
+  @spec build_headers(t :: %__MODULE__{}, message :: map()) :: [{String.t(), String.t()}]
+  def build_headers(state, message) do
     [
       {"content-type", "application/json"},
       {"accept", "application/json, text/event-stream"},
@@ -227,9 +343,151 @@ defmodule MCP.Transport.StreamableHTTP.Client do
       # (req's decompression is opt-in and unbounded — a decompression-bomb DoS,
       # EEF-CVE-2026-49755), so it declines coding rather than enabling it.
       {"accept-encoding", "identity"},
-      {"mcp-protocol-version", state.protocol_version}
-    ] ++ state.extra_headers
+      # The header value MUST match the body's
+      # `_meta["io.modelcontextprotocol/protocolVersion"]`, or the server
+      # rejects with 400 + HeaderMismatch (streamable-http.mdx:255-259). It is
+      # therefore READ OFF THE MESSAGE rather than from the transport's own
+      # config: with two sources of truth the two could diverge, and after a
+      # -32022 retry changes the version, the header has to change with it.
+      # The configured version remains the fallback for a message that carries
+      # no `_meta` version of its own.
+      {"mcp-protocol-version", message_protocol_version(message) || state.protocol_version}
+    ] ++ routing_headers(message)
   end
+
+  # SEP-2243 (`streamable-http.mdx:286-292`). `Mcp-Method` on every POST that
+  # carries a method — requests and notifications alike, per "All requests".
+  # `Mcp-Name` only for the three name-bearing methods; the mapping is the
+  # mirror of the server's `routing_target/2` in `MCP.Transport.StreamableHTTP.Plug`.
+  # The duplication is deliberate and noted rather than extracted: the two are
+  # the same rule read from opposite ends of the wire, and a shared helper
+  # would let one side's change silently move the other's.
+  defp routing_headers(message) when is_map(message) do
+    case Map.get(message, "method") do
+      method when is_binary(method) ->
+        [{"mcp-method", method}] ++ name_header(method, Map.get(message, "params"))
+
+      _ ->
+        []
+    end
+  end
+
+  defp routing_headers(_message), do: []
+
+  defp name_header(method, params) when is_map(params) do
+    case routing_target(method, params) do
+      target when is_binary(target) -> [{"mcp-name", HeaderMirror.encode_value(target)}]
+      _ -> []
+    end
+  end
+
+  defp name_header(_method, _params), do: []
+
+  defp routing_target("tools/call", params), do: Map.get(params, "name")
+  defp routing_target("prompts/get", params), do: Map.get(params, "name")
+  defp routing_target("resources/read", params), do: Map.get(params, "uri")
+  defp routing_target(_method, _params), do: nil
+
+  defp message_protocol_version(%{"params" => %{"_meta" => meta}}) when is_map(meta) do
+    case Map.get(meta, @protocol_version_meta_key) do
+      version when is_binary(version) -> version
+      _ -> nil
+    end
+  end
+
+  defp message_protocol_version(_message), do: nil
+
+  # --- Rotating credentials ---
+
+  defp provider_headers(%{header_provider: nil}), do: {:ok, []}
+
+  # Run in a SEPARATE, UNLINKED process with a bounded wait.
+  #
+  # Unlinked and not `Task.async/1` on purpose. `Task.async/1` links, and this
+  # transport does not trap exits, so a provider process killed outright would
+  # take the transport down through the link — the exact outcome the contract
+  # promises cannot happen. `catch` covers raise/throw/exit; only an unlinked
+  # process also covers a kill.
+  #
+  # A bound is required because a HANG is the failure `try` cannot catch at
+  # all, and `send_message/2` is a synchronous `GenServer.call`: without it a
+  # hung provider blocks this transport for the full 60s call timeout and
+  # `MCP.Client` behind it.
+  #
+  # The `receive` is SELECTIVE — on our own ref and monitor only — so it cannot
+  # swallow an unrelated message from this GenServer's mailbox.
+  defp provider_headers(%{header_provider: fun} = state) when is_function(fun, 0) do
+    parent = self()
+    ref = make_ref()
+    {pid, monitor} = spawn_monitor(fn -> send(parent, {ref, safely_call(fun)}) end)
+
+    receive do
+      {^ref, {:ok, result}} ->
+        Process.demonitor(monitor, [:flush])
+        validate_provider_headers(result)
+
+      {^ref, {:error, reason}} ->
+        Process.demonitor(monitor, [:flush])
+        provider_error(reason)
+
+      {:DOWN, ^monitor, :process, ^pid, reason} ->
+        provider_error({:exit, reason})
+    after
+      state.header_provider_timeout ->
+        Process.demonitor(monitor, [:flush])
+        Process.exit(pid, :kill)
+        provider_error(:timeout)
+    end
+  end
+
+  defp provider_headers(%{header_provider: other}),
+    do: provider_error({:not_a_zero_arity_function, other})
+
+  defp safely_call(fun) do
+    {:ok, fun.()}
+  catch
+    kind, reason -> {:error, {kind, reason}}
+  end
+
+  defp validate_provider_headers(headers) when is_list(headers) do
+    if Enum.all?(headers, &match?({name, value} when is_binary(name) and is_binary(value), &1)) do
+      {:ok, headers}
+    else
+      provider_error({:invalid_headers, headers})
+    end
+  end
+
+  defp validate_provider_headers(other), do: provider_error({:invalid_headers, other})
+
+  defp provider_error(reason) do
+    Logger.warning(
+      "MCP StreamableHTTP Client: :header_provider failed (#{inspect(reason, limit: 5)}). " <>
+        "THIS REQUEST fails; the transport is unaffected."
+    )
+
+    {:error, {:header_provider_failed, reason}}
+  end
+
+  defp warn_on_reserved_headers(headers) when is_list(headers) do
+    reserved =
+      headers
+      |> Enum.flat_map(fn
+        {name, _value} when is_binary(name) -> [String.downcase(name)]
+        _ -> []
+      end)
+      |> Enum.filter(&(&1 in @reserved_headers))
+
+    if reserved != [] do
+      Logger.warning(
+        "MCP StreamableHTTP Client: :headers contains #{inspect(reserved)}, which the SDK " <>
+          "derives from each message. `:headers` entries are APPENDED, not merged, so this " <>
+          "sends two field lines for that name and an intermediary taking the caller's may " <>
+          "disagree with the body — the mismatch -32020 exists to catch. Remove it."
+      )
+    end
+  end
+
+  defp warn_on_reserved_headers(_headers), do: :ok
 
   defp get_content_type(headers) do
     get_header(headers, "content-type") || ""
