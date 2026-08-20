@@ -30,8 +30,9 @@ a ticket only when the **assignee is its own service account**.
 **All ticket information is on the Jira ticket — no Confluence in-flight pages** (Global Rule #10
 superseded locally by MES **D5**):
 - **Brief** → the ticket **body** (`jira_set_description`, PM-only).
-- **Plan, close-out, review, findings** → ticket **comments**, split per MES **A13** / EMFA
-  Override 6 (~15k chars, each part valid standalone ADF, back-linked to its predecessor).
+- **Plan, close-out, review, findings** → ticket **comments**, split per MES **A13** (**~6k bytes
+  per call — measured on MES-18, not the 15k target**; each part valid standalone ADF, opening with
+  a back-link to its predecessor; **the baton rides the final part only**).
 - **Turn + baton** → `jira_handoff` (posts the comment **and** sets the assignee in one call).
   **The assignee is the baton** — never resolve a turn by scanning comment mentions.
 - **Queue** → `jira_my_queue` (`project: "MES"`). **Transitions** → `jira_transition` (PM-only,
