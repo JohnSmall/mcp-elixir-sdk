@@ -3094,3 +3094,1343 @@ mutation above and observed to fail for the stated reason. No production depende
 change, so **MES-27's 6a residual stays at 21 unvalidated of 26**.
 
 **Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+---
+
+## MES-24 — Conformance adapter rework for 2026-07-28, CLIENT LEG (2026-08-20)
+
+Phase 1 of two. The server leg (`server_adapter.exs` + `server_handler.ex` + the 37-scenario run)
+is phase 2 on the same branch. Every figure below is pinned to
+`@modelcontextprotocol/conformance@0.2.0-alpha.11` run as
+`conformance client --command "mix run conformance/client_adapter.exs" --requirements 2026-07-28`,
+against the tree at `bb573d1` + this branch's adapter commits. Results adjudicated from the saved
+`-o` artefacts, never from terminal scrollback.
+
+**Revised after CODE_REVIEWER's round-1 review (verdict: CHANGES REQUIRED).** Three BLOCKING
+findings, **none of them in the SDK** — every one was a claim in this report, or in the instrument
+that produced it, that was **wider than what had actually been checked**. The measurement did not
+move: 8/32 scored, and every per-scenario check count is unchanged. What needed correcting was what
+the report said the measurement meant. The three, and where each is now answered: the
+`request-metadata` 8/8 is contingent on a **drive policy** (BLOCKING 1 → the three-figure table
+below and its own finding); row 6's eleven checks were **insensitive to the SDK** (BLOCKING 2 → the
+derived drive, with a no-SDK control and a mutation); and RULING 3's recorded justification was
+**false for the gate this project runs** (BLOCKING 3 → the restated ruling near the end). The
+findings are left in place rather than tidied — that a ratified ruling was checked and failed is
+itself the record MES-19 needs.
+
+**The PO ruling this sits under, unchanged:** the 2.0.0 conformance claim rests on our own ported
+acceptance suite; the harness supplies *supporting evidence* with its numbers reported. A bad figure
+is a finding to classify, not a claim to retract — and a good figure does not upgrade the claim.
+
+### The measured client-leg figure, and the honest way to state it
+
+**THREE figures, each with its axis named, and none of them is the headline** (PM RULING 2 as
+amended after review). The first is about what the harness reports; the second about what this SDK
+implements; the third about what the *adapter* chose to keep doing after a failure. A reader given
+one number recovers neither of the other two, so MES-19 may pick a headline only by publishing all
+three.
+
+| # | Figure | Value | Axis it measures |
+|---|---|---|---|
+| 1 | Scored scenarios reported PASS | **8 / 32** | what the harness reports |
+| 2 | — DRIVEN by this adapter **and** passing | **7 / 32** | what the SDK implements |
+| 3 | — core (non-`auth/*`), under a **consumer-realistic drive** | **6 / 7** | what the *drive policy* contributes |
+
+| Supporting figure | Value |
+|---|---|
+| Scored client scenarios in the frozen 2026-07-28 set | **32** |
+| — of which passed WITHOUT THE SDK DOING ANYTHING | **1** (`auth/resource-mismatch`) |
+| Core (non-`auth/*`) subset **as driven** | **7 / 7** |
+| Scored scenarios FAILING | **24 / 32**, all `auth/*` |
+| `not_scored` run and reported, never counted | **7 run, 6 failing** — enumerated below |
+
+**Figure 1 → 2, the delta:** `auth/resource-mismatch` passes on a negative check with no
+implementation behind it (see the finding below). **Figure 2 → 3, the delta:** `request-metadata`'s
+8/8 is contingent on `drive/2` carrying on past a failed `Client.connect/1` — see the drive-policy
+finding below. Both deltas are subtractions from a number that would otherwise read as tested
+behaviour.
+
+**`7/7` is a legitimate sub-figure and a dangerous headline.** The 25 `auth/*` scenarios are not
+absorbed into a denominator — they are *deleted* from it, which reads as a better result than the
+honest one. The denominator is **32**. Enumerated (A2d), the 25 scored `auth/*` empties, reason
+*"this SDK has no OAuth client surface: no token acquisition, no metadata discovery, no
+`WWW-Authenticate` handling"*: `metadata-default`, `metadata-var1`, `metadata-var2`, `metadata-var3`,
+`basic-cimd`, `scope-from-www-authenticate`, `scope-from-scopes-supported`,
+`scope-omitted-when-undefined`, `scope-step-up`, `scope-retry-limit`, `token-endpoint-auth-basic`,
+`token-endpoint-auth-post`, `token-endpoint-auth-none`, `pre-registration`, `resource-mismatch`,
+`offline-access-scope`, `offline-access-not-supported`, `authorization-server-migration`,
+`iss-supported`, `iss-not-advertised`, `iss-supported-missing`, `iss-wrong-issuer`, `iss-unexpected`,
+`iss-normalized`, `metadata-issuer-mismatch`. That is a bounded, nameable gap MES-19 can price.
+
+### Finding: a scenario can score PASS *because* the implementation is absent — measured, not derived
+
+`auth/resource-mismatch` reports **OVERALL: PASSED**, one check, `SUCCESS`: *"Client rejects
+mismatched resource"*. This adapter drives nothing for it; the SDK has no OAuth client. The check is
+**negative** — it asserts the client did NOT do something — and a client that does nothing satisfies
+every negative check trivially. Two of the three checks in `auth/authorization-server-migration`
+scored `SUCCESS` the same way (that scenario still fails on its one positive check).
+
+This is worse than the zero-denominator hollow PASS predicted during planning: there the denominator
+is 0 and a careful reader can notice. Here the denominator is 1, the check is a genuine `SUCCESS`,
+and **nothing in the output distinguishes it from a capability we implemented**. A naive `8/32`
+credits this SDK with a scenario it has no code for.
+
+**Consequence for MES-19: a scored pass rate over a suite containing negative checks is not a
+measure of implemented behaviour unless the empties are enumerated first.**
+
+**Correction after review — this section originally counted the shape as occurring ONCE, and it
+occurs at least ELEVEN times.** Ten more instances were inside a *driven* scenario this report was
+citing as CONFIRMED evidence (`http-invalid-tool-headers`), and a twelfth of a different kind sits
+in `json-schema-ref-no-deref`. See the BLOCKING 2 finding and the F-3 enumeration below. Reading the
+referee's source is what found the instance above; it could not have found the others.
+
+### Finding: an un-exercised check does not fail uniformly — CR's asymmetry, confirmed by running it
+
+Confirmed first-hand at alpha.11, and the adapter is built to the resulting obligation:
+
+| Scenario | Un-driven cost | What the adapter drives | Observed |
+|---|---|---|---|
+| `tools_call` | FAILURE | discover; `tools/list`; `add_numbers` with **numeric** `a`,`b` | 2/2 SUCCESS |
+| `request-metadata` | FAILURE (NotObserved) | discover; `tools/list`; `tools/call` | 8/8 SUCCESS |
+| `sep-2322-client-request-state` | FAILURE ×5 | all four `test_mrtr_*` tools with an `:on_input_required` resolver bound | 5/5 SUCCESS |
+| `http-standard-headers` | **SKIPPED (free)** | all **six** watched methods that exist at this wire | 9 SUCCESS + 2 SKIPPED |
+| `http-custom-headers` | FAILURE | `tools/list`, then **both** context tool calls verbatim | 18/18 SUCCESS |
+| `http-invalid-tool-headers` | FAILURE ×2 | `tools/list`, then **every tool the listing kept** — derived, not named in the adapter | 11/11 SUCCESS |
+| `json-schema-ref-no-deref` | FAILURE | `tools/list`, and no canary fetch | 1/1 SUCCESS |
+| `json-schema-2020-12-preservation` (`not_scored`) | FAILURE ×2 | `tools/list`; echo the focal `inputSchema` back verbatim via `json_schema_echo` | 9/9 SUCCESS |
+
+The coverage obligation was treated as an acceptance criterion and every row is shown met.
+
+### Finding: THREE scoring rules, not two — and the third one governs the adapter's exit code
+
+From the reducer at alpha.11 (`dist/index.js`, `function qo`), verbatim:
+
+```text
+  i = checks with status SUCCESS or FAILURE      <- the denominator
+  a = SUCCESS   o = FAILURE   s = WARNING
+  c = clientOutput.timedOut        l = (clientOutput.exitCode !== 0)
+
+  overallFailure = o>0 || s>0 || c || (l && !allowClientError)
+```
+
+So: **a WARNING fails a scenario** *and* is excluded from the denominator; **a timeout fails one
+outright**; and **a non-zero exit fails one independently of every check** unless the scenario sets
+`allowClientError` — which, across the seven core client scenarios, **only `http-invalid-tool-headers`
+does**.
+
+That third rule is why `client_adapter.exs` exits **0** for a scenario it does not drive and carries
+on past a failed call rather than raising: a non-zero exit decides the verdict *instead of* the
+checks, hiding what they would have said. Non-zero is reserved for a genuine adapter crash, which
+keeps a self-consistency failure of ours distinguishable from a conformance failure. Every error is
+printed to stderr with the call that produced it and reported beside the check table — this is
+error *reporting*, not error swallowing.
+
+### GENUINE SDK GAP (A1, raised as MES-44 — NOT MES-43's class): a JSON-RPC error carried on a 4xx HTTP response is discarded, so BOTH of `MCP.Client`'s recoveries are unreachable over Streamable HTTP
+
+`lib/mcp/transport/streamable_http/client.ex:301-304` turns any non-2xx, non-202 response into
+`{:error, {:http_error, status, body}}` — the JSON-RPC error body is logged and dropped, never
+decoded, never delivered to `MCP.Client`. Both one-shot recoveries in `lib/mcp/client.ex` live in
+`route_response/3`, which is only reached for a *delivered* message. The spec puts both of their
+triggers behind a 4xx:
+
+* `streamable-http.mdx:263-268` — an unsupported protocol version **MUST** be answered
+  `400 Bad Request` + `UnsupportedProtocolVersionError` (`-32022`).
+* `streamable-http.mdx:259-261` and `:596-598` — a header-validation failure **MUST** be answered
+  `400 Bad Request` + `HeaderMismatch` (`-32020`).
+* `streamable-http.mdx:654-664` is explicit that a client **SHOULD** *inspect the body* on a 400:
+  *"If the body contains a recognized modern JSON-RPC error … retry using the advertised `supported`
+  versions or correct the request."*
+
+**A7 evidence — positive control and subject, identical but for the HTTP status:**
+
+```text
+=== CONTROL  200 + -32022 ===   (the SDK's own documented path)
+requests seen by server: ["server/discover", "server/discover"]   <- retried
+connect/1 returned: {:ok, %{...}}
+
+=== SUBJECT  400 + -32022 ===   (what streamable-http.mdx:263-268 MANDATES)
+requests seen by server: ["server/discover"]                      <- did NOT retry
+connect/1 returned: {:error, {:transport_send_failed, {:http_error, 400, ...}}}
+```
+
+**The `-32020` half is self-inconsistent and needs no harness to see it.** Our *own* server sends
+HeaderMismatch as `400` (`lib/mcp/transport/streamable_http/plug.ex:332`, per the same MUST), and
+our own client discards a 400 body. So MES-18's headline SEP-2243 recovery —
+*"a `-32020` triggers a `tools/list` refresh and one retry"* (`client.ex:511-538`,
+`streamable-http.mdx:533-539`) — **can never fire over the only transport on which `Mcp-Param-*`
+headers exist**. That path is reachable in the unit suite only because the tests deliver the
+`-32020` as a 200. Derived from the two line references plus the mechanism the control above
+demonstrates empirically; not separately run.
+
+Third consequence, same mechanism: `streamable-http.mdx:270-274` requires `404 Not Found` +
+`-32601` for an unimplemented method, which today surfaces as `{:http_error, 404, _}` rather than a
+JSON-RPC `Method not found`.
+
+**Not fixed here, on purpose.** The adapter is a translator; a genuine gap escalates (A1). No SDK
+behaviour was changed to move a harness number.
+
+### Finding: `request-metadata` PASSES while the property its check names is BROKEN
+
+`sep-2575-client-retry-supported-version` scored `SUCCESS`. Our client did **not** retry. Both are
+true, and the report must say so.
+
+The fixture rejects the *first* request with `-32022`, marks the check `WARNING`, and then — on
+**every subsequent request**, not on a retry of the rejected one — sets the check to `SUCCESS` if
+that request carries `2026-07-28` in the header and in `_meta`. So a client with no retry at all
+scores `SUCCESS` provided it sends anything afterwards. The run's own stderr shows exactly that:
+
+```text
+DRIVE ERROR server/discover: {:transport_send_failed, {:http_error, 400, %{"error" => %{"code" => -32022, ...}}}}
+DRIVE ok    tools/list
+DRIVE ok    tools/call any_tool
+```
+
+**Verdict: the scenario PASSES; the property does not hold.** Classified as a **genuine SDK gap**
+(above) and, separately, as a **harness-side weakness** worth reporting upstream: the check's name
+and description claim more than its mechanism tests.
+
+### Finding (BLOCKING 1, CR): that 8/8 is manufactured by the DRIVE POLICY, not only by the SDK — core is 6/7 under a consumer-realistic drive
+
+The previous finding says the scenario passes while the property fails. It does not say **why** the
+scenario passes, and the reason is not an SDK property at all. `drive/2` returns `nil` on
+`{:error, reason}` and execution continues (`conformance/client_adapter.exs`, `drive/2`), so
+`run_scenario("request-metadata", …)` issues `tools/list` and `tools/call` **after
+`Client.connect/1` has already failed**. Those two later requests are the whole of what flips
+`sep-2575-client-retry-supported-version` off WARNING. **A real `MCP.Client` consumer stops at a
+failed connect.**
+
+**A7 evidence — CR ran the counterfactual; one line differs between the arms:**
+
+```text
+SUBJECT (adapter as committed)      8 checks, 8 SUCCESS               -> OVERALL: PASSED
+CONTROL (stop when connect errors)  7 checks, 7 SUCCESS + 1 WARNING   -> OVERALL: FAILED
+                                    (the reducer's s>0 disjunct: the WARNING is never
+                                     re-evaluated because no later request is sent)
+Same SDK, same commit, same fixture.
+```
+
+**The carry-on policy stays, and the disclosure is what was missing.** Its justification is in
+`drive/2`'s comment and it is sound — a raise would abort the drive, silently costing every check
+the *later* calls would have emitted, and those checks are fail-closed, so the loss would be
+attributed to the SDK rather than to the adapter giving up. What the policy must not do is go
+unstated: it is a **third axis** of the figure, larger than the 8-vs-7 one, and it is why figure 3
+above reads **6 / 7** rather than 7/7.
+
+*Provenance: the counterfactual arm was run by CODE_REVIEWER, not re-run here; the mechanism was
+verified in the adapter source by CODE_CREATOR and independently by the PM.*
+
+### Finding (BLOCKING 2, CR): row 6's eleven checks were insensitive to the SDK — proved with a no-SDK control, then made falsifiable
+
+Ten of `http-invalid-tool-headers`'s eleven checks are `calledTools.has(name) ? FAILURE : SUCCESS`
+— **pure negatives**. As first committed, the adapter's call list was a **literal** (`"valid_tool"`),
+never derived from what `Client.list_tools/1` kept, so those ten SUCCESSes could not distinguish our
+CG7 exclusion from its total absence. The `IO.puts` of kept/excluded tools was observability, not a
+check input: the fixture scores `calledTools`, which the literal alone determined.
+
+**A7 evidence — five arms, controls labelled. The first two are CR's; the last three are this leg's.**
+
+```text
+CONTROL  a "client" with NO MCP SDK AT ALL — raw :httpc, sends
+         tools/list, IGNORES the listing entirely, calls valid_tool     11/11 PASSED   (CR)
+FIX ARM  adapter driving every tool list_tools KEPT                     11/11 PASSED   (CR)
+
+SUBJECT  committed fix, derived drive, SDK pristine                     11/11 PASSED
+  stderr:  tools kept: ["valid_tool"]
+           tools excluded: [all ten, each with the correct reason]
+           DRIVE ok  tools/call valid_tool          <- one call, and it is the DERIVED one
+
+MUTANT   same derived adapter; HeaderMirror.validate_tool/1 forced to
+         {:ok, []} so CG7's exclusion is DISABLED                        1/11 FAILED
+  all ten ClientRejectsInvalidTool_* checks FAILURE, each naming the tool
+  the client called: "Client called 'invalid_empty_header' which has an
+  invalid x-mcp-header. Clients MUST reject (exclude) such tools."
+
+MUTANT + OLD ADAPTER   the decisive arm: same disabled exclusion,
+         driven by the adapter as originally committed                  11/11 PASSED
+```
+
+**That last arm is the point of the whole item.** With CG7's exclusion switched off — a regression
+that breaks the exact MUST the row cites — the *original* adapter still scored a clean 11/11. The
+row's evidence could not have gone red. Derived, it goes red on the first invalid tool the client
+fails to exclude, so the 11/11 is now evidence about `MCP.Client` rather than about this file.
+
+**Generalisation, and it is C-1's shape one level up.** C-1 found a scenario that passes because the
+implementation is absent, and counted the shape as occurring **once**
+(`auth/resource-mismatch`). It occurs **at least eleven times**: once in an undriven scenario, and
+ten more inside a *driven* one that the report was citing as CONFIRMED evidence. Reading the
+referee's source is what found C-1; it could not find this, because reading a fixture tells you a
+check is negative and does not tell you that your own call list is what satisfies it. **Only a
+control that is not our implementation does that.** PM RULING 4 makes it binding on the server leg,
+where 14 of 37 scored scenarios are MRTR and a hard-coded drive list is the obvious way to write
+them.
+
+### Class closure for the above (F-3): every adapter-supplied value a check consumes, across all eight driven scenarios, adjudicated
+
+BLOCKING 2 was one instance of a class — *a value this file supplies that a check reads, where an
+SDK regression would not change the verdict*. The enumeration is on the record here rather than
+"CR looked", because MES-19 inherits the table and a review remark is not citable. The question
+asked of each row is exactly: **would a regression in the SDK change this check's verdict?**
+
+| Scenario | Adapter-supplied values a check consumes | Regression-sensitive? |
+|---|---|---|
+| `tools_call` | tool name `add_numbers`; arguments `a=2`, `b=40` | **Yes.** The check reads the *recorded* `tools/call` and requires `typeof a === "number" && typeof b === "number"` — a regression that failed to send the call, dropped the arguments, or stringified them goes FAILURE. The name is not read by the check; the fixture advertises exactly one tool, so deriving it would give the same string. |
+| `request-metadata` | the *fact* of two further requests after the rejection (`tools/list`, `tools/call any_tool`); the three declared `client_capabilities` | **PARTLY — the one row that is not clean.** No check reads the method or the tool name: the fixture evaluates every request identically, so `any_tool` is not a check input, and *"another request was sent"* is. That is BLOCKING 1's axis exactly. The three capability checks read `_meta.clientCapabilities` and so *are* sensitive to the SDK forwarding the declaration — but not to the capability behind it, which the report already states. The other five checks read the version header, `_meta` and `clientInfo`: all SDK-produced, all sensitive. |
+| `sep-2322-client-request-state` | four `test_mrtr_*` names (the fixture's own protocol); the `:on_input_required` resolver's response bodies | **Yes.** Every check reads SDK-produced wire structure — `requestState` echoed verbatim, a fresh JSON-RPC id on retry, the key **omitted** when the server sent none, no retry when `resultType` is absent. A regression in `MCP.Client`'s MRTR handling turns each red irrespective of what the resolver returned. (Structural caveat on one of the five: see the `MRTRClientParallelIsolation` finding below.) |
+| `http-standard-headers` | which of the eight watched methods are driven; names `test_headers`, `test_prompt`; the resource URI, **derived** from `resources/list` | **Yes for verdicts, with a denominator caveat.** Each check compares the `Mcp-Method`/`Mcp-Name` header against the body value — both built by the SDK from whatever name it was handed, so a missing or wrongly encoded header goes FAILURE for any name. What the adapter's choice *does* control is the **denominator**: an undriven method SKIPs, which is free. That is the hollow-PASS risk already recorded on row 4, not a verdict-insensitivity. |
+| `http-custom-headers` | nothing of its own — the `toolCalls` come **verbatim from `MCP_CONFORMANCE_CONTEXT`** | **Yes.** The fixture compares each `Mcp-Param-*` header against the argument value *it* sent. There is no adapter-invented value in the loop. |
+| `http-invalid-tool-headers` | the call list, now **derived** from `Client.list_tools/1` | **Yes — demonstrated by mutation** (BLOCKING 2 above). Before the fix: **no**, demonstrated by the no-SDK control. |
+| `json-schema-ref-no-deref` | nothing beyond issuing `tools/list` | **ASYMMETRICALLY — name it.** The single check is negative (the canary must NOT be fetched). It is fail-closed on `tools/list` never arriving, so it does distinguish *"listed and did not dereference"* from *"never listed"*. It cannot distinguish a deliberate refusal from **the absence of any `$ref` handling at all**: only a regression that *added* network dereferencing would turn it red, and there is no implemented behaviour here whose breakage it would catch. This is C-1's shape again, in the one place the report had not looked. |
+| `json-schema-2020-12-preservation` | two fixture-protocol tool names; the echoed schema, **derived** from `list_tools/1` | **Yes — demonstrated by mutation** (see the F-6 section below). |
+
+**A2d, the empties — the rows where the answer is yes for every input:** `tools_call`,
+`sep-2322-client-request-state`, `http-standard-headers`, `http-custom-headers`,
+`http-invalid-tool-headers` (post-fix) and `json-schema-2020-12-preservation`. **Six of eight.**
+
+**The two that are not clean, and neither is a defect in this file:** `request-metadata`, whose
+verdict turns on the drive policy (BLOCKING 1 — disclosed, policy kept), and
+`json-schema-ref-no-deref`, whose single negative check cannot credit implemented behaviour
+(disclosed here for the first time). **Neither is fixable by driving harder**, which is why both are
+recorded as reading instructions for MES-19 rather than as work.
+
+### A2d (F-6): the seven `not_scored` scenarios, NAMED — and the one that was the client-side 2020-12 measurement is now DRIVEN
+
+The entry previously gave these as a bare count — *"7 (6 extension, 1 added-after-release) — all
+failing"* — while the 25 `auth/*` empties got full enumeration. A count is the shape this report
+keeps telling MES-19 not to publish. Enumerated from the run:
+
+| `not_scored` scenario | Reason it is unscored | Result |
+|---|---|---|
+| `auth/client-credentials-jwt` | `extension` | fails — `auth/*` empty, no OAuth client surface |
+| `auth/client-credentials-basic` | `extension` | fails — same |
+| `auth/enterprise-managed-authorization` | `extension` | fails — same |
+| `auth/dpop` | `extension` | fails — same |
+| `auth/dpop-nonce` | `extension` | fails — same |
+| `auth/wif-jwt-bearer` | `extension` | fails — same |
+| `json-schema-2020-12-preservation` | `added-after-release` | **now PASSES 9/9** — was 0/2 as an undriven empty |
+
+**The seventh is not like the other six, and nobody had named it.** It is the **only** scenario in
+the alpha.11 catalogue that measures **client-side** JSON Schema 2020-12 preservation (SEP-1613 /
+SEP-2106). The brief already flags that MES-17's *server-side* 2020-12 work earns no scoring
+credit; this is the client-side counterpart, and left undriven it failed as an **empty** — no
+adapter clause — which on the result sheet is indistinguishable from a measured gap.
+
+**Decision: DRIVEN, in this leg.** It is `not_scored`, so this moves **no figure** — 8/32 before and
+8/32 after — which is precisely why it would otherwise have been dropped. What it buys is a real
+measurement where there was a blank.
+
+**A7 evidence, fail-then-pass, controls labelled:**
+
+```text
+SUBJECT  SDK pristine; adapter echoes the focal inputSchema back verbatim
+         via json_schema_echo                                             9/9 PASSED
+  stderr: echoing inputSchema keys: ["$defs", "$schema", "additionalProperties",
+                                     "allOf", "else", "if", "properties",
+                                     "then", "type"]
+  9 SUCCESS, enumerated: tools/list called and focal tool advertised ·
+           echo completed with a schema object · $schema preserved ·
+           $defs preserved (nested defs) · additionalProperties = false
+           preserved · allOf/anyOf preserved · if/then/else preserved ·
+           $anchor inside $defs.address preserved · wire-schema-valid
+
+MUTANT   one line in MCP.Client.partition_tools/1 strips "$schema" from every
+         kept tool's inputSchema — i.e. a client that discards it while parsing 8/9 FAILED
+  FAILURE JsonSchema2020_12Client$SchemaPreserved:
+          "$schema missing from echoed inputSchema — client likely stripped it
+           during parsing"
+```
+
+The mutant arm is what makes the 9/9 evidence rather than decoration: **the checks are positive and
+they can go red.** Both mutations in this leg were reverted immediately and the tree rebuilt; `git
+status` is clean but for this ticket's two files.
+
+### Finding (F-8, from CR): `MRTRClientParallelIsolation` does not reach the property its description names — structural, ours to report and not ours to fix
+
+The check's description is *"`inputRequests` and `requestState` MUST NOT be used for any other
+request the client **may be sending**"*. As driven, `test_mrtr_unrelated` is issued strictly **after**
+the `test_mrtr_echo_state` round has fully completed: `MCP.Client.call_tool/4` is a blocking
+`GenServer.call` (`lib/mcp/client.ex:156-159`), and the run's stderr shows the strict sequence.
+
+So the SUCCESS is **real and it tests leakage across SEQUENTIAL calls** — it does not reach the
+concurrent property the description claims. **This is structural, not an adapter defect:** the SDK
+exposes no mid-round point at which a second request could be issued, so *no* drive of this API
+reaches it. Report it upstream-shaped alongside the `checkMcpNameHeader` finding — same family
+(a check whose description is wider than its mechanism), same disposition: **worth reporting,
+not worth fixing here.**
+
+### Finding (harness-side, DORMANT — do NOT change our encoder): `checkMcpNameHeader` never decodes the sentinel
+
+Confirmed at alpha.11: `checkMcpNameHeader` compares `Mcp-Name` to the body value with a raw `!==`
+and does not decode the Base64 sentinel — unlike its own `Mcp-Param-*` comparator, which does.
+`streamable-http.mdx:486-506` is unambiguous that the client MUST encode and the server MUST decode
+before comparing.
+
+**It did not bite, and here is why, measured rather than assumed** — every name and URI the alpha.11
+fixtures use is header-safe, so we send it plain and the raw comparison succeeds:
+
+```text
+PLAIN    "test_headers"                          -> "test_headers"
+PLAIN    "my-hyphenated-tool"                    -> "my-hyphenated-tool"
+PLAIN    "file:///path/to/file%20name.txt"       -> "file:///path/to/file%20name.txt"
+PLAIN    "https://example.com/resource?id=123"   -> "https://example.com/resource?id=123"
+PLAIN    "test_prompt"                           -> "test_prompt"
+PLAIN    "valid_tool"                            -> "valid_tool"
+
+negative control — a name that WOULD trip the harness bug:
+SENTINEL "tool wíth spaces"  -> "=?base64?dG9vbCB3w610aCBzcGFjZXM=?="
+```
+
+All three `Mcp-Name` checks scored `SUCCESS`. If a later alpha adds a non-header-safe fixture name,
+our spec-correct encoding scores FAILURE against a harness bug: **classify harness-side, report
+upstream-shaped, leave the encoder alone.**
+
+### The seven-row prediction (MES-18 DoD item 2) — adjudicated row by row
+
+Three verdicts, not two. `NOT SETTLED` exists because a PASS built of SKIPPED checks settles
+nothing, and rounding one to CONFIRMED would be this sprint's own recurring defect.
+
+| # | Scenario | Predicted | Observed | Verdict | Reason |
+|---|---|---|---|---|---|
+| 1 | `tools_call` | PASS | PASS 2/2 | **CONFIRMED** | `tool-add-numbers` + `wire-schema-valid` both SUCCESS |
+| 2 | `request-metadata` | PASS (D-2/3/4) | PASS 8/8 | **CONFIRMED at the verdict, REFUTED at the mechanism** | see below |
+| 3 | `sep-2322-client-request-state` | PASS (D-1) | PASS 5/5 | **CONFIRMED** | `sep-2322-client-no-state-omitted` SUCCESS — D-1's fix is exactly what that check tests |
+| 4 | `http-standard-headers` | PASS (named risk) | PASS, **9 SUCCESS + 2 SKIPPED** | **CONFIRMED, and the named risk REFUTED** | see below |
+| 5 | `http-custom-headers` | PASS (CG7) | PASS 18/18 | **CONFIRMED** | all five declared check ids emitted, incl. all six `sep-2243-client-base64-unsafe` values |
+| 6 | `http-invalid-tool-headers` | PASS (CG7) | PASS 11/11 | **CONFIRMED — but only after the drive was made falsifiable** | see below |
+| 7 | `json-schema-ref-no-deref` | PASS (CG4) | PASS 1/1 | **CONFIRMED at the verdict, NOT SETTLED as evidence for CG4** | see below |
+
+**Row 2 — the prediction was right about the scenario and wrong about the reason, and the wrong half
+matters more.** D-3 (the one-shot `-32022` retry) is the item the row cited and it did **not**
+execute: the transport discarded the 400. The scenario passes on the fixture's weaker re-evaluation
+rule, not on D-3. Reported unsoftened; this is a refuted mechanism inside a confirmed row, and the
+underlying defect is escalated as a genuine SDK gap.
+
+**Row 7 — restated at close-out (PM carry-in CI-1, comment 24496). The verdict stands; the
+evidence column did not.** It read a bare `CONFIRMED` / *"canary never fetched"*, which reads as
+*we were measured not to dereference `$ref`*. This ticket's own F-3 table above
+(`json-schema-ref-no-deref` row) says the opposite in the same document: the scenario's single
+check is negative and **cannot distinguish a deliberate refusal from the absence of any `$ref`
+handling at all** — only a regression that *added* network dereferencing would turn it red, and
+there is no implemented behaviour of ours whose breakage it would catch.
+
+So the honest reading, and the one MES-19 must inherit:
+
+* **What the row confirms:** the prediction *"this scenario will pass"* was correct, and the
+  check is fail-closed on `tools/list` never arriving — so it does distinguish *"listed and did not
+  dereference"* from *"never listed"*. That much is measured.
+* **What it does NOT confirm:** that CG4's `$ref`-non-dereferencing behaviour was exercised. A
+  client with no `$ref` handling whatsoever scores the same SUCCESS.
+
+Row 6 was restated for exactly this defect — a verdict wider than what its check can support — and
+row 7 carried it too. **F-3 is not softened to match the row; the row moves.** Rows 1, 3, 4, 5 are
+among the six F-3 cleared and row 2 already carries its refutation, so row 7 was the only one left.
+
+**Row 6 — the verdict stands and its evidence had to be rebuilt.** The original evidence column
+read *"ten exclusion checks + `ClientKeepsValidTool`"*, which claims the SDK's exclusion was tested.
+It was not: with a hard-coded call list those ten checks scored SUCCESS for a client with no MCP SDK
+in it at all, and — the decisive arm — they still scored 11/11 with CG7's exclusion **disabled**.
+What the eleven checks measure **now that the drive is derived from `Client.list_tools/1`** is:
+`ClientKeepsValidTool` — the client kept the one valid tool *and called it*; ten
+`ClientRejectsInvalidTool_*` — the client called **none** of the ten tools it was required to
+exclude, *having been asked to call everything the listing left it*; and the `tools-list-gate` check
+was never pushed, i.e. the listing was sent. A regression in CG7 now turns the row red, demonstrated
+by mutation. **CONFIRMED, on evidence that could have refuted it.**
+
+**Row 4 — the risk CC named was the wrong risk, twice over, and both corrections are worth keeping.**
+CR relocated it first (the fixture routes `server/discover` in its base class, and `mcp-session-id`
+is only ever a *response* header the fixture sets — the client is never checked for echoing it).
+Running it settles the rest: the runner **does** drive it at the 2026-07-28 wire under
+`--requirements`, `initialize` and `notifications/initialized` degrade to **SKIPPED**, and the
+scenario is **not** an ADR-003 sub-decision 5 expected failure. The real risk on row 4 was the
+opposite one — a **hollow PASS**: had the adapter driven none of the eight watched methods,
+FAILURE=0, WARNING=0, exit 0, and the scenario would have reported **PASS with a denominator of
+zero**. It reports 9 measured SUCCESS only because the adapter drives all six methods that exist at
+this wire. **A PASS on row 4 is evidence only when the emitted check statuses are quoted with it.**
+
+### Correction (A2d): the planned "roughly 13 minutes of wall clock" for the client run was wrong
+
+The plan predicted the 25 `auth/*` empties would each burn the 30 s timeout. They do not: the
+adapter exits **0** immediately on an undriven scenario, so nothing times out. The full
+`--requirements 2026-07-28` client leg (39 scenarios) completed in **about ten seconds**.
+
+**A hazard found in its place, and it is the more important one.** The requirement-set runner starts
+all 39 scenarios **in parallel**, each spawning `mix run`, and they contend on the `_build` lock —
+`Waiting for lock on the build directory` appears throughout the run's stderr. A driven scenario
+starved long enough would hit the 30 s timeout and **fail outright, independent of every check**, in
+a way indistinguishable on the result sheet from a conformance failure. It did not bite here: all
+seven driven scenarios produced check-for-check identical results in the parallel run and in
+individual serial runs (2, 8, 5, 9, 18, 11, 1 successes respectively). The correction round adds an
+eighth, `json-schema-2020-12-preservation`, and the same holds for it and for the re-derived
+`http-invalid-tool-headers`: 9/9 and 11/11 both serially (`--scenario`) and in the parallel
+`--requirements` run. **Anyone re-running this must compare against the serial results before
+trusting a timeout-shaped failure.**
+
+**F-10 — the answer to *"bound or observation?"* is OBSERVATION, and it is stated in those words.**
+Two things were measured after the fact, both by CODE_REVIEWER and recorded here rather than
+re-run: (1) `mix run --no-compile` does **not** remove the contention — *"Waiting for lock on the
+build directory"* still appears in **every** driven scenario's stderr, and **more** often than in
+the plain run (13, 28, 11, 1, 23, 2, 19 occurrences), because `mix` takes the lock regardless of
+`--no-compile`; (2) the whole 39-scenario parallel run finished in **5.2 s** wall on this box, so no
+single scenario came within roughly **6×** of the 30 s budget — corroborated at the correction tip,
+where the same run took **4.9 s** (`time`, same box, eight driven scenarios now instead of seven).
+
+**That headroom is an observation about this machine, not a bound.** The re-run protocol above is
+the right shape and stays. The only real bound available is the harness's own `--timeout` flag:
+**MES-19 should pin `--timeout` explicitly and record the headroom it chose**, rather than inherit a
+margin that happened to hold here. A margin nobody set is not a margin anybody can rely on.
+
+### Decision: three capabilities are declared, and the checks they satisfy are shape checks
+
+The adapter declares `roots`, `sampling` and `elicitation` in `client_capabilities`, because it
+genuinely provides all three — the `:on_input_required` resolver answers elicitation-, sampling- and
+roots-shaped input requests. That converts three `request-metadata` checks from SKIPPED to SUCCESS.
+
+**Stated so nobody reads them as three tested capabilities:** those checks are `SKIPPED` when the
+key is absent and `SUCCESS` when it is present *and an object*. They test the **shape of a
+declaration**, not the capability behind it. Three of `request-metadata`'s eight successes are
+therefore cheap, and the honest core of that scenario is the other five.
+
+### Decision (RULING 3, RESTATED after its primary reason was FALSIFIED): `conformance/` stays out of `elixirc_paths` for MES-24 — as a DEFERRAL, not a rejection
+
+**The falsification is itself the finding, and it is recorded rather than tidied away.** This entry
+previously gave, as *"the reason that must survive into the record"*: *"no build-based gate could
+have caught the defect this ticket was pointed at, because the file builds. An undefined remote call
+is a warning, not an error."* **That is false for the gate this project actually runs.** Gate 2 is
+not plain `elixirc`; it is `mix compile --force --warnings-as-errors`, which promotes exactly that
+warning. Measured twice, independently — by CODE_REVIEWER, then re-run by the PM rather than taken
+on report — with `"conformance"` added to `elixirc_paths(_)` at `mix.exs:36` and then restored:
+
+```text
+$ mix compile --force --warnings-as-errors
+Compiling 70 files (.ex)                        (69 without conformance/)
+  warning: MCP.Server.ToolContext.request_sampling/2 is undefined or private
+           conformance/server_handler.ex:179:22
+  warning: MCP.Server.ToolContext.request_elicitation/2 is undefined or private
+           conformance/server_handler.ex:201:22, :233:22, :283:22
+  Compilation failed due to warnings while using the --warnings-as-errors option
+EXIT=1
+
+CONTROL for the confusion that produced the false claim:
+$ elixirc --warnings-as-errors <same file>      EXIT=0   (warnings printed, exit not set)
+```
+
+**All four sites named, on the first run.** So *"the file builds"* is true of `elixirc` and false of
+the gate we run: **the gate would have caught this ticket's defect before the measurement run ever
+started.**
+
+**The second reason SURVIVES intact:** `elixirc` compiles `.ex` only, so gating `conformance/` would
+cover `server_handler.ex` and **neither `.exs` adapter** — putting *"`conformance/` is gated"* into
+the record as a claim wider than its check, this sprint's signature defect in miniature. That reason
+is endorsed by CR and by the PM. But the two reasons do not point the same way, and with the first
+gone the second does not carry the decision on its own: **a claim wider than its check is an
+argument for narrowing the claim, not for declining the coverage.**
+
+**RULING 3 as restated by the PM (who ratified it, and who restated it):** `conformance/` stays out
+of `elixirc_paths` **for MES-24**, because a build-configuration change mid-ticket, on a branch
+already reviewed once, is outside this ticket's scope — **and that is the whole of the reason it is
+not happening here.** This is now a **DEFERRAL**. The follow-up ticket the PM owes carries a
+materially different brief from the one originally promised: the open question is no longer
+*"would a gate help"* — it demonstrably would, by four named sites — but ***"how do we cover the two
+`.exs` adapters so the recorded claim matches the check"***. Partial coverage stated as partial is
+acceptable; partial coverage stated as total is the defect this sprint keeps finding.
+
+**For MES-19's reader:** a ratified decision was checked, its main reason failed, and the decision
+was restated rather than quietly kept. That sequence is the point of recording it.
+
+### Class closure for the falsified ruling (F-5): every claim in this entry about what a TOOL does, swept — run it or mark it unverified
+
+The falsified reason in RULING 3 was not a typo. It was **a claim about what a tool does, reasoned
+rather than executed, that reached the deliverable** — the same habit that produced the wrong
+13-minute estimate earlier in this entry, landing this time on a ratified ruling. So every assertion
+here about the behaviour of a `mix` task, the compiler, the harness CLI or `hex` was swept:
+
+| Claim in this entry | Status |
+|---|---|
+| *"no build-based gate could have caught it, because the file builds"* | **FALSIFIED and corrected** — was reasoned, never run. See RULING 3 restated. |
+| *"`mix test` would stay green if `client_adapter.exs` were deleted"* (the gate-5 positive-control disclosure) | **WAS reasoned; NOW RUN.** File moved out of the tree, `mix test` → `13 doctests, 546 tests, 0 failures`; file restored. The claim holds, and it now holds on evidence. |
+| *"the adapter exits 0 on an undriven scenario, so nothing times out"* | **RUN.** CR's exit-code matrix: undriven → 0; driven with required context missing (a genuine crash) → **1**; driven against a dead server, every call failing → 0 with each error on stderr. Distinguishability holds; exit 0 did not become universal. |
+| *"the full client leg completed in about ten seconds"* | **RUN** — observed wall-clock, and CR measured 5.2 s for the 39-scenario parallel run. Recorded as an observation, not a bound (F-10). |
+| *"the requirement-set runner starts all 39 scenarios in parallel and they contend on the `_build` lock"* | **RUN** — `Waiting for lock on the build directory` observed throughout the run's stderr. |
+| *"`mix run --no-compile` would avoid the contention"* | **RUN by CR and REFUTED** — the lock waits get *more* frequent, not fewer. Recorded under F-10; never asserted in the entry unverified. |
+| *"the runner drives `http-standard-headers` at the 2026-07-28 wire under `--requirements`"* | **RUN** — `initialize` and `notifications/initialized` observed degrading to SKIPPED. |
+| *"`mix hex --version` meets the ≥ 2.5.1 floor"*, gates 6a/6b | **RUN** — see the gate block below. |
+| *"the reducer fails a scenario on `exitCode !== 0` unless `allowClientError`"* and the rest of the three scoring rules | **READ FROM SOURCE, and labelled as such** — `dist/index.js`, `function qo`, quoted verbatim; CR read the same reducer independently and matched it check for check, and the exit-code matrix above corroborates it behaviourally. |
+
+**A2d, the empties:** every other assertion in this entry is about our own code or about a fixture's
+source, not about a tool's behaviour, so the sweep found **one** falsified claim (RULING 3) and
+**one** unverified-but-true claim (the gate-5 disclosure), both now closed. Nothing else in the
+entry rests on reasoning about a tool that was never run.
+
+**Provenance note for the single-scenario arms.** The controls and mutants in this leg were run as
+`--scenario <name> --spec-version 2026-07-28`, **not** under `--requirements`: the CLI refuses the
+combination outright — *"--requirements cannot be combined with --scenario: a requirement set
+already fixes which scenarios run"* — which is itself a tool behaviour observed rather than assumed.
+The full-suite figures are all from `--requirements 2026-07-28` runs.
+
+### Gates — all six run individually at the client-leg phase tip, and AGAIN at the correction tip
+
+```text
+   mix hex --version                          Hex v2.5.1   (>= 2.5.1 floor met)
+1  mix format --check-formatted               clean
+2  mix compile --force --warnings-as-errors   clean (69 files)
+3  mix credo                                  1089 mods/funs, found no issues
+4  mix dialyzer                                Total errors: 0, Skipped: 0, Unnecessary Skips: 0
+5  mix test                                   13 doctests, 546 tests, 0 failures
+                                              + 20-seed sweep, 20/20 green
+                                              (0 1 2 3 5 7 11 13 17 23 42 97 314
+                                               777 1601 2024 4242 7777 9999 16180)
+6a baseline sentinel @ d697093                PASS — all 22 known advisory ids present
+6b mix hex.audit                              "No retired or security advisory
+                                               packages found", exit 0
+```
+
+Re-run in full after the correction round (F-1…F-10); every line above is the correction tip's
+result, and it is identical to the phase tip's. The correction round touches
+`conformance/client_adapter.exs` and this document only — `lib/` is byte-identical to `6b16cac`
+(both mutation controls were reverted and the tree rebuilt before the gates ran).
+
+**Gate 5 is a POSITIVE CONTROL for this phase and nothing more — and that is now MEASURED, not
+reasoned (F-5).** This phase changes exactly one code file, `conformance/client_adapter.exs`, which
+no test loads. The entry used to *assert* that `mix test` would stay green if the file were deleted;
+it was run instead:
+
+```text
+CONTROL  conformance/client_adapter.exs moved OUT of the tree
+         $ mix test        ->  13 doctests, 546 tests, 0 failures
+         file restored; git status clean but for this ticket's two files
+```
+
+So gate 5 discriminates **nothing** about this work and is not offered as if it did. The
+discriminating evidence for this phase is the harness run itself plus the controls above: the
+`-32022` status probe, the `Mcp-Name` encoding vector with its negative control, the **no-SDK
+control** and **disabled-CG7 mutant** on `http-invalid-tool-headers`, and the **`$schema`-stripping
+mutant** on `json-schema-2020-12-preservation`.
+
+**Gate 6 residual: UNCHANGED at 21 unvalidated of 26.** No dependency added; `mix.lock` untouched.
+
+### Upstream-shaped findings this leg produced (none is ours to fix)
+
+Three, all of the same family — **a check or a comparator whose stated scope is wider than its
+mechanism** — and all left alone deliberately:
+
+1. `checkMcpNameHeader` compares `Mcp-Name` to the body with a raw `!==` and never decodes the
+   Base64 sentinel, unlike its own `Mcp-Param-*` comparator. **Dormant at alpha.11** (every fixture
+   name is header-safe); a later non-safe fixture name would score our spec-correct encoding
+   FAILURE against a harness bug. `streamable-http.mdx:486-506` is unambiguous. **Do not change the
+   encoder.**
+2. `MRTRClientParallelIsolation` claims *"any other request the client may be sending"* and tests
+   sequential leakage only (F-8 above). Structural — no drive of this SDK's blocking API reaches
+   the concurrent property.
+3. `sep-2575-client-retry-supported-version` marks SUCCESS on *any* subsequent well-formed request,
+   not on a retry of the rejected one — so its name and description claim a property it does not
+   test. This is what lets `request-metadata` pass while our retry is unreachable.
+
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** Yes — the 4xx-body gap
+is **MES-44** (a distinct gap from MES-43's class: it disables MES-18's headline `-32020` recovery
+over the only transport on which `Mcp-Param-*` headers exist); `elixirc_paths` coverage for
+`conformance/` is PM's to raise, now as a **deferral with a changed brief** (see RULING 3 restated).
+
+---
+
+## MES-24 — Conformance adapter rework for 2026-07-28, SERVER LEG (2026-08-20)
+
+Phase 2 of two, same branch. The client leg is the section above and its figures are unchanged by
+anything here. Every figure below is pinned to `@modelcontextprotocol/conformance@0.2.0-alpha.11`
+run as `conformance server --url http://127.0.0.1:3001/mcp --requirements 2026-07-28 -o <dir>`,
+against the tree at this branch's tip. Results are adjudicated from the saved `-o` artefacts, never
+from terminal scrollback.
+
+**The PO ruling this sits under, unchanged:** the 2.0.0 conformance claim rests on our own ported
+acceptance suite; the harness supplies *supporting evidence* with its numbers reported. A bad figure
+is a finding to classify, not a claim to retract — and a good figure does not upgrade the claim.
+
+**The spine, unchanged:** no SDK behaviour was changed to satisfy a scenario. Where the SDK cannot
+express what a scenario requires, the fixture implements the closest thing the SDK's public contract
+allows and the gap is escalated. Four such gaps are named below; all four are visible in the figure
+as failures, and none of them was smoothed.
+
+### RULING 4 — the pre-run classification, and why it is in its own commit
+
+PM RULING 4 (comment 24493) binds this leg to classifying all 37 scored server scenarios by check
+polarity **before** the run, and to showing any scenario cited as evidence to be falsifiable. The
+client leg established why: `http-invalid-tool-headers` scored a clean 11/11 with the MUST it was
+cited for switched off, because the drive list was hard-coded — *"it passed" is not evidence for a
+row unless failing was possible.*
+
+**So this classification, and the per-scenario PASS/FAIL prediction derived from it, are committed
+in a separate commit made before the harness was started.** Not because a claim in a document is
+worth less than a claim in a commit, but because a prediction that can be edited after the result is
+not a prediction. Where the run contradicts a row below, the row is reported refuted at full
+strength rather than corrected.
+
+**Polarity, defined.** A check is **POSITIVE** when SUCCESS requires the harness to *observe*
+something this SDK did; **NEGATIVE** when SUCCESS is the default and only an observed bad thing
+turns it red — so an implementation that does nothing at all scores the same green; **MIXED** when a
+scenario carries both.
+
+Read from `dist/index.js` at alpha.11, each scenario's own `run()` and every `push({status: …})`
+in it.
+
+| # | Scenario | Checks | Polarity | Predicted | Why |
+|---|---|---|---|---|---|
+| 1 | `server-stateless` | ~30 | MIXED | **FAIL** | HTTP status mapping (gap 3) + `-32021` data (gap 4) |
+| 2 | `completion-complete` | 1 | POSITIVE | PASS | needs a `completion.values` array |
+| 3 | `tools-list` | 2 | POSITIVE | PASS | structure + SEP-986 name format |
+| 4 | `tools-call-simple-text` | 1 | POSITIVE | PASS | |
+| 5 | `tools-call-image` | 1 | POSITIVE | PASS | |
+| 6 | `tools-call-audio` | 1 | POSITIVE | PASS | |
+| 7 | `tools-call-embedded-resource` | 1 | POSITIVE | PASS | |
+| 8 | `tools-call-mixed-content` | 1 | POSITIVE | PASS | |
+| 9 | `tools-call-error` | 1 | POSITIVE | PASS | needs `isError: true` **and** text |
+| 10 | `tools-call-with-progress` | 1 | POSITIVE | PASS | needs ≥3 increasing progress notifications |
+| 11 | `server-sse-multiple-streams` | 2 | POSITIVE | PASS | 3 concurrent POSTs, each stream readable |
+| 12 | `resources-list` | 1 | POSITIVE | PASS | |
+| 13 | `resources-read-text` | 1 | POSITIVE | PASS | |
+| 14 | `resources-read-binary` | 1 | POSITIVE | PASS | |
+| 15 | `resources-templates-read` | 1 | POSITIVE | PASS | needs `123` to appear in the substituted body |
+| 16 | `sep-2164-resource-not-found` | 3 | MIXED | **FAIL** | `data.uri` SHOULD → WARNING → scenario fails (gap 4) |
+| 17 | `prompts-list` | 1 | POSITIVE | PASS | every prompt needs `description` |
+| 18 | `prompts-get-simple` | 1 | POSITIVE | PASS | |
+| 19 | `prompts-get-with-args` | 1 | POSITIVE | PASS | |
+| 20 | `prompts-get-embedded-resource` | 1 | POSITIVE | PASS | |
+| 21 | `prompts-get-with-image` | 1 | POSITIVE | PASS | |
+| 22 | `dns-rebinding-protection` | 2 | POSITIVE | PASS | 4xx on `evil.example.com`, 2xx on localhost |
+| 23 | `caching` | 7 | POSITIVE | PASS | `ttlMs`/`cacheScope` on all five endpoints |
+| 24 | `input-required-result-basic-elicitation` | 2 | POSITIVE | PASS | |
+| 25 | `input-required-result-basic-sampling` | 2 | POSITIVE | PASS | |
+| 26 | `input-required-result-basic-list-roots` | 2 | POSITIVE | PASS | |
+| 27 | `input-required-result-request-state` | 2 | POSITIVE | PASS | round 2 must contain `state-ok` |
+| 28 | `input-required-result-multiple-input-requests` | 2 | POSITIVE | PASS | ≥3 requests of 3 distinct methods |
+| 29 | `input-required-result-multi-round` | 3 | POSITIVE | PASS | R2's `requestState` must differ from R1's |
+| 30 | `input-required-result-missing-input-response` | 1 | POSITIVE | PASS **for the wrong reason** | see "passes hollowly" below |
+| 31 | `input-required-result-non-tool-request` | 2 | POSITIVE | **FAIL** | `prompts/get` is not MRTR-wired (gap 1) |
+| 32 | `input-required-result-result-type` | 1 | POSITIVE | PASS | |
+| 33 | `input-required-result-unsupported-methods` | 1 | **NEGATIVE** | PASS, unfalsifiable | see below |
+| 34 | `input-required-result-tampered-state` | 1 | POSITIVE | PASS | HMAC verify must reject |
+| 35 | `input-required-result-capability-check` | 1 | MIXED (weak) | PASS | see below |
+| 36 | `input-required-result-ignore-extra-params` | 1 | POSITIVE | **FAIL** | retry without `requestState` is invisible (gap 2) |
+| 37 | `input-required-result-validate-input` | 2 | **NEGATIVE** | PASS, unfalsifiable | see below |
+
+Plus **one further check appended to every scenario** by the runner (`u.push(...nt(c))`):
+`wire-schema-valid`, which validates **every JSON-RPC message this server sent** against the
+official 2026-07-28 JSON schema. It is POSITIVE and it is the single most load-bearing check on the
+sheet: it is what makes the otherwise-negative scenarios below carry any information at all.
+
+**Predicted total: 33 / 37.** Four predicted failures, all four attributed to a named SDK gap
+before the run rather than after it.
+
+#### The empties, enumerated FIRST (C-1's generalisation, applied prospectively)
+
+Three scored server scenarios cannot distinguish this SDK from its absence, and are named here
+rather than discovered afterwards:
+
+* **`input-required-result-unsupported-methods`** — sends `tools/list` and `prompts/list` and
+  scores SUCCESS unless one comes back with `resultType: "input_required"`. A server that answers
+  `-32601` to both scores the same SUCCESS. There is no implemented behaviour of ours whose
+  breakage it would catch.
+* **`input-required-result-validate-input`** — both checks are of the form *SUCCESS unless the
+  server accepted the invalid input and returned a complete result*. A server that errors on
+  everything passes both.
+* **`input-required-result-capability-check`** — weakly mixed rather than empty. It fails a server
+  that includes an undeclared `elicitation/create`, but a degenerate `InputRequiredResult` carrying
+  **no `inputRequests` at all** takes neither branch and scores SUCCESS. So it can catch
+  over-asking and cannot catch not-asking.
+
+And one that will pass for a reason that is not the reason it tests:
+
+* **`input-required-result-missing-input-response`** — expects the server to answer a retry with
+  *wrong* `inputResponses` by re-requesting. Ours does. But it does so because gap 2 means the
+  handler **cannot see `inputResponses` at all** when no `requestState` accompanies them, so it
+  takes the first-attempt branch. The check cannot tell that apart from a server that inspected the
+  responses, found them wrong, and deliberately re-requested. **A green here is not evidence that
+  we validate input responses.** It is the same shape as the client leg's row 6 and it is recorded
+  before the run for the same reason.
+
+#### Falsifiability of what this leg will cite
+
+Nothing in this leg is cited as evidence for a gap-register row on the strength of a green alone.
+The four gaps below are each evidenced by a **failure** that names its cause, and the MRTR tools
+are driven by the harness's own fixture rather than by any list this repository controls — the
+`BLOCKING 2` shape from the client leg cannot recur here, because the drive list is the harness's.
+
+### The four SDK gaps this leg exercises — escalated, not routed around
+
+All four join **MES-43** under the PM's standing pre-authorisation (RULING 2, comment 24485:
+"further instances of this class join MES-43 rather than spawning a ticket each"). None is fixed
+here.
+
+1. **MRTR is wired to `tools/call` and nothing else.** `MCP.Server.Dispatch` sets `ctx.input` at
+   `dispatch.ex:195` and carries the `{:input_required, …}` clause at `:223`, both inside the
+   `tools/call` route; `prompts/get` at `:297-312` does neither, and its shape function has exactly
+   two clauses. SEP-2322 says InputRequiredResult is universal across `prompts/get`,
+   `resources/read`, `tools/call` and `tasks/result`. Escalated during planning; unchanged.
+2. **`MRTR.continuation_from_params/1` drops `inputResponses` when `requestState` is absent.** It
+   returns `nil` unless `params["requestState"]` is present, so a retry carrying only
+   `inputResponses` — which the schema explicitly permits, both fields being optional on
+   `InputResponseRequestParams` — never reaches the handler. An MRTR flow that needs no server-side
+   continuation is therefore **not expressible in this SDK**, and a handler cannot tell "first
+   attempt" from "retry with no state".
+3. **No JSON-RPC-code → HTTP-status mapping.** `MCP.Transport.StreamableHTTP.Plug` sends every
+   dispatch result — success or error — with HTTP 200 (`plug.ex:1005`, `:1016`); only the four
+   errors raised *before* dispatch get a non-200 (`:329`, `:332`, `:342`, `:364`). SEP-2575
+   requires 400 for `-32602`/`-32022`/`-32021` and 404 for `-32601`.
+4. **A handler error return has no `data` slot.** `{:error, code, message, state}` becomes
+   `%MCP.Protocol.Error{code: code, message: message}` with `data: nil`, and there is no other
+   handler-reachable path to it. Two spec requirements are unreachable from any handler as a
+   result: `-32021`'s `error.data.requiredCapabilities` (SEP-2575) and SEP-2164's
+   `error.data.uri`.
+
+And one **documentation/typespec defect**, distinct from the four because it misleads rather than
+blocks: `MCP.Protocol.Messages.MRTR.input_required/2` is spec'd `list() | nil` and its moduledoc
+says *"the list of input-request objects"*, while the wire type `InputRequests` is a JSON **object**
+keyed by input name (schema `$defs.InputRequests`, `type: "object"`; `InputRequiredResult.
+inputRequests` `$ref`s it). **A handler following this SDK's own typespec emits non-conforming
+wire.** This fixture sends a map, and `wire-schema-valid` in the run below is what settles which of
+the two is right.
+
+### The measured server-leg figures, and the honest way to state them
+
+Run at `@modelcontextprotocol/conformance@0.2.0-alpha.11`, `--requirements 2026-07-28`, against the
+branch tip. **35 of 37 scored server scenarios pass** — and that number on its own is misleading in
+two independent directions, so it is never reported alone.
+
+| | **FAILURE-only** (the `--requirements` verdict) | **warnings also fail** (the harness's own stricter reducer) |
+|---|---|---|
+| **this SDK** | **35 / 37** | **33 / 37** |
+| **null-implementation control** | **6 / 37** | **3 / 37** |
+| **discriminating (ours − null)** | **29 / 37** | **30 / 37** |
+
+Three axes, three numbers, none of them the headline:
+
+| # | Figure | Value | Axis it measures |
+|---|---|---|---|
+| 1 | Scored scenarios the harness reports PASS | **35 / 37** | what the harness's `--requirements` verdict reports |
+| 2 | — under the harness's own **stricter** reducer (WARNING fails) | **33 / 37** | *which of the harness's two disagreeing verdicts you read* |
+| 3 | — scenarios a **null implementation does not also pass** | **29 / 37** | what this SDK actually contributes |
+
+Check-level, for the 37 scored scenarios: **98 SUCCESS · 19 FAILURE · 2 WARNING · 0 SKIPPED**
+(117 in the SUCCESS+FAILURE denominator). All 19 failures are in two scenarios.
+
+MES-19 may pick a headline only by publishing all three. Figure 1 alone reads as *"the server is
+94% conformant"*; figure 3 says *"29 of 37 scenarios would have gone red had this SDK been absent,
+and 6 would not."*
+
+#### CORRECTION, measured: "a WARNING fails a scenario" is TRUE FOR ONE RUNNER AND FALSE FOR THE OTHERS
+
+The ticket brief (adversarial item 2), the MES-18 review input, and **this document's own client-leg
+entry** all state the rule unqualified: *a WARNING fails a scenario (`s>0` is a disjunct of
+`overallFailure`)*. Read again at alpha.11, in the three places that decide a verdict:
+
+```text
+CLIENT, single scenario   (function qo)   overallFailure = failed>0 || warnings>0
+                                                          || timedOut
+                                                          || (exit!=0 && !allowClientError)
+                                          -> WARNING FAILS.  This is the reducer the rule came from.
+
+CLIENT, suite summary                     mark = (failures===0 && warnings===0) ? '✓' : '✗'
+                                          -> WARNING marks a scenario ✗ in the printed summary.
+
+SERVER, suite summary     (function Qo)   mark = (failures===0) ? '✓' : '✗'
+                                          -> WARNING does NOT fail, and is not even printed.
+
+BOTH legs, --requirements exit code (Bc)  exit = scored.some(s => s.checks.some(FAILURE))
+                                          -> WARNING does NOT fail.
+```
+
+So the harness's **own scenario verdict depends on which output you read**, and the rule as this
+project recorded it is the client single-scenario one generalised. **Measured consequence, not
+inferred:** `sep-2164-resource-not-found` and `input-required-result-ignore-extra-params` each emit
+a WARNING and each is reported **✓ / passing** by the server runner and by the `--requirements`
+exit code.
+
+**Does this move the client-leg figure? No, and that is checked rather than assumed.** Across every
+`checks.json` the client leg saved (`/tmp/mes24/client/**`, 33 scenarios), the status totals are
+**57 SUCCESS · 61 FAILURE · 8 SKIPPED · 1 INFO · 0 WARNING**. Not one client check emitted a
+WARNING, so 8/32 stands under either rule. The correction is to a **claim**, not to a number — which
+is this sprint's signature defect, found this time in our statement of the referee's own rules.
+
+#### The pre-run prediction, adjudicated — TWO ROWS REFUTED
+
+Predicted 33/37; measured 35/37. Both discrepancies are refutations of my own pre-run rows, and
+neither is the SDK doing better than predicted:
+
+| Scenario | Predicted | Observed | Verdict | Why the prediction was wrong |
+|---|---|---|---|---|
+| `sep-2164-resource-not-found` | FAIL | **PASS** (3 SUCCESS, 1 WARNING) | **REFUTED** | The `data.uri` SHOULD **is** unmet — `sep-2164-data-uri` is WARNING, exactly as predicted. The prediction failed on the **scoring rule**, not on the behaviour: I applied the client reducer to a server run. |
+| `input-required-result-ignore-extra-params` | FAIL | **PASS** (1 SUCCESS, 1 WARNING) | **REFUTED** | Identical cause. `sep-2322-ignore-unexpected-params` is WARNING with the message *"Server did not return complete result…"* — gap 2 bit exactly as predicted, and the scenario passes anyway. |
+| `server-stateless` | FAIL | FAIL (13 SUCCESS, 17 FAILURE) | CONFIRMED | but see the root-cause decomposition: I predicted 2 causes and the run found 6. |
+| `input-required-result-non-tool-request` | FAIL | FAIL (0 SUCCESS, 2 FAILURE) | CONFIRMED | gap 1, as predicted |
+
+**Both refutations point the same way: two scenarios are green over behaviour the harness itself
+described as unmet.** The prediction was wrong; the SDK's behaviour was exactly as predicted in both
+cases. That is the most useful thing a refuted prediction can do — it moved the error out of the
+implementation and into the account of the referee.
+
+#### The null-implementation control (PM RULING 4, comment 24493)
+
+RULING 4: *"run something that is not our implementation and see whether it scores the same green."*
+The control is a 25-line HTTP server that answers **`-32601 Method not found` to every method**, HTTP
+200, and implements no MCP behaviour whatsoever (`/tmp/null_server.py`, reproduced in this leg's
+artefacts). Same harness, same `--requirements 2026-07-28`.
+
+```text
+NULL CONTROL — scored server scenarios it PASSES: 6 / 37
+
+  server-sse-multiple-streams                    accepts-multiple-post-streams SUCCESS
+                                                 sse-streams-functional        INFO
+  sep-2164-resource-not-found                    no-empty-contents  SUCCESS  (never returned contents)
+                                                 error-code         WARNING
+                                                 data-uri           WARNING
+  input-required-result-missing-input-response   missing-response-rerequests WARNING
+  input-required-result-unsupported-methods      not-on-unsupported-requests SUCCESS
+  input-required-result-ignore-extra-params      ignore-unexpected-params    WARNING
+  input-required-result-validate-input           validate-input-responses    SUCCESS
+                                                 error-on-protocol-error     SUCCESS
+```
+
+Every one of those 6 is also in our 35, so the set difference is well defined: **29 of our 35 passes
+are scenarios a do-nothing server does not get.** The subset relation is what makes the subtraction
+legitimate, and it makes the control *harder* on us, not easier: a null that answered 500 or closed
+the connection would pass fewer, so 29 is a floor obtained against the most generous null available.
+
+**The sentence MES-19 should quote, verbatim, whenever the 29 appears** (PM ruling, comment 24503):
+
+> a conservative floor on scenario-level evidence contributed beyond a minimal valid-envelope null,
+> not a conformance-rate estimate.
+
+It is not 29/37, it is not a pass rate, and it must not be reported as one. Three of the six were named as empties *before*
+the run (`unsupported-methods`, `validate-input`, and `missing-input-response`'s hollow green); the
+control added three the pre-run reading had not caught — `server-sse-multiple-streams` (three HTTP
+200s is the whole test), and the two WARNING-only scenarios, which the pre-run reading had
+mis-scored as failures rather than as empties.
+
+**`server-sse-multiple-streams` deserves naming separately.** Its second check went `INFO` for the
+null server and `SUCCESS` for us (we do serve SSE), but `INFO` is outside the SUCCESS+FAILURE
+denominator, so it cannot fail anything. The scenario's only FAILURE-capable check is *"three
+concurrent POSTs each returned `res.ok`"*. **SEP-1699 multiple-stream support is, at this revision,
+measured by the ability to return HTTP 200 three times.**
+
+### Falsifiability: every claim this leg makes is backed by an arm that could have come out the other way
+
+RULING 4's second clause: *"'it passed' is not evidence for a row unless failing was possible."*
+Six mutations, each run against the harness or the suite, each reverted with `git status` clean
+afterwards.
+
+| # | Mutation | Scenario / suite run | Result | What it establishes |
+|---|---|---|---|---|
+| C-A | `inputRequests` emitted as a **list**, as `MRTR.input_required/2`'s own typespec says | `input-required-result-basic-elicitation` | `sep-2322-elicitation-incomplete` **FAILURE**; `wire-schema-valid` **FAILURE** — *"InputRequiredResult/inputRequests: must be object"* | `wire-schema-valid` is falsifiable **and** the SDK's `list()` typespec produces non-conforming wire |
+| C-B | `RequestState.verify/2` replaced by an unverified `peek/1` | `input-required-result-tampered-state` | `sep-2322-reject-tampered-state` **FAILURE** — *"Server accepted tampered requestState"* | the tampered-state green is earned by the HMAC, not by the scenario being weak |
+| C-C | `test_logging_tool` logs unconditionally | `server-stateless` | `sep-2575-server-no-log-without-loglevel` **FAILURE** | the no-log MUST NOT is a live check, not a free green |
+| C-D | `broadcast/2` made a no-op (lists still mutate, nothing is notified) | `server-stateless` | both `…-list-changed-on-subscription` → **WARNING**; ack / subscriptionId / filter stayed **SUCCESS** | the two list-changed checks are SHOULD-level and **cannot fail the scenario**; and `ServerTagsSubscriptionId` is satisfied by the acknowledgment frame alone |
+| C-E | `test_input_required_result_prompt` returns an ordinary `GetPromptResult` | `input-required-result-non-tool-request` | 1 FAILURE (`non-tool-incomplete`), `wire-schema-valid` **SUCCESS** | separates the SDK gap from the fixture's choice of how to surface it — see below |
+| C-F | `RequestState.verify/2`'s tag comparison short-circuited to `true` | `mix test` | **5 of 12** requestState tests fail | the unit tests are evidence, not decoration |
+
+Plus the **gate-5 control**, measured rather than argued (the client leg's F-5 discipline):
+
+```text
+CONTROL  conformance/server_handler.ex AND conformance/server_adapter.exs moved OUT of the tree
+         $ mix test  ->  13 doctests, 558 tests, 0 failures
+         both restored; git status clean but for this ticket's files
+```
+
+So `mix test` discriminates **nothing** about the two files that are the substance of this leg. It
+discriminates exactly one thing: `conformance/request_state.ex`, via the 12 new tests, and C-F shows
+those tests fail when the mechanism does. Gate 5 is a positive control for the fixture and real
+evidence for the token.
+
+### The 19 failing checks, decomposed by root cause — and the three-way classification
+
+**`server-stateless` — 13 SUCCESS, 17 FAILURE.** I predicted it would fail from two causes; it
+failed from **six**. Four of the six were named before the run, two were not, and saying which is
+which is the point of having predicted at all.
+
+| Root cause | Failing checks | Predicted pre-run? | Class |
+|---|---|---|---|
+| **R1** `server/discover` performs **no `_meta` structural validation** — a request with no `_meta` at all, or missing `protocolVersion`, or missing `clientCapabilities`, gets a normal result instead of `-32602` | `…request-meta-invalid-missing-meta`, `…-missing-protocol-version`, `…-missing-client-capabilities` (3) | **NO** — discovered by the run | genuine gap |
+| **R2** no JSON-RPC-code → **HTTP-status mapping**: every dispatch result leaves as HTTP 200 | `…http-server-meta-invalid-400` ×3, `…unsupported-version-400`, `…header-mismatch-400`, `…missing-capability-http-400`, `…method-not-found-404-{initialize,ping,logging-setlevel,resources-subscribe,resources-unsubscribe}`, `…method-not-found-404` (12, overlapping R1/R3/R4/R5/R6) | yes (gap 3) | genuine gap |
+| **R3** `server/discover` has **no version gate at all** (`dispatch.ex:158-168`, deliberately), so an unsupported requested version yields a result, not an `UnsupportedProtocolVersionError` carrying `data.supported`/`data.requested` | `…server-unsupported-version-error` (1) | **NO** — discovered by the run | genuine gap **against an explicit SDK design decision** |
+| **R4** no cross-check of the `MCP-Protocol-Version` **header** against `_meta.protocolVersion`; `check_routing_headers/2` covers `Mcp-Method`/`Mcp-Name` only | `…http-server-header-mismatch-400` (1) | no | genuine gap |
+| **R5** a handler error return has **no `data` slot**, so `-32021` cannot carry `error.data.requiredCapabilities` | `…server-rejects-undeclared-capability` (1) | yes (gap 4) | genuine gap |
+| **R6** `initialize` is answered `-32022 UnsupportedProtocolVersion`; the scenario requires `-32601` + HTTP 404 for every removed method | `…method-not-found-404-initialize` (also under R2) | no | genuine gap **against an explicit SDK design decision** (`dispatch.ex:131-139`) |
+
+R3 and R6 are worth separating from the rest because they are not oversights: `dispatch.ex` documents
+both choices in prose. `server/discover` is exempted from the version gate because it *is* the
+version-discovery probe — but SEP-2575, as the scenario reads it, says the rejection **carries** the
+supported list, so discovery still works through the error and the exemption is not needed. And
+`initialize` is answered `-32022` to tell a 2025-11-25 client what happened — helpful, and not what
+the revision requires. **Two documented decisions contradicted by the referee is a different kind of
+finding from four gaps**, and MES-19 should not read them as the same thing.
+
+##### PM RULING (comment 24503): R3 and R6 are **decisions, not defects**. Settled.
+
+I flagged the class rather than pre-judging it; the PM read the prose at both sites before ruling,
+rather than taking the flag on trust. Both citations re-verified here at the branch tip:
+
+* **R3** — `dispatch.ex:146`: *"server/discover: the version-discovery probe (no version gate)"*.
+  The absence of the gate is named as the design, not left implicit.
+* **R6** — `dispatch.ex:66-68` states the removed-method behaviour including `initialize` →
+  `-32022`, and `:131-139` carries the reason inside the error string itself — *"carry protocol
+  version in per-request _meta"*.
+
+**The ruling: both go to MES-19 as decisions requiring a PO call at release — NOT to MES-43's class
+as gaps to fix.** The distinction is load-bearing in both directions: MES-19 must not publish "by
+design" over an accident, and must not publish "gap" over a deliberate reading of the revision.
+Recorded here so MES-19 inherits the ruling instead of re-deriving it from the table above. The
+table's *"genuine gap against an explicit SDK design decision"* class is the **measurement** and
+stands unchanged; this ruling is the **routing** decision taken on top of it.
+
+The 13 SUCCESSes in `server-stateless` are not filler and one group of them is a correction to a
+PM-ratified finding — see *"P-4, partly refuted"* below.
+
+**`input-required-result-non-tool-request` — 0 SUCCESS, 2 FAILURE, and only ONE of them is cleanly
+the SDK's.**
+
+* `sep-2322-non-tool-incomplete` FAILURE — *"Expected InputRequiredResult from prompts/get"*. This
+  is gap 1, unambiguously: no handler can produce one.
+* `wire-schema-valid` FAILURE — *"GetPromptResult: must have required property 'messages'"*. The
+  fixture put the input-required **body** through `{:ok, result, state}`, and
+  `MCP.Server.Dispatch.complete/1` overwrote `resultType: "input_required"` with `"complete"`,
+  producing a result that is neither a `GetPromptResult` nor an `InputRequiredResult`. The
+  **overwrite** is the SDK's; **putting the body there** was the fixture's choice.
+
+**C-E is the control that separates them**: with the prompt returning an ordinary `GetPromptResult`,
+the scenario still fails `non-tool-incomplete` and `wire-schema-valid` goes SUCCESS. So the honest
+statement is *"one failure is the gap; the second is the gap made visible on the wire by a fixture
+choice, and a different choice removes it."* The choice is kept because
+`Dispatch.complete/1` overwriting a handler-supplied `resultType` unconditionally is itself worth
+having on the record as measured wire rather than as a code reading. The alternative — returning
+`{:input_required, …}` from `handle_get_prompt/4`, which is what a handler author would actually
+write — **raises**, measured below.
+
+#### Correction to my own planning claim (comment 24484): it is a `FunctionClauseError`, not a `CaseClauseError`
+
+Probed directly, with a positive control, at the branch tip:
+
+```text
+POSITIVE CONTROL  tools/call, handler returns {:input_required, requests, "st", state}
+  -> %{"inputRequests" => %{...}, "requestState" => "st", "resultType" => "input_required"}
+
+SUBJECT           prompts/get, handler returns the SAME shape
+  -> RAISED FunctionClauseError: no function clause matching in
+     anonymous fn/1 in MCP.Server.Dispatch.route/5
+```
+
+The shape function is an anonymous `fn` with clauses, not a `case`. The consequence is unchanged and
+the correction is small, but the claim was mine and it was stated in a plan the PM ratified. **Not
+added as a permanent test**: a test asserting broken behaviour becomes a maintenance trap the moment
+MES-43 fixes it, so this is a recorded probe (`/tmp/mes24_prompts_mrtr_probe.exs`, reproduced in the
+close-out) rather than a suite entry.
+
+### Three-way classification of every failure (ticket DoD item 2)
+
+**1 — genuine SDK gap (all 19 scored failures).** R1–R6 above plus gap 1. Every one is escalated;
+none is fixed here. No scored failure on this leg is attributable to the harness or to an
+old-revision scenario.
+
+**2 — scenario targets an old revision: EMPTY, and re-derived rather than inherited.** MES-13's
+ADR-003 #5 enumeration of expected-failures against `0.1.16` is **SUPERSEDED, not dropped**: the
+frozen set scopes itself to one revision (*"Scenarios run at THIS revision's wire version"*) and
+`--requirements 2026-07-28` selects exactly that, so no `--expected-failures` baseline is used and
+none is needed. The concrete demonstration that the frozen set does the job the old list did:
+`server-stateless` probes `initialize`, `ping`, `logging/setLevel`, `resources/subscribe` and
+`resources/unsubscribe` — five methods that do not exist at this revision — and treats their absence
+as the *requirement*, not as an exclusion.
+
+**3 — harness-side: TWO, neither fatal, both upstream-shaped.**
+
+* **The WARNING asymmetry** documented above: the same scenario is `✗` under the client
+  single-scenario reducer and `✓` under the server summary and the `--requirements` exit code. A
+  harness that publishes conformance figures should not have two verdicts. Reported as an
+  inconsistency, not a bug in our favour — it *helps* our number, which is exactly why it is stated.
+* **`input-required-result-capability-check` cannot catch under-asking.** Its check fails a server
+  that includes an undeclared `elicitation/create`, but an `InputRequiredResult` carrying **no
+  `inputRequests` at all** takes neither branch and scores SUCCESS. The check's description claims
+  *"Server only includes inputRequests for declared client capabilities"*; it tests only the
+  *"only"* half. Our green is real (C-A's neighbouring evidence shows the requests are emitted and
+  schema-valid), but the check would not have caught the degenerate case.
+
+And carried forward from the client leg, still dormant and still not ours to fix: `checkMcpNameHeader`
+compares `Mcp-Name` to the body with a raw `!==` and never decodes the Base64 sentinel. It did not
+bite on this leg either — every server-leg name is header-safe. **The encoder is not touched.**
+
+### The `not_scored` scenarios — run and reported, never counted, and two of them are the most informative results on this leg
+
+The brief's instruction, kept: *a reader who sees 35/37 must not conclude that 2020-12 was
+measured.* It was measured, it passed perfectly, and **it counts for nothing**.
+
+| Scenario | Reason it is unscored | Result | What it tells MES-19 |
+|---|---|---|---|
+| `json-schema-2020-12` | `pending` (the suite's own reference fixture cannot pass it) | **8 SUCCESS, 0 FAILURE** | **MES-17's entire server-side surface verified and worth zero.** `$schema`, `$defs`, `additionalProperties` (SEP-1613) **and** `allOf`/`anyOf`, `if`/`then`/`else`, `$anchor`-in-`$defs` (SEP-2106) all preserved verbatim through `tools/list`. |
+| `http-header-validation` | `pending` (SEP-2243) | 9 SUCCESS, 3 FAILURE, 2 WARNING | found a **genuine defect in MES-18's own just-landed work** — see below |
+| `http-custom-header-server-validation` | `pending` (SEP-2243) | 4 SUCCESS, 6 FAILURE | the server does **no `Mcp-Param-*` validation at all**; and 4 of the 4 greens are hollow |
+| `tasks-*` (10) | `extension` (SEP-2663) | 12 SUCCESS, 30 FAILURE | this SDK implements no tasks extension. Expected, and optional by definition (SEP-1730). |
+
+**The `json-schema-2020-12` result only exists because this leg added the tool the scenario names.**
+Before that, it reported *"Tool 'json_schema_2020_12_tool' not found"* — one FAILURE that measured
+the **fixture**, not the SDK. The requirements file's own words are the justification: *"invisible
+coverage is how gaps hide."* The same applies to `http-custom-header-server-validation`, which
+reported five *"Not testable: server exposes no tool with x-mcp-header annotations"* failures until
+this leg added one. **Neither tool can move a scored figure — both scenarios are `not_scored` — and
+the scored figure is byte-identical before and after adding them (35/37, 98/19/2).** That is stated
+because "added a tool, number went up" is precisely the move this ticket exists to not make.
+
+#### GENUINE DEFECT found by a `not_scored` scenario, in MES-18's surface: trailing OWS is not trimmed from routing headers
+
+`sep-2243-server-accepts-whitespace-header-value` FAILURE — *"HTTP spec requires trimming OWS around
+field values"*. Reproduced directly, with both controls, against the branch tip:
+
+```text
+A  Mcp-Name: test_simple_text          (exact — control, MUST accept)   -> HTTP 200  result
+B  Mcp-Name: "test_simple_text  "      (trailing OWS — MUST accept)     -> HTTP 400  -32020
+       data: "Mcp-Name test_simple_text   != \"test_simple_text\""
+C  Mcp-Name: "  test_simple_text"      (leading OWS — MUST accept)      -> HTTP 200  result
+D  Mcp-Name: other_tool                (real mismatch — MUST reject)    -> HTTP 400  -32020
+```
+
+The leading/trailing asymmetry is the evidence that this is accidental rather than policy: the HTTP
+layer strips leading OWS before `plug.ex:890` ever sees the value, and trailing OWS survives into a
+raw `!=` comparison. RFC 9110 §5.5 requires recipients to strip both. **Control D shows the
+rejection path itself is correct** — a genuinely different name is still rejected — so this is a
+narrow comparator defect, not a broken feature.
+
+**This is a distinct class from MES-43's** (SEP-2322/MRTR): it is SEP-2243, it is in code that
+landed yesterday under MES-18, and it makes a conforming client's request fail. **It needs its own
+ticket — PM's to raise** (the same shape as MES-44, which the client leg produced).
+
+#### The 4 hollow greens in `http-custom-header-server-validation`
+
+`sep-2243-server-decode-base64` and `sep-2243-server-validate-param-match` ×2 score SUCCESS, and the
+reason is that **we accept everything**: `check_routing_headers/2` (`plug.ex:887-903`) validates
+`Mcp-Method` and `Mcp-Name` and reads no `Mcp-Param-*` header at all. Every "accept" case therefore
+passes, and every "reject" case fails. **A green in an accept-case check is not evidence of decoding
+when the implementation has no decoder.** Named here so nobody reads 4/10 as partial support: the
+correct reading is **zero** server-side `x-mcp-header` validation, with 4 checks that cannot detect
+its absence.
+
+### P-4, partly REFUTED: MES-15's `subscriptions/listen` IS measured — inside a scenario that fails for other reasons
+
+The plan's finding P-4, which the PM verified personally, said no `subscriptions/listen` and no
+extensions scenario exists anywhere in alpha.11, and concluded that three of this sprint's four
+feature tickets earn zero scoring credit with two not representable at all.
+
+**Measured, `server-stateless` emits five checks that drive `subscriptions/listen` directly, and all
+five are SUCCESS:**
+
+```text
+SUCCESS  sep-2575-server-sends-subscription-ack       ack is the FIRST frame on the stream
+SUCCESS  sep-2575-server-tags-subscription-id         frames carry _meta.../subscriptionId
+SUCCESS  sep-2575-server-honors-notification-filter   a prompts-only stream got no tools/list_changed
+SUCCESS  sep-2575-server-sends-prompts-list-changed-on-subscription
+SUCCESS  sep-2575-server-sends-tools-list-changed-on-subscription
+```
+
+**So P-4 splits:**
+
+* **REFUTED as to coverage.** MES-15's surface is exercised and passes, by five checks whose
+  behaviour is exactly what MES-15 built.
+* **STANDS as to scoring.** They live inside `server-stateless`, which fails on R1–R6, so they move
+  no scenario. No row anywhere in the results says "subscriptions work".
+* **STANDS entirely for extensions (MES-16).** Zero checks anywhere in the run touch extension
+  negotiation. That ticket's surface remains unrepresentable, exactly as P-4 said.
+
+**And the coverage is thinner than five checks suggests**, which C-D measured rather than assumed:
+with `broadcast/2` a no-op, the two `…-list-changed-on-subscription` checks degrade to **WARNING**
+(SHOULD-level, and warnings cannot fail a server scenario), and `ServerTagsSubscriptionId` **stays
+SUCCESS** because the acknowledgment frame is itself a tagged notification. So of the five, exactly
+**two** — `ServerSendsSubscriptionAck` and `ServerHonorsNotificationFilter` — are FAILURE-capable
+checks of implemented behaviour, and the second is a negative check that only fires on a leak. **The
+honest claim is one positive FAILURE-capable check on the entire subscriptions surface.**
+
+#### What the correction does and does not do to the client leg's D-3
+
+D-3 in the section above says *"a WARNING fails the scenario (`overallFailure` disjoins `s>0`)"* and
+uses that to argue the `-32022` retry had to be implemented. Under the measurement above:
+
+* The parenthetical is **the client single-scenario reducer**, and the client leg was run with
+  `--requirements`, whose **exit code** is FAILURE-only. So the parenthetical is not the rule that
+  governed the run.
+* The client suite summary's per-scenario mark **does** count warnings
+  (`(failures===0 && warnings===0) ? '✓' : '✗'`), and the client leg's 8/32 was read from those
+  marks. **So the reported figure is the one the parenthetical implies, and it does not move.**
+* And D-3's justification never rested on the scoring rule anyway: it is discharged on normative
+  text (`basic/versioning.mdx:69-71`, the client SHOULD retry). **The fix is right for the reason
+  D-3 gave, and the scoring parenthetical beside it is narrower than it reads.**
+
+### The empties, on the record — the whole ticket (A2d, both legs)
+
+Named by count and by name, because "not run" absorbed into a denominator is the one thing MES-19's
+published claim cannot survive.
+
+| Empty | Count | What it is |
+|---|---|---|
+| `auth/*` scored **client** scenarios | **25** | no OAuth surface in this SDK. Deleted from the client denominator would read *better* than the truth, so the client leg reports N/32 with 7 as the core sub-figure and all 25 named. |
+| Server `not_scored / pending` | **3** | `json-schema-2020-12`, `http-header-validation`, `http-custom-header-server-validation`. All three are **now driven** by this leg and reported above. Run, reported, never counted. |
+| `extension` scenarios | **16** | 10 `tasks-*` (server) + 6 `auth/*` (client). Optional by definition (SEP-1730). |
+| `added-after-release` | **1** | `json-schema-2020-12-preservation` (client). |
+| **Leaves no row in any results file at all** | — | **MES-16's extensions negotiation.** Zero checks anywhere in either leg touch it (P-4, confirmed). **MES-15's `subscriptions/listen` is no longer in this bucket** — it moved to "measured but uncounted" (P-4 partly refuted, above). |
+| Scored scenarios a **null implementation also passes** | **6** | server leg, enumerated above. The client leg's equivalent — `auth/resource-mismatch` passing with no implementation — was already named as its figure-1-vs-2 delta. |
+
+### The combined ticket figure, both legs, one sentence each
+
+```text
+CLIENT  (conformance client --command "mix run conformance/client_adapter.exs"
+         --requirements 2026-07-28 @ 0.2.0-alpha.11)
+          8 / 32  harness-reported scored passes
+          7 / 32  driven AND passing        (delta: auth/resource-mismatch, negative check)
+          6 /  7  core, consumer-realistic drive
+
+SERVER  (conformance server --url http://127.0.0.1:3001/mcp
+         --requirements 2026-07-28 @ 0.2.0-alpha.11)
+         35 / 37  harness-reported scored passes (--requirements verdict, FAILURE-only)
+         33 / 37  under the harness's own stricter reducer (WARNING fails)
+         29 / 37  scenarios a null implementation does NOT also pass
+
+NOT COMPARABLE AND NOT ADDED TOGETHER. The client denominator is 78% auth scenarios this SDK
+does not implement; the server denominator has none. A combined "43/69" would be arithmetic
+without a meaning.
+```
+
+### Adversarial items — the server leg's answers
+
+Items 1, 2, 3, 4, 5, 6, 7 and 8 were adjudicated in the plan (comment 24484) and again on the client
+leg. What the server leg **changes**:
+
+1. **Coverage obligation as an acceptance criterion — met, and by a different mechanism.** On the
+   server leg the harness drives us, so there is no adapter drive list to get wrong: the
+   `BLOCKING 2` shape (a hard-coded list that makes checks insensitive) **cannot recur**. The
+   server-leg equivalent of "what the adapter must drive" is "what the fixture must **implement**",
+   and it is met by construction — every check that ran found the tool or prompt it names. The two
+   places it was *not* met before this leg were `json_schema_2020_12_tool` and the `x-mcp-header`
+   tool, both now added and both `not_scored`.
+2. **The scoring rules — CORRECTED by measurement.** Three rules, not two, and one of them is
+   leg-dependent. See the correction section above.
+3. **`checkMcpNameHeader`** — still dormant, still classified harness-side, encoder untouched.
+4. **Handler-shaped friction — five findings, all reported even though fixing them is out of
+   scope.** (a) no `data` slot on a handler error return (R5); (b) no mint/verify for `requestState`
+   — the fixture had to invent `MCP.Conformance.RequestState`, and getting that wrong is a security
+   defect rather than a rough edge; (c) `MRTR.input_required/2`'s `list()` typespec produces
+   non-conforming wire (C-A); (d) `continuation_from_params/1` makes an ephemeral MRTR flow
+   inexpressible (gap 2); (e) `Dispatch.complete/1` overwrites a handler-supplied `resultType`
+   unconditionally. **MES-36 re-checked: our handler uses `/4` throughout, so the advertised-but-
+   never-invoked 3-arity tool callback was not tripped over — recorded either way, as asked.**
+   Separately: every callback in the old fixture used the **legacy** no-context arities, which
+   `Dispatch` never invokes (MC-1 strict). That file could not have served a single scored scenario.
+5. **Does `conformance/` compile — and now, does it FORMAT?** RULING 3 (restated) keeps it out of
+   `elixirc_paths` for MES-24 and defers the question. This leg adds a second instance of the same
+   shape, found while running gate 1: **`.formatter.exs` inputs are `{config,lib,test}/**` — so
+   `conformance/` is outside gate 1 as well as gate 2.** Both files here were formatted by naming
+   them explicitly (`mix format --check-formatted conformance/*.ex*` → clean), but nothing enforces
+   that. The deferred ticket's brief should be *"which gates see `conformance/`, and which of its
+   file types can they see"*, not just `elixirc_paths`. **RAISED as MES-46 (PM, comment 24503) with
+   RULING 3 restated and the brief widened to both gates** — two of six are blind to `conformance/`,
+   not one.
+6. **Two modes, one SDK — still structurally empty, and now with the server half demonstrated.**
+   Under `--requirements 2026-07-28` the server leg is driven by the harness's own stateless client
+   (`wt`, a raw-fetch client in `dist/index.js`) and the client leg by the harness's own mock
+   servers. **There is no run in this ticket in which our client talks to our server**, so a
+   self-consistency failure cannot present as a conformance number. The residual risk is the other
+   direction — our own fixture crashing and reading as a gap — and it did not materialise: no
+   scenario failed with a transport-level error, and the one place a crash was possible
+   (`{:input_required, …}` from `prompts/get`) was deliberately routed away from the shared server
+   and probed in isolation instead.
+7. **Old-revision exclusion — re-derived, superseded, not dropped.** See classification bucket 2.
+8. **The empties — enumerated first this time**, per RULING 4, and then corrected by the null
+   control which found three the reading had missed. **That is the finding under the finding: an
+   empties list derived by reading was 50% complete; running a null implementation completed it.**
+
+### CI-2 (PM carry-in, comment 24496): the two register corrections, now in the MES-24 entry
+
+DoD item 6 requires this entry — the one MES-19 reads for the measurement — to carry the two
+corrections MES-18 produced, rather than leaving them only in the MES-18 entry above.
+
+1. **MRTR was marked `CONFORMANT` in the gap register and is not.** MES-18 refuted it client-side
+   (D-1: `requestState` was sent as a present key holding JSON `null` when the server sent none).
+   **This leg refutes it server-side as well, and more broadly:** SEP-2322 makes
+   `InputRequiredResult` universal across `prompts/get`, `resources/read`, `tools/call` and
+   `tasks/result`, and this SDK implements it on **`tools/call` alone** — measured, not read, by
+   `input-required-result-non-tool-request` failing 0/2. A register entry marked done that is not
+   done is more expensive than one marked open, because nobody looks again.
+2. **CG2 was stale in the OPPOSITE direction.** The brief said the inbound extensions half was
+   absent; it was functionally closed and evidentially open — `Discover.Result.from_map/1` delegates
+   to `ServerCapabilities.from_map/1`, which parses it. Taken at face value the brief would have had
+   MES-18 build a parser that already existed. **The server leg adds the other half of the picture:**
+   extensions negotiation earns **zero** conformance coverage in either direction — no scenario in
+   alpha.11 touches it — so CG2's status can only ever be evidenced by our own tests, never by the
+   harness. That is a permanent property of the register entry, not a gap waiting to close.
+
+### Gates — all six, individually, at the branch tip
+
+```text
+   mix hex --version                          Hex v2.5.1   (>= 2.5.1 floor met)
+1  mix format --check-formatted               clean
+   (+ mix format --check-formatted conformance/*.ex conformance/*.exs   clean — see item 5
+      above: conformance/ is OUTSIDE the formatter's inputs, so this arm is manual)
+2  mix compile --force --warnings-as-errors   clean (69 files)
+3  mix credo                                  1090 mods/funs, found no issues
+4  mix dialyzer                               Total errors: 0, Skipped: 0, Unnecessary Skips: 0
+5  mix test                                   13 doctests, 558 tests, 0 failures   (546 -> 558, +12)
+                                              + 20-seed sweep, 20/20 green
+                                              (0 1 2 3 5 7 11 13 17 23 42 97 314
+                                               777 1601 2024 4242 7777 9999 16180)
+6a baseline sentinel @ d697093                PASS — all 22 known advisory ids present
+6b mix hex.audit                              "No retired or security advisory
+                                               packages found", exit 0
+```
+
+**Gate 6 residual: UNCHANGED at 21 unvalidated of 26.** No dependency added; `git diff main..HEAD --
+mix.exs mix.lock` is empty. The `requestState` token uses `:crypto` from OTP, deliberately, so the
+residual could not move.
+
+**Gate 5's status on this leg is mixed and both halves are stated.** The 546 pre-existing tests are
+a **positive control** — measured, not argued: with both `conformance/server_handler.ex` and
+`conformance/server_adapter.exs` removed from the tree, `mix test` still reports 558 tests, 0
+failures. The **12 new** `MCP.ConformanceRequestStateTest` tests are **evidence**: C-F short-circuits
+the tag comparison and 5 of the 12 go red. The `test/` → `conformance/` coupling this creates is a
+**deliberate cost, ratified by the PM (RULING 4, comment 24485)**, taken because a tamper-evident
+token whose only evidence is "one scenario went green" is a single-instance check of a property
+whose whole point is the rejection path.
+
+### What this leg did NOT do
+
+* **No SDK change.** `git diff main..HEAD -- lib/` is empty. Every one of the seven gaps and the one
+  defect below is escalated, none is fixed. The single place the temptation was concrete —
+  `test_missing_capability` needs `error.data.requiredCapabilities`, and adding a `data` slot to the
+  handler error return is a ten-line change — was declined, and the check is red because of it.
+* **No re-run of the client leg.** Its figures are unchanged and the WARNING correction was shown
+  not to move them by reading its saved artefacts, not by re-measuring.
+* **No `--expected-failures` baseline.** None is needed; MES-13's is superseded, with the reason
+  recorded rather than the enumeration silently dropped.
+
+### Escalations this leg produced
+
+**To MES-43 (SEP-2322 / stateless-core surface), under the PM's standing pre-authorisation
+(RULING 2, comment 24485):**
+
+| # | Gap | Evidence |
+|---|---|---|
+| 1 | MRTR wired to `tools/call` only | `input-required-result-non-tool-request` 0/2; probe raising `FunctionClauseError` with a passing `tools/call` control |
+| 2 | `continuation_from_params/1` drops `inputResponses` without `requestState` | `…ignore-extra-params` WARNING; `…missing-input-response`'s hollow green |
+| 3 | no JSON-RPC-code → HTTP-status mapping | 12 of `server-stateless`'s 17 failures |
+| 4 | handler error return has no `data` slot | `…rejects-undeclared-capability`; `sep-2164-data-uri` WARNING |
+| 5 | `server/discover` does no `_meta` structural validation | 3 `…request-meta-invalid-*` failures |
+| 6 | `server/discover` has no version gate; `initialize` answers `-32022` not `-32601` | `…unsupported-version-error`, `…404-initialize`. **Both contradict a documented SDK design decision.** **RE-ROUTED by PM ruling (comment 24503): this row does NOT join MES-43.** R3/R6 go to **MES-19** as decisions requiring a PO call at release. Kept in the table so the measurement is not lost, struck from the MES-43 hand-off. |
+| 7 | `MRTR.input_required/2` typespec/doc say `list()`; the wire type is an object | C-A: the list form fails `wire-schema-valid` |
+| 8 | `Dispatch.complete/1` overwrites a handler-supplied `resultType` unconditionally | the second failure in `…non-tool-request`, isolated by C-E |
+
+**Needed its own ticket, a different class from MES-43 — RAISED by the PM as MES-45 (comment
+24503), which carries both items below:**
+
+* **SEP-2243 routing headers do not trim trailing OWS.** In MES-18's surface, landed 2026-08-20.
+  Minimal reproducer with both controls above; a conforming client's request is rejected `-32020`.
+* **SEP-2243 server-side `x-mcp-header` / `Mcp-Param-*` validation is absent entirely.**
+  `check_routing_headers/2` reads no `Mcp-Param-*` header. 6 failures in
+  `http-custom-header-server-validation`, and 4 greens there that cannot detect its absence.
+
+**Upstream-shaped (not ours to fix):** the WARNING verdict asymmetry between the harness's three
+reducers; `input-required-result-capability-check` cannot catch under-asking; and, carried forward
+and still dormant, `checkMcpNameHeader`'s non-decoding comparison.
+
+**Priority Hint:** high · **Blocking?:** unblocks MES-19 · **Suggested Jira Ticket?:** Yes — gaps
+1–5, 7 and 8 join **MES-43**; **gap 6 (R3/R6) does not** — PM ruling, comment 24503, routes it to
+**MES-19** as a decision requiring a PO call at release. The two SEP-2243 server-side items are
+raised as **MES-45**; `elixirc_paths` **and now `.formatter.exs` inputs** coverage for `conformance/`
+is **MES-46**, with RULING 3 restated in its brief.
