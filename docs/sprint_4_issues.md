@@ -4434,3 +4434,486 @@ and still dormant, `checkMcpNameHeader`'s non-decoding comparison.
 **MES-19** as a decision requiring a PO call at release. The two SEP-2243 server-side items are
 raised as **MES-45**; `elixirc_paths` **and now `.formatter.exs` inputs** coverage for `conformance/`
 is **MES-46**, with RULING 3 restated in its brief.
+
+---
+
+## MES-19 — Conformance closure: re-measure, close the gap register, draft the claim (2026-08-20)
+
+Sprint 4's closing ticket. Four deliverables: **(1)** confirm the measurement at the release commit,
+**(2)** deterministic `tools/list` ordering (gap-register **E2**, the only code), **(3)** the
+gap-register walk, **(4)** the conformance-claim wording, drafted and **not published**.
+
+Plan on the ticket in five parts (comments 24507–24511); ratified by the PM in two parts (24512,
+24513). Six ratification items were ruled — **RAT-5 overruled**, so the whole-tree OSV cross-check
+runs here rather than at release; **item 3 expanded 29 → 36 rows**; the register-adjacent scope
+additions (README excision, ADR-003 amendment) are sanctioned scope under A9.
+
+### Pre-run prediction — committed before the harness was started
+
+C-1 rewrote deliverable 1 from *re-run* to *confirm at the release commit*: MES-24 measured both legs
+five hours earlier, and the tree it measured is content-identical to merged `main` (verified by the
+PM at the squash; **inherited here, not re-derived by me** — the MES-24 branch was deleted at the
+squash, so I cannot diff against it and I will not imply that I did).
+
+That makes this confirmation, not discovery — which is exactly the shape in which a re-run gets
+quietly adjusted to the number everyone expects. So the prediction below is in **its own commit,
+made before the harness was started**, and it is on the ticket (comment 24509) timestamped before
+any run. Where the run contradicts a line, the line is reported **refuted at full strength** rather
+than corrected.
+
+```text
+PREDICTION @ 7480f2f, @modelcontextprotocol/conformance@0.2.0-alpha.11,
+--requirements 2026-07-28, both legs, adjudicated from saved -o artefacts.
+
+SERVER  conformance server --url http://127.0.0.1:3001/mcp
+  35 / 37   harness-reported PASS (--requirements verdict, FAILURE-only)
+  33 / 37   under the harness's own stricter reducer (WARNING fails)
+  29 / 37   discriminating = ours minus the null control's 6
+  98 SUCCESS / 19 FAILURE / 2 WARNING / 0 SKIPPED over 117 SUCCESS+FAILURE
+  all 19 FAILUREs in exactly TWO scenarios:
+      server-stateless                          13 SUCCESS / 17 FAILURE
+      input-required-result-non-tool-request      0 SUCCESS /  2 FAILURE
+  the 2 WARNINGs, one each, in two scenarios that nonetheless PASS:
+      sep-2164-resource-not-found  (sep-2164-data-uri)
+      input-required-result-ignore-extra-params  (sep-2322-ignore-unexpected-params)
+
+NULL CONTROL (25-line always -32601 server, not our implementation)
+   6 / 37   FAILURE-only        3 / 37   warnings-also-fail
+  and our 35 is a SUPERSET of its 6, which is what makes the subtraction legal
+
+CLIENT  conformance client --command "mix run conformance/client_adapter.exs"
+   8 / 32   harness-reported scored passes
+   7 / 32   driven by the adapter AND passing
+   6 /  7   core (non-auth/*), under a consumer-realistic drive
+  0 WARNING across every client check (57 SUCCESS / 61 FAILURE / 8 SKIPPED / 1 INFO)
+
+not_scored, run and reported, never counted:
+  server  json-schema-2020-12                    8 S /  0 F
+          http-header-validation                 9 S /  3 F / 2 W
+          http-custom-header-server-validation    4 S /  6 F
+          tasks-* (10)                          12 S / 30 F
+  client  6 auth/* extension scenarios, all failing
+          json-schema-2020-12-preservation       9 / 9 PASS
+```
+
+**Predicted delta against MES-24: ZERO, and it is a self-consistency check, not a measure of
+progress.** The tree is content-identical and no dependency moved, so any non-zero delta means
+something moved that should not have — and the first hypothesis to test is not *the SDK regressed*
+but *the tree I am measuring is not the tree MES-24 measured*.
+
+**Two ways this run can lie, and what is done about each.**
+
+1. **A starved scenario is indistinguishable from a conformance failure.** The requirement-set runner
+   starts all scenarios in parallel, each spawning `mix`, and they contend on the `_build` lock.
+   MES-24's F-10 instructs this ticket to pin `--timeout` explicitly and record the headroom, because
+   "a margin nobody set is not a margin anybody can rely on". Any timeout-shaped failure is
+   re-checked serially before it is believed. `mix run --no-compile` does **not** help — CR measured
+   that it makes the waits more frequent, not fewer.
+2. **`--requirements` and `--scenario` are mutually exclusive** by the CLI's own refusal, so
+   single-scenario arms run as `--scenario X --spec-version 2026-07-28` and are labelled as a
+   different invocation. They are never quoted as suite figures.
+
+**The null control is re-run here rather than inherited.** Its 6/37 is a property of the harness, not
+of `7480f2f`, so inheriting it would be defensible. But the 29 is the figure with the largest blast
+radius in deliverable 4, and inheriting the subtrahend for a number about to be certified is the
+exact shape this sprint keeps finding. It is a 25-line script and one run.
+
+---
+
+## MES-49 — Confirm the measurement at the release commit; whole-tree OSV cross-check (2026-08-20)
+
+Split out of MES-19 by the PM at 09:12 local (MES-19 comment 24514, MES-49 comment 24515), together
+with **MES-48** (E2, deterministic `tools/list` ordering) and **MES-47** (the README excision). This
+entry covers **only** MES-49's two halves: **Part A**, confirming the measurement at the release
+commit `7480f2f`; and **Part B**, the whole-tree OSV cross-check that `CLAUDE.md` assigns here by
+name (RAT-5, PM ruling — my reading that it belonged to Sprint 5 was overruled).
+
+### Branch provenance, said plainly rather than implied
+
+The PM asked which of the two paths was taken and why the answer matters. **Started fresh from
+`7480f2f`**, not renamed: the pre-split `MES-19` branch carries MES-48's and MES-47's commits as
+well, and renaming it would have put another sub-task's code on this sub-task's branch.
+
+The pre-run prediction commit was **cherry-picked** (`498f7b1` → `b4c2f9c`) with its original author
+date `07:56:30 UTC` preserved; only the subject key was rewritten `MES-19` → `MES-49`. `git diff
+498f7b1 b4c2f9c` is **empty**, so the tree is byte-identical, and the prediction text itself is
+anchored *outside git* on MES-19 comment **24509**, posted **07:43:31 UTC** — earlier than the commit
+and earlier than every run in this entry. No rewrite on this branch could alter what was predicted.
+
+**What this branch is, relative to the certified commit:** `git diff 7480f2f HEAD --stat` is *one
+file*, `docs/sprint_4_issues.md`. **Zero code difference from the release commit.** That statement is
+first-hand and is the one provenance claim I can make myself.
+
+**The one I cannot, and do not.** C-1's content-identity between `7480f2f` and the tree MES-24
+measured is **inherited on the PM's verification at the squash, not re-derived here** — the MES-24
+branch was deleted at the squash, so there is nothing to diff against. "I checked" and "the PM
+checked and I am relying on it" are different claims and only the second one is mine.
+
+### F-11 — a concurrent seat switched the branch out from under a live measurement
+
+**This is the ticket's most transferable finding and it was found by accident, which is the point.**
+
+Partway through Part A, `git status` reported branch **`MES-19`** in a shell that had checked out
+`MES-49` six minutes earlier. Nothing in this session issued that checkout. `git reflog --date=iso`:
+
+```text
+9d662ab HEAD@{2026-08-20 08:42:25 +0000}: checkout: moving from MES-49 to MES-19
+b4c2f9c HEAD@{2026-08-20 08:40:09 +0000}: commit (amend): [MES-49] Pre-run prediction …
+7480f2f HEAD@{2026-08-20 08:39:52 +0000}: checkout: moving from MES-19 to MES-49
+```
+
+`/tmp/emfa-seat-dispatch.log` names the cause:
+
+```text
+2026-08-20T08:37:40 MES CODE_CREATOR  ASSIGNED ticket=MES-49 epic=MES-23 engine=claude
+2026-08-20T08:41:03 MES CODE_REVIEWER ASSIGNED ticket=MES-19 epic=MES-23 engine=codex
+2026-08-20T08:41:03 MES CODE_REVIEWER PICKUP   ticket=MES-19
+```
+
+**The three seats share one clone** (`CLAUDE.md`, seat-based procedure). CODE_REVIEWER was dispatched
+MES-19 at 08:41:03 and checked it out at 08:42:25 — into the working tree this seat was measuring
+from. The two branches differ in `lib/mcp/server/{config,dispatch,handler}.ex`, i.e. **exactly the
+server code the server leg exercises.**
+
+**Why it is a measurement hazard and not just an annoyance.** A conformance run reads its subject off
+the working tree. A branch switch mid-run yields a result sheet with **no record of which tree
+produced it** — the artefacts carry a harness version, a requirement-set md5 and timestamps, and
+**not one field naming the commit**. Had the switch landed 80 seconds earlier, this entry would have
+certified `7480f2f` from figures produced partly on a different tree, and nothing in the artefacts
+would have shown it. That is the ticket's own subject arriving as an accident against the ticket.
+
+**Adjudicated by timestamp rather than by assumption.** Every arm's first and last check timestamp
+was extracted from the saved `checks.json` files and compared against the switch at `08:42:25Z`:
+
+| arm | first check | last check | vs switch | tree-dependent? |
+|---|---|---|---|---|
+| server (ours) | 08:41:04.116Z | 08:41:06.079Z | **79 s before** | yes |
+| server null control | 08:41:29.829Z | 08:41:30.025Z | **55 s before** | no — a 25-line Python server |
+| client (ours) | 08:42:10.118Z | 08:42:12.770Z | **12 s before** | yes |
+| client null control | 08:43:05.516Z | 08:43:05.593Z | *after* | no — `/bin/sh; exit 0` |
+
+So no arm is contaminated. **A 12-second margin is not a control, it is a near miss**, and reporting
+it as "fine" would be the reasoning this sprint keeps catching.
+
+**Fixed structurally, not by asking the other seat to wait.** The remaining work moved to a dedicated
+`git worktree` at `/workspace/elixir_code/mcp_ex_MES49`, and the shared clone was left on `MES-19`
+where CODE_REVIEWER expects it. Both seats then hold their own working tree over one object store,
+and neither can move the other's. **Both legs were then re-run from the worktree** — see below.
+
+**Raised for the working procedure, because it is not specific to this ticket.** `CLAUDE.md` says the
+seats execute "strict-sequentially (one ticket in flight)"; here CODE_CREATOR held MES-49 while
+CODE_REVIEWER held MES-19, in one clone, concurrently. Any seat running a build, a test sweep or a
+conformance leg is exposed. This is a **PM/PO decision** and is not taken here; the options that
+present themselves are a worktree per seat, a lock, or an actually-enforced single ticket in flight.
+
+### Part A — the measurement at `7480f2f`, adjudicated
+
+Every figure is pinned to `@modelcontextprotocol/conformance@**0.2.0-alpha.11**` (a **pre-release**),
+requirement set `requirements/2026-07-28.yaml`, md5 **`d6eb2061b2d35c7c71a86059b08bb928`** — the same
+md5 MES-24 recorded, checked rather than assumed. Adjudicated from saved `-o` artefacts under
+`/tmp/mes49/`, never from terminal scrollback. Invocations, in full:
+
+```text
+SERVER  conformance server --url http://127.0.0.1:3001/mcp --requirements 2026-07-28 -o <dir>
+        (adapter: mix run --no-halt conformance/server_adapter.exs 3001)
+NULL    same invocation against http://127.0.0.1:3002/mcp — a 25-line Python server answering
+        -32601 to every method, HTTP 200. No MCP behaviour at all.
+CLIENT  conformance client --requirements 2026-07-28 --timeout 30000 -o <dir> \
+          --command "cd <project> && mix run conformance/client_adapter.exs"
+NULLC   same invocation, --command "/tmp/mes49/null_client.sh"  (a script whose body is `exit 0`)
+```
+
+The **cwd matters and is quoted with every figure**: MES-19's run recorded a control in which the
+harness's own cwd was used, `mix run` could not start the adapter outside a Mix project, the harness
+said nothing, and the sheet read **2/32** — indistinguishable from a poor implementation.
+
+| axis | predicted | measured | verdict |
+|---|---|---|---|
+| server, FAILURE-only (`--requirements` exit rule) | 35/37 | **35/37** | CONFIRMED |
+| server, warnings-also-fail | 33/37 | **33/37** | CONFIRMED |
+| server, scored check census | 98 S / 19 F / 2 W / 0 SKIPPED | **98 / 19 / 2 / 0** | CONFIRMED |
+| the 19 FAILUREs, scenario split | `server-stateless` 13 S/17 F, `input-required-result-non-tool-request` 0 S/2 F | **identical** | CONFIRMED |
+| the 2 WARNINGs | `sep-2164-data-uri`, `sep-2322-ignore-unexpected-params` | **identical** | CONFIRMED |
+| null control, FAILURE-only | 6/37 | **6/37** | CONFIRMED |
+| null control, warnings-also-fail | 3/37 | **3/37** | CONFIRMED |
+| null ⊆ ours (what makes the subtraction legal) | superset | **holds — 0 null passes outside our 35** | CONFIRMED |
+| discriminating (35 − 6) | 29/37 | **29/37** | CONFIRMED |
+| client, harness-reported scored | 8/32 | **8/32** | CONFIRMED |
+| client, driven-and-passing | 7/32 | **7/32** | CONFIRMED |
+| client, core (non-`auth/*`) | 6 of 7 | **6 of 7** | CONFIRMED — *by a different mechanism than predicted; see below* |
+| client, scored check census | — | **57 S / 46 F / 2 SKIPPED / 1 INFO / 0 WARNING** | recorded |
+| client, WARNINGs anywhere | 0 | **0 across all 39 saved scenarios** | CONFIRMED |
+| **client, ALL-scenario check census** | **57 S / 61 F / 8 SKIPPED / 1 INFO** | **66 S / 59 F / 2 SKIPPED / 1 INFO** | **REFUTED** |
+
+**Delta against MES-24: ZERO on every scored axis — and that is a self-consistency check, not a
+measure of progress.** The tree is content-identical and no dependency moved, so a non-zero scored
+delta would have meant something moved that should not have. **"What moved" has the honest answer
+"nothing, and nothing could have."**
+
+#### Both legs were run twice, and the second run is the one that certifies
+
+Not for confidence in the number — for provenance. Run 1 executed in the shared clone before the
+branch switch; run 2 executed in the isolated worktree, where the branch is `MES-49` throughout and
+no other seat can move it. Compared **check-by-check**, not summary-to-summary:
+
+```text
+SERVER: run1 (50 scenarios) vs run2-in-worktree (50) -> IDENTICAL on every (check-id, status) pair
+CLIENT: run1 (39 scenarios) vs run2-in-worktree (39) -> IDENTICAL on every (check-id, status) pair
+```
+
+A repeat that agrees is also the answer to "is any of this flaky": **it is not**, at n=2 per leg on
+top of MES-19's four client repeats.
+
+#### The refuted row, at full strength, and it is not the SDK
+
+The predicted all-scenario client census was **inherited from MES-24's entry**, which recorded it
+across *"33 scenarios"*. The artefact set holds **39** `checks.json` (8 top-level + 31 under `auth/`),
+and the run contradicts the figure. MES-19 tested the two hypotheses that fit — a stale artefact
+versus a starved scenario — by running the client leg four times; all four gave
+`json-schema-2020-12-preservation` **9/9 SUCCESS** and byte-identical censuses, so the scenario is
+not flaky and the **stale-artefact** explanation stands. **Both runs here reproduce 9/9 SUCCESS and
+66/59/2/1, making it six independent confirmations.** The `-o` directory MES-24 censused was not the
+run MES-24 reported.
+
+**What it touches: no scored figure.** 8/32, 7/32, 6/7, 35/37, 33/37 and 29/37 are all unchanged, and
+`json-schema-2020-12-preservation` is `added-after-release`, i.e. never scored. It is a defect in
+MES-24's reporting of a *not-scored* census, found by running the thing rather than re-reading it.
+
+#### A control the prediction implied but never defined: the null CLIENT
+
+The server leg has had a null control since MES-13. The client leg has not, and my own prediction
+line — *"6 / 7 core (non-`auth/*`), under a consumer-realistic drive"* — was not operationally
+defined: it asserted that one of the seven core passes was worth less than the others without saying
+how anyone would tell. **Built and run here** as `--command "/tmp/mes49/null_client.sh"`, whose
+entire body is a `#!/bin/sh` shebang and `exit 0`: it is handed the mock server's URL and does
+nothing with it. No MCP SDK, no HTTP request of any kind, and exit 0 so the harness's exitCode
+reducer cannot be the thing that fails it.
+
+```text
+NULL CLIENT scored pass: 2/32  ->  auth/resource-mismatch, http-standard-headers
+null ⊆ ours: EMPTY difference -> superset holds, so the subtraction is legal on this leg too
+client discriminating = 8 - 2 = 6 / 32
+core (non-auth/*) scored passes            : 7 of 7
+core the NULL CLIENT also passes           : http-standard-headers
+core DISCRIMINATING                        : 6 of 7
+```
+
+**The figure 6/7 is confirmed and the reasoning behind it was wrong.** The prediction leaned on the
+adapter's own moduledoc note that a raw `:httpc` client with no MCP SDK scores 11/11 on
+`http-invalid-tool-headers` — so I expected *that* to be the non-discriminating one. It is not:
+`http-invalid-tool-headers` **is** discriminating here (the null client fails it), and the
+non-discriminating core scenario is **`http-standard-headers`**, which pushes SKIPPED for any method
+never exercised and therefore passes a client that does nothing at all. **A right number reached by
+wrong reasoning is a finding, not a confirmation**, and it is recorded as one.
+
+**And a control that closes MES-19's accidental one by construction.** The null client's
+all-scenario census is **13 S / 83 F / 17 SKIPPED / 1 INFO, scored 2/32** — *identical* to the census
+MES-19 recorded for its misconfigured run whose adapter never started. So the two are not merely
+similar: **a run whose adapter never starts is indistinguishable, check for check, from having no
+client implementation at all.** MES-19 found that by accident; it is now demonstrated on purpose.
+
+#### `--timeout`: pinned where it exists, and named where it does not
+
+MES-24's **F-10** instructs this ticket to pin `--timeout` and record the headroom. Read from the
+CLI's own `--help` rather than assumed:
+
+```text
+conformance client --help  ->  --timeout <ms>   Timeout in milliseconds (default: "30000")
+conformance server --help  ->  (no --timeout option exists)
+```
+
+So F-10 is dischargeable on **one leg only**, and the reason the other does not need it is
+structural, not an omission: the server leg drives one already-running server over HTTP and spawns no
+`mix` per scenario, so it is not exposed to the `_build` contention F-10 is about.
+
+Client leg, pinned at `--timeout 30000` (the same value as the default — pinned so that it is *a
+margin somebody set*, which is F-10's whole point):
+
+| quantity | measured | headroom vs the 30 s pin |
+|---|---|---|
+| whole-leg wall clock | 5.420 s (run 1) / 5.705 s (run 2) | ~5× |
+| check-timestamp span across the parallel suite | 2.652 s | **11×** |
+| widest single-scenario check span | 0.029 s (`http-standard-headers`) | **~1034×** |
+
+**Timeout-shaped failures: zero, and that was checked rather than assumed.** Every FAILURE in all
+four arms was scanned for `timed out` / `timeout` / `ETIMEDOUT` / `ECONNREFUSED` / `EADDR`: **0
+matches in all three saved arms, and 0 in the three run logs**, so no serial cross-check was
+triggered. A first, deliberately over-broad scan produced 10 apparent hits; each was read rather than
+counted, and every one was a check whose *own text* contains "not"/"could not" — e.g.
+`sep-2663-tasks-get-status-working`, *"Not testable: no task was created by the preceding step"*.
+**Recorded because a pattern that over-matches and gets counted rather than read is exactly how a
+false clean bill is issued.**
+
+#### C-2 — there is no comparable baseline, and this report says so
+
+MES-13 measured against the **stable** harness `0.1.16`, whose 2026-07-28 denominator is **zero**;
+its client figure was 1 passed / 55 failed at the **old** revision, and the single pass was the
+out-of-scope `auth/resource-mismatch`. **A delta against an empty denominator is not a delta**, and
+quoting "0 → 35" would be a manufactured movement. The only defensible comparison available is
+against MES-24 five hours earlier, and **by construction that delta must be zero**. It is a
+self-consistency check and is labelled as one everywhere it appears.
+
+#### C-3 — the old-revision exclusion, re-derived against the frozen set, and found empty
+
+Re-derived from **this run's own artefacts** rather than inherited from MES-24:
+
+* The frozen requirement set carries **no exclusion mechanism of any kind**. A scenario is scored, or
+  `not_scored` with `reason: extension | pending | added-after-release` (grepped: 16 / 4 / 1
+  occurrences, 20 entries). There is no "old-revision" bucket to put anything in.
+* **No `--expected-failures` baseline** is passed on any invocation and none exists in the tree
+  (MES-13's `conformance/expected_failures.yml` was retired at MES-13 and is gone).
+* All **19** scored server FAILUREs decompose by check-id prefix as **`sep-2575` ×17, `sep-2322` ×1,
+  `wire-schema-valid` ×1** — every one a 2026-07-28 requirement. SEP-2575 *is* the stateless core.
+* Five of the seventeen (`…-404-initialize`, `-ping`, `-logging-setlevel`, `-resources-subscribe`,
+  `-resources-unsubscribe`) probe methods this revision **removed** and require HTTP 404. **The
+  scenario treats their absence as the requirement** — the exact opposite of targeting the old
+  revision.
+
+**Bucket 2 (scenario-targets-old-revision) is EMPTY.** MES-13's three-way classification therefore
+resolves as bucket 1 (genuine gap) and bucket 3 (harness-side) only.
+
+**Recommended wording for ADR-003 sub-decision 5, supplied and not applied here.** Recording a
+PO-accepted sub-decision as superseded is an edit to a PO decision. Per the PM's RAT-6 ruling this
+sub-task supplies **the measurement and the recommended wording**; the ADR edit itself belongs to the
+parent, MES-19:
+
+> Sub-decision 5's exclusion clause is **superseded on the measurement** — recommended by MES-49,
+> **pending PO ratification at release**. It was written against stable harness `0.1.16`, which had no
+> way to scope a run to a revision; it does not transfer to a frozen requirement set that already
+> scopes itself to one. Measured at `7480f2f` with `0.2.0-alpha.11` / requirement set md5
+> `d6eb2061b2d35c7c71a86059b08bb928`: the set has no exclusion mechanism, no baseline is used, and
+> all 19 scored server FAILUREs are 2026-07-28 requirements. **The set to enumerate and exclude is
+> empty.** Not applied silently, not dropped.
+
+### Part B — RAT-5, the whole-tree OSV cross-check, with its positive control
+
+`CLAUDE.md` assigns this to MES-19 by name, twice, and the PM overruled my reading that it belonged
+to Sprint 5. My argument was that `mix.lock` is untouched so there is nothing new to measure — a good
+argument for why the **result** would be uninteresting, and not an argument for leaving an assigned
+obligation undischarged. The PM was right; "the answer is probably boring" is the reasoning that
+leaves controls unrun.
+
+**Why this control exists at all.** Gate 6 (`mix hex.audit`) reads advisory data from the **local
+registry cache** and cannot detect staleness: a complete-but-old snapshot passes 6a and exits 0 on 6b
+while missing every advisory published since. OSV is queried **live over the network**, so it is
+**freshness-independent** in the one way the gate is not.
+
+```text
+QUERY   POST https://api.osv.dev/v1/querybatch   <- 26 queries, one per mix.lock entry
+        HTTP=200 ; 26 results for 26 queries (1:1) ; packages with advisories: 0
+CONTROL POST https://api.osv.dev/v1/querybatch   <- bandit@1.10.2, the pre-remediation version
+        HTTP=200 ; 14 records: EEF-CVE-2026-39803/39804/39805/39806/39807/42786/42788,
+        GHSA-375f-4r2h-f99j, -9q9q-324x-93r2, -c67r-gc9j-2qf7, -frh3-6pv6-rc8j,
+        -pf94-94m9-536p, -q6v9-r226-v65f, -rf5q-vwxw-gmrf
+```
+
+**The control is the point and it is why the zero can be believed**: an OSV query returning nothing
+looks *identical* whether the feed answered or the request silently failed. Same endpoint, same batch
+shape, same session — one returns 14 records, the other returns 26 empty objects. **The empty tree
+result is the feed answering.** Whole locked tree: **0 advisories across 26 packages.**
+
+**Two obligations, recorded rather than assumed discharged.**
+
+1. **Sprint 5 must re-run this against the final locked tree at publish.** A run today certifies
+   today's lock and nothing else. `mix.lock` is untouched by MES-47/48/49, but the release ticket may
+   move a dependency, and a green measured before that move would be a claim wider than its check.
+   **Both halves, or the gate is exactly that.**
+2. **The gate-6 residual is unchanged at 21 unvalidated of 26**, said out loud rather than letting a
+   green stand alone. Gate 6a's baseline sentinel validates advisory rows only for the five packages
+   that carry the 22 baseline ids (`bandit`, `hpax`, `mint`, `plug`, `req`). The other **21** —
+   `bunt`, `credo`, `dialyxir`, `earmark_parser`, `elixir_uuid`, `erlex`, `ex_doc`, `file_system`,
+   **`finch`**, `jason`, `makeup`, `makeup_elixir`, `makeup_erlang`, `mime`, `nimble_options`,
+   `nimble_parsec`, `nimble_pool`, `plug_crypto`, `telemetry`, **`thousand_island`**, `websock` —
+   are untouched by it, and `finch` and `thousand_island` are **runtime deps on this SDK's transport
+   path**, so the residual is not confined to dev tooling. **This OSV run is the compensating control
+   that covers them**: it queried all 26 by name and version, not the five the sentinel can reach.
+   It does not shrink the residual on gate 6 itself, which stays 21 of 26 for any ticket that runs
+   the gate without this cross-check.
+
+### A2d — the empties, enumerated. Nothing is absorbed into a denominator.
+
+Anything that cannot be measured is named and classified rather than left inside a fraction.
+
+| # | class | count | members |
+|---|---|---|---|
+| 1 | Scored **client** scenarios for the authorization profile this release **does not implement** | **25** | `auth/` `metadata-default`, `metadata-var1`, `metadata-var2`, `metadata-var3`, `basic-cimd`, `scope-from-www-authenticate`, `scope-from-scopes-supported`, `scope-omitted-when-undefined`, `scope-step-up`, `scope-retry-limit`, `token-endpoint-auth-basic`, `token-endpoint-auth-post`, `token-endpoint-auth-none`, `pre-registration`, `resource-mismatch`, `offline-access-scope`, `offline-access-not-supported`, `authorization-server-migration`, `iss-supported`, `iss-not-advertised`, `iss-supported-missing`, `iss-wrong-issuer`, `iss-unexpected`, `iss-normalized`, `metadata-issuer-mismatch` |
+| 2 | **Server** `not_scored`, `reason: pending` — run, reported, never counted | **3** | `json-schema-2020-12` (**8 S / 0 F — passes, and counts for nothing**), `http-header-validation` (9 S / 3 F / 2 W), `http-custom-header-server-validation` (4 S / 6 F) |
+| 3 | `not_scored`, `reason: extension` — optional by definition (SEP-1730) | **16** | server: `tasks-lifecycle`, `tasks-capability-negotiation`, `tasks-wire-fields`, `tasks-request-state-removal`, `tasks-mrtr-input`, `tasks-request-headers`, `tasks-dispatch-and-envelope`, `tasks-status-notifications`, `tasks-required-task-error`, `tasks-mrtr-composition` · client: `auth/client-credentials-jwt`, `auth/client-credentials-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer` |
+| 4 | `not_scored`, `reason: added-after-release` | **1** | `json-schema-2020-12-preservation` (**9 S / 0 F — passes, and counts for nothing**) |
+| 5 | Scored **server** scenarios a **null implementation also passes** — the subtrahend in 35 − 6 = 29 | **6** | `input-required-result-ignore-extra-params`, `input-required-result-missing-input-response`, `input-required-result-unsupported-methods`, `input-required-result-validate-input`, `sep-2164-resource-not-found`, `server-sse-multiple-streams` |
+| 5b | Scored **client** scenarios a **null client also passes** — the subtrahend in 8 − 2 = 6 | **2** | `auth/resource-mismatch`, `http-standard-headers` |
+| 6 | Rows leaving **no result-file row at all**, or a row with **no measurable outcome** | **see below** | — |
+
+**Class 6, enumerated exactly, because "no row" and "a green row" look the same from a summary:**
+
+* **No `checks.json` written at all.** Our two legs: **none** — 50/50 server and 39/39 client
+  scenarios produced a result directory. The **null control** arm dropped one:
+  `tasks-capability-negotiation` (extension, not scored). Recorded because a scenario that leaves no
+  row cannot be distinguished from one that was never required, and only a per-scenario reconciliation
+  against the frozen set surfaces it. It is *outside* both scored denominators, so no figure moves.
+* **A row with only SKIPPED checks — measured nothing, and the console prints it with a green tick.**
+  `tasks-status-notifications` reports `✓ tasks-status-notifications: 0 passed, 0 failed`. It is
+  `not_scored`/extension so it touches no figure, but **`✓` over a scenario that measured nothing is
+  precisely the shape this sprint exists to catch**, and it is named here rather than left to read as
+  a pass. The null client shows the same shape on `http-standard-headers`, which is *why* that
+  scenario is non-discriminating (class 5b).
+* **Features with no scenario in either direction — a zero that is not a measurement.** The
+  **extensions negotiation surface (SEP-2133)** leaves no row anywhere: grepping the whole harness
+  (`dist/` and `src/`) for `2133` returns **nothing**. Likewise **deterministic `tools/list` ordering**
+  — MES-48's subject — has **no ordering check** in either leg. These are *unmeasured*, not *passed*,
+  and the distinction is the difference between "we have evidence" and "no one looked".
+
+**Two kinds of zero, and neither is evidence of anything.** JSON Schema 2020-12 (SEP-2106) **was
+measured** — 8/8 server, 9/9 client — and both scenarios are `not_scored`, so the work earns nothing
+in any figure. SEP-2133 is **not measured at all**. Both read as "0 scored credit" on a summary sheet.
+
+### Gates — all six, individually, on this branch
+
+Run in the isolated worktree at `7480f2f` + this branch's two docs commits.
+
+| # | gate | result |
+|---|---|---|
+| — | `mix hex --version` ≥ 2.5.1 (gate-6 floor, checked first) | **Hex v2.5.1** — at the floor |
+| 1 | `mix format --check-formatted` | exit **0** |
+| 2 | `mix compile --force --warnings-as-errors` | exit **0**, 69 files |
+| 3 | `mix credo` | exit **0** — 119 files, 1090 mods/funs, **no issues** |
+| 4 | `mix dialyzer` | exit **0** — **Total errors: 0**, skipped 0, unnecessary skips 0 |
+| 5 | `mix test` | exit **0** — 13 doctests, **558 tests, 0 failures** |
+| 5 | **seed sweep, 20 varied seeds** | **20 / 20 green**, 558 tests each: seeds 0, 1, 7, 42, 99, 123, 256, 512, 1024, 2048, 4096, 7777, 11111, 24680, 31415, 54321, 65535, 80808, 99991, 123456 |
+| 6a | baseline-lock sentinel at `d697093` | **PASS — all 22 known advisory ids present** (44 advisory lines reported) |
+| 6b | `mix hex.audit` on this project | exit **0** — *No retired or security advisory packages found* |
+
+**Gate 6 was run as the two-step procedure, never bare.** A bare 6b green is not trustworthy on its
+own: `mix hex.audit` false-greens on absent or corrupt local advisory data, per-package and silently.
+
+**No dependency moved on this branch, so the gate-6 residual is unchanged at 21 of 26**, exactly as
+predicted. What changed is not the residual but the **coverage of the compensating control**: Part B
+queried all 26 live.
+
+**Gates 1 and 2 remain blind to `conformance/`** — `.formatter.exs` inputs are `{config,lib,test}/**`
+and `elixirc_paths` excludes it, so neither gate sees the adapters this entry's figures depend on.
+Raised as **MES-46**, unchanged and unscheduled; restated here because a green that does not cover
+the instrument is worth saying twice.
+
+### What this sub-task found that reading would not have
+
+1. **A concurrent seat moved the branch under a live measurement** (F-11) — caught by a routine
+   `git status`, adjudicated by timestamp, and fixed with a worktree. Margin was **12 seconds**.
+2. **The prediction's `6/7` was right and its reasoning was wrong** — the non-discriminating core
+   scenario is `http-standard-headers`, not `http-invalid-tool-headers`. Only building the null
+   **client** — a control the prediction implied but never defined — could show that.
+3. **A run whose adapter never starts is check-for-check identical to having no client at all**
+   (13 S / 83 F / 17 SKIPPED / 1 INFO, 2/32). MES-19 hit that by accident; it is now reproduced by
+   construction.
+4. **A scenario that measures nothing prints as `✓`** (`tasks-status-notifications`, 0 passed /
+   0 failed).
+5. **An over-broad grep for "timeout" produced 10 false hits** that would have read as a fleet of
+   starved scenarios had they been counted rather than read. All 10 were checks whose own text says
+   "not testable" / "could not".
+6. **`--timeout` does not exist on the server leg** — read from the CLI's own `--help`. F-10 is
+   dischargeable on one leg, and the other's exemption is structural rather than an oversight.
+
+**Delta on the certified figures: zero.** Every scored number MES-24 reported is reproduced here, on
+a tree whose only difference from `7480f2f` is one documentation file, twice, in two independent runs
+that agree check for check. That is the whole of what Part A was asked to establish, and it is worth
+no more than that.
