@@ -75,11 +75,28 @@ defmodule MCP.Server.Dispatch do
   alias MCP.Server.Subscription
   alias MCP.Server.ToolContext
 
+  require Logger
+
   # Conservative caching policy default (SEP-2549): no-store (ttlMs 0), public
   # scope. `resultType` "complete" is the Result base requirement (schema.ts:658).
   @default_cache_defaults {0, "public"}
 
   @stateless_protocol_version "2026-07-28"
+
+  # The whole of `t:MCP.Server.Handler.call_tool_extras/0`. Anything else in the
+  # slot-3 map is dropped, and named in a warning when it is (see
+  # `warn_unusable_extras/2`).
+  @extras_keys [:structured_content, :is_error]
+
+  # F-11: the unrecognised-key warning enumerates a consumer-supplied map, whose
+  # key COUNT is unbounded while Logger truncates the message at ~8 KB — so a
+  # handler that returns its state map in slot 3 (R-3's own premise) had the
+  # join build a multi-kilobyte string that Logger provably discarded: 5000 keys
+  # cost 7.567 ms/call against 0.053 ms for a correct extras map. The list is
+  # capped and the elided count is stated in the same line, because a truncated
+  # list that does not say it truncated is the silent-drop class wearing a hat
+  # (MES-16 R-10's ruling, applied to a logger written this ticket).
+  @unknown_keys_logged 10
 
   @doc "The protocol version this stateless core targets."
   def protocol_version, do: @stateless_protocol_version
@@ -186,8 +203,22 @@ defmodule MCP.Server.Dispatch do
         {:ok, content, state} ->
           {complete(%{"content" => content}), state}
 
-        {:ok, content, is_error, state} ->
+        # SEP-2106: a map in slot 3 carries structuredContent (and optionally
+        # isError). Slot 3 was `boolean()` and nothing else, so this shape is
+        # additive — no existing handler return can match it.
+        {:ok, content, extras, state} when is_map(extras) ->
+          {complete(tool_extras(%{"content" => content}, content, extras, name)), state}
+
+        {:ok, content, is_error, state} when is_boolean(is_error) ->
           {complete(maybe_error(%{"content" => content}, is_error)), state}
+
+        # F-10: slot 3 that is neither a map nor the legacy boolean. The drop is
+        # unchanged — `maybe_error/2` dropped it before this clause existed, and
+        # still would — so this adds a warning and nothing else, closing the
+        # fifth of S4's five plausible mistakes.
+        {:ok, content, other, state} ->
+          warn_unusable_extras(other, name)
+          {complete(%{"content" => content}), state}
 
         {:input_required, input_requests, request_state, state} ->
           {MRTR.input_required(input_requests, request_state), state}
@@ -444,6 +475,218 @@ defmodule MCP.Server.Dispatch do
 
   defp maybe_error(result, true), do: Map.put(result, "isError", true)
   defp maybe_error(result, _), do: result
+
+  # --- SEP-2106 structured tool output ---
+
+  # `structuredContent` keys off PRESENCE, never truthiness: `false`, `0`, `""`,
+  # `[]`, `%{}` and `null` are all legal values (schema.ts:1819-1821), so a
+  # present key with value nil emits JSON null and an absent key omits the
+  # field. That is the whole absent-vs-null distinction, with no sentinel.
+  defp tool_extras(result, content, extras, name) do
+    warn_unusable_extras(extras, name)
+    result = maybe_error(result, Map.get(extras, :is_error))
+
+    case Map.fetch(extras, :structured_content) do
+      {:ok, value} ->
+        warn_missing_text_fallback(value, content, name)
+        Map.put(result, "structuredContent", value)
+
+      :error ->
+        result
+    end
+  end
+
+  # The extras map is consumer-supplied, and every key this SDK does not
+  # recognise is dropped. Dropping ALONE is the posture MES-16 ruled against on
+  # `:extensions`: `%{structuredContent: v}` (camelCase), `%{"structured_content"
+  # => v}` (string key), a struct in slot 3, and `%{is_error: "true"}` each
+  # produced a successful, silently empty result — four plausible mistakes, no
+  # error, no warning, and no dialyzer complaint (the type is all-`optional()`,
+  # so a misspelled key is not a mismatch). This names what was dropped and why.
+  #
+  # It NEVER raises: a stray key must not fail a tool call that otherwise works.
+  #
+  # F-9: a struct IS a map, so `tool_extras/4` reads `:structured_content` and
+  # `:is_error` off it with the same `Map.fetch/2` and `Map.get/2` it uses on a
+  # plain map, and whatever it finds DOES reach the wire. The behaviour is the
+  # right one; the old sentence ("structuredContent and isError are IGNORED")
+  # was a universal claim over a conditional code path, false for exactly the
+  # struct that carries those field names — and false in an operator's log at
+  # the moment they are trying to work out where their output went. So the line
+  # names what could not be used instead of asserting that everything was.
+  defp warn_unusable_extras(extras, name) when is_struct(extras) do
+    outcome =
+      case Enum.filter(@extras_keys, &Map.has_key?(extras, &1)) do
+        [] ->
+          "it has none of #{inspect(@extras_keys)} as fields, so NO extras are read from it " <>
+            "and every field is IGNORED"
+
+        carried ->
+          "its #{inspect(carried)} field(s) ARE read, exactly as a plain extras map's would " <>
+            "be, and DO reach the wire; every OTHER field is IGNORED"
+      end
+
+    Logger.warning(
+      "MCP Server: tool #{inspect(name)} returned a #{inspect(extras.__struct__)} struct in " <>
+        "slot 3 where a `t:MCP.Server.Handler.call_tool_extras/0` map was expected — " <>
+        outcome <> ". Nothing is raised."
+    )
+  end
+
+  # F-10: slot 3 is dispatched on `is_map/1`, so anything that is neither a map
+  # nor the legacy `boolean()` never reaches the extras path at all — it is
+  # dropped by `maybe_error/2`, exactly as it was before this ticket. The drop
+  # is inherited; the SILENCE is what S4 ruled against, and a keyword list is
+  # both the most idiomatic Elixir spelling of an options map and newly
+  # plausible precisely BECAUSE this ticket made slot 3 a map.
+  defp warn_unusable_extras(extras, name) when not is_map(extras) do
+    Logger.warning(
+      "MCP Server: tool #{inspect(name)} returned " <>
+        "#{inspect(extras, limit: 5, printable_limit: 120)} in slot 3, where a " <>
+        "`t:MCP.Server.Handler.call_tool_extras/0` map (or the legacy `boolean()` isError) " <>
+        "was expected — it is IGNORED in full: neither structuredContent nor isError " <>
+        "reaches the wire. Nothing is raised."
+    )
+  end
+
+  defp warn_unusable_extras(extras, name) do
+    case extras_complaints(extras) do
+      [] ->
+        :ok
+
+      complaints ->
+        Logger.warning(
+          "MCP Server: tool #{inspect(name)} returned an extras map this SDK cannot use — " <>
+            Enum.join(complaints, "; ") <>
+            ". The recognised keys are #{inspect(@extras_keys)} " <>
+            "(`t:MCP.Server.Handler.call_tool_extras/0`). Nothing is raised."
+        )
+    end
+  end
+
+  defp extras_complaints(extras) do
+    unknown = extras |> Map.keys() |> Enum.reject(&(&1 in @extras_keys)) |> Enum.sort()
+
+    unknown_complaint =
+      case unknown do
+        [] ->
+          []
+
+        keys ->
+          count = length(keys)
+          elided = count - @unknown_keys_logged
+
+          [
+            "#{count} unrecognised key(s) IGNORED: " <>
+              Enum.map_join(
+                Enum.take(keys, @unknown_keys_logged),
+                ", ",
+                &inspect(&1, printable_limit: 120)
+              ) <> if(elided > 0, do: ", and #{elided} more", else: "")
+          ]
+      end
+
+    is_error_complaint =
+      case Map.fetch(extras, :is_error) do
+        {:ok, value} when not is_boolean(value) ->
+          [
+            "`:is_error` is not a boolean " <>
+              "(#{inspect(value, limit: 5, printable_limit: 120)}) and is IGNORED"
+          ]
+
+        _ ->
+          []
+      end
+
+    unknown_complaint ++ is_error_complaint
+  end
+
+  # SEP-2106 Backward Compatibility: "servers using array or primitive
+  # structuredContent MUST also emit a TextContent block containing the
+  # serialized JSON". We do not inject that block — the content list is
+  # handler-authored, model-visible data (see MCP.Server.Handler) — but we
+  # notice, and the check is the exact condition rather than a proxy for it:
+  # each text block is JSON-decoded and compared to the structured value.
+  defp warn_missing_text_fallback(value, content, name)
+       when is_list(value) or not is_map(value) do
+    unless Enum.any?(List.wrap(content), &serialized_json_of?(&1, value)) do
+      Logger.warning(
+        "MCP Server: tool #{inspect(name)} returned array/primitive structuredContent " <>
+          "without a TextContent block carrying the serialized JSON. SEP-2106 Backward " <>
+          "Compatibility makes that block a MUST for older clients; this SDK does not " <>
+          "add it for you."
+      )
+    end
+  end
+
+  defp warn_missing_text_fallback(_value, _content, _name), do: :ok
+
+  # R-8: `MCP.Server.Handler` promises this warning fires "never on a compliant
+  # result", so the match must be as wide as "a block the peer receives as a
+  # TextContent" — not as wide as one spelling of it. A
+  # `%MCP.Protocol.Types.Content.TextContent{}` (public, `Jason.Encoder`-derived,
+  # `type: "text"` by default) and an atom-keyed content map both encode to
+  # exactly the right JSON, so both count; the second clause covers both,
+  # because a struct matches a map pattern on its fields.
+  defp serialized_json_of?(%{"type" => "text", "text" => text}, value),
+    do: json_text_of?(text, value)
+
+  defp serialized_json_of?(%{type: "text", text: text}, value),
+    do: json_text_of?(text, value)
+
+  defp serialized_json_of?(_block, _value), do: false
+
+  defp json_text_of?(text, value) when is_binary(text),
+    do: json_first_byte_can_match?(text, value) and match?({:ok, ^value}, Jason.decode(text))
+
+  defp json_text_of?(_text, _value), do: false
+
+  # A cheap gate in front of the decode: a JSON text can only decode to `value`
+  # if its first significant byte is the one `value`'s JSON form must begin
+  # with, so a large non-matching block is rejected on ONE byte rather than a
+  # full parse. It can never reject a block that would have matched — the
+  # mapping is the JSON grammar's own first-character rule, and RFC 8259
+  # leading whitespace is skipped first.
+  #
+  # Measured on the dispatch path, 200 calls per case, gate off then on:
+  #
+  #     array[2] + a 20k-key JSON object text block   4.671 -> 0.001 ms/call
+  #     array[20k] + its own serialized JSON          1.075 -> 1.109 ms/call
+  #
+  # **It does not help the compliant case, which is the one that matters most**
+  # — a block that really is the serialized JSON passes the gate and is then
+  # parsed in full, as it must be. No sound cheap check exists for that case:
+  # confirming equality needs either this decode or an encode of the value
+  # (same order of cost), and a byte comparison would be wrong, since JSON key
+  # order inside an array element is not semantic. So a compliant server does
+  # pay a re-parse of what it just serialized, per call, and that is stated
+  # rather than papered over.
+  defp json_first_byte_can_match?(text, value) do
+    case json_first_bytes(value) do
+      :any ->
+        true
+
+      allowed ->
+        case skip_json_ws(text) do
+          <<byte, _rest::binary>> -> byte in allowed
+          <<>> -> false
+        end
+    end
+  end
+
+  defp json_first_bytes(value) when is_list(value), do: ~c"["
+  defp json_first_bytes(value) when is_binary(value), do: ~c"\""
+  defp json_first_bytes(nil), do: ~c"n"
+  defp json_first_bytes(true), do: ~c"t"
+  defp json_first_bytes(false), do: ~c"f"
+  defp json_first_bytes(value) when is_number(value), do: ~c"-0123456789"
+  defp json_first_bytes(value) when is_map(value), do: ~c"{"
+  # Anything else (a bare atom, a tuple) has no first byte we can predict
+  # without encoding it, so the gate stands aside rather than guess.
+  defp json_first_bytes(_value), do: :any
+
+  defp skip_json_ws(<<c, rest::binary>>) when c in ~c" \t\n\r", do: skip_json_ws(rest)
+  defp skip_json_ws(text), do: text
 
   defp reply(id, %Error{} = error, config) do
     {:reply, error_response(id, error), config.handler_state}

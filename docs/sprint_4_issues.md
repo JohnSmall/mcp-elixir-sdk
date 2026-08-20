@@ -1757,3 +1757,826 @@ that must not reach the wire + the warning naming the discard; the first request
 the client); R-10/R-11 — 1 cap test, 1 ordering test.
 
 **Priority Hint:** high · **Blocking?:** No (closes both blockers) · **Suggested Jira Ticket?:** No
+
+---
+
+## MES-17 — JSON Schema 2020-12 for tool schemas (SEP-2106), server-side (2026-08-19)
+
+Epic MES-22, which this closes. Gap register **K1**. All citations are to the published-final
+`2026-07-28` schema at commit `5f5440bb26a62e2cf3440b92da5a667efa03b267`
+(`schema/2026-07-28/schema.ts`, md5 `48a009165e07f6732e38baf91291de87`), to spec pages at the same
+pin (`docs/specification/2026-07-28/server/tools.mdx`, md5 `c302125aae381e9be1feb96305341d4b`), and
+to SEP-2106 itself — never to the ticket brief.
+
+### Decision: what MES-17 delivers, and why validation is NOT part of it
+
+**Description:** The ticket was dispatched as "make a validator work". It ships as SEP-2106's four
+implementation obligations plus the gap that blocks the third one. **The reason validation is
+deferred is not that the SEP is silent about it — it is not silent, and saying so would be a
+permanent wrong reference in this log.** SEP-2106's Security Implications section opens:
+
+> "JSON Schema validation already handles type checking, value constraints, and required field
+> validation, and implementations MUST continue to validate all inputs and outputs against declared
+> schemas."
+
+A MUST, about inputs and outputs, in a Final Standards-Track SEP. Two properties of that sentence
+bound it: it says MUST **continue**, so its function is "this SEP loosens the vocabulary and does
+not thereby relax any existing duty", and it says "implementations", not "servers", so it does not
+allocate the duty to a party.
+
+Validation is deferred for two measured reasons, neither of which is the SEP's silence:
+
+1. **It cannot be built where it would have to live.** There is no tool registry. `inputSchema`
+   occurs in `lib/` on exactly four lines, all in `types/tool.ex` (`:15`, `:26`, `:39`, `:59`) and
+   all pure decode/encode. The server's tool list is whatever raw maps `handle_list_tools/3`
+   returns — cursor-paginated, handler-owned, with no ordering or stability guarantee relative to
+   `tools/call`. So at `tools/call` time the dispatcher has a name and an arguments map and **no way
+   to obtain that tool's schema** short of walking every page of `handle_list_tools` on every call.
+   Closing that needs a new public API on the same `handle_list_tools` surface MES-18 touches: a
+   ticket, not a task.
+2. **It earns zero conformance credit.** Measured first-hand in both harness releases — see the
+   finding below.
+
+**MES-34 owns server-side argument validation**, and inherits: the registry design; the two security
+risks a validator *acquires* (SSRF via `$ref`, composition-keyword CPU) with SEP-2106's own
+mitigations; the settled `-32602` error shape; the dependency evidence below; the gate-6 residual
+arithmetic; and `type: "object"` root enforcement. **MES-35 owns `x-mcp-header`.**
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** Raised — MES-34, MES-35
+
+### Finding: F-2 — a server built on this SDK could not emit `structuredContent` at all
+
+**Description:** The dispatched brief named two defects in `Tools.CallResult`'s encoder. Behind them
+was a larger one it did not have. `dispatch.ex:175-199` is the only `tools/call` route in the tree,
+and its result-shaping function had exactly four clauses — `{:ok, content, state}`,
+`{:ok, content, is_error, state}`, `{:input_required, ...}` and `{:error, ...}` — **none carrying
+structured content**. `handler.ex:54-79` offered no such return shape in either arity.
+
+Consequence: a handler **could** advertise an `outputSchema` (tool maps come back raw and unchecked
+from `handle_list_tools`) and could **never** satisfy it. A shipped over-claim of the same family as
+the capability-honesty work in `MCP.Server.Config`. It also means SEP-2106's third obligation —
+"`structuredContent` accepts any JSON value" — was not a type-widening on a live path here: **the
+path did not exist.**
+
+Closed by a fourth return shape: a **map** in slot 3, `{:ok, content, %{structured_content: v,
+is_error: b}, state}`. Slot 3 was `boolean()` and nothing else, so a map is a new, non-colliding
+shape and every existing handler keeps working untouched — asserted, not assumed.
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No (closed here)
+
+### Decision: absent versus JSON `null` is carried by KEY PRESENCE, and it needs no sentinel where a map is available
+
+**Description:** `schema.ts:1819-1821` enumerates `structuredContent` as "any JSON value (object,
+array, string, number, boolean, **or null**)". So "absent" and "present and null" are different
+results and `nil` cannot stand for both. Both directions now distinguish them:
+
+- **Handler → wire** (`t:MCP.Server.Handler.call_tool_extras/0`): the extras **map** carries the
+  distinction in the key itself. Key absent → field omitted. Key present with value `nil` → JSON
+  `null`. No sentinel is needed because a map already has a third state.
+- **`Tools.CallResult`**: a struct does **not** have a third state — its key set is fixed at
+  `defstruct` — so the distinction is carried by the field's default, the atom `:absent`, exposed as
+  `CallResult.absent/0`. An atom other than `nil`/`true`/`false` is not producible by JSON decoding,
+  so the sentinel cannot collide with a decoded value. `from_map/1` reads the same distinction off
+  `Map.fetch/2`.
+
+**Behaviour change, stated because it is one:** a consumer who previously wrote
+`%CallResult{structured_content: nil}` to mean "absent" now gets `"structuredContent": null`. That
+is the only way to express null, this is the 2.0.0 major window, and the type is reachable only
+from dead code (below).
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Finding: F-1 — D-1 is real, but it is a PUBLIC-API defect, not a wire defect; `CallResult` and `ListResult` are both reachable only from dead code
+
+**Description:** The brief's measured table (`structuredContent: false` dropped by
+`tools.ex:141`'s falsy `if`) reproduces exactly. But nothing in `lib/` constructs, encodes or
+decodes `Tools.CallResult`: the server assembles a bare map at `dispatch.ex:184-198`, and the client
+replies `{:ok, result}` with the raw decoded map at `client.ex:385-397`. So the table measured the
+struct's encoder **in isolation**, not any request this SDK can serve. It stays in scope — it is a
+public, exported, documented type with a hand-written encoder, and a consumer using it directly hits
+exactly that drop — but it is a public-API defect, and describing it as a wire defect would
+over-claim.
+
+**Say "reachable only from dead code", not "referenced by nothing".** `Types.Tool` *is* referenced
+once (`tools.ex:43` aliases it, `:57` calls `Tool.from_map/1`) — from `Tools.ListResult`, which is
+itself referenced nowhere in `lib/` outside its own definition. **The dead public-type family has
+two members, `CallResult` and `ListResult`**, and the second is worth someone knowing.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Finding: F-4 — the behaviour's own moduledoc example produces a handler the dispatcher answers `-32601` to
+
+**Description:** Found while building F-2's fix, measured rather than reasoned.
+`dispatch.ex:412-422` builds `ctx_args = leading_args ++ [ctx, state]` and calls
+`function_exported?(mod, name, length(ctx_args))` — so `tools/call` only ever invokes the
+**context-bearing 4-arity** `handle_call_tool/4`, and replies `-32601 Method not found` when it is
+absent. `MCP.Server.Handler`'s moduledoc example defines `handle_call_tool/3`. A handler written
+exactly as the behaviour documents it therefore fails every `tools/call`; run at this ticket's tip,
+it returns `{"code" => -32601, "message" => "Method not found", "data" => "handle_call_tool"}`.
+`test/support/echo_handler.ex` is the same shape and is itself referenced by nothing.
+
+Same over-claim family as F-2, on the documentation surface. **Deliberately not fixed here:**
+whether the non-context arities are supported, or should be removed from the behaviour, is a
+callback-surface decision that belongs with MES-34/MES-18, and changing the example either way
+would assert that decision.
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** Yes — PM to raise
+
+### Decision: the dialect question — we implement none, so we neither honour nor refuse one
+
+**Description:** `schema.ts:1962-1963` carries a worked example titled "With explicit draft-07 input
+schema", beside the default-2020-12 one; `schema.ts:1995`/`:2003` make 2020-12 the **default** when
+no `$schema` is given, not the only dialect. The brief offered three outcomes for a dialect we do
+not implement — refuse at registration, validate under 2020-12 anyway, or skip validation for that
+tool. **None of the three describes this SDK.** We do not implement *any* dialect, so a tool
+declaring draft-07, 2020-12, or a dialect that does not exist is carried verbatim to the client,
+which is the party that validates. It is not "skip validation for that tool" (we skip it for all
+tools) and emphatically not "validate under 2020-12 anyway". The spec's draft-07 example is a case
+we pass by construction rather than by effort, and there is a test that says so.
+
+**CORRECTED IN ROUND 1 (S3/R-6): the decision stands; the justification was stated against the
+absence of a normative text rather than against it.** `server/tools.mdx:291` and `:300` — the lines
+defining `inputSchema` and `outputSchema`, the two fields this ticket owns — each say "Follows the
+[JSON Schema usage guidelines]" and link to `docs/specification/2026-07-28/basic/index.mdx`
+§"JSON Schema Usage" (`:247`–`:319`). I fetched that file at the pin
+(`5f5440bb26a62e2cf3440b92da5a667efa03b267`, md5 `1b680a56e96533ff28f6eac07bd51bdc`, confirming the
+reviewer's hash) and it carries four dialect obligations, verbatim:
+
+- `:257` — "**Supported dialects**: Implementations MUST support at least 2020-12 and SHOULD
+  document which additional dialects they support"
+- `:291` — "Clients and servers **MUST** support JSON Schema 2020-12 for schemas without an
+  explicit `$schema` field"
+- `:292` — "Clients and servers **MUST** validate schemas according to their declared or default
+  dialect. They **MUST** handle unsupported dialects gracefully by returning an appropriate error
+  indicating the dialect is not supported."
+- `:297` — "Schemas **MUST** be valid according to their declared or default dialect"
+
+`:292` prescribes precisely one of the three outcomes this entry said none of applied to us, so
+"none of the three describes this SDK" cannot stand on `schema.ts` alone. **The bound that makes
+the decision survive is C-1's own:** every one of these four addresses "clients and servers" *as
+validating parties* — each is a duty of the party performing validation. This SDK validates
+nothing on either side, so, exactly as with SEP-2106's Security Implications MUST, the duty lands
+on the consumer, and the honest sentence is "the duty is yours and this SDK neither discharges nor
+polices it" rather than "the obligation does not exist". `:293`'s SHOULD ("Clients and servers
+**SHOULD** document which schema dialects they support") is discharged by this entry and by
+`MCP.Protocol.Types.Tool`'s moduledoc: **the answer is none, and every dialect is carried
+verbatim.** All four are handed to **MES-34** with the rest, and MES-19 must draft K1 wording from
+*this* paragraph rather than from the one above it.
+
+**Two citation corrections while I was in there, because MES-19 inherits these strings.** The
+review and the correction contract both cite `tools.mdx:290` and `:299`; the "Follows the JSON
+Schema usage guidelines" lines are at **`:291`** and **`:300`** in the file at the pin (md5
+`c302125aae381e9be1feb96305341d4b`, re-verified by me). And the page's path at the pin is
+`docs/specification/2026-07-28/basic/index.mdx`, not `basic.mdx` — it renders at
+`/specification/2026-07-28/basic`, which is where `tools.mdx` links. One more line on the same
+page that nothing here had cited: `tools.mdx:293`, "`inputSchema` **MUST** be a valid JSON Schema
+object (not `null`)", which belongs with the deferred root-`type` enforcement question (MES-34).
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Decision: the `$ref` sizing question is answered by the spec forbidding the expanding part
+
+**Description:** The roadmap's named depth risk. SEP-2106's Security Implications section:
+"Implementations **MUST NOT** automatically dereference `$ref` values that resolve to a network URI
+(i.e. anything that is not a same-document JSON Pointer such as `#/$defs/Foo` or an internal
+`$anchor`)"; an opt-in fetching mode MAY exist but "MUST be disabled by default"; and schemas
+failing on an unresolved external `$ref` "SHOULD be rejected rather than silently treated as
+permissive". So the required surface is **same-document JSON Pointer plus internal `$anchor`, and
+nothing else** — a bounded, enumerable subset, and the spec's own bound rather than one we chose.
+
+This SDK dereferences nothing at all, so the MUST NOT holds **by construction**. That is a stronger
+guarantee than a check, and it is pinned by a canary test rather than by an argument: a real
+listening socket, a tool whose `inputSchema` `$ref`s it, both `tools/list` and `tools/call` driven,
+zero connections asserted — the same instrument the alpha harness's own
+`sep-2106-no-network-ref-deref` client scenario uses.
+
+**The canary's `tools/call` half was inert at round 1 and controlled nothing — corrected under S2
+below.** The sentence "pinned by a canary test rather than by an argument" was itself half an
+argument until then.
+
+**Second normative surface for the same rules (S3/R-6), which this entry cited as SEP-2106-only:**
+`basic/index.mdx:301-302` carries the network-`$ref` MUST NOT, `:304-307` the
+opt-in-disabled-by-default MAY with its allowlist/loopback/timeout/size conditions, `:309-310` the
+SHOULD-reject-on-unresolved-external-`$ref`, and `:312-318` the composition-keyword resource bound
+("Implementations **SHOULD** apply reasonable bounds, such as a maximum schema depth, a cap on the
+total number of subschemas, or a per-validation time budget"). Same content, so the sizing
+conclusion is unchanged; recorded so MES-34 and MES-19 start from both surfaces rather than one.
+The `:312-318` SHOULD is a duty of the *validator*, so it arrives with MES-34 rather than here.
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Decision: no dependency was added; the evidence is recorded for MES-34 anyway
+
+**Description:** A validator would sit on the tools path, which is not optional, and would have been
+**the first mandatory runtime dependency added to this SDK since it was built** (`jason` and
+`elixir_uuid` are the only two; `req`/`plug`/`bandit` are all `optional: true`). None was added.
+The measurement is kept here so MES-34 starts from data rather than a survey.
+
+`jsv` 0.22.0 (Apache-2.0), run in a scratch project outside the repo — `mix.exs` and `mix.lock`
+untouched:
+
+```text
+1. Builds the alpha harness fixture VERBATIM (ref+anchor+allOf/anyOf+if/then/else) -> OK
+2. Rejects 3 hand-built invalid arguments, accepts the valid one, with per-instance
+   error paths (e.g. instanceLocation "#/address/city")
+3. NO MUTATION: validate() returned a value IDENTICAL to its input
+4. NO DEFAULT INJECTION: {"n":{"type":"integer","default":7}} + %{} -> %{}
+5. draft-07: the spec's own explicit-dialect example builds and validates
+6. NETWORK $ref, DEFAULT CONFIG: build ERROR {:resolver_error, ...}; canary NEVER
+   connected to. Default resolver chain is Embedded+Internal, no HTTP resolver at all.
+   It REJECTS rather than silently permitting -- the SHOULD in the same paragraph.
+7. draft-04 (unimplemented dialect): build ERROR, not a silent fallback to 2020-12
+8. $ref CYCLE (#/$defs/a <-> #/$defs/b): build OK, validate OK, 3 ms
+9. 4 resource probes: 2000-deep nested object 15 ms; allOf x18 of anyOf pairs 0 ms;
+   200,000-key argument 128 ms
+
+COST: mix.lock is 26 packages; jsv adds FOUR new (jsv Apache-2.0, abnf_parsec MIT,
+idna MIT, texture Apache-2.0). All permissive, compatible with our MIT. 26 -> 30.
+```
+
+**Honest width of that evidence, because it is narrower than it looks.** Probes 8 and 9 are four
+probes, **not a bound**. `jsv` documents no maximum depth, no subschema cap and no per-validation
+time budget, so the true statement is "no pathological behaviour was found in four attempts" and
+**not** "validation is bounded in time and depth". SEP-2106 §5a asks for the second one. **Any
+validation ticket must supply the bound itself; it does not come with the library.** Also not
+verified here: the brief's disqualification of `ex_json_schema` as draft-4-only, and `xema`,
+`json_xema`, `exonerate` and `jesse` were not surveyed at all — moot under this scope, and MES-34
+should measure the field rather than inherit the one package that happened to be probed.
+**Priority Hint:** high (MES-34 input) · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Decision: output validation — we do not, and will not; and the TextContent fallback is noticed, not injected
+
+**Description:** Two obligations about output, decided together because they pull the same way.
+
+**Output validation.** `schema.ts:2467` makes `structuredContent`'s conformance to `outputSchema` a
+**SHOULD**. Failing a call because *our own handler* misbehaved converts that SHOULD into a MUST and
+breaks working tools. A handler's `structured_content` reaches the wire verbatim, conforming or not,
+and that is now written into `MCP.Server.Handler`'s docs as a stated policy rather than left as an
+omission. **A divergence between the two normative surfaces at the same pin, recorded because it
+looks like it contradicts this:** `server/tools.mdx` says "Servers **MUST** provide structured
+results that conform to this schema", where `schema.ts:2467` says SHOULD. It does not change the
+decision — that MUST binds the **server author**, who is our consumer, and this SDK cannot discharge
+it for them; it only declines to enforce it against them.
+
+**The TextContent fallback (SEP-2106 Backward Compatibility).** "To remain interoperable with older
+clients, servers using array or primitive `structuredContent` **MUST** also emit a `TextContent`
+block containing the serialized JSON (as already recommended in the tools specification)." Resolved
+against `server/tools.mdx` at the pin rather than against the SEP's parenthetical: the tools page
+states the **wider** form of the rule as a **SHOULD** ("a tool that returns structured content
+SHOULD also return the serialized JSON in a TextContent block"), so the SEP narrows the subject
+(array or primitive only) and strengthens the modality (MUST). Both readings are recorded because
+the pair is easy to mis-cite in either direction.
+
+**We notice; we do not inject.** The `content` list is model-visible data the handler authored, and
+silently adding to it would change what every existing tool shows an LLM — the same instinct as
+refusing to fail a call over our own output. Instead, when a result carries array or primitive
+structured content and no content block's text is the serialized JSON, `dispatch.ex` emits a
+`Logger.warning` naming the tool and citing the MUST. **The check is the exact condition, not a
+proxy for it:** each text block is JSON-decoded and compared to the structured value, so a prose
+summary does not count as compliance and a serialized-JSON block is never double-reported.
+
+One consequence of the exactness worth stating: `server/tools.mdx`'s own array example emits a prose
+text block ("Found 2 users: Alice…"), which does **not** satisfy the SEP's literal MUST. That is a
+divergence in the spec's own material, not in our reading of it, and it is why an "any text block
+counts" check would have been the wrong width.
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Finding: F-5 — the conformance harness is preservation-only in both releases, and K1's evidence rests entirely on this ticket's tests
+
+**Description:** Measured first-hand rather than inherited from MES-13, because MES-16's F-2
+established this pattern repeats.
+
+- Local `mcp-conformance` 0.1.13, `src/scenarios/server/json-schema-2020-12.ts`, 181 lines: four
+  checks — tool found, `$schema` preserved, `$defs` preserved, `additionalProperties` preserved. Its
+  only RPC is `listTools()`.
+- `@modelcontextprotocol/conformance@0.2.0-alpha.11`, read out of the bundle: extended with the
+  SEP-2106 vocabulary and **still preservation-only**. Its own sentence: "The test verifies that
+  `$schema`, `$defs` and `additionalProperties` are preserved (SEP-1613), and that the composition
+  (`allOf`/`anyOf`), conditional (`if`/`then`/`else`) and `$anchor` keywords are preserved
+  (SEP-2106), *in the tool listing response*."
+- **Neither release ever issues a `tools/call` in this scenario, and neither ever sends invalid
+  arguments.** There is no conformance check anywhere in either suite that a server *rejects*
+  arguments failing its own `inputSchema`.
+- Scoring: the alpha's frozen `requirements/2026-07-28.yaml` omits `json-schema-2020-12` (server
+  leg) from the required `server:` list (lines 38–76) and lists it under `not_scored:` at line 183
+  with `reason: pending`. The header states pending scenarios "are never scored".
+
+Same shape as MES-16's J1 (`sprint_4_issues.md:1352`): the scenario runs and is reported but
+contributes zero to the SEP-1730 pass rate, so **MES-19's K1 evidence rests entirely on the tests
+written here**. The difference from J1 is that the scenario at least exists, and gave us a free,
+exact fixture — used verbatim in `test/support/schema_handler.ex`.
+**Priority Hint:** high (MES-19 input) · **Blocking?:** No · **Suggested Jira Ticket?:** No (MES-19 owns it)
+
+### Finding: `x-mcp-header` is entirely absent, and grepping its error code gives a false all-clear
+
+**Description:** Reported, not scoped, per the brief. `schema.ts:1990-1993`: "Property schemas may
+carry an `x-mcp-header` annotation to mirror the argument value into an HTTP header on the
+Streamable HTTP transport." Zero occurrences of `x-mcp-header` in `lib/`, `test/` or `docs/`: not
+implemented, not tested.
+
+**The trap worth recording.** `-32020` **is** implemented — for a different thing: `Mcp-Method`/
+`Mcp-Name` routing-header agreement (SEP-2243) at `plug.ex:332`, with three tests in
+`streamable_http_stateless_test.exs`. So grepping the error code that `x-mcp-header` connects to
+returns working, tested code and gives a false all-clear on a surface that is entirely absent.
+
+The alpha harness has a whole `x-mcp-header` scenario family with MUST-reject validity rules,
+extracted from the bundle: the annotation may sit only on **primitive** property types (`array` and
+`null` MUST be rejected); duplicate header names across two properties MUST be rejected
+**case-insensitively** (`MyField` vs `myfield`); and the name MUST NOT contain a space, a colon, a
+control character or any non-ASCII character. The sibling scenarios `http-header-validation` and
+`http-custom-header-server-validation` are also `not_scored: pending`. These are validity checks
+**on `inputSchema`**. **MES-35 owns it.**
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** Raised — MES-35
+
+### Decision: adversarial items with empty answers, recorded as empty rather than skipped
+
+**Description:** Three of the brief's eight items have no defect behind them under this scope. Each
+is recorded with *why it is empty*, because "empty by construction" and "empty because we looked"
+age differently.
+
+- **Where validation runs / what a handler sees — empty by construction.** No gate is added, so
+  nothing sits between the peer and the handler: `dispatch.ex:177` passes `args` through untouched.
+  Pinned anyway by a test that asserts argument **identity** (a nested map with a `null` inside,
+  echoed back and compared) rather than absence of a crash — the assertion that will still mean
+  something after MES-34 lands.
+- **Two trust levels in one validator / remote DoS — unreachable today, real the moment we
+  validate.** We never parse, resolve or evaluate a consumer schema, so a `$ref` cycle costs nothing
+  and pathological arguments cost only JSON decoding (bounded elsewhere; MES-16's F-1 → MES-31).
+  Under validation it becomes real and SEP-2106 §5a makes bounds a SHOULD.
+- **When is the schema itself checked — satisfied vacuously, and that is what it is.** MES-16's rule
+  (nothing a consumer supplies may fail later than the call that accepts it) holds here only because
+  we never interpret the schema, so there is no "later". It bites the moment validation lands, and
+  then it has teeth this codebase cannot currently satisfy: there is no registration call to fail
+  at (no registry), and the nearest accepting call is `tools/list`, itself a per-request handler
+  callback. Named now so MES-34 inherits it stated rather than rediscovering it in review round
+  three.
+
+**`type: "object"` at the `inputSchema` root: NOT enforced, in either direction, deliberately.**
+`tool.ex:39` is a bare `Map.fetch!(map, "inputSchema")` on the client-decode side; the server never
+inspects an advertised schema. The asymmetry is real — `schema.ts:1997` demands `type: "object"` and
+`:2005` imposes nothing — and is now documented on `MCP.Protocol.Types.Tool` so it is not flattened
+by accident. It is not enforced because a shape check without a validator is half a gate, and the
+drop-versus-warn choice is a behaviour break that should be made **once**, with the validator, by
+whoever owns MES-34.
+
+**What a validation failure tells the caller: settled by the spec's own example, not by us.**
+`examples/InvalidParamsError/invalid-tool-arguments.json` at the pin is
+`{"code": -32602, "message": "Invalid arguments for tool calculate: Missing required property
+'expression'"}` — **no `data` member**, one sentence naming the tool and the single failing
+constraint, echoing the property *name* and no argument *value*. The disclosure dilemma dissolves:
+the spec's own shape is already the conservative one and is still self-correctable by a model,
+because it names what was missing. `schema.ts:241` permits `data` and leaves it undefined, so the
+spec models the answer by example rather than by rule. Binds MES-34; MES-17 emits no such error.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### A7 evidence — which tests are caught regressions and which are positive controls
+
+**Description:** Split pre-committed in the plan, then measured. **Genuine fail-then-pass, run
+against `e1f5904` in a separate worktree with the new tests and none of the fixes:**
+
+- `test/mcp/protocol/messages/tools_test.exs` — **7 failures**, all `CallResult`: `encodes false`
+  and `from_map/1 decodes false…` (D-1's falsy `if`); the four absent-vs-null cases (D-2's harder
+  half, which the old struct could not represent in either direction); and `isError` explicit
+  `false` (the same falsy guard on the next line, which the brief flagged). The other nine
+  `structuredContent` values (`true`, `0`, `1.5`, `""`, `"str"`, `[]`, `[1,2]`, `%{}`, `%{"a"=>1}`)
+  passed pre-fix and are enumerated controls: **`false` is the only enumerated value Elixir's `if`
+  treats as absent, and a suite that only tested the other nine would have stayed green.**
+- `test/mcp/server/json_schema_2020_12_test.exs` — **17 failures of 30**, F-2's whole surface: every
+  `structuredContent` emission case, the absent/null pair, the extras `isError` case and all four
+  C-2 warning cases, because the return shape did not exist.
+
+**Positive controls, green at `e1f5904` and labelled as controls — each with its discriminating
+mutation demonstrated, one run per mutation:**
+
+| Control | Mutation | Result |
+|---|---|---|
+| W-3 keyword preservation | strip `$defs` from each tool's `inputSchema` in `dispatch.ex`'s `list_result/3` | **2 red**, one naming `$defs` by keyword |
+| C-2 exactness (compliant result is silent) | `serialized_json_of?/2` always `false` | **1 red**, exactly the "silent" case |
+| C-2 exactness (prose is not compliance) | `serialized_json_of?/2` always `true` | **1 red**, exactly the "prose" case |
+| C-2 trigger width (objects are outside the MUST) | drop the `is_list or not is_map` guard | **1 red**, exactly the "object never warns" case |
+| W-4 `$ref` canary | ~~—~~ **round 1: no mutation was run, and the control was inert** — see S2 | round 1: **0 red** under a call-path resolver. Corrected: **1 red** |
+
+**The W-3 mutation is worth its own line, because the first attempt at it failed to go red.**
+Stripping `$defs` in `Types.Tool`'s encoder changed nothing: **that encoder is not on the
+`tools/list` path at all** — the handler's raw maps go straight through `list_result/3`, which is
+F-1 and F-3 showing up as a mutation that does not bite. The mutation had to be applied to the real
+path before it discriminated. The preservation guarantee holds *because nothing touches the map*,
+and a struct-level test would have measured a different thing entirely — exactly the trap MES-16's
+R-1/R-7/R-8 named.
+
+**W-5 is a control, not a regression, and the distinction matters:** a boolean `outputSchema`
+already reached the wire correctly at `e1f5904` — the `Types.Tool` encoder drops `nil`, not
+`false`. Only the **typespec** was wrong, so **dialyzer had been agreeing with a spec narrower than
+the wire**. All its tests pass pre-fix. Nothing was caught; a future narrowing is now pinned.
+
+**Its justification was over-wide, and is corrected in round 1 (R-7).** This entry read "a wire
+that admits any JSON Schema", i.e. that MCP admits a boolean `outputSchema`. It does not:
+`schema.ts:2005` types the field `{ $schema?: string; [key: string]: unknown }` — an **object**
+type, to which `false` is not assignable — and the doc comment opens "An optional JSON Schema
+**object**" (`:2000`). The sentence the wide reading came from is the next one, `:2001`, "This can
+be any valid JSON Schema 2020-12"; generic 2020-12 does admit boolean schemas at any position, but
+the TS type is the narrower and more specific of the two and governs. SEP-2106 removes the
+requirement that the schema *declare* `type: "object"`, not that it *be* a JSON object. The
+widening is kept — a permissive typespec on a field this SDK only copies costs nothing and pins a
+future narrowing, which is what D-2 was — but **`json_schema_2020_12_test.exs`'s W-5 test is NOT
+conformance evidence and MES-19 must not cite it as such.** It and `tool_test.exs`'s pair now say
+so in the files, as does `MCP.Protocol.Types.Tool`'s moduledoc.
+
+**Test delta (A2d).** 369 → 429 (+60), 0 failures. Enumerated: `tools_test.exs` +26 (20 value cases
+× encode/decode for 10 values, 4 absent-vs-null, 2 `isError`); `tool_test.exs` +4 (2 boolean
+`outputSchema`, 1 absent control, 1 keyword-verbatim case covering `not` and `$anchor`);
+`json_schema_2020_12_test.exs` +30 (6 W-3 preservation, 1 W-5, 1 W-4 canary, 15 W-1 emission,
+6 C-2, 1 argument identity).
+
+**Suite flake — WAS REPORTED FIXED HERE AND WAS NOT. Corrected in round 1; see S1 below.**
+`extensions_negotiation_test.exs:221` asserted `log == ""` inside an `async: true` test.
+`capture_log/1` captures the **whole VM's** log for its duration, so any concurrent async test that
+logs anything failed it — and C-2's warning is the first such logger. That diagnosis is right and
+the narrowing to `refute log =~ "MCP extensions (SEP-2133)"` is a strict improvement, kept. **The
+claim that it fixed the flake was not.** Round 1 evidenced "fixed" with "zero failures in six full-suite
+runs"; the reviewer got a red in 23 seeds and it then reproduced 4 times out of 4 at `--seed 7819`,
+which the PM and I have each reproduced independently. Six runs was never a bound. The sentence that
+stood here — "it failed twice in eight full-suite runs before the fix and zero times in six after" —
+was a false record in the entry that exists to document exactly this failure mode, and is struck.
+**What actually closes it is `async: false`, not a narrower pattern:** the polluting module emits the
+very string being refuted, so no pattern is narrow enough. Full account, including the two further
+sites in this ticket's own new test file that nobody had named, under S1 in the round-1 section.
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Method note: eight instances now of one failure mode, each found by the seat that did not write the claim
+
+**Description:** The recurring defect on this project is **a claim and its evidence at different
+widths**. MES-16 found three (R-1 an anchor for a boundary, R-7 encodability for objecthood, R-8 a
+struct pattern for a value's shape) and in all three the full suite stayed green under the fix.
+MES-17 adds a fourth, and it is the sharpest instance yet because of where it occurred: the plan
+that diagnosed the failure mode contained it. Its §6 reason 1 said "SEP-2106 does not ask an SDK to
+validate arguments", checked at the width of one section (Implementation Guidance, where the claim
+is true) and stated at the width of the whole SEP — which contains a MUST about validating inputs
+and outputs in its Security Implications section. The PM caught it before a line of code was
+written; it is corrected at the head of this entry.
+
+**Round 1 added three more, and the count is now seven.** R-1 ("fixed", evidenced by six runs),
+R-2 ("the canary goes red the day someone adds a resolver", evidenced by a mutation never run) and
+R-6 ("the dialect question is settled", evidenced by one of the two normative surfaces) — all three
+in *this* entry, the one that names the mode. See the round-1 section at the end of this file.
+
+**Round 2 added the eighth, and it is a different shape from the first seven.** F-9: the struct
+clause of `warn_unusable_extras/2` — written in round 1, to fix this exact failure mode — told the
+operator "structuredContent and isError are IGNORED" while dispatch read both fields off the struct
+and put both on the wire. A claim stated wider than its check, in the code added to close that
+class, in the one branch nobody probed.
+
+**The finding is not the irony. It is that this failure mode is unrelated to care.** All eight
+instances were produced by careful work, none was caught by the seat that produced it, and every
+one was caught by a second reader with a different starting point. That is the strongest argument
+this project has that **A6's authorship separation is load-bearing rather than ceremonial** — a
+reviewer who inherits the author's starting point cannot find this class of defect, and more care
+by the author does not either.
+
+**Two corollaries, both now in force.** For prose: when you state a guarantee, state in the same
+sentence how it is checked, make the two the same width, and where they cannot be, state the gap.
+For tests, the narrower rule this ticket proposed and the PM adopted — **a stated discriminating
+mutation is not evidence until it has been run; planning one is the same act as claiming one.**
+That second rule is mechanical, needs no second seat, and is exactly what R-2 was: the mutation
+table's one row marked "positive control by design" was the one row where no mutation had been run,
+and it was the row that was wrong.
+
+**And the eighth instance bounds that second corollary: it is necessary and NOT sufficient.** The
+struct branch *did* get a test in round 1, and every mutation run against round 1 was run. The test
+used `%URI{}` — the one struct that carries neither field, and therefore the one struct for which
+the false sentence reads true. Running the mutation you thought of does not reach the branch you did
+not: **the case you enumerate is the case you imagined.** That is why the mechanical rule cannot
+replace A6 and why the argument for a second seat is not that they try harder — it is that they
+imagine a different set. Applied here: when a warning's text depends on what the value *contains*,
+the case that varies the contents is the discriminating one, and the empty-of-everything value is
+the control, not the test.
+**Priority Hint:** high (method, reusable) · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### Gate 6 — unchanged residual
+
+**Description:** No dependency was added, so `mix.lock` is untouched and **MES-27's 6a residual is
+unchanged at 21 unvalidated of 26 packages**. Stated rather than restated. `mix hex --version` is
+Hex v2.5.1, meeting the documented floor; gate 6 was run as the two-step 6a sentinel + 6b audit,
+never bare. Had `jsv` been ratified, all four new packages would have landed in the UNVALIDATED set
+(none has ever carried an advisory, so the sentinel cannot cover them by construction) — 25 of 30,
+with `jsv` on the non-optional tools path, joining `finch` and `thousand_island` as runtime residual
+rather than dev/build residual.
+**Priority Hint:** medium · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+### MES-17 correction round 1 (S1–S6, 2026-08-20) — CC/CODE_CREATOR
+
+Review verdict BLOCKING on R-1 and R-2; the PM reproduced R-1 independently and issued a frozen
+six-item contract (S1–S6, comment 24445). Everything below is on top of `e9806c4`, which is **not**
+amended — the re-review needs the delta. No version bump, no tag; still `2.0.0-dev.6`, the PM's at
+the squash.
+
+**The finding the PM adopted for the ticket, and it is the entry's own conclusion turned on the
+entry.** R-1, R-2 and R-6 are one pattern — **a claim and its evidence at different widths**:
+"fixed" evidenced by six runs; "the canary goes red the day someone adds a resolver" evidenced by a
+mutation never run; "the dialect question is settled" evidenced by one of the two normative
+surfaces. **The entry documenting that failure mode contained three fresh instances of it**, which
+is the strongest confirmation yet of what it concluded: the mode is unrelated to care, and only a
+second reader with a different starting point finds it. Two details sharpen it further. The
+W-4 row of the mutation table was the *one* row marked "—, positive control by design" — the single
+place no mutation was run — and it is the row that was wrong; the rule that would have caught it is
+the one **I proposed in the same comment** ("a stated discriminating mutation is not evidence until
+it has been run"). And R-1's evidence — "zero failures in six runs" — is a *narrower* width than the
+sentence it was written to support, in the paragraph whose subject is that exact error. Neither was
+carelessness, and neither was findable from where I was standing.
+
+**S1 (blocking) — the flake is live, six runs was never a bound, and narrowing the pattern could
+not have closed it.** Reproduced by me at `e9806c4`: `mix test --seed 7819` → 429 tests, **1
+failure**, the same test and the same captured log the reviewer and the PM each got. `ExUnit.CaptureLog`
+attaches a **VM-wide** `:logger` handler with no per-process filter, and `test/mcp/client_test.exs`
+is `async: true` and declares `"no-prefix"` and `"bad"` as invalid extension identifiers **on
+purpose** — so it emits `"MCP extensions (SEP-2133) — …"`, the very string the round-1 narrowing
+refutes. **No pattern is narrow enough when the polluter emits the same string**; that is why the
+narrowing was a strict improvement to the *assertion* and not a fix for the *flake*, and round 1
+conflated the two.
+
+Fixed by `async: false` on the modules that assert silence, and the mechanism was read off the
+ExUnit this suite actually runs on — the abstract code of the installed `ExUnit.Runner` beam
+(Elixir 1.19.5), not a doc claim: `async_loop/4` calls `ExUnit.Server.take_sync_modules/0` only once
+`take_async_modules/1` stops returning modules, and then asserts `0 = map_size(...)` over the
+running set — every async module waited down — before spawning sync modules one at a time. So a
+sync module's capture window contains **no other test module**.
+
+**Six sites, not four.** The contract named `extensions_negotiation_test.exs:237` and
+`extensions_test.exs:267`, `:287`, `:351`. Grepping the class across `test/` turns up **two more, in
+this ticket's own new file**: `json_schema_2020_12_test.exs:224` and `:231` (`refute log =~
+"SEP-2106"`), which nobody had named and which are the identical defect — I wrote them in round 1
+while fixing an instance of the same class three files away. The same module's *presence*
+assertions (`assert log =~ "SEP-2106"`) are the same class in the other direction: a concurrent
+module emitting that string would satisfy them falsely. `async: false` closes both directions. The
+only other silence-assertion module in the suite,
+`streamable_http_cache_scope_warning_test.exs` (MES-14), was already `async: false`.
+
+**Bound, stated rather than implied:** `async: false` removes concurrently-scheduled *test modules*.
+It does not make the capture per-process, so a process that outlives the module which started it
+and logs during the window would still pollute. Nothing in this suite does that today; if it ever
+does, the fix is a per-process capture, not a wider pattern. That is written into the test file so
+the next reader inherits the bound with the fix.
+
+**A7 for S1 — the fix is not evidenced by the sweep, and saying so is the point.** 43 green runs is
+*the same width of evidence* that was wrong last round; it cannot distinguish "fixed" from "did not
+reproduce". Two things do. (a) The **mechanism** above, read off the installed beam. (b) A
+**mutation**: making `Extensions.normalise/2` warn on declarations that are perfectly valid turned
+**all four** extensions silence assertions red, one each — so `async: false` did not buy green by
+making them vacuous; they still discriminate. The sweep is reported as corroboration, not as proof:
+
+```
+seed 7819 x4              4/4 GREEN   (it was deterministic 4/4 RED at e9806c4)
+reviewer's 23-seed set    23/23 GREEN (1117*k, k=1..8; 631*k, k=20..34 —
+                                       includes 7819, 13882 and 15144)
+second disjoint sample    20/20 GREEN (977*k, k=1..20)
+```
+
+**S2 (blocking) — the `$ref` canary's `tools/call` half was inert; fixed and the mutation run both
+ways.** `json_schema_2020_12_test.exs` called `"echo_args"` — a tool that is not advertised and
+whose schema contains no `$ref` — while the comment above it says "calling *that* tool". The
+`$ref`-bearing tool is `network_ref_tool`. Corrected, plus two things the one-word fix does not
+cover: `SchemaHandler` now has a `handle_call_tool` clause for it (without one the call fell to the
+unknown-tool error, and a canary that measures an error path cannot see a resolver that runs on a
+successful one), and the test now asserts the call **succeeded** before asserting no connection.
+
+I ran the mutation the control exists to catch — a resolver on the `tools/call` path that looks the
+called tool up through `handle_list_tools` and TCP-connects to any `http` `$ref` in its schema —
+against both versions:
+
+```
+as shipped in round 1  ("echo_args")        -> 30 tests, 0 failures   INERT
+corrected              ("network_ref_tool") -> 30 tests, 1 failure    DISCRIMINATES
+   assert {:error, :timeout} = :gen_tcp.accept(listen, 200)
+   right: {:ok, #Port<0.12>}
+```
+
+The mutation was reverted and the worktree re-verified clean before the gates were run. The W-4 row
+of the mutation table above is corrected in place.
+
+**S3 — the `basic/index.mdx` MUSTs.** Fetched at the pin and verified first-hand (md5
+`1b680a56e96533ff28f6eac07bd51bdc`, matching the reviewer's); quoted at `:257`, `:291`, `:292` and
+`:297` with the C-1 bound applied, in the dialect decision above, and handed to MES-34. Two
+citation corrections came out of doing it: the linking lines in `tools.mdx` are `:291` and `:300`,
+not `:290`/`:299`, and the page's path at the pin is `basic/index.mdx`, not `basic.mdx`. Both are
+strings MES-19 will copy, which is the only reason they are worth a sentence.
+
+**S4 (ruled) — the extras map is now dropped AND named.** MES-16 settled this posture on
+`:extensions`; the extras map is a new consumer-supplied surface and did not follow it. Four
+plausible mistakes each produced a successful, silently empty result, with no dialyzer complaint
+(the type is all-`optional()`, so a misspelled key is not a mismatch). `dispatch.ex` now emits one
+`Logger.warning` naming the tool and the unusable keys — a camelCase or string key by name, a
+struct by its module, a non-boolean `:is_error` by its value — and **never raises**: a stray key
+must not fail a tool call that otherwise works. A **correct** extras map, and in particular an
+**empty** one (what a handler that adds keys conditionally returns, as `SchemaHandler` itself does),
+is silent — pinned by a control, because a warning that also fires on correct input is noise and
+then the case that matters is lost in it.
+
+**S5 (ruled) — a cheap gate before the decode, and it does not help the case that decided the
+ruling.** `serialized_json_of?/2` now checks that the block's first significant byte is the one the
+value's JSON form must begin with (RFC 8259 leading whitespace skipped first) before decoding. It
+can never reject a block that would have matched — the mapping is the JSON grammar's own
+first-character rule. Measured on the dispatch path, 200 calls per case, gate off then on, same
+machine:
+
+```
+array[2] + a 20k-key JSON object text block   4.671 -> 0.001 ms/call
+array[20k] + its own serialized JSON          1.075 -> 1.109 ms/call   <-- UNCHANGED
+object structuredContent (outer guard skips)  0.001 -> 0.001 ms/call
+```
+
+**The compliant case is the one the ruling named as deciding it, and the gate does nothing for
+it** — a block that really is the serialized JSON passes the gate and is then parsed in full, as it
+must be. No sound cheap check exists there: confirming equality needs either this decode or an
+encode of the value (the same order of cost), and a byte comparison would be *wrong*, because JSON
+key order inside an array element is not semantic. So a fully compliant server does still pay a
+re-parse of what it just serialized, per call. Stated in the code and here rather than left to be
+inferred from a number that did not move. No dedup and no throttle were added, per the ruling.
+
+**S6 — R-5, R-7, R-8.** R-5: the test named "byte-identical" compares decoded maps; renamed to
+"arrives intact — decoded-map equality, not bytes", assertion unchanged, with the reason written
+down (byte identity would be the *wrong* check here). R-7: the boolean-`outputSchema` justification
+is corrected in the `Types.Tool` moduledoc, in both test files and in the W-5 paragraph above —
+the widening is kept as a permissive pass-through typespec, and the wire test is marked **not
+conformance evidence**. R-8: the match was widened rather than the sentence narrowed, because a
+compliant result should not warn — `serialized_json_of?/2` now accepts a string-keyed map, an
+atom-keyed map and a `%MCP.Protocol.Types.Content.TextContent{}` struct (one clause covers the last
+two, since a struct matches a map pattern on its fields). `handler.ex`'s promise now states that
+width explicitly.
+
+**A7 evidence for the new tests — measured, not asserted.** The 11 new tests were run against
+`e9806c4` in a git worktree, tests only, none of the fixes:
+
+```
+GENUINE FAIL-THEN-PASS  (6 of 11 red at e9806c4)
+  R-3  camelCase key named            \
+  R-3  string key named                |  S4: nothing warned at all,
+  R-3  struct in slot 3 named          |  so every naming assertion failed
+  R-3  non-boolean :is_error named    /
+  R-8  %TextContent{} struct is silent      \  the latent defect made live:
+  R-8  atom-keyed content map is silent     /  a compliant result WAS warned at
+
+ENUMERATED CONTROLS, green at e9806c4 and labelled as controls (5 of 11)
+  R-3  a correct/empty extras map warns about nothing
+  R-8  a %TextContent{} carrying PROSE still is not compliance
+  gate leading JSON whitespace is still compliance
+  gate a large non-matching JSON block is still not compliance
+  gate every enumerated JSON value's own serialization still counts
+```
+
+Every one of those five controls has its discriminating mutation **run**, one per mutation, and each
+turns exactly one test red — disjoint, so each measures its own condition rather than something
+correlated with it:
+
+| Control | Mutation applied | Result |
+|---|---|---|
+| correct/empty extras map is silent | treat every extras key as unrecognised | **1 red**, exactly that case |
+| prose in a struct is not compliance | any atom-keyed text block counts as the JSON | **1 red**, exactly that case |
+| leading whitespace is still compliance | drop the whitespace skip in the gate | **1 red**, exactly that case |
+| enumerated values still count | wrong first-byte mapping for `false` (`~c"f"` → `~c"t"`) | **1 red**, exactly that case |
+| corrected `$ref` canary | a resolver on the `tools/call` path | **1 red** (and **0 red** on the round-1 version — see S2) |
+
+**Test delta (A2d).** 429 → 440 (+11), 0 failures, 9 doctests unchanged. All eleven in
+`json_schema_2020_12_test.exs`: R-3 +5 (4 naming cases, 1 silence control), R-8 +3 (2 spellings,
+1 prose control), first-byte gate +3 (whitespace, large non-matching, all ten enumerated values).
+No test was removed. Three modules moved `async: true` → `async: false`.
+
+**Gates — all six run individually at the round-1 tip.**
+
+```
+1  mix format --check-formatted        clean
+2  mix compile --warnings-as-errors    clean (forced full rebuild, 68 files)
+3  mix credo                           934 mods/funs, found no issues
+4  mix dialyzer                        Total errors: 0, Skipped: 0, Unnecessary Skips: 0
+5  mix test                            9 doctests, 440 tests, 0 failures
+                                       + 43 seeds and 4x7819, all green (see S1)
+6  mix hex --version                   Hex v2.5.1  (>= 2.5.1 floor met)
+   6a baseline sentinel @ d697093      PASS — all 22 known advisory ids present
+   6b mix hex.audit                    "No retired or security advisory packages
+                                        found", exit 0
+```
+
+**Gate 6 residual: unchanged.** No dependency was added and `mix.lock` is untouched, so MES-27's 6a
+residual stays at **21 unvalidated of 26** packages. Stated, not restated.
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No
+
+
+### MES-17 correction round 2 (T1–T4, 2026-08-20) — CC/CODE_CREATOR
+
+Review verdict **MERGE**, nothing blocking; the PM took a round anyway for T1 alone and let T2–T4
+ride along. Everything below is on top of `209999e`, which is **not** amended. No version bump, no
+tag; still `2.0.0-dev.6`, the PM's at the squash.
+
+**T1 (F-9) — the struct warning stated the opposite of what the code did.** A struct IS a map, so
+`tool_extras/4` reads `:structured_content` with `Map.fetch/2` and `:is_error` with `Map.get/2` off
+a struct exactly as it does off a plain map, and both reach the wire. The clause nevertheless
+logged "structuredContent and isError are IGNORED" — a **universal claim over a conditional code
+path**, false for precisely the struct that carries those field names. The behaviour is the right
+one and is unchanged; the sentence now names what could not be used:
+
+```text
+%MCP.Test.ExtrasStruct{structured_content: [1,2], is_error: true}
+  209999e  log  "...structuredContent and isError are IGNORED. Nothing is raised."
+           wire {"content":[],"isError":true,"structuredContent":[1,2],"resultType":"complete"}
+  round 2  log  "...its [:structured_content, :is_error] field(s) ARE read, exactly as a
+                 plain extras map's would be, and DO reach the wire; every OTHER field is
+                 IGNORED. Nothing is raised."
+           wire unchanged, byte for byte
+
+%URI{} (carries neither field)
+  round 2  log  "...it has none of [:structured_content, :is_error] as fields, so NO extras
+                 are read from it and every field is IGNORED. Nothing is raised."
+```
+
+**Why one sentence was worth a round, and it is the round's real finding.** This is a *live false
+statement the SDK emits into an operator's log*, at the moment they are trying to work out where
+their output went — and it points them away from the one place the value actually is. It is worse
+than the silent drop the same code was written to fix. And it is **instance eight** of the claim/
+evidence-width mode: written in round 1, in the code that closes that class, in the one branch
+nobody probed. The round-1 test used `%URI{}` — the single struct for which the false sentence
+reads true — so the case that could falsify it was never written. See the method note above for the
+corollary that bounds: running the mutation you thought of does not reach the branch you did not.
+
+**T2 (F-10) — S4's enumeration was four of five; the fifth is now dropped AND named.** The dispatch
+clause is guarded `when is_map(extras)`, so a slot 3 that is neither a map nor the legacy `boolean()`
+fell through to the legacy clause and was dropped by `maybe_error/2` without `warn_unusable_extras/2`
+ever running. The **drop is inherited and unchanged** — this adds a warning and nothing else. A
+keyword list matters most: it is the idiomatic Elixir spelling of an options map, and newly
+plausible *because* this ticket made slot 3 a map.
+
+```text
+slot 3 value                    209999e            round 2
+[structured_content: %{a: 1}]   dropped, silent    dropped, "...IGNORED in full..."
+[]                              dropped, silent    dropped, named
+:structured_content             dropped, silent    dropped, named
+"true"                          dropped, silent    dropped, named
+true  / false  (legacy)         isError / none     UNCHANGED, and still silent
+```
+
+**T3 (F-11) — the unrecognised-key line is capped at 10 and states the elided count.** The key
+count is consumer-controlled and unbounded while Logger truncates at ~8 KB, so the join built a
+string Logger provably discarded. A cap alone would be the silent-drop class again, so the count is
+in the same line. Measured on the dispatch path, 20 calls per case, both versions on this machine:
+
+```text
+unrecognised keys   log chars 209999e -> round 2   ms/call 209999e -> round 2
+        1               272   ->   272                0.037 ->  0.031
+      100              2445   ->   486                0.248 ->  0.056
+     5000              8131   ->   503                8.747 ->  1.626   (8131 = Logger's cut)
+correct extras map        0   ->     0                0.002 ->  0.001
+```
+
+**Stated at its real width: the cap removes the string building, not the enumeration.** The residual
+1.626 ms at 5000 keys is `Map.keys |> Enum.reject |> Enum.sort` over the map — work proportional to
+what the handler itself built, and irreducible if the count in the message is to be true. Sorting is
+kept so the ten keys shown are deterministic rather than whatever the map iteration order yields.
+
+**T4 (F-12) — citation corrected, verified first-hand at the pin, not inherited.** Re-fetched
+`docs/specification/2026-07-28/basic/index.mdx` at `5f5440bb26a62e2cf3440b92da5a667efa03b267`, md5
+`1b680a56e96533ff28f6eac07bd51bdc`, 498 lines: the network-`$ref` MUST NOT is `:301-302`, and
+`:303` is blank. Corrected in this entry and in the `json_schema_2020_12_test.exs` comment, both of
+which MES-19 copies. `:304-307`, `:309-310` and `:312-318` re-read at the same fetch and are
+correct as already written.
+
+**A7 evidence — four discriminating mutations, each run, each turning exactly its own test red.**
+Full revert of `dispatch.ex` to `209999e` with the new tests in place: **5 red of 47** — both F-9
+tests, the F-10 four-shapes test, the F-11 truncation test, and the R-3 `%URI{}` test's new
+assertions. **That is 4 of the 6 new tests; the other 2 are positive controls and are named as
+such** rather than left to read as regressions: the legacy-boolean test and the `≤10` test are
+green at `209999e` *and* after the fix, because each exists to pin that a fix did **not** reach
+where it should not.
+
+| Mutation applied to the fix | Result |
+|---|---|
+| restore the old universal struct sentence | **3 red** — both F-9 tests and R-3's `%URI{}` test, nothing else |
+| remove the non-map slot-3 clause (and its `is_boolean` guard) | **1 red** — the F-10 test only |
+| raise the cap to 1,000,000 (cap removed, suffix kept) | **1 red** — the F-11 truncation test only |
+| keep the cap, drop the ", and N more" suffix | **1 red** — the F-11 truncation test only |
+
+The last two are a pair on purpose: they are the two halves of T3's claim, and the truncation test
+fails under *either*, so it measures "capped **and** says so" rather than only one of them. The
+`≤10` test stays green under both, so it is the control that the cap does not fire early. The
+legacy-boolean test (`true`/`false` still work, still silent) is the control for T2's new clause —
+it is a **positive control**, not a caught regression, and is labelled as such here because the F-10
+clause could otherwise have swallowed the legacy shape unnoticed.
+
+**Test delta (A2d).** 440 → **446 (+6)**, 0 failures, 9 doctests unchanged. All six in
+`json_schema_2020_12_test.exs`: F-9 +2 (a struct carrying both fields; a struct carrying one, which
+also pins that a nil-valued *field* still puts an explicit JSON `null` on the wire), F-10 +2 (four
+non-map shapes in one test; the legacy-boolean control), F-11 +2 (>10 truncated with the count;
+≤10 listed in full). Two assertions were added to R-3's existing `%URI{}` test. No test was removed.
+One new test-support module, `MCP.Test.ExtrasStruct` (`test/support/extras_struct.ex`) — a struct
+whose fields are named like `call_tool_extras/0`, which is the thing round 1 had no way to express.
+
+**Gates — all six run individually at the round-2 tip.**
+
+```text
+1  mix format --check-formatted        clean
+2  mix compile --force --warnings-as-errors   clean (68 files)
+3  mix credo                           936 mods/funs, found no issues
+4  mix dialyzer                        Total errors: 0, Skipped: 0, Unnecessary Skips: 0
+5  mix test                            9 doctests, 446 tests, 0 failures
+                                       + seeds 3037*k, k=1..20 (disjoint from every
+                                         earlier sweep) all green, and 7819 / 13882 /
+                                         15144 green — 23/23
+6  mix hex --version                   Hex v2.5.1  (>= 2.5.1 floor met)
+   6a baseline sentinel @ d697093      PASS — all 22 known advisory ids present
+   6b mix hex.audit                    "No retired or security advisory packages
+                                        found", exit 0
+```
+
+**Gate 6 residual: unchanged.** No dependency was added and `mix.lock` is untouched, so MES-27's 6a
+residual stays at **21 unvalidated of 26** packages.
+**Priority Hint:** high · **Blocking?:** No · **Suggested Jira Ticket?:** No

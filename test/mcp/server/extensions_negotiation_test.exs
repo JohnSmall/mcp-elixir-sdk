@@ -17,7 +17,33 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
   `5f5440bb26a62e2cf3440b92da5a667efa03b267`, and to the spec pages at the same
   pin.
   """
-  use ExUnit.Case, async: true
+  # `async: false` is LOAD-BEARING — do not re-enable async here.
+  #
+  # This module asserts that a valid declaration logs *nothing*, and
+  # `ExUnit.CaptureLog` attaches a VM-wide `:logger` handler with no
+  # per-process filter. A silence assertion over a shared substring is
+  # therefore unsound the moment any concurrently-scheduled module exercises
+  # the same log site — and `test/mcp/client_test.exs` (`async: true`) declares
+  # `"no-prefix"` and `"bad"` as invalid extension identifiers **on purpose**,
+  # so `Extensions.normalise/2` emits the very string being refuted while this
+  # capture is open. MES-17 round 1 narrowed the *pattern* instead, which could
+  # not close it: no pattern is narrow enough when the polluter emits the same
+  # string. Measured at `e9806c4`: `mix test --seed 7819` failed 4 runs of 4.
+  #
+  # `async: false` closes the class rather than the instance, and the mechanism
+  # was read off the ExUnit this suite actually runs on (abstract code of the
+  # installed `ExUnit.Runner` beam, Elixir 1.19.5) rather than off a doc claim:
+  # `async_loop/4` calls `ExUnit.Server.take_sync_modules/0` only once
+  # `take_async_modules/1` stops returning modules, and then asserts
+  # `0 = map_size(...)` over the running set — every async module is waited
+  # down — before spawning sync modules one at a time. So a sync module's
+  # capture window contains no other test module.
+  #
+  # Bound, stated: this removes concurrent *test modules*. It does not make the
+  # capture per-process, so a process that outlives the module that started it
+  # and logs during the window would still pollute. Nothing in this suite does;
+  # if that ever changes, the fix is a per-process capture, not a wider pattern.
+  use ExUnit.Case, async: false
 
   # The R-2 group exercises deliberately-bad launch config, which now warns by
   # design; captured so a green run stays readable.
@@ -218,6 +244,17 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
 
     # A correct declaration must be silent, or the warning is noise and the
     # case that matters is lost in it.
+    #
+    # MES-17: this asserted `log == ""`, which is wider than the claim — the
+    # claim is that *the extensions machinery* says nothing, and every warning
+    # it can emit carries this prefix (`extensions.ex:359` and `:479` are its
+    # only two `Logger.warning` sites, checked not assumed). Narrowing to the
+    # prefix is the same claim at its own width and is kept.
+    #
+    # It was NOT the flake fix, and round 1 was wrong to record it as one: the
+    # capture is VM-wide, so `client_test.exs` emitting this exact prefix
+    # concurrently still failed it. The module is `async: false` for that; see
+    # the note on `use ExUnit.Case` above.
     test "a valid declaration is advertised and warns about nothing" do
       log =
         capture_log(fn ->
@@ -225,7 +262,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
                    %{"com.example/x" => %{}}
         end)
 
-      assert log == ""
+      refute log =~ "MCP extensions (SEP-2133)"
     end
   end
 

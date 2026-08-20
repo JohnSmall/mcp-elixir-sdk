@@ -14,7 +14,14 @@ defmodule MCP.Protocol.ExtensionsTest do
   at commit `5f5440bb26a62e2cf3440b92da5a667efa03b267`,
   `schema/2026-07-28/schema.ts` — never to the ticket brief.
   """
-  use ExUnit.Case, async: true
+  # `async: false` is LOAD-BEARING — do not re-enable async here. Three tests
+  # below assert that a call logs *nothing* (`:267`, `:287`, `:351` at MES-17
+  # round 1), and `ExUnit.CaptureLog` attaches a VM-wide handler with no
+  # per-process filter, so such an assertion is unsound while any other module
+  # can run concurrently — `client_test.exs` emits this module's own warnings
+  # on purpose. Full rationale, and the ExUnit mechanism that makes sync
+  # modules sound, in `test/mcp/server/extensions_negotiation_test.exs`.
+  use ExUnit.Case, async: false
 
   # The drop-and-warn posture (R-2/R-3) means the tests that exercise a bad
   # declaration legitimately log; captured so a green run stays readable, and

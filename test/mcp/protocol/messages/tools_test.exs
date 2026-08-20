@@ -115,4 +115,101 @@ defmodule MCP.Protocol.Messages.ToolsTest do
       assert decoded["isError"] == true
     end
   end
+
+  # --- MES-17 / SEP-2106: structuredContent is any JSON value (D-1, D-2) ---
+  #
+  # `schema.ts:1819-1821` enumerates what `structuredContent?: unknown` means:
+  # "any JSON value (object, array, string, number, boolean, or null)". The old
+  # encoder used `if struct.structured_content`, which is falsy on `false`, and
+  # the old typespec said `map() | nil`. Both are fixed here; `false` is the
+  # case that discriminates, because it is the only enumerated value Elixir's
+  # `if` treats as absent.
+
+  describe "CallResult — structuredContent may be any JSON value" do
+    defp encoded(struct), do: struct |> Jason.encode!() |> Jason.decode!()
+
+    for {label, value} <- [
+          {"false", false},
+          {"true", true},
+          {"zero", 0},
+          {"a float", 1.5},
+          {"an empty string", ""},
+          {"a string", "str"},
+          {"an empty array", []},
+          {"an array", [1, 2]},
+          {"an empty object", %{}},
+          {"an object", %{"a" => 1}}
+        ] do
+      test "encodes #{label}" do
+        value = unquote(Macro.escape(value))
+        result = encoded(%Tools.CallResult{content: [], structured_content: value})
+
+        assert Map.has_key?(result, "structuredContent")
+        assert result["structuredContent"] == value
+      end
+
+      test "from_map/1 decodes #{label} and it survives a full round trip" do
+        value = unquote(Macro.escape(value))
+        map = %{"content" => [], "structuredContent" => value}
+        struct = Tools.CallResult.from_map(map)
+
+        assert struct.structured_content == value
+        assert encoded(struct)["structuredContent"] == value
+      end
+    end
+  end
+
+  describe "CallResult — absent is not null, in both directions" do
+    test "the default is the absent sentinel, and it emits no key" do
+      struct = %Tools.CallResult{content: []}
+
+      assert struct.structured_content == Tools.CallResult.absent()
+      refute Map.has_key?(encoded(struct), "structuredContent")
+    end
+
+    test "an explicit nil emits JSON null" do
+      encoded = encoded(%Tools.CallResult{content: [], structured_content: nil})
+
+      assert Map.has_key?(encoded, "structuredContent")
+      assert encoded["structuredContent"] == nil
+    end
+
+    test "from_map/1 distinguishes an absent key from a present null" do
+      absent = Tools.CallResult.from_map(%{"content" => []})
+      null = Tools.CallResult.from_map(%{"content" => [], "structuredContent" => nil})
+
+      assert absent.structured_content == Tools.CallResult.absent()
+      assert null.structured_content == nil
+      refute absent.structured_content == null.structured_content
+    end
+
+    test "both directions agree: absent round-trips absent, null round-trips null" do
+      absent = %{"content" => []}
+      null = %{"content" => [], "structuredContent" => nil}
+
+      assert absent
+             |> Tools.CallResult.from_map()
+             |> encoded()
+             |> Map.has_key?("structuredContent") == false
+
+      assert null |> Tools.CallResult.from_map() |> encoded() |> Map.has_key?("structuredContent") ==
+               true
+    end
+  end
+
+  describe "CallResult — isError keys off presence too" do
+    test "an explicit false survives a decode/encode round trip" do
+      # `isError?: boolean` (schema.ts:1826) admits no null, so nil alone is
+      # unambiguously "absent" here and needs no sentinel — but the old falsy
+      # guard still dropped a peer's explicit `"isError": false`.
+      struct = Tools.CallResult.from_map(%{"content" => [], "isError" => false})
+
+      assert struct.is_error == false
+      assert encoded(struct)["isError"] == false
+    end
+
+    test "nil isError is omitted" do
+      refute Map.has_key?(encoded(%Tools.CallResult{content: []}), "isError")
+    end
+  end
 end

@@ -28,6 +28,37 @@ defmodule MCP.Server.Handler do
           {:ok, [%{"type" => "text", "text" => msg}], state}
         end
       end
+
+  ## Tool schemas: what this SDK does, and what it leaves to you
+
+  A tool map returned by `c:handle_list_tools/2,3` reaches the wire verbatim.
+  Whatever you put in `"inputSchema"` and `"outputSchema"` is what the peer
+  sees, byte for byte, and this SDK never parses, resolves, interprets or
+  validates either one. Three consequences are policy, not accident, and each
+  is stated here so it is a decision rather than an omission:
+
+  * **Arguments are not validated against `inputSchema`.** `c:handle_call_tool/3,4`
+    receives the peer's `arguments` map exactly as decoded — nothing is
+    re-ordered, coerced, defaulted or `$ref`-expanded on the way in. Validating
+    them is your handler's job. When you reject a call, the spec's settled
+    answer is `-32602` (`schema.ts:315`, `:362-372`), whose own worked example
+    (`examples/InvalidParamsError/invalid-tool-arguments.json`) carries **no
+    `data` member** — one sentence in `message` naming the tool and the single
+    failing constraint, echoing the property *name* and no argument *value*.
+  * **`$ref` is never dereferenced.** SEP-2106's Security Implications section
+    makes this a **MUST NOT** for anything that is not a same-document JSON
+    Pointer or an internal `$anchor`, on SSRF and fetch-DoS grounds. This SDK
+    dereferences nothing at all, so the prohibition holds by construction
+    rather than by a check that could regress silently — there is a test that
+    fails the day it stops holding.
+  * **Structured output is not validated against `outputSchema`.**
+    `schema.ts:2467` makes conformance a **SHOULD**, and failing a call because
+    *your* handler's own output did not match *your* handler's own schema would
+    convert that SHOULD into a MUST and break working tools. Your
+    `:structured_content` reaches the wire verbatim, conforming or not. Note
+    that `server/tools.mdx` states the same obligation as a **MUST** on
+    *servers* — that duty is yours as the server author, and this SDK cannot
+    discharge it for you; it only declines to enforce it against you.
   """
 
   @type state :: term()
@@ -48,12 +79,87 @@ defmodule MCP.Server.Handler do
   @callback handle_list_tools(cursor(), state()) ::
               {:ok, tools :: [map()], next_cursor :: cursor(), state()}
 
+  @typedoc """
+  Optional extras a tool result may carry, returned in slot 3 of
+  `c:handle_call_tool/3,4` **as a map** — the shape that also accepts a bare
+  `boolean()` there means `is_error` and nothing else.
+
+  `:structured_content` is keyed off **presence**, not value: including the key
+  emits `structuredContent` even when the value is `nil` (which reaches the
+  wire as JSON `null`, one of the enumerated legal values at
+  `schema.ts:1819-1821`), and omitting the key omits the field. That is the
+  only way to distinguish "no structured result" from "a structured result
+  that is null", and it needs no sentinel.
+
+      # no structuredContent on the wire
+      {:ok, content, %{}, state}
+      # "structuredContent": null
+      {:ok, content, %{structured_content: nil}, state}
+      # "structuredContent": false  -- a legitimate value, not an absence
+      {:ok, content, %{structured_content: false}, state}
+
+  > #### Anything else in this map is dropped, and named {: .warning}
+  >
+  > The two keys above are the whole type. A map carrying anything else —
+  > `%{structuredContent: v}` (camelCase), `%{"structured_content" => v}`
+  > (a string key), a struct in slot 3, or an `:is_error` that is not a
+  > boolean — is a shape this SDK cannot use, and dialyzer cannot catch it
+  > (every key is `optional()`, so a misspelled one is not a mismatch).
+  >
+  > Rather than drop it silently, the dispatch emits a `Logger.warning` naming
+  > the tool and the unusable keys, and then continues: **a stray key never
+  > raises and never fails a tool call that otherwise works.** A correct extras
+  > map — including an empty one, which is what a handler that adds keys
+  > conditionally returns — is silent.
+  """
+  @type call_tool_extras :: %{
+          optional(:structured_content) => term(),
+          optional(:is_error) => boolean()
+        }
+
   @doc """
   Execute a tool. Called on `tools/call`.
+
+  ## Returning structured content
+
+  The 4-tuple with a **map** in slot 3 carries `structuredContent` (and
+  optionally `isError`) — see `t:call_tool_extras/0`. The 4-tuple with a bare
+  `boolean()` in slot 3 is the older `is_error` shape and keeps working
+  unchanged; a map and a boolean cannot be confused.
+
+  `structuredContent` may be **any** JSON value — object, array, string,
+  number, boolean or null (`schema.ts:1819-1821`) — not only an object.
+
+  > #### The backwards-compatibility fallback is yours to emit {: .warning}
+  >
+  > SEP-2106's Backward Compatibility section: "servers using array or
+  > primitive `structuredContent` **MUST** also emit a `TextContent` block
+  > containing the serialized JSON". `server/tools.mdx` states the wider form
+  > of the same rule as a SHOULD ("a tool that returns structured content
+  > SHOULD also return the serialized JSON in a TextContent block").
+  >
+  > This SDK **does not inject that block for you**, for the same reason it
+  > does not validate your output: your `content` list is model-visible data
+  > you authored, and silently adding to it would change what every existing
+  > tool shows an LLM. What it does instead is *notice* — when a result carries
+  > array or primitive structured content and no content block's text is the
+  > serialized JSON, it emits a `Logger.warning` naming the tool. The check is
+  > exact (each text block is JSON-decoded and compared to the structured
+  > value), so the warning fires on precisely the condition the MUST describes
+  > and never on a compliant result.
+  >
+  > "Compliant" is judged at the width of the wire, not of one spelling
+  > (R-8): a `MCP.Protocol.Types.Content.TextContent` struct and an atom-keyed
+  > `%{type: "text", text: ...}` map both encode to exactly the right JSON, so
+  > both satisfy the check, as does a string-keyed map. Leading JSON
+  > whitespace in the text is skipped. What does *not* satisfy it is a prose
+  > summary of the structured value — including the one `server/tools.mdx`
+  > uses in its own array-output example.
   """
   @callback handle_call_tool(name :: String.t(), arguments :: map(), state()) ::
               {:ok, content :: [map()], state()}
               | {:ok, content :: [map()], is_error :: boolean(), state()}
+              | {:ok, content :: [map()], extras :: call_tool_extras(), state()}
               | {:error, code :: integer(), message :: String.t(), state()}
 
   @doc """
@@ -66,6 +172,9 @@ defmodule MCP.Server.Handler do
 
   When this callback is implemented, tool execution runs asynchronously,
   enabling SSE streaming of intermediate messages.
+
+  Structured content is returned exactly as in `c:handle_call_tool/3` — a
+  `t:call_tool_extras/0` map in slot 3.
   """
   @callback handle_call_tool(
               name :: String.t(),
@@ -75,6 +184,7 @@ defmodule MCP.Server.Handler do
             ) ::
               {:ok, content :: [map()], state()}
               | {:ok, content :: [map()], is_error :: boolean(), state()}
+              | {:ok, content :: [map()], extras :: call_tool_extras(), state()}
               | {:error, code :: integer(), message :: String.t(), state()}
 
   @doc """

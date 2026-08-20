@@ -91,4 +91,64 @@ defmodule MCP.Protocol.Types.ToolTest do
       refute Map.has_key?(decoded, "_meta")
     end
   end
+
+  # --- MES-17 / SEP-2106: outputSchema is carried, whatever it holds ---
+  #
+  # SEP-2106's second implementation obligation removes the `type: "object"`
+  # constraint from `outputSchema` (`schema.ts:2005`). `false` is used here as
+  # the discriminating value because it is the one a nil-check flattens — the
+  # same shape as D-1 — not because MCP admits a boolean schema in this field.
+  # It does not: `schema.ts:2005` is an object type and its doc opens "An
+  # optional JSON Schema **object**" (`:2000`). Generic 2020-12 admits boolean
+  # schemas anywhere; this field is narrower (R-7). These tests measure the
+  # SDK's pass-through, and are NOT conformance evidence — see
+  # `MCP.Protocol.Types.Tool`'s moduledoc.
+
+  describe "outputSchema is carried verbatim, and false is not an absence" do
+    for value <- [true, false] do
+      test "a boolean outputSchema of #{value} round-trips as a value, not an absence" do
+        value = unquote(value)
+        tool = Tool.from_map(Map.put(@tool_map, "outputSchema", value))
+
+        assert tool.output_schema == value
+
+        decoded = tool |> Jason.encode!() |> Jason.decode!()
+        assert Map.has_key?(decoded, "outputSchema")
+        assert decoded["outputSchema"] == value
+      end
+    end
+
+    test "an absent outputSchema is still absent" do
+      tool = Tool.from_map(@tool_map)
+
+      assert tool.output_schema == nil
+      refute tool |> Jason.encode!() |> Jason.decode!() |> Map.has_key?("outputSchema")
+    end
+  end
+
+  # --- MES-17 / SEP-2106: any 2020-12 keyword survives, in either schema ---
+
+  test "inputSchema keywords beyond `type` are carried verbatim, including `not` and `$anchor`" do
+    schema = %{
+      "type" => "object",
+      "$schema" => "https://json-schema.org/draft/2020-12/schema",
+      "$defs" => %{"x" => %{"$anchor" => "xDef", "type" => "string"}},
+      "properties" => %{"a" => %{"$ref" => "#/$defs/x"}},
+      "not" => %{"required" => ["forbidden"]},
+      "oneOf" => [%{"required" => ["a"]}],
+      "if" => %{"required" => ["a"]},
+      "then" => %{"required" => ["a"]},
+      "else" => %{},
+      "unevaluatedProperties" => false
+    }
+
+    decoded =
+      @tool_map
+      |> Map.put("inputSchema", schema)
+      |> Tool.from_map()
+      |> Jason.encode!()
+      |> Jason.decode!()
+
+    assert decoded["inputSchema"] == schema
+  end
 end
