@@ -22,10 +22,12 @@ This project is worked by three **Claude Code CLI seats** — `PM`, `CODE_CREATO
 **strict-sequentially** (one ticket in flight). Flow is mediated **PM→CC→PM→CR→PM**; a seat acts on
 a ticket only when the **assignee is its own service account**.
 
-**The canonical procedure lives on Confluence, not here — link, never paraphrase:**
-- MES overrides (binding for this project): [Working Procedure Overrides — MCP_Elixir_SDK (MES) 250052681](https://vidhya-trading.atlassian.net/wiki/spaces/ElixirMCPS/pages/250052681)
-- Wrapper tool contract: [Tool Surface — Comment Tools 195592193](https://vidhya-trading.atlassian.net/wiki/spaces/EMFA/pages/195592193) · [Issue Tools 259391492](https://vidhya-trading.atlassian.net/wiki/spaces/EMFA/pages/259391492)
-- Seat mechanics / baton / commit model: [Active EMFA Workflow Overrides 249659395](https://vidhya-trading.atlassian.net/wiki/spaces/EMFA/pages/249659395)
+**The canonical procedure lives on Confluence, not here — link, never paraphrase.
+One page, and it is the only one this file cites:**
+- [Working Procedure Overrides — MCP_Elixir_SDK (MES) 250052681](https://vidhya-trading.atlassian.net/wiki/spaces/ElixirMCPS/pages/250052681)
+  — binding for this project. Seat mechanics, baton, channel model (**D5**), comment splitting
+  (**A13**), commit identity and merge authorship (**D6**), and the pointer to the wrapper's
+  **tool API contract**. Its *citation register* names every outward reference it makes.
 
 **All ticket information is on the Jira ticket — no Confluence in-flight pages** (Global Rule #10
 superseded locally by MES **D5**):
@@ -41,14 +43,17 @@ superseded locally by MES **D5**):
 - Wrapper tools are surfaced under short names via tool-search — search for the name and use the
   fully-qualified result; never construct it.
 
-**Commits (EMFA Override 9).** Each seat commits under its **own** service-account identity
+**Commits (D6).** Each seat commits under its **own** service-account identity
 (`../wp_scripts/seat_identity.sh` derives `GIT_AUTHOR_*`/`GIT_COMMITTER_*` from `EMFA_${SEAT}_EMAIL`; read a
 commit's author off the commit object, never off `.git/config`). The **PM authors the squash-merge**
 as `Project-Manager` after the merge gate — writing the `mix.exs` version in that commit and
 collecting `Co-authored-by:` trailers for other contributing seats
 (`emfa_coauthor_trailers main..{TICKET_KEY}`). Branches are bare `{TICKET_KEY}` (no slug),
-local-only. Versioning stays **D4** (`2.0.0-dev.N`, one bump per merge) — EMFA's Override 8 is
-**not** adopted here.
+local-only. Versioning is **D4** (`2.0.0-dev.N`, one flat counter, one bump per merge) —
+semver-by-content increments are **not** used here.
+
+**The `EMFA_*` env vars and `emfa_*` shell functions below are literal identifiers in a
+cross-project contract, not references to another project's procedure — do not rename them.**
 
 **Wrapper wiring.** The wrapper is reached as an MCP server declared in `.mcp.json` (HTTP,
 `${EMFA_WRAPPER_URL}/mcp`, per-seat `Bearer ${EMFA_SEAT_INBOUND}`). Seats are launched by the shared
