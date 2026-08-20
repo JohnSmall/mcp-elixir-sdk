@@ -14,3 +14,8 @@ package-lock.json
 .claude
 .mcp.json
 
+
+# `mix credo --debug` drops this at the repo root. With MES-51 making a dirty
+# worktree a refusal condition, an untracked debug artefact would false-red a
+# perfectly good conformance run.
+/credo-debug-log.html

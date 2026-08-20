@@ -472,4 +472,15 @@ defmodule MCP.Conformance.ClientAdapter do
   end
 end
 
+# MES-51 beacon. Provenance only, and deliberately the smallest possible edit to
+# the measurement instrument: the logic lives in `MCP.Conformance.Beacon` (which
+# IS gate-covered), this is the call site. It is a no-op unless the runner set
+# MCP_CONFORMANCE_BEACON, it writes to a file and never to stdout, stderr or the
+# wire, and it cannot raise or change an exit code. Without it, a run whose
+# adapter never started is indistinguishable from having no implementation at
+# all — MES-49 measured a null client at 2/32 to prove exactly that.
+if Code.ensure_loaded?(MCP.Conformance.Beacon) do
+  MCP.Conformance.Beacon.emit(:adapter, __ENV__.file)
+end
+
 MCP.Conformance.ClientAdapter.run()

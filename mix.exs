@@ -1,7 +1,7 @@
 defmodule MCPElixirSDK.MixProject do
   use Mix.Project
 
-  @version "2.0.0-dev.10"
+  @version "2.0.0-dev.11"
   @source_url "https://github.com/JohnSmall/mcp-elixir-sdk"
 
   def project do
@@ -12,7 +12,10 @@ defmodule MCPElixirSDK.MixProject do
       start_permanent: Mix.env() == :prod,
       elixirc_paths: elixirc_paths(Mix.env()),
       deps: deps(),
-      dialyzer: [plt_add_apps: [:ex_unit]],
+      # :mix is needed because MES-51 put Mix tasks under conformance/lib/, which
+      # gate 4 now reaches. Without it dialyzer reports Mix.shell/0, Mix.raise/1
+      # and Mix.env/0 as unknown, and the Mix.Task behaviour as callback_info_missing.
+      dialyzer: [plt_add_apps: [:ex_unit, :mix]],
 
       # Hex
       name: "MCP Elixir SDK",
@@ -32,7 +35,12 @@ defmodule MCPElixirSDK.MixProject do
     ]
   end
 
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  # MES-51: conformance/lib/ carries the run-provenance tooling and IS gate-covered
+  # (gates 2 and 4 via this list, gate 1 via .formatter.exs, gate 3 via .credo.exs).
+  # :prod stays ["lib"] and `package.files` never listed conformance/, so nothing here
+  # ships to Hex.
+  defp elixirc_paths(:test), do: ["lib", "test/support", "conformance/lib"]
+  defp elixirc_paths(:dev), do: ["lib", "conformance/lib"]
   defp elixirc_paths(_), do: ["lib"]
 
   defp package do
