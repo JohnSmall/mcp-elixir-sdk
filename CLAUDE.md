@@ -117,17 +117,16 @@ and the only side-effecting one: 6a materialises a separate tree at `d697093`, r
 cleanup form in the 6a snippet below is *rejected by the seat command guards*, so a
 run that could not have found anything relevant also left a temp directory behind.
 
-**The honest counter-argument, recorded because the rule does not defeat it.** Gate 6's
-verdict is a function of *(lock, wall-clock)* — every other gate's is a function of the
-tree alone. A universal gate 6 would therefore catch advisories published *since the
-last run*, against dependencies no ticket touched. **This rule gives that up**, and the
-give-up is real: a run of ticket-shaped work that never touches `mix.lock` now never
-re-audits. The obligation is discharged elsewhere — a release runs the
-freshness-independent whole-tree OSV cross-check (MES-19), which is the control that
-was already load-bearing, since a green `mix hex.audit` was never publish-blocking
-evidence on its own (see Known limitation 2). **If a dependency-advisory sweep is
-wanted on a cadence rather than per-ticket, that is a scheduled job, not a DoD gate,
-and it is PA-9 territory — the PO's, not decided here.**
+**What this rule gives up, and where it is picked up.** Gate 6's verdict is a function
+of *(lock, wall-clock)* — every other gate's is a function of the tree alone. A
+universal gate 6 would therefore catch advisories published *since the last run*,
+against dependencies no ticket touched. **Per-ticket, this rule gives that up**: a run
+of ticket-shaped work that never touches `mix.lock` never re-audits. That coverage is
+not abandoned — it moves to a cadence where it can actually be acted on, the
+**end-of-sprint sweep** below (PO-ratified 2026-08-21, settling the cadence half of
+PA-9). Per-ticket is the wrong cadence for it in any case: an advisory found mid-sprint
+against an untouched dependency is not the reviewing seat's to fix, and blocking a
+merge on it would be the one thing nobody wants.
 
 **Gate 6 (`mix hex.audit`) — reproducibility and behaviour.**
 
@@ -193,12 +192,16 @@ and it is PA-9 territory — the PO's, not decided here.**
   compensating control that *does* cover the remainder is the **live whole-tree OSV
   cross-check** (this ticket's AC4), which queries an external feed and so is not
   limited to what the local cache happens to hold. It is **owned by MES-19** for
-  release. Whether that OSV check should also join gate 6 is a policy question (it
-  would make the gate network-dependent, against the offline finding above) —
-  **PA-9, the PO's, not decided here.** Note the 2026-08-21 applicability rule
-  sharpens PA-9 rather than settling it: gate 6 now fires only on a dependency
-  change, so a check that belongs there fires *less* often than "per ticket" once
-  implied.
+  release. **PA-9, restated 2026-08-21 — what remains open is narrower than it was.**
+  The question used to be whether the OSV check should join the *per-ticket* gate 6,
+  and the standing objection was that this would make a per-ticket gate
+  network-dependent, against the offline finding above. The end-of-sprint sweep
+  changes that: **at a sprint boundary, network dependence costs nothing** — no work
+  is in flight, no merge is blocked, and the run is PM-owned rather than on a seat's
+  critical path. So the live question is now whether the OSV cross-check should also
+  run at the sprint boundary, giving two independent checks per sprint instead of
+  one at release. **Still the PO's, still not decided here** — but decide it against
+  the boundary, not against the gate.
 
   ```bash
   # Gate 6a — baseline-lock sentinel: require ALL 22 known advisory ids (superset).
@@ -231,6 +234,42 @@ and it is PA-9 territory — the PO's, not decided here.**
   `bandit` (7 missing) and `plug` (4 missing) — under both ordinary and
   `set -euo pipefail` shells. If a future hex adds a fail-closed freshness mode, gate 6
   can simplify toward a bare invocation.
+
+## End-of-Sprint Procedure
+
+**Runs in the gap between sprints — after the last ticket is Done, before the next
+sprint's first dispatch. PM-owned.** Seats run strict-sequentially, so at a sprint
+boundary there is by construction no work in flight; that is what makes this the one
+moment an advisory can be acted on without disrupting anything.
+
+1. **Write up `docs/sprint_{N}_issues.md`** — the sprint's findings register.
+
+2. **Dependency-advisory sweep.** Run the **two-step gate 6** (6a baseline sentinel,
+   then 6b) against `main` at the sprint's final tip.
+
+   - **The gate-6 applicability rule above does NOT apply here.** That rule is about
+     *tickets*; this is a cadence sweep and it runs every sprint regardless of what
+     changed. Do not skip it because no ticket touched `mix.lock` — the whole point
+     is to catch advisories published against dependencies nobody touched.
+   - **Two-step, never bare.** Known limitation 1 still holds: a bare `mix hex.audit`
+     exits 0 over an outstanding advisory when the local cache is incomplete. 6a is
+     what makes a green mean something.
+   - **Record the result in `docs/sprint_{N}_issues.md`, including a clean one.**
+     "Checked, and zero" and "never asked" read identically when only the answer is
+     printed — so print the question.
+
+3. **Any advisory becomes a Jira ticket. Do not fix it in place.** Raising it on the
+   board is the reason this sits between sprints rather than inside one: it gets
+   scoped, prioritised and scheduled like any other work, instead of being absorbed
+   silently into whatever ticket happened to notice it.
+
+**Relationship to release.** A release only ever follows a completed sprint — never
+mid-sprint. So this sweep is always upstream of any release, and no release can ship
+on advisory data older than the last sprint boundary. It does **not** replace MES-19's
+whole-tree OSV cross-check at release: `hex.audit` reads the **local registry cache**
+and OSV queries a **live external feed**, so the two fail differently and neither
+subsumes the other. Both, in that order.
+
 
 ## Key Documentation
 
