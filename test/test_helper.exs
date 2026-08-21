@@ -22,5 +22,35 @@
 #   * Identity ACs + spoof sweep     — streamable_http_ac_test.exs (real HTTP)
 #   * Client ↔ server integration    — integration_test.exs
 #
-# The exclude list is EMPTY: every test runs.
-ExUnit.start()
+# The exclude list is EMPTY *of retired tests*: every test in the ledger runs.
+#
+# One conditional exclusion remains, and it is conditional on the HOST rather
+# than on anything about the code: three conformance tests shell out to `node`
+# to cross-check our parsing against the live harness's own rendering. Where
+# `node` or the pinned harness is absent they cannot run, and the choice is
+# between a red that means "wrong host", a silent skip, and this: an EXCLUSION
+# that prints its reason and visibly shortens the suite.
+#
+# The silent skip is the one option that is not available. MES-56 round 1 found
+# two of these tests guarding themselves with `if File.exists?(yaml)`, which
+# passed green on a host that had checked nothing — absence read as
+# satisfaction, in the test suite, on the ticket about exactly that.
+#
+# A complete gate-5 run therefore requires `node` on PATH and the harness
+# installed at MCP.Conformance.TestHarness.install_dir/0. A run reporting
+# "3 excluded" is NOT a complete gate 5.
+case MCP.Conformance.TestHarness.unavailable_reason() do
+  nil ->
+    ExUnit.start()
+
+  why ->
+    IO.puts(:stderr, """
+
+    EXCLUDING :requires_live_harness — #{why}.
+    These tests drive the real conformance harness and cross-check its output
+    against our parser; nothing else in the suite covers that. The excluded
+    count below is the evidence they did not run. This is NOT a complete gate 5.
+    """)
+
+    ExUnit.start(exclude: [:requires_live_harness])
+end

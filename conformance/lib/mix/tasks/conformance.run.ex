@@ -14,6 +14,10 @@ defmodule Mix.Tasks.Conformance.Run do
     * `-o`, `--out-dir` — run directory. Defaults under
       `/tmp/mcp-conformance-runs/`, i.e. **outside the repository**, so the run
       cannot dirty the tree it is measuring.
+    * `--adapter` — `sdk` (default) or `null`. `null` substitutes the
+      do-nothing control at `conformance/controls/null_server.py`, so the run
+      measures what a server with no implementation earns from the same suite.
+      Server leg only.
     * `--cwd` — directory the harness and adapter run in. Defaults to the
       project root; pointing it elsewhere reproduces the wrong-cwd control.
     * `--harness-dir` — npm install root holding
@@ -31,6 +35,7 @@ defmodule Mix.Tasks.Conformance.Run do
 
   @switches [
     leg: :string,
+    adapter: :string,
     out_dir: :string,
     cwd: :string,
     harness_dir: :string,
@@ -40,7 +45,7 @@ defmodule Mix.Tasks.Conformance.Run do
 
   @aliases [o: :out_dir]
 
-  @usage "mix conformance.run --leg server|client [-o RUN_DIR] [--cwd DIR]"
+  @usage "mix conformance.run --leg server|client [--adapter sdk|null] [-o RUN_DIR] [--cwd DIR]"
 
   @impl Mix.Task
   def run(argv) do
@@ -64,8 +69,16 @@ defmodule Mix.Tasks.Conformance.Run do
         other -> Mix.raise("--leg must be server or client, got: #{inspect(other)}")
       end
 
+    adapter =
+      case opts[:adapter] do
+        nil -> :sdk
+        "sdk" -> :sdk
+        "null" -> :null
+        other -> Mix.raise("--adapter must be sdk or null, got: #{inspect(other)}")
+      end
+
     run_opts =
-      [leg: leg]
+      [leg: leg, adapter: adapter]
       |> put_if(:out_dir, opts[:out_dir])
       |> put_if(:cwd, opts[:cwd])
       |> put_if(:harness_dir, opts[:harness_dir])

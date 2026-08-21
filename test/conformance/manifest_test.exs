@@ -17,12 +17,80 @@ defmodule MCP.Conformance.ManifestTest do
   @good_commit "1111111111111111111111111111111111111111"
   @other_commit "2222222222222222222222222222222222222222"
 
+  # MES-56. The denominator is now part of what a run must carry, so the fixture
+  # carries a complete, self-consistent one: a frozen set, the harness's own
+  # listing of that set, and a console whose scenario map covers every scenario
+  # the set expects of this leg. Spoiling any one of the three is a test below.
+  @yaml_body """
+  # A comment, and a blank line, both of which the parser must skip.
+
+  server:
+    - tools-list
+    - resources-list
+
+  client:
+    - tools_call
+
+  not_scored:
+    - scenario: tasks-lifecycle
+      leg: server
+      reason: extension
+      note: >-
+        folded prose the parser must consume and discard, spanning
+        more than one line so the continuation rule is exercised
+  """
+
+  @expected_body """
+  Required for 2026-07-28 (3 scenarios, frozen; run at the 2026-07-28 wire):
+
+  Server scenarios (test against a server):
+    - tools-list
+    - resources-list
+
+  Client scenarios (test against a client):
+    - tools_call
+
+  Run and reported, but never scored:
+    extension (1):
+      - tasks-lifecycle [server]
+  """
+
+  @console_body """
+  Running requirements 2026-07-28 (3 scenarios) against http://127.0.0.1:3001/mcp
+
+  === Running scenario: tools-list ===
+  Results saved to /tmp/run/server-tools-list-A
+
+  === Running scenario: resources-list ===
+  Results saved to /tmp/run/server-resources-list-B
+
+  === Running scenario: tasks-lifecycle ===
+  Results saved to /tmp/run/server-tasks-lifecycle-C
+
+
+  === SUMMARY ===
+  ✓ tools-list: 3 passed, 0 failed
+  ✓ resources-list: 2 passed, 0 failed
+  ✗ tasks-lifecycle: 1 passed, 4 failed
+
+  Total: 6 passed, 4 failed
+
+  Not scored for 2026-07-28: 1 scenario(s) run, 1 failing. These do not affect conformance.
+    ✗ tasks-lifecycle (extension)
+  """
+
+  @console_sha :sha256 |> :crypto.hash(@console_body) |> Base.encode16(case: :lower)
+  @expected_sha :sha256 |> :crypto.hash(@expected_body) |> Base.encode16(case: :lower)
+  @yaml_sha :sha256 |> :crypto.hash(@yaml_body) |> Base.encode16(case: :lower)
+
+  @dirs ["server-resources-list-B", "server-tasks-lifecycle-C", "server-tools-list-A"]
+
   # A manifest that MUST be accepted. Every refusal test below is this map with
   # exactly one field spoiled, so a test that goes red names the field.
   defp good_manifest do
     %{
       "schema_version" => Manifest.schema_version(),
-      "leg" => "client",
+      "leg" => "server",
       "git" => %{
         "commit_sha_start" => @good_commit,
         "commit_sha_end" => @good_commit,
@@ -53,14 +121,16 @@ defmodule MCP.Conformance.ManifestTest do
         "path" => "/tmp/conf11/requirements/2026-07-28.yaml",
         "exists" => true,
         "md5" => "d6eb2061b2d35c7c71a86059b08bb928",
-        "sha256" => "beef"
+        "sha256" => @yaml_sha,
+        "copy_sha256" => @yaml_sha
       },
       "invocation" => %{
-        "argv" => ["node", "index.js", "client"],
+        "argv" => ["node", "index.js", "server"],
         "cwd" => "/tmp/wt",
         "project_root" => "/tmp/wt",
         "cwd_is_project_root" => true,
-        "adapter_command" => "mix run conformance/client_adapter.exs",
+        "adapter" => "sdk",
+        "adapter_command" => "mix run --no-halt conformance/server_adapter.exs 3001",
         "out_dir" => "/tmp/run",
         "compiled_before_run" => true
       },
@@ -79,22 +149,30 @@ defmodule MCP.Conformance.ManifestTest do
         "preflight_count" => 1,
         "foreign_lines" => 0,
         "unparseable_lines" => 0,
-        "adapter_sources" => ["conformance/client_adapter.exs"]
+        "adapter_sources" => ["conformance/server_adapter.exs"]
       },
       "result" => %{
         "harness_exit_code" => 1,
-        "console_sha256" => "c0ffee",
-        "console_bytes" => 15_381,
-        "scenario_dir_count" => 2,
-        "scenario_dirs" => ["client-tools_call-A", "client-request-metadata-B"]
+        "console_sha256" => @console_sha,
+        "console_bytes" => byte_size(@console_body),
+        "scenario_dir_count" => 3,
+        "scenario_dirs" => @dirs,
+        "expected_sha256" => @expected_sha,
+        "expected_bytes" => byte_size(@expected_body),
+        "expected_exit_code" => 0
       }
     }
   end
 
   defp observed do
     %{
-      scenario_dirs: ["client-request-metadata-B", "client-tools_call-A"],
-      console_sha256: "c0ffee"
+      scenario_dirs: @dirs,
+      console_sha256: @console_sha,
+      console_body: @console_body,
+      expected_sha256: @expected_sha,
+      expected_body: @expected_body,
+      requirements_copy_sha256: @yaml_sha,
+      requirements_body: @yaml_body
     }
   end
 
@@ -138,19 +216,27 @@ defmodule MCP.Conformance.ManifestTest do
     {:BEACON_PREFLIGHT_FAILED, ["beacon", "preflight_ok"], false, true},
     {:ADAPTER_NEVER_STARTED, ["beacon", "adapter_count"], 0, 8},
     {:ARTEFACTS_INCONSISTENT, ["beacon", "foreign_lines"], 3, 0},
-    {:ARTEFACTS_INCONSISTENT, ["result", "scenario_dir_count"], 0, 2},
-    {:ARTEFACTS_INCONSISTENT, ["result", "console_sha256"], "not-this-runs-console", "c0ffee"},
+    {:ARTEFACTS_INCONSISTENT, ["result", "scenario_dir_count"], 0, 3},
+    {:ARTEFACTS_INCONSISTENT, ["result", "console_sha256"], "not-this-runs-console",
+     @console_sha},
+    # --- MES-56: the captured denominator ---
+    {:ARTEFACTS_INCONSISTENT, ["result", "expected_sha256"], "not-this-runs-listing",
+     @expected_sha},
+    {:ARTEFACTS_INCONSISTENT, ["result", "expected_exit_code"], 1, 0},
+    {:ARTEFACTS_INCONSISTENT, ["requirements", "copy_sha256"], "not-this-runs-frozen-set",
+     @yaml_sha},
     # --- round 1 corrections: B1 ---
     {:DIRTY_EXCLUSION_COVERS_ROOT, ["git", "dirty_excluded_paths"], ["/tmp/wt"], ["/tmp/run"]},
     {:DIRTY_EXCLUSION_COVERS_ROOT, ["git", "dirty_excluded_paths"], ["/tmp"], ["/tmp/run"]},
     {:DIRTY_EXCLUSION_COVERS_ROOT, ["git", "dirty_exclusions_rejected"], ["/tmp/wt"], []},
     # --- round 1 corrections: B2 ---
-    {:ARTEFACTS_INCONSISTENT, ["result", "scenario_dir_count"], 999, 2},
+    {:ARTEFACTS_INCONSISTENT, ["result", "scenario_dir_count"], 999, 3},
     {:ARTEFACTS_INCONSISTENT, ["beacon", "unparseable_lines"], 1, 0},
     # --- round 1 corrections: the class (MANIFEST_INCOMPLETE on a null) ---
     {:MANIFEST_INCOMPLETE, ["git", "commit_sha_start"], nil, @good_commit},
     {:MANIFEST_INCOMPLETE, ["beacon", "adapter_count"], nil, 8},
-    {:MANIFEST_INCOMPLETE, ["result", "console_sha256"], nil, "c0ffee"}
+    {:MANIFEST_INCOMPLETE, ["result", "console_sha256"], nil, @console_sha},
+    {:MANIFEST_INCOMPLETE, ["result", "expected_sha256"], nil, @expected_sha}
   ]
 
   for {code, path, bad, good} <- @pairs do
@@ -220,7 +306,7 @@ defmodule MCP.Conformance.ManifestTest do
 
   describe "ARTEFACTS_INCONSISTENT via on-disk drift" do
     test "refuses when the directories on disk are not the ones recorded" do
-      drifted = %{observed() | scenario_dirs: ["client-tools_call-A", "some-other-run"]}
+      drifted = %{observed() | scenario_dirs: ["server-tools-list-A", "some-other-run"]}
 
       assert {:refused, :ARTEFACTS_INCONSISTENT, detail} = judge(good_manifest(), drifted)
       assert detail =~ "scenario directories on disk differ"
@@ -339,6 +425,181 @@ defmodule MCP.Conformance.ManifestTest do
       assert :ok == judge(good_manifest(), observed())
     end
   end
+
+  # --- MES-56: SCORED_SCENARIO_ABSENT and the console <-> disk check ------
+  #
+  # S5-11 applied to a check that did not exist yet. On a healthy run the
+  # absentee list is EMPTY, so this condition would go green having tested
+  # nothing — which is the whole shape of a check that passes with the feature
+  # removed. Both controls are here: removing a SCORED scenario must refuse and
+  # NAME it; removing a NOT-SCORED one must still accept.
+
+  # Rebuild a manifest around a different console, recomputing every field the
+  # console determines. Editing the body alone would trip ARTEFACTS_INCONSISTENT
+  # first and the absentee check would never be reached — a test that passes
+  # for the wrong reason (S5's own lesson).
+  defp with_console(m, body) do
+    dirs =
+      body
+      |> MCP.Conformance.Console.parse()
+      |> MCP.Conformance.Console.dirs_relative(m["invocation"]["out_dir"])
+
+    sha = :sha256 |> :crypto.hash(body) |> Base.encode16(case: :lower)
+
+    m
+    |> put_in_path(["result", "console_sha256"], sha)
+    |> put_in_path(["result", "console_bytes"], byte_size(body))
+    |> put_in_path(["result", "scenario_dirs"], dirs)
+    |> put_in_path(["result", "scenario_dir_count"], length(dirs))
+  end
+
+  defp observed_for(body) do
+    dirs =
+      body |> MCP.Conformance.Console.parse() |> MCP.Conformance.Console.dirs_relative("/tmp/run")
+
+    %{
+      observed()
+      | console_body: body,
+        console_sha256: :sha256 |> :crypto.hash(body) |> Base.encode16(case: :lower),
+        scenario_dirs: dirs
+    }
+  end
+
+  @without_scored """
+  Running requirements 2026-07-28 (3 scenarios) against http://127.0.0.1:3001/mcp
+
+  === Running scenario: tools-list ===
+  Results saved to /tmp/run/server-tools-list-A
+
+  === Running scenario: tasks-lifecycle ===
+  Results saved to /tmp/run/server-tasks-lifecycle-C
+
+  === SUMMARY ===
+  ✓ tools-list: 3 passed, 0 failed
+  ✗ tasks-lifecycle: 1 passed, 4 failed
+
+  Total: 4 passed, 4 failed
+  """
+
+  @without_not_scored """
+  Running requirements 2026-07-28 (3 scenarios) against http://127.0.0.1:3001/mcp
+
+  === Running scenario: tools-list ===
+  Results saved to /tmp/run/server-tools-list-A
+
+  === Running scenario: resources-list ===
+  Results saved to /tmp/run/server-resources-list-B
+
+  === SUMMARY ===
+  ✓ tools-list: 3 passed, 0 failed
+  ✓ resources-list: 2 passed, 0 failed
+
+  Total: 5 passed, 0 failed
+  """
+
+  describe "SCORED_SCENARIO_ABSENT" do
+    test "a healthy run is accepted — the accept half, so the refusals below mean something" do
+      assert :ok == judge(good_manifest())
+    end
+
+    test "refuses a run missing a SCORED scenario, and NAMES it (A2d)" do
+      m = with_console(good_manifest(), @without_scored)
+
+      assert {:refused, :SCORED_SCENARIO_ABSENT, detail} = judge(m, observed_for(@without_scored))
+      assert detail =~ "resources-list"
+
+      refute detail =~ "tasks-lifecycle",
+             "a not-scored absentee must not be reported as a scored one"
+    end
+
+    test "ACCEPTS a run missing a NOT-SCORED scenario: it cannot move a rate" do
+      m = with_console(good_manifest(), @without_not_scored)
+
+      assert :ok == judge(m, observed_for(@without_not_scored)),
+             "a not-scored absentee is reported by the census and must not refuse the run"
+    end
+
+    test "the diff still reports the not-scored absentee it refused to refuse over" do
+      m = with_console(good_manifest(), @without_not_scored)
+
+      assert {:ok, diff} = Manifest.expected_diff(m, observed_for(@without_not_scored))
+      assert diff.missing_scored == []
+      assert diff.missing_not_scored == ["tasks-lifecycle"]
+    end
+
+    test "refuses when the expected set cannot be established at all" do
+      spoiled = %{observed() | expected_body: "this is not a scenario listing"}
+
+      assert {:refused, :SCORED_SCENARIO_ABSENT, detail} = judge(good_manifest(), spoiled)
+
+      assert detail =~ "cannot be ruled out",
+             "an unreadable denominator must refuse, not silently pass over an unknown"
+    end
+
+    test "refuses when the frozen set and the harness's listing of it disagree" do
+      diverged = String.replace(@yaml_body, "  - resources-list", "  - resources-listed")
+
+      spoiled = %{
+        observed()
+        | requirements_body: diverged,
+          requirements_copy_sha256: sha(diverged)
+      }
+
+      m = put_in_path(good_manifest(), ["requirements", "copy_sha256"], sha(diverged))
+
+      assert {:refused, :SCORED_SCENARIO_ABSENT, detail} = judge(m, spoiled)
+      assert detail =~ "disagree"
+    end
+  end
+
+  describe "ARTEFACTS_INCONSISTENT — the console <-> disk consistency check" do
+    test "refuses when the console names a directory the disk walk did not find" do
+      unnamed =
+        String.replace(
+          @console_body,
+          "Results saved to /tmp/run/server-tools-list-A",
+          "Results saved to /tmp/run/server-tools-list-GHOST"
+        )
+
+      spoiled = %{observed() | console_body: unnamed, console_sha256: sha(unnamed)}
+      m = put_in_path(good_manifest(), ["result", "console_sha256"], sha(unnamed))
+
+      assert {:refused, :ARTEFACTS_INCONSISTENT, detail} = judge(m, spoiled)
+      assert detail =~ "named-but-not-enumerated"
+      assert detail =~ "GHOST"
+    end
+
+    test "refuses a console whose scenario was announced and never saved" do
+      truncated =
+        String.replace(@console_body, "Results saved to /tmp/run/server-tasks-lifecycle-C\n", "")
+
+      spoiled = %{observed() | console_body: truncated, console_sha256: sha(truncated)}
+      m = put_in_path(good_manifest(), ["result", "console_sha256"], sha(truncated))
+
+      assert {:refused, :ARTEFACTS_INCONSISTENT, detail} = judge(m, spoiled)
+      assert detail =~ "neither saved results nor reported a failure to run"
+    end
+
+    test "refuses a client-leg console outright rather than mis-attributing it (S5-12)" do
+      client = """
+      Running requirements 2026-07-28 (39 scenarios) in parallel...
+
+      Starting scenario: auth/metadata-default
+      Starting scenario: auth/dpop
+      Results saved to /tmp/run/auth/dpop-2026-08-21T00-29-23-813Z
+      Results saved to /tmp/run/auth/metadata-default-2026-08-21T00-29-23-812Z
+      """
+
+      spoiled = %{observed() | console_body: client, console_sha256: sha(client)}
+      m = put_in_path(good_manifest(), ["result", "console_sha256"], sha(client))
+
+      assert {:refused, :ARTEFACTS_INCONSISTENT, detail} = judge(m, spoiled)
+      assert detail =~ "client leg"
+      assert detail =~ "Promise.all"
+    end
+  end
+
+  defp sha(body), do: :sha256 |> :crypto.hash(body) |> Base.encode16(case: :lower)
 
   # --- MANIFEST_ABSENT / MANIFEST_UNREADABLE: these live in read/1 --------
 
@@ -612,7 +873,7 @@ defmodule MCP.Conformance.ManifestTest do
     test "the condition list is read_codes ++ judged_codes, enumerated (A2d)" do
       assert Manifest.read_codes() ++ Manifest.judged_codes() == Manifest.refusal_codes()
       assert length(Manifest.read_codes()) == 2
-      assert length(Manifest.judged_codes()) == 10
+      assert length(Manifest.judged_codes()) == 11
       assert Enum.uniq(Manifest.refusal_codes()) == Manifest.refusal_codes()
     end
   end

@@ -29,13 +29,69 @@ defmodule Mix.Tasks.Conformance.AdjudicateExitTest do
   alias Mix.Tasks.Conformance.Adjudicate
 
   @commit "1111111111111111111111111111111111111111"
-  @console "conformance console output\n"
+
+  # MES-56: a run directory now has to carry its own denominator, so the fixture
+  # writes all three artefacts the adjudicator re-hashes — console, the
+  # harness's listing, and a byte copy of the frozen set — and the console's
+  # scenario map has to cover every scored scenario the listing names.
+  @yaml """
+  server:
+    - tools-list
+
+  client:
+    - tools_call
+
+  not_scored:
+    - scenario: tasks-lifecycle
+      leg: server
+      reason: extension
+  """
+
+  @expected """
+  Required for 2026-07-28 (2 scenarios, frozen; run at the 2026-07-28 wire):
+
+  Server scenarios (test against a server):
+    - tools-list
+
+  Client scenarios (test against a client):
+    - tools_call
+
+  Run and reported, but never scored:
+    extension (1):
+      - tasks-lifecycle [server]
+  """
+
+  defp console(dir) do
+    """
+    Running requirements 2026-07-28 (2 scenarios) against http://127.0.0.1:3001/mcp
+
+    === Running scenario: tools-list ===
+    Results saved to #{dir}/server-tools-list-A
+
+    === Running scenario: tasks-lifecycle ===
+    Results saved to #{dir}/server-tasks-lifecycle-B
+
+    === SUMMARY ===
+    ✓ tools-list: 0 passed, 0 failed
+    ✓ tasks-lifecycle: 0 passed, 0 failed
+
+    Total: 0 passed, 0 failed
+    """
+  end
+
+  defp sha(body), do: :sha256 |> :crypto.hash(body) |> Base.encode16(case: :lower)
 
   setup do
     dir = Path.join(System.tmp_dir!(), "mes51-adj-#{System.unique_integer([:positive])}")
-    File.mkdir_p!(Path.join(dir, "client-tools_call-A"))
-    File.write!(Path.join([dir, "client-tools_call-A", "checks.json"]), "[]")
-    File.write!(Path.join(dir, Manifest.console_filename()), @console)
+
+    for scenario <- ["server-tools-list-A", "server-tasks-lifecycle-B"] do
+      File.mkdir_p!(Path.join(dir, scenario))
+      File.write!(Path.join([dir, scenario, "checks.json"]), "[]")
+    end
+
+    File.write!(Path.join(dir, Manifest.console_filename()), console(dir))
+    File.write!(Path.join(dir, "expected.txt"), @expected)
+    File.write!(Path.join(dir, "requirements.yaml"), @yaml)
     on_exit(fn -> File.rm_rf!(dir) end)
     %{dir: dir}
   end
@@ -43,13 +99,12 @@ defmodule Mix.Tasks.Conformance.AdjudicateExitTest do
   # An acceptable run, written to disk. `spoil` applies one edit before writing,
   # so each test below differs from the accepted case in exactly one field.
   defp write_manifest(dir, spoil \\ & &1) do
-    console_sha =
-      :sha256 |> :crypto.hash(@console) |> Base.encode16(case: :lower)
+    body = console(dir)
 
     manifest =
       %{
         "schema_version" => Manifest.schema_version(),
-        "leg" => "client",
+        "leg" => "server",
         "git" => %{
           "commit_sha_start" => @commit,
           "commit_sha_end" => @commit,
@@ -80,14 +135,16 @@ defmodule Mix.Tasks.Conformance.AdjudicateExitTest do
           "path" => "/tmp/conf11/requirements/2026-07-28.yaml",
           "exists" => true,
           "md5" => "d6eb2061b2d35c7c71a86059b08bb928",
-          "sha256" => "beef"
+          "sha256" => sha(@yaml),
+          "copy_sha256" => sha(@yaml)
         },
         "invocation" => %{
-          "argv" => ["node", "index.js", "client"],
+          "argv" => ["node", "index.js", "server"],
           "cwd" => "/tmp/wt",
           "project_root" => "/tmp/wt",
           "cwd_is_project_root" => true,
-          "adapter_command" => "elixir conformance/client_adapter.exs",
+          "adapter" => "sdk",
+          "adapter_command" => "mix run --no-halt conformance/server_adapter.exs 3001",
           "out_dir" => dir,
           "compiled_before_run" => true
         },
@@ -106,14 +163,17 @@ defmodule Mix.Tasks.Conformance.AdjudicateExitTest do
           "preflight_count" => 1,
           "foreign_lines" => 0,
           "unparseable_lines" => 0,
-          "adapter_sources" => ["conformance/client_adapter.exs"]
+          "adapter_sources" => ["conformance/server_adapter.exs"]
         },
         "result" => %{
           "harness_exit_code" => 1,
-          "console_sha256" => console_sha,
-          "console_bytes" => byte_size(@console),
-          "scenario_dir_count" => 1,
-          "scenario_dirs" => ["client-tools_call-A"]
+          "console_sha256" => sha(body),
+          "console_bytes" => byte_size(body),
+          "scenario_dir_count" => 2,
+          "scenario_dirs" => ["server-tasks-lifecycle-B", "server-tools-list-A"],
+          "expected_sha256" => sha(@expected),
+          "expected_bytes" => byte_size(@expected),
+          "expected_exit_code" => 0
         }
       }
       |> spoil.()
@@ -197,7 +257,7 @@ defmodule Mix.Tasks.Conformance.AdjudicateExitTest do
       {status, out, _err} = adjudicate([dir, "--diagnose", "--expect-commit", @commit])
 
       assert status == 2
-      assert out =~ "0 outstanding, 0 not evaluated, 12 passing"
+      assert out =~ "0 outstanding, 0 not evaluated, 13 passing"
       assert out =~ "still not accepted"
       refute out =~ "ACCEPTED"
     end
@@ -210,7 +270,7 @@ defmodule Mix.Tasks.Conformance.AdjudicateExitTest do
       assert status == 2
       assert out =~ "OUTSTANDING    MANIFEST_ABSENT"
       assert out =~ "NOT EVALUATED  WORKTREE_DIRTY"
-      assert out =~ "1 outstanding, 11 not evaluated, 0 passing"
+      assert out =~ "1 outstanding, 12 not evaluated, 0 passing"
     end
 
     # Enumerated rather than argued (A2d): every condition, one at a time, over

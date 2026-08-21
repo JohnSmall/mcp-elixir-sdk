@@ -52,9 +52,16 @@ defmodule MCP.Conformance.Manifest do
   enumerated bound.
   """
 
-  alias MCP.Conformance.Provenance
+  alias MCP.Conformance.{Console, Provenance, RequirementSet}
 
-  @schema_version 1
+  # 1 -> 2 when MES-56 added the captured denominator. The bump RETIRES every
+  # run written by MES-51's tooling: they carry no `expected.txt`, no
+  # `requirements.yaml` copy and no `invocation.adapter`, so `read/1` refuses
+  # them with MANIFEST_UNREADABLE. That is the correct outcome and it is stated
+  # here so a later reader does not mistake an old refusal for a regression —
+  # those runs genuinely cannot state their own denominator, and half-judging
+  # them would be worse than refusing them.
+  @schema_version 2
 
   # The refusal conditions `read/1` decides, ahead of the ten `checks/0` tests.
   @read_codes [:MANIFEST_ABSENT, :MANIFEST_UNREADABLE]
@@ -111,12 +118,24 @@ defmodule MCP.Conformance.Manifest do
     "requirements.exists" => :provenance_only,
     "requirements.md5" => :HARNESS_MISMATCH,
     "requirements.sha256" => :provenance_only,
+    "requirements.copy_sha256" => :ARTEFACTS_INCONSISTENT,
     "invocation.argv" => :provenance_only,
     "invocation.cwd" => :CWD_NOT_PROJECT_ROOT,
     "invocation.project_root" => :CWD_NOT_PROJECT_ROOT,
     "invocation.cwd_is_project_root" => :CWD_NOT_PROJECT_ROOT,
+    # Consumed by no refusal condition HERE, and consumed heavily by
+    # `MCP.Conformance.Census`, which derives a run's role from it and refuses
+    # to print a headline for a control. What stops a null run being relabelled
+    # as a measurement is therefore not in this table: the census re-reads
+    # `beacon.jsonl` FROM DISK and refuses if the sources named there do not
+    # match the adapter claimed here. Stated rather than assumed, because a
+    # hand-edited manifest is a threat model this tool already takes seriously.
+    "invocation.adapter" => :provenance_only,
     "invocation.adapter_command" => :provenance_only,
-    "invocation.out_dir" => :provenance_only,
+    # No longer provenance: the console names artefact directories by ABSOLUTE
+    # path, and this is what they are relativised against, so an archived or
+    # copied run is judged on its contents rather than on where it now sits.
+    "invocation.out_dir" => :ARTEFACTS_INCONSISTENT,
     "invocation.compiled_before_run" => :provenance_only,
     "timing.started_at" => :provenance_only,
     "timing.ended_at" => :provenance_only,
@@ -141,7 +160,13 @@ defmodule MCP.Conformance.Manifest do
     "result.console_sha256" => :ARTEFACTS_INCONSISTENT,
     "result.console_bytes" => :provenance_only,
     "result.scenario_dir_count" => :ARTEFACTS_INCONSISTENT,
-    "result.scenario_dirs" => :ARTEFACTS_INCONSISTENT
+    "result.scenario_dirs" => :ARTEFACTS_INCONSISTENT,
+    "result.expected_sha256" => :ARTEFACTS_INCONSISTENT,
+    "result.expected_bytes" => :provenance_only,
+    # A non-zero `list --requirements` exit means the capture is an error
+    # message, not a denominator. Judged, not recorded: SCORED_SCENARIO_ABSENT
+    # below would otherwise be decided against whatever the failure printed.
+    "result.expected_exit_code" => :ARTEFACTS_INCONSISTENT
   }
 
   @doc """
@@ -173,7 +198,8 @@ defmodule MCP.Conformance.Manifest do
       :BEACON_PREFLIGHT_FAILED,
       :ADAPTER_NEVER_STARTED,
       :HARNESS_MISMATCH,
-      :ARTEFACTS_INCONSISTENT
+      :ARTEFACTS_INCONSISTENT,
+      :SCORED_SCENARIO_ABSENT
     ]
   end
 
@@ -197,6 +223,13 @@ defmodule MCP.Conformance.Manifest do
         "every scenario used it — only that at least one did, plus a count to compare.",
       "Timestamps inherit the container clock. A wrong clock yields wrong stamps and " <>
         "nothing here detects that.",
+      "An acceptance says a run happened as recorded, NOT that it measured this SDK. " <>
+        "The null-implementation control is adjudicated on purpose — the figure whose job " <>
+        "is to discipline the headline should not be the only one without provenance — so " <>
+        "an ACCEPTED manifest can attest a run in which no SDK code executed at all. " <>
+        "invocation.adapter says which ran; mix conformance.census marks a control's role " <>
+        "and refuses to print a headline for it, cross-checking that field against the " <>
+        "beacon journal on disk.",
       "Most important: an accepted manifest makes a figure ATTRIBUTABLE, not CORRECT. " <>
         "It ties a number to a tree. Whether the number is a good measurement of " <>
         "conformance is decided by the adapters' own fidelity — MES-56/57's problem, " <>
@@ -387,7 +420,8 @@ defmodule MCP.Conformance.Manifest do
       {:BEACON_PREFLIGHT_FAILED, &check_preflight/3},
       {:ADAPTER_NEVER_STARTED, &check_adapter_started/3},
       {:HARNESS_MISMATCH, &check_harness/3},
-      {:ARTEFACTS_INCONSISTENT, &check_artefacts/3}
+      {:ARTEFACTS_INCONSISTENT, &check_artefacts/3},
+      {:SCORED_SCENARIO_ABSENT, &check_scored_present/3}
     ]
   end
 
@@ -689,7 +723,155 @@ defmodule MCP.Conformance.Manifest do
         )
 
       true ->
+        check_denominator_artefacts(m, o)
+    end
+  end
+
+  # The captured denominator, checked exactly as `console.txt` is: re-hashed
+  # from disk against what the run recorded. MES-51 bound the run to a tree; a
+  # rate still needs the set it is a rate OVER, and a capture that can be
+  # swapped, truncated or deleted without refusing is not evidence of one.
+  defp check_denominator_artefacts(m, o) do
+    r = m["result"]
+    expected = Map.get(o, :expected_sha256)
+    copy = Map.get(o, :requirements_copy_sha256)
+
+    cond do
+      r["expected_exit_code"] != 0 ->
+        refuse(
+          :ARTEFACTS_INCONSISTENT,
+          "`conformance list --requirements` exited #{r["expected_exit_code"]} when the " <>
+            "denominator was captured, so #{RequirementSet.expected_filename()} holds a " <>
+            "failure message rather than the expected set"
+        )
+
+      is_nil(expected) ->
+        refuse(
+          :ARTEFACTS_INCONSISTENT,
+          "no readable #{RequirementSet.expected_filename()} in the run directory, yet the " <>
+            "manifest records #{r["expected_sha256"]}. Without it the run cannot state which " <>
+            "scenarios it was supposed to have executed"
+        )
+
+      expected != r["expected_sha256"] ->
+        refuse(
+          :ARTEFACTS_INCONSISTENT,
+          "#{RequirementSet.expected_filename()} hashes #{expected}; the run recorded " <>
+            "#{r["expected_sha256"]} — the denominator on disk is not the one this run captured"
+        )
+
+      is_nil(copy) ->
+        refuse(
+          :ARTEFACTS_INCONSISTENT,
+          "no readable #{RequirementSet.requirements_copy_filename()} in the run directory, " <>
+            "yet the manifest records #{m["requirements"]["copy_sha256"]}. The frozen set is " <>
+            "cross-checked against the harness's listing of it, and one witness is not two"
+        )
+
+      copy != m["requirements"]["copy_sha256"] ->
+        refuse(
+          :ARTEFACTS_INCONSISTENT,
+          "#{RequirementSet.requirements_copy_filename()} hashes #{copy}; the run recorded " <>
+            "#{m["requirements"]["copy_sha256"]}"
+        )
+
+      true ->
+        check_console_versus_disk(m, o)
+    end
+  end
+
+  # The console names an artefact directory for every scenario it ran. The disk
+  # walk finds every directory holding a `checks.json`. Neither is authoritative
+  # alone: the console could name a directory that was never written, and the
+  # walk cannot say which scenario a directory belongs to. Requiring them to
+  # agree is what makes the scenario -> directory map usable as a key.
+  #
+  # Relativised against the manifest's own `invocation.out_dir` rather than the
+  # directory being adjudicated, so an archived or copied run is judged on its
+  # contents rather than on where it now sits.
+  defp check_console_versus_disk(m, o) do
+    parsed = Console.parse(Map.get(o, :console_body) || "")
+    from_console = Console.dirs_relative(parsed, m["invocation"]["out_dir"])
+    recorded = Enum.sort(m["result"]["scenario_dirs"])
+
+    cond do
+      parsed.faults != [] ->
+        refuse(
+          :ARTEFACTS_INCONSISTENT,
+          "#{console_filename()} does not describe a well-formed run: " <>
+            Enum.join(parsed.faults, "; ")
+        )
+
+      from_console != recorded ->
+        refuse(
+          :ARTEFACTS_INCONSISTENT,
+          "the scenario -> directory map in #{console_filename()} does not match the " <>
+            "directories enumerated on disk: #{inspect(only(from_console, recorded))} " <>
+            "named-but-not-enumerated, #{inspect(only(recorded, from_console))} " <>
+            "enumerated-but-unnamed. Every per-scenario figure is attributed through that " <>
+            "map, so a disagreement is a mis-attribution waiting to be quoted"
+        )
+
+      true ->
         :ok
+    end
+  end
+
+  # AC2. The manifest records what RAN. Until now nothing recorded what SHOULD
+  # have run, so a scored scenario the harness silently skipped left no trace
+  # and the harness exited 0 over the gap. Absentees are NAMED, never counted
+  # (A2d) — a count says something is wrong without saying what, and this
+  # project has published a count that was wrong by 4x while looking plausible.
+  #
+  # A not-scored absentee is reported by the census and does NOT refuse: it
+  # cannot move a rate. A SCORED absentee refuses.
+  defp check_scored_present(m, o, _e) do
+    case expected_diff(m, o) do
+      {:error, why} ->
+        refuse(
+          :SCORED_SCENARIO_ABSENT,
+          "the expected set could not be established, so the absence of a scored scenario " <>
+            "cannot be ruled out: " <> why
+        )
+
+      {:ok, %{missing_scored: []}} ->
+        :ok
+
+      {:ok, %{missing_scored: missing}} ->
+        refuse(
+          :SCORED_SCENARIO_ABSENT,
+          "#{length(missing)} scored scenario(s) the frozen set requires did not run: " <>
+            "#{inspect(missing)}. A rate over the remainder would silently use a smaller " <>
+            "denominator than the one it names"
+        )
+    end
+  end
+
+  @doc """
+  What the frozen set expected of this leg, against what the run actually ran.
+
+  Returns `{:ok, %{missing_scored:, missing_not_scored:, unexpected:}}` or
+  `{:error, sentence}`. Shared by `judge/3` (which refuses on a missing scored
+  scenario), the acceptance block (which prints the whole diff, including the
+  parts that do not refuse) and `MCP.Conformance.Census` — one derivation, so
+  the gate and the report cannot disagree about the denominator.
+  """
+  @spec expected_diff(map(), map()) ::
+          {:ok,
+           %{
+             missing_scored: [String.t()],
+             missing_not_scored: [String.t()],
+             unexpected: [String.t()]
+           }}
+          | {:error, String.t()}
+  def expected_diff(m, o) do
+    with {:ok, set} <-
+           RequirementSet.parse(
+             Map.get(o, :requirements_body) || "",
+             Map.get(o, :expected_body) || ""
+           ) do
+      ran = Console.ran(Console.parse(Map.get(o, :console_body) || ""))
+      {:ok, RequirementSet.diff(set, m["leg"], ran)}
     end
   end
 

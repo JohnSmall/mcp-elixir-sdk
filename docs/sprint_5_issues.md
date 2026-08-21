@@ -679,3 +679,628 @@ opposite responses: fix the command line, versus re-run the measurement. **The
 bound:** a caller testing only `rc != 0` cannot tell the four statuses apart,
 and that is intended — the safety property is that a usage error is never
 mistaken for success, not that every consumer distinguishes it.
+
+---
+
+## S5-12 — The client leg prints no scenario→artefact map, because it runs in parallel
+
+**Found:** MES-56, 2026-08-21, by a deliberate smoke run rather than by MES-57
+hitting it under time pressure. **Status:** the server-leg parser refuses a
+client console outright; choosing the client leg's key is MES-57's design call.
+
+`checks.json` carries **no scenario id** — its `id` is the *check's*. So a census
+needs some other key from a scenario to the directory holding its results. On the
+**server** leg the console provides one, adjacently and unambiguously:
+
+```
+=== Running scenario: tools-list ===
+Results saved to /tmp/run/server-tools-list-2026-…Z
+```
+
+On the **client** leg that key does not exist. Measured at
+`@modelcontextprotocol/conformance@0.2.0-alpha.11`, `client --suite sep-835`:
+
+```
+Running sep-835 suite (5 scenarios) in parallel...
+Starting scenario: auth/scope-from-www-authenticate
+Starting scenario: auth/scope-retry-limit
+… all five started …
+Results saved to /tmp/…/auth/scope-from-scopes-supported-2026-…Z
+Results saved to /tmp/…/auth/scope-from-www-authenticate-2026-…Z
+… in COMPLETION order …
+```
+
+**The mechanism:** the client path is a single `Promise.all` over every scenario
+(`dist/index.js`), so all start lines precede all save lines and the saves come
+back in completion order. There is no textual adjacency to pair them by. The
+`--requirements` invocation takes the same branch, so this is not an artefact of
+using `--suite` for the smoke run. Two smaller differences travel with it: the
+header is `Starting scenario:`, not `=== Running scenario: … ===`, and the
+summary mark grows an optional `, K warnings` suffix.
+
+**Why this is worth an entry rather than a fix.** Pairing them positionally
+*looks* correct — every scenario is accounted for and every directory is used —
+and would have mis-attributed **four of five** here, silently. That is the worst
+available failure: a complete-looking table that is wrong. The client leg needs a
+different key entirely (its directories are `<scenario-id>-<timestamp>` under a
+real `auth/` directory, which is parseable *because* the expected id list is
+known and ambiguity can be made to refuse), and picking one is a design decision,
+not an adjustment. So `MCP.Conformance.Console` **refuses** a client console and
+says why. An instrument that cannot attribute what it reads should decline, not
+guess.
+
+---
+
+## S5-13 — A scenario that throws is summarised, scored, and leaves no artefact
+
+**Found:** MES-56, 2026-08-21, on the null-implementation control run.
+**Status:** handled explicitly in the console parser and the census; the entry
+exists because the shape generalises.
+
+Running the suite against a server that answers `-32601` to everything made
+`tasks-capability-negotiation` **raise** inside the harness. The harness caught
+it, and:
+
+* printed `Failed to run scenario <id>: <message>` and a stack trace;
+* synthesised a single `FAILURE` check for it and counted it in the SUMMARY
+  (`✗ tasks-capability-negotiation: 0 passed, 1 failed`) and in the not-scored
+  block;
+* wrote **no artefact directory at all** — 49 directories for 50 scenarios.
+
+**The mechanism, and why it is dangerous:** a census built from the artefact tree
+alone is short by exactly the scenarios that crashed, and a crashed scenario is
+always a *failing* one — so the omission biases in the **flattering** direction,
+which is the direction nobody audits. Worse, the natural repair is worse than the
+disease: treating "no `checks.json`" as "no checks, therefore nothing failed"
+turns every crash into a pass.
+
+This is S5-5's shape a second time — the artefact tree is not a faithful index of
+what ran — and it is the reason the console↔disk consistency check exists. That
+check **caught this unprompted**, on its first contact with a run nobody had
+designed it against, which is the only kind of evidence that a control is not
+unfalsifiable.
+
+Handled by distinguishing three endings for an announced scenario, from the
+console's own evidence: `Results saved to` (ran, artefacts present),
+`Failed to run scenario <same id>` (ran, threw, no artefacts — recorded, with the
+message, and **failing** under every reducer), and neither (unattributable —
+still a refusal, so accepting the second case did not switch the check off).
+
+---
+
+## S5-14 — The adjudicator cannot accept a run of any tree that predates it
+
+**Found:** MES-56, 2026-08-21, at plan time, trying to satisfy an AC that asked
+for an adjudicated comparison against a Sprint 4 figure. **Status:** structural,
+correct, and **not to be fixed**; ruled by the PM as the fingerprint route.
+
+`mix conformance.adjudicate` accepts only a run whose worktree was clean at the
+measured commit. A tree that predates the adjudicator does not contain it, so:
+
+* transplanting the tooling into that tree makes the worktree dirty →
+  `WORKTREE_DIRTY`;
+* pointing `--cwd` at an old worktree → `CWD_NOT_PROJECT_ROOT`.
+
+There is no third route, and **that falls straight out of the requirement rather
+than being a bug in it.** The consequence is general and every future
+re-measurement of a shipped release will hit it: *no historical figure can ever
+be retro-adjudicated.*
+
+**What to do instead** — and the reason this is an entry rather than a defect.
+Reconstructing "old tree + new tooling" on a throwaway branch would produce an
+*accepted* manifest attesting a tree nobody ever shipped: not weak provenance but
+**false** provenance, manufactured by the tool built to prevent it. Compare
+**fingerprints** instead: quote the historical side explicitly as a claim under
+review rather than as an accepted figure, and compare against everything the old
+run recorded — every reducer, the null control, the check-level census, the named
+failing scenarios, the failure decomposition — not just the headline. Zero delta
+then means *the fingerprints match*, and any drift lands on a named scenario and
+check id instead of on a total.
+
+---
+
+## S5-15 — A seat can exit mid-ticket still holding the baton, and neither Jira nor the dispatch log detects it alone
+
+**Found:** MES-56, 2026-08-21, by the PM, when this seat's engine died 49 minutes
+into execution. **Status:** unmitigated. Recovered by hand; the recovery is
+recorded here because the *recovery move is not the obvious one*.
+
+The EMFA overrides already name seat death as a gap in the abstract. This is an
+instance, with timestamps, and it sharpens the abstract statement in two places.
+
+**What happened.** All times UTC, from `/tmp/emfa-seat-dispatch.log`; Jira
+renders `+0100`, and mixing the two inflates every interval by an hour.
+
+| UTC | event |
+|---|---|
+| `00:13:58` | `ASSIGNED` + `PICKUP` MES-56 — 6s after the PM's ratification handoff |
+| `01:03:15` | `ENGINE_EXIT ticket=MES-56 rc=0` — no close-out posted, assignee unchanged |
+| `01:16:23` | PM posts a resume handoff to `CODE_CREATOR`, who is **already** the assignee |
+| — | **no dispatch for 8m35s** |
+| `01:24:58` | PM unassigns, then hands off — an assignee *change* |
+| `01:25:04` | `ASSIGNED` + `PICKUP` — 6s later |
+
+**Mechanism 1 — the exit is invisible from either source on its own, so
+detection requires a join.** From Jira the ticket is In Progress and assigned to
+a seat: indistinguishable from one still working, and there is no upper bound on
+a legitimate turn against which a stall could be timed out. The dispatch log does
+record the exit — but it logs `ENGINE_EXIT rc=0` for a *healthy* end-of-turn
+too. This very ticket shows both: the planning turn exited `rc=0` at `00:09:25`,
+19 seconds after its handoff landed, and that was correct. **`rc=0` is emitted
+whether or not the baton was passed**, so the log alone cannot classify an exit
+either. The signal is the conjunction — *an `ENGINE_EXIT` whose ticket is still
+assigned to the seat that exited* — and nothing computes it.
+
+**Mechanism 2 — the obvious recovery is a silent no-op, and this is the more
+useful half.** The harness dispatches on an assignee **change**, not on a new
+comment and not on an `updated` timestamp. So re-sending the handoff to a dead
+seat — exactly what a PM who has correctly diagnosed the death would do, and
+what `jira_handoff` is *for* — sets the assignee to the value it already holds,
+changes nothing, and fires nothing. The 8m35s row above is that no-op. A PM can
+diagnose the stall correctly, re-hand the baton correctly, and still wait
+forever, with every reason to believe the seat is alive. **Recovery requires
+manufacturing an assignee change: unassign, then hand off.**
+
+**What bounded the loss**, since the interesting question is why 49 minutes of
+work survived. Two things, and only the first is the usual advice:
+
+* Commits were small and frequent — three on the branch — so what was lost was
+  not a session but a single untracked directory.
+* That directory was `docs/conformance/`, which is a **projection** of saved run
+  artefacts plus committed code, not an original. Regenerating it and diffing
+  reproduced all three files byte-identically. The generate-don't-transcribe rule
+  adopted for the census against MES-24's drift defect turned out to also make
+  the artefact *reconstructible after a crash* — a second, unplanned payoff for
+  the same discipline.
+
+The general form: **work is recoverable to the extent it is either committed or
+derivable.** An untracked file that is neither is the only thing a mid-ticket
+death can actually destroy.
+
+---
+
+## S5-16 — A DoD gate the reviewer cannot run: `node` is on two seats' PATH and not on the third's
+
+**Found:** MES-56 round 1, 2026-08-21, by `CODE_REVIEWER`, when it tried to
+reproduce a green gate 5 and could not. **Status:** the dependency is now
+declared and excluded-with-a-reason (`:requires_live_harness`); the PATH
+difference between seats is unfixed and is not this ticket's to fix.
+
+Three conformance tests shell out to `node` to cross-check our parsing of the
+harness's frozen requirement set against the harness's own listing of it. They
+pass for `PM` and for `CODE_CREATOR`, whose shells have node v24.13.0 via nvm,
+and they raise for `CODE_REVIEWER`, whose shell does not. Same clone, same
+commit, same `mix test` — a green gate for two seats and `rc 2` for the third.
+
+**The mechanism is not the missing binary.** It is that the seats share a
+repository and *not* an environment, while the review model rests on the
+reviewer being able to re-derive what the author claims. After the seat-family
+change, authorship separation is the independence property we have left; an
+environment difference that silently removes the reviewer's ability to re-run a
+gate erodes it exactly as effectively as a shared identity would, and it does so
+without anyone deciding to.
+
+**The half that was ours, and is worse.** Two of the three tests already guarded
+themselves with `if File.exists?(requirements_yaml)`. On a host with the
+requirement set installed and no `node`, that guard passes and the body then
+explodes — which is how it was found. On a host with neither, the guard fails,
+the body never runs, and the test **reports green having checked nothing**. A
+conditional skip written inside a test body is indistinguishable from a pass in
+every report the suite produces. That is absence read as satisfaction, inside
+the test suite, on the ticket about exactly that.
+
+**The remedy is a tag, not a fixture.** The precondition is declared once
+(`MCP.Conformance.TestHarness.unavailable_reason/0`) and `test_helper.exs` turns
+it into an exclusion that prints the reason and visibly shortens the suite:
+`170 tests, 0 failures (3 excluded)` instead of `173 tests, 0 failures`. Both
+directions were measured. Recording the harness output as a fixture was
+considered and rejected: the value of those tests is that two *independent*
+derivations agree, and a snapshot would compare the parser against itself.
+
+**Transferable form:** *a test that decides for itself whether it can run must
+report that decision in the suite's own counters.* A skip that is invisible in
+the count is a pass. And when a gate's runnability depends on the host,
+**a green from one seat is not evidence for another** until the dependency is
+declared.
+
+---
+
+## S5-17 — Fixing the instance does not answer the class: four defects of one shape in one sprint
+
+**Found:** MES-56 round 1, 2026-08-21, by the PM, on being handed the fourth.
+**Status:** answered for the census by an enumerated precondition register
+(`MCP.Conformance.Census.precondition_register/0`), with tests that fail when a
+refusal exists without one.
+
+Four separate defects this sprint were the same defect: **a value computed as
+though its precondition held, with nothing said when it did not.**
+
+| # | site | what it computed anyway |
+|---|---|---|
+| S5-7 | a check reading a decoded-JSON operand | passed when the operand was absent |
+| MES-51 | the acceptance block | printed a console hash for a file that did not exist |
+| S5-16 | a test guarding itself with `File.exists?` | reported green having checked nothing |
+| B1 | the null-control join | printed "ours alone" over scenarios the control never ran |
+
+Each was found separately, fixed separately, and none of the fixes protected the
+next site. The reason is that they are not related by *code* — different modules,
+different authors, different rounds — but by *shape*, and a shape is not
+something a diff review can be relied on to see.
+
+**What the register does that a fix cannot.** It lists every site in the module
+whose value rests on a precondition, together with what happens when that
+precondition fails, and it lists the sites that are **already correct** — because
+"correct" and "never examined" are indistinguishable from outside, which is the
+whole complaint. Four dispositions are allowed: `:refuses`, `:refused_upstream`
+(named the condition that makes the local default unreachable), `:reported`
+(stated why no printed figure can depend on it), and `:degrades` — of which
+exactly one site is permitted, is named, and is asserted by a test, so a second
+cannot join it quietly.
+
+Writing it found a fifth instance the review had not: an unrecognised check
+status had no disposition in any reducer, so it was silently non-failing and
+counted as a **pass** under all three at once — and the harness cross-check could
+not catch it, because the harness keys on `FAILURE` too and calls it non-failing
+as well. Now `CHECK_STATUS_UNKNOWN`.
+
+**Transferable form:** when a defect recurs, the deliverable is *the enumeration
+of its class*, not the fix. Ask of every value: what must be true for this to
+mean anything, and what does this code do when that is false? Write the answer
+down for the sites where it is "nothing" as well as the sites where it is
+"refuses" — an unenumerated correct site is a site nobody has checked.
+
+---
+
+## S5-18 — A seed sweep that tails its own output cannot name the failure it found
+
+**Found:** MES-56 round 1, 2026-08-21, on the gate-5 sweep for the correction.
+**Status:** the sweep harness now writes one full log per seed; the red it found
+is recorded here because it could not be identified afterwards.
+
+The first 20-seed sweep of the round came back **19 green, 1 red** (seed
+`1000003`). The harness printed `tail -25` of the failing run's output, which on
+this suite is Bandit's shutdown logging — the ExUnit failure block had already
+scrolled past. Nothing else was kept, so the failing test's *identity was
+destroyed by the harness that detected it*.
+
+Everything after that is weaker than it should have been: seed `1000003` was
+re-run 22 times and passed every time, a fresh logged 20-seed sweep was 20/20
+green, and 20 further logged runs at other seeds were green — **61 runs, one
+red, unidentified and unreproduced**. That is enough to say the suite is not
+reliably red, and not enough to say what happened once.
+
+**Mechanism, and it is the S5-10 family.** S5-10 is about a status read off a
+pipeline being `tail`'s rather than the command's; this is its sibling — the
+status was read correctly, and the *evidence* was piped away. A sweep exists to
+turn a rare failure into a caught one, and catching it is worth nothing if the
+artefact that names it is discarded in the same breath.
+
+**Rule:** a sweep writes each run's complete output to its own file and reports
+paths, never excerpts. Cheap — 20 files, a few hundred KB — and it is the whole
+difference between "a flake exists somewhere" and a bug report.
+
+**Left open, deliberately:** an unidentified intermittent failure in this
+suite. It is not attributed to this round's changes (they add pure, `async`
+conformance tests with no ports or timers) and it is not attributed to anything
+else either, because attributing it would require the log this file exists to
+say we did not keep.
+
+---
+
+## S5-19 — A precondition register is complete only relative to the question used to build it
+
+**Found:** MES-56 round 2, 2026-08-21, by the CODE_REVIEWER, on a register that
+S5-17 had just declared the class answer.
+**Status:** the register stands and was extended; what changed is that it is no
+longer treated as self-certifying. A second, mechanical question is now part of
+writing one.
+
+S5-17 answered a recurring defect by enumerating its class into
+`MCP.Conformance.Census.precondition_register/0` — fifteen sites, each with what
+it does when its precondition fails, including the sites that were already
+right. The register was **complete against the question that built it**, which
+was an intent question: *what preconditions does this code have?* Every site the
+author could think of was in it.
+
+The reviewer found a sixteenth by asking a different question, and a mechanical
+one:
+
+> Trace every `Map.new`, every default (`||`, `Map.get/3`, `Enum.find/3`), and
+> every list-to-set conversion. At each, ask: **is this value valid only if some
+> input is unique, or complete?**
+
+That question does not need the author's model of the code, and it is the reason
+it found what the intent walk missed. `Map.new(parsed.marks, &{&1.scenario, &1})`
+keys the harness's own per-scenario verdicts by scenario id. Two marks for one
+scenario collapse **last-wins**, silently. A one-scenario run whose console
+carried both `✗ tools-list: 0 passed, 1 failed` and `✓ tools-list: 1 passed, 0
+failed` was ACCEPTED, keeping the ✓ — *the flattering one* — while the
+cross-check reported agreement with a harness verdict it had just discarded.
+The register said "every scenario has a mark". It did not say "exactly one, and
+no conflicting duplicate", because nobody had asked whether it needed to.
+
+**The sub-shape worth carrying: PAIRED CONCEPTS, one half guarded.**
+`Console.parse/1` had always faulted a scenario mapped to two artefact
+directories (`duplicate_faults/1`). The SUMMARY block — the other half of the
+same "one line per scenario" property, in the same file, feeding the same
+cross-check — had nothing. The concept existed, was implemented once, and was
+never applied to its sibling. That is fix-the-instance-not-the-class in
+miniature, occurring *inside* the register written to prevent it. So: **wherever
+a guard exists for one member of a pair, go and look at the other member.**
+
+Running the mechanical question over the whole converter found **five more**
+accepting cases, each measured on a run the tooling accepted before the guard
+and refuses after:
+
+| site | the input it assumed | what it did instead of refusing |
+|---|---|---|
+| `Console.marks/1` | one SUMMARY mark per scenario | kept the last; the ✗ vanished (B2) |
+| `Console.marks/1` | no mark without a scenario | ignored a mark for a scenario that never ran |
+| `Console.not_scored/1` | one not-scored line per scenario | kept both; the reason became order-dependent |
+| `Console.totals/1` | one `Total:` line, one label each | read the first line, kept the last label |
+| `RequirementSet` scored/not-scored lists | each id listed once | `expected_counts.scored = 2` over a one-scenario set, with `absentees.scored = []` |
+| `Census` leg → frozen set | the leg is one the set defines | `Map.get(…, leg, [])` gave an empty denominator; 0 of 0 rendered as a complete census |
+| `Classification` table | the three sources do not overlap | `Map.merge/2` silently kept the harness entry over ours |
+
+Two are worth naming beyond the table. The `RequirementSet` one is the **AC2
+denominator vouching for a total it had inflated itself** — and its own
+yaml-versus-listing cross-check could not catch it, because that check compares
+`MapSet`s, and a `MapSet` discards multiplicity along with the order it was
+written to ignore. The `Classification` one is B2's exact sentence in another
+file: a duplicate collapses last-wins, and the winner is the entry that says
+failing the scenario "costs nothing against the conformance denominator", so the
+owned `:real_gap` is the half that disappears.
+
+**Negatives, enumerated, because a negative is the evidence the pass was made.**
+The same trace cleared: `Map.new(@reducers, …)`, `Map.new(@statuses, …)`,
+`Map.new(Map.keys(@reducers), …)`, `Map.new(@statuses ++ ["total"], …)` and
+`Map.new(Classification.classes(), …)` — every key a literal of this codebase's,
+unique by construction and asserted by an existing test; the four sites keying on
+scenario id (`by_id` twice, a `Map.keys` difference, one `Enum.find`), which
+`duplicate_faults/1` has always refused upstream; `Beacon.read/2`'s
+`Enum.uniq`, which collapses multiplicity but keeps the count in a separate
+field and feeds an existential test; `counts/1`'s `|| "ABSENT"` and
+`Map.merge/3` adder, both closed by `CHECK_STATUS_UNKNOWN`; and
+`Manifest.refusal_codes/0`'s `Enum.find_index`, over a literal list.
+
+One site was examined and **deliberately left unguarded**: an *absent* `Total:`
+line does not fault. Multiplicity and absence are not the same hazard —
+multiplicity means two contradictory values with one chosen silently, absence
+means no value, and `%{}` is visibly empty to whoever reads it. Guarding it
+would be a bound with nothing behind it.
+
+**Transferable form.** A register is an artefact of the question that produced
+it, and its completeness claim is only ever relative to that question. Build one
+with at least two questions, and let one of them be mechanical enough that it
+does not consult your model of the code: *grep the collapse points, then ask
+what each one assumes*. Where the answers differ, the second question is the one
+that found something.
+
+---
+
+## S5-20 — A stated property with nothing checking the code against it yields one sibling defect per review round
+
+**Found:** MES-56 round 3, 2026-08-21, by the CODE_REVIEWER; the *class* named by
+the PM in the round-4 correction contract.
+**Status:** closed by construction — the property is now a table over a set the
+code itself defines, and completing that table is the terminating condition.
+
+### The defect
+
+`MCP.Conformance.Console`'s `parse/1` moduledoc has asserted a **universal**
+property since it was written:
+
+> A console is well-formed only if every scenario it names appears exactly once
+> in each block that names scenarios.
+
+Its bullet list also claimed the membership half for one block ("a SUMMARY mark
+for a scenario that never ran"). The code satisfied that claim for **three** of
+the four blocks `parse/1` returns, and rounds 2 and 3 each found one more block
+it was false of:
+
+| round | block | half that was missing |
+|---|---|---|
+| 2 (B2) | `marks` | multiplicity, then membership |
+| 3 (B3) | `not_scored` | membership |
+
+Neither was a guard someone forgot. Both were **a stated property with nothing
+comparing it against the code** — and the thing absent was the doc-to-code
+check itself, so its absence read as satisfaction. That is this sprint's
+recurring defect one level up (S5-17, S5-19).
+
+### Why patching does not terminate
+
+Round 2 fixed the block the reviewer named and swept for more, using the
+reviewer's question. Round 3 asked the *same* question and found the next
+sibling. A review round that fixes the named instance and sweeps by the same
+question can always yield exactly one more instance, because the sweep's
+boundary is the sweeper's model of the code rather than anything the code
+declares. Rounds 1, 2 and 3 produced 1, 6 and 1 findings, with no round able to
+say it was the last.
+
+### The close, and why it terminates
+
+The enumeration is taken over a set **the code defines rather than the author
+chooses**: the four content blocks `parse/1` itself returns
+(`mappings`, `marks`, `not_scored`, `totals`). For each, both guarantees are
+stated in the moduledoc as a table, and every cell must be one of
+
+* *enforced by* a named function,
+* *vacuous* for a stated reason (`mappings` **are** the ground truth membership
+  is checked against),
+* *bounded* for a stated reason (the client leg has no scenario headers, so
+  every mark and every not-scored line is an orphan by construction and
+  `parallel_leg_faults/1` refuses that console whole).
+
+A cell that is none of the three is a defect, and the table makes it visible in
+the source rather than a review round later. When the table is complete there is
+no next sibling for the question to find, because the question's domain is the
+return map.
+
+> **Superseded in part, MES-56 round 5 — see S5-21.** This entry originally
+> gave `totals` as a second *vacuous* example, on the ground that it keys on
+> status labels and never on scenario ids. The premise is true and the
+> conclusion was not: a label is still a key, and `total_parts/1` accepted any
+> lowercase word. That cell is now *enforced*. More importantly, "the question's
+> domain is the return map" fixes the domain and leaves the **arity** free, and
+> the register one arity up was not closed at all.
+
+Completing it also opened one guarantee **the table does not itself state**:
+`marks` and `not_scored` both carry a ✓/✗ for the *same* scenario, and nothing
+compared them, so a console could mark a scenario ✗ in one block and ✓ in the
+other while satisfying every cell. That is the duplicate-mark defect spread
+across two blocks. Guarded in the same round rather than discovered in the next
+one — which is what "closed by construction" is supposed to buy.
+
+### The layering, which is a separate ruling
+
+B3 named two different membership questions and they belong in different
+modules:
+
+| question | authority | where |
+|---|---|---|
+| does this not-scored line name a scenario that **ran**? | intra-console | `Console.orphan_not_scored_faults/3` |
+| does the **frozen set** agree this scenario is not scored, and for the same reason? | console vs. requirement set | `Census.corroborate_not_scored/3` (`NOT_SCORED_DISAGREES_WITH_FROZEN_SET`) |
+
+`RequirementSet` is deliberately **not** imported into the parser: a parser that
+imports its own referee can no longer be used to check the referee. Both halves
+are needed — the intra-console guard catches a not-scored line for a scenario
+that never ran, and only the cross-authority one catches a not-scored line for a
+scenario that ran and that the frozen set **scores**, which is the flattering
+direction (a scenario leaving the scored denominator by an edit to a text file
+the census reads and never cross-examines).
+
+### Transferable form
+
+A universal claim in a doc comment is a **specification with no test**. Where
+one exists, discharge it as a table over a set the code declares — a return map,
+a struct's fields, a behaviour's callbacks — not over a list of places worth
+looking at. Then the register is closed by construction, and the convergence
+signal is *"the table is complete"* rather than *"this round found nothing"*,
+which is a claim no round can make.
+
+---
+
+## S5-21 — A register closed over items is not closed over their joins, and the arity has to be argued rather than climbed one round at a time
+
+**Found:** MES-56 round 4, 2026-08-21, by the CODE_REVIEWER.
+**Status:** closed by construction — both registers are now enumerations over
+sets the code defines, and the moduledoc states why there is no third.
+
+### The defect
+
+S5-20 closed a universal doc claim by turning it into a table over a **closed**
+set: the four blocks `MCP.Conformance.Console.parse/1` returns, two guarantees
+each, eight cells, every cell *enforced-by* / *vacuous-because* /
+*bounded-because*. The round-4 close-out then claimed closure "in your sense…
+the question has no undiscovered instance to find, because its domain is the
+return value".
+
+That claim was true of what it enumerated and **false of the register one arity
+up**. The eight cells say what is true of each block *on its own*. The blocks
+are reducers over one run, so they also constrain *each other*, and a console
+can satisfy all eight cells and still be one the harness could not have printed.
+Measured: a console whose SUMMARY marks sum to 1 passed / 0 failed while its
+`Total:` line states 0 passed / 1 failed satisfies every cell, parses with
+`faults: []`, and the census **ACCEPTS** it.
+
+### Why it is the same mechanism as S5-20, one level up
+
+S5-20's lesson was "do not enumerate over a set you chose; enumerate over a set
+the code declares". Round 4 did that — and then picked the **arity** by hand.
+Unary properties were enumerated exhaustively; binary ones were not enumerated
+at all, so the first join anyone looked at was unguarded. Choosing the arity is
+choosing the domain again, in the one dimension the closed set does not fix.
+
+Climbing one arity per review round does not terminate either, for exactly the
+reason S5-20 gives: each round's boundary is that round's model of the code.
+
+### The close, and why it terminates
+
+Two things, and the second is the one that ends it:
+
+1. **Enumerate the next register too** — four blocks, six unordered pairs, no
+   pair omitted, each *guarded-by* or *vacuous-because*. Four of the six were
+   already guarded; one (`marks × totals`) was the measured defect above and is
+   now `total_sum_faults/3`; two are vacuous for stated reasons.
+2. **Argue the arity, in the source.** Take a census of what the blocks carry —
+   scenario id, verdict, check counts, an aggregate of those counts, directory,
+   reason. A consistency property has content only where a value is derivable
+   from more than one block. Membership is always stated against one
+   distinguished set, so a three-way membership claim is the conjunction of two
+   pairs (transitivity, not a new property); agreement needs two carriers of one
+   value and no value has three. A genuine triple needs a **hyperedge** — a
+   value derivable jointly from three blocks and from no two of them — and the
+   census shows there is none. The same census answers every higher arity,
+   because it is an enumeration rather than a search.
+
+The terminating condition is therefore not "round 5 found nothing" but "the
+arity argument is stated and its premise is a census over the return map".
+
+### Transferable form
+
+When you discharge a universal claim as a register over a closed set, **state
+the register's arity and defend it in the same breath**. A per-item register is
+evidence about items; it is silent about joins, and joins are where reducers
+over one source disagree. Either show that the n-ary case decomposes into the
+(n−1)-ary one — usually by finding the shared value and showing it has at most
+two carriers — or enumerate the next register too. A closure claim that does not
+name its arity is a closure claim about a domain the reader has to guess.
+
+---
+
+## S5-22 — A hand-built accept-half control can be an artefact the source could never emit, and then it proves less than it appears to
+
+**Found:** MES-56 round 5, 2026-08-21, by the CODE_CREATOR — by the guard added
+in the same round refusing the round's own controls.
+**Status:** fixed; three probe directories and one test fixture rebuilt, and the
+fixture now computes the fields the harness computes.
+
+### The defect
+
+Adding `total_sum_faults/3` (S5-21) immediately refused two things that were
+supposed to be **accept halves**:
+
+* `/tmp/mes56r4-ns-clean`, the round-4 accept-half control for the not-scored
+  cross-authority guard, and the two refusal probes derived from it. Its
+  SUMMARY marks sum to 1 passed / 1 failed; its `Total:` line said
+  1 passed / 0 failed. The harness cannot print that — it computes the second by
+  summing the first;
+* the census test's console fixture, which generated its SUMMARY block from the
+  run's scenarios and then stated `Total: 3 passed, 2 failed` as a **constant**.
+  Correct for the default run, wrong for every test that passes a subset.
+
+Both were accepted for as long as nothing compared the two blocks. The moment
+something did, they were revealed as consoles no run could have produced.
+
+### Why it matters more than a broken fixture
+
+The two derived probes — "the console omits a not-scored scenario that ran" and
+"the two authorities give different reasons" — were published in round 4 as
+evidence that `NOT_SCORED_DISAGREES_WITH_FROZEN_SET` fires. After the new guard
+they refused **earlier**, on the incoherent total, and so no longer reached the
+guard they existed to exercise. A refusal control that refuses for the wrong
+reason still looks green in a table of refusals.
+
+The same applies in the flattering direction: an **accept**-half control built
+by hand is an assertion that the instrument accepts something. If the something
+is unreachable from the source, the assertion is about nothing.
+
+### The close
+
+Every fixture field the harness *computes* is now computed in the fixture too —
+the `Total:` line from the marks it prints, the opening scenario count from the
+scenarios it announces, the not-scored header's failing count from the entries
+it lists. A control that spoils one field corrects the fields the harness would
+have recomputed, so the forgery is internally coherent and the guard under test
+is the one that has to catch it. That is a strictly stronger control: it must
+now catch a console nothing else can tell is wrong.
+
+### Transferable form
+
+A control is only as good as the fidelity of the artefact it is built from. For
+every field of a synthetic fixture, ask whether the *producer* derives it from
+another field; if so, derive it in the fixture too, and have a spoiling probe
+correct the derived fields it disturbs. Otherwise the first guard that checks
+the derivation will silently re-point your whole control set at itself — and the
+table of refusals will not change colour when it does.

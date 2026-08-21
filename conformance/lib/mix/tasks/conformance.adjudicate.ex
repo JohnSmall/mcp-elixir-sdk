@@ -44,7 +44,7 @@ defmodule Mix.Tasks.Conformance.Adjudicate do
 
   use Mix.Task
 
-  alias MCP.Conformance.{Argv, Manifest, Provenance}
+  alias MCP.Conformance.{Argv, Manifest, Provenance, RequirementSet}
 
   @switches [
     expect_commit: :string,
@@ -113,14 +113,9 @@ defmodule Mix.Tasks.Conformance.Adjudicate do
     end
   end
 
-  defp observe(run_dir) do
-    console = Path.join(run_dir, Manifest.console_filename())
-
-    %{
-      scenario_dirs: Provenance.scenario_dirs(run_dir),
-      console_sha256: Provenance.sha256_file(console)
-    }
-  end
+  # `mix conformance.census` observes through the SAME function, so the two
+  # tasks cannot come to different verdicts about one run.
+  defp observe(run_dir), do: Provenance.observe_run(run_dir)
 
   # The block is split because it was caught asserting what it had not checked:
   # a run with no console.txt was accepted while this block printed the stored
@@ -139,7 +134,10 @@ defmodule Mix.Tasks.Conformance.Adjudicate do
                           == project root #{m["invocation"]["project_root"]}
         adapter beacons   #{m["beacon"]["adapter_count"]} > 0, over #{m["result"]["scenario_dir_count"]} scenario dirs enumerated on disk
         console           #{Manifest.console_filename()} sha256:#{short(m["result"]["console_sha256"])} — re-hashed from the file now
-    #{instrument_lines(m, expect, :verified)}
+        denominator       #{RequirementSet.expected_filename()} + #{RequirementSet.requirements_copy_filename()} re-hashed; the two
+                          derivations agree, and every scored scenario the frozen set
+                          requires appears in the console's scenario map
+    #{denominator_lines(m, run_dir)}#{instrument_lines(m, expect, :verified)}
       RECORDED — provenance this run carries. Nothing here was verified; do not read it as a check:
         leg               #{m["leg"]}
         branch            #{m["git"]["branch_start"]}
@@ -221,8 +219,47 @@ defmodule Mix.Tasks.Conformance.Adjudicate do
     """
   end
 
+  # The diff is printed in full, not just the half that refuses. A not-scored
+  # absentee and a scenario outside the frozen set cannot change a rate, so they
+  # do not refuse — which is exactly why they have to be stated somewhere, or
+  # the only visible outcome of the whole comparison would be silence.
+  defp denominator_lines(m, run_dir) do
+    case Manifest.expected_diff(m, observe(run_dir)) do
+      {:ok, diff} ->
+        """
+            expected diff     scored absent: #{render(diff.missing_scored)} (any one of these refuses)
+                              not-scored absent: #{render(diff.missing_not_scored)} — reported, cannot move a rate
+                              ran but outside the frozen set: #{render(diff.unexpected)}
+        """
+
+      {:error, why} ->
+        "    expected diff     UNAVAILABLE: #{why}\n"
+    end
+  end
+
+  defp render([]), do: "none"
+  defp render(ids), do: inspect(ids)
+
+  # Truncation is LABELLED wherever it happens. A 16-char prefix looks exactly
+  # like a hash and is not one: fed back to --expect-harness-dist-sha256 or
+  # --expect-requirements-md5 it refuses HARNESS_MISMATCH, because judge/3
+  # compares literally — the same trap as a short SHA under --expect-commit.
+  # CR walked into it while re-verifying this run, which is why the pins below
+  # are printed in full and copyable rather than shortened to fit the column.
   defp short(nil), do: "(none)"
-  defp short(hash), do: String.slice(to_string(hash), 0, 16)
+
+  defp short(hash) do
+    full = to_string(hash)
+
+    case String.length(full) do
+      n when n > 16 ->
+        String.slice(full, 0, 16) <>
+          "… (truncated, #{n} chars; full value in " <> Manifest.filename() <> ")"
+
+      _ ->
+        full
+    end
+  end
 
   # The instrument fields are judged only when the caller pins them, so they
   # belong under whichever heading is true for THIS invocation. Printing them
@@ -239,12 +276,16 @@ defmodule Mix.Tasks.Conformance.Adjudicate do
       section == if(is_nil(pin), do: :recorded, else: :verified)
     end)
     |> Enum.map_join("", fn {label, actual, pin, flag} ->
-      suffix =
-        if is_nil(pin),
-          do: " — unpinned this run; pass #{flag} to have it checked",
-          else: " == the pinned value"
-
-      "    #{String.pad_trailing(label, 18)}#{short(actual)}#{suffix}\n"
+      # Printed FULL, never truncated: this is the one value a reader copies
+      # back out of the block, and a shortened one refuses when they do.
+      if is_nil(pin) do
+        "    #{String.pad_trailing(label, 18)}#{actual || "(none)"}\n" <>
+          "                      unpinned this run. To have it checked, pass it back in full:\n" <>
+          "                        #{flag} #{actual || "VALUE"}\n"
+      else
+        "    #{String.pad_trailing(label, 18)}#{actual}\n" <>
+          "                      == the pinned value, compared literally\n"
+      end
     end)
   end
 

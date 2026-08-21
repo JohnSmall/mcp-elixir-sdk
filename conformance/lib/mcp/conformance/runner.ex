@@ -25,11 +25,22 @@ defmodule MCP.Conformance.Runner do
   and MES-57.
   """
 
-  alias MCP.Conformance.{Beacon, Manifest, Provenance}
+  alias MCP.Conformance.{Beacon, Manifest, Provenance, RequirementSet}
 
   @default_harness_dir "/tmp/conf11"
   @default_requirements "2026-07-28"
   @default_port 3001
+
+  # An ENUM, not a command. The null control has to be selectable by the same
+  # runner as the measurement — an unreproducible control is not a control, and
+  # MES-49's lived in /tmp — but "let the operator name a command" would turn a
+  # provenance tool into an arbitrary-process launcher whose manifest records
+  # whatever it was told. Two named adapters, each with a fixed command line, so
+  # `invocation.adapter` is a fact about which of two known things ran.
+  @adapters %{
+    sdk: "conformance/server_adapter.exs",
+    null: "conformance/controls/null_server.py"
+  }
 
   @doc """
   Run a leg. Options:
@@ -42,18 +53,25 @@ defmodule MCP.Conformance.Runner do
     * `:cwd` — the directory the harness (and so the spawned adapter) runs in.
       Defaults to the project root. Setting it elsewhere is how the wrong-cwd
       positive control is produced.
+    * `:adapter` — `:sdk` (default) or `:null`, the do-nothing control. Server
+      leg only; the client leg has no adapter to substitute.
     * `:harness_dir`, `:requirements`, `:port`
   """
   @spec run(keyword()) :: {:ok, map(), String.t()} | {:error, term()}
   def run(opts) do
     leg = Keyword.fetch!(opts, :leg)
+    adapter_kind = Keyword.get(opts, :adapter, :sdk)
     harness_dir = Keyword.get(opts, :harness_dir, @default_harness_dir)
     requirements = Keyword.get(opts, :requirements, @default_requirements)
     port_no = Keyword.get(opts, :port, @default_port)
 
+    if adapter_kind == :null and leg != :server do
+      Mix.raise("--adapter null substitutes the SERVER under test; there is no client leg form")
+    end
+
     project_root = Provenance.project_root(File.cwd!()) || File.cwd!()
     cwd = opts |> Keyword.get(:cwd, project_root) |> Path.expand()
-    out_dir = opts |> Keyword.get(:out_dir, default_out_dir(leg)) |> Path.expand()
+    out_dir = opts |> Keyword.get(:out_dir, default_out_dir(leg, adapter_kind)) |> Path.expand()
 
     File.mkdir_p!(out_dir)
 
@@ -84,11 +102,29 @@ defmodule MCP.Conformance.Runner do
       {Beacon.env_token_var(), token}
     ]
 
+    # The denominator, captured INTO the run directory before anything runs.
+    # `requirements.{md5,sha256}` already identify the frozen file; neither says
+    # what is in it, so a run directory alone could not state which scenarios it
+    # was supposed to have executed. Both derivations are captured — the
+    # harness's rendering and a byte copy of its source — because
+    # `MCP.Conformance.RequirementSet` cross-checks them rather than trusting
+    # either.
+    requirements_info = Provenance.resolve_requirements(harness_dir, requirements)
+    {expected, expected_exit} = Provenance.capture_expected(harness_dir, requirements)
+    File.write!(Path.join(out_dir, RequirementSet.expected_filename()), expected)
+
+    copy_sha =
+      copy_requirements(requirements_info["path"], out_dir)
+
+    log("expected set captured (list exit #{expected_exit}, #{byte_size(expected)} bytes)")
+
     started = Provenance.now()
     started_ms = System.monotonic_time(:millisecond)
     git_start = Provenance.collect_git(project_root, [out_dir])
 
-    adapter = if leg == :server, do: start_server_adapter(cwd, port_no, env), else: nil
+    adapter =
+      if leg == :server, do: start_server_adapter(adapter_kind, cwd, port_no, env), else: nil
+
     argv = harness_argv(leg, harness_dir, requirements, out_dir, port_no)
 
     {console, exit_code} = invoke_harness(argv, cwd, env)
@@ -107,13 +143,14 @@ defmodule MCP.Conformance.Runner do
         git_start: git_start,
         git_end: git_end,
         harness: Provenance.resolve_harness(harness_dir),
-        requirements: Provenance.resolve_requirements(harness_dir, requirements),
+        requirements: Map.put(requirements_info, "copy_sha256", copy_sha),
         invocation: %{
           "argv" => argv,
           "cwd" => cwd,
           "project_root" => project_root,
           "cwd_is_project_root" => Path.expand(cwd) == Path.expand(project_root),
-          "adapter_command" => adapter_command(leg, port_no),
+          "adapter" => Atom.to_string(adapter_kind),
+          "adapter_command" => adapter_command(leg, adapter_kind, port_no),
           "out_dir" => out_dir,
           "compiled_before_run" => compiled
         },
@@ -138,6 +175,9 @@ defmodule MCP.Conformance.Runner do
           "harness_exit_code" => exit_code,
           "console_sha256" => Provenance.sha256_string(console),
           "console_bytes" => byte_size(console),
+          "expected_sha256" => Provenance.sha256_string(expected),
+          "expected_bytes" => byte_size(expected),
+          "expected_exit_code" => expected_exit,
           "scenario_dir_count" => length(scenario_dirs),
           "scenario_dirs" => scenario_dirs
         }
@@ -156,9 +196,10 @@ defmodule MCP.Conformance.Runner do
     {:ok, manifest, out_dir}
   end
 
-  defp default_out_dir(leg) do
+  defp default_out_dir(leg, adapter_kind) do
     stamp = DateTime.utc_now() |> DateTime.to_iso8601(:basic) |> String.replace(~r/[^0-9TZ]/, "")
-    Path.join("/tmp/mcp-conformance-runs", "#{leg}-#{stamp}")
+    suffix = if adapter_kind == :sdk, do: "", else: "-#{adapter_kind}"
+    Path.join("/tmp/mcp-conformance-runs", "#{leg}#{suffix}-#{stamp}")
   end
 
   # The runner compiles so the adapter cannot serve stale beams from an older
@@ -188,17 +229,34 @@ defmodule MCP.Conformance.Runner do
 
     case leg do
       :server -> base ++ ["--url", "http://127.0.0.1:#{port_no}/mcp"]
-      :client -> base ++ ["--command", adapter_command(:client, port_no)]
+      :client -> base ++ ["--command", adapter_command(:client, :sdk, port_no)]
+    end
+  end
+
+  # A byte copy, not a re-render. The manifest hashes it, and the adjudicator
+  # re-hashes it from disk, so the copy in the run directory is bound to the
+  # file the run was scored against rather than merely resembling it.
+  defp copy_requirements(nil, _out_dir), do: nil
+
+  defp copy_requirements(path, out_dir) do
+    dest = Path.join(out_dir, RequirementSet.requirements_copy_filename())
+
+    case File.cp(path, dest) do
+      :ok -> Provenance.sha256_file(dest)
+      {:error, _} -> nil
     end
   end
 
   # Deliberately cwd-relative, exactly as the runs this ticket is fixing were
   # invoked. An absolute path here would silently repair the wrong-cwd failure
   # mode and there would be nothing left for the positive control to catch.
-  defp adapter_command(:client, _port), do: "mix run conformance/client_adapter.exs"
+  defp adapter_command(:client, _kind, _port), do: "mix run conformance/client_adapter.exs"
 
-  defp adapter_command(:server, port),
-    do: "mix run --no-halt conformance/server_adapter.exs #{port}"
+  defp adapter_command(:server, :sdk, port),
+    do: "mix run --no-halt #{@adapters.sdk} #{port}"
+
+  defp adapter_command(:server, :null, port),
+    do: "python3 #{@adapters.null} #{port}"
 
   defp invoke_harness([bin | args], cwd, env) do
     {out, code} = System.cmd(bin, args, cd: cwd, env: env, stderr_to_stdout: true)
@@ -207,11 +265,15 @@ defmodule MCP.Conformance.Runner do
     e -> {"harness could not be invoked: #{Exception.message(e)}\n", 127}
   end
 
-  defp start_server_adapter(cwd, port_no, env) do
-    args = ["run", "--no-halt", "conformance/server_adapter.exs", Integer.to_string(port_no)]
+  defp start_server_adapter(kind, cwd, port_no, env) do
+    {bin, args} =
+      case kind do
+        :sdk -> {"mix", ["run", "--no-halt", @adapters.sdk, Integer.to_string(port_no)]}
+        :null -> {"python3", [@adapters.null, Integer.to_string(port_no)]}
+      end
 
     port =
-      Port.open({:spawn_executable, System.find_executable("mix")}, [
+      Port.open({:spawn_executable, System.find_executable(bin)}, [
         :binary,
         :exit_status,
         :hide,

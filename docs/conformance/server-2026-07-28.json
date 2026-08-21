@@ -1,0 +1,3107 @@
+{
+  "census_schema_version": 1,
+  "expected": {
+    "absent_not_scored": [],
+    "absent_scored": [],
+    "not_scored": [
+      {
+        "leg": "client",
+        "reason": "extension",
+        "scenario": "auth/client-credentials-jwt"
+      },
+      {
+        "leg": "client",
+        "reason": "extension",
+        "scenario": "auth/client-credentials-basic"
+      },
+      {
+        "leg": "client",
+        "reason": "extension",
+        "scenario": "auth/enterprise-managed-authorization"
+      },
+      {
+        "leg": "client",
+        "reason": "extension",
+        "scenario": "auth/dpop"
+      },
+      {
+        "leg": "client",
+        "reason": "extension",
+        "scenario": "auth/dpop-nonce"
+      },
+      {
+        "leg": "client",
+        "reason": "extension",
+        "scenario": "auth/wif-jwt-bearer"
+      },
+      {
+        "leg": "client",
+        "reason": "added-after-release",
+        "scenario": "json-schema-2020-12-preservation"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-lifecycle"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-capability-negotiation"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-wire-fields"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-request-state-removal"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-mrtr-input"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-request-headers"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-dispatch-and-envelope"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-status-notifications"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-required-task-error"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-mrtr-composition"
+      },
+      {
+        "leg": "server",
+        "reason": "pending",
+        "scenario": "json-schema-2020-12"
+      },
+      {
+        "leg": "server",
+        "reason": "pending",
+        "scenario": "http-header-validation"
+      },
+      {
+        "leg": "server",
+        "reason": "pending",
+        "scenario": "http-custom-header-server-validation"
+      }
+    ],
+    "ran_outside_frozen_set": [],
+    "revision": "2026-07-28",
+    "scored": {
+      "client": [
+        "tools_call",
+        "request-metadata",
+        "auth/metadata-default",
+        "auth/metadata-var1",
+        "auth/metadata-var2",
+        "auth/metadata-var3",
+        "auth/basic-cimd",
+        "auth/scope-from-www-authenticate",
+        "auth/scope-from-scopes-supported",
+        "auth/scope-omitted-when-undefined",
+        "auth/scope-step-up",
+        "auth/scope-retry-limit",
+        "auth/token-endpoint-auth-basic",
+        "auth/token-endpoint-auth-post",
+        "auth/token-endpoint-auth-none",
+        "auth/pre-registration",
+        "auth/resource-mismatch",
+        "auth/offline-access-scope",
+        "auth/offline-access-not-supported",
+        "auth/authorization-server-migration",
+        "auth/iss-supported",
+        "auth/iss-not-advertised",
+        "auth/iss-supported-missing",
+        "auth/iss-wrong-issuer",
+        "auth/iss-unexpected",
+        "auth/iss-normalized",
+        "auth/metadata-issuer-mismatch",
+        "sep-2322-client-request-state",
+        "http-standard-headers",
+        "http-custom-headers",
+        "http-invalid-tool-headers",
+        "json-schema-ref-no-deref"
+      ],
+      "server": [
+        "server-stateless",
+        "completion-complete",
+        "tools-list",
+        "tools-call-simple-text",
+        "tools-call-image",
+        "tools-call-audio",
+        "tools-call-embedded-resource",
+        "tools-call-mixed-content",
+        "tools-call-error",
+        "tools-call-with-progress",
+        "server-sse-multiple-streams",
+        "resources-list",
+        "resources-read-text",
+        "resources-read-binary",
+        "resources-templates-read",
+        "sep-2164-resource-not-found",
+        "prompts-list",
+        "prompts-get-simple",
+        "prompts-get-with-args",
+        "prompts-get-embedded-resource",
+        "prompts-get-with-image",
+        "dns-rebinding-protection",
+        "caching",
+        "input-required-result-basic-elicitation",
+        "input-required-result-basic-sampling",
+        "input-required-result-basic-list-roots",
+        "input-required-result-request-state",
+        "input-required-result-multiple-input-requests",
+        "input-required-result-multi-round",
+        "input-required-result-missing-input-response",
+        "input-required-result-non-tool-request",
+        "input-required-result-result-type",
+        "input-required-result-unsupported-methods",
+        "input-required-result-tampered-state",
+        "input-required-result-capability-check",
+        "input-required-result-ignore-extra-params",
+        "input-required-result-validate-input"
+      ]
+    }
+  },
+  "reducers": {
+    "client_summary": {
+      "disposition": {
+        "FAILURE": "fail",
+        "INFO": "ignored",
+        "SKIPPED": "ignored",
+        "SUCCESS": "pass",
+        "WARNING": "fail"
+      },
+      "scope": "all_ran",
+      "source": "the client leg's suite verdict when NOT run under --requirements. In dist/index.js: process.exit(+(failed > 0 || warnings > 0)) — a WARNING fails here and is free in the other two. This is the leg-dependence that made Sprint 4 quote two different numbers for one run"
+    },
+    "requirements_exit": {
+      "disposition": {
+        "FAILURE": "fail",
+        "INFO": "ignored",
+        "SKIPPED": "ignored",
+        "SUCCESS": "pass",
+        "WARNING": "ignored"
+      },
+      "scope": "scored",
+      "source": "the exit code of `conformance <leg> --requirements REV`; both legs. In dist/index.js: +!!scored.some(s => s.checks.some(c => c.status === 'FAILURE'))"
+    },
+    "server_summary": {
+      "disposition": {
+        "FAILURE": "fail",
+        "INFO": "ignored",
+        "SKIPPED": "ignored",
+        "SUCCESS": "pass",
+        "WARNING": "ignored"
+      },
+      "scope": "all_ran",
+      "source": "the ✓/✗ mark the server leg prints per scenario in its SUMMARY block. In dist/index.js: failed = checks.filter(c => c.status === 'FAILURE').length; ✗ iff failed > 0"
+    }
+  },
+  "run": {
+    "adapter": "sdk",
+    "adapter_command": "mix run --no-halt conformance/server_adapter.exs 3001",
+    "adjudication": {
+      "conditions": [
+        "MANIFEST_ABSENT",
+        "MANIFEST_UNREADABLE",
+        "MANIFEST_INCOMPLETE",
+        "CWD_NOT_PROJECT_ROOT",
+        "COMMIT_MISMATCH",
+        "COMMIT_MOVED_MID_RUN",
+        "DIRTY_EXCLUSION_COVERS_ROOT",
+        "WORKTREE_DIRTY",
+        "BEACON_PREFLIGHT_FAILED",
+        "ADAPTER_NEVER_STARTED",
+        "HARNESS_MISMATCH",
+        "ARTEFACTS_INCONSISTENT",
+        "SCORED_SCENARIO_ABSENT"
+      ],
+      "judged_by": "MCP.Conformance.Manifest.judge/3",
+      "verdict": "accepted"
+    },
+    "branch": "MES-56",
+    "commit": "940445cef85ebad7ad7181db93ca1d7fbe4d98ad",
+    "console_sha256": "242a8923c9893011681dfbf620df74f533c7013fbfe1e40db63cb7905d0c00f0",
+    "expected_sha256": "8eccf948ba9fc01968161db4d884cbc27baa9c4d4fe645182212f03dacc06023",
+    "harness_dist_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+    "harness_exit_code": 1,
+    "harness_version_reported": "0.2.0-alpha.11",
+    "leg": "server",
+    "manifest_sha256": "244dbbbc80a212e0511bc02166293fd233fea451448f32262ec584140c8525a7",
+    "requirements_md5": "d6eb2061b2d35c7c71a86059b08bb928",
+    "requirements_revision": "2026-07-28",
+    "role": "measurement",
+    "run_dir": "/tmp/mes56r3-sdk",
+    "started_at": "2026-08-21T03:55:00.523637Z"
+  },
+  "scenarios": [
+    {
+      "artefact_dir": "server-server-stateless-2026-08-21T03-55-01-582Z",
+      "checks": {
+        "FAILURE": 17,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 13,
+        "WARNING": 0,
+        "total": 30
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "real_gap",
+        "owner": "MES-58 gap register -> Sprint 6",
+        "why": "17 sep-2575 checks, and four distinct defects rather than one: (a) a request whose _meta is absent or invalid is answered HTTP 200 with no error, where the SEP requires -32602 and HTTP 400; (b) an unsupported protocolVersion is answered 200 rather than 400, and the supported-versions payload does not have the shape the check reads; (c) methods REMOVED by the stateless core (initialize, ping, logging/setLevel, resources/subscribe, resources/unsubscribe) are answered HTTP 200 where the SEP requires 404 — the JSON-RPC code is already right, the HTTP status is not; (d) error.data.requiredCapabilities is an array where the schema defines an object of capability objects. Core server, squarely inside ADR-003's denominator, so none of it is excused by scope."
+      },
+      "control": {
+        "checks": {
+          "FAILURE": 24,
+          "INFO": 0,
+          "SKIPPED": 2,
+          "SUCCESS": 3,
+          "WARNING": 1,
+          "total": 30
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2575-request-meta-invalid-missing-meta",
+          "message": "Expected error code -32602, got undefined",
+          "name": "RequestMetaInvalid",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2575-http-server-meta-invalid-400",
+          "message": "Expected HTTP 400 Bad Request, got status code 200",
+          "name": "HttpServerMetaInvalid400",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2575-request-meta-invalid-missing-protocol-version",
+          "message": "Expected error code -32602, got undefined",
+          "name": "RequestMetaInvalid",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2575-http-server-meta-invalid-400",
+          "message": "Expected HTTP 400 Bad Request, got status code 200",
+          "name": "HttpServerMetaInvalid400",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2575-request-meta-invalid-missing-client-capabilities",
+          "message": "Expected error code -32602, got undefined",
+          "name": "RequestMetaInvalid",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2575-http-server-meta-invalid-400",
+          "message": "Expected HTTP 400 Bad Request, got status code 200",
+          "name": "HttpServerMetaInvalid400",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2575-server-unsupported-version-error",
+          "message": "Returned supported versions data layout does not correlate to active server metrics: undefined",
+          "name": "ServerUnsupportedVersionError",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2575-http-server-unsupported-version-400",
+          "message": "Expected HTTP 400 Bad Request, got status code 200",
+          "name": "HttpServerUnsupportedVersion400",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2575-http-server-header-mismatch-400",
+          "message": "Expected HTTP 400 and JSON-RPC error -32020, got status 200 with code undefined",
+          "name": "HttpServerHeaderMismatch400",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2575-server-rejects-undeclared-capability",
+          "message": "Server responded with error code -32021 but error.data.requiredCapabilities is not a ClientCapabilities object naming 'sampling' (the schema defines it as an object of capability objects, e.g. { \"sampling\": {} }, not an array)",
+          "name": "ServerRejectsUndeclaredCapability",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2575-missing-capability-http-400",
+          "message": "Expected HTTP status code 400 Bad Request for an undeclared capability error response, got 200",
+          "name": "MissingCapabilityHttp400",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2575-http-server-method-not-found-404-initialize",
+          "message": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32022",
+          "name": "HttpServerMethodNotFound404initialize",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2575-http-server-method-not-found-404-ping",
+          "message": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601",
+          "name": "HttpServerMethodNotFound404ping",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2575-http-server-method-not-found-404-logging-setlevel",
+          "message": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601",
+          "name": "HttpServerMethodNotFound404loggingsetLevel",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2575-http-server-method-not-found-404-resources-subscribe",
+          "message": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601",
+          "name": "HttpServerMethodNotFound404resourcessubscribe",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2575-http-server-method-not-found-404-resources-unsubscribe",
+          "message": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601",
+          "name": "HttpServerMethodNotFound404resourcesunsubscribe",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2575-http-server-method-not-found-404",
+          "message": "Expected HTTP 404 and JSON-RPC error code -32601, got HTTP 200 and code -32601",
+          "name": "HttpServerMethodNotFound404",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "server-stateless",
+      "leg": "server",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-completion-complete-2026-08-21T03-55-03-166Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "completion-complete",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-tools-list-2026-08-21T03-55-03-238Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 3,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "tools-list",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-tools-call-simple-text-2026-08-21T03-55-03-254Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "tools-call-simple-text",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-tools-call-image-2026-08-21T03-55-03-282Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "tools-call-image",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-tools-call-audio-2026-08-21T03-55-03-284Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "tools-call-audio",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-tools-call-embedded-resource-2026-08-21T03-55-03-285Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "tools-call-embedded-resource",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-tools-call-mixed-content-2026-08-21T03-55-03-289Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "tools-call-mixed-content",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-tools-call-error-2026-08-21T03-55-03-291Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "tools-call-error",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-tools-call-with-progress-2026-08-21T03-55-03-292Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "tools-call-with-progress",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-server-sse-multiple-streams-2026-08-21T03-55-03-399Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 0,
+          "INFO": 1,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": true,
+          "requirements_exit": true,
+          "server_summary": true,
+          "server_summary_or_client_summary": true
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "server-sse-multiple-streams",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-resources-list-2026-08-21T03-55-03-405Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "resources-list",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-resources-read-text-2026-08-21T03-55-03-414Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "resources-read-text",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-resources-read-binary-2026-08-21T03-55-03-419Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "resources-read-binary",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-resources-templates-read-2026-08-21T03-55-03-420Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "resources-templates-read",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-sep-2164-resource-not-found-2026-08-21T03-55-03-422Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 3,
+        "WARNING": 1,
+        "total": 4
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 0,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 2,
+          "WARNING": 2,
+          "total": 4
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": true,
+          "server_summary": true,
+          "server_summary_or_client_summary": true
+        }
+      },
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2164-data-uri",
+          "message": "Error data.uri is undefined, expected \"test://nonexistent-resource-for-conformance-testing\". This is a SHOULD requirement.",
+          "name": "ResourcesNotFoundDataUri",
+          "status": "WARNING"
+        }
+      ],
+      "harness_reason": null,
+      "id": "sep-2164-resource-not-found",
+      "leg": "server",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-prompts-list-2026-08-21T03-55-03-427Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "prompts-list",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-prompts-get-simple-2026-08-21T03-55-03-433Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "prompts-get-simple",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-prompts-get-with-args-2026-08-21T03-55-03-437Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "prompts-get-with-args",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-prompts-get-embedded-resource-2026-08-21T03-55-03-438Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "prompts-get-embedded-resource",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-prompts-get-with-image-2026-08-21T03-55-03-439Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "prompts-get-with-image",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-dns-rebinding-protection-2026-08-21T03-55-03-441Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "dns-rebinding-protection",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-caching-2026-08-21T03-55-03-448Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 8,
+        "WARNING": 0,
+        "total": 8
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 6,
+          "INFO": 0,
+          "SKIPPED": 1,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 8
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "caching",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-input-required-result-basic-elicitation-2026-08-21T03-55-03-456Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 3,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "input-required-result-basic-elicitation",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-input-required-result-basic-sampling-2026-08-21T03-55-03-474Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 3,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "input-required-result-basic-sampling",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-input-required-result-basic-list-roots-2026-08-21T03-55-03-477Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 3,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "input-required-result-basic-list-roots",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-input-required-result-request-state-2026-08-21T03-55-03-479Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 3,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "input-required-result-request-state",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-input-required-result-multiple-input-requests-2026-08-21T03-55-03-481Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 3,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "input-required-result-multiple-input-requests",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-input-required-result-multi-round-2026-08-21T03-55-03-483Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 4,
+        "WARNING": 0,
+        "total": 4
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "input-required-result-multi-round",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-input-required-result-missing-input-response-2026-08-21T03-55-03-486Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 0,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 1,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": true,
+          "server_summary": true,
+          "server_summary_or_client_summary": true
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "input-required-result-missing-input-response",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-input-required-result-non-tool-request-2026-08-21T03-55-03-487Z",
+      "checks": {
+        "FAILURE": 2,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "real_gap",
+        "owner": "MES-58 gap register -> Sprint 6",
+        "why": "2 checks: sep-2322-non-tool-incomplete and wire-schema-valid. MRTR is implemented for tools/call and not for other request types — prompts/get returns a result carrying inputRequests but no `messages`, so it is neither a valid InputRequiredResult nor a valid GetPromptResult. The wire-schema failure is a consequence of the first, not a second defect."
+      },
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2322-non-tool-incomplete",
+          "message": "Expected InputRequiredResult from prompts/get",
+          "name": "InputRequiredResultNonToolIncomplete",
+          "status": "FAILURE"
+        },
+        {
+          "id": "wire-schema-valid",
+          "message": "[implementation] SSE event during 'prompts/get' (spec 2026-07-28): GetPromptResult: must have required property 'messages' (result of 'prompts/get') — message: {\"id\":39,\"jsonrpc\":\"2.0\",\"result\":{\"inputRequests\":{\"user_context\":{\"method\":\"elicitation/create\",\"params\":{\"message\":\"What context should the prompt use?\",\"requestedSchema\":{\"properties\":{\"context\":{\"type\":\"string\"}},\"required\":[\"context\"],\"type\":\"object\"}}}},\"resultType\":\"complete\"}}",
+          "name": "WireSchemaValid",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "input-required-result-non-tool-request",
+      "leg": "server",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-input-required-result-result-type-2026-08-21T03-55-03-488Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "input-required-result-result-type",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-input-required-result-unsupported-methods-2026-08-21T03-55-03-490Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 0,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 2,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": true,
+          "requirements_exit": true,
+          "server_summary": true,
+          "server_summary_or_client_summary": true
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "input-required-result-unsupported-methods",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-input-required-result-tampered-state-2026-08-21T03-55-03-492Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "input-required-result-tampered-state",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-input-required-result-capability-check-2026-08-21T03-55-03-494Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "input-required-result-capability-check",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-input-required-result-ignore-extra-params-2026-08-21T03-55-03-495Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 1,
+        "WARNING": 1,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 0,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 1,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": true,
+          "server_summary": true,
+          "server_summary_or_client_summary": true
+        }
+      },
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2322-ignore-unexpected-params",
+          "message": "Server did not return complete result when valid inputResponses were provided alongside extra keys. Servers SHOULD ignore information they do not recognize.",
+          "name": "IgnoreUnexpectedParams",
+          "status": "WARNING"
+        }
+      ],
+      "harness_reason": null,
+      "id": "input-required-result-ignore-extra-params",
+      "leg": "server",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-input-required-result-validate-input-2026-08-21T03-55-03-496Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 3,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 0,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 3,
+          "WARNING": 0,
+          "total": 3
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": true,
+          "requirements_exit": true,
+          "server_summary": true,
+          "server_summary_or_client_summary": true
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "input-required-result-validate-input",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-tasks-lifecycle-2026-08-21T03-55-03-498Z",
+      "checks": {
+        "FAILURE": 8,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 1,
+        "WARNING": 0,
+        "total": 9
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "extension",
+        "owner": "ADR-003 (extension track, out of 2.0.0)",
+        "why": "io.modelcontextprotocol/tasks (SEP-2663). Not scored by the frozen 2026-07-28 set — extensions are optional by definition (SEP-1730) — and excluded from 2.0.0 by ADR-003 sub-decision 3. It RUNS and is reported so the coverage gap is visible rather than absent; failing it costs nothing against the conformance denominator."
+      },
+      "control": {
+        "checks": {
+          "FAILURE": 8,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 9
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "tasks-sync-tool-call",
+          "message": "Unknown tool: greet",
+          "name": "TasksSyncToolCall",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2663-result-type-task-on-create",
+          "message": "Unknown tool: slow_compute",
+          "name": "TasksServerTaskCreation",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2663-tasks-get-status-working",
+          "message": "Not testable: no task was created by the preceding step, so this check could not be exercised",
+          "name": "TasksGetDuringWorking",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2663-tasks-get-status-completed",
+          "message": "Not testable: no task was created by the preceding step, so this check could not be exercised",
+          "name": "TasksGetTerminalInlinedResult",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2663-tool-error-uses-completed-status",
+          "message": "Unknown tool: failing_job",
+          "name": "TasksToolErrorCompletedIsError",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2663-tasks-get-status-failed",
+          "message": "Unknown tool: protocol_error_job",
+          "name": "TasksProtocolErrorFailedShape",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2663-cancel-ack-empty-result",
+          "message": "Unknown tool: slow_compute",
+          "name": "TasksCancelEmptyAck",
+          "status": "FAILURE"
+        },
+        {
+          "id": "tasks-cancel-terminal-idempotent-ack",
+          "message": "Unknown tool: slow_compute",
+          "name": "TasksCancelTerminalIdempotentAck",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": "extension",
+      "id": "tasks-lifecycle",
+      "leg": "server",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-tasks-capability-negotiation-2026-08-21T03-55-03-504Z",
+      "checks": {
+        "FAILURE": 4,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 1,
+        "WARNING": 0,
+        "total": 5
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "extension",
+        "owner": "ADR-003 (extension track, out of 2.0.0)",
+        "why": "io.modelcontextprotocol/tasks (SEP-2663). Not scored by the frozen 2026-07-28 set — extensions are optional by definition (SEP-1730) — and excluded from 2.0.0 by ADR-003 sub-decision 3. It RUNS and is reported so the coverage gap is visible rather than absent; failing it costs nothing against the conformance denominator."
+      },
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 0,
+          "WARNING": 0,
+          "total": 1
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "tasks-extension-advertised",
+          "message": "capabilities.extensions MUST be advertised",
+          "name": "TasksExtensionAdvertised",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2663-tasks-methods-non-declaring",
+          "message": "tasks/get MUST return -32021; got -32601; tasks/update MUST return -32021; got -32601; tasks/cancel MUST return -32021; got -32601",
+          "name": "TasksMethodsGatedWithoutExtension",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2663-server-rejects-undeclared-client",
+          "message": "Unknown tool: slow_compute",
+          "name": "TasksToolsCallWithoutExtensionSync",
+          "status": "FAILURE"
+        },
+        {
+          "id": "tasks-per-request-meta-opt-in",
+          "message": "Unknown tool: slow_compute",
+          "name": "TasksPerRequestMetaOptIn",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": "extension",
+      "id": "tasks-capability-negotiation",
+      "leg": "server",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-tasks-wire-fields-2026-08-21T03-55-03-515Z",
+      "checks": {
+        "FAILURE": 3,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 1,
+        "WARNING": 0,
+        "total": 4
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "extension",
+        "owner": "ADR-003 (extension track, out of 2.0.0)",
+        "why": "io.modelcontextprotocol/tasks (SEP-2663). Not scored by the frozen 2026-07-28 set — extensions are optional by definition (SEP-1730) — and excluded from 2.0.0 by ADR-003 sub-decision 3. It RUNS and is reported so the coverage gap is visible rather than absent; failing it costs nothing against the conformance denominator."
+      },
+      "control": {
+        "checks": {
+          "FAILURE": 3,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 4
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "tasks-wire-field-renames",
+          "message": "Unknown tool: slow_compute",
+          "name": "TasksWireFieldRenames",
+          "status": "FAILURE"
+        },
+        {
+          "id": "tasks-no-early-ttl-expiry",
+          "message": "Not testable: no task was created by the preceding step, so this check could not be exercised",
+          "name": "TasksNoEarlyTtlExpiry",
+          "status": "FAILURE"
+        },
+        {
+          "id": "tasks-no-related-task-meta-on-inlined-result",
+          "message": "Unknown tool: slow_compute",
+          "name": "TasksNoRelatedTaskMetaOnInlinedResult",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": "extension",
+      "id": "tasks-wire-fields",
+      "leg": "server",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-tasks-request-state-removal-2026-08-21T03-55-03-517Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 1,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "extension",
+        "owner": "ADR-003 (extension track, out of 2.0.0)",
+        "why": "io.modelcontextprotocol/tasks (SEP-2663). Not scored by the frozen 2026-07-28 set — extensions are optional by definition (SEP-1730) — and excluded from 2.0.0 by ADR-003 sub-decision 3. It RUNS and is reported so the coverage gap is visible rather than absent; failing it costs nothing against the conformance denominator."
+      },
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "tasks-request-state-removal-setup",
+          "message": "Unknown tool: slow_compute",
+          "name": "TasksRequestStateRemovalSetup",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": "extension",
+      "id": "tasks-request-state-removal",
+      "leg": "server",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-tasks-mrtr-input-2026-08-21T03-55-03-518Z",
+      "checks": {
+        "FAILURE": 3,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 1,
+        "WARNING": 0,
+        "total": 4
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "extension",
+        "owner": "ADR-003 (extension track, out of 2.0.0)",
+        "why": "io.modelcontextprotocol/tasks (SEP-2663). Not scored by the frozen 2026-07-28 set — extensions are optional by definition (SEP-1730) — and excluded from 2.0.0 by ADR-003 sub-decision 3. It RUNS and is reported so the coverage gap is visible rather than absent; failing it costs nothing against the conformance denominator."
+      },
+      "control": {
+        "checks": {
+          "FAILURE": 3,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 4
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2663-tasks-get-status-input-required",
+          "message": "Unknown tool: confirm_delete",
+          "name": "TasksMRTRInputRequestsOnTasksGet",
+          "status": "FAILURE"
+        },
+        {
+          "id": "tasks-mrtr-tasks-update-resumes",
+          "message": "Unknown tool: confirm_delete",
+          "name": "TasksMRTRTasksUpdateResumes",
+          "status": "FAILURE"
+        },
+        {
+          "id": "tasks-mrtr-partial-fulfillment",
+          "message": "Unknown tool: multi_input",
+          "name": "TasksMRTRPartialFulfillment",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": "extension",
+      "id": "tasks-mrtr-input",
+      "leg": "server",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-tasks-request-headers-2026-08-21T03-55-03-521Z",
+      "checks": {
+        "FAILURE": 3,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 5
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "extension",
+        "owner": "ADR-003 (extension track, out of 2.0.0)",
+        "why": "io.modelcontextprotocol/tasks (SEP-2663). Not scored by the frozen 2026-07-28 set — extensions are optional by definition (SEP-1730) — and excluded from 2.0.0 by ADR-003 sub-decision 3. It RUNS and is reported so the coverage gap is visible rather than absent; failing it costs nothing against the conformance denominator."
+      },
+      "control": {
+        "checks": {
+          "FAILURE": 4,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 5
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "tasks-headers-tolerate-mcp-method-on-tools-call",
+          "message": "Unknown tool: greet",
+          "name": "TasksHeadersTolerateMcpMethodOnToolsCall",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2663-routing-headers-accepted-on-tasks-get",
+          "message": "Unknown tool: slow_compute",
+          "name": "Sep2663RoutingHeadersAcceptedOnTasksGet",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2663-server-rejects-mismatched-mcp-name-on-tasks-get",
+          "message": "routing-task fixture from Check 2 unavailable; cannot drive negative-path probe",
+          "name": "Sep2663ServerRejectsMismatchedMcpNameOnTasksGet",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": "extension",
+      "id": "tasks-request-headers",
+      "leg": "server",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-tasks-dispatch-and-envelope-2026-08-21T03-55-03-527Z",
+      "checks": {
+        "FAILURE": 6,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 3,
+        "WARNING": 0,
+        "total": 9
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "extension",
+        "owner": "ADR-003 (extension track, out of 2.0.0)",
+        "why": "io.modelcontextprotocol/tasks (SEP-2663). Not scored by the frozen 2026-07-28 set — extensions are optional by definition (SEP-1730) — and excluded from 2.0.0 by ADR-003 sub-decision 3. It RUNS and is reported so the coverage gap is visible rather than absent; failing it costs nothing against the conformance denominator."
+      },
+      "control": {
+        "checks": {
+          "FAILURE": 6,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 3,
+          "WARNING": 0,
+          "total": 9
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "tasks-server-directed-creation-no-hint",
+          "message": "Unknown tool: failing_job",
+          "name": "TasksServerDirectedCreationNoHint",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2663-legacy-task-param-ignored",
+          "message": "Unknown tool: greet",
+          "name": "TasksLegacyTaskParamIgnored",
+          "status": "FAILURE"
+        },
+        {
+          "id": "tasks-immediate-result-shortcut",
+          "message": "Unknown tool: slow_compute",
+          "name": "TasksImmediateResultShortcut",
+          "status": "FAILURE"
+        },
+        {
+          "id": "tasks-result-type-complete-on-non-task-responses",
+          "message": "Unknown tool: greet",
+          "name": "TasksResultTypeCompleteOnNonTaskResponses",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2663-durable-create-strong-consistency",
+          "message": "Unknown tool: slow_compute",
+          "name": "TasksStrongConsistencyImmediateGet",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2663-tasks-get-invalid-task-id-32602",
+          "message": "expected -32602; got -32601 (if the server is otherwise compliant, verify it does not validate other dimensions — routing headers, _meta, params shape — before method dispatch)",
+          "name": "TasksGetUnknownTaskIdRejected",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": "extension",
+      "id": "tasks-dispatch-and-envelope",
+      "leg": "server",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-tasks-status-notifications-2026-08-21T03-55-03-534Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 1,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 1
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 0,
+          "INFO": 0,
+          "SKIPPED": 1,
+          "SUCCESS": 0,
+          "WARNING": 0,
+          "total": 1
+        },
+        "empty": true,
+        "passes": {
+          "client_summary": true,
+          "requirements_exit": true,
+          "server_summary": true,
+          "server_summary_or_client_summary": true
+        }
+      },
+      "empty": true,
+      "failed_checks": [],
+      "harness_reason": "extension",
+      "id": "tasks-status-notifications",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-tasks-required-task-error-2026-08-21T03-55-03-535Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 1,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "extension",
+        "owner": "ADR-003 (extension track, out of 2.0.0)",
+        "why": "io.modelcontextprotocol/tasks (SEP-2663). Not scored by the frozen 2026-07-28 set — extensions are optional by definition (SEP-1730) — and excluded from 2.0.0 by ADR-003 sub-decision 3. It RUNS and is reported so the coverage gap is visible rather than absent; failing it costs nothing against the conformance denominator."
+      },
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2663-server-returns-missing-capability-when-required",
+          "message": "tools/call for failing_job returned error code -32602; spec requires -32021.",
+          "name": "Sep2663ServerReturnsMissingCapabilityWhenRequired",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": "extension",
+      "id": "tasks-required-task-error",
+      "leg": "server",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-tasks-mrtr-composition-2026-08-21T03-55-03-536Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 1,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "extension",
+        "owner": "ADR-003 (extension track, out of 2.0.0)",
+        "why": "io.modelcontextprotocol/tasks (SEP-2663). Not scored by the frozen 2026-07-28 set — extensions are optional by definition (SEP-1730) — and excluded from 2.0.0 by ADR-003 sub-decision 3. It RUNS and is reported so the coverage gap is visible rather than absent; failing it costs nothing against the conformance denominator."
+      },
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2663-mrtr-synchronous-before-task-creation",
+          "message": "Unknown tool: test_tool_with_task",
+          "name": "Sep2663MrtrSynchronousBeforeTaskCreation",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": "extension",
+      "id": "tasks-mrtr-composition",
+      "leg": "server",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-json-schema-2020-12-2026-08-21T03-55-03-537Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 8,
+        "WARNING": 0,
+        "total": 8
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": {
+        "checks": {
+          "FAILURE": 1,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 2
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": "pending",
+      "id": "json-schema-2020-12",
+      "leg": "server",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-http-header-validation-2026-08-21T03-55-03-538Z",
+      "checks": {
+        "FAILURE": 3,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 9,
+        "WARNING": 2,
+        "total": 14
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "pending",
+        "owner": "upstream conformance suite",
+        "why": "SEP-2243 Mcp-Method/Mcp-Name routing headers. Not scored: the suite's own reference fixture cannot pass it yet, so a failure here is not evidence about this SDK either way. Run for visibility. Re-examine when the upstream fixture catches up."
+      },
+      "control": {
+        "checks": {
+          "FAILURE": 4,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 5
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2243-server-reject-invalid-headers",
+          "message": "Expected HTTP 400, got 200. Server MUST reject with 400 Bad Request.",
+          "name": "ServerRejectsMissingMethodHeader",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2243-server-reject-error-code",
+          "message": "Expected JSON-RPC error code -32020 (HeaderMismatch), got (missing).",
+          "name": "ServerRejectsMissingMethodHeaderErrorCode",
+          "status": "WARNING"
+        },
+        {
+          "id": "sep-2243-server-accepts-whitespace-header-value",
+          "message": "Expected successful response, got HTTP 400. Server MUST accept this request.; Expected successful response, but body contains JSON-RPC error {\"code\":-32020,\"data\":\"Mcp-Name json_schema_2020_12_tool   != \\\"json_schema_2020_12_tool\\\"\",\"message\":\"Header mismatch\"}.",
+          "name": "ServerAcceptsWhitespaceHeaderValue",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2243-server-reject-invalid-headers",
+          "message": "Expected HTTP 400, got 200. Server MUST reject with 400 Bad Request.",
+          "name": "ServerRejectsMissingNameHeader",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2243-server-reject-error-code",
+          "message": "Expected JSON-RPC error code -32020 (HeaderMismatch), got (missing).",
+          "name": "ServerRejectsMissingNameHeaderErrorCode",
+          "status": "WARNING"
+        }
+      ],
+      "harness_reason": "pending",
+      "id": "http-header-validation",
+      "leg": "server",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "server-http-custom-header-server-validation-2026-08-21T03-55-03-547Z",
+      "checks": {
+        "FAILURE": 6,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 4,
+        "WARNING": 0,
+        "total": 10
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "pending",
+        "owner": "upstream conformance suite",
+        "why": "SEP-2243 custom-header validation. Not scored: the suite's own reference fixture cannot pass it yet, so a failure here is not evidence about this SDK either way. Run for visibility. Re-examine when the upstream fixture catches up."
+      },
+      "control": {
+        "checks": {
+          "FAILURE": 5,
+          "INFO": 0,
+          "SKIPPED": 0,
+          "SUCCESS": 1,
+          "WARNING": 0,
+          "total": 6
+        },
+        "empty": false,
+        "passes": {
+          "client_summary": false,
+          "requirements_exit": false,
+          "server_summary": false,
+          "server_summary_or_client_summary": false
+        }
+      },
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2243-server-reject-invalid-param-chars",
+          "message": "Expected HTTP 400, got 200. Server MUST reject with 400 Bad Request.",
+          "name": "ServerRejectsInvalidBase64Padding",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2243-server-reject-param-mismatch",
+          "message": "Expected JSON-RPC error code -32020 (HeaderMismatch), got (missing).",
+          "name": "ServerRejectsInvalidBase64PaddingErrorCode",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2243-server-reject-invalid-param-chars",
+          "message": "Expected HTTP 400, got 200. Server MUST reject with 400 Bad Request.",
+          "name": "ServerRejectsInvalidBase64Chars",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2243-server-reject-param-mismatch",
+          "message": "Expected JSON-RPC error code -32020 (HeaderMismatch), got (missing).",
+          "name": "ServerRejectsInvalidBase64CharsErrorCode",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2243-server-validate-param-match",
+          "message": "Expected HTTP 400, got 200. Server MUST reject with 400 Bad Request.",
+          "name": "ServerRejectsMissingCustomHeader",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2243-server-reject-param-mismatch",
+          "message": "Expected JSON-RPC error code -32020 (HeaderMismatch), got (missing).",
+          "name": "ServerRejectsMissingCustomHeaderErrorCode",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": "pending",
+      "id": "http-custom-header-server-validation",
+      "leg": "server",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": false,
+      "threw": null
+    }
+  ],
+  "totals": {
+    "absentees": {
+      "not_scored": [],
+      "scored": []
+    },
+    "by_reducer": {
+      "client_summary": {
+        "all_ran": {
+          "failing": [
+            "server-stateless",
+            "sep-2164-resource-not-found",
+            "input-required-result-non-tool-request",
+            "input-required-result-ignore-extra-params",
+            "tasks-lifecycle",
+            "tasks-capability-negotiation",
+            "tasks-wire-fields",
+            "tasks-request-state-removal",
+            "tasks-mrtr-input",
+            "tasks-request-headers",
+            "tasks-dispatch-and-envelope",
+            "tasks-required-task-error",
+            "tasks-mrtr-composition",
+            "http-header-validation",
+            "http-custom-header-server-validation"
+          ],
+          "passed": 35,
+          "total": 50
+        },
+        "scored": {
+          "failing": [
+            "server-stateless",
+            "sep-2164-resource-not-found",
+            "input-required-result-non-tool-request",
+            "input-required-result-ignore-extra-params"
+          ],
+          "passed": 33,
+          "total": 37
+        }
+      },
+      "requirements_exit": {
+        "all_ran": {
+          "failing": [
+            "server-stateless",
+            "input-required-result-non-tool-request",
+            "tasks-lifecycle",
+            "tasks-capability-negotiation",
+            "tasks-wire-fields",
+            "tasks-request-state-removal",
+            "tasks-mrtr-input",
+            "tasks-request-headers",
+            "tasks-dispatch-and-envelope",
+            "tasks-required-task-error",
+            "tasks-mrtr-composition",
+            "http-header-validation",
+            "http-custom-header-server-validation"
+          ],
+          "passed": 37,
+          "total": 50
+        },
+        "scored": {
+          "failing": [
+            "server-stateless",
+            "input-required-result-non-tool-request"
+          ],
+          "passed": 35,
+          "total": 37
+        }
+      },
+      "server_summary": {
+        "all_ran": {
+          "failing": [
+            "server-stateless",
+            "input-required-result-non-tool-request",
+            "tasks-lifecycle",
+            "tasks-capability-negotiation",
+            "tasks-wire-fields",
+            "tasks-request-state-removal",
+            "tasks-mrtr-input",
+            "tasks-request-headers",
+            "tasks-dispatch-and-envelope",
+            "tasks-required-task-error",
+            "tasks-mrtr-composition",
+            "http-header-validation",
+            "http-custom-header-server-validation"
+          ],
+          "passed": 37,
+          "total": 50
+        },
+        "scored": {
+          "failing": [
+            "server-stateless",
+            "input-required-result-non-tool-request"
+          ],
+          "passed": 35,
+          "total": 37
+        }
+      }
+    },
+    "checks": {
+      "all_ran": {
+        "FAILURE": 58,
+        "INFO": 0,
+        "SKIPPED": 1,
+        "SUCCESS": 131,
+        "WARNING": 4,
+        "total": 194
+      },
+      "scored": {
+        "FAILURE": 19,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 98,
+        "WARNING": 2,
+        "total": 119
+      }
+    },
+    "classification": {
+      "by_class": {
+        "added_after_release": {
+          "count": 0,
+          "scenarios": []
+        },
+        "by_design_2025_11_25": {
+          "count": 0,
+          "scenarios": []
+        },
+        "extension": {
+          "count": 9,
+          "scenarios": [
+            "tasks-lifecycle",
+            "tasks-capability-negotiation",
+            "tasks-wire-fields",
+            "tasks-request-state-removal",
+            "tasks-mrtr-input",
+            "tasks-request-headers",
+            "tasks-dispatch-and-envelope",
+            "tasks-required-task-error",
+            "tasks-mrtr-composition"
+          ]
+        },
+        "out_of_scope_adr_003": {
+          "count": 0,
+          "scenarios": []
+        },
+        "pending": {
+          "count": 2,
+          "scenarios": [
+            "http-header-validation",
+            "http-custom-header-server-validation"
+          ]
+        },
+        "real_gap": {
+          "count": 2,
+          "scenarios": [
+            "server-stateless",
+            "input-required-result-non-tool-request"
+          ]
+        }
+      },
+      "classified": 13
+    },
+    "control": {
+      "adapter_command": "python3 conformance/controls/null_server.py 3001",
+      "commit": "940445cef85ebad7ad7181db93ca1d7fbe4d98ad",
+      "control_passed_scored": {
+        "failing": [
+          "server-stateless",
+          "completion-complete",
+          "tools-list",
+          "tools-call-simple-text",
+          "tools-call-image",
+          "tools-call-audio",
+          "tools-call-embedded-resource",
+          "tools-call-mixed-content",
+          "tools-call-error",
+          "tools-call-with-progress",
+          "resources-list",
+          "resources-read-text",
+          "resources-read-binary",
+          "resources-templates-read",
+          "prompts-list",
+          "prompts-get-simple",
+          "prompts-get-with-args",
+          "prompts-get-embedded-resource",
+          "prompts-get-with-image",
+          "dns-rebinding-protection",
+          "caching",
+          "input-required-result-basic-elicitation",
+          "input-required-result-basic-sampling",
+          "input-required-result-basic-list-roots",
+          "input-required-result-request-state",
+          "input-required-result-multiple-input-requests",
+          "input-required-result-multi-round",
+          "input-required-result-non-tool-request",
+          "input-required-result-result-type",
+          "input-required-result-tampered-state",
+          "input-required-result-capability-check"
+        ],
+        "passed": 6,
+        "total": 37
+      },
+      "discriminating": [
+        "completion-complete",
+        "tools-list",
+        "tools-call-simple-text",
+        "tools-call-image",
+        "tools-call-audio",
+        "tools-call-embedded-resource",
+        "tools-call-mixed-content",
+        "tools-call-error",
+        "tools-call-with-progress",
+        "resources-list",
+        "resources-read-text",
+        "resources-read-binary",
+        "resources-templates-read",
+        "prompts-list",
+        "prompts-get-simple",
+        "prompts-get-with-args",
+        "prompts-get-embedded-resource",
+        "prompts-get-with-image",
+        "dns-rebinding-protection",
+        "caching",
+        "input-required-result-basic-elicitation",
+        "input-required-result-basic-sampling",
+        "input-required-result-basic-list-roots",
+        "input-required-result-request-state",
+        "input-required-result-multiple-input-requests",
+        "input-required-result-multi-round",
+        "input-required-result-result-type",
+        "input-required-result-tampered-state",
+        "input-required-result-capability-check"
+      ],
+      "in_control_only": [],
+      "inherited": [
+        "server-sse-multiple-streams",
+        "sep-2164-resource-not-found",
+        "input-required-result-missing-input-response",
+        "input-required-result-unsupported-methods",
+        "input-required-result-ignore-extra-params",
+        "input-required-result-validate-input"
+      ],
+      "not_in_control": [],
+      "not_in_control_not_scored": [],
+      "reducer": "requirements_exit",
+      "run_dir": "/tmp/mes56r3-null"
+    },
+    "empty_scenarios": {
+      "all_ran": [
+        "tasks-status-notifications"
+      ],
+      "scored": []
+    },
+    "expected_counts": {
+      "not_scored": 13,
+      "scored": 37
+    },
+    "thrown_scenarios": []
+  }
+}

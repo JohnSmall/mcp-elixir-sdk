@@ -178,6 +178,35 @@ defmodule MCP.Conformance.Provenance do
     }
   end
 
+  @doc """
+  Capture the harness's own listing of a frozen requirement set.
+
+  Runs `conformance list --requirements REV` and returns its combined output and
+  exit code verbatim. The output is written into the run directory as
+  `expected.txt` and hashed into the manifest: the manifest already pins the
+  frozen file's *identity* (path, md5, sha256) but never its **contents**, so
+  without this capture a run directory cannot state its own denominator, and a
+  scored scenario that silently did not run stays invisible.
+
+  A non-zero exit is returned rather than raised. The adjudicator refuses on it,
+  which is where a refusal belongs; raising here would abort a run that has
+  already measured something and lose the evidence.
+  """
+  @spec capture_expected(String.t(), String.t()) :: {String.t(), integer()}
+  def capture_expected(harness_dir, revision) do
+    dist =
+      Path.join([harness_dir, "node_modules", "@modelcontextprotocol", "conformance", "dist"])
+
+    case System.cmd("node", [Path.join(dist, "index.js"), "list", "--requirements", revision],
+           cd: harness_dir,
+           stderr_to_stdout: true
+         ) do
+      {out, code} -> {out, code}
+    end
+  rescue
+    e -> {"`conformance list` could not be invoked: #{Exception.message(e)}\n", 127}
+  end
+
   @doc "Elixir/OTP/Mix facts for the tree that produced the run."
   @spec toolchain() :: map()
   def toolchain do
@@ -247,6 +276,42 @@ defmodule MCP.Conformance.Provenance do
 
       {:error, _} ->
         []
+    end
+  end
+
+  @doc """
+  Describe a run directory as it stands NOW, for `MCP.Conformance.Manifest.judge/3`.
+
+  Lives here rather than in either caller because both `mix
+  conformance.adjudicate` and `mix conformance.census` must judge the same run
+  identically: two copies of this could drift and let a figure be printed from a
+  run the adjudicator would have refused.
+
+  Every artefact is read **once** and returned as body *and* hash from that one
+  read, so a file cannot pass its hash comparison and then be parsed from a
+  different version of itself.
+  """
+  @spec observe_run(String.t()) :: map()
+  def observe_run(run_dir) do
+    console = read_artefact(run_dir, "console.txt")
+    expected = read_artefact(run_dir, "expected.txt")
+    copy = read_artefact(run_dir, "requirements.yaml")
+
+    %{
+      scenario_dirs: scenario_dirs(run_dir),
+      console_sha256: console.sha256,
+      console_body: console.body,
+      expected_sha256: expected.sha256,
+      expected_body: expected.body,
+      requirements_copy_sha256: copy.sha256,
+      requirements_body: copy.body
+    }
+  end
+
+  defp read_artefact(run_dir, name) do
+    case File.read(Path.join(run_dir, name)) do
+      {:ok, body} -> %{body: body, sha256: sha256_string(body)}
+      {:error, _} -> %{body: nil, sha256: nil}
     end
   end
 
