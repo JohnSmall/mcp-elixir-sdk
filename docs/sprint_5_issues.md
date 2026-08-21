@@ -2539,3 +2539,40 @@ after four review rounds, after the merge gate, after the squash-merge and the t
 step before Done. Every one of those rounds was spent on a document whose route to publication
 had never been tested. **Verify the capability from the lane that will execute it, at the
 moment the lane is chosen** — not when the lane is finally asked to move.
+
+---
+
+## Sprint 5 close-out — the end-of-sprint dependency sweep (first execution)
+
+**PM, 2026-08-21, at the sprint's final tip `2941cb6`.** This is the first run of the
+end-of-sprint procedure ratified into `CLAUDE.md` this morning, and it is recorded here
+**because the procedure requires a clean result to be written down**: "checked, and zero" and
+"never asked" read identically when only the answer is printed.
+
+| step | result |
+|---|---|
+| hex floor, checked FIRST | `Hex v2.5.1` — at the documented minimum |
+| **6a** baseline-lock sentinel @ `d697093` | **PASS** — all 22 known advisory ids present (48 id lines) |
+| **6b** `mix hex.audit` on this project | **exit 0** — no retired or security advisory packages found |
+| dependency surface swept | **26 locked packages** |
+| lock last moved | `7749d29` (MES-51, 2026-08-20) — the `bandit` 1.12.1 → 1.12.5 bump |
+
+**No advisory found, so no ticket raised.** Had one been found it would have become a Jira
+ticket rather than a fix in place — that disposition is the whole reason the sweep sits between
+sprints rather than inside one.
+
+**Why this ran at all, given gate 6 fired on no Sprint 5 ticket.** The 2026-08-21 applicability
+rule stops gate 6 on tickets that change no dependency, and *none* of MES-51/56/57/58 changed
+`mix.exs` or `mix.lock` after MES-51. Per-ticket, that coverage was given up deliberately. This
+sweep is where it was picked up, and the applicability rule explicitly does **not** apply here —
+skipping the cadence sweep because no ticket touched the lock would defeat its entire purpose.
+
+**What this sweep does NOT establish, stated so the green is not over-read.** `mix hex.audit`
+reads the **local registry cache**. It detects absence and corruption of advisory rows — 6a is
+what makes that green mean anything — but it **cannot detect staleness**: a complete-but-old
+snapshot passes both steps while missing every advisory published since it was written. The
+freshness-independent control is the live whole-tree OSV cross-check owned by MES-19, which runs
+at release. This sweep is upstream of any release and does not replace it; the two fail
+differently and neither subsumes the other. Whether OSV should *also* run at the sprint boundary
+is the open half of PA-9 — and note the boundary dissolves its standing objection, since network
+dependence costs nothing when no work is in flight.
