@@ -99,8 +99,16 @@ them.**
 `mix.lock`.** Establish it, do not assume it:
 
 ```bash
-git diff --name-only main..{TICKET_KEY} | grep -E '^(mix\.exs|mix\.lock)$'
+git diff --name-only main...{TICKET_KEY} | grep -E '^(mix\.exs|mix\.lock)$'
 ```
+
+**Three dots, not two, and this is not a style preference.** `git diff A..B` compares
+the two tips, so once `main` has moved it reports *main's own* changes as the branch's.
+`A...B` diffs from the merge-base and answers the question actually being asked: what
+did this branch change? Measured 2026-08-21 on `MES-57` — two-dot listed `CLAUDE.md`,
+which only `main` had touched; three-dot did not. Left as two-dot, a `mix.lock` change
+landing on `main` would make every unrebased branch fire gate 6 for someone else's
+edit.
 
 A match means run gate 6 (both halves). No match means **skip gate 6 and say so in
 the close-out** — a gate table with two rows quietly missing reads as an omission,
@@ -114,8 +122,12 @@ changes no dependency cannot fail it for anything that ticket caused, so running
 yields no information about the work under review. It is also the most expensive gate
 and the only side-effecting one: 6a materialises a separate tree at `d697093`, runs
 `mix deps.get` inside it, and audits 22 advisory ids. **Measured on MES-57:** the
-cleanup form in the 6a snippet below is *rejected by the seat command guards*, so a
-run that could not have found anything relevant also left a temp directory behind.
+cleanup form in the 6a snippet below was *rejected by CODE_REVIEWER's command guard*
+and ran clean twice under CODE_CREATOR's — so the behaviour is **per-seat, not
+universal**, and a run that could not have found anything relevant also left a temp
+directory behind on the seat that refused it. The distinction decides the remedy: if
+the guards merely differ, rewriting the snippet fixes the wrong thing. Recorded as
+S5-27; not acted on here.
 
 **What this rule gives up, and where it is picked up.** Gate 6's verdict is a function
 of *(lock, wall-clock)* — every other gate's is a function of the tree alone. A
