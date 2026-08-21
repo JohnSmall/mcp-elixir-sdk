@@ -1889,3 +1889,521 @@ looks like one operation in the expression that reads it, and a collision inside
 an inner merge is invisible to a guard written against the outer one. The tell
 is a count in the prose that no longer matches the count in the check — here,
 "four sources" beside three pairs.
+
+---
+
+## S5-29 — A classification's prose restated the TOOL'S generic message as an observation, and named a defect the run never saw
+
+**Found:** MES-58, 2026-08-21, by the CODE_CREATOR, while citing the gap register to the
+saved check sheet rather than to the census summary.
+**Status:** recorded, not fixed — **no figure moves**: the scenario's class (`real_gap`),
+owner and check counts are all correct, and only the free-text `why` is wrong. Backlog, per
+the merge stopping rule.
+
+### The finding
+
+`server-2026-07-28.json`'s `classification.why` for `server-stateless` decomposes its 17
+failures into four sub-causes, of which (d) reads:
+
+```text
+(d) error.data.requiredCapabilities is an array where the schema defines an
+    object of capability objects
+```
+
+The run's own saved check sheet says otherwise. `sep-2575-server-rejects-undeclared-capability`
+captured this response:
+
+```json
+{"jsonrpc":"2.0","id":401,
+ "error":{"code":-32021,
+          "message":"Missing required client capability: sampling (requiredCapabilities: {\"sampling\":{}})"}}
+```
+
+There is **no `error.data` at all**. The value is stringified into the error *message*. The
+mechanism is the one `docs/sprint_4_issues.md` recorded as **R5** — *a handler error return
+has no `data` slot* — and its owner is MES-43 gap 4.
+
+### The mechanism, which is the transferable part
+
+The harness's check reads `error.data.requiredCapabilities`, finds `undefined`, and emits
+**one generic message** covering every way the field can be wrong:
+
+```js
+!t(e) || !t(e.sampling) ? {error: `… is not a ClientCapabilities object naming 'sampling'
+  (the schema defines it as an object of capability objects, e.g. { "sampling": {} },
+   not an array)`} : …
+```
+
+The trailing *"not an array"* is the tool **explaining the schema**, not **reporting what it
+saw**. Reading it as an observation converts "the field is absent" into "the field is an
+array" — a different defect, with a different fix, in the flattering direction: absent is
+worse than mis-shaped.
+
+**Why it is worth an entry.** A classification is written once and read by whoever schedules
+the fix. A fixer sent to "change an array to an object" would look for an array that does not
+exist, find the field missing, and have to re-derive the cause from scratch — after
+concluding the register was unreliable. The classification survived a review round because
+it is *plausible*: it quotes the tool almost verbatim.
+
+### Transferable form
+
+When a check fails, the tool's message describes **the predicate that failed**, not
+necessarily **the state that failed it** — a fail-closed check emits the same sentence for
+absent, null, and wrongly-typed. Before writing a cause into a register, read the **captured
+response**, not the **error string**. The tell is a message that enumerates what the value
+*should* be: that phrasing is written for every failing case at once, so it cannot be
+evidence about this one.
+
+---
+
+## S5-30 — An enumeration of causes covered 16 of 17 checks, and the one it dropped was the one with no owning ticket
+
+**Found:** MES-58, 2026-08-21, by the CODE_CREATOR, mapping the census's sub-causes onto the
+root causes in `docs/sprint_4_issues.md` in order to cite an owner per row.
+**Status:** recorded, not fixed — same artefact and same stopping-rule verdict as
+S5-29. Distinct mechanism, so a distinct entry.
+
+### The finding
+
+The same `classification.why` decomposes `server-stateless` into **four** sub-causes. Counted
+against the run's check sheet, they account for **16** of the **17** failing checks:
+
+```text
+(a) _meta absent/invalid         3 request-meta-invalid-* + 3 http-server-meta-invalid-400   = 6
+(b) unsupported protocolVersion  1 server-unsupported-version-error + 1 …-version-400        = 2
+(c) removed methods -> 404       5 …-404-<method> + 1 …-method-not-found-404                 = 6
+(d) requiredCapabilities         1 server-rejects-undeclared-capability + 1 …-http-400       = 2
+                                                                                      total   16
+```
+
+The seventeenth is `sep-2575-http-server-header-mismatch-400`, and it appears under none of
+the four. It is the check for **R4** — no cross-check of the `MCP-Protocol-Version` header
+against `_meta.protocolVersion` — which the MES-43 escalation list also never routed. **The
+one check the enumeration drops is the one root cause with no owning ticket.** That is not a
+coincidence to shrug at: the same reader who wrote the summary is the reader who would have
+noticed the gap had no owner.
+
+### Why it is a different mechanism from S5-29
+
+S5-29 is a *wrong* statement — one that can be falsified by reading the evidence. This is a
+statement that is *true as far as it goes* and **silently short of its set**. Nothing in the
+prose is false; the sentence merely says "four distinct defects" without saying "…covering
+sixteen of seventeen checks", so there is **no number in the text for a reviewer to check
+against**. The failure is invisible by construction: an enumeration with no stated count
+cannot be seen to be incomplete.
+
+### Transferable form
+
+**An enumeration in prose must carry the count it claims to cover, and the count must be of
+the leaves.** "Four distinct defects" is unfalsifiable; "four distinct defects, accounting for
+all 17 failing checks" is a claim a reviewer can test in one subtraction — and would have
+failed here. This is the same shape as S5-28 (a guard whose enumeration ran over an
+intermediate layer rather than the leaves) and the same shape as the A2d rule the project
+already applies to counts: **enumerate, and state the total, so that "covered everything"
+cannot be read into a list that did not.**
+
+---
+
+## S5-31 — Two different things are named `totals` in one library, and the console one has no consumer
+
+**Found:** MES-58, 2026-08-21, by the CODE_CREATOR, answering the PM's MES-59 precondition
+question; recorded at the PM's direction (ratification comment 25183).
+**Status:** recorded, **nothing renamed here** — a rename inside a publish-only ticket is out
+of scope, and the collision is latent rather than live.
+
+### The finding
+
+`conformance/lib` contains two unrelated things called `totals`:
+
+* `MCP.Conformance.Console.totals/1` — a parse of the harness's printed SUMMARY block;
+* `census["totals"]` — the census's own map, built by `MCP.Conformance.Census.totals/5` from
+  scenario check data.
+
+They are computed from different inputs by different code and mean different things. A grep
+for `totals` across `conformance/lib` outside `console.ex` returns **only** the census map —
+`census["totals"]`, `Census.totals/5`, `control_totals/2`, `classification_totals/1`. **No
+consumer outside `console.ex` reads the parsed console `totals` value at all.** The
+`Console.blocks/1` fields that *are* read outside it are `mappings` and `faults`
+(`RunIndex`) and `marks` and `not_scored` (`Census`'s `corroborate_reducer/3` and
+`corroborate_not_scored/4`).
+
+**Stated precisely, because the loose version would overclaim.** `totals` is not inert
+*inside* `console.ex`: `totals_faults/1` and `total_sum_faults/3` cross-check it against the
+marks block, and `faults` **is** read outside. So a defect in how `totals` is parsed can
+still reach a consumer — as a spurious fault, or a missing one. What has no consumer is the
+**value**.
+
+**Consequence, and it is the reason the PM asked:** per-leg printer-shape enforcement on the
+console *totals* block has **no consumer for its value today**, so MES-59's precondition
+resolves to "speculative guard" — with the qualification above, which is the PM's to weigh
+rather than mine to decide.
+
+### Transferable form
+
+Two things sharing a name in one library is how a future reader wires the wrong one — and it
+is worst when one of the two is **unused**, because the unused one is the one a search for
+the name surfaces first, with nothing downstream to go red when it is picked. Record the
+collision even when nothing is broken: the entry is cheaper than the debugging session, and
+the moment to rename is a ticket that already touches the file, not this one.
+
+---
+
+## S5-32 — Three guards are justified by a NAMED future consumer; the consumer has now arrived and reads none of them
+
+**Found:** MES-58, 2026-08-21, by the CODE_CREATOR, while answering the PM's MES-59
+precondition question at the delivered tip.
+**Status:** recorded, not fixed — **no live defect**. Every guard involved is correct and
+cheap; what has lapsed is the *reason written beside it*. Nothing renamed, nothing removed.
+
+### The finding
+
+`conformance/lib/mcp/conformance/console.ex` carries three sites whose stated justification is
+that **MES-58 will consume** the field they guard:
+
+```text
+:694  "Nothing in this project reads `not_scored` yet — MES-57 and MES-58 will"
+:718  "... into an IR that MES-57 and MES-58 are documented consumers of"
+:785  "Same reasoning as the block above: unread today, load-bearing for MES-58"
+```
+
+**MES-58 consumes none of them.** It reads the committed censuses
+(`docs/conformance/*-2026-07-28.json`) and their rendered markdown; it starts no harness and
+parses no console. Two of the three are rescued by the *other* named consumer — `Census`
+gained a `blocks.not_scored` reader in MES-57 — but the `totals` site at `:785` has **no
+consumer for its value at all** (see S5-31), and the one it named has now arrived and does
+not read it.
+
+### The mechanism, which is what makes it worth an entry rather than a comment fix
+
+A guard justified by *"X will need this"* has a property no other justification has: **it
+becomes checkable exactly once, when X lands, and nothing schedules that check.** X's author
+is working on X and has no reason to grep for prophecies about it; the guard's author has
+moved on. So the justification survives its own falsification and keeps reading as
+considered — the S5-24 mechanism, arriving through a different door. S5-24's lapsed
+justifications lapsed because the *world* moved; these lapse because the *prediction was
+wrong*, and the difference matters for the remedy: no amount of re-reading the guard reveals
+it, only the arrival of the named consumer does.
+
+It is also the argument that *sounds* strongest at review time. "Guarded now rather than
+after it is load-bearing" is good practice and was the right call — the guards would be
+worth keeping even with no consumer at all, because they cost nothing and the failure they
+prevent is silent. **The defect is not the guard; it is having written a falsifiable claim
+about the future into the place a reader looks for the reason.**
+
+### Transferable form
+
+**Do not justify a guard by naming a ticket that does not exist yet.** Justify it by the
+property it protects — "a duplicate here fails silently and in whichever direction the file
+is ordered" is true forever and needs no consumer. If a future consumer *is* the reason,
+write it as a *prediction* rather than a *fact* and expect to be wrong: the first thing the
+named ticket should do is check the claim made in its name, and that check belongs in the
+brief, not in the reader's luck.
+
+---
+
+## S5-33 — A test globs `docs/conformance/*-2026-07-28*.json` and `Map.fetch!`es `"scenarios"`, so the FIRST non-census file in that directory breaks gate 5
+
+**Found:** MES-58, 2026-08-21, by the CODE_CREATOR — **by hitting it**, not by reading for
+it. Adding the Confluence mirror payload to `docs/conformance/` turned gate 5 red.
+**Status:** **worked around in MES-58, not fixed.** The payload moved to
+`docs/conformance/confluence/`, a subdirectory the glob does not descend into. The latent
+defect is untouched and is reported here rather than repaired, per the ticket's scope
+boundary — a publish-only ticket does not fix instruments.
+
+### The finding
+
+`test/conformance/classification_test.exs:157` reads:
+
+```elixir
+for path <- Path.wildcard(Path.join(docs, "*-2026-07-28*.json")),
+    scenario <- path |> File.read!() |> Jason.decode!() |> Map.fetch!("scenarios"),
+```
+
+The glob's predicate is **"a filename in this directory containing the revision string"**.
+The code's assumption is **"a census"**. Those are not the same set, and nothing narrows the
+first to the second: any JSON file whose name happens to carry `-2026-07-28` is opened and
+`Map.fetch!("scenarios")` is applied to it. A file without that key does not fail the
+assertion the test exists to make — it raises `KeyError` and takes the test out before it can
+make any assertion at all.
+
+**Measured, not predicted:** committing
+`docs/conformance/report-2026-07-28.confluence.json` — a Confluence payload, not a census —
+produced
+
+```text
+1) test ... every classification block equals what Classification.fetch/1 returns
+   ** (KeyError) key "scenarios" not found in: %{"_readme" => ..., "content" => [...]}
+   13 doctests, 826 tests, 1 failure
+```
+
+### Why it is worth an entry rather than a rename and silence
+
+**The directory is a natural home for non-census artefacts and will attract more of them.**
+`docs/conformance/` already holds four `.md` files that are not censuses; the JSON half has
+simply been homogeneous so far, and the glob quietly depends on that continuing. The next
+non-census JSON — a fixture, a payload, a captured denominator, a second revision's
+manifest — breaks a gate for a reason that has nothing to do with what the test checks, and
+does so **at whatever moment someone adds a file**, which is the worst time to be debugging a
+test about classification drift.
+
+**The workaround is not the fix, and the difference is worth stating.** A subdirectory keeps
+*this* file out of the way; it does nothing about the next one placed alongside the censuses,
+and it leaves a glob whose stated domain is wider than the domain it can actually handle.
+The fix is to make the selection say what it means — filter on shape (`Map.has_key?("scenarios")`)
+or on the census's own `census_schema_version`, rather than on a substring of a filename.
+
+### Transferable form
+
+**A glob is a claim about a directory's future contents, and it is the weakest kind of
+claim available** — it selects on *names*, then the code proceeds on *structure*, and nothing
+connects the two. When a `Path.wildcard` result feeds a `fetch!`, the pairing is a latent
+crash waiting for the first file that satisfies the name and not the shape. Select on the
+property you actually depend on; if that means reading each file and skipping the ones that
+do not qualify, the extra line is cheaper than a red gate on someone else's ticket. This is
+the same family as S5-30 — a set defined one way and consumed as if it were defined another.
+
+---
+
+## S5-34 — A statement about how well something is CHECKED is itself a claim, and it was the one claim in the report the check did not cover
+
+**Found:** MES-58 review round 1, 2026-08-21, by the **CODE_REVIEWER**, at `cdb19e4` —
+**by mutating the report and watching the check stay green**, not by reading the script.
+**Status:** **fixed in MES-58 round 2**, by broadening the check rather than narrowing the
+claim (PM correction contract, comment 25192, C1).
+
+### The finding
+
+`docs/conformance/report-2026-07-28.md:6-8` published this guarantee about itself:
+
+```text
+Every number below is quoted from an adjudicator-accepted run and is
+transcription-checked against the census JSON.
+```
+
+The reviewer changed the client headline — the single most quotable sentence in the
+document — from `5 survive` to `6 survive`, changing nothing else, and re-ran the check:
+
+```text
+MES-58 transcription check: 134 assertions
+PASS — every figure in the report matches the artefact it was derived from.
+```
+
+134 assertions, and not one of them was about that sentence. The **figure itself was
+correct**; what was false was the report's statement about how well the figure was checked.
+
+### The mechanism, and why it is not "a missing assertion"
+
+Calling this an oversight understates it. The check *did* carry needles containing the
+headline's numbers — but they were matched against **the whole report as one string**, so an
+assertion nominally about the headline was satisfied by any paragraph anywhere that happened
+to contain the same words. The §4 body says `The raw figure is 8 of 32, and it may not be
+quoted bare`; the §2 headline says `The raw figure is 8 of 32 and`. **A body paragraph was
+standing in for the headline**, which is why the coverage looked complete while a headline
+mutation slipped through. Coverage measured as *"is there an assertion mentioning this
+number?"* was not coverage of *"is this sentence checked?"*.
+
+The three targets combined into the worst case:
+
+* **The most-copied sentence** — the report's own §2 says the headlines are written to
+  survive being copied out alone, so they are precisely what a transcription guarantee most
+  needs to cover.
+* **The broadest wording** — "every number below", with no bound stated.
+* **A verifier that could not distinguish** — the substring match had no notion of *where*
+  in the document the needle was satisfied.
+
+### Why it belongs beside S5-24 rather than in the same bucket as a wrong figure
+
+This is the assurance-layer form of S5-24 (*a guard's stated justification can lapse without
+the guard changing*). There, a true-then-false justification made a guard read as considered;
+here, an over-broad coverage statement made a check read as complete. In both, **nothing in
+the artefact was numerically wrong** — what was wrong was a sentence about the artefact's own
+reliability, and that is the kind of sentence a reader has no independent way to test. It is
+also the same shape as two of this sprint's own defects one level down: a PM close-out saying
+gate 6a's cleanup line "is rejected by the seat command guards" when it was rejected by one
+seat's, and the `@auth_scored_why` attribute justified by a consumer that read nothing.
+
+**A claim about verification gets no exemption from the standard it describes.**
+
+### The fix, and the shape it takes
+
+Two changes, and the second is the one that generalises:
+
+1. **Headline assertions are bound to the headline text.** The check now extracts the two §2
+   blockquotes and asserts against *those strings*, so a needle satisfied elsewhere cannot
+   stand in. The reviewer's exact mutation now fails, as do `passes 35 → 36` and
+   `6 of those 35 → 7 of those 35`.
+2. **The coverage statement was made testable instead of merely more careful.** Every
+   assertion is filed under a *kind of figure*; the kinds are closed by the report's own
+   structure; the per-kind tally is printed; and **the report's §11 coverage table is
+   asserted against that tally** — one assertion per row, plus the forbidden-shape count and
+   the grand total. Mutating any cell of that table now fails the check. The one kind that
+   **cannot** be asserted (the R1–R6 root-cause attribution, whose evidence is the harness
+   run directory and is not committed) is published as a **0** with its reason, rather than
+   omitted.
+
+> **Corrected at round 3 — the zero in item 2 was wrong about a committed artefact, and the
+> fix in item 2 was the wrong *kind* of fix.** The censuses do carry the check-name sheet
+> (`failed_checks`), so the names and counts were assertable all along and are now asserted;
+> only the *attribution* survives as uncheckable. And broadening the check a second time was
+> what invited a third round. Both are **S5-35**, which is the entry to read after this one.
+
+### Transferable form
+
+**Write the coverage claim as a number the checker produces, not as a sentence the author
+believes.** "Everything below is checked" is unfalsifiable prose; "these 14 kinds of figure,
+with these 14 assertion counts, one of them zero" is a statement a reader can test by running
+the thing — and it fails loudly when the artefact grows a kind of figure nobody covered.
+
+**And test the verifier where the claim is loudest, not where the code is easiest.** A
+substring match over a whole document reports coverage of *vocabulary*, not of *sentences*;
+bind each assertion to the region whose correctness it is standing for. The way to find this
+class is the way the reviewer found it: **mutate the most quotable sentence and see whether
+anything goes red.**
+
+## S5-35 — Broadening a check to catch each new instance is unbounded; the terminating move is to bound the claim
+
+**Round 2 of the MES-58 review found the report's §11 coverage claim over-claiming in five
+places. Round 1 had found the same class in one place, and the fix then was to broaden the
+check. That fix is what produced round 2.** The report says "every figure above is checked".
+That is a claim about a **hand-written document**, and no finite script closes it: for any
+check, a new sentence can be written that the check does not cover. Broadening is therefore
+a move with no last step, and each round costs a full review cycle.
+
+CODE_REVIEWER's mutation sweep is what made the shape visible rather than arguable: it
+mutated **every numeric token in the report — 595 of them**, one at a time, each scored by a
+full run of the check. 262 caught, 333 not. Most of the 333 are identifiers a transcription
+check has no business asserting (`SEP-2322`, `ADR-003`, JSON-RPC codes, HTTP statuses, dates,
+list markers). What was left after setting those aside was five real over-claims — and the
+point is that **the sweep enumerated them instead of finding one more**, which is what turns
+"broaden again" into a decision that can be refused with a reason.
+
+### The five, and the two different remedies they needed
+
+| # | over-claim | remedy |
+|---|---|---|
+| (a) | the R1–R6 row published as **0** because "no committed artefact carries the mapping" | **assertions** — the premise was false |
+| (b) | the §9 row titled "…and exit codes" while no assertion read the report's exit-code sentence | one assertion + honest labelling |
+| (c) | §8 had **no row at all** in a table published as complete | give it a row |
+| (d) | the guarantee covered a figure's *first* statement; every restatement was unguarded | **wording** |
+| (e) | §11's own self-check count was the one number in its closing sentence nobody asserted | assert it |
+
+**(a) is the one worth keeping.** The zero was not an omission — it was published *with a
+stated reason*, which is the discipline that is supposed to make a zero honest. **The reason
+was wrong about a committed artefact.** `docs/conformance/server-2026-07-28.json` carries
+`failed_checks`: all 17 failing check ids for `server-stateless`, by name. Every check name
+in the R1–R6 table is in it, and every count in that column reproduces from it. So the
+answer to "cannot be asserted, or merely was not?" was **merely was not** — and the
+difference matters downstream, because §11 was telling a Sprint 6 planner that S5-30's "16 of
+the 17" and "the seventeenth" were unverifiable when the census verifies the names and the
+17. What genuinely cannot be asserted is narrower: the **attribution**, which cause a given
+check belongs to, whose evidence is the uncommitted run directory.
+
+**A stated reason for a zero is a claim like any other, and it is the claim least likely to
+be re-read.** It is written once, by the person who has just decided not to do the work, and
+every later reader takes it as settled. The check on it is cheap and specific: *name the
+artefact the reason says does not carry the data, and open it.*
+
+**(d) is the one that terminates the round.** Rather than binding every restatement — which
+is the broadening move again, one level down — the guarantee now says what it binds: **the
+primary statement of each figure, not every restatement of it**. That is true today, it took
+one sentence, and it cannot decay into a sixth instance. The same move handles (b): four of
+that row's assertions are **artefact-side** (they assert a property of the census and never
+open the report), so the table gives them their own column instead of counting them as report
+coverage.
+
+### The bounded claim, tested the way the broad one was broken
+
+A bound is worth no more than the sweep that fails to break it, so the same exhaustive,
+position-aware mutation was re-run against the **bounded** claim at the delivered tip.
+
+```
+numeric literal occurrences in the report: 619
+mutations scored: 619   caught: 304   uncaught: 315   phantom (refused, not scored): 0
+```
+
+**All 315 uncaught were read by hand, position-aware.** Every one is an identifier (spec id,
+Jira key, sprint or gap number, `R1`–`R6` label, `§` reference, function arity, version,
+commit, hash, port, flag name), a list marker or heading number, a claim the report quotes in
+order to call it false (`"29 of 37"`, `"78% conformant"`, `"100% conformance (Tier 1)"`), or a
+**restatement of a figure whose primary statement is caught**. Spot-checked in both
+directions: mutating the primary statement of three figures whose restatements are uncaught —
+the §5 `extension` table row (`9`), the null-control score (`6 of 37`), the §2 client
+headline (`leaving 7 in scope`) — fails the check every time.
+
+**So the bound is exactly right, rather than merely safer than the old claim.** No primary
+statement is uncovered; restatements are uncovered and are now *stated* to be. That is the
+difference between a guarantee that holds and one that has survived two rounds of patching.
+
+**This sweep is a function of the report and the check, not of the tree that records it** —
+the commit carrying this entry changes neither, so recording the result here does not
+outdate it (contrast **S5-16**'s tip problem, where committing the measurement moved the
+thing measured).
+
+**One thing the sweep cannot do, stated because a green sweep invites the opposite reading.**
+It mutates the report and asks whether the check notices. It says nothing about whether the
+census is right — every figure could be faithfully transcribed from a wrong measurement and
+the sweep would look exactly like this. Transcription is all that is being proved, and the
+adjudicator is the control on the other half.
+
+### The named uncovered restatements — where the edit-time drift risk sits
+
+**The bound is right, and the residual it leaves is edit-time drift.** A restatement is
+uncovered *by design* now, which is honest but not free: whoever edits this report next can
+change a primary statement, watch the check go green on it, and leave a restatement behind
+saying the old number. The mitigation that fits is a **note naming where that sits**, not
+another assertion — an assertion would be the broadening move this entry exists to refuse.
+
+**A sub-class is worth naming: restatements that, if they drift, make a sentence contradict
+*itself*.** Measured at the delivered tip, one mutation at a time, each scored by a full run
+of the check:
+
+| report site | the restatement | mutated | check |
+|---|---|---|---|
+| §3 | `35` in "So 35 − 6 = **29**" | `35` → `34` | **uncaught** |
+| §3 | the `6` in the same sentence | `6` → `7` | caught |
+| §3 | the `29` in the same sentence | `29` → `28` | caught |
+| §5 | ``Server `extension` (9)`` before a 9-name list | `(9)` → `(8)` | **uncaught** |
+| §5 | ``Server `pending` (2)`` before a 2-name list | `(2)` → `(3)` | **uncaught** |
+| §5 | ``Client `extension` (6)`` before a 6-name list | `(6)` → `(7)` | **uncaught** |
+| §5 | ``Client `out_of_scope_adr_003` (24)`` before a 24-name list | `(24)` → `(23)` | **uncaught** |
+
+**Every one of the five uncaught has its primary statement caught** — §3's subtraction is
+checked on both of its other terms, and each §5 parenthetical restates a §5 classification
+table row that the check does assert (mutating all four rows fails it). So the bound holds
+exactly as stated; these are the figures it declines to bind, listed by name.
+
+**Why it is left alone rather than fixed.** A drifted one of these reads `"34 − 6 = 29"`, or
+a `(8)` over a list of nine names — the **loudest** failure mode available to a human reader,
+not the quietest. The quiet failure is a stale figure with nothing beside it to disagree
+with, and that is the one the check covers.
+
+**And the count is the point.** This started as two instances the author looked at hardest;
+CODE_REVIEWER's hand-read of the 315 uncaught added ``Server `pending` (2)`` and ``Client
+`extension` (6)``; enumerating the §5 bullet list mechanically then added ``(24)``. Three
+passes, three different totals — **"no sentence may contradict itself" is a judgement over
+prose and not a closed set**, which is why this is a register note and not an assertion. The
+table above is the set as enumerated, not a proof that no sixth exists.
+
+### Transferable form
+
+**A bounded guarantee that holds beats a broad one that does not.** When a review finds
+instance *n* of a claim outrunning its evidence, the question is not "how do I catch instance
+*n*" but "what is the largest guarantee I can actually discharge". Patch the instance and you
+have bought one round; narrow the claim and you have closed the class.
+
+**Two markers that you are on the unbounded side:** the claim quantifies over a
+*hand-written* artefact ("every figure", "all sections", "each of these"), and the fix for the
+last instance was to make the checker bigger. Either alone is survivable; together they
+predict the next round.
+
+**And the diagnostic that ends the argument is exhaustive mutation, not another example.**
+One more counter-example invites one more patch. An enumeration over every candidate — with
+the position recorded, not just the line, so a caught primary statement and an uncaught
+restatement on the same line do not collapse into one entry — turns the choice between
+broadening and bounding into a decision with the whole set in view.
+
+This is the assurance-layer twin of the sprint's own **S5-17** (*fixing the instance does not
+answer the class*), and it is the second time this sprint the same pattern has cost a review
+round. The difference here is that the class was **named and refused** rather than
+rediscovered: MES-56 spent five rounds patching instances of a claim, and that history is
+what justified stopping at two here.

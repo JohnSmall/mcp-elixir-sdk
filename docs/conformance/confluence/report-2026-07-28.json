@@ -1,0 +1,9026 @@
+{
+ "_readme": "Documentation, NOT an argument to confluence_create_page. Pass space_key, title, parent_id and content. Before creating the page, replace the literal token {{MERGE_COMMIT}} in the first panel with the squash-merge SHA on main. That token is the only placeholder in this file, and grep finds it TWICE: once in the panel, which is the one to replace, and once in the sentence above, which is this _readme naming it. _readme is not passed to the create call, so a global substitution is harmless -- but a verifying grep should expect 2, not 1.",
+ "space_key": "ElixirMCPS",
+ "parent_id": "209682736",
+ "title": "Conformance Report — MCP 2026-07-28, official suite (Sprint 5)",
+ "content": [
+  {
+   "t": "panel",
+   "variant": "info",
+   "c": [
+    {
+     "t": "p",
+     "c": [
+      {
+       "t": "text",
+       "text": "This page is a MIRROR. ",
+       "marks": [
+        "strong"
+       ]
+      },
+      {
+       "t": "text",
+       "text": "The report is authored, reviewed and gated in the repo at "
+      },
+      {
+       "t": "text",
+       "text": "docs/conformance/report-2026-07-28.md",
+       "marks": [
+        "code"
+       ]
+      },
+      {
+       "t": "text",
+       "text": ". The repo is the source of truth; this page mirrors it, following the ADR-003 precedent."
+      }
+     ]
+    },
+    {
+     "t": "p",
+     "c": [
+      {
+       "t": "text",
+       "text": "This page mirrors commit "
+      },
+      {
+       "t": "text",
+       "text": "{{MERGE_COMMIT}}",
+       "marks": [
+        "code"
+       ]
+      },
+      {
+       "t": "text",
+       "text": " on "
+      },
+      {
+       "t": "text",
+       "text": "main",
+       "marks": [
+        "code"
+       ]
+      },
+      {
+       "t": "text",
+       "text": ". Two copies exist and this one can still go stale — naming the commit "
+      },
+      {
+       "t": "text",
+       "text": "does not prevent that",
+       "marks": [
+        "strong"
+       ]
+      },
+      {
+       "t": "text",
+       "text": ", it only makes it visible. If the two disagree, the repo is right."
+      }
+     ]
+    },
+    {
+     "t": "p",
+     "c": [
+      {
+       "t": "text",
+       "text": "Produced by MES-58 (Sprint 5, epic MES-55) from the adjudicator-accepted runs of MES-56 (server leg) and MES-57 (client leg). Provenance, in full, is in the "
+      },
+      {
+       "t": "text",
+       "text": "Provenance",
+       "marks": [
+        "em"
+       ]
+      },
+      {
+       "t": "text",
+       "text": " section below."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "Written by hand",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", like "
+    },
+    {
+     "t": "text",
+     "text": "delta-vs-sprint-4.md",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " and unlike its other neighbours in this directory. The censuses and their per-scenario tables are "
+    },
+    {
+     "t": "text",
+     "text": "projections",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " of "
+    },
+    {
+     "t": "text",
+     "text": "census.json",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "; this file is an argument about what those projections mean, and cannot be a projection. "
+    },
+    {
+     "t": "text",
+     "text": "It derives no figure of its own.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " Every number below is quoted from an adjudicator-"
+    },
+    {
+     "t": "text",
+     "text": "accepted",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " run. A transcription check re-derives each figure from the committed artefacts and asserts this file carries it — "
+    },
+    {
+     "t": "text",
+     "text": "the primary statement of each figure, not every restatement of it",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "; "
+    },
+    {
+     "t": "text",
+     "text": "§11 names the kinds of figure it covers, the assertion count for each, and the one thing it does not cover",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", and the check asserts that table against its own tally. The 208-assertion check and its output are on MES-58's close-out."
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "Repo is source of truth; the Confluence page is the mirror.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " This file is authored, reviewed and gated here. The mirror names the commit it mirrors, so that if the two ever diverge the staleness is "
+    },
+    {
+     "t": "text",
+     "text": "visible",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " rather than invisible. That is the only mitigation, and it is stated rather than hidden: two copies exist and the mirror can still go stale."
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 2,
+   "c": [
+    {
+     "t": "text",
+     "text": "1. What this is, and what it is not"
+    }
+   ]
+  },
+  {
+   "t": "ul",
+   "c": [
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "This is a "
+        },
+        {
+         "t": "text",
+         "text": "measurement",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", taken with the "
+        },
+        {
+         "t": "text",
+         "text": "official",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " MCP conformance suite "
+        },
+        {
+         "t": "text",
+         "text": "@modelcontextprotocol/conformance@0.2.0-alpha.11",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", scored against the "
+        },
+        {
+         "t": "text",
+         "text": "frozen",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " "
+        },
+        {
+         "t": "text",
+         "text": "2026-07-28",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " requirement set."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "The suite is a pre-release alpha.",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " Scenario "
+        },
+        {
+         "t": "text",
+         "text": "membership",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " is frozen by the requirement set; scenario "
+        },
+        {
+         "t": "text",
+         "text": "implementations and check ids are not",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", and the alpha line keeps moving. A later alpha can turn a scenario red with no change to this SDK's code."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "Nobody has certified this SDK.",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " Nothing here is certification by, or endorsement from, the MCP conformance project. It is supporting evidence we took ourselves with their instrument."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "The denominator is ADR-003's:",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " the "
+        },
+        {
+         "t": "text",
+         "text": "core",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " specification of 2026-07-28, server and client, "
+        },
+        {
+         "t": "text",
+         "text": "excluding the authorization profile and the extension track",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " (Tasks, MCP Apps). Out-of-scope scenarios are "
+        },
+        {
+         "t": "text",
+         "text": "named",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " in §5 and §6, never folded into a rate."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "Server and client are reported separately, never blended.",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " They have different denominators and different exclusions; one combined percentage would be meaningless."
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 2,
+   "c": [
+    {
+     "t": "text",
+     "text": "2. The two headline statements"
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "They are "
+    },
+    {
+     "t": "text",
+     "text": "sentences, not numbers",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", and each is written to survive being copied out of this page on its own. Every qualifier a figure needs is inside the sentence that carries it."
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 3,
+   "c": [
+    {
+     "t": "text",
+     "text": "Server"
+    }
+   ]
+  },
+  {
+   "t": "panel",
+   "variant": "note",
+   "c": [
+    {
+     "t": "p",
+     "c": [
+      {
+       "t": "text",
+       "text": "Against the 37 scored server scenarios of the frozen 2026-07-28 requirement set, mcp_elixir_sdk passes 35 under the harness's FAILURE-only rule and 33 under its stricter rule in which a WARNING also fails. 6 of those 35 are also passed by a null server implementing no MCP at all, so 29 is the number of scored scenarios whose pass this SDK's own behaviour produced. None of the three is a certified conformance rate."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 3,
+   "c": [
+    {
+     "t": "text",
+     "text": "Client"
+    }
+   ]
+  },
+  {
+   "t": "panel",
+   "variant": "note",
+   "c": [
+    {
+     "t": "p",
+     "c": [
+      {
+       "t": "text",
+       "text": "Of the 32 scored client scenarios, 25 are "
+      },
+      {
+       "t": "text",
+       "text": "auth/*",
+       "marks": [
+        "code"
+       ]
+      },
+      {
+       "t": "text",
+       "text": " — the authorization profile ADR-003 puts out of 2.0.0 — leaving 7 in scope. All 7 pass as driven; 5 survive both published discounts: drive-policy (removes "
+      },
+      {
+       "t": "text",
+       "text": "request-metadata",
+       "marks": [
+        "code"
+       ]
+      },
+      {
+       "t": "text",
+       "text": ") and null-passable (removes "
+      },
+      {
+       "t": "text",
+       "text": "http-standard-headers",
+       "marks": [
+        "code"
+       ]
+      },
+      {
+       "t": "text",
+       "text": "). Each discount ALONE leaves 6, over DIFFERENT sets, so neither 6 may be quoted. The raw figure is 8 of 32 and never appears without that exclusion beside it."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "Why 29 is not promoted into a heading.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " 29 is "
+    },
+    {
+     "t": "text",
+     "text": "a conservative floor on scenario-level evidence contributed beyond a minimal valid-envelope null, not a conformance-rate estimate",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " (the Sprint 4 claim draft's own words). Written as \"29 of 37\" in a heading it gets copied as \"78% conformant\", which is both wrong and pessimistic in a way that invites a reader to correct it back to 35 — the outcome the null control exists to prevent. So the sentence is the headline and 29 is the number it ends on."
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 2,
+   "c": [
+    {
+     "t": "text",
+     "text": "3. Server leg — three reducers, one control, two real gaps"
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "There is no single \"pass rate\".",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " The harness applies three different rules to the same run and they do not agree, so each figure names its own rule."
+    }
+   ]
+  },
+  {
+   "t": "table",
+   "rows": [
+    [
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "reducer"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "scored"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "rule"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "scored scenarios failing"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "requirements_exit",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "35/37",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "FAILURE fails; WARNING is free"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "server-stateless",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ", "
+         },
+         {
+          "t": "text",
+          "text": "input-required-result-non-tool-request",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "server_summary",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "35/37",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "FAILURE fails; WARNING is free"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "server-stateless",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ", "
+         },
+         {
+          "t": "text",
+          "text": "input-required-result-non-tool-request",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "client_summary",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "33/37",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "FAILURE "
+         },
+         {
+          "t": "text",
+          "text": "and WARNING",
+          "marks": [
+           "strong"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " both fail"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "the two above, plus "
+         },
+         {
+          "t": "text",
+          "text": "sep-2164-resource-not-found",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " and "
+         },
+         {
+          "t": "text",
+          "text": "input-required-result-ignore-extra-params",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "Check-level census over the scored scenarios: "
+    },
+    {
+     "t": "text",
+     "text": "98 SUCCESS, 19 FAILURE, 2 WARNING, 0 SKIPPED, 0 INFO",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " (119 checks)."
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "The denominator is a checked fact, not an assumption.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " The frozen set requires 37 scored and 13 not-scored server scenarios; this run ran all 50. Scored scenarios absent: "
+    },
+    {
+     "t": "text",
+     "text": "none",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " (any one refuses the run outright, "
+    },
+    {
+     "t": "text",
+     "text": "SCORED_SCENARIO_ABSENT",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "). Not-scored absent: "
+    },
+    {
+     "t": "text",
+     "text": "none",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ". Ran but outside the frozen set: "
+    },
+    {
+     "t": "text",
+     "text": "none",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ". Scored scenarios that measured nothing: "
+    },
+    {
+     "t": "text",
+     "text": "none",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "."
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 3,
+   "c": [
+    {
+     "t": "text",
+     "text": "The null control, which is what makes 29 sayable"
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "A server answering "
+    },
+    {
+     "t": "text",
+     "text": "-32601",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " to every method — implementing no MCP behaviour at all — was run through the same suite. Under "
+    },
+    {
+     "t": "text",
+     "text": "requirements_exit",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " it scores "
+    },
+    {
+     "t": "text",
+     "text": "6 of 37",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ". Those 6 are "
+    },
+    {
+     "t": "text",
+     "text": "named rather than counted",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", because a subtracted number a reader cannot audit is not evidence:"
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "server-sse-multiple-streams",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", "
+    },
+    {
+     "t": "text",
+     "text": "sep-2164-resource-not-found",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", "
+    },
+    {
+     "t": "text",
+     "text": "input-required-result-missing-input-response",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", "
+    },
+    {
+     "t": "text",
+     "text": "input-required-result-unsupported-methods",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", "
+    },
+    {
+     "t": "text",
+     "text": "input-required-result-ignore-extra-params",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", "
+    },
+    {
+     "t": "text",
+     "text": "input-required-result-validate-input",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "."
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "What makes the subtraction legal",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " is coverage: the control ran "
+    },
+    {
+     "t": "text",
+     "text": "every",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " scored scenario the measurement ran. Scored scenarios missing from the control: "
+    },
+    {
+     "t": "text",
+     "text": "none",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " — a census carrying any is refused ("
+    },
+    {
+     "t": "text",
+     "text": "CONTROL_MISSING_SCENARIOS",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ") before the table exists. Scenarios the control ran and the measurement did not: "
+    },
+    {
+     "t": "text",
+     "text": "none",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ". So 35 − 6 = "
+    },
+    {
+     "t": "text",
+     "text": "29",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " compares two runs over one set, not two sets."
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 3,
+   "c": [
+    {
+     "t": "text",
+     "text": "Two scored passes sit over a SHOULD the referee recorded as unmet"
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "sep-2164-resource-not-found",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " (3 SUCCESS / 1 WARNING) and "
+    },
+    {
+     "t": "text",
+     "text": "input-required-result-ignore-extra-params",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " (1 SUCCESS / 1 WARNING) each pass while carrying a WARNING raised against this implementation. Both are inside the 35 and outside the 33. A SHOULD is not a MUST and the claim stands over them — but "
+    },
+    {
+     "t": "text",
+     "text": "which reducer you read decides it",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", so it is said here rather than left inside a number."
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 2,
+   "c": [
+    {
+     "t": "text",
+     "text": "4. Client leg — the exclusion, the in-scope 7, both discounts, and the inversion"
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "The raw figure is 8 of 32, and it may not be quoted bare.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " 25 of the 32 scored client scenarios are "
+    },
+    {
+     "t": "text",
+     "text": "auth/*",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " — the authorization profile ADR-003 puts out of 2.0.0. All three reducers read 8/32 on this run, and that agreement is a "
+    },
+    {
+     "t": "text",
+     "text": "coincidence of this run, not a property",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ": the measurement's 128 checks contain "
+    },
+    {
+     "t": "text",
+     "text": "zero WARNINGs",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", and WARNING is the only status the reducers disagree about."
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "The in-scope denominator is 7 scenarios",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", named: "
+    },
+    {
+     "t": "text",
+     "text": "http-custom-headers",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", "
+    },
+    {
+     "t": "text",
+     "text": "http-invalid-tool-headers",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", "
+    },
+    {
+     "t": "text",
+     "text": "http-standard-headers",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", "
+    },
+    {
+     "t": "text",
+     "text": "json-schema-ref-no-deref",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", "
+    },
+    {
+     "t": "text",
+     "text": "request-metadata",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", "
+    },
+    {
+     "t": "text",
+     "text": "sep-2322-client-request-state",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", "
+    },
+    {
+     "t": "text",
+     "text": "tools_call",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "."
+    }
+   ]
+  },
+  {
+   "t": "table",
+   "rows": [
+    [
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "figure"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "value"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "scenarios removed"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "as driven"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "7 of 7",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "—"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "after drive-policy only"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "6 of 7",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "request-metadata",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "after null-passable only"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "6 of 7",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "http-standard-headers",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "surviving BOTH",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "5 of 7",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "request-metadata",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ", "
+         },
+         {
+          "t": "text",
+          "text": "http-standard-headers",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "The two middle rows are published rather than the endpoints, and that is deliberate.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " They are the same number over "
+    },
+    {
+     "t": "text",
+     "text": "different sets",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ". Two units independently published \"6 of 7\" from those two rows before anyone noticed they were answering different questions. "
+    },
+    {
+     "t": "text",
+     "text": "Neither 6 may be quoted.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " Surviving both: "
+    },
+    {
+     "t": "text",
+     "text": "http-custom-headers",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", "
+    },
+    {
+     "t": "text",
+     "text": "http-invalid-tool-headers",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", "
+    },
+    {
+     "t": "text",
+     "text": "json-schema-ref-no-deref",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", "
+    },
+    {
+     "t": "text",
+     "text": "sep-2322-client-request-state",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", "
+    },
+    {
+     "t": "text",
+     "text": "tools_call",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "."
+    }
+   ]
+  },
+  {
+   "t": "ul",
+   "c": [
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "Drive-policy",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " removes "
+        },
+        {
+         "t": "text",
+         "text": "request-metadata",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ": under a "
+        },
+        {
+         "t": "text",
+         "text": "strict_connect",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " probe that halts the moment "
+        },
+        {
+         "t": "text",
+         "text": "MCP.Client.connect/1",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " errors — where the measurement adapter logs and carries on — the scenario goes red. Its pass depends on our adapter's drive policy, not on a property of the SDK. "
+        },
+        {
+         "t": "text",
+         "text": "The reducer choice is load-bearing here",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ": under the probe "
+        },
+        {
+         "t": "text",
+         "text": "request-metadata",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " scores 7 SUCCESS and 1 WARNING, so "
+        },
+        {
+         "t": "text",
+         "text": "requirements_exit",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " and "
+        },
+        {
+         "t": "text",
+         "text": "server_summary",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " would call it a PASS and the discount would not fire at all. A derivation reading the wrong reducer publishes 6 of 7 with every scenario named, over the right denominator, from two adjudicated runs. The discipline produces the difference, not the arithmetic."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "Null-passable",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " removes "
+        },
+        {
+         "t": "text",
+         "text": "http-standard-headers",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ": a null client passes it, so it cannot distinguish this SDK from its absence."
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 3,
+   "c": [
+    {
+     "t": "text",
+     "text": "The null control INVERTS on this leg, and it is published as an inversion"
+    }
+   ]
+  },
+  {
+   "t": "table",
+   "rows": [
+    [
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "null control"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "scored"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "in-scope scenarios it passes"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "2026-07-28-null-connect",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "2/32",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "http-standard-headers",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "2026-07-28-null-exit0",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "2/32",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "http-standard-headers",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "2026-07-28-null-request",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "1/32",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "none"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "A ",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "stricter",
+     "marks": [
+      "em",
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " null scores ",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "lower",
+     "marks": [
+      "em",
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ".",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " The mechanism: for a do-nothing client, "
+    },
+    {
+     "t": "text",
+     "text": "http-standard-headers",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " is a pass assembled from eleven SKIPPED checks and not one that could fail; send anything at all and a twelfth check appears and fails. This is "
+    },
+    {
+     "t": "text",
+     "text": "not",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " resolved to whichever null flatters the SDK. The discount is computed under the reading least flattering to us — "
+    },
+    {
+     "t": "text",
+     "text": "any",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " null passing a scenario removes it — which is the "
+    },
+    {
+     "t": "text",
+     "text": "null-connect",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "/"
+    },
+    {
+     "t": "text",
+     "text": "null-exit0",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " reading, and it is the reading Sprint 4's figure used."
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 3,
+   "c": [
+    {
+     "t": "text",
+     "text": "real_gap",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " is 0 on the client leg, and here is the bound on that"
+    }
+   ]
+  },
+  {
+   "t": "panel",
+   "variant": "note",
+   "c": [
+    {
+     "t": "p",
+     "c": [
+      {
+       "t": "text",
+       "text": "Outside the authorization profile, this SDK fails "
+      },
+      {
+       "t": "text",
+       "text": "no",
+       "marks": [
+        "strong"
+       ]
+      },
+      {
+       "t": "text",
+       "text": " client scenario the frozen set names — "
+      },
+      {
+       "t": "text",
+       "text": "and",
+       "marks": [
+        "strong"
+       ]
+      },
+      {
+       "t": "text",
+       "text": " the 24 out-of-scope failures are "
+      },
+      {
+       "t": "text",
+       "text": "measured failures of an absent surface",
+       "marks": [
+        "strong"
+       ]
+      },
+      {
+       "t": "text",
+       "text": ", not empty scenarios: "
+      },
+      {
+       "t": "text",
+       "text": "empty_scenarios",
+       "marks": [
+        "code"
+       ]
+      },
+      {
+       "t": "text",
+       "text": " is "
+      },
+      {
+       "t": "text",
+       "text": "[]",
+       "marks": [
+        "code"
+       ]
+      },
+      {
+       "t": "text",
+       "text": " in both directions and no scored scenario has "
+      },
+      {
+       "t": "text",
+       "text": "SUCCESS + FAILURE == 0",
+       "marks": [
+        "code"
+       ]
+      },
+      {
+       "t": "text",
+       "text": ". They cost nothing because of ADR-003, not because nothing was measured."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "The second half is not a caveat paragraph; it is the rest of the sentence. Publishing the first half alone would be the flattering read."
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "One further honesty item: the raw 8 exceeds the in-scope numerator by exactly "
+    },
+    {
+     "t": "text",
+     "text": "auth/resource-mismatch",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", which passes on a "
+    },
+    {
+     "t": "text",
+     "text": "single",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " SUCCESS check and is passed by every null control too. It is outside the in-scope denominator on the ADR-003 ground, and it would be worth nothing inside it."
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 2,
+   "c": [
+    {
+     "t": "text",
+     "text": "5. What earns no scored credit — and there are two different kinds of zero"
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "Two features of this release earn "
+    },
+    {
+     "t": "text",
+     "text": "no scored credit at all, for two different reasons",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", and collapsing them would misrepresent both."
+    }
+   ]
+  },
+  {
+   "t": "ol",
+   "c": [
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "JSON Schema 2020-12 (SEP-2106) was measured and counts for nothing.",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " "
+        },
+        {
+         "t": "text",
+         "text": "json-schema-2020-12",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " passes "
+        },
+        {
+         "t": "text",
+         "text": "8 SUCCESS / 0 FAILURE",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " on the server leg and "
+        },
+        {
+         "t": "text",
+         "text": "json-schema-2020-12-preservation",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " passes "
+        },
+        {
+         "t": "text",
+         "text": "9 SUCCESS / 0 FAILURE",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " on the client leg — and both are "
+        },
+        {
+         "t": "text",
+         "text": "not_scored",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " in the frozen set, so neither moves any figure above."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "The extensions negotiation surface (SEP-2133) is not measured at all.",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " No scenario in either direction touches it. It leaves no row on the result sheet in any direction."
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "Neither zero is evidence of anything. A reader who sees \"0\" against both and concludes the same thing about both has been misled."
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "Named, never folded into a rate",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " — the scenarios outside the denominator:"
+    }
+   ]
+  },
+  {
+   "t": "table",
+   "rows": [
+    [
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "leg"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "class"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "count"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "why"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "server"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "extension",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "9"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "the "
+         },
+         {
+          "t": "text",
+          "text": "tasks-*",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " family — ADR-003 extension track, out of 2.0.0"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "server"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "pending",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "2"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "http-header-validation",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ", "
+         },
+         {
+          "t": "text",
+          "text": "http-custom-header-server-validation",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " — the "
+         },
+         {
+          "t": "text",
+          "text": "suite's own",
+          "marks": [
+           "em"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " reference fixture cannot pass them yet"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "server"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "added_after_release",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "0"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "measured zero, not an absent row"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "client"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "extension",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "6"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "auth/client-credentials-basic",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ", "
+         },
+         {
+          "t": "text",
+          "text": "auth/client-credentials-jwt",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ", "
+         },
+         {
+          "t": "text",
+          "text": "auth/dpop",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ", "
+         },
+         {
+          "t": "text",
+          "text": "auth/dpop-nonce",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ", "
+         },
+         {
+          "t": "text",
+          "text": "auth/enterprise-managed-authorization",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ", "
+         },
+         {
+          "t": "text",
+          "text": "auth/wif-jwt-bearer",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "client"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "out_of_scope_adr_003",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "24"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "the scored "
+         },
+         {
+          "t": "text",
+          "text": "auth/*",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " failures — the authorization profile"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "client"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "by_design_2025_11_25",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "0"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "measured zero; the enumerate-and-exclude bucket is "
+         },
+         {
+          "t": "text",
+          "text": "empty",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "Named in full, because a count is not an enumeration (A2d).",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " Each list below is quoted from the census's "
+    },
+    {
+     "t": "text",
+     "text": "totals.classification.by_class",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", not retyped:"
+    }
+   ]
+  },
+  {
+   "t": "ul",
+   "c": [
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "Server ",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "extension",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " (9):",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " "
+        },
+        {
+         "t": "text",
+         "text": "tasks-lifecycle",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "tasks-capability-negotiation",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "tasks-wire-fields",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "tasks-request-state-removal",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "tasks-mrtr-input",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "tasks-request-headers",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "tasks-dispatch-and-envelope",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "tasks-required-task-error",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "tasks-mrtr-composition",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "Server ",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "pending",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " (2):",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " "
+        },
+        {
+         "t": "text",
+         "text": "http-header-validation",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "http-custom-header-server-validation",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ". These are "
+        },
+        {
+         "t": "text",
+         "text": "not_scored",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " because the "
+        },
+        {
+         "t": "text",
+         "text": "suite's own reference fixture",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " cannot pass them yet — the harness's judgement, not ours, and not something a Sprint 6 ticket can close."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "Client ",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "extension",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " (6):",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " "
+        },
+        {
+         "t": "text",
+         "text": "auth/client-credentials-basic",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/client-credentials-jwt",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/dpop",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/dpop-nonce",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/enterprise-managed-authorization",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/wif-jwt-bearer",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "Client ",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "out_of_scope_adr_003",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " (24):",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " "
+        },
+        {
+         "t": "text",
+         "text": "auth/authorization-server-migration",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/basic-cimd",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/iss-normalized",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/iss-not-advertised",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/iss-supported",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/iss-supported-missing",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/iss-unexpected",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/iss-wrong-issuer",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/metadata-default",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/metadata-issuer-mismatch",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/metadata-var1",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/metadata-var2",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/metadata-var3",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/offline-access-not-supported",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/offline-access-scope",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/pre-registration",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/scope-from-scopes-supported",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/scope-from-www-authenticate",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/scope-omitted-when-undefined",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/scope-retry-limit",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/scope-step-up",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/token-endpoint-auth-basic",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/token-endpoint-auth-none",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", "
+        },
+        {
+         "t": "text",
+         "text": "auth/token-endpoint-auth-post",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "The 25 scored ",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "auth/*",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " scenarios excluded from the client denominator",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " are those 24 plus "
+        },
+        {
+         "t": "text",
+         "text": "auth/resource-mismatch",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", which "
+        },
+        {
+         "t": "text",
+         "text": "passes",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " — on a single SUCCESS check that every null control also passes. Excluding a scenario we pass is what keeps the exclusion a scope boundary rather than a filter chosen to flatter the numerator."
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 2,
+   "c": [
+    {
+     "t": "text",
+     "text": "6. Gap register — what Sprint 6 acts on"
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "The register's own finding, and it is more useful to a planner than the rows:",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " "
+    },
+    {
+     "t": "text",
+     "text": "Sprint 6's conformance queue is nearly all ONE existing ticket.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " Both real gaps are on the server leg; five of the six root causes behind them are already owned by "
+    },
+    {
+     "t": "text",
+     "text": "MES-43",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "; "
+    },
+    {
+     "t": "text",
+     "text": "12 of ",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "server-stateless",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "'s 17 failing checks trace to a single missing JSON-RPC-code → HTTP-status mapping",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ". And on the client leg:"
+    }
+   ]
+  },
+  {
+   "t": "panel",
+   "variant": "note",
+   "c": [
+    {
+     "t": "p",
+     "c": [
+      {
+       "t": "text",
+       "text": "Sprint 6's client conformance queue is empty unless ADR-003 changes.",
+       "marks": [
+        "strong"
+       ]
+      },
+      {
+       "t": "text",
+       "text": " That is a finding, stated in its own sentence rather than left as an absence in a table."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 3,
+   "c": [
+    {
+     "t": "text",
+     "text": "Gap 1 — "
+    },
+    {
+     "t": "text",
+     "text": "server-stateless",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " (13 SUCCESS / 17 FAILURE) · severity "
+    },
+    {
+     "t": "text",
+     "text": "high",
+     "marks": [
+      "strong"
+     ]
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "It is "
+    },
+    {
+     "t": "text",
+     "text": "the",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " stateless-core scenario, squarely inside ADR-003's denominator, so none of it is excused by scope. Decomposed by root cause (R1–R6 as established in "
+    },
+    {
+     "t": "text",
+     "text": "docs/sprint_4_issues.md",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", whose check-level decomposition "
+    },
+    {
+     "t": "text",
+     "text": "delta-vs-sprint-4.md",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " shows is unchanged at this run — the 19 scored FAILUREs are "
+    },
+    {
+     "t": "text",
+     "text": "sep-2575",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " ×17, "
+    },
+    {
+     "t": "text",
+     "text": "sep-2322",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " ×1, "
+    },
+    {
+     "t": "text",
+     "text": "wire-schema-valid",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " ×1 on both sides, zero delta):"
+    }
+   ]
+  },
+  {
+   "t": "table",
+   "rows": [
+    [
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "root cause"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "failing checks"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "owner"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "R1",
+          "marks": [
+           "strong"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " "
+         },
+         {
+          "t": "text",
+          "text": "server/discover",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " does no "
+         },
+         {
+          "t": "text",
+          "text": "_meta",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " structural validation, so a request with no "
+         },
+         {
+          "t": "text",
+          "text": "_meta",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ", or missing "
+         },
+         {
+          "t": "text",
+          "text": "protocolVersion",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": "/"
+         },
+         {
+          "t": "text",
+          "text": "clientCapabilities",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ", gets a normal result instead of "
+         },
+         {
+          "t": "text",
+          "text": "-32602",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "sep-2575-request-meta-invalid-{missing-meta, missing-protocol-version, missing-client-capabilities}",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " (3)"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "MES-43 gap 5",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "R2",
+          "marks": [
+           "strong"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " no JSON-RPC-code → HTTP-status mapping: every dispatch result leaves as HTTP 200"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "12 checks, overlapping R1/R3/R4/R5/R6"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "MES-43 gap 3",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "R3",
+          "marks": [
+           "strong"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " "
+         },
+         {
+          "t": "text",
+          "text": "server/discover",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " has no version gate, so an unsupported requested version yields a result rather than an "
+         },
+         {
+          "t": "text",
+          "text": "UnsupportedProtocolVersionError",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " carrying "
+         },
+         {
+          "t": "text",
+          "text": "data.supported",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": "/"
+         },
+         {
+          "t": "text",
+          "text": "data.requested",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "sep-2575-server-unsupported-version-error",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " (1)"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "decision row — see below",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "R4",
+          "marks": [
+           "strong"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " no cross-check of the "
+         },
+         {
+          "t": "text",
+          "text": "MCP-Protocol-Version",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " "
+         },
+         {
+          "t": "text",
+          "text": "header",
+          "marks": [
+           "strong"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " against "
+         },
+         {
+          "t": "text",
+          "text": "_meta.protocolVersion",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "sep-2575-http-server-header-mismatch-400",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " (1)"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "UNOWNED — brief drafted, see §8",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "R5",
+          "marks": [
+           "strong"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " a handler error return has no "
+         },
+         {
+          "t": "text",
+          "text": "data",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " slot, so "
+         },
+         {
+          "t": "text",
+          "text": "-32021",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " cannot carry "
+         },
+         {
+          "t": "text",
+          "text": "error.data.requiredCapabilities",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "sep-2575-server-rejects-undeclared-capability",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " (1)"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "MES-43 gap 4",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "R6",
+          "marks": [
+           "strong"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " "
+         },
+         {
+          "t": "text",
+          "text": "initialize",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " is answered "
+         },
+         {
+          "t": "text",
+          "text": "-32022 UnsupportedProtocolVersion",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": "; the scenario requires "
+         },
+         {
+          "t": "text",
+          "text": "-32601",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " + HTTP 404 for every removed method"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "sep-2575-http-server-method-not-found-404-initialize",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " (also under R2)"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "decision row — see below",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "R3 and R6 are a DECISION row, not a fix row.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " Both are documented SDK design decisions that the referee contradicts — "
+    },
+    {
+     "t": "text",
+     "text": "dispatch.ex:146",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " names the missing version gate as the design, and "
+    },
+    {
+     "t": "text",
+     "text": "dispatch.ex:66-68",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "/"
+    },
+    {
+     "t": "text",
+     "text": ":131-139",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " document "
+    },
+    {
+     "t": "text",
+     "text": "initialize → -32022",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " and why. PM ruling (MES-24, comment 24503) routes them to the "
+    },
+    {
+     "t": "text",
+     "text": "release ticket as decisions requiring a PO call",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", "
+    },
+    {
+     "t": "text",
+     "text": "not",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " to MES-43 as gaps to fix. They are carried here so the measurement is not lost and so "
+    },
+    {
+     "t": "text",
+     "text": "nobody schedules them as bugs",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "."
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "Two corrections to how this scenario has been described, both verified against the run's own saved check sheet",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " ("
+    },
+    {
+     "t": "text",
+     "text": "server-server-stateless-2026-08-21T03-55-01-582Z/checks.json",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " in the accepted run directory):"
+    }
+   ]
+  },
+  {
+   "t": "ul",
+   "c": [
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "The census's "
+        },
+        {
+         "t": "text",
+         "text": "classification.why",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " for this scenario describes sub-cause (d) as "
+        },
+        {
+         "t": "text",
+         "text": "\"",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "error.data.requiredCapabilities",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " is an array where the schema defines an object of capability objects\"",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ". "
+        },
+        {
+         "t": "text",
+         "text": "The observed response carries no ",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "error.data",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " at all",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " — the value is stringified into the error "
+        },
+        {
+         "t": "text",
+         "text": "message",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " ("
+        },
+        {
+         "t": "text",
+         "text": "\"Missing required client capability: sampling (requiredCapabilities: {\\\"sampling\\\":{}})\"",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "). The harness's message mentions an array only because its generic wording explains the schema; it did not observe one. "
+        },
+        {
+         "t": "text",
+         "text": "R5 is the correct mechanism, and MES-43 gap 4 is the correct owner",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " — a fixer told to change an array's shape would be looking for something that does not exist. Recorded as "
+        },
+        {
+         "t": "text",
+         "text": "S5-29",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "The same prose enumerates "
+        },
+        {
+         "t": "text",
+         "text": "four",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " sub-causes accounting for "
+        },
+        {
+         "t": "text",
+         "text": "16",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " of the 17 failing checks. The seventeenth — "
+        },
+        {
+         "t": "text",
+         "text": "sep-2575-http-server-header-mismatch-400",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " — appears in none of them. It is R4's check, and R4 is the one root cause with no owning ticket. Recorded as "
+        },
+        {
+         "t": "text",
+         "text": "S5-30",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "."
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 3,
+   "c": [
+    {
+     "t": "text",
+     "text": "Gap 2 — "
+    },
+    {
+     "t": "text",
+     "text": "input-required-result-non-tool-request",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " (0 SUCCESS / 2 FAILURE) · severity "
+    },
+    {
+     "t": "text",
+     "text": "high",
+     "marks": [
+      "strong"
+     ]
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "MRTR is wired to "
+    },
+    {
+     "t": "text",
+     "text": "tools/call",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " alone ("
+    },
+    {
+     "t": "text",
+     "text": "MES-43 gap 1",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "), and "
+    },
+    {
+     "t": "text",
+     "text": "Dispatch.complete/1",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " overwrites a handler-supplied "
+    },
+    {
+     "t": "text",
+     "text": "resultType",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " unconditionally ("
+    },
+    {
+     "t": "text",
+     "text": "MES-43 gap 8",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "). SEP-2322 makes "
+    },
+    {
+     "t": "text",
+     "text": "InputRequiredResult",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " "
+    },
+    {
+     "t": "text",
+     "text": "universal",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "; the scenario is, in MES-43's own words, "
+    },
+    {
+     "t": "text",
+     "text": "structurally unpassable",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " — no conformance handler anyone could write passes it. Severity is high because the conformance claim currently implies we are universal."
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 3,
+   "c": [
+    {
+     "t": "text",
+     "text": "Client — no rows"
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "Stated above as a finding rather than left as an empty table."
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 2,
+   "c": [
+    {
+     "t": "text",
+     "text": "7. Reconciliation against the Sprint 4 claim draft"
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "The draft is "
+    },
+    {
+     "t": "text",
+     "text": "docs/sprint_4_issues.md",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " §\"Item 4 — the conformance-claim wording. "
+    },
+    {
+     "t": "text",
+     "text": "DRAFT. NOT PUBLISHED.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "\" It is reconciled "
+    },
+    {
+     "t": "text",
+     "text": "statement by statement",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ". Its "
+    },
+    {
+     "t": "text",
+     "text": "figures",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " are not re-compared here: "
+    },
+    {
+     "t": "text",
+     "text": "delta-vs-sprint-4.md",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " already compares the two runs as "
+    },
+    {
+     "t": "text",
+     "text": "fingerprints",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " on both legs — every axis Sprint 4 recorded, not just the headline — and reports "
+    },
+    {
+     "t": "text",
+     "text": "zero on every axis",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ". Repeating that would be re-measurement."
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "One wording correction first, and it is about our own history.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " Sprint 4's figures were "
+    },
+    {
+     "t": "text",
+     "text": "not self-derived",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ". Sprint 4 measured with the "
+    },
+    {
+     "t": "text",
+     "text": "official",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " suite at "
+    },
+    {
+     "t": "text",
+     "text": "@0.2.0-alpha.11",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " on both legs, driven through the same adapters. What Sprint 4 lacked was "
+    },
+    {
+     "t": "text",
+     "text": "adjudicated provenance",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " — no manifest, no adjudication, no captured denominator, and on the client leg no way to adjudicate at all — not an official instrument. Calling those figures \"self-derived\" on the page Sprint 6 plans from would put a false statement about our own history in front of a reader who cannot check it."
+    }
+   ]
+  },
+  {
+   "t": "table",
+   "rows": [
+    [
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "Sprint 4 statement"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "verdict"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "detail"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "35 of 37 scored server scenarios pass under the FAILURE-only rule"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "confirms",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "35/37, adjudicated at "
+         },
+         {
+          "t": "text",
+          "text": "940445c",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "33 of 37 under the stricter WARNING-also-fails reducer"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "confirms",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "33/37"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "29 of 37 are scenarios a null does not also pass; the null scores 6 of 37"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "confirms",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "6/37 control, 29 discriminating, control coverage complete both directions"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "8 of 32 scored client scenarios pass, 25 of the 32 being "
+         },
+         {
+          "t": "text",
+          "text": "auth/*",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "confirms",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "8/32; and the exclusion list is now "
+         },
+         {
+          "t": "text",
+          "text": "named",
+          "marks": [
+           "em"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " rather than counted"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "7 of 7 core as driven; 5 of 7 surviving both discounts; two different sixes"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "confirms",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "and both discounts were "
+         },
+         {
+          "t": "text",
+          "text": "re-derived by measurement on this tree",
+          "marks": [
+           "strong"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ", not carried across"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "The null control used was \"a client whose entire body is "
+         },
+         {
+          "t": "text",
+          "text": "exit 0",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": "\", scoring 2/32"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "adds",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "three nulls were run, not one: "
+         },
+         {
+          "t": "text",
+          "text": "exit0",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " 2/32, "
+         },
+         {
+          "t": "text",
+          "text": "connect",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " 2/32, "
+         },
+         {
+          "t": "text",
+          "text": "request",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " 1/32, and the "
+         },
+         {
+          "t": "text",
+          "text": "inversion",
+          "marks": [
+           "strong"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " — a stricter null scores lower — is now published with its mechanism"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "\"5 of 7 … is "
+         },
+         {
+          "t": "text",
+          "text": "not",
+          "marks": [
+           "strong"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " a demonstration that each of the five discriminates; showing that would need a stricter null client, "
+         },
+         {
+          "t": "text",
+          "text": "and none was built",
+          "marks": [
+           "strong"
+          ]
+         },
+         {
+          "t": "text",
+          "text": "\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "adds, and does not settle it",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "a stricter null "
+         },
+         {
+          "t": "text",
+          "text": "was",
+          "marks": [
+           "em"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " built: "
+         },
+         {
+          "t": "text",
+          "text": "null_request",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " scores 1/32 and passes "
+         },
+         {
+          "t": "text",
+          "text": "none",
+          "marks": [
+           "strong"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " of the in-scope 7. But the inversion means part of its lower score is "
+         },
+         {
+          "t": "text",
+          "text": "mechanical",
+          "marks": [
+           "strong"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " — sending anything makes a twelfth "
+         },
+         {
+          "t": "text",
+          "text": "http-standard-headers",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " check appear and fail — so it bounds the claim rather than demonstrating it. The draft's sentence still stands"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "JSON Schema 2020-12 measured 8/8 server and 9/9 client, both "
+         },
+         {
+          "t": "text",
+          "text": "not_scored",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": "; extensions negotiation not measured at all"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "confirms",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "unchanged, and both zeros are still different kinds of zero"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "Two scored passes sit over a WARNING ("
+         },
+         {
+          "t": "text",
+          "text": "sep-2164-resource-not-found",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ", "
+         },
+         {
+          "t": "text",
+          "text": "…-ignore-extra-params",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "confirms",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "both still inside the 35 and outside the 33"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "Known limits: MRTR "
+         },
+         {
+          "t": "text",
+          "text": "tools/call",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": "-only; 4xx JSON-RPC error discarded by the client; no server-side "
+         },
+         {
+          "t": "text",
+          "text": "Mcp-Param-*",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " validation; "
+         },
+         {
+          "t": "text",
+          "text": "subscriptions/listen",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " server-HTTP-only; "
+         },
+         {
+          "t": "text",
+          "text": "server/discover",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " ungated and "
+         },
+         {
+          "t": "text",
+          "text": "initialize → -32022",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": "; HTTP/2 exposure; "
+         },
+         {
+          "t": "text",
+          "text": "accept-encoding: identity",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "drops",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "the official suite does not speak to five of the seven.",
+          "marks": [
+           "strong"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " Only MRTR-universality (gap 2) and the "
+         },
+         {
+          "t": "text",
+          "text": "server/discover",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": "/"
+         },
+         {
+          "t": "text",
+          "text": "initialize",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " pair (R3/R6) are scored by any scenario in the frozen set. The 4xx-discard, "
+         },
+         {
+          "t": "text",
+          "text": "Mcp-Param-*",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ", "
+         },
+         {
+          "t": "text",
+          "text": "subscriptions/listen",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " transport bound, HTTP/2 and content-coding limits are "
+         },
+         {
+          "t": "text",
+          "text": "unmeasured by this instrument",
+          "marks": [
+           "strong"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " — they remain true, and they remain evidenced only by our own reading. A green run is not evidence against any of them"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "\""
+         },
+         {
+          "t": "text",
+          "text": "What the claim rests on.",
+          "marks": [
+           "strong"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " Our own ported acceptance suite.\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "contradicts",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "see below"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "The 1.x obligation: four released versions ("
+         },
+         {
+          "t": "text",
+          "text": "v1.0.0",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ", "
+         },
+         {
+          "t": "text",
+          "text": "v1.0.1",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ", "
+         },
+         {
+          "t": "text",
+          "text": "v1.0.2",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ", "
+         },
+         {
+          "t": "text",
+          "text": "v1.1.0",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ") carry the false \"100% conformance (Tier 1)\" README on HexDocs"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "drops",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "untouched by conformance measurement, and still an open obligation on the release ticket. Deleting the lines from the repo did not retract four published doc sets"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "\"A green "
+         },
+         {
+          "t": "text",
+          "text": "mix hex.audit",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " is not publish-blocking evidence on its own\""
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "drops",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "a dependency-advisory obligation; no conformance run speaks to it. Now additionally carried by the end-of-sprint sweep in "
+         },
+         {
+          "t": "text",
+          "text": "CLAUDE.md",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "t": "h",
+   "level": 3,
+   "c": [
+    {
+     "t": "text",
+     "text": "The one contradiction, stated in full"
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "The draft says the claim rests on "
+    },
+    {
+     "t": "text",
+     "text": "\"our own ported acceptance suite\"",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ". That sentence was written to ADR-003's Consequences bullet, which is "
+    },
+    {
+     "t": "text",
+     "text": "conditional",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ":"
+    }
+   ]
+  },
+  {
+   "t": "panel",
+   "variant": "note",
+   "c": [
+    {
+     "t": "p",
+     "c": [
+      {
+       "t": "text",
+       "text": "If the conformance harness still lacks stateless-core scenarios (it had none at the Sprint 3 measurement), the claim rests on our own ported acceptance evidence, and says so rather than implying harness certification.",
+       "marks": [
+        "em"
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "The condition's antecedent is false and has been since before Sprint 4 measured.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " "
+    },
+    {
+     "t": "text",
+     "text": "@0.2.0-alpha.11",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " carries a full 2026-07-28 suite — 37 scored server scenarios and 32 scored client scenarios — and Sprint 4 used it. So the justification "
+    },
+    {
+     "t": "text",
+     "text": "lapsed without the sentence changing",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", which means it still reads as considered. That is exactly the class recorded as "
+    },
+    {
+     "t": "text",
+     "text": "S5-24",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ": "
+    },
+    {
+     "t": "text",
+     "text": "a guard's stated justification can lapse without the guard changing, and a lapsed justification reads as considered.",
+     "marks": [
+      "em"
+     ]
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "This report states and routes it; it does not rewrite the claim.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " The claim wording is owned by the release ticket under ADR-003 sub-decision 6, where the PO owes the final wording. What the release ticket needs to know is that the sentence is now false in a direction that "
+    },
+    {
+     "t": "text",
+     "text": "understates",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " our evidence, and that the honest replacement is roughly "
+    },
+    {
+     "t": "text",
+     "text": "\"measured with the official suite, pre-release alpha, with adjudicated provenance; not certified by anyone\"",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "."
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 2,
+   "c": [
+    {
+     "t": "text",
+     "text": "8. New finding — a root cause with no owning ticket (brief for the PM)"
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "R4 is unowned.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " Established rather than assumed:"
+    }
+   ]
+  },
+  {
+   "t": "ul",
+   "c": [
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "docs/sprint_4_issues.md",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " names R4 as a root cause of "
+        },
+        {
+         "t": "text",
+         "text": "server-stateless",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ": "
+        },
+        {
+         "t": "text",
+         "text": "no cross-check of the ",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "MCP-Protocol-Version",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " header against ",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "_meta.protocolVersion",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "; ",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "check_routing_headers/2",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " covers ",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "Mcp-Method",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "/",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "Mcp-Name",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " only.",
+         "marks": [
+          "em"
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "The MES-43 escalation list ("
+        },
+        {
+         "t": "text",
+         "text": "sprint_4_issues.md",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", \"Escalations this leg produced\") routes gaps 1–5, 7 and 8; "
+        },
+        {
+         "t": "text",
+         "text": "R4 is in none of them",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ". MES-43's ticket body is SEP-2322/MRTR and does not mention it. MES-45 covers "
+        },
+        {
+         "t": "text",
+         "text": "trailing OWS on ",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "Mcp-Name",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "/",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "Mcp-Method",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " and "
+        },
+        {
+         "t": "text",
+         "text": "Mcp-Param-*",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "/",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "x-mcp-header",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " validation",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " — different headers, different checks. A sweep of every open MES ticket description for "
+        },
+        {
+         "t": "text",
+         "text": "protocol-version",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " / "
+        },
+        {
+         "t": "text",
+         "text": "header-mismatch",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " / "
+        },
+        {
+         "t": "text",
+         "text": "-32020",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " finds no owner."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "MES-43's gap 3 does NOT close it incidentally",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", which was the reason to check rather than assume. The harness sends "
+        },
+        {
+         "t": "text",
+         "text": "_meta.protocolVersion = \"v999.0.0\"",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " with "
+        },
+        {
+         "t": "text",
+         "text": "MCP-Protocol-Version: 2026-07-28",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " and requires "
+        },
+        {
+         "t": "text",
+         "text": "HTTP 400 ",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "and",
+         "marks": [
+          "em",
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " JSON-RPC ",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": "-32020",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ". The observed result is "
+        },
+        {
+         "t": "text",
+         "text": "\"got status 200 with code undefined\"",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " — "
+        },
+        {
+         "t": "text",
+         "text": "no error was produced at all",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ". Status mapping (gap 3) can only map an error that exists; the mismatch must first be "
+        },
+        {
+         "t": "text",
+         "text": "detected",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ". So R4 is independently necessary."
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "Proposed Sprint 6 ticket",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " — "
+    },
+    {
+     "t": "text",
+     "text": "the server does not cross-check the ",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "MCP-Protocol-Version",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " header against ",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "_meta.protocolVersion",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", so a mismatched request is served normally.",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " Scope: detect the disagreement on the request path and answer "
+    },
+    {
+     "t": "text",
+     "text": "-32020",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " HeaderMismatch; the HTTP-400 half arrives with MES-43 gap 3 and the two must land together for the check to pass. Sibling of MES-45 in shape (routing-header handling) but a different header and a different requirement, so it is a candidate to "
+    },
+    {
+     "t": "text",
+     "text": "join MES-45",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " rather than be raised standalone — a call for the PM. Severity: moderate — one scored check, inside the stateless-core scenario, and a documented MUST."
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "Raised as a brief only. CODE_CREATOR does not raise tickets.",
+     "marks": [
+      "em"
+     ]
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 2,
+   "c": [
+    {
+     "t": "text",
+     "text": "9. Provenance"
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "No figure appears in this report that is not from an adjudicator-accepted run.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " Acceptance makes a figure "
+    },
+    {
+     "t": "text",
+     "text": "attributable to the tree named",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " — not "
+    },
+    {
+     "t": "text",
+     "text": "correct",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "; adapter fidelity is a separate question and is not established by any of this."
+    }
+   ]
+  },
+  {
+   "t": "table",
+   "rows": [
+    [
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": " "
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "server leg"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "client leg"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "commit measured"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "940445cef85ebad7ad7181db93ca1d7fbe4d98ad",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " (branch "
+         },
+         {
+          "t": "text",
+          "text": "MES-56",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "f4be9eb4624813ebcf5418898180f0ca433ab562",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " (branch "
+         },
+         {
+          "t": "text",
+          "text": "MES-57",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ")"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "adapter"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "mix run --no-halt conformance/server_adapter.exs 3001",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "mix run conformance/client_adapter.exs",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "manifest sha256"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "244dbbbc80a212e0511bc02166293fd233fea451448f32262ec584140c8525a7",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "8948dfb516d6bb6c6388202c3a53ed23ea9b13c87cdb2f6565e0ca1f9b49c2d5",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "adjudication"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "accepted by "
+         },
+         {
+          "t": "text",
+          "text": "MCP.Conformance.Manifest.judge/3",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "accepted by "
+         },
+         {
+          "t": "text",
+          "text": "MCP.Conformance.Manifest.judge/3",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "census"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "docs/conformance/server-2026-07-28.json",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " / "
+         },
+         {
+          "t": "text",
+          "text": ".md",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "docs/conformance/client-2026-07-28.json",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": " / "
+         },
+         {
+          "t": "text",
+          "text": ".md",
+          "marks": [
+           "code"
+          ]
+         },
+         {
+          "t": "text",
+          "text": ", "
+         },
+         {
+          "t": "text",
+          "text": "client-2026-07-28-discounts.md",
+          "marks": [
+           "code"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "Both legs: harness "
+    },
+    {
+     "t": "text",
+     "text": "0.2.0-alpha.11",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", dist sha256 "
+    },
+    {
+     "t": "text",
+     "text": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "; requirement set "
+    },
+    {
+     "t": "text",
+     "text": "2026-07-28",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", md5 "
+    },
+    {
+     "t": "text",
+     "text": "d6eb2061b2d35c7c71a86059b08bb928",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "."
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "Hashes are printed in full, deliberately.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " "
+    },
+    {
+     "t": "text",
+     "text": "--expect-harness-dist-sha256",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " and "
+    },
+    {
+     "t": "text",
+     "text": "--expect-requirements-md5",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " compare literally, so a value shortened to fit a column refuses when it is pasted back — the same trap as a short SHA under "
+    },
+    {
+     "t": "text",
+     "text": "--expect-commit",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "."
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "A census cannot attest the tree that contains it.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " Committing a measurement moves the tip that measurement attests, so this report names "
+    },
+    {
+     "t": "text",
+     "text": "both",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ": the code commits measured, above, and the commit that carries this report, which is the commit the Confluence mirror names. What is guaranteed is narrower and is stated instead: "
+    },
+    {
+     "t": "text",
+     "text": "no code commit falls between either measurement run and this report",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " — only censuses, rendered tables and documents land after them."
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "The harness exit code is 1 on both legs.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " It is recorded and is "
+    },
+    {
+     "t": "text",
+     "text": "not",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " a gate (S5-6): the harness exits non-zero whenever any scenario fails, including scenarios outside the scored denominator, so its exit code cannot carry a verdict about the scored set."
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 2,
+   "c": [
+    {
+     "t": "text",
+     "text": "10. Bounds — what this report does not establish"
+    }
+   ]
+  },
+  {
+   "t": "ol",
+   "c": [
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "Not certification.",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " Pre-release alpha, run by us, on our own adapters."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "Adapter fidelity is not established.",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " Acceptance ties a figure to a tree; it does not show the adapter faithfully exercises the SDK. A conformance adapter can flatter its subject, and only the null controls bound that — which is why the controls are published beside every figure."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "The instrument moves.",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " "
+        },
+        {
+         "t": "text",
+         "text": "checkMcpNameHeader",
+         "marks": [
+          "code"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " is dormant today only because every alpha.11 fixture name happens to be header-safe; one non-safe fixture name in a later alpha turns this SDK's spec-correct encoding red with no code change."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "Not-scored is not \"passed\".",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " 13 server and 7 client scenarios run and are reported and never counted, in either direction."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "Five of the seven Known limits are unmeasured by this suite",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " (§7). A green run is not evidence against any of them."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "t": "li",
+     "c": [
+      {
+       "t": "p",
+       "c": [
+        {
+         "t": "text",
+         "text": "The historical side of any comparison cannot be adjudicated.",
+         "marks": [
+          "strong"
+         ]
+        },
+        {
+         "t": "text",
+         "text": " No run of a tree predating the adjudicator can ever be accepted (S5-14), so Sprint 4's figures are quoted as a "
+        },
+        {
+         "t": "text",
+         "text": "claim under review",
+         "marks": [
+          "em"
+         ]
+        },
+        {
+         "t": "text",
+         "text": ", never as a second adjudicated number."
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "t": "h",
+   "level": 2,
+   "c": [
+    {
+     "t": "text",
+     "text": "11. How every figure above is checked, and exactly what that does not cover"
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "Every figure above is a hand-copy, so a script re-derives each one from the "
+    },
+    {
+     "t": "text",
+     "text": "committed",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " artefacts and asserts this file carries that value. It proves "
+    },
+    {
+     "t": "text",
+     "text": "transcription, not correctness",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ": the censuses are the authority, and this only establishes that the report agrees with them."
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "Two bounds travel with that guarantee, because \"every number is checked\" would promise more than it delivers.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " First, it binds the "
+    },
+    {
+     "t": "text",
+     "text": "primary statement",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " of each figure — the sentence, table row or cell where the report states it — and not every later restatement of the same number; a figure quoted again in passing is not separately asserted. Second, some assertions are "
+    },
+    {
+     "t": "text",
+     "text": "artefact-side",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ": they assert a property of a committed artefact rather than a needle in this file, so they are part of the check without being report coverage. They get their own column below instead of being folded into one number that overstates the cover."
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "The kinds of figure are closed by this report's own structure",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", so every §-numbered section that carries a figure has a row here. A section with figures and no row would be uncovered "
+    },
+    {
+     "t": "text",
+     "text": "and",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " unadmitted, which is the defect this table exists to prevent."
+    }
+   ]
+  },
+  {
+   "t": "table",
+   "rows": [
+    [
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "where"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "kind of figure"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "assertions"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": true,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "of which artefact-side"
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "§2"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "headline sentences (server, client)"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "15",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "5",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "§3"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "the three-reducer table"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "3",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "0",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "§3, §4"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "check-level censuses"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "4",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "2",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "§3, §4"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "denominator and completeness figures"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "8",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "5",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "§3, §4"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "null-control scores and their coverage"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "18",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "6",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "§4"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "the discounts ladder and the in-scope 7"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "15",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "1",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "§4, §5"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "the raw client figure and the auth exclusion"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "9",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "3",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "§5"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "classification counts and their A2d name lists"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "56",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "7",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "§5"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "measured-but-not-scored figures"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "5",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "2",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "§3"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "scored passes carrying a WARNING"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "4",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "2",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "§6"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "gap-register scenario check splits"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "5",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "2",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "§6"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "root-cause check names and counts (R1-R6)"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "16",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "1",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "§8"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "the unowned-root-cause brief"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "3",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "1",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "§9"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "provenance commits, hashes and exit codes"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "14",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "5",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    [
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "§7, §10"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "reconciliation-table and bounds figures"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "10",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "header": false,
+      "c": [
+       {
+        "t": "p",
+        "c": [
+         {
+          "t": "text",
+          "text": "0",
+          "marks": [
+           "strong"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "Beside the figures, "
+    },
+    {
+     "t": "text",
+     "text": "5",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " forbidden-shape assertions cover shapes this report must "
+    },
+    {
+     "t": "text",
+     "text": "not",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " have — a bare rate in a heading, a tier claim, a bare-percentage conformance claim, a claim of certification — and "
+    },
+    {
+     "t": "text",
+     "text": "18",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " more assert this very table against the script's own tally: one per row, one for the forbidden-shape count, one for this sentence's own count, and one for the total. "
+    },
+    {
+     "t": "text",
+     "text": "208 assertions in total",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "."
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "The §2 row exists because it once did not.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " The headline sentences are the ones most likely to be copied out alone, so they are what a transcription guarantee most needs to cover; at "
+    },
+    {
+     "t": "text",
+     "text": "cdb19e4",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " they were the one thing it did not cover, and changing "
+    },
+    {
+     "t": "text",
+     "text": "5 survive",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " to "
+    },
+    {
+     "t": "text",
+     "text": "6 survive",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " in the client headline left the check green. They are now asserted against the blockquote text "
+    },
+    {
+     "t": "text",
+     "text": "itself",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " rather than against the report as a whole, so a needle satisfied by some other paragraph cannot stand in for them."
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "The §6 and §8 rows exist for the same reason, one round later.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " §6's root-cause row was published as a zero, on the stated ground that no committed artefact carried the check-name sheet. That was wrong about a committed artefact: "
+    },
+    {
+     "t": "text",
+     "text": "server-2026-07-28.json",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " carries "
+    },
+    {
+     "t": "text",
+     "text": "failed_checks",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ", every failing check id for "
+    },
+    {
+     "t": "text",
+     "text": "server-stateless",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " "
+    },
+    {
+     "t": "text",
+     "text": "by name",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": ". So the names and the counts are asserted — each name in the R1–R6 table is parsed out of "
+    },
+    {
+     "t": "text",
+     "text": "this file",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " and looked up in that list, each parenthetical is asserted against the number of names beside it, and R2's "
+    },
+    {
+     "t": "text",
+     "text": "12",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " is asserted against the failing checks whose own message states an HTTP status. §8 had no row at all while the table was published as complete."
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "What is not checked, and it is one thing: the attribution.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " "
+    },
+    {
+     "t": "text",
+     "text": "Which",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " root cause a given failing check belongs to is a reading of the run directory, which is "
+    },
+    {
+     "t": "text",
+     "text": "not committed",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " — only the censuses are — so no assertion here could be made to fail on a wrong grouping. S5-30's "
+    },
+    {
+     "t": "text",
+     "text": "16",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " is a figure of that same kind: it counts how many failing checks the census's "
+    },
+    {
+     "t": "text",
+     "text": "classification.why",
+     "marks": [
+      "code"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " prose accounts for, which is a property of the grouping and not of the census's numbers. "
+    },
+    {
+     "t": "text",
+     "text": "A Sprint 6 planner should treat the grouping as an argument to verify against the run, and the names and counts as transcribed.",
+     "marks": [
+      "strong"
+     ]
+    }
+   ]
+  },
+  {
+   "t": "p",
+   "c": [
+    {
+     "t": "text",
+     "text": "One more bound, on the check that guards the mirror.",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " The Confluence payload is compared to this file token by token, so a rendering that drops, reorders or invents a sentence fails. It proves the two copies "
+    },
+    {
+     "t": "text",
+     "text": "agree",
+     "marks": [
+      "strong"
+     ]
+    },
+    {
+     "t": "text",
+     "text": "; a figure wrong in "
+    },
+    {
+     "t": "text",
+     "text": "both",
+     "marks": [
+      "em"
+     ]
+    },
+    {
+     "t": "text",
+     "text": " passes it. It is a divergence check, not a second opinion, and the transcription check above is what makes the shared value right in the first place."
+    }
+   ]
+  }
+ ]
+}
