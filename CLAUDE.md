@@ -75,7 +75,9 @@ mix dialyzer
 
 ## Definition-of-Done Gates
 
-Every ticket's Definition of Done runs **six** gates, each individually, all green:
+Every ticket's Definition of Done runs these gates, each individually, all green.
+**Gates 1-5 always. Gate 6 only when the ticket changes `mix.exs` or `mix.lock`** —
+see the applicability rule below:
 
 1. `mix format --check-formatted`
 2. `mix compile --warnings-as-errors`
@@ -87,9 +89,45 @@ Every ticket's Definition of Done runs **six** gates, each individually, all gre
 `mix deps.get` is setup, not a gate.
 
 **These are DoD gates, not automation.** There is no CI in this repository — no
-`.github/workflows`, no `mix` gate alias. Every one of the six is run per ticket and
+`.github/workflows`, no `mix` gate alias. Every applicable gate is run per ticket and
 checked on the reviewer's merge-gate checklist. **Do not assume CI enforces any of
 them.**
+
+**Gate 6 applicability — the standing rule (PO-ratified 2026-08-21).**
+
+**Gate 6 runs when, and only when, the ticket's branch changes `mix.exs` or
+`mix.lock`.** Establish it, do not assume it:
+
+```bash
+git diff --name-only main..{TICKET_KEY} | grep -E '^(mix\.exs|mix\.lock)$'
+```
+
+A match means run gate 6 (both halves). No match means **skip gate 6 and say so in
+the close-out** — a gate table with two rows quietly missing reads as an omission,
+whereas "gate 6 not applicable, no dependency change" is a stated result. Gates 1-5
+still run in full: those are functions of the tree, and the ticket changes the tree.
+If a ticket touches no repo files at all (a pure-Confluence reporting ticket), gates
+1-5 have nothing to run against either — state that, with the same reasoning.
+
+**Why, and what it costs.** Gate 6 is a *dependency-advisory* gate. A ticket that
+changes no dependency cannot fail it for anything that ticket caused, so running it
+yields no information about the work under review. It is also the most expensive gate
+and the only side-effecting one: 6a materialises a separate tree at `d697093`, runs
+`mix deps.get` inside it, and audits 22 advisory ids. **Measured on MES-57:** the
+cleanup form in the 6a snippet below is *rejected by the seat command guards*, so a
+run that could not have found anything relevant also left a temp directory behind.
+
+**The honest counter-argument, recorded because the rule does not defeat it.** Gate 6's
+verdict is a function of *(lock, wall-clock)* — every other gate's is a function of the
+tree alone. A universal gate 6 would therefore catch advisories published *since the
+last run*, against dependencies no ticket touched. **This rule gives that up**, and the
+give-up is real: a run of ticket-shaped work that never touches `mix.lock` now never
+re-audits. The obligation is discharged elsewhere — a release runs the
+freshness-independent whole-tree OSV cross-check (MES-19), which is the control that
+was already load-bearing, since a green `mix hex.audit` was never publish-blocking
+evidence on its own (see Known limitation 2). **If a dependency-advisory sweep is
+wanted on a cadence rather than per-ticket, that is a scheduled job, not a DoD gate,
+and it is PA-9 territory — the PO's, not decided here.**
 
 **Gate 6 (`mix hex.audit`) — reproducibility and behaviour.**
 
@@ -155,9 +193,12 @@ them.**
   compensating control that *does* cover the remainder is the **live whole-tree OSV
   cross-check** (this ticket's AC4), which queries an external feed and so is not
   limited to what the local cache happens to hold. It is **owned by MES-19** for
-  release. Whether that OSV check should also join the per-ticket gate 6 is a policy
-  question (it would make the gate network-dependent, against the offline finding
-  above) — **PA-9, the PO's, not decided here.**
+  release. Whether that OSV check should also join gate 6 is a policy question (it
+  would make the gate network-dependent, against the offline finding above) —
+  **PA-9, the PO's, not decided here.** Note the 2026-08-21 applicability rule
+  sharpens PA-9 rather than settling it: gate 6 now fires only on a dependency
+  change, so a check that belongs there fires *less* often than "per ticket" once
+  implied.
 
   ```bash
   # Gate 6a — baseline-lock sentinel: require ALL 22 known advisory ids (superset).
