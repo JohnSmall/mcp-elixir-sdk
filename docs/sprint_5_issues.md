@@ -2407,3 +2407,135 @@ answer the class*), and it is the second time this sprint the same pattern has c
 round. The difference here is that the class was **named and refused** rather than
 rediscovered: MES-56 spent five rounds patching instances of a claim, and that history is
 what justified stopping at two here.
+
+## S5-36 — Capability was verified from the wrong seat: "X is reachable" is a claim about ONE seat, and a lane ruling is a claim about a DIFFERENT one
+
+**Found by PROJECT-MANAGER, on themselves, at the last possible moment — after review, after
+the squash-merge, with the only remaining step being the one that could not run.** MES-58's
+acceptance says the report is *published*. Everything upstream of publication was correct and
+had survived four review rounds. The step that failed was the one nobody had tested.
+
+### What happened
+
+CODE_CREATOR reported that `confluence_create_page` was reachable from **its** seat and asked
+the PM to rule which lane publication belonged to. The PM ruled it into the **PM lane** —
+correctly, on the merits, since the page must name the squash-merge commit and that commit did
+not exist at CC's handback. At execution time the PM seat turned out not to have
+`confluence_create_page` at all. It has the Rovo page tool, which takes HTML/markdown/ADF and
+not the wrapper's typed blocks.
+
+**Nothing in the reachability report was wrong.** It was accurate, and it was accurate *about a
+different seat*. The defect is entirely in the inference: a lane ruling silently re-scopes a
+capability claim from the seat that made it to the seat that will execute it, and no step in
+between re-asks the question.
+
+### The cost, which is the part that makes it worth an entry rather than a note
+
+The PM did not simply stop. They built the bridge: converted the payload's typed blocks to ADF
+and verified the conversion properly — substitution `{{MERGE_COMMIT}}` → SHA in `content` only,
+`_readme` untouched, flattened token comparison **4962 == 4962, identical**. The conversion was
+sound. **The delivery was not, and the PM said so rather than proceeding:** the ADF is 108,098
+bytes and every one of them would have had to be emitted verbatim through a tool parameter —
+hand-reproducing a 108 KB document from a summary is precisely the transcription defect this
+ticket exists to prevent, and "I will verify it afterwards" is the same bargain as a green
+sweep over a check nobody read.
+
+So the wrong-seat check cost a full PM→CC→PM round *plus* a sound-but-unusable conversion,
+and it bought nothing that a single `tools/list` from the executing seat would not have
+settled before the first plan.
+
+### The second defect underneath it: a ruling outlives its own reason silently
+
+Ruling 2's entire justification was temporal — *the mirror must name the merge commit, and the
+commit does not exist yet*. Once `ef7fc48` existed the premise was discharged, and with it the
+conclusion. But nothing in a ruling carries an expiry: it reads as a standing allocation of
+work long after the condition that produced it has been satisfied. **The PM caught this by
+re-reading their own reasoning, not by any mechanism** — which is the honest description, and
+the reason it is recorded here rather than presented as a process that worked.
+
+### How the 108 KB was actually delivered, since the same wall stood in front of CODE_CREATOR
+
+Amending the ruling moved the hop, not the payload. CC's seat *has* the tool, but CC would
+still have had to emit ~86 KB of typed blocks verbatim through a tool parameter — the same
+transcription bargain, one seat over.
+
+**It was not retyped. The delivery path was made to read the file.** The wrapper is an MCP
+server over HTTP (`.mcp.json`: `${EMFA_WRAPPER_URL}/mcp`, per-seat `Bearer
+${EMFA_SEAT_INBOUND}`), so the tool call was POSTed to that endpoint as an ordinary
+`tools/call` for `confluence_create_page`, with the request body built from
+`docs/conformance/confluence/report-2026-07-28.json` by a script. **Same wrapper, same seat
+credential, same tool, same validator** — the only thing removed from the path is the hand-copy
+in the middle. The substitution, the `_readme` exclusion and the argument set were assertions in
+that script rather than intentions in a paragraph:
+
+```
+assert exactly 1 substitution inside `content`      -> 1
+assert `_readme` still holds its own occurrence     -> unchanged, not passed to the call
+assert no `{{MERGE_COMMIT}}` survives in `content`  -> 0
+assert the SHA appears exactly once                 -> 1
+arguments = space_key, parent_id, title, content    -> `_readme` absent by construction
+```
+
+**The transferable half:** when a payload is too large to retype faithfully, the answer is not
+to retype it carefully. It is to give the delivery path the file. A tool parameter is not the
+only way to reach a tool.
+
+**What this does NOT establish, stated because the obvious reading is wrong.** It does not show
+the PM could have done the same. The wrapper resolves a role from the bearer, so whether the
+HTTP route exposes `confluence_create_page` to the PM seat depends on whether tools are gated by
+**role** or only by **transport** — and that was not tested, because testing it means using
+another seat's credential. `jira_whoami` takes no arguments precisely so that no seat can ask
+about another; borrowing a bearer to answer a convenience question would defeat that on the
+first occasion it was inconvenient.
+
+### Publication, verified rather than assumed
+
+| check | result |
+|---|---|
+| page created | id `275841149`, version 1, space `ElixirMCPS`, parent `209682736` (*MCP_Elixir_SDK*) |
+| payload vs page, flattened tokens | **5158 == 5158**, md5 `0003b852…` on both sides, token-for-token identical |
+| structure | 90 top-level blocks; 6 panels / 21 headings / 8 tables / 297 paragraphs / 1087 text nodes, sent and stored |
+| silent Confluence damage | **0** `extension` / `bodiedExtension` / `inlineExtension` nodes; marks `strong` 228, `code` 262, `em` 51 — equal on both sides |
+| the panel | renders `ef7fc4844998edcd6c9b2b9b8d4a0663b4d990bd`; `{{MERGE_COMMIT}}` occurs **0** times on the page |
+
+The comparison is against an **independent read-back** (`confluence_get_page`), not the create
+call's own echo — the create tool returns the page as stored, but a tool reporting on its own
+write is the weaker of the two available checks and both were free. The flattener is stated so
+the figure is interpretable: every `text` node's text in document order, whitespace-split; it is
+**not** the 4864-token mirror-fidelity number, which pairs the payload against the repo markdown
+under a different definition. Two numbers named `tokens` measure two different things, which is
+S5-31's shape and is why both are spelled out here.
+
+### Gates
+
+**The PM waived gates for a register-only edit. Gate 5 was run anyway, and the waiver is
+otherwise stated rather than assumed.** This commit changes `docs/sprint_5_issues.md` and
+nothing else. Gates 1–4 cannot see it *by configuration*: `.formatter.exs` inputs are
+`{mix,.formatter}.exs`, `{config,lib,test}/**/*.{ex,exs}`, `conformance/lib/**/*.{ex,exs}` and
+`.credo.exs`; compile and dialyzer read `lib/`; `.credo.exs` restates credo's default
+`files.included`. None reaches `docs/`.
+
+Gate 5 is the exception and was run for exactly one reason: **S5-33 in this same register is a
+docs file turning gate 5 red.** Two tests read `docs/` — `classification_test.exs:157` and
+`census_markdown_test.exs:35` — and both are scoped to `docs/conformance/`, which this commit
+does not touch; no test references `sprint_` at all. That is an argument, so it was checked
+against a run rather than left as one. Gate 6: not applicable, no `mix.exs` / `mix.lock` change,
+established by three-dot diff.
+
+### Transferable form
+
+**A capability claim names a seat. A lane ruling names a different seat. The two are not
+transitively composable, and the gap between them is invisible in the text of either.** "X is
+reachable from here" and "X happens in lane L" read as though they compose into "L can do X";
+they do not, and the sentence that would have caught it — *which seat will run this, and has
+that seat been asked?* — costs one tool call.
+
+**The marker that you are in this failure mode:** the capability was reported by one party and
+relied upon by another, and no message in between names the executing seat. Every hop after
+that point is spent on work that cannot be delivered by whoever is holding it.
+
+**And the detection cost is the argument for checking early.** This surfaced after the plan,
+after four review rounds, after the merge gate, after the squash-merge and the tag — the last
+step before Done. Every one of those rounds was spent on a document whose route to publication
+had never been tested. **Verify the capability from the lane that will execute it, at the
+moment the lane is chosen** — not when the lane is finally asked to move.
