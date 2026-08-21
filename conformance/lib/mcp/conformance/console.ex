@@ -6,7 +6,9 @@ defmodule MCP.Conformance.Console do
   ## Why the console is load-bearing rather than a transcript
 
   Two things exist **only** here, in a file the harness does not consider an
-  artefact at all:
+  artefact at all — the first of them **on the server leg**, since the client
+  leg's key to it is the artefact tree rather than this file, as that bullet
+  explains:
 
     * the **scenario → artefact-directory map**. `checks.json` carries no
       scenario id — measured, not assumed: its keys are `id`, `name`,
@@ -14,17 +16,28 @@ defmodule MCP.Conformance.Console do
       `errorMessage`, and the `id` there is the *check's*, not the scenario's.
       Directory names concatenate leg, scenario id and timestamp with dashes
       inside both halves (`server-tools-call-simple-text-2026-…`), so splitting
-      one back into its parts is guesswork. On the client leg it is worse:
-      scenario ids contain slashes (`auth/metadata-default`) and the harness
-      nests them, so name-parsing would mis-attribute results silently. The
-      console states the mapping outright and is therefore the only
-      non-guessing key.
+      one back into its parts is guesswork.
+
+      **On the SERVER leg** the console states the pairing outright — a
+      `=== Running scenario: X ===` header followed by that scenario's
+      `Results saved to DIR` — so the console is the only non-guessing key to
+      it, and that is what makes this file load-bearing.
+
+      **On the CLIENT leg the console is NOT the key to the mapping** and this
+      file never reads one from it (the next section measures why, and
+      `parallel_leg_faults/1` refuses it). The client key is the artefact
+      **directory name**, in `MCP.Conformance.RunIndex`: it strips the
+      timestamp suffix and matches the remainder **exactly** against the frozen
+      requirement set, refusing on anything it does not name. Matching exactly
+      is deliberately not *splitting* — where scenario ids contain slashes
+      (`auth/metadata-default`) and the harness nests them, splitting a name
+      would mis-attribute results silently.
 
     * the **scored / not-scored split**, in the "Not scored for REV" block.
       Nothing in the artefact tree records which scenarios counted.
 
-  ## MEASURED: this parser is SERVER-LEG ONLY, and the client leg is a design
-  ## question rather than a missing branch (S5-12)
+  ## MEASURED: the MAPPING is server-leg only, and the client leg's key was a
+  ## design question rather than a missing branch (S5-12)
 
   The scenario -> directory pairing above exists **only on the server leg**.
   Measured on the client leg at alpha.11, `--suite sep-835`, five scenarios:
@@ -48,14 +61,27 @@ defmodule MCP.Conformance.Console do
        its directory, and pairing them positionally would have mis-attributed
        four of five here — silently, with every scenario still accounted for.
 
-  So a leg-agnostic parser is not what this is. The client leg needs a
-  different key (its directories are `<scenario-id>-<timestamp>` under a real
-  `auth/` directory, which is parseable *because* the expected id list is
-  known), and choosing one is a design decision for MES-57, not an adjustment
-  here. Rather than guess, `parse/1` **refuses a client-leg console outright**:
-  it reports a fault naming this finding, and every caller turns a fault into a
-  refusal. Declining to measure is the correct behaviour for an instrument that
-  cannot attribute what it reads.
+  So a leg-agnostic MAPPING is not what this is. Rather than guess, `parse/1`
+  **refuses a client-leg console outright**: it reports a fault naming this
+  finding, and every caller turns a fault into a refusal. Declining to measure
+  is the correct behaviour for an instrument that cannot attribute what it
+  reads, and that refusal is unchanged.
+
+  The scope of that refusal, however, is narrower than this section used to
+  say. MES-57 chose the client leg's key — the artefact **directory name**,
+  matched exactly against the frozen requirement set and refused on any
+  ambiguity, in `MCP.Conformance.RunIndex` — and it read the rest of the
+  console through `blocks/1`, whose guards are live on both legs. So:
+
+    * the scenario → directory **mapping** is server-leg only, here, and
+      `parallel_leg_faults/1` still refuses to produce one for a client
+      console;
+    * **membership** — `marks` and `not_scored` against `announced/1` — is
+      guarded on **both** legs, because the SET of announced scenarios is a
+      position-free fact even where their ORDER is not.
+
+  Leaving the wider claim standing after MES-57's own change falsified it is
+  S5-24, and it happened twice in this file.
 
   ## The marks are the harness's own reducer, and that is the point
 
@@ -121,6 +147,7 @@ defmodule MCP.Conformance.Console do
           marks: [mark()],
           not_scored: [not_scored()],
           totals: %{String.t() => integer()},
+          announced: MapSet.t(),
           faults: [String.t()]
         }
 
@@ -174,8 +201,8 @@ defmodule MCP.Conformance.Console do
   | block | multiplicity | membership |
   | --- | --- | --- |
   | `mappings` | enforced by `duplicate_faults/1` — one scenario mapped to two artefact directories | **vacuous.** A mapping exists only because `scenario_header/1` matched, and `announced/1` reads the same headers off the same lines, so a mapping cannot name a scenario the console did not announce. The mappings *are* the ground truth every other row is checked against |
-  | `marks` | enforced by `mark_faults/3`, duplicates arm — whether or not the two agree, since "refuse only on conflict" would make the guard depend on the comparison it exists to protect | enforced by `mark_faults/3`, orphans arm, against `announced/1`. **Bounded on the client leg**, where there are no headers and every mark is orphaned by construction: `parallel_leg_faults/1` refuses that console whole, so the bound costs a diagnosis and never a verdict |
-  | `not_scored` | enforced by `duplicate_not_scored_faults/1` | enforced by `orphan_not_scored_faults/3` against `announced/1`, under the same client-leg bound as `marks` and for the same reason. The **cross-authority** half — does the frozen set agree this scenario is not scored, and for the same reason — is deliberately not here: it needs `MCP.Conformance.RequirementSet`, and a parser that imports its own referee is no longer a parser. It lives in `MCP.Conformance.Census.corroborate_not_scored/3`, as `NOT_SCORED_DISAGREES_WITH_FROZEN_SET` |
+  | `marks` | enforced by `mark_faults/3`, duplicates arm — whether or not the two agree, since "refuse only on conflict" would make the guard depend on the comparison it exists to protect | enforced by `mark_faults/3`, orphans arm, against `announced/1`, **on both legs**. `announced/1` reads the server's `=== Running scenario: X ===` and the client's `Starting scenario: X`, so the arm has a real set to check against either way, and `attributable?` (`parallel_leg == [] or announced != ∅`) arms it by asking whether the console announced *anything to attribute to* rather than which leg printed it. It was **bounded on the client leg until MES-57**, on the argument that such a console was refused whole anyway; `RunIndex` made client runs adjudicable and that argument lapsed (S5-24). What still refuses is narrower and is not this cell: `parse/1` declines the client leg's scenario → directory *mapping* and position pairing via `parallel_leg_faults/1`. The two coexist because membership is a position-free fact — which scenarios the console named — and pairing is not |
+  | `not_scored` | enforced by `duplicate_not_scored_faults/1` | enforced by `orphan_not_scored_faults/3` against `announced/1`, live on both legs under the same `attributable?` as `marks` and for the same reason. The **cross-authority** half — does the frozen set agree this scenario is not scored, and for the same reason — is deliberately not here: it needs `MCP.Conformance.RequirementSet`, and a parser that imports its own referee is no longer a parser. It lives in `MCP.Conformance.Census.corroborate_not_scored/3`, as `NOT_SCORED_DISAGREES_WITH_FROZEN_SET` |
   | `totals` | enforced by `totals_faults/1`, in both senses: more than one `Total:` line, and one line repeating a label | enforced by `totals_faults/1` against `@total_labels`. Round 4 called this cell **vacuous** because the block keys on status *labels* rather than scenario ids, and that was the wrong conclusion from a true premise: a label is still a key, and `total_parts/1` accepted any lowercase word, so `Total: 3 widgets` parsed faultlessly into a key nothing reads — while a part matching neither shape was dropped in silence. The admissible set is the union of the harness's three `Total:` printers, so it is the harness's set and not this parser's |
 
   Completing the table opened one guarantee the table does not itself state.
@@ -192,9 +219,13 @@ defmodule MCP.Conformance.Console do
   Multiplicity is two contradictory values with one silently chosen; absence is
   no value, and `%{}` is visibly empty to whoever reads it.
 
-  Only the first two bullets were checked before MES-56 correction round 2,
-  which made this parser's guarantee true of the mapping block and false of
-  every other block in the same file — the failure those rounds are about.
+  Only the first two bullets of that fault list — the two **mapping-block**
+  ones, a header with no ending and one scenario mapped to two directories —
+  were checked before MES-56 correction round 2, which made this parser's
+  guarantee true of the mapping block and false of every other block in the
+  same file — the failure those rounds are about. (Named rather than counted:
+  an ordinal into a list that a later edit can reorder is a claim resting on
+  its neighbours, which is the shape of the defect this round is about.)
 
   ## Pair × guarantee, because a per-block table says nothing about the joins
 
@@ -287,32 +318,109 @@ defmodule MCP.Conformance.Console do
     lines = String.split(body, "\n")
 
     {mappings, open_faults} = mappings(lines)
+    blocks = block_analysis(lines)
 
+    Map.merge(blocks_public(blocks), %{
+      mappings: mappings,
+      faults:
+        open_faults ++
+          duplicate_faults(mappings) ++
+          blocks.faults ++
+          blocks.parallel_leg
+    })
+  end
+
+  @typedoc "Everything `blocks/1` reads: the console blocks that are NOT the mapping."
+  @type blocks :: %{
+          marks: [mark()],
+          not_scored: [not_scored()],
+          totals: %{String.t() => integer()},
+          announced: MapSet.t(),
+          faults: [String.t()]
+        }
+
+  @doc """
+  The console's per-scenario blocks — SUMMARY marks, the not-scored block and
+  the `Total:` line — **without** the scenario -> artefact-directory mapping.
+
+  ## Why this is a separate entry point rather than a flag on `parse/1`
+
+  `parse/1` is the SERVER leg's authority and refuses a client console whole,
+  via `parallel_leg_faults/1`. That guard is not an obstacle to be relaxed: it
+  is what stands between this project and a mis-attributed client table, and
+  MES-57 was dispatched with an explicit instruction not to weaken it.
+
+  But the mapping is the *only* block the client leg cannot express. Its marks,
+  its not-scored block and its `Total:` line are printed by the same code paths
+  and parse identically — measured on the alpha.11 client console this ticket
+  ran. Routing the client leg away from `parse/1` and stopping there would have
+  left **every** block guard dark on that leg: a duplicated flattering mark
+  would then reach `Census.corroborate_reducer/3`, which keys marks by scenario
+  and so keeps whichever came last. That is B2 exactly, re-opened on a new leg.
+
+  So the blocks and their guards are shared, and only the mapping is
+  leg-dispatched — by `MCP.Conformance.RunIndex`, which is the one derivation
+  both the gate and the census consume.
+
+  `parse/1` returns everything this does, plus `:mappings`, plus the
+  `parallel_leg_faults/1` sentence. The block faults are byte-identical between
+  the two, and a test holds them so.
+  """
+  @spec blocks(String.t()) :: blocks()
+  def blocks(body) do
+    body
+    |> String.split("\n")
+    |> block_analysis()
+    |> then(&Map.put(blocks_public(&1), :faults, &1.faults))
+  end
+
+  defp blocks_public(blocks) do
+    %{
+      marks: blocks.marks,
+      not_scored: blocks.not_scored,
+      totals: blocks.totals,
+      announced: blocks.announced
+    }
+  end
+
+  defp block_analysis(lines) do
     marks = marks(lines)
     not_scored = not_scored(lines)
     parallel_leg = parallel_leg_faults(lines)
     announced = announced(lines)
-    attributable? = parallel_leg == []
     totals = totals(lines)
+
+    # A console is attributable when it announced anything at all to attribute
+    # to. Before MES-57 this read `parallel_leg == []`, whose stated
+    # justification was that a client console "is refused either way, so the
+    # bound costs a diagnosis and never a verdict". `RunIndex` makes client runs
+    # adjudicable, so that justification lapsed — and a lapsed justification
+    # guarding a live leg is worse than no guard, because it reads as
+    # considered. `announced/1` now recognises the client leg's
+    # `Starting scenario:` header too, so the membership arms have a real set to
+    # check against on both legs.
+    #
+    # Server behaviour is unchanged and provably so: a server console has no
+    # `Starting scenario:` lines, so `parallel_leg == []` and the first disjunct
+    # decides exactly as before.
+    attributable? = parallel_leg == [] or not Enum.empty?(announced)
 
     marks_block = mark_faults(marks, announced, attributable?)
     totals_block = totals_faults(lines)
 
     %{
-      mappings: mappings,
       marks: marks,
       not_scored: not_scored,
       totals: totals,
+      announced: announced,
+      parallel_leg: parallel_leg,
       faults:
-        open_faults ++
-          duplicate_faults(mappings) ++
-          marks_block ++
+        marks_block ++
           duplicate_not_scored_faults(not_scored) ++
           orphan_not_scored_faults(not_scored, announced, attributable?) ++
           not_scored_verdict_faults(not_scored, marks) ++
           totals_block ++
-          total_sum_faults(totals, marks, marks_block ++ totals_block) ++
-          parallel_leg
+          total_sum_faults(totals, marks, marks_block ++ totals_block)
     }
   end
 
@@ -325,12 +433,57 @@ defmodule MCP.Conformance.Console do
         "this console was produced by the client leg, whose scenarios run in Promise.all: " <>
           "every `Starting scenario:` line precedes every `Results saved to` line, and the " <>
           "saves arrive in completion order, so no scenario -> directory pairing can be read " <>
-          "from it. Measured at alpha.11 on --suite sep-835 (S5-12). This parser is server-leg " <>
-          "only and refuses rather than guessing; MES-57 must choose the client leg's key"
+          "from it. Measured at alpha.11 on --suite sep-835 (S5-12). This parser's MAPPING is " <>
+          "server-leg only and refuses rather than guessing; the client leg's artefact key is " <>
+          "`MCP.Conformance.RunIndex`'s, and this console's other blocks are read by " <>
+          "`MCP.Conformance.Console.blocks/1`, which is guarded on both legs"
       ]
     else
       []
     end
+  end
+
+  @doc """
+  Scenarios the harness reported it could not run, keyed BY SCENARIO ID.
+
+  Position-free by construction: the id is on the line itself. This is what
+  makes the fact usable on the client leg, where line order carries no
+  information — see `blocks/1`.
+
+  A scenario that threw leaves **no artefact directory**, so without this a
+  crash is indistinguishable from a scenario that never ran at all, and the
+  flattering reading of that is "nothing failed".
+  """
+  @spec thrown_by_id(String.t()) :: %{String.t() => String.t()}
+  def thrown_by_id(body) do
+    for line <- String.split(body, "\n"),
+        [_, id, message] <- [Regex.run(~r/^Failed to run scenario (\S+): (.*)$/, line)],
+        into: %{},
+        do: {id, String.trim(message)}
+  end
+
+  @doc """
+  Scenarios the harness SKIPPED as inapplicable, keyed BY SCENARIO ID.
+
+  Read off `Wo()` in dist/index.js at alpha.11:
+
+      SKIPPED: scenario 'ID' is not applicable at spec version VER (WHY). Use --force ...
+
+  On the client leg this is load-bearing rather than informational. `Ko()`
+  creates the scenario's output directory **before** the applicability check and
+  returns early on a skip, so a skipped client scenario leaves a directory with
+  no `checks.json` in it. `MCP.Conformance.Provenance.scenario_dirs/1` keys on
+  `checks.json` and therefore cannot see such a directory at all: the artefact
+  tree and the enumerated tree disagree, and the disagreement has an innocent
+  cause exactly here and nowhere else. Measured from harness source, and the
+  reason `RunIndex` gives that state a NAME instead of reading it as absence.
+  """
+  @spec skipped_by_id(String.t()) :: %{String.t() => String.t()}
+  def skipped_by_id(body) do
+    for line <- String.split(body, "\n"),
+        [_, id, why] <- [Regex.run(~r/^SKIPPED: scenario '([^']+)' (.*)$/, line)],
+        into: %{},
+        do: {id, String.trim(why)}
   end
 
   @doc "Scenario ids in the order the run executed them."
@@ -455,13 +608,24 @@ defmodule MCP.Conformance.Console do
   # conflict" would make the guard depend on the very comparison it exists to
   # protect. The message says which it was, because the two mean different
   # things to whoever reads the fault.
-  # `attributable?` is false for a client-leg console, where there are no
-  # `=== Running scenario:` headers at all and therefore EVERY mark is orphaned
-  # by construction. Reporting that per scenario would restate
-  # `parallel_leg_faults/1`'s finding thirty-two times and bury the one sentence
-  # that says what is actually wrong. The console is refused either way; what is
-  # protected here is the diagnosis, not the verdict. Duplicate marks are still
-  # faulted on that leg, because a duplicate is a duplicate whoever printed it.
+  # `attributable?` asks whether the console announced anything to attribute a
+  # mark TO, and it is true on both legs: `announced/1` reads the server's
+  # `=== Running scenario: X ===` and the client's `Starting scenario: X`, so
+  # the orphans arm is live on a client console. Until MES-57 it was bounded
+  # away there, on the argument that `parallel_leg_faults/1` refused such a
+  # console whole so the bound cost a diagnosis and never a verdict; `RunIndex`
+  # made client runs adjudicable and that argument lapsed (S5-24).
+  #
+  # Live membership does NOT reinstate any positional reading, and the two facts
+  # are about different things: this arm reads the SET of announced ids, while
+  # `parse/1` still refuses the client leg's mapping and position pairing. A set
+  # is position-free; a pairing is not.
+  #
+  # The arm is false only for a degenerate console — client-leg start lines
+  # present and not one of them carrying an id, so there is no announced set to
+  # check against. There, `parallel_leg_faults/1`'s sentence is the one true
+  # thing to say and per-scenario orphans would bury it. Duplicate marks are
+  # faulted regardless, because a duplicate is a duplicate whoever printed it.
   defp mark_faults(marks, announced, attributable?) do
     duplicates =
       marks
@@ -500,7 +664,27 @@ defmodule MCP.Conformance.Console do
   # defect must produce one fault, and a fault that misdescribes its own cause
   # is worse than none.
   defp announced(lines) do
-    for line <- lines, id = scenario_header(line), into: MapSet.new(), do: id
+    for line <- lines, id = scenario_announcement(line), into: MapSet.new(), do: id
+  end
+
+  # The two shapes the harness announces a scenario in, read off dist/index.js
+  # at alpha.11 rather than inferred: the server leg's sequential runner prints
+  # `=== Running scenario: X ===`, and the client leg's parallel runner prints
+  # `Starting scenario: X` (`Ko()`, via `console.error`).
+  #
+  # Both are MEMBERSHIP facts — "this console announced X" — and neither is an
+  # ORDER fact. That distinction is the whole of MES-57's design ruling: the
+  # client leg's saves arrive in completion order, so a scenario's POSITION
+  # carries no information, while the SET of scenarios it announced still does.
+  # Reading the set is not the positional pairing that was measured and
+  # mis-attributed 4 of 5.
+  defp scenario_announcement(line), do: scenario_header(line) || starting_scenario(line)
+
+  defp starting_scenario(line) do
+    case Regex.run(~r/^Starting scenario: (.+)$/, line) do
+      [_, id] -> String.trim(id)
+      _ -> nil
+    end
   end
 
   defp render_mark(m),
@@ -533,11 +717,12 @@ defmodule MCP.Conformance.Console do
   # ran carried a harness verdict and a harness reason into an IR that MES-57
   # and MES-58 are documented consumers of.
   #
-  # Same client-leg bound as `mark_faults/3`, for the same reason: with no
-  # `=== Running scenario:` headers every line here is an orphan by
-  # construction, and restating that per scenario would bury
-  # `parallel_leg_faults/1`'s one true sentence. The console is refused either
-  # way, so the bound costs a diagnosis and never a verdict.
+  # Armed by the same `attributable?` as `mark_faults/3` and live on both legs
+  # for the same reason: `announced/1` reads the client leg's
+  # `Starting scenario:` header too, so this block's membership is checked on a
+  # client console. The client-leg bound this arm used to carry lapsed with
+  # MES-57's `RunIndex` (S5-24). The false clause below is the degenerate case
+  # named there, not a leg test.
   defp orphan_not_scored_faults(_not_scored, _announced, false), do: []
 
   defp orphan_not_scored_faults(not_scored, announced, true) do
@@ -683,7 +868,9 @@ defmodule MCP.Conformance.Console do
   # gap: the client leg prints a skipped scenario as `- X: skipped`, which
   # carries no ✓/✗ and is not a SUMMARY mark, so there is no mark-side number to
   # sum. Reading that line would mean deciding whether a skipped scenario counts
-  # as announced, and the client leg's key is MES-57's to choose.
+  # as announced — a question this parser still does not answer, and one that is
+  # separate from the client leg's artefact key, which MES-57 settled in
+  # `MCP.Conformance.RunIndex`.
   defp total_sum_faults(_totals, _marks, [_ | _]), do: []
 
   defp total_sum_faults(totals, marks, []) do

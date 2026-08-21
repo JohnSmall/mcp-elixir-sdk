@@ -873,13 +873,59 @@ defmodule MCP.Conformance.CensusTest do
   # set". Only the second is an error, and it produced a complete-looking census
   # whose scored denominator had silently become zero.
   describe "a leg the frozen set does not define" do
-    test "REFUSES rather than reporting 0 of 0" do
+    # MES-57 moved WHERE this is caught, and made it stricter rather than
+    # weaker. `Manifest.judge/3` now DISPATCHES on `leg` — the scenario ->
+    # artefact map is derived per leg by `MCP.Conformance.RunIndex` — so a leg
+    # outside the vocabulary is refused by the ADJUDICATOR, before the census's
+    # own gate is reached.
+    #
+    # That closes a hole MES-56 could not close from the census: `judge/3`
+    # previously read `leg` only as a key into the frozen set, with a `[]`
+    # default, so `mix conformance.adjudicate` ACCEPTED a run recording leg
+    # "sever" — printing a clean acceptance block for a run whose scored
+    # denominator had silently become zero. The census refused it; the
+    # adjudicator did not, and the adjudicator is the thing whose exit status
+    # other tickets treat as binding.
+    #
+    # The census's own `LEG_NOT_IN_REQUIREMENT_SET` is kept as a backstop and is
+    # asserted below to still exist. It is not reachable through a real frozen
+    # set today: `RequirementSet.parse/2` refuses a set that omits either leg,
+    # so "a valid leg the set does not score" cannot be constructed. Keeping it
+    # costs nothing and it is the gate that fires first if the dispatch above is
+    # ever widened to a third leg.
+    test "REFUSES rather than reporting 0 of 0 — at the adjudicator, before the census" do
       dir = write_run!(spoil: &Map.put(&1, "leg", "sever"))
 
-      assert {:refused, :LEG_NOT_IN_REQUIREMENT_SET, detail} = Census.build(dir)
+      assert {:refused, :ARTEFACTS_INCONSISTENT, detail} = Census.build(dir)
       assert detail =~ ~s("sever")
-      assert detail =~ ~s(["client", "server"])
-      assert detail =~ "empty denominator"
+      assert detail =~ "not a leg this tooling can index"
+      assert detail =~ "no generic derivation to fall back to"
+    end
+
+    test "the same run is refused by the ADJUDICATOR too, which it was not before" do
+      dir = write_run!(spoil: &Map.put(&1, "leg", "sever"))
+
+      m = Jason.decode!(File.read!(Path.join(dir, "manifest.json")))
+      observed = MCP.Conformance.Provenance.observe_run(dir)
+
+      assert {:refused, :ARTEFACTS_INCONSISTENT, _} =
+               MCP.Conformance.Manifest.judge(m, observed, %{
+                 commit: m["git"]["commit_sha_start"]
+               })
+    end
+
+    test "a NULL leg is refused as INCOMPLETE, not as inconsistent" do
+      # The two sentences send a reader to different places: "this manifest was
+      # not written by this tooling" versus "this run's artefacts disagree".
+      # `leg` is a consumed field as of MES-57, so it takes the first.
+      dir = write_run!(spoil: &Map.put(&1, "leg", nil))
+
+      assert {:refused, :MANIFEST_INCOMPLETE, detail} = Census.build(dir)
+      assert detail =~ ~s("leg")
+    end
+
+    test "the backstop gate still exists and still names both legs" do
+      assert :LEG_NOT_IN_REQUIREMENT_SET in MCP.Conformance.Census.refusal_codes()
     end
 
     test "the accept half: the same run with its real leg reaches the later gates" do

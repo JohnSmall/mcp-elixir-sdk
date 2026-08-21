@@ -1,0 +1,2297 @@
+{
+  "census_schema_version": 1,
+  "expected": {
+    "absent_not_scored": [],
+    "absent_scored": [],
+    "not_scored": [
+      {
+        "leg": "client",
+        "reason": "extension",
+        "scenario": "auth/client-credentials-jwt"
+      },
+      {
+        "leg": "client",
+        "reason": "extension",
+        "scenario": "auth/client-credentials-basic"
+      },
+      {
+        "leg": "client",
+        "reason": "extension",
+        "scenario": "auth/enterprise-managed-authorization"
+      },
+      {
+        "leg": "client",
+        "reason": "extension",
+        "scenario": "auth/dpop"
+      },
+      {
+        "leg": "client",
+        "reason": "extension",
+        "scenario": "auth/dpop-nonce"
+      },
+      {
+        "leg": "client",
+        "reason": "extension",
+        "scenario": "auth/wif-jwt-bearer"
+      },
+      {
+        "leg": "client",
+        "reason": "added-after-release",
+        "scenario": "json-schema-2020-12-preservation"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-lifecycle"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-capability-negotiation"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-wire-fields"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-request-state-removal"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-mrtr-input"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-request-headers"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-dispatch-and-envelope"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-status-notifications"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-required-task-error"
+      },
+      {
+        "leg": "server",
+        "reason": "extension",
+        "scenario": "tasks-mrtr-composition"
+      },
+      {
+        "leg": "server",
+        "reason": "pending",
+        "scenario": "json-schema-2020-12"
+      },
+      {
+        "leg": "server",
+        "reason": "pending",
+        "scenario": "http-header-validation"
+      },
+      {
+        "leg": "server",
+        "reason": "pending",
+        "scenario": "http-custom-header-server-validation"
+      }
+    ],
+    "ran_outside_frozen_set": [],
+    "revision": "2026-07-28",
+    "scored": {
+      "client": [
+        "tools_call",
+        "request-metadata",
+        "auth/metadata-default",
+        "auth/metadata-var1",
+        "auth/metadata-var2",
+        "auth/metadata-var3",
+        "auth/basic-cimd",
+        "auth/scope-from-www-authenticate",
+        "auth/scope-from-scopes-supported",
+        "auth/scope-omitted-when-undefined",
+        "auth/scope-step-up",
+        "auth/scope-retry-limit",
+        "auth/token-endpoint-auth-basic",
+        "auth/token-endpoint-auth-post",
+        "auth/token-endpoint-auth-none",
+        "auth/pre-registration",
+        "auth/resource-mismatch",
+        "auth/offline-access-scope",
+        "auth/offline-access-not-supported",
+        "auth/authorization-server-migration",
+        "auth/iss-supported",
+        "auth/iss-not-advertised",
+        "auth/iss-supported-missing",
+        "auth/iss-wrong-issuer",
+        "auth/iss-unexpected",
+        "auth/iss-normalized",
+        "auth/metadata-issuer-mismatch",
+        "sep-2322-client-request-state",
+        "http-standard-headers",
+        "http-custom-headers",
+        "http-invalid-tool-headers",
+        "json-schema-ref-no-deref"
+      ],
+      "server": [
+        "server-stateless",
+        "completion-complete",
+        "tools-list",
+        "tools-call-simple-text",
+        "tools-call-image",
+        "tools-call-audio",
+        "tools-call-embedded-resource",
+        "tools-call-mixed-content",
+        "tools-call-error",
+        "tools-call-with-progress",
+        "server-sse-multiple-streams",
+        "resources-list",
+        "resources-read-text",
+        "resources-read-binary",
+        "resources-templates-read",
+        "sep-2164-resource-not-found",
+        "prompts-list",
+        "prompts-get-simple",
+        "prompts-get-with-args",
+        "prompts-get-embedded-resource",
+        "prompts-get-with-image",
+        "dns-rebinding-protection",
+        "caching",
+        "input-required-result-basic-elicitation",
+        "input-required-result-basic-sampling",
+        "input-required-result-basic-list-roots",
+        "input-required-result-request-state",
+        "input-required-result-multiple-input-requests",
+        "input-required-result-multi-round",
+        "input-required-result-missing-input-response",
+        "input-required-result-non-tool-request",
+        "input-required-result-result-type",
+        "input-required-result-unsupported-methods",
+        "input-required-result-tampered-state",
+        "input-required-result-capability-check",
+        "input-required-result-ignore-extra-params",
+        "input-required-result-validate-input"
+      ]
+    }
+  },
+  "reducers": {
+    "client_summary": {
+      "disposition": {
+        "FAILURE": "fail",
+        "INFO": "ignored",
+        "SKIPPED": "ignored",
+        "SUCCESS": "pass",
+        "WARNING": "fail"
+      },
+      "scope": "all_ran",
+      "source": "the client leg's suite verdict when NOT run under --requirements. In dist/index.js: process.exit(+(failed > 0 || warnings > 0)) — a WARNING fails here and is free in the other two. This is the leg-dependence that made Sprint 4 quote two different numbers for one run"
+    },
+    "requirements_exit": {
+      "disposition": {
+        "FAILURE": "fail",
+        "INFO": "ignored",
+        "SKIPPED": "ignored",
+        "SUCCESS": "pass",
+        "WARNING": "ignored"
+      },
+      "scope": "scored",
+      "source": "the exit code of `conformance <leg> --requirements REV`; both legs. In dist/index.js: +!!scored.some(s => s.checks.some(c => c.status === 'FAILURE'))"
+    },
+    "server_summary": {
+      "disposition": {
+        "FAILURE": "fail",
+        "INFO": "ignored",
+        "SKIPPED": "ignored",
+        "SUCCESS": "pass",
+        "WARNING": "ignored"
+      },
+      "scope": "all_ran",
+      "source": "the ✓/✗ mark the server leg prints per scenario in its SUMMARY block. In dist/index.js: failed = checks.filter(c => c.status === 'FAILURE').length; ✗ iff failed > 0"
+    }
+  },
+  "run": {
+    "adapter": "null_request",
+    "adapter_command": "python3 conformance/controls/null_client_request.py",
+    "adjudication": {
+      "conditions": [
+        "MANIFEST_ABSENT",
+        "MANIFEST_UNREADABLE",
+        "MANIFEST_INCOMPLETE",
+        "CWD_NOT_PROJECT_ROOT",
+        "COMMIT_MISMATCH",
+        "COMMIT_MOVED_MID_RUN",
+        "DIRTY_EXCLUSION_COVERS_ROOT",
+        "WORKTREE_DIRTY",
+        "BEACON_PREFLIGHT_FAILED",
+        "ADAPTER_NEVER_STARTED",
+        "HARNESS_MISMATCH",
+        "ARTEFACTS_INCONSISTENT",
+        "SCORED_SCENARIO_ABSENT"
+      ],
+      "judged_by": "MCP.Conformance.Manifest.judge/3",
+      "verdict": "accepted"
+    },
+    "branch": "MES-57",
+    "commit": "f4be9eb4624813ebcf5418898180f0ca433ab562",
+    "console_sha256": "13cf83bb916e7358dcbfcd573766f4180d35fe389a9a5858a823d463f75988f8",
+    "expected_sha256": "8eccf948ba9fc01968161db4d884cbc27baa9c4d4fe645182212f03dacc06023",
+    "harness_dist_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+    "harness_exit_code": 1,
+    "harness_version_reported": "0.2.0-alpha.11",
+    "leg": "client",
+    "manifest_sha256": "43a2abf693792b92a2ade59b2624600d211e14f4046e6299da87a33bb6a80a6c",
+    "requirements_md5": "d6eb2061b2d35c7c71a86059b08bb928",
+    "requirements_revision": "2026-07-28",
+    "role": "control",
+    "run_dir": "/tmp/mes57-f/null_request",
+    "started_at": "2026-08-21T07:25:34.657711Z"
+  },
+  "scenarios": [
+    {
+      "artefact_dir": "auth/authorization-server-migration-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 2,
+        "WARNING": 0,
+        "total": 5
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2352-reregister-on-as-change",
+          "message": null,
+          "name": "Client re-registers with the new authorization server",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/authorization-server-migration",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/basic-cimd-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "cimd-client-id-used",
+          "message": null,
+          "name": "Client ID Metadata Document Usage",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/basic-cimd",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/client-credentials-basic-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "extension",
+        "owner": "ADR-003 (extension track, out of 2.0.0)",
+        "why": "An authorization EXTENSION, not scored by the frozen 2026-07-28 set — extensions are optional by definition (SEP-1730) — and doubly out of reach here: it is in the extension track AND in the authorization profile, either of which ADR-003 excludes from 2.0.0. It runs and is reported for visibility; failing it costs nothing against the conformance denominator."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "client-credentials-basic-auth",
+          "message": null,
+          "name": "ClientCredentialsBasicAuth",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": "extension",
+      "id": "auth/client-credentials-basic",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/client-credentials-jwt-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "extension",
+        "owner": "ADR-003 (extension track, out of 2.0.0)",
+        "why": "An authorization EXTENSION, not scored by the frozen 2026-07-28 set — extensions are optional by definition (SEP-1730) — and doubly out of reach here: it is in the extension track AND in the authorization profile, either of which ADR-003 excludes from 2.0.0. It runs and is reported for visibility; failing it costs nothing against the conformance denominator."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "client-credentials-jwt-verified",
+          "message": null,
+          "name": "ClientCredentialsJwtVerified",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": "extension",
+      "id": "auth/client-credentials-jwt",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/dpop-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 3,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 5
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "extension",
+        "owner": "ADR-003 (extension track, out of 2.0.0)",
+        "why": "An authorization EXTENSION, not scored by the frozen 2026-07-28 set — extensions are optional by definition (SEP-1730) — and doubly out of reach here: it is in the extension track AND in the authorization profile, either of which ADR-003 excludes from 2.0.0. It runs and is reported for visibility; failing it costs nothing against the conformance denominator."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-1932-client-token-request-proof",
+          "message": "Client never completed an authorization_code token request, so it obtained no DPoP-bound token",
+          "name": "DpopTokenRequestProof",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-1932-client-dpop-auth-scheme",
+          "message": "Client never presented an access token to the MCP server",
+          "name": "DpopAuthScheme",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-1932-client-fresh-proof",
+          "message": "Client never presented an access token to the MCP server",
+          "name": "DpopFreshProof",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": "extension",
+      "id": "auth/dpop",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/dpop-nonce-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 5,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 7
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "extension",
+        "owner": "ADR-003 (extension track, out of 2.0.0)",
+        "why": "An authorization EXTENSION, not scored by the frozen 2026-07-28 set — extensions are optional by definition (SEP-1730) — and doubly out of reach here: it is in the extension track AND in the authorization profile, either of which ADR-003 excludes from 2.0.0. It runs and is reported for visibility; failing it costs nothing against the conformance denominator."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-1932-client-token-request-proof",
+          "message": "Client never completed an authorization_code token request, so it obtained no DPoP-bound token",
+          "name": "DpopTokenRequestProof",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-1932-client-dpop-auth-scheme",
+          "message": "Client never presented an access token to the MCP server",
+          "name": "DpopAuthScheme",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-1932-client-fresh-proof",
+          "message": "Client never presented an access token to the MCP server",
+          "name": "DpopFreshProof",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-1932-client-as-nonce",
+          "message": "Client never presented a valid proof that was answered with a use_dpop_nonce challenge",
+          "name": "DpopAsNonce",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-1932-client-rs-nonce",
+          "message": "Client never made an MCP request with a valid proof that was answered with a use_dpop_nonce challenge",
+          "name": "DpopRsNonce",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": "extension",
+      "id": "auth/dpop-nonce",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/enterprise-managed-authorization-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 2,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 4
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "extension",
+        "owner": "ADR-003 (extension track, out of 2.0.0)",
+        "why": "An authorization EXTENSION, not scored by the frozen 2026-07-28 set — extensions are optional by definition (SEP-1730) — and doubly out of reach here: it is in the extension track AND in the authorization profile, either of which ADR-003 excludes from 2.0.0. It runs and is reported for visibility; failing it costs nothing against the conformance denominator."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "complete-flow-token-exchange",
+          "message": null,
+          "name": "CompleteFlowTokenExchange",
+          "status": "FAILURE"
+        },
+        {
+          "id": "complete-flow-jwt-bearer",
+          "message": null,
+          "name": "CompleteFlowJwtBearer",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": "extension",
+      "id": "auth/enterprise-managed-authorization",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/iss-normalized-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2468-client-no-normalization",
+          "message": null,
+          "name": "Client compares iss without URL normalization",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/iss-normalized",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/iss-not-advertised-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2468-client-proceed-no-iss",
+          "message": null,
+          "name": "Client proceeds when iss absent and not advertised",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/iss-not-advertised",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/iss-supported-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2468-client-compare-iss-supported",
+          "message": null,
+          "name": "Client accepts matching iss when advertised",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/iss-supported",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/iss-supported-missing-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2468-client-reject-missing-iss",
+          "message": null,
+          "name": "Client rejects missing iss when required",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/iss-supported-missing",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/iss-unexpected-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2468-client-compare-iss-unadvertised",
+          "message": null,
+          "name": "Client compares unadvertised iss and rejects mismatch",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/iss-unexpected",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/iss-wrong-issuer-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2468-client-compare-iss-supported",
+          "message": null,
+          "name": "Client rejects mismatched iss",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/iss-wrong-issuer",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/metadata-default-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 5,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 7
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "prm-pathbased-requested",
+          "message": null,
+          "name": "Expected Check Missing: prm-pathbased-requested",
+          "status": "FAILURE"
+        },
+        {
+          "id": "authorization-server-metadata",
+          "message": null,
+          "name": "Expected Check Missing: authorization-server-metadata",
+          "status": "FAILURE"
+        },
+        {
+          "id": "client-registration",
+          "message": null,
+          "name": "Expected Check Missing: client-registration",
+          "status": "FAILURE"
+        },
+        {
+          "id": "authorization-request",
+          "message": null,
+          "name": "Expected Check Missing: authorization-request",
+          "status": "FAILURE"
+        },
+        {
+          "id": "token-request",
+          "message": null,
+          "name": "Expected Check Missing: token-request",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/metadata-default",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/metadata-issuer-mismatch-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2468-client-validate-metadata-issuer",
+          "message": null,
+          "name": "Client validates metadata issuer against well-known URL",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/metadata-issuer-mismatch",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/metadata-var1-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 5,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 7
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "prm-pathbased-requested",
+          "message": null,
+          "name": "Expected Check Missing: prm-pathbased-requested",
+          "status": "FAILURE"
+        },
+        {
+          "id": "authorization-server-metadata",
+          "message": null,
+          "name": "Expected Check Missing: authorization-server-metadata",
+          "status": "FAILURE"
+        },
+        {
+          "id": "client-registration",
+          "message": null,
+          "name": "Expected Check Missing: client-registration",
+          "status": "FAILURE"
+        },
+        {
+          "id": "authorization-request",
+          "message": null,
+          "name": "Expected Check Missing: authorization-request",
+          "status": "FAILURE"
+        },
+        {
+          "id": "token-request",
+          "message": null,
+          "name": "Expected Check Missing: token-request",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/metadata-var1",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/metadata-var2-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 4,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 6
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "authorization-server-metadata",
+          "message": null,
+          "name": "Expected Check Missing: authorization-server-metadata",
+          "status": "FAILURE"
+        },
+        {
+          "id": "client-registration",
+          "message": null,
+          "name": "Expected Check Missing: client-registration",
+          "status": "FAILURE"
+        },
+        {
+          "id": "authorization-request",
+          "message": null,
+          "name": "Expected Check Missing: authorization-request",
+          "status": "FAILURE"
+        },
+        {
+          "id": "token-request",
+          "message": null,
+          "name": "Expected Check Missing: token-request",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/metadata-var2",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/metadata-var3-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 4,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 6
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "authorization-server-metadata",
+          "message": null,
+          "name": "Expected Check Missing: authorization-server-metadata",
+          "status": "FAILURE"
+        },
+        {
+          "id": "client-registration",
+          "message": null,
+          "name": "Expected Check Missing: client-registration",
+          "status": "FAILURE"
+        },
+        {
+          "id": "authorization-request",
+          "message": null,
+          "name": "Expected Check Missing: authorization-request",
+          "status": "FAILURE"
+        },
+        {
+          "id": "token-request",
+          "message": null,
+          "name": "Expected Check Missing: token-request",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/metadata-var3",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/offline-access-not-supported-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2207-offline-access-not-requested",
+          "message": null,
+          "name": "Client does not request unsupported offline_access",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/offline-access-not-supported",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/offline-access-scope-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 3,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 4
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2207-offline-access-requested",
+          "message": null,
+          "name": "Client requests offline_access scope",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/offline-access-scope",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/pre-registration-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "pre-registration-auth",
+          "message": null,
+          "name": "Pre-registration authentication",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/pre-registration",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/resource-mismatch-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 0,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 1,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": null,
+      "empty": false,
+      "failed_checks": [],
+      "harness_reason": null,
+      "id": "auth/resource-mismatch",
+      "leg": "client",
+      "passes": {
+        "client_summary": true,
+        "requirements_exit": true,
+        "server_summary": true,
+        "server_summary_or_client_summary": true
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/scope-from-scopes-supported-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "scope-from-scopes-supported",
+          "message": null,
+          "name": "Client scope selection from scopes_supported",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/scope-from-scopes-supported",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/scope-from-www-authenticate-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "scope-from-www-authenticate",
+          "message": null,
+          "name": "Client scope selection from WWW-Authenticate header",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/scope-from-www-authenticate",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/scope-omitted-when-undefined-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "scope-omitted-when-undefined",
+          "message": null,
+          "name": "Client scope omission when scopes_supported undefined",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/scope-omitted-when-undefined",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/scope-retry-limit-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "scope-retry-limit",
+          "message": null,
+          "name": "Client retry limit for scope escalation",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/scope-retry-limit",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/scope-step-up-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 3,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 5
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "scope-step-up-initial",
+          "message": null,
+          "name": "Client initial scope selection for step-up auth",
+          "status": "FAILURE"
+        },
+        {
+          "id": "scope-step-up-escalation",
+          "message": null,
+          "name": "Client scope escalation for step-up auth",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2350-scope-union-on-reauth",
+          "message": null,
+          "name": "Client accumulates previously-granted scopes on re-authorization",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/scope-step-up",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/token-endpoint-auth-basic-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 3,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 5
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "token-endpoint-auth-method",
+          "message": null,
+          "name": "Token endpoint authentication method",
+          "status": "FAILURE"
+        },
+        {
+          "id": "resource-parameter-in-authorization",
+          "message": null,
+          "name": "Resource parameter in authorization request",
+          "status": "FAILURE"
+        },
+        {
+          "id": "resource-parameter-in-token",
+          "message": null,
+          "name": "Resource parameter in token request",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/token-endpoint-auth-basic",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/token-endpoint-auth-none-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 3,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 5
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "token-endpoint-auth-method",
+          "message": null,
+          "name": "Token endpoint authentication method",
+          "status": "FAILURE"
+        },
+        {
+          "id": "resource-parameter-in-authorization",
+          "message": null,
+          "name": "Resource parameter in authorization request",
+          "status": "FAILURE"
+        },
+        {
+          "id": "resource-parameter-in-token",
+          "message": null,
+          "name": "Resource parameter in token request",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/token-endpoint-auth-none",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/token-endpoint-auth-post-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 3,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 5
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "out_of_scope_adr_003",
+        "owner": "ADR-003 (authorization profile, out of 2.0.0)",
+        "why": "The OAuth 2.1 authorization profile. This SDK's client has no authorization surface at all — no metadata discovery, no token acquisition, no WWW-Authenticate handling — so `client_adapter.exs` does not drive it and the scenario's fail-closed checks score it as never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: it carries at least one real FAILURE check, so the census records `empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, not a scenario that asked nothing, and its cost is zero because ADR-003 puts the profile out of 2.0.0 and for no other reason. The absence is NAMED rather than silent: `client_adapter.exs` reports the scenario as not driven on stderr, and it is enumerated here rather than counted. SCORED by the frozen set, so it is inside the raw n/32 and outside the in-scope figure — which is why the two are never printed without the exclusion between them."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "token-endpoint-auth-method",
+          "message": null,
+          "name": "Token endpoint authentication method",
+          "status": "FAILURE"
+        },
+        {
+          "id": "resource-parameter-in-authorization",
+          "message": null,
+          "name": "Resource parameter in authorization request",
+          "status": "FAILURE"
+        },
+        {
+          "id": "resource-parameter-in-token",
+          "message": null,
+          "name": "Resource parameter in token request",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "auth/token-endpoint-auth-post",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "auth/wif-jwt-bearer-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 2,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 3
+      },
+      "checks_source": "artefacts",
+      "classification": {
+        "class": "extension",
+        "owner": "ADR-003 (extension track, out of 2.0.0)",
+        "why": "An authorization EXTENSION, not scored by the frozen 2026-07-28 set — extensions are optional by definition (SEP-1730) — and doubly out of reach here: it is in the extension track AND in the authorization profile, either of which ADR-003 excludes from 2.0.0. It runs and is reported for visibility; failing it costs nothing against the conformance denominator."
+      },
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "wif-assertion-verified",
+          "message": null,
+          "name": "WifAssertionVerified",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": "extension",
+      "id": "auth/wif-jwt-bearer",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "http-custom-headers-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 5,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 5
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2243-client-supports-custom-headers",
+          "message": "Client did not send a tools/call request for test_custom_headers.",
+          "name": "NotObserved",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2243-client-mirrors-designated-params",
+          "message": "Client did not send a tools/call request for test_custom_headers.",
+          "name": "NotObserved",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2243-client-encode-values",
+          "message": "Client did not send a tools/call request for test_custom_headers.",
+          "name": "NotObserved",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2243-client-base64-unsafe",
+          "message": "Client did not send a tools/call request for test_custom_headers.",
+          "name": "NotObserved",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2243-client-omit-null",
+          "message": "Client did not send a tools/call request for test_custom_headers_null to test null/omitted parameter handling.",
+          "name": "NotObserved",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "http-custom-headers",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "http-invalid-tool-headers-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 2,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 10,
+        "WARNING": 0,
+        "total": 12
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2243-invalid-tool-tools-list-gate",
+          "message": "Client did not send a tools/list request.",
+          "name": "ClientInvalidToolHeadersToolsList",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2243-client-reject-invalid-tool",
+          "message": "Client did not call 'valid_tool'. A single malformed tool definition must not prevent other valid tools from being used.",
+          "name": "ClientKeepsValidTool",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "http-invalid-tool-headers",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "http-standard-headers-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 0,
+        "SKIPPED": 11,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 12
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2243-client-includes-standard-headers",
+          "message": "Missing Mcp-Method header on conformance/null-control request. Clients MUST include the Mcp-Method header on all POST requests.",
+          "name": "ClientMcpMethodHeader_conformance_null-control",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "http-standard-headers",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "json-schema-2020-12-preservation-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 2,
+        "INFO": 0,
+        "SKIPPED": 6,
+        "SUCCESS": 1,
+        "WARNING": 0,
+        "total": 9
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "json-schema-2020-12-client-tool-found",
+          "message": "Client never called tools/list; the scenario cannot observe schema preservation",
+          "name": "JsonSchema2020_12ClientToolFound",
+          "status": "FAILURE"
+        },
+        {
+          "id": "json-schema-2020-12-client-echo-completed",
+          "message": "Client did not echo back the inputSchema; downstream preservation checks are SKIPPED",
+          "name": "JsonSchema2020_12ClientEchoCompleted",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": "added-after-release",
+      "id": "json-schema-2020-12-preservation",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": false,
+      "threw": null
+    },
+    {
+      "artefact_dir": "json-schema-ref-no-deref-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 1
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2106-no-network-ref-deref",
+          "message": "Client did not call tools/list against a server advertising a tool with a network $ref",
+          "name": "NoNetworkRefDereference",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "json-schema-ref-no-deref",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "request-metadata-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 2,
+        "INFO": 0,
+        "SKIPPED": 4,
+        "SUCCESS": 0,
+        "WARNING": 2,
+        "total": 8
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2575-http-client-sends-version-header",
+          "message": null,
+          "name": "ClientSendsVersionHeader",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2575-client-populates-meta",
+          "message": null,
+          "name": "ClientPopulatesMeta",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2575-client-sends-client-info",
+          "message": null,
+          "name": "ClientSendsClientInfo",
+          "status": "WARNING"
+        },
+        {
+          "id": "sep-2575-client-retry-supported-version",
+          "message": null,
+          "name": "ClientRetrySupportedVersion",
+          "status": "WARNING"
+        }
+      ],
+      "harness_reason": null,
+      "id": "request-metadata",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "sep-2322-client-request-state-2026-08-21T07-25-34-969Z",
+      "checks": {
+        "FAILURE": 5,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 0,
+        "WARNING": 0,
+        "total": 5
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "sep-2322-client-request-state-echoed",
+          "message": null,
+          "name": "sep-2322-client-request-state-echoed",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2322-client-jsonrpc-id-different",
+          "message": null,
+          "name": "sep-2322-client-jsonrpc-id-different",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2322-client-no-state-omitted",
+          "message": null,
+          "name": "sep-2322-client-no-state-omitted",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2322-client-parallel-isolation",
+          "message": null,
+          "name": "sep-2322-client-parallel-isolation",
+          "status": "FAILURE"
+        },
+        {
+          "id": "sep-2322-default-result-type-complete",
+          "message": null,
+          "name": "sep-2322-default-result-type-complete",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "sep-2322-client-request-state",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    },
+    {
+      "artefact_dir": "tools_call-2026-08-21T07-25-34-968Z",
+      "checks": {
+        "FAILURE": 1,
+        "INFO": 0,
+        "SKIPPED": 0,
+        "SUCCESS": 1,
+        "WARNING": 0,
+        "total": 2
+      },
+      "checks_source": "artefacts",
+      "classification": null,
+      "control": null,
+      "empty": false,
+      "failed_checks": [
+        {
+          "id": "tool-add-numbers",
+          "message": null,
+          "name": "ToolAddNumbers",
+          "status": "FAILURE"
+        }
+      ],
+      "harness_reason": null,
+      "id": "tools_call",
+      "leg": "client",
+      "passes": {
+        "client_summary": false,
+        "requirements_exit": false,
+        "server_summary": false,
+        "server_summary_or_client_summary": false
+      },
+      "scored": true,
+      "threw": null
+    }
+  ],
+  "totals": {
+    "absentees": {
+      "not_scored": [],
+      "scored": []
+    },
+    "by_reducer": {
+      "client_summary": {
+        "all_ran": {
+          "failing": [
+            "auth/authorization-server-migration",
+            "auth/basic-cimd",
+            "auth/client-credentials-basic",
+            "auth/client-credentials-jwt",
+            "auth/dpop",
+            "auth/dpop-nonce",
+            "auth/enterprise-managed-authorization",
+            "auth/iss-normalized",
+            "auth/iss-not-advertised",
+            "auth/iss-supported",
+            "auth/iss-supported-missing",
+            "auth/iss-unexpected",
+            "auth/iss-wrong-issuer",
+            "auth/metadata-default",
+            "auth/metadata-issuer-mismatch",
+            "auth/metadata-var1",
+            "auth/metadata-var2",
+            "auth/metadata-var3",
+            "auth/offline-access-not-supported",
+            "auth/offline-access-scope",
+            "auth/pre-registration",
+            "auth/scope-from-scopes-supported",
+            "auth/scope-from-www-authenticate",
+            "auth/scope-omitted-when-undefined",
+            "auth/scope-retry-limit",
+            "auth/scope-step-up",
+            "auth/token-endpoint-auth-basic",
+            "auth/token-endpoint-auth-none",
+            "auth/token-endpoint-auth-post",
+            "auth/wif-jwt-bearer",
+            "http-custom-headers",
+            "http-invalid-tool-headers",
+            "http-standard-headers",
+            "json-schema-2020-12-preservation",
+            "json-schema-ref-no-deref",
+            "request-metadata",
+            "sep-2322-client-request-state",
+            "tools_call"
+          ],
+          "passed": 1,
+          "total": 39
+        },
+        "scored": {
+          "failing": [
+            "auth/authorization-server-migration",
+            "auth/basic-cimd",
+            "auth/iss-normalized",
+            "auth/iss-not-advertised",
+            "auth/iss-supported",
+            "auth/iss-supported-missing",
+            "auth/iss-unexpected",
+            "auth/iss-wrong-issuer",
+            "auth/metadata-default",
+            "auth/metadata-issuer-mismatch",
+            "auth/metadata-var1",
+            "auth/metadata-var2",
+            "auth/metadata-var3",
+            "auth/offline-access-not-supported",
+            "auth/offline-access-scope",
+            "auth/pre-registration",
+            "auth/scope-from-scopes-supported",
+            "auth/scope-from-www-authenticate",
+            "auth/scope-omitted-when-undefined",
+            "auth/scope-retry-limit",
+            "auth/scope-step-up",
+            "auth/token-endpoint-auth-basic",
+            "auth/token-endpoint-auth-none",
+            "auth/token-endpoint-auth-post",
+            "http-custom-headers",
+            "http-invalid-tool-headers",
+            "http-standard-headers",
+            "json-schema-ref-no-deref",
+            "request-metadata",
+            "sep-2322-client-request-state",
+            "tools_call"
+          ],
+          "passed": 1,
+          "total": 32
+        }
+      },
+      "requirements_exit": {
+        "all_ran": {
+          "failing": [
+            "auth/authorization-server-migration",
+            "auth/basic-cimd",
+            "auth/client-credentials-basic",
+            "auth/client-credentials-jwt",
+            "auth/dpop",
+            "auth/dpop-nonce",
+            "auth/enterprise-managed-authorization",
+            "auth/iss-normalized",
+            "auth/iss-not-advertised",
+            "auth/iss-supported",
+            "auth/iss-supported-missing",
+            "auth/iss-unexpected",
+            "auth/iss-wrong-issuer",
+            "auth/metadata-default",
+            "auth/metadata-issuer-mismatch",
+            "auth/metadata-var1",
+            "auth/metadata-var2",
+            "auth/metadata-var3",
+            "auth/offline-access-not-supported",
+            "auth/offline-access-scope",
+            "auth/pre-registration",
+            "auth/scope-from-scopes-supported",
+            "auth/scope-from-www-authenticate",
+            "auth/scope-omitted-when-undefined",
+            "auth/scope-retry-limit",
+            "auth/scope-step-up",
+            "auth/token-endpoint-auth-basic",
+            "auth/token-endpoint-auth-none",
+            "auth/token-endpoint-auth-post",
+            "auth/wif-jwt-bearer",
+            "http-custom-headers",
+            "http-invalid-tool-headers",
+            "http-standard-headers",
+            "json-schema-2020-12-preservation",
+            "json-schema-ref-no-deref",
+            "request-metadata",
+            "sep-2322-client-request-state",
+            "tools_call"
+          ],
+          "passed": 1,
+          "total": 39
+        },
+        "scored": {
+          "failing": [
+            "auth/authorization-server-migration",
+            "auth/basic-cimd",
+            "auth/iss-normalized",
+            "auth/iss-not-advertised",
+            "auth/iss-supported",
+            "auth/iss-supported-missing",
+            "auth/iss-unexpected",
+            "auth/iss-wrong-issuer",
+            "auth/metadata-default",
+            "auth/metadata-issuer-mismatch",
+            "auth/metadata-var1",
+            "auth/metadata-var2",
+            "auth/metadata-var3",
+            "auth/offline-access-not-supported",
+            "auth/offline-access-scope",
+            "auth/pre-registration",
+            "auth/scope-from-scopes-supported",
+            "auth/scope-from-www-authenticate",
+            "auth/scope-omitted-when-undefined",
+            "auth/scope-retry-limit",
+            "auth/scope-step-up",
+            "auth/token-endpoint-auth-basic",
+            "auth/token-endpoint-auth-none",
+            "auth/token-endpoint-auth-post",
+            "http-custom-headers",
+            "http-invalid-tool-headers",
+            "http-standard-headers",
+            "json-schema-ref-no-deref",
+            "request-metadata",
+            "sep-2322-client-request-state",
+            "tools_call"
+          ],
+          "passed": 1,
+          "total": 32
+        }
+      },
+      "server_summary": {
+        "all_ran": {
+          "failing": [
+            "auth/authorization-server-migration",
+            "auth/basic-cimd",
+            "auth/client-credentials-basic",
+            "auth/client-credentials-jwt",
+            "auth/dpop",
+            "auth/dpop-nonce",
+            "auth/enterprise-managed-authorization",
+            "auth/iss-normalized",
+            "auth/iss-not-advertised",
+            "auth/iss-supported",
+            "auth/iss-supported-missing",
+            "auth/iss-unexpected",
+            "auth/iss-wrong-issuer",
+            "auth/metadata-default",
+            "auth/metadata-issuer-mismatch",
+            "auth/metadata-var1",
+            "auth/metadata-var2",
+            "auth/metadata-var3",
+            "auth/offline-access-not-supported",
+            "auth/offline-access-scope",
+            "auth/pre-registration",
+            "auth/scope-from-scopes-supported",
+            "auth/scope-from-www-authenticate",
+            "auth/scope-omitted-when-undefined",
+            "auth/scope-retry-limit",
+            "auth/scope-step-up",
+            "auth/token-endpoint-auth-basic",
+            "auth/token-endpoint-auth-none",
+            "auth/token-endpoint-auth-post",
+            "auth/wif-jwt-bearer",
+            "http-custom-headers",
+            "http-invalid-tool-headers",
+            "http-standard-headers",
+            "json-schema-2020-12-preservation",
+            "json-schema-ref-no-deref",
+            "request-metadata",
+            "sep-2322-client-request-state",
+            "tools_call"
+          ],
+          "passed": 1,
+          "total": 39
+        },
+        "scored": {
+          "failing": [
+            "auth/authorization-server-migration",
+            "auth/basic-cimd",
+            "auth/iss-normalized",
+            "auth/iss-not-advertised",
+            "auth/iss-supported",
+            "auth/iss-supported-missing",
+            "auth/iss-unexpected",
+            "auth/iss-wrong-issuer",
+            "auth/metadata-default",
+            "auth/metadata-issuer-mismatch",
+            "auth/metadata-var1",
+            "auth/metadata-var2",
+            "auth/metadata-var3",
+            "auth/offline-access-not-supported",
+            "auth/offline-access-scope",
+            "auth/pre-registration",
+            "auth/scope-from-scopes-supported",
+            "auth/scope-from-www-authenticate",
+            "auth/scope-omitted-when-undefined",
+            "auth/scope-retry-limit",
+            "auth/scope-step-up",
+            "auth/token-endpoint-auth-basic",
+            "auth/token-endpoint-auth-none",
+            "auth/token-endpoint-auth-post",
+            "http-custom-headers",
+            "http-invalid-tool-headers",
+            "http-standard-headers",
+            "json-schema-ref-no-deref",
+            "request-metadata",
+            "sep-2322-client-request-state",
+            "tools_call"
+          ],
+          "passed": 1,
+          "total": 32
+        }
+      }
+    },
+    "checks": {
+      "all_ran": {
+        "FAILURE": 78,
+        "INFO": 63,
+        "SKIPPED": 21,
+        "SUCCESS": 15,
+        "WARNING": 2,
+        "total": 179
+      },
+      "scored": {
+        "FAILURE": 63,
+        "INFO": 51,
+        "SKIPPED": 15,
+        "SUCCESS": 14,
+        "WARNING": 2,
+        "total": 145
+      }
+    },
+    "classification": {
+      "by_class": {
+        "added_after_release": {
+          "count": 0,
+          "scenarios": []
+        },
+        "by_design_2025_11_25": {
+          "count": 0,
+          "scenarios": []
+        },
+        "extension": {
+          "count": 6,
+          "scenarios": [
+            "auth/client-credentials-basic",
+            "auth/client-credentials-jwt",
+            "auth/dpop",
+            "auth/dpop-nonce",
+            "auth/enterprise-managed-authorization",
+            "auth/wif-jwt-bearer"
+          ]
+        },
+        "out_of_scope_adr_003": {
+          "count": 24,
+          "scenarios": [
+            "auth/authorization-server-migration",
+            "auth/basic-cimd",
+            "auth/iss-normalized",
+            "auth/iss-not-advertised",
+            "auth/iss-supported",
+            "auth/iss-supported-missing",
+            "auth/iss-unexpected",
+            "auth/iss-wrong-issuer",
+            "auth/metadata-default",
+            "auth/metadata-issuer-mismatch",
+            "auth/metadata-var1",
+            "auth/metadata-var2",
+            "auth/metadata-var3",
+            "auth/offline-access-not-supported",
+            "auth/offline-access-scope",
+            "auth/pre-registration",
+            "auth/scope-from-scopes-supported",
+            "auth/scope-from-www-authenticate",
+            "auth/scope-omitted-when-undefined",
+            "auth/scope-retry-limit",
+            "auth/scope-step-up",
+            "auth/token-endpoint-auth-basic",
+            "auth/token-endpoint-auth-none",
+            "auth/token-endpoint-auth-post"
+          ]
+        },
+        "pending": {
+          "count": 0,
+          "scenarios": []
+        },
+        "real_gap": {
+          "count": 0,
+          "scenarios": []
+        }
+      },
+      "classified": 30
+    },
+    "control": null,
+    "empty_scenarios": {
+      "all_ran": [],
+      "scored": []
+    },
+    "expected_counts": {
+      "not_scored": 7,
+      "scored": 32
+    },
+    "thrown_scenarios": []
+  }
+}

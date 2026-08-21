@@ -13,7 +13,10 @@ defmodule Mix.Tasks.Conformance.Census do
     * `-o`, `--out` — where `census.json` goes. Defaults to `census.json`
       inside the run directory.
     * `--control` — a null-implementation run to join, so the passes a
-      do-nothing server also earns are visible rather than inherited.
+      do-nothing implementation also earns are visible rather than inherited.
+      Leg-neutral by construction: on a server census that control is a null
+      server, on a client census a null client, and the console output names
+      whichever the census's own `run.leg` says it is.
     * `--markdown` — also render the table to this path. It is rendered **from**
       the census, never written by hand: a committed table that can drift from
       the run it reports is MES-24's defect, and the only reliable fix is to
@@ -101,14 +104,21 @@ defmodule Mix.Tasks.Conformance.Census do
   defp scored(census), do: Enum.count(census["scenarios"], & &1["scored"])
 
   # A control gets no headline. The number that says how many scenarios a
-  # do-nothing server passes is meaningful only beside the measurement it
+  # do-nothing implementation passes is meaningful only beside the measurement it
   # disciplines; printed alone in the same shape as a conformance figure, it is
   # a rate waiting to be quoted as one.
+  #
+  # MES-57 round 4: "server" was hard-coded in three console strings here and
+  # printed over CLIENT-leg censuses, whose controls are null CLIENTS. Console
+  # output is not a published artefact, so this is outside the C3 sweep's set —
+  # but it is the same false statement, and the operator reading it is the one
+  # deciding whether the run is sound.
   defp headline(%{"run" => %{"role" => "control"}} = census) do
     tally = get_in(census, ["totals", "by_reducer", "requirements_exit", "scored"])
 
-    "  CONTROL — no headline. A do-nothing server passed #{tally["passed"]}/#{tally["total"]} " <>
-      "scored scenarios;\n                        that figure exists to be subtracted, not quoted."
+    "  CONTROL — no headline. A do-nothing #{null_noun(census)} passed " <>
+      "#{tally["passed"]}/#{tally["total"]} scored scenarios;\n" <>
+      "                        that figure exists to be subtracted, not quoted."
   end
 
   defp headline(census) do
@@ -125,17 +135,20 @@ defmodule Mix.Tasks.Conformance.Census do
     case get_in(census, ["totals", "control"]) do
       nil ->
         "\n      control           NOT JOINED — pass --control to state how many of those " <>
-          "passes a\n                        do-nothing server also earns"
+          "passes a\n                        do-nothing #{null_noun(census)} also earns"
 
       c ->
         "\n      control           #{length(c["discriminating"])} of those passes are ours " <>
           "alone; #{length(c["inherited"])} are also earned\n" <>
-          "                        by a do-nothing server (reducer #{c["reducer"]})\n" <>
+          "                        by a do-nothing #{null_noun(census)} (reducer #{c["reducer"]})\n" <>
           "      coverage          the control ran every scored scenario measured here — " <>
           "checked, not\n                        assumed: a gap refuses " <>
           "(CONTROL_MISSING_SCENARIOS) and nothing above\n                        is printed"
     end
   end
+
+  defp null_noun(%{"run" => %{"leg" => "client"}}), do: "client"
+  defp null_noun(_census), do: "server"
 
   defp refuse(run_dir, code, detail) do
     Mix.shell().error("""

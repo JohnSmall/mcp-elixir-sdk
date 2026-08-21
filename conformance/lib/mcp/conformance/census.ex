@@ -72,7 +72,16 @@ defmodule MCP.Conformance.Census do
   are evidence that the pass was made, not conditions anything can violate.
   """
 
-  alias MCP.Conformance.{Beacon, Classification, Console, Manifest, Provenance, RequirementSet}
+  alias MCP.Conformance.{
+    Adapters,
+    Beacon,
+    Classification,
+    Console,
+    Manifest,
+    Provenance,
+    RequirementSet,
+    RunIndex
+  }
 
   @census_schema_version 1
 
@@ -437,11 +446,12 @@ defmodule MCP.Conformance.Census do
          :ok <- corroborate_role(run_dir, m),
          {:ok, set} <- requirement_set(observed),
          :ok <- leg_in_requirement_set(m, set),
+         index = run_index(m, observed, set),
          {:ok, diff} <- Manifest.expected_diff(m, observed),
-         {:ok, scenarios} <- scenarios(run_dir, m, observed, set),
+         {:ok, scenarios} <- scenarios(run_dir, m, index, set),
          :ok <- corroborate_statuses(scenarios),
          :ok <- corroborate_reducer(m, observed, scenarios),
-         :ok <- corroborate_not_scored(m, observed, set),
+         :ok <- corroborate_not_scored(m, observed, index, set),
          {:ok, control} <- control(opts[:control]),
          :ok <- control_covers_measurement(scenarios, control) do
       census =
@@ -494,12 +504,13 @@ defmodule MCP.Conformance.Census do
   defp corroborate_role(run_dir, m) do
     claimed = m["invocation"]["adapter"]
 
-    case adapter_fragment(claimed) do
+    case Adapters.fragment(m["leg"], claimed) do
       nil ->
         refuse(
           :ADAPTER_UNKNOWN,
-          "invocation.adapter is #{inspect(claimed)}, which is not an adapter this tooling " <>
-            "can run, so the run's role cannot be established"
+          "invocation.adapter is #{inspect(claimed)} for leg #{inspect(m["leg"])}, which is " <>
+            "not an adapter this tooling can run on that leg, so the run's role cannot be " <>
+            "established. Admissible: #{inspect(Adapters.names(:server) ++ Adapters.names(:client))}"
         )
 
       fragment ->
@@ -520,10 +531,6 @@ defmodule MCP.Conformance.Census do
         end
     end
   end
-
-  defp adapter_fragment("sdk"), do: "server_adapter.exs"
-  defp adapter_fragment("null"), do: "null_server.py"
-  defp adapter_fragment(_), do: nil
 
   # MES-56 correction round 2. `m["leg"]` reaches the frozen set as
   # `Map.get(set.scored, m["leg"], [])`, and the manifest treats `leg` as
@@ -600,9 +607,9 @@ defmodule MCP.Conformance.Census do
   # If they disagree, one of us has misread the artefacts and no figure from
   # either is worth printing.
   defp corroborate_reducer(m, observed, scenarios) do
-    parsed = Console.parse(observed.console_body || "")
+    blocks = Console.blocks(observed.console_body || "")
     reducer = summary_reducer(m["leg"])
-    marks = Map.new(parsed.marks, &{&1.scenario, &1})
+    marks = Map.new(blocks.marks, &{&1.scenario, &1})
     by_id = Map.new(scenarios, &{&1["id"], &1})
 
     missing = Enum.sort(Map.keys(by_id) -- Map.keys(marks))
@@ -667,16 +674,21 @@ defmodule MCP.Conformance.Census do
   # A set entry whose scenario never ran at all is NOT this check's business:
   # that is an absentee, and `Manifest.expected_diff/2` already reports it as
   # `absent_not_scored`. Faulting it here too would give one defect two names.
-  defp corroborate_not_scored(m, observed, set) do
-    parsed = Console.parse(observed.console_body || "")
+  defp corroborate_not_scored(m, observed, index, set) do
+    blocks = Console.blocks(observed.console_body || "")
 
     expected =
       set.not_scored
       |> Enum.filter(&(&1.leg == m["leg"]))
       |> Map.new(&{&1.scenario, &1.reason})
 
-    ran = MapSet.new(Console.ran(parsed))
-    printed = Map.new(parsed.not_scored, &{&1.scenario, &1.reason})
+    # From the INDEX, not from `Console.ran/1`. On the client leg the console
+    # yields no mappings at all, so `ran` was the empty set and `set_only/4`
+    # could never fire — the check did not fail, it stopped being able to. A
+    # guard that cannot see is the same defect as a guard that is absent, and
+    # this one is harder to notice because it still reports :ok.
+    ran = MapSet.new(RunIndex.ran(index))
+    printed = Map.new(blocks.not_scored, &{&1.scenario, &1.reason})
 
     disagreements =
       Enum.flat_map(Enum.sort(Map.keys(printed)), &console_only(&1, printed, expected, m)) ++
@@ -733,7 +745,11 @@ defmodule MCP.Conformance.Census do
   # AC3. Enforced only for a measurement: a control exists to fail, and
   # demanding a rationale for each of its failures would be filing paperwork
   # against a straw man.
-  defp classify(%{"run" => %{"role" => "control"}} = census), do: {:ok, census}
+  # A control exists to fail, and a PROBE exists to fail differently on purpose:
+  # demanding a written rationale for each of their failures would be filing
+  # paperwork against a straw man. Only a MEASUREMENT owes one.
+  defp classify(%{"run" => %{"role" => role}} = census) when role != "measurement",
+    do: {:ok, census}
 
   defp classify(census) do
     scenarios = census["scenarios"]
@@ -779,7 +795,12 @@ defmodule MCP.Conformance.Census do
     %{
       "run_dir" => run_dir,
       "leg" => m["leg"],
-      "role" => if(m["invocation"]["adapter"] == "null", do: "control", else: "measurement"),
+      # From the adapter registry rather than a bare `== "null"`. The client leg
+      # has THREE nulls (`null_exit0`, `null_connect`, `null_request`), and a
+      # bare equality would have filed all three as measurements — a control
+      # reported as a measurement is the one mislabelling this whole tool exists
+      # to prevent.
+      "role" => Atom.to_string(Adapters.role(m["leg"], m["invocation"]["adapter"])),
       "adapter" => m["invocation"]["adapter"],
       "adapter_command" => m["invocation"]["adapter_command"],
       "commit" => m["git"]["commit_sha_start"],
@@ -815,6 +836,19 @@ defmodule MCP.Conformance.Census do
     }
   end
 
+  # One derivation, shared with `Manifest.judge/3` through `RunIndex` itself:
+  # the gate and the report must not be able to answer "what ran, and where are
+  # its results?" differently. On the server leg it delegates to `Console`
+  # unchanged; on the client leg it is the directory-name key.
+  defp run_index(m, observed, set) do
+    RunIndex.index(m["leg"],
+      console_body: observed.console_body || "",
+      run_dir: Map.get(observed, :run_dir) || m["invocation"]["out_dir"],
+      out_dir: m["invocation"]["out_dir"],
+      requirement_set: set
+    )
+  end
+
   defp requirement_set(observed) do
     case RequirementSet.parse(observed.requirements_body || "", observed.expected_body || "") do
       {:ok, set} -> {:ok, set}
@@ -822,11 +856,10 @@ defmodule MCP.Conformance.Census do
     end
   end
 
-  defp scenarios(run_dir, m, observed, set) do
-    parsed = Console.parse(observed.console_body || "")
+  defp scenarios(run_dir, m, index, set) do
     scored = MapSet.new(Map.get(set.scored, m["leg"], []))
 
-    parsed.mappings
+    index.mappings
     |> Enum.reduce_while({:ok, []}, fn mapping, {:ok, acc} ->
       case read_checks(run_dir, m, mapping) do
         {:ok, checks, source} ->
@@ -1056,7 +1089,28 @@ defmodule MCP.Conformance.Census do
       {:refused, code, detail} ->
         refuse(:CONTROL_REFUSED, "the control run at #{dir} was refused: #{code} — #{detail}")
 
-      {:ok, %{"invocation" => %{"adapter" => "null"}}} ->
+      {:ok, %{"leg" => leg, "invocation" => %{"adapter" => name}}}
+      when is_binary(leg) and is_binary(name) ->
+        control_by_role(dir, leg, name)
+
+      {:ok, m} ->
+        refuse(
+          :ADAPTER_UNKNOWN,
+          "#{dir} was joined as the null control but its leg (#{inspect(m["leg"])}) and " <>
+            "adapter (#{inspect(get_in(m, ["invocation", "adapter"]))}) are not both strings, " <>
+            "so its role cannot be established"
+        )
+    end
+  end
+
+  # The registry decides, so the client leg's three nulls are controls without
+  # anyone remembering to extend an equality test. A PROBE is refused here on
+  # purpose and with its own sentence: `strict_connect` is full of SDK, so
+  # joining it would compute "ours alone" against ourselves and license a
+  # subtraction that means nothing.
+  defp control_by_role(dir, leg, name) do
+    case Adapters.role(leg, name) do
+      :control ->
         case build(dir, []) do
           {:ok, census} ->
             {:ok, census}
@@ -1068,12 +1122,20 @@ defmodule MCP.Conformance.Census do
             )
         end
 
-      {:ok, m} ->
+      nil ->
+        refuse(
+          :ADAPTER_UNKNOWN,
+          "#{dir} was joined as the null control but its adapter #{inspect(name)} is not one " <>
+            "this tooling can run on leg #{inspect(leg)}, so its role cannot be established"
+        )
+
+      other_role ->
         refuse(
           :CONTROL_IS_NOT_A_CONTROL,
-          "#{dir} was joined as the null control but its adapter is " <>
-            "#{inspect(m["invocation"]["adapter"])}, so its role is measurement. Joining a " <>
-            "measurement to itself would report every scenario as undiscriminating"
+          "#{dir} was joined as the null control but its adapter #{inspect(name)} has role " <>
+            "#{inspect(other_role)}. Joining a #{other_role} run reports \"ours alone\" " <>
+            "against a run that contains the very SDK the subtraction is supposed to " <>
+            "exclude, which is not a subtraction"
         )
     end
   end

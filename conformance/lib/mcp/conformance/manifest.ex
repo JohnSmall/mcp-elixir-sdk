@@ -52,7 +52,7 @@ defmodule MCP.Conformance.Manifest do
   enumerated bound.
   """
 
-  alias MCP.Conformance.{Console, Provenance, RequirementSet}
+  alias MCP.Conformance.{Provenance, RequirementSet, RunIndex}
 
   # 1 -> 2 when MES-56 added the captured denominator. The bump RETIRES every
   # run written by MES-51's tooling: they carry no `expected.txt`, no
@@ -89,7 +89,21 @@ defmodule MCP.Conformance.Manifest do
   # later fails gate 5 rather than sliding in.
   @field_dispositions %{
     "schema_version" => :MANIFEST_UNREADABLE,
-    "leg" => :provenance_only,
+    # No longer provenance-only, as of MES-57. `judge/3` now DISPATCHES on it:
+    # the scenario -> artefact map is derived per leg by
+    # `MCP.Conformance.RunIndex`, and there is no generic derivation to fall
+    # back to. A null leg is therefore an operand a refusal condition would be
+    # judged against, and `check_complete/3` refuses it as incomplete rather
+    # than letting it reach the dispatch — which is the difference between
+    # "this manifest was not written by this tooling" and "this run's artefacts
+    # are inconsistent", two sentences that send a reader to different places.
+    #
+    # Closing this also closed a hole nobody had named: before the dispatch
+    # existed, `judge/3` read `leg` only as a key into the frozen set, with a
+    # `[]` default, so a run recording leg `"sever"` was ACCEPTED by the
+    # adjudicator with an empty scored set and no absentees. MES-56 caught that
+    # in the census (LEG_NOT_IN_REQUIREMENT_SET) and could not catch it here.
+    "leg" => :ARTEFACTS_INCONSISTENT,
     "git.commit_sha_start" => :COMMIT_MISMATCH,
     "git.commit_sha_end" => :COMMIT_MOVED_MID_RUN,
     "git.branch_start" => :provenance_only,
@@ -790,24 +804,24 @@ defmodule MCP.Conformance.Manifest do
   # directory being adjudicated, so an archived or copied run is judged on its
   # contents rather than on where it now sits.
   defp check_console_versus_disk(m, o) do
-    parsed = Console.parse(Map.get(o, :console_body) || "")
-    from_console = Console.dirs_relative(parsed, m["invocation"]["out_dir"])
+    index = run_index(m, o)
+    from_index = RunIndex.dirs_relative(index, m["invocation"]["out_dir"])
     recorded = Enum.sort(m["result"]["scenario_dirs"])
 
     cond do
-      parsed.faults != [] ->
+      index.faults != [] ->
         refuse(
           :ARTEFACTS_INCONSISTENT,
           "#{console_filename()} does not describe a well-formed run: " <>
-            Enum.join(parsed.faults, "; ")
+            Enum.join(index.faults, "; ")
         )
 
-      from_console != recorded ->
+      from_index != recorded ->
         refuse(
           :ARTEFACTS_INCONSISTENT,
-          "the scenario -> directory map in #{console_filename()} does not match the " <>
-            "directories enumerated on disk: #{inspect(only(from_console, recorded))} " <>
-            "named-but-not-enumerated, #{inspect(only(recorded, from_console))} " <>
+          "the scenario -> directory map for the #{m["leg"]} leg does not match the " <>
+            "directories enumerated on disk: #{inspect(only(from_index, recorded))} " <>
+            "named-but-not-enumerated, #{inspect(only(recorded, from_index))} " <>
             "enumerated-but-unnamed. Every per-scenario figure is attributed through that " <>
             "map, so a disagreement is a mis-attribution waiting to be quoted"
         )
@@ -870,9 +884,32 @@ defmodule MCP.Conformance.Manifest do
              Map.get(o, :requirements_body) || "",
              Map.get(o, :expected_body) || ""
            ) do
-      ran = Console.ran(Console.parse(Map.get(o, :console_body) || ""))
+      ran = RunIndex.ran(run_index(m, o, set))
       {:ok, RequirementSet.diff(set, m["leg"], ran)}
     end
+  end
+
+  # The one derivation, reached from both call sites in this module. The frozen
+  # set is parsed here when the caller has not already got it: the client leg's
+  # key IS the set, so an index built without one names nothing (`RunIndex` says
+  # so as a fault rather than returning an empty map that reads as "clean").
+  defp run_index(m, o, set \\ nil) do
+    set =
+      set ||
+        case RequirementSet.parse(
+               Map.get(o, :requirements_body) || "",
+               Map.get(o, :expected_body) || ""
+             ) do
+          {:ok, parsed} -> parsed
+          {:error, _} -> nil
+        end
+
+    RunIndex.index(m["leg"],
+      console_body: Map.get(o, :console_body) || "",
+      run_dir: Map.get(o, :run_dir) || m["invocation"]["out_dir"],
+      out_dir: m["invocation"]["out_dir"],
+      requirement_set: set
+    )
   end
 
   defp only(a, b), do: Enum.take(a -- b, 5)

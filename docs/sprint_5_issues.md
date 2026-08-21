@@ -1128,14 +1128,23 @@ stated in the moduledoc as a table, and every cell must be one of
 * *enforced by* a named function,
 * *vacuous* for a stated reason (`mappings` **are** the ground truth membership
   is checked against),
-* *bounded* for a stated reason (the client leg has no scenario headers, so
-  every mark and every not-scored line is an orphan by construction and
-  `parallel_leg_faults/1` refuses that console whole).
+* *bounded* for a stated reason (at the time: the client leg has no scenario
+  headers, so every mark and every not-scored line is an orphan by construction
+  and `parallel_leg_faults/1` refuses that console whole).
 
 A cell that is none of the three is a defect, and the table makes it visible in
 the source rather than a review round later. When the table is complete there is
 no next sibling for the question to find, because the question's domain is the
 return map.
+
+> **Superseded in part, MES-57 round 2 — see S5-24.** The *bounded* example
+> above is no longer true of the delivered source. `RunIndex` made client runs
+> adjudicable, `announced/1` was taught the client leg's `Starting scenario:`
+> header, and both membership cells are now *enforced* on both legs. The
+> example is left in place because the point it illustrates — that "bounded for
+> a stated reason" is an admissible cell — survives; what it demonstrates in
+> passing is that such a reason is a claim about the world and can lapse
+> without anyone touching the cell.
 
 > **Superseded in part, MES-56 round 5 — see S5-21.** This entry originally
 > gave `totals` as a second *vacuous* example, on the ground that it keys on
@@ -1304,3 +1313,579 @@ another field; if so, derive it in the fixture too, and have a spoiling probe
 correct the derived fields it disturbs. Otherwise the first guard that checks
 the derivation will silently re-point your whole control set at itself — and the
 table of refusals will not change colour when it does.
+
+---
+
+## S5-23 — The client leg's ~39 adapters append to ONE `beacon.jsonl` concurrently, and an interleaved write would corrupt the PROVENANCE while every figure still looked right
+
+**Found:** MES-57, 2026-08-21, by the CODE_CREATOR at plan time; recorded at the
+PM's instruction as a genuine new finding.
+**Status:** checked and reported on every MES-57 run; 0 foreign and 0
+unparseable lines on all five. Not fixed, because there is nothing yet to fix —
+see "what would have to change".
+
+### The defect
+
+`MCP.Conformance.Beacon` was designed against the SERVER leg, where exactly one
+adapter process starts, emits one line, and runs for the whole run. It is a
+**single-writer** assumption, and nothing in the module states it.
+
+The client leg violates it by construction. The harness spawns one adapter
+process *per scenario*, all inside one `Promise.all`, so on this suite **39
+processes append to one file at once**. An interleaved append would produce a
+line whose JSON does not parse, or two half-lines that parse as one.
+
+### Why it is worth its own entry
+
+Because of **which** thing it breaks. A corrupted beacon does not move a single
+conformance figure: the scores come from `checks.json`, which each scenario
+writes to its own directory. What it breaks is the **attestation underneath**
+them — `adapter_count`, and `adapter_sources`, which is how
+`Census.corroborate_role/2` tells a control run from a measurement run without
+taking the manifest's word for it.
+
+So the failure mode is a run whose numbers are all correct and whose evidence
+that they measured *this SDK* is quietly gone. That is the inverse of the usual
+hazard, and it is why nothing was looking: every existing check is aimed at the
+figures.
+
+### Why it did not fire
+
+POSIX `O_APPEND` writes below `PIPE_BUF` (4096 bytes on Linux) are atomic, and a
+beacon line is ~200 bytes. So the current shape is safe *by accident of size*,
+not by design — nothing in `Beacon` bounds the line length, and `source` is an
+absolute path.
+
+### What is in place now
+
+`Manifest.judge/3` already refuses a run with `foreign_lines > 0` or
+`unparseable_lines > 0` (both `ARTEFACTS_INCONSISTENT`). MES-57 checks and
+**reports** both on every run rather than relying on the refusal being silent
+when it passes: "checked, and zero" and "never asked" read identically when only
+the answer is printed.
+
+### What would have to change
+
+If a future beacon line grows past `PIPE_BUF` — a longer `source`, an added
+field, a deeper path — atomicity is lost with no warning and no test would
+notice. The fix at that point is a bounded line length asserted at emit time,
+not a lock. **Do not add a lock now**: it would serialise 39 adapters to buy a
+guarantee the platform already gives at this size.
+
+### Transferable form
+
+When a tool grows a second execution shape, ask which of its assumptions were
+about the *first* shape's concurrency. Then ask what the violation would damage:
+if the answer is "the evidence rather than the result", nothing that watches the
+result will ever tell you.
+
+---
+
+## S5-24 — A guard's stated justification can LAPSE without the guard changing, and a lapsed justification reads as considered
+
+**Found:** MES-57, 2026-08-21, by the CODE_CREATOR.
+**Recurred:** MES-57 review round 1, same file, found by the CODE_REVIEWER —
+see *Recurrence* below.
+**Recurred again:** MES-57 review round 2, same file, found by the
+CODE_REVIEWER — and by a **different mechanism**, which is why the transferable
+form below has two shapes rather than one. See *Second shape* below.
+**Recurred a third time:** MES-57 review round 3, found by the CODE_REVIEWER,
+and this one is the subclass that matters: **it was GENERATED INTO A PUBLISHED
+ARTEFACT rather than read by a human.** The first two instances were comments
+and prose a reader might trip over; this one was a string the renderer wrote
+into `docs/conformance/*.json`, which MES-58 publishes. Same family, larger
+blast radius. See *Third shape* below.
+**Recurred a fourth time:** MES-57 review round 4, found by the CODE_REVIEWER,
+and the distinguishing feature is one emitter boundary out from round 4's own
+sweep: **the sweep found what the code prints when it RUNS, and missed what it
+prints when asked to DESCRIBE ITSELF.** See *Fourth shape* below.
+**Status:** fixed — `Console.announced/1` now reads both legs' header shapes,
+the membership arms are live on both, the prose stating the lapsed bound has
+been corrected in seven places, the one sentence that round-2's own rewriting
+re-pointed has been corrected in round 3, and round 4 corrected the two
+published strings (`@auth_scored_why`, the markdown control section) plus six
+non-published siblings of the same claim — three in `client_adapter.exs` (two
+comments and the `NOT DRIVEN` stderr message) and three console strings in
+`mix conformance.census`, which printed "a do-nothing server" over client-leg
+censuses whose controls are null clients. Round 5 corrected the same
+noun where the task *documents* it — `mix conformance.census`'s `--control`
+option description, printed by `mix help` — and one sibling the same sweep
+turned up, `mix conformance.run`'s usage line, which enumerated the adapter
+names as `sdk|null` (the SERVER leg's set) to operators of both legs.
+
+### The defect
+
+`MCP.Conformance.Console` suppressed two membership checks — orphaned SUMMARY
+marks and orphaned not-scored entries — on a client console, with an explicit
+and, at the time, correct justification:
+
+> Same client-leg bound as `mark_faults/3`, for the same reason: with no
+> `=== Running scenario:` headers every line here is an orphan by construction
+> [...] **The console is refused either way, so the bound costs a diagnosis and
+> never a verdict.**
+
+That last sentence was the whole argument, and it was true only because
+`parallel_leg_faults/1` refused every client console outright. MES-57's
+`RunIndex` made client runs adjudicable. The moment it did, the justification
+became false — and **not one character of the comment or the code had to change
+for that to happen**.
+
+### Why this class is hard to catch
+
+A stale comment that contradicts its code is findable: the two disagree. This
+one did not contradict its code. It described the code correctly and was wrong
+about the *world*, and the world was changed by a different file. A reader
+reviewing `Console` in isolation would have found nothing wrong, and a reader
+reviewing `RunIndex` had no reason to open `Console`.
+
+Left alone, the client leg would have shipped with two membership guards dark
+and a comment explaining why that was safe — which is worse than no guard,
+because it reads as considered.
+
+### The fix, and why it is byte-safe on the other leg
+
+`announced/1` now recognises the client leg's `Starting scenario:` header as
+well as the server's `=== Running scenario: ... ===`. Both are MEMBERSHIP facts
+and neither is an ORDER fact, so this does not reintroduce the positional
+reading MES-57 exists to rule out. `attributable?` became
+`parallel_leg == [] or announced != ∅`, whose first disjunct decides every
+server console exactly as before — MES-56's three committed artefacts re-render
+byte-identically.
+
+### Recurrence, in the same file and in the same round
+
+The fix above changed the mechanism and left the **prose that stated the old
+bound** standing: the moduledoc's block × guarantee table (the `marks` and
+`not_scored` membership cells) and the two helper comments still said membership
+was bounded on the client leg because there are no headers and the console is
+refused either way. The CODE_REVIEWER found three sites by reading. So the same
+lapse happened twice, in one file, in one ticket — and the second time the
+sentence was falsified by *this entry's own fix*.
+
+That is the mechanism working exactly as described rather than a second,
+different defect. It is worth recording because of what it says about the
+remedy: fixing the guard does not discharge the claim, because the claim lives
+somewhere the compiler never reads. A sweep of `conformance/` for the same claim
+shape found **four more** beyond the reviewer's three — the moduledoc's
+"this parser is SERVER-LEG ONLY" heading and its closing paragraph, a
+name-parsing sentence written before `RunIndex` existed to do it safely, the
+`parallel_leg_faults/1` fault message, and a `total_sum_faults/3` comment — all
+of which asserted the pre-`RunIndex` state of the world. One published claim
+outside `conformance/` was superseded too: S5-20's *bounded* example.
+
+Two things follow, and only the first was in this ticket's scope. **A reviewer
+finding one instance bounds nothing** — the count was seven, not three, and the
+gap between those numbers is the whole argument for enumerating rather than
+patching. And the class wants a machine check: **MES-60** is raised for that
+over `lib/`. This sweep suggests it should cover `conformance/` too, and that
+the check worth having is not spell-checking prose but binding a named claim to
+a named function, since every one of the seven sites cited a real function
+correctly while describing a world that had changed.
+
+### Second shape: the correction falsified a TRUE neighbour by moving what its pronoun bound to
+
+Round 2's sweep asked one question — *which sentences assert the pre-`RunIndex`
+state of the world?* — and answered it thoroughly: seven, against the
+reviewer's three. Round 2 was nonetheless BLOCKING, on an eighth site the
+question could not have found, because that site **asserts nothing false on its
+own**.
+
+`console.ex`'s first moduledoc bullet ended "On this leg the console states the
+mapping outright and is therefore the only non-guessing key." That sentence is
+true of the **server** leg and always was. What changed is the sentence before
+it: round 2 rewrote the preceding clause to describe the CLIENT leg's key
+(`RunIndex`, exact-match against the frozen set), so "this leg" — whose
+referent is supplied by the neighbouring prose rather than stated — silently
+re-bound to *client*, where the same file says the opposite. **The fix created
+the defect**, in text the fix did not touch.
+
+Round 3 swept `conformance/` for that second shape: every deictic whose
+referent comes from neighbouring prose — *this/that leg*, *this/that
+block/cell/section*, *the former/the latter*, *this one*, *these two*, *the
+same &lt;noun&gt;*. **39 sites examined, 1 wrong** — the one above. The other 38
+bind to what they bound to before, and 15 of the 39 have a LEG as their
+referent, which is the class this ticket's change could move. No *former*/
+*latter* appears anywhere in the tree.
+
+A third shape was searched for in the same round rather than left for a fourth:
+**a count or ordinal referring into a neighbouring list, which an edit to the
+list falsifies without touching the sentence.** Two sites, neither a live
+defect: `console.ex`'s "only the first two bullets" (true; the bullets are now
+NAMED as the mapping-block ones so a reorder cannot falsify it) and
+`classification.ex`'s source count — recorded separately as S5-28.
+
+### Transferable form
+
+When a guard is deliberately narrowed, its justification is a claim about
+something OUTSIDE the file. Write down which fact it depends on, and when a
+later ticket changes that fact, grep for the guards that were resting on it. Ask
+of every bounded check: *what would have to become true for this bound to be
+wrong?* — and then notice when your own ticket makes it true.
+
+And when you fix such a guard, the fix is not done at the code: **grep for the
+sentences that were resting on the old bound, including the ones you wrote
+yourself in the same ticket.** Report the count, including zero — "I looked and
+found none" is a result, and "a reviewer found three" is not a bound.
+
+That is shape one, and it is the incomplete half. Shape two is the more useful
+one and it cost three review rounds to learn: **a correction can falsify a
+neighbouring sentence that was true and that you never touched, by moving what
+its pronouns bind to.** So re-read the PARAGRAPHS you edited, not only the
+CLAIMS you edited — a deictic (*this leg*, *that block*, *the same reason*)
+takes its referent from whatever now sits beside it, and rewriting the
+neighbour re-points it in silence. The generalisation of both shapes: a
+sentence's truth can depend on text outside it, so the unit of review after a
+correction is the passage, not the diff.
+
+### Third shape — the string that LEAVES THE REPO, and the sweep that closes over it
+
+Rounds 1-3 each found a false claim of this family by searching **by shape**:
+what kind of sentence goes wrong. Round 4's finding says that was the wrong
+axis. `@auth_scored_why` in `classification.ex` said the scored `auth/*`
+failures "are an EMPTY" and that "the census marks `empty`". Both halves were
+false, and the artefact contradicted them **in the same object**: the scenario
+carries `empty: false`, `totals.empty_scenarios` is `[]`, and the rendered row
+prints `empty | no`.
+
+What makes it the worst instance is not that it was wrong for longer. It is
+that **the run had already falsified it and everything else was corrected**:
+round 1's close-out says, in as many words, "There are ZERO empty scenarios on
+this leg. My plan's R7 paragraph was wrong... they are not empty, each carries
+real FAILURE checks." The plan, the understanding, the delta document and the
+register were all fixed on that finding. The one thing left standing was the
+string the RENDERER emits.
+
+So the closing sweep is by **blast radius**, not by shape, and it is a closed
+set rather than a judgement about where to look: **every human-written string a
+renderer or classification table emits into a published artefact.** Enumerate
+it from the code that emits it, and check each against the data it accompanies.
+
+**The sweep, MES-57 round 4: 29 units in the set, 2 false, both fixed.** The set
+is closed and enumerable from the emitters: **14 distinct human-written string
+VALUES** reaching the committed JSON (7 classification `why`, 4 classification
+`owner`, 3 reducer `source`) and **15 prose PASSAGES** in the two Markdown
+renderers (9 in `Census.Markdown`, 6 in `Discounts.to_markdown/2`). Everything
+else that is prose in those artefacts is the harness's own — `failed_checks`
+`name` and `message` — and is not ours to check. `delta-vs-sprint-4.md` is
+outside the set by construction: it is hand-written and says so in its first
+line.
+
+The two false ones were `@auth_scored_why` (above) and `Census.Markdown`'s
+null-control paragraph, which described **"a server that answers `-32601` to
+every method"** two lines above a bullet naming `null_client_connect.py` — a
+Python **null client** that opens a TCP socket, sends no byte and exits 0.
+Leg-blind renderer prose, rendered into the client census; the server leg's
+wording is unchanged and MES-56's three artefacts re-render byte-identically
+from their own run directories.
+
+The remaining 27 hold, with two recorded as imprecise-but-not-false rather than
+silently passed (below). The
+three reducer `source` strings were re-verified against the harness
+`dist/index.js` whose sha256 matches the one the run recorded: the requirements
+exit is `+!!scored.some(...FAILURE)`, the server mark is `failed === 0 ? ✓ : ✗`,
+and the client suite exit is `+(failed > 0 || warnings > 0)`. All three hold.
+
+**The two imprecise ones, reported rather than changed.** (1)
+`Census.Markdown`'s reducer section opens "the harness applies three different
+rules and they do not agree" — true of the rules, and on the client measurement
+run all three rows read `8/32`, so the sentence sits above a table that agrees.
+It is a claim about the reducers, not about the run, and rewriting it would
+weaken the reason it exists. (2) `delta-vs-sprint-4.md` says "There are ZERO
+empty scenarios on this leg"; that is true of the MEASUREMENT run and of
+`null-request`, and false of the other three client runs, where
+`http-standard-headers` is an empty. The next sentence names
+`totals.empty_scenarios`, which disambiguates it to one census. Both are left
+for the PM to rule on: neither moves a number, and the file in (2) is
+hand-written and outside this sweep's set.
+
+### The near-miss, which is the part worth keeping
+
+The obvious replacement for `@auth_scored_why` was to state the corrected fact
+the way every other artefact states it: *`empty_scenarios` is `[]` on this leg*.
+**That would have committed the same defect again, and in more files.** A
+classification reason is rendered into **every** census that contains the
+scenario — here five: the measurement, three null controls and the
+strict-connect probe. `empty_scenarios` is `[]` in two of them and contains
+`http-standard-headers` in the other three, because a null client passes that
+scenario on eleven SKIPPED checks and no FAILURE, which is the definition of an
+empty.
+
+**Transferable:** a string attached to a SCENARIO may assert only what is true
+of that scenario in every run the string can be rendered into. A run-level fact
+belongs in a run-level field. Before writing a corrected claim, ask *how many
+artefacts does this render into, and is it true in all of them?* — the check
+that caught this was mechanical: all 5 x 24 = 120 entries carry >= 1 FAILURE
+check and `empty: false`. It also killed a second tempting phrasing, "no SUCCESS
+checks", which is false for `auth/authorization-server-migration` (2 SUCCESS, in
+every run).
+
+### What now guards it, and what does not
+
+`ClassificationTest` gained the JSON counterpart of the markdown projection
+test: every classification block in every committed census must equal
+`Classification.fetch/1`. Mutating either side fails it, both directions
+checked. **It proves derivation, not truth** — round 4's defect was a false
+claim faithfully copied into five artefacts and this test would have been green
+the whole time. Nothing mechanical catches a reason that is simply wrong. That
+is why this is a register entry, and it is the strongest evidence yet for
+MES-60.
+
+### Fourth shape — what the code prints when it RUNS vs. what it prints when asked to DESCRIBE ITSELF
+
+Round 4 swept the console strings `mix conformance.census` emits **at runtime**
+and corrected three: each said "a do-nothing server" where a client census's
+control is a null client. The fix was real and it was verified by re-running the
+task. It was also bounded by the emitter it was searched in.
+
+A mix task has a **second** emitter that no amount of running it exercises: the
+`@shortdoc`, `@moduledoc` and option descriptions that `mix help TASK` prints —
+what the task documents *about itself*. `conformance.census`'s `--control`
+option still read "so the passes a do-nothing **server** also earns are visible",
+and `mix help conformance.census` printed it verbatim. Same sentence, same
+falsity on the client leg, different emitter — so a sweep keyed on *runtime
+output* could not see it however carefully it was run.
+
+**The sibling the boundary-crossing turned up.** Checking every mix task in the
+project rather than only the one under correction found a second instance of the
+class in a task nobody had touched this round: `mix conformance.run`'s `@usage`
+line enumerated `[--adapter sdk|null]`. `null` is the SERVER leg's control; the
+client leg's adapters are `null_exit0`, `null_connect`, `null_request`,
+`strict_connect` and `sdk`. An operator on the client leg following the printed
+usage got a raise. That line is doubly instructive: it is printed **at runtime**
+(with any usage rejection) *and* it documents the options, so it sits in both
+emitters and had been missed by sweeps of each. Fixed by not restating a per-leg
+enum in a leg-neutral line at all — the admissible set is already printed, per
+leg, from `MCP.Conformance.Adapters.names/1`, at the point where it can be
+correct.
+
+**Enumerated, because a count is only evidence if the set is closed.** The
+project has exactly four mix tasks — `grep "use Mix.Task"` over the tree outside
+`deps/` and `_build/` returns `conformance.adjudicate`, `conformance.census`,
+`conformance.discounts`, `conformance.run`, and nothing else. All four had their
+`@shortdoc`, `@moduledoc`, option descriptions and `@usage` read. **Two carried
+the defect** (census, run — both fixed); `adjudicate` names a leg only inside an
+example run-directory path (`.../server-20260820T193000Z`), which is an
+invocation and not a claim; `discounts` names the client leg throughout and is
+client-only by construction
+(it reads `client_summary` and hardcodes `Adapters.scope(:client,
+"strict_connect")`), so its leg nouns are true rather than leaked.
+
+**Considered and left, with the reason stated.** (1) `conformance.census`'s two
+`@moduledoc` examples both write to `server-2026-07-28.*` paths, and
+`conformance.adjudicate`'s example adjudicates a `server-*` run directory. An
+example is a valid invocation, not a universal claim, so none of the three is
+false — but the file is
+the reason the leg-skew keeps recurring: server is this codebase's default noun
+and the examples are where a reader learns it. (2) `mix conformance.discounts`
+prints a `CLIENT LEG` header derived from nothing in the census it was handed;
+its `read!/2` checks `run.role` (measurement / control / probe) and never
+`run.leg`, so a *server* measurement census would be accepted and reported under
+a client-leg heading. Not blocking and no committed number depends on it — the
+one pipeline that invokes the task passes client censuses — but it is the same
+hardcoded-leg-noun shape one layer down, and a `run.leg` check in `read!/2`
+would close it by construction. Both are outside round 5's ratified contract and
+are recorded here for the PM to rule on rather than absorbed silently.
+
+**Transferable, and this is the generalisation of all four shapes:** when a
+false claim is found, the question is not only *what shape of sentence went
+wrong* (rounds 1-3) or *how far does it travel* (round 4), but **which emitters
+can utter it**. Runtime output, generated artefacts and self-documentation are
+three different emitters over the same source strings, and a sweep names one of
+them whether or not its author noticed choosing.
+
+---
+
+## S5-25 — Reading a NARROW instrument as a wide one produced a catastrophic-looking headline with no bug anywhere
+
+**Found:** MES-57, 2026-08-21, by the CODE_CREATOR — from the first output the
+derivation produced.
+**Status:** fixed; the probe's scope is declared once in
+`MCP.Conformance.Adapters` and `Discounts.derive/1` refuses a probe given
+without one.
+
+### The defect
+
+The drive-policy discount is established by a PROBE: the SDK client driven under
+one changed policy (halt on a `connect/1` error). The probe drives **one**
+scenario — the only one the claim is about — and takes its not-driven path for
+the other 38, exiting 0 so the fail-closed checks decide.
+
+The first derivation compared the probe's whole sheet against the measurement's
+and subtracted every scenario the probe did not pass. That removed 6 of 7
+in-scope scenarios and reported the client leg as **0 of 7**.
+
+Nothing was broken. The probe was correct, the measurement was correct, the
+censuses were correct and both runs were ACCEPTED. The number was manufactured
+entirely by reading "said nothing" as "failed".
+
+### Why it would have survived review
+
+**Its shape is right.** It is a subtraction, over the correct denominator, under
+the correct reducer, computed from adjudicated runs, with every scenario named.
+Every discipline this project enforces was satisfied. A reader checking the
+arithmetic would have found it sound.
+
+The only thing wrong was the *width of the instrument*, which is not a number
+and appears nowhere in either census. And "0 of 7" is a plausible thing for a
+conformance report to say.
+
+### The fix
+
+`scope` is now a field of the adapter registry: `:all`, or the explicit list.
+Two consumers read the same declaration — the probe, to decide what to drive,
+and the derivation, to decide what silence means — so they cannot disagree.
+`derive/1` **raises** on a probe supplied without a scope rather than defaulting
+to `:all`, because a default would have made the wrong reading the quiet one.
+
+### Transferable form
+
+Before subtracting one run from another, ask whether both were asked the same
+questions. `Census.control_covers_measurement/2` already enforces exactly this
+for the null control — it refuses a control that did not run every scored
+scenario the measurement did — and the probe comparison was a second instance of
+that concept with no such check. **When a guard exists for one comparison, look
+for the comparison it does not cover.**
+
+---
+
+## S5-26 — The null control's own inversion bites the DISCOUNT computed from it, so "which null" is a number-moving choice
+
+**Found:** MES-57, 2026-08-21, by the CODE_CREATOR, while deriving discount 2.
+**Status:** treated — the discount takes the union over all three nulls, and each
+null's own figure is reported separately.
+
+### The finding
+
+On the client leg a **stricter** null scores **lower**: measured on this tree at
+`f4be9eb`, `null_exit0` 2/32, `null_connect` 2/32, `null_request` **1/32**. The
+mechanism is that for a do-nothing client `http-standard-headers` is a pass
+assembled from **eleven SKIPPED checks and not one that could fail**; the
+strictest null sends one request, a twelfth check appears, and it fails.
+
+That inversion is already known. What is new is that it propagates into the
+**discount**. The null-passable subtraction removes any in-scope scenario a null
+also passes, and the only such scenario is `http-standard-headers`:
+
+* union over all three nulls → `http-standard-headers` subtracted → **5 of 7**;
+* `null_request` alone → it FAILS there, nothing is subtracted → **6 of 7**.
+
+So the headline moves by one on a choice that looks like housekeeping, and the
+flattering choice is the one that sounds most rigorous — "we used the strictest
+null".
+
+### Treatment
+
+Take the **union**: a scenario is null-passable if *any* null passes it. That is
+the reading least flattering to the SDK, and it is the one Sprint 4's figure was
+computed under, so the two remain comparable. Report each null separately beside
+it so the choice is visible rather than folded into the number.
+
+### Transferable form
+
+When a control set is not totally ordered by strength, "the control" is not a
+value and any function of it is a choice. Enumerate the controls, state the
+aggregation rule, and check whether the flattering answer is the one that sounds
+most rigorous — because that is the one that gets published without argument.
+
+---
+
+## S5-27 — A documented procedure a seat cannot execute: the gate-6a cleanup line is rejected by the local command guard
+
+**Found:** MES-57 review round 2, 2026-08-21, by the CODE_REVIEWER, while
+running gate 6.
+**Status:** recorded, deliberately NOT fixed here. The PM holds the decision on
+whether `CLAUDE.md`'s snippet is amended; MES-57 was instructed not to change
+`CLAUDE.md`.
+
+### The finding
+
+`CLAUDE.md`'s gate-6a snippet ends with a cleanup line that removes the
+temporary positive-control checkout it created. The CODE_REVIEWER ran gate 6a
+at `b2787da`, and the **local command guard refused that cleanup form**, so the
+directory `/tmp/mes57-gate6a.MaAnOC` was left behind. The gate itself passed —
+all 22 baseline advisory ids present — so nothing about the advisory result is
+in doubt.
+
+**It is per-seat, not universal — measured rather than assumed.** The
+CODE_CREATOR ran the same cleanup form on its own gate-6a control directory in
+round 3 and it succeeded (exit 0, directory gone). So the snippet is not
+unrunnable in this container; it is runnable under one seat's command guard and
+refused under another's. That distinction decides the remedy: rewriting the
+snippet would be fixing the wrong thing if the guards are simply configured
+differently, and the question to answer first is which guard is right.
+CR's directory has deliberately been left in place, since it is the evidence.
+
+### Why it is worth an entry rather than a shrug
+
+A litter directory is trivial. **A DoD procedure that a seat cannot run as
+written is not**, and the two are easy to confuse because the visible symptom is
+the trivial one. The gate-6 snippet is the most-copied block in `CLAUDE.md`: it
+is run per ticket, by every seat, and it is the one gate whose correctness rests
+on a shell fragment rather than on a `mix` task. A step that silently cannot
+execute is a step that will be silently skipped, and the next reader will assume
+the snippet was verified end-to-end because it is written down.
+
+The residue also accumulates in a way that reads as evidence: `/tmp` now carries
+several `mes57-*gate6a*` directories from different seats and different rounds,
+each a full `deps.get` of the baseline lock. Anyone reconstructing a run from
+`/tmp` later will find several trees that look like measurement material and are
+not.
+
+### Transferable form
+
+A procedure written in a repo is a claim that a seat can execute it. When a step
+of one fails **for reasons of the environment rather than the code** — a command
+guard, a missing tool, a permission — that is a finding about the procedure, not
+a housekeeping nuisance: record it against the procedure, and do not let the
+tidy-up cost hide the fact that the documented form did not run.
+
+---
+
+## S5-28 — `Classification`'s collision guard checks the three TOP-LEVEL merges, while the file's own prose now counts four sources
+
+**Found:** MES-57 review round 3, 2026-08-21, by the CODE_CREATOR, from the
+third-shape sweep described in S5-24 (a count referring into a neighbouring set).
+**Status:** recorded, not fixed — **no live defect**: measured, nothing overlaps
+today. Backlog, per the merge stopping rule (it moves no number, breaks no gate
+and falsifies no published claim).
+
+### The finding
+
+`MCP.Conformance.Classification` builds `@table` as
+`@ours |> Map.merge(@client_table) |> Map.merge(@harness_table)`, and refuses at
+COMPILE time if any of the **three** pairs among those three tables shares an
+id — the guard MES-56 added after `Map.merge/2` was found to resolve a collision
+silently in favour of its second argument, always in the flattering direction.
+
+MES-57 added the client table and wrote, correctly, that "the table is now four
+sources, not three". Both of the merged tables are themselves merges:
+
+* `@client_table` = `@auth_scored_scenarios` ⊎ `@auth_extension_scenarios`;
+* `@harness_table` = `@extension_scenarios` ⊎ `@pending_scenarios`.
+
+So the leaves are **five id-lists**, and `@collisions` covers only the three
+pairs *between* the top-level three. An id appearing in both halves of
+`@client_table`, or both halves of `@harness_table`, collapses exactly as B2
+described — silently, second argument winning — and the compile-time guard does
+not see it. The prose one paragraph above ("if the sources ever overlap, this
+file must not compile") is therefore **wider than the check beneath it**, which
+is the MES-51 theme applied to a guard rather than to a printed field.
+
+### Measured, so the entry states a fact and not a worry
+
+`Classification.table()` has **43** entries. The five leaf lists hold
+24 + 6 + 9 + 2 + 2 = **43**. Equality over the union means no id is shared
+between any two lists and none is repeated within one, so today the unchecked
+pairs are empty and no scenario is mis-classified. That is a property of the
+current lists, not of the code: the auth ids come from an upstream frozen set,
+which is precisely the kind of input that changes without anyone editing this
+file.
+
+### Transferable form
+
+When a guard enumerates pairs, check that its enumeration is over the **leaves**
+and not over an intermediate layer someone introduced later. A merge of merges
+looks like one operation in the expression that reads it, and a collision inside
+an inner merge is invisible to a guard written against the outer one. The tell
+is a count in the prose that no longer matches the count in the check — here,
+"four sources" beside three pairs.

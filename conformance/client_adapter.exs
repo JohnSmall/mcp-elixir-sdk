@@ -49,7 +49,10 @@
 # distinguishable, on the result sheet, from a conformance failure.
 #
 # The 25 scored `auth/*` scenarios land on that clause: this SDK has no OAuth
-# client surface, so they are named empties, not silent absences.
+# client surface, so their absence is NAMED here rather than silent. It is not an
+# emptiness — the run measured them as real FAILUREs against a surface that is
+# not there, and `empty` is false on every one. What makes them cost nothing is
+# ADR-003, not the shape of their check sheets.
 
 defmodule MCP.Conformance.ClientAdapter do
   @moduledoc false
@@ -65,7 +68,7 @@ defmodule MCP.Conformance.ClientAdapter do
 
   # Every scenario the frozen 2026-07-28 requirement set scores on the client
   # leg and this adapter drives. The other 25 (`auth/*`) are enumerated in the
-  # report as empties with their reason.
+  # report with their reason, as scored failures of an absent surface.
   @driven ~w(
     tools_call
     request-metadata
@@ -278,9 +281,12 @@ defmodule MCP.Conformance.ClientAdapter do
     have said; exiting 0 lets the fail-closed checks decide and keeps a
     non-zero exit meaning "the adapter crashed".
 
-    If this is an auth/* scenario it is an EMPTY, not a failure to run: this
-    SDK has no OAuth client surface (no token acquisition, no metadata
-    discovery, no WWW-Authenticate handling), so there is nothing to drive.
+    If this is an auth/* scenario, not driven is the whole answer and not a
+    failure to run: this SDK has no OAuth client surface (no token acquisition,
+    no metadata discovery, no WWW-Authenticate handling), so there is nothing to
+    drive. Its fail-closed checks will score real FAILUREs — the scenario is not
+    an empty, it is a measured failure of a surface that is not there, and
+    ADR-003 is what makes that cost nothing.
     """)
   end
 

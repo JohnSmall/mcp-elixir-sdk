@@ -14,10 +14,19 @@ defmodule Mix.Tasks.Conformance.Run do
     * `-o`, `--out-dir` — run directory. Defaults under
       `/tmp/mcp-conformance-runs/`, i.e. **outside the repository**, so the run
       cannot dirty the tree it is measuring.
-    * `--adapter` — `sdk` (default) or `null`. `null` substitutes the
-      do-nothing control at `conformance/controls/null_server.py`, so the run
-      measures what a server with no implementation earns from the same suite.
-      Server leg only.
+    * `--adapter` — which of the leg's named adapters to drive the run with.
+      Defaults to `sdk`, the SDK under test. The rest are the controls and the
+      probe, enumerated per leg in `MCP.Conformance.Adapters`:
+
+        * server: `null` — answers -32601 to everything, so the run measures
+          what a server with no implementation earns from the same suite;
+        * client: `null_exit0`, `null_connect`, `null_request` — three nulls of
+          increasing strictness, because on this leg a **stricter** null scores
+          **lower** and "the null control" is therefore not one number;
+        * client: `strict_connect` — not a control but a **probe**: the SDK
+          client halting the moment `connect/1` errors, which is what turns the
+          drive-policy discount from something inherited into something
+          measured.
     * `--cwd` — directory the harness and adapter run in. Defaults to the
       project root; pointing it elsewhere reproduces the wrong-cwd control.
     * `--harness-dir` — npm install root holding
@@ -45,7 +54,13 @@ defmodule Mix.Tasks.Conformance.Run do
 
   @aliases [o: :out_dir]
 
-  @usage "mix conformance.run --leg server|client [--adapter sdk|null] [-o RUN_DIR] [--cwd DIR]"
+  # The usage line does NOT enumerate the adapter names, and that is the fix
+  # rather than an omission: the admissible set is per leg, so any one-line enum
+  # is false for the other leg. It used to read `sdk|null`, which is the server
+  # leg's set — an operator on the client leg following it got a raise. The
+  # per-leg enumeration is printed where it can be correct, by `run/1` below,
+  # out of `MCP.Conformance.Adapters.names/1`.
+  @usage "mix conformance.run --leg server|client [--adapter NAME] [-o RUN_DIR] [--cwd DIR]"
 
   @impl Mix.Task
   def run(argv) do
@@ -69,12 +84,24 @@ defmodule Mix.Tasks.Conformance.Run do
         other -> Mix.raise("--leg must be server or client, got: #{inspect(other)}")
       end
 
+    # Validated against the registry for THIS leg, and converted through
+    # `Adapters.atom/1` — the only sanctioned string -> atom conversion for an
+    # adapter name, and one that can only return an atom the registry itself
+    # minted. The membership check is `Adapters.fetch/2`, not a hardcoded list:
+    # the client leg's four adapters were added to the registry alone.
     adapter =
       case opts[:adapter] do
-        nil -> :sdk
-        "sdk" -> :sdk
-        "null" -> :null
-        other -> Mix.raise("--adapter must be sdk or null, got: #{inspect(other)}")
+        nil ->
+          :sdk
+
+        name ->
+          MCP.Conformance.Adapters.fetch(leg, name) ||
+            Mix.raise(
+              "--adapter must be one of #{Enum.join(MCP.Conformance.Adapters.names(leg), ", ")} " <>
+                "for the #{leg} leg, got: #{inspect(name)}"
+            )
+
+          MCP.Conformance.Adapters.atom(name)
       end
 
     run_opts =

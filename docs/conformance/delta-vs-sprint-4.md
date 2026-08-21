@@ -88,3 +88,101 @@ one is tied to `940445cef85ebad7ad7181db93ca1d7fbe4d98ad` by a manifest the
 adjudicator re-verified from disk, over a denominator captured into the run
 directory and cross-checked against the harness's own listing of it, with every
 non-pass classified and owned. That is the change MES-56 was for.
+
+---
+
+# Delta against Sprint 4's client-leg figure
+
+Added by MES-57. Same discipline as the server section above, and the same
+caveat: every MES-57 number is quoted from `client-2026-07-28.json` and is
+therefore adjudicated; every Sprint 4 number is quoted from the MES-57 brief's
+record of it and is **not**. S5-14 applies unchanged — no run of a tree
+predating the adjudicator can ever be accepted, so the historical side stays a
+claim under review.
+
+## Compared as a FINGERPRINT
+
+| axis | Sprint 4 (claim under review) | MES-57 (adjudicated at `f4be9eb`) | delta |
+|---|---|---|---|
+| client, scored (`client_summary`) | 8/32 | **8/32** | zero |
+| client, driven-and-passing core | 7 | **7 of 7 in-scope** | zero |
+| all-scenario check census | 66 S / 59 F / 2 SKIPPED / 1 INFO | **66 / 59 / 2 / 1** | zero |
+| null `exit 0` | 2/32 | **2/32** | zero |
+| null connect-and-say-nothing | 2/32 | **2/32** | zero |
+| null one-request | 1/32 | **1/32** | zero |
+| the inversion (stricter null scores lower) | holds | **holds** | zero |
+| drive-policy discount (`request-metadata`) | holds | **holds, re-measured** | zero |
+| null-passable discount (`http-standard-headers`) | holds | **holds** | zero |
+| figure surviving both discounts | 5 of 7 | **5 of 7** | zero |
+
+Zero on every axis, including the two discounts — which were **re-derived by
+measurement on this tree**, not carried across. See
+`client-2026-07-28-discounts.md`, which is rendered from the censuses.
+
+## What the fingerprint does NOT say, stated by enumeration
+
+**1. The measurement run contains no WARNING at all, so its own headline is
+reducer-independent — and that is a coincidence of this run, not a property.**
+`requirements_exit`, `server_summary` and `client_summary` all read 8/32 here
+because the measurement's 128 checks include zero WARNINGs.
+
+The reducer choice is nevertheless load-bearing, and the PROBE is where it
+bites. Under the strict-connect probe `request-metadata` scores 7 SUCCESS and
+**1 WARNING**:
+
+| reducer | probe verdict on `request-metadata` | discount 1 |
+|---|---|---|
+| `requirements_exit` | PASS (a WARNING is ignored) | would not fire |
+| `server_summary` | PASS (a WARNING is ignored) | would not fire |
+| `client_summary` | **FAIL** (a WARNING fails) | fires |
+
+So a derivation reading the wrong reducer would have found no drive-policy
+discount and published **6 of 7** — with every scenario named, over the right
+denominator, from two adjudicated runs. The discipline is what produces the
+difference, not the arithmetic.
+
+**2. There are ZERO empty scenarios on this leg, and that corrects an
+expectation MES-57 started with.** The plan expected the 25 scored `auth/*`
+scenarios to land as empties — scenarios with a check sheet nobody exercised.
+They do not. Each carries real FAILURE checks (`auth/metadata-default` 5,
+`auth/scope-retry-limit` 1, and so on) because those checks are fail-closed and
+the adapter emits nothing to satisfy them. `totals.empty_scenarios` is `[]` in
+both directions, and no scored scenario has `SUCCESS + FAILURE == 0`.
+
+The distinction matters for Sprint 6's queue: these are not unmeasured, they are
+**measured failures of an absent surface**, and the reason they cost nothing is
+ADR-003 rather than emptiness.
+
+**3. The raw 8/32 exceeds the in-scope numerator by exactly one scenario, and
+that scenario's pass is inherited from the null.** `auth/resource-mismatch` is
+the 8th. It passes on a **single** SUCCESS check, and every null control passes
+it too — it is in `totals.control.inherited`. It is outside the in-scope
+denominator on the ADR-003 ground, and it would be worth nothing inside it.
+
+**4. Zero delta is a self-consistency check, not progress.** No SDK code on the
+client path changed between Sprint 4 and MES-57; what changed is the standing of
+the figure. A non-zero delta would have meant something was wrong with the
+*measurement*.
+
+## What is different is the STANDING
+
+Sprint 4's client figures came from the official suite at `@0.2.0-alpha.11`
+driven through `conformance/client_adapter.exs` — they were never self-derived,
+and the ticket body corrects that. What they lacked was provenance: no manifest,
+no adjudication, no captured denominator, and **no way to adjudicate them at
+all**, because `Console.parse/1` refuses a client console and every gate that
+depended on it therefore refused the run.
+
+MES-57's figure is tied to `f4be9eb4624813ebcf5418898180f0ca433ab562` by a
+manifest the adjudicator re-verified from disk, over a denominator captured into
+the run directory and cross-checked against the harness's own listing of it,
+with every one of the 30 non-passing scenarios classified and owned, and with
+the scenario→artefact map derived by a key that refuses rather than guesses.
+
+## The fixed point does not exist, and this is the bound rather than a claim
+
+Committing a census moves the tip the census attests. What is guaranteed is
+narrower and is stated instead: **no code commit falls between the measurement
+run and delivery.** All five runs were taken at `f4be9eb`, the last code commit
+on this branch; only censuses, rendered tables and documents land after it. The
+same shape MES-56 delivered.

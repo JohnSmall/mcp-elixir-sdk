@@ -1,0 +1,180 @@
+Running requirements 2026-07-28 (39 scenarios) in parallel...
+
+Starting scenario: tools_call
+Executing client: mix run conformance/client_adapter.exs http://localhost:38247/mcp
+(node:1849803) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Starting scenario: request-metadata
+Executing client: mix run conformance/client_adapter.exs http://localhost:46819
+Starting scenario: sep-2322-client-request-state
+Executing client: mix run conformance/client_adapter.exs http://localhost:43073/mcp
+Starting scenario: http-standard-headers
+Executing client: mix run conformance/client_adapter.exs http://localhost:36631
+Starting scenario: http-custom-headers
+Executing client: mix run conformance/client_adapter.exs http://localhost:33653
+With context: {"toolCalls":[{"name":"test_custom_headers","arguments":{"region":"us-west1","priority":42,"verbose":false,"debug":true,"empty_val":"","method_val":"test-method","float_val":3.14159,"non_ascii_val":"Hello, 世界","whitespace_val":" padded ","leading_space_val":" us-west1","trailing_space_val":"us-west1 ","internal_space_val":"us west 1","control_char_val":"line1\nline2","crlf_val":"line1\r\nline2","tab_val":"\tindented","query":"SELECT * FROM users"}},{"name":"test_custom_headers_null","arguments":{"region":"us-east1","priority":1,"verbose":null,"query":"SELECT 1"}}]}
+Starting scenario: http-invalid-tool-headers
+Executing client: mix run conformance/client_adapter.exs http://localhost:34981
+Starting scenario: json-schema-ref-no-deref
+Executing client: mix run conformance/client_adapter.exs http://localhost:35335/mcp
+Starting scenario: json-schema-2020-12-preservation
+Executing client: mix run conformance/client_adapter.exs http://localhost:37265/mcp
+Starting scenario: auth/metadata-var3
+Executing client: mix run conformance/client_adapter.exs http://localhost:44873/mcp
+Starting scenario: auth/metadata-var1
+Executing client: mix run conformance/client_adapter.exs http://localhost:42973/mcp
+Starting scenario: auth/basic-cimd
+Executing client: mix run conformance/client_adapter.exs http://localhost:35683/mcp
+Starting scenario: auth/metadata-var2
+Executing client: mix run conformance/client_adapter.exs http://localhost:45649/mcp
+Starting scenario: auth/metadata-default
+Executing client: mix run conformance/client_adapter.exs http://localhost:43607/mcp
+Starting scenario: auth/scope-from-www-authenticate
+Executing client: mix run conformance/client_adapter.exs http://localhost:34175/mcp
+Starting scenario: auth/scope-from-scopes-supported
+Executing client: mix run conformance/client_adapter.exs http://localhost:38829/mcp
+Starting scenario: auth/scope-omitted-when-undefined
+Executing client: mix run conformance/client_adapter.exs http://localhost:43199/mcp
+Starting scenario: auth/scope-step-up
+Executing client: mix run conformance/client_adapter.exs http://localhost:33951/mcp
+Starting scenario: auth/scope-retry-limit
+Executing client: mix run conformance/client_adapter.exs http://localhost:34677/mcp
+Starting scenario: auth/token-endpoint-auth-basic
+Executing client: mix run conformance/client_adapter.exs http://localhost:41825/mcp
+Starting scenario: auth/token-endpoint-auth-post
+Executing client: mix run conformance/client_adapter.exs http://localhost:45113/mcp
+Starting scenario: auth/token-endpoint-auth-none
+Executing client: mix run conformance/client_adapter.exs http://localhost:33979/mcp
+Starting scenario: auth/pre-registration
+Executing client: mix run conformance/client_adapter.exs http://localhost:45813/mcp
+With context: {"client_id":"pre-registered-client","client_secret":"pre-registered-secret"}
+Starting scenario: auth/resource-mismatch
+Executing client: mix run conformance/client_adapter.exs http://localhost:37053/mcp
+Starting scenario: auth/offline-access-scope
+Executing client: mix run conformance/client_adapter.exs http://localhost:34485/mcp
+Starting scenario: auth/authorization-server-migration
+Executing client: mix run conformance/client_adapter.exs http://localhost:38157/mcp
+Starting scenario: auth/offline-access-not-supported
+Executing client: mix run conformance/client_adapter.exs http://localhost:37565/mcp
+Starting scenario: auth/iss-supported
+Executing client: mix run conformance/client_adapter.exs http://localhost:35375/mcp
+Starting scenario: auth/iss-not-advertised
+Executing client: mix run conformance/client_adapter.exs http://localhost:43565/mcp
+Starting scenario: auth/iss-supported-missing
+Executing client: mix run conformance/client_adapter.exs http://localhost:34465/mcp
+Starting scenario: auth/iss-wrong-issuer
+Executing client: mix run conformance/client_adapter.exs http://localhost:33483/mcp
+Starting scenario: auth/iss-unexpected
+Executing client: mix run conformance/client_adapter.exs http://localhost:41309/mcp
+Starting scenario: auth/iss-normalized
+Executing client: mix run conformance/client_adapter.exs http://localhost:44379/mcp
+Starting scenario: auth/metadata-issuer-mismatch
+Executing client: mix run conformance/client_adapter.exs http://localhost:34785/mcp
+Starting scenario: auth/client-credentials-jwt
+Starting scenario: auth/enterprise-managed-authorization
+Starting scenario: auth/client-credentials-basic
+Executing client: mix run conformance/client_adapter.exs http://localhost:44161/mcp
+With context: {"client_id":"conformance-test-client","client_secret":"conformance-test-secret"}
+Starting scenario: auth/dpop
+Executing client: mix run conformance/client_adapter.exs http://localhost:35521/mcp
+Starting scenario: auth/dpop-nonce
+Executing client: mix run conformance/client_adapter.exs http://localhost:39569/mcp
+Starting scenario: auth/wif-jwt-bearer
+Executing client: mix run conformance/client_adapter.exs http://localhost:41239/mcp
+With context: {"client_id":"conformance-test-client","private_key_pem":"-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQghnSvnJkTpwsBJThQ\n+j++13ok64bf+SvUABHmkfrHlqOhRANCAAQjC8TyNJJgPnnr3T/m9wAyYtHuTZ2j\nklFOurfvQp+9m9B2AywhwLegz7NUQVdrNMP/m7a8bV+rx2Pt0GJOaUVE\n-----END PRIVATE KEY-----","signing_algorithm":"ES256"}
+Executing client: mix run conformance/client_adapter.exs http://localhost:42307/mcp
+With context: {"client_id":"conformance-test-xaa-client","client_secret":"conformance-test-xaa-secret","idp_client_id":"conformance-test-idp-client","idp_id_token":"eyJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJkZW1vLXVzZXJAZXhhbXBsZS5jb20iLCJlbWFpbCI6ImRlbW8tdXNlckBleGFtcGxlLmNvbSIsImF1ZCI6ImNvbmZvcm1hbmNlLXRlc3QtaWRwLWNsaWVudCIsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6MzU3MjEiLCJpYXQiOjE3ODcyOTUwNTksImV4cCI6MTc4NzI5ODY1OX0.EvkeAtV1nP9SjqF41nXcso3YNj1GojtnRC27rmcfrGtDAmw0gS6zPdgMgpGqaocKXg8prWcq09_ZzTqj3CuKgQ","idp_issuer":"http://localhost:35721","idp_token_endpoint":"http://localhost:35721/token"}
+Executing client: mix run conformance/client_adapter.exs http://localhost:34423/mcp
+With context: {"client_id":"conformance-wif-workload","valid_jwt":"eyJhbGciOiJFUzI1NiJ9.eyJpc3MiOiJodHRwczovL2lkcC5jb25mb3JtYW5jZS10ZXN0LmxvY2FsIiwic3ViIjoiY29uZm9ybWFuY2Utd29ya2xvYWQiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjQ1MDkxIiwiZXhwIjoxNzg3Mjk1MzU5LCJqdGkiOiJkZDUxYmVjYi1kOGEyLTQ0MDctOTE1NC02YTgwMDVhM2Y5OWIiLCJpYXQiOjE3ODcyOTUwNTl9.02gwWURzQSH7DZ0DGiDPF3vS1h6921n5SN4QdlFDa-RmCHUbBPLIPHSf-tCoVgG0Z9JXSwQcCTS8buuKgfwYdA","wrong_audience_jwt":"eyJhbGciOiJFUzI1NiJ9.eyJpc3MiOiJodHRwczovL2lkcC5jb25mb3JtYW5jZS10ZXN0LmxvY2FsIiwic3ViIjoiY29uZm9ybWFuY2Utd29ya2xvYWQiLCJhdWQiOiJodHRwczovL3dyb25nLmV4YW1wbGUiLCJleHAiOjE3ODcyOTUzNTksImp0aSI6ImIzZGU4YWFiLTUxOWMtNDg0OC1iMmM4LWZkYzk3MTc0Y2VjOSIsImlhdCI6MTc4NzI5NTA1OX0.0nWn53lqVwnH49OzYHPPo8D9fa73ceANtQ6Jk9oYQeq1hdHKBQceORzdT9-3zDikqREWZyaKTs6MLyLWbwFALg","expired_jwt":"eyJhbGciOiJFUzI1NiJ9.eyJpc3MiOiJodHRwczovL2lkcC5jb25mb3JtYW5jZS10ZXN0LmxvY2FsIiwic3ViIjoiY29uZm9ybWFuY2Utd29ya2xvYWQiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjQ1MDkxIiwiZXhwIjoxNzg3Mjk0OTk5LCJqdGkiOiI0ZmQyMjQ3MC00OWMxLTQ3MWYtYjVkMi1kN2Y1ZmQyMjNlNzYiLCJpYXQiOjE3ODcyOTUwNTl9.wJSp_PzxEA1QeWeL_HpB3NOloIcr9J8sjZV2Vs9SuRqcyqCrCBpJ1pjQHjhQvYecMRcSPiEZZYgEtfGBqI46kg"}
+Results saved to /tmp/mes57-smoke/auth/metadata-default-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/http-invalid-tool-headers-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/scope-step-up-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/metadata-var3-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/dpop-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/tools_call-2026-08-21T06-50-59-376Z
+Results saved to /tmp/mes57-smoke/auth/token-endpoint-auth-post-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/scope-omitted-when-undefined-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/wif-jwt-bearer-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/metadata-var2-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/resource-mismatch-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/enterprise-managed-authorization-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/scope-from-scopes-supported-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/scope-from-www-authenticate-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/pre-registration-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/scope-retry-limit-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/basic-cimd-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/client-credentials-basic-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/http-custom-headers-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/http-standard-headers-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/iss-unexpected-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/authorization-server-migration-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/iss-supported-missing-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/iss-not-advertised-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/json-schema-2020-12-preservation-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/token-endpoint-auth-none-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/json-schema-ref-no-deref-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/metadata-issuer-mismatch-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/iss-wrong-issuer-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/client-credentials-jwt-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/metadata-var1-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/offline-access-not-supported-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/token-endpoint-auth-basic-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/iss-normalized-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/request-metadata-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/offline-access-scope-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/sep-2322-client-request-state-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/dpop-nonce-2026-08-21T06-50-59-377Z
+Results saved to /tmp/mes57-smoke/auth/iss-supported-2026-08-21T06-50-59-377Z
+
+=== SUITE SUMMARY ===
+
+✓ tools_call: 2 passed, 0 failed
+✓ request-metadata: 8 passed, 0 failed
+✗ auth/metadata-default: 0 passed, 5 failed
+✗ auth/metadata-var1: 0 passed, 5 failed
+✗ auth/metadata-var2: 0 passed, 4 failed
+✗ auth/metadata-var3: 0 passed, 4 failed
+✗ auth/basic-cimd: 0 passed, 1 failed
+✗ auth/scope-from-www-authenticate: 0 passed, 1 failed
+✗ auth/scope-from-scopes-supported: 0 passed, 1 failed
+✗ auth/scope-omitted-when-undefined: 0 passed, 1 failed
+✗ auth/scope-step-up: 0 passed, 3 failed
+✗ auth/scope-retry-limit: 0 passed, 1 failed
+✗ auth/token-endpoint-auth-basic: 0 passed, 3 failed
+✗ auth/token-endpoint-auth-post: 0 passed, 3 failed
+✗ auth/token-endpoint-auth-none: 0 passed, 3 failed
+✗ auth/pre-registration: 0 passed, 1 failed
+✓ auth/resource-mismatch: 1 passed, 0 failed
+✗ auth/offline-access-scope: 0 passed, 1 failed
+✗ auth/offline-access-not-supported: 0 passed, 1 failed
+✗ auth/authorization-server-migration: 2 passed, 1 failed
+✗ auth/iss-supported: 0 passed, 1 failed
+✗ auth/iss-not-advertised: 0 passed, 1 failed
+✗ auth/iss-supported-missing: 0 passed, 1 failed
+✗ auth/iss-wrong-issuer: 0 passed, 1 failed
+✗ auth/iss-unexpected: 0 passed, 1 failed
+✗ auth/iss-normalized: 0 passed, 1 failed
+✗ auth/metadata-issuer-mismatch: 0 passed, 1 failed
+✓ sep-2322-client-request-state: 5 passed, 0 failed
+✓ http-standard-headers: 9 passed, 0 failed
+✓ http-custom-headers: 18 passed, 0 failed
+✓ http-invalid-tool-headers: 11 passed, 0 failed
+✓ json-schema-ref-no-deref: 1 passed, 0 failed
+✗ auth/client-credentials-jwt: 0 passed, 1 failed
+✗ auth/client-credentials-basic: 0 passed, 1 failed
+✗ auth/enterprise-managed-authorization: 0 passed, 2 failed
+✗ auth/dpop: 0 passed, 3 failed
+✗ auth/dpop-nonce: 0 passed, 5 failed
+✗ auth/wif-jwt-bearer: 0 passed, 1 failed
+✓ json-schema-2020-12-preservation: 9 passed, 0 failed
+
+Total: 66 passed, 59 failed, 0 warnings
+
+Not scored for 2026-07-28: 7 scenario(s) run, 6 failing. These do not affect conformance.
+  ✗ auth/client-credentials-jwt (extension)
+  ✗ auth/client-credentials-basic (extension)
+  ✗ auth/enterprise-managed-authorization (extension)
+  ✗ auth/dpop (extension)
+  ✗ auth/dpop-nonce (extension)
+  ✗ auth/wif-jwt-bearer (extension)
+  ✓ json-schema-2020-12-preservation (added-after-release)

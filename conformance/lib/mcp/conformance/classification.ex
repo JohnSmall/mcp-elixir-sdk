@@ -58,7 +58,7 @@ defmodule MCP.Conformance.Classification do
   @type entry :: %{class: atom(), why: String.t(), owner: String.t()}
 
   # ---------------------------------------------------------------------------
-  # The table. Server leg, requirement revision 2026-07-28.
+  # SERVER leg, requirement revision 2026-07-28.
   #
   # Populated from the run the adjudicator ACCEPTED at commit cf15d9a. Every
   # entry names a scenario that did not pass under `server_summary` in that run;
@@ -120,6 +120,118 @@ defmodule MCP.Conformance.Classification do
     }
   }
 
+  # ---------------------------------------------------------------------------
+  # CLIENT leg, requirement revision 2026-07-28. MES-57.
+  #
+  # Populated from the run the adjudicator ACCEPTED on this branch. Every entry
+  # names a scenario that did not pass under `client_summary` in that run — and
+  # every one of the thirty is `auth/*`. That is not a coincidence to be noted
+  # in passing, it is the whole shape of the client leg's result: outside the
+  # authorization profile this SDK does not fail a single client scenario the
+  # frozen set names.
+  #
+  # `auth/resource-mismatch` is deliberately ABSENT from this table, and the
+  # absence is the second half of the census's both-ways refusal: it PASSES, so
+  # an entry here would be a stale rationale for something that is not
+  # happening. What its pass is worth is a question for the null control, not
+  # for this table.
+  # ---------------------------------------------------------------------------
+  @adr_003_owner "ADR-003 (authorization profile, out of 2.0.0)"
+
+  # The 24 SCORED auth scenarios that do not pass. Scored, and therefore inside
+  # the raw `n/32` denominator — which is exactly why the in-scope figure is
+  # reported as primary and the raw rate never appears without this exclusion
+  # printed beside it.
+  @auth_scored_scenarios ~w(
+    auth/authorization-server-migration auth/basic-cimd auth/iss-normalized
+    auth/iss-not-advertised auth/iss-supported auth/iss-supported-missing
+    auth/iss-unexpected auth/iss-wrong-issuer auth/metadata-default
+    auth/metadata-issuer-mismatch auth/metadata-var1 auth/metadata-var2
+    auth/metadata-var3 auth/offline-access-not-supported
+    auth/offline-access-scope auth/pre-registration
+    auth/scope-from-scopes-supported auth/scope-from-www-authenticate
+    auth/scope-omitted-when-undefined auth/scope-retry-limit auth/scope-step-up
+    auth/token-endpoint-auth-basic auth/token-endpoint-auth-none
+    auth/token-endpoint-auth-post
+  )
+
+  # MES-57 round 4. This reason said the scored auth failures were EMPTIES and
+  # that the census marked them `empty`. Both halves were false, and the census
+  # said so IN THE SAME OBJECT: `empty: false` on the scenario, `[]` in
+  # `empty_scenarios`, `empty | no` in the rendered row. The run had already
+  # falsified the plan's expectation in round 1 and every other artefact was
+  # corrected then; this string was missed, and it is the one the renderer
+  # writes into `docs/conformance/*.json`.
+  #
+  # Two constraints bind the replacement, and the second is why the obvious
+  # rewrite is also wrong:
+  #
+  #   1. It must state what IS true — a scored failure of a surface that is not
+  #      there — and locate the zero cost in ADR-003, which is what actually
+  #      makes it free.
+  #   2. It is rendered into FIVE censuses (the measurement, three null controls
+  #      and the strict-connect probe), so it may assert nothing that is true of
+  #      only one of them. "`empty_scenarios` is empty on this leg" would have
+  #      been exactly the original defect committed again: it holds for the
+  #      measurement and the null-request run and is FALSE for the other three,
+  #      where `http-standard-headers` passes on eleven SKIPPED checks and is an
+  #      empty. So the claim is scoped to the scenario the reason is attached
+  #      to, and it was checked against all 5 x 24 = 120 entries: every one
+  #      carries at least one FAILURE check and `empty: false`. Note it is NOT
+  #      "no SUCCESS checks" — `auth/authorization-server-migration` has two, in
+  #      every run.
+  @auth_scored_why "The OAuth 2.1 authorization profile. This SDK's client has no " <>
+                     "authorization surface at all — no metadata discovery, no token " <>
+                     "acquisition, no WWW-Authenticate handling — so `client_adapter.exs` " <>
+                     "does not drive it and the scenario's fail-closed checks score it as " <>
+                     "never-emitted. Excluded from 2.0.0 by ADR-003. It is NOT an empty: " <>
+                     "it carries at least one real FAILURE check, so the census records " <>
+                     "`empty: false` — this is a MEASURED FAILURE OF AN ABSENT SURFACE, " <>
+                     "not a scenario that asked nothing, and its cost is zero because " <>
+                     "ADR-003 puts the profile out of 2.0.0 and for no other reason. The " <>
+                     "absence is NAMED rather than silent: `client_adapter.exs` reports " <>
+                     "the scenario as not driven on stderr, and it is enumerated here " <>
+                     "rather than counted. SCORED by the frozen set, so it is inside the " <>
+                     "raw n/32 and outside the in-scope figure — which is why the two are " <>
+                     "never printed without the exclusion between them."
+
+  # The 6 auth scenarios the frozen set does not score. They cost nothing
+  # against any denominator and are reported so the coverage gap is visible
+  # rather than absent.
+  @auth_extension_scenarios ~w(
+    auth/client-credentials-basic auth/client-credentials-jwt
+    auth/dpop auth/dpop-nonce auth/enterprise-managed-authorization
+    auth/wif-jwt-bearer
+  )
+
+  @auth_extension_why "An authorization EXTENSION, not scored by the frozen 2026-07-28 set " <>
+                        "— extensions are optional by definition (SEP-1730) — and doubly out " <>
+                        "of reach here: it is in the extension track AND in the " <>
+                        "authorization profile, either of which ADR-003 excludes from 2.0.0. " <>
+                        "It runs and is reported for visibility; failing it costs nothing " <>
+                        "against the conformance denominator."
+
+  @client_table Map.merge(
+                  Map.new(
+                    @auth_scored_scenarios,
+                    &{&1,
+                     %{
+                       class: :out_of_scope_adr_003,
+                       why: @auth_scored_why,
+                       owner: @adr_003_owner
+                     }}
+                  ),
+                  Map.new(
+                    @auth_extension_scenarios,
+                    &{&1,
+                     %{
+                       class: :extension,
+                       why: @auth_extension_why,
+                       owner: @extension_owner
+                     }}
+                  )
+                )
+
   @harness_table Map.merge(
                    Map.new(
                      @extension_scenarios,
@@ -148,17 +260,29 @@ defmodule MCP.Conformance.Classification do
   # A compile-time refusal rather than a test, because the table is a literal:
   # if the three sources ever overlap, this file must not compile into an
   # artefact anyone can quote a rate from.
-  @collisions Map.keys(@ours)
-              |> Enum.filter(&Map.has_key?(@harness_table, &1))
+  # MES-57 extends this over the CLIENT table by the same argument. The table is
+  # now four sources, not three, and this file is keyed by scenario id ALONE —
+  # it has no leg — so a scenario id shared between the two legs would collapse
+  # here too, and in the same silent direction. Today no id is shared, and
+  # "today no id is shared" is precisely the kind of fact that stops being true
+  # without anyone editing this file: the ids come from an upstream frozen set.
+  # Checking all three pairs, rather than the one pair that can collide today,
+  # is the multiplicity half MES-56 spent two rounds learning to check.
+  @collisions [{@ours, @harness_table}, {@ours, @client_table}, {@client_table, @harness_table}]
+              |> Enum.flat_map(fn {a, b} ->
+                a |> Map.keys() |> Enum.filter(&Map.has_key?(b, &1))
+              end)
+              |> Enum.uniq()
               |> Enum.sort()
 
   if @collisions != [] do
-    raise "MCP.Conformance.Classification: #{inspect(@collisions)} is classified both by us " <>
-            "and by the harness's own reason. Map.merge/2 would keep the harness entry and " <>
-            "discard ours silently, so the scenario would stop being anyone's to own."
+    raise "MCP.Conformance.Classification: #{inspect(@collisions)} is classified by more " <>
+            "than one of this file's tables. Map.merge/2 resolves a collision silently in " <>
+            "favour of its second argument, so one of the two entries would be discarded " <>
+            "without a word and the scenario would stop being anyone's to own."
   end
 
-  @table Map.merge(@ours, @harness_table)
+  @table @ours |> Map.merge(@client_table) |> Map.merge(@harness_table)
 
   @doc "Every class this module recognises."
   @spec classes() :: [atom()]

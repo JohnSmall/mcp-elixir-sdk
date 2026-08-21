@@ -136,12 +136,12 @@ defmodule MCP.Conformance.Census.Markdown do
     |> then(&"#{&1} (#{counts["total"]} checks).")
   end
 
-  defp control_section(%{"totals" => %{"control" => nil}}) do
+  defp control_section(%{"totals" => %{"control" => nil}} = census) do
     """
     ## Null-implementation control
 
-    **NOT JOINED.** No figure here states how many of these passes a do-nothing server
-    also earns, so the headline's meaning is unbounded from below.
+    **NOT JOINED.** No figure here states how many of these passes a #{null_noun(census)}
+    with no implementation also earns, so the headline's meaning is unbounded from below.
     """
   end
 
@@ -151,16 +151,14 @@ defmodule MCP.Conformance.Census.Markdown do
     """
     ## Null-implementation control
 
-    A server that answers `-32601` to every method, implementing no MCP behaviour at
-    all, was run through the same suite. Any scenario it passes is one whose checks
-    cannot distinguish this SDK from its absence.
+    #{null_description(census)}
 
     - Control run: `#{c["run_dir"]}`, adapter `#{c["adapter_command"]}`.
     - Control scored result under `#{c["reducer"]}`:
       **#{c["control_passed_scored"]["passed"]}/#{c["control_passed_scored"]["total"]}**.
     - **Ours alone (#{length(c["discriminating"])}):** scenarios we pass and the null does not.
     - **Inherited (#{length(c["inherited"])}):** #{render_ids(c["inherited"])} — we pass these and so
-      does a server with no implementation.
+      does a #{null_noun(census)} with no implementation.
     - **Coverage, which is what makes the subtraction legal:** the control ran every scored
       scenario this run measured. Scored scenarios missing from the control:
       #{render_ids(c["not_in_control"])} — a census carrying any is refused
@@ -249,8 +247,20 @@ defmodule MCP.Conformance.Census.Markdown do
   defp control_cell(%{"control" => nil}, false), do: "—"
   defp control_cell(%{"control" => nil}, true), do: "not run"
 
+  # Under the LEG'S OWN summary reducer, the same one the row's own verdict is
+  # printed under. It read `requirements_exit` until MES-57, which put the
+  # measurement and the control in one row under two different reducers with
+  # nothing saying so — the exact defect this file's moduledoc says it exists to
+  # prevent, one column to the left of where it was being prevented.
+  #
+  # It cannot move a server figure: `requirements_exit` and `server_summary`
+  # have identical dispositions over all five statuses, so they agree scenario
+  # by scenario, and MES-56's committed table re-renders byte-identically (held
+  # by a test). It CAN move a client one: `client_summary` fails a WARNING that
+  # the other two ignore, and a null that merely warns would otherwise be
+  # printed as "pass" and subtracted from the honest figure.
   defp control_cell(%{"control" => c}, _joined?),
-    do: if(c["passes"]["requirements_exit"], do: "pass", else: "fail")
+    do: if(c["passes"]["server_summary_or_client_summary"], do: "pass", else: "fail")
 
   defp reducer_definitions(census) do
     rows =
@@ -276,6 +286,44 @@ defmodule MCP.Conformance.Census.Markdown do
     #{rows}
     """
   end
+
+  # MES-57 round 4, and the same defect as the classification reason corrected in
+  # the same commit: a sentence describing the SERVER leg's control was rendered
+  # into the CLIENT census too. It read "a server that answers `-32601` to every
+  # method" directly above a bullet naming `null_client_connect.py` — a Python
+  # NULL CLIENT that opens a TCP socket, sends no byte and exits 0. It answers
+  # nothing to anything, because nothing asks it. The contradiction was two lines
+  # apart in the published file, which is how C1 read as well.
+  #
+  # The server sentence is reproduced here verbatim so the MES-56 markdown on
+  # main re-renders byte-identically; only the client branch is new.
+  #
+  # The client sentence deliberately does NOT describe how the null behaves. It
+  # cannot: three nulls of increasing strictness exist on this leg, and they
+  # differ on exactly that (exit at once / connect and say nothing / send one
+  # well-formed request for a nonexistent method). Any concrete description would
+  # be false for two of the three. The adapter bullet immediately below names
+  # which one ran, which is the fact rather than a paraphrase of it.
+  defp null_description(census) do
+    case census["run"]["leg"] do
+      "client" ->
+        """
+        A null client — one that implements no MCP client behaviour at all — was run
+        through the same suite; the adapter that produced it is named below. Any scenario
+        it passes is one whose checks cannot distinguish this SDK from its absence.\
+        """
+
+      _ ->
+        """
+        A server that answers `-32601` to every method, implementing no MCP behaviour at
+        all, was run through the same suite. Any scenario it passes is one whose checks
+        cannot distinguish this SDK from its absence.\
+        """
+    end
+  end
+
+  defp null_noun(%{"run" => %{"leg" => "client"}}), do: "client"
+  defp null_noun(_census), do: "server"
 
   defp render_ids([]), do: "none"
   defp render_ids(ids), do: Enum.map_join(ids, ", ", &"`#{&1}`")

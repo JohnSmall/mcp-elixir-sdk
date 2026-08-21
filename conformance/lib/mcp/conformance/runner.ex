@@ -25,22 +25,11 @@ defmodule MCP.Conformance.Runner do
   and MES-57.
   """
 
-  alias MCP.Conformance.{Beacon, Manifest, Provenance, RequirementSet}
+  alias MCP.Conformance.{Adapters, Beacon, Manifest, Provenance, RequirementSet}
 
   @default_harness_dir "/tmp/conf11"
   @default_requirements "2026-07-28"
   @default_port 3001
-
-  # An ENUM, not a command. The null control has to be selectable by the same
-  # runner as the measurement — an unreproducible control is not a control, and
-  # MES-49's lived in /tmp — but "let the operator name a command" would turn a
-  # provenance tool into an arbitrary-process launcher whose manifest records
-  # whatever it was told. Two named adapters, each with a fixed command line, so
-  # `invocation.adapter` is a fact about which of two known things ran.
-  @adapters %{
-    sdk: "conformance/server_adapter.exs",
-    null: "conformance/controls/null_server.py"
-  }
 
   @doc """
   Run a leg. Options:
@@ -53,8 +42,11 @@ defmodule MCP.Conformance.Runner do
     * `:cwd` — the directory the harness (and so the spawned adapter) runs in.
       Defaults to the project root. Setting it elsewhere is how the wrong-cwd
       positive control is produced.
-    * `:adapter` — `:sdk` (default) or `:null`, the do-nothing control. Server
-      leg only; the client leg has no adapter to substitute.
+    * `:adapter` — a name from `MCP.Conformance.Adapters` admissible for this
+      leg. `:sdk` (default) is the SDK under test; the rest are the leg's
+      controls and, on the client leg, the `:strict_connect` drive-policy probe.
+      Membership is checked against the registry per leg, so the enum has one
+      spelling.
     * `:harness_dir`, `:requirements`, `:port`
   """
   @spec run(keyword()) :: {:ok, map(), String.t()} | {:error, term()}
@@ -65,8 +57,15 @@ defmodule MCP.Conformance.Runner do
     requirements = Keyword.get(opts, :requirements, @default_requirements)
     port_no = Keyword.get(opts, :port, @default_port)
 
-    if adapter_kind == :null and leg != :server do
-      Mix.raise("--adapter null substitutes the SERVER under test; there is no client leg form")
+    # The enum is `MCP.Conformance.Adapters` and the check is membership in it,
+    # per leg. It used to be one hardcoded sentence about `null` on the client
+    # leg — which was true when the client leg had no control, and became a
+    # false statement the moment MES-57 built three.
+    if is_nil(Adapters.fetch(leg, Atom.to_string(adapter_kind))) do
+      Mix.raise(
+        "--adapter #{adapter_kind} is not an adapter for the #{leg} leg. " <>
+          "Admissible for #{leg}: #{Enum.join(Adapters.names(leg), ", ")}"
+      )
     end
 
     project_root = Provenance.project_root(File.cwd!()) || File.cwd!()
@@ -125,7 +124,7 @@ defmodule MCP.Conformance.Runner do
     adapter =
       if leg == :server, do: start_server_adapter(adapter_kind, cwd, port_no, env), else: nil
 
-    argv = harness_argv(leg, harness_dir, requirements, out_dir, port_no)
+    argv = harness_argv(leg, adapter_kind, harness_dir, requirements, out_dir, port_no)
 
     {console, exit_code} = invoke_harness(argv, cwd, env)
     File.write!(console_path, console)
@@ -214,7 +213,7 @@ defmodule MCP.Conformance.Runner do
     _ -> false
   end
 
-  defp harness_argv(leg, harness_dir, requirements, out_dir, port_no) do
+  defp harness_argv(leg, adapter_kind, harness_dir, requirements, out_dir, port_no) do
     dist =
       Path.join([
         harness_dir,
@@ -229,7 +228,7 @@ defmodule MCP.Conformance.Runner do
 
     case leg do
       :server -> base ++ ["--url", "http://127.0.0.1:#{port_no}/mcp"]
-      :client -> base ++ ["--command", adapter_command(:client, :sdk, port_no)]
+      :client -> base ++ ["--command", adapter_command(:client, adapter_kind, port_no)]
     end
   end
 
@@ -247,16 +246,7 @@ defmodule MCP.Conformance.Runner do
     end
   end
 
-  # Deliberately cwd-relative, exactly as the runs this ticket is fixing were
-  # invoked. An absolute path here would silently repair the wrong-cwd failure
-  # mode and there would be nothing left for the positive control to catch.
-  defp adapter_command(:client, _kind, _port), do: "mix run conformance/client_adapter.exs"
-
-  defp adapter_command(:server, :sdk, port),
-    do: "mix run --no-halt #{@adapters.sdk} #{port}"
-
-  defp adapter_command(:server, :null, port),
-    do: "python3 #{@adapters.null} #{port}"
+  defp adapter_command(leg, kind, port), do: Adapters.command(leg, Atom.to_string(kind), port)
 
   defp invoke_harness([bin | args], cwd, env) do
     {out, code} = System.cmd(bin, args, cd: cwd, env: env, stderr_to_stdout: true)
@@ -266,11 +256,10 @@ defmodule MCP.Conformance.Runner do
   end
 
   defp start_server_adapter(kind, cwd, port_no, env) do
-    {bin, args} =
-      case kind do
-        :sdk -> {"mix", ["run", "--no-halt", @adapters.sdk, Integer.to_string(port_no)]}
-        :null -> {"python3", [@adapters.null, Integer.to_string(port_no)]}
-      end
+    # Split from the SAME string the manifest records as `adapter_command`, so
+    # the two cannot drift: a manifest naming a command line other than the one
+    # that ran is a provenance tool lying about its own subject.
+    [bin | args] = String.split(Adapters.command(:server, Atom.to_string(kind), port_no), " ")
 
     port =
       Port.open({:spawn_executable, System.find_executable(bin)}, [

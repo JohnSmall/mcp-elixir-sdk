@@ -298,6 +298,12 @@ defmodule MCP.Conformance.Provenance do
     copy = read_artefact(run_dir, "requirements.yaml")
 
     %{
+      # Where the run is being read FROM, which is not always where it was
+      # written to: `invocation.out_dir` is the path the harness wrote, and an
+      # archived or copied run is judged on its contents rather than on where it
+      # now sits. The client leg's scenario key walks the artefact tree, so it
+      # needs the tree that exists rather than the one that used to.
+      run_dir: Path.expand(run_dir),
       scenario_dirs: scenario_dirs(run_dir),
       console_sha256: console.sha256,
       console_body: console.body,
