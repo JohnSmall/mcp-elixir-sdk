@@ -634,3 +634,125 @@ wrong somewhere as it is to be wrong once, and there is no single place to fix
 it. Emitting the derived flag beside the evidence costs one field and converts
 "everyone re-implements it" into "everyone reads it, and one place is
 authoritative".
+
+---
+
+## S6-6 — One source construct compiles to N runtime tests, so every mechanism that addresses tests by their source — a tag, a grep, a count — covers a subset and reports success
+
+**Found:** MES-67 (Sprint 6, A2), 2026-08-22, by CODE_CREATOR, while defining
+the ET-CC membership criterion. **Status:** open as a class; both known
+instances have measured remedies, and the remedies share the failure mode.
+
+### The defect
+
+ET-CC membership — and any per-test property we will ever record — is a
+property of a **runtime test**. Every mechanism we have for naming a test
+addresses a **source construct**: an ExUnit `test` declaration, a `doctest`
+declaration, a `file:line` citation, a `grep` pattern. In this tree that map is
+one-to-many in two places, and *both* mechanisms that traverse it fail the same
+way: they cover a subset and return a success signal.
+
+**Instance 1 — the denominator.** MES-67's brief, and MES-65's epic prose,
+scope the sweep as "the 537 tests under `test/mcp/`". Measured at `9661ef8`:
+
+```
+grep -c '^\s*test "' over test/mcp/    ->  537   source declarations
+mix test test/mcp                      ->  566 tests + 13 doctests = 579 runtime units
+mix test test/conformance              ->  285   (the brief said 236)
+```
+
+537 is exactly the grep. The 29-test gap is fully accounted for by four `test`
+declarations wrapped in a `for` comprehension, each compiling to one test per
+value:
+
+```
+test/mcp/protocol/messages/tools_test.exs:131      2 decls x 10 values -> 20  (+18)
+test/mcp/server/json_schema_2020_12_test.exs:188   1 decl  x 11 values -> 11  (+10)
+test/mcp/protocol/types/tool_test.exs:108          1 decl  x  2 values ->  2   (+1)
+                                                                  total  +29
+537 declarations - 4 expanded + 33 generated = 566 tests   (+13 doctests = 579)
+```
+
+Ruled out as the cause: `node` on PATH, which accounts for 3 excluded tests in
+the whole-suite run, not 29.
+
+**Instance 2 — the tag.** Measured on a throwaway three-doctest module and a
+three-value `for`, under Elixir 1.19.5:
+
+| mechanism | what it actually reaches |
+|---|---|
+| `@tag :x` before `doctest Mod` | the **first generated doctest only** — 1 of 3; the other 2 silently excluded |
+| `@moduletag :x` | the **whole module** — every doctest *and* every ordinary test in the file |
+| `@tag :x` before a `for`-wrapped `test` | the **first generated test only** — 1 of 3 |
+
+The second row is not a hypothetical over-reach. Both `doctest` declarations in
+this tree sit in files dense with ordinary tests (`extensions_test.exs`, 41
+units; `header_mirror_test.exs`), so `@moduletag` sweeps unrelated tests in
+while `@tag` reaches at most 2 of the 13 doctests.
+
+### The mechanism, which is the transferable part
+
+**A construct that expands is invisible to the thing that addresses it.** The
+`for` and the `doctest` macro both run at compile time; by the time ExUnit has
+tests, the expansion has already happened and the one-to-many step left no
+record at the address the caller used. `@tag` is a module attribute consumed and
+cleared by the *next* `test` call, so an expansion that emits N `test` calls
+consumes it once. `grep` never sees the expansion at all.
+
+**Both failure modes return success.** A sweep whose denominator is 537 visits
+every row it knows about and reports complete. `mix test --only etcc` over a
+subset-tagged suite exits 0 and prints a green. Neither prints the question, and
+from where the caller stands 537 and 566 read identically as "all of them". This
+is the S5-7 / S6-5 shape — absence read as satisfaction — arriving through the
+*address* rather than through a field.
+
+### The remedies exist, and they have the same failure mode one level up
+
+Measured, same session:
+
+| remedy | reach |
+|---|---|
+| `@tag :x` **inside** the `for`, before `test` | all N generated tests |
+| `doctest Mod, tags: [:x]` | all doctests of that declaration; ordinary tests untouched |
+| `doctest Mod, only: [f: 1], tags: [:x]` | that function's doctests only |
+| two `doctest Mod, only: [...]` declarations in one module, one tagged | composes cleanly — no name clash, no error |
+
+So the granularity floor is `{function, arity}`: **no `doctest` option separates
+two doctests of the same function.** In this tree at `9661ef8` that floor is
+sufficient — the 13 doctests come from 5 functions and no function's doctests
+split across labels — but that is a measured contingency, not a guarantee.
+
+**And the remedy fails silently if the toolchain drifts.** Measured: an
+unrecognised option to `doctest` is **ignored with no warning and no error** —
+`doctest Sub, tags: [:meas], no_such_option_xyz: [:meas]` compiles clean and runs.
+`mix.exs` declares `elixir: "~> 1.17"`; the measurements above are on 1.19.5. On
+any Elixir predating the `:tags` option, `doctest Mod, tags: [:etcc]` therefore
+compiles clean, tags nothing, and the suite goes green — the same defect, now in
+the fix.
+
+**The one thing that fails closed is also the one that cannot help.** `mix test
+--only etcc` exits **1** when *zero* tests match ("The --only option was given to
+`mix test` but no test was executed"). That catches the total miss. It does
+nothing for the partial miss — 1 tagged of 13 exits 0 — which is the actual
+failure mode here.
+
+### Transferable form
+
+**Count the thing you are going to act on, not the thing you can grep.** Before
+adopting a denominator, run the tool that produces the population and compare.
+If a brief states a figure, establish it; `grep -c` over declarations and
+`mix test` over the same path answer different questions, and the difference is
+invisible in the smaller answer.
+
+**When a mechanism selects a subset, the exit code cannot tell you.** A
+selection mechanism's green means "everything selected passed", never
+"everything intended was selected". The only evidence that separates them is the
+**count**, asserted against an independently-derived expected count. Any design
+that tags a population and then runs `--only` needs that assertion as a positive
+control, or it is asserting nothing.
+
+**An unrecognised option that is ignored is a silent-subset mechanism.** Before
+relying on an option to carry a property, check what happens when it is *not*
+understood. If the answer is "nothing, quietly", the option's presence in the
+source is not evidence that it took effect, and the version that introduced it
+must be pinned or asserted rather than assumed.
