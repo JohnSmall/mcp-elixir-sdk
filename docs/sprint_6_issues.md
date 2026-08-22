@@ -756,3 +756,98 @@ relying on an option to carry a property, check what happens when it is *not*
 understood. If the answer is "nothing, quietly", the option's presence in the
 source is not evidence that it took effect, and the version that introduced it
 must be pinned or asserted rather than assumed.
+
+---
+
+## S6-7 — The seat launch prompt says "hand the baton back" but never names the role, and `jira_handoff` forces the seat to choose one
+
+**Found:** MES-67 (Sprint 6, A2), 2026-08-22, by the PM, when CODE_CREATOR's
+close-out arrived with CODE_REVIEWER already reviewing it. **Status:** open —
+**for the EMFA project**, not fixable here. It is a defect in how seats are
+instructed, not in any ticket's deliverable.
+
+### The defect
+
+The flow is `PM→CC→PM→CR→PM` — **mediated**. CLAUDE.md states it, and the
+Confluence working procedure is its source. A seat acts only when the assignee
+is its own service account, so the assignee *is* the baton.
+
+The seat launch prompt (from `../wp_scripts/`, visible in the process table)
+says:
+
+```
+Hand the baton back with the jira_handoff tool on the emfa-wrapper, which posts
+the comment and moves the assignee in one call. Never use a Rovo comment tool
+for a hop: it posts the comment without moving the assignee, so the turn
+silently does not pass.
+```
+
+That instruction is precise about the *tool* and silent about the *destination*.
+`jira_handoff` requires `next_role`, so the seat must supply one — and
+**"back" is not a role**. A seat reading only its launch prompt has to infer
+the destination, and "the next seat in the pipeline" is a defensible reading:
+it is the reading under which work moves forward.
+
+CODE_CREATOR handed A2's close-out directly to CODE_REVIEWER. CR's polling loop
+picked it up **four seconds later**.
+
+### Why the mediated hop is not ceremony — the measured cost
+
+The PM hop exists so the PM adjudicates a close-out before review: verifies
+claims, rules on deviations, and tells the reviewer where to aim.
+
+A2's close-out declared **three deviations from the ratification it was
+executing** — an `ET-ADJ` test re-keyed onto a `lib/` call site (CC's own words:
+"a real deviation, not a paraphrase"), gate 1 yielding `OUT-OF-SCOPE` rather
+than a label, and a label-precedence rule in neither the plan nor the
+ratification.
+
+**All three reached the reviewer before they reached the seat that set the
+terms.** CR spent its review confirming a ratification whose terms had moved,
+without being told they had. It rated all three improvements — and it was right,
+all three were adopted — but that was luck about the content, not a property of
+the routing. Had one been wrong, the reviewer would have been the only check on
+a deviation from a rule it did not know had changed.
+
+### The mechanism, which is the transferable part
+
+**A rule stated where the decision is *described* but not where the decision is
+*made*.** The mediation rule lives in CLAUDE.md and on Confluence. The
+`next_role` argument is supplied at a tool call, in a context where neither is
+quoted. Between the two sits a launch prompt that names the tool, warns about a
+different failure mode, and stops one word short.
+
+The instruction is not wrong. It is **incomplete in exactly the place the
+caller must act**, and incompleteness there reads as latitude rather than as an
+omission — so the seat does not experience itself as guessing.
+
+### What is NOT wrong, and should be said
+
+- **CC declared all three deviations plainly, at the top of its close-out**, and
+  did not bury them. A seat that flags its own departures has done its job; the
+  flag went to the wrong reader first.
+- **The guard the prompt *does* carry is the right one** — "never use a Rovo
+  comment tool for a hop" prevents a silent non-pass, which is the worse
+  failure. This is a gap beside a good rule, not a bad rule.
+- **Nothing was lost.** CR reviewed well, the PM adjudicated afterwards, and the
+  ticket merged. The cost was a check performed out of order, not a check
+  skipped.
+
+### For EMFA
+
+The ask is one clause: **name the destination role in the launch prompt**, or
+state the mediation rule there. Something of the shape *"hand back to PM;
+PM routes to CR"* would have closed it.
+
+If seat prompts are meant to be project-agnostic and the flow is a project
+concern, that is a defensible answer — and the fix then belongs in the
+project's own instructions, quoted where the seat will read it at hand-off
+time, not only where the procedure is described.
+
+### Transferable form
+
+**An instruction that names a tool but not its destination will be completed by
+whoever calls it, and they will complete it plausibly.** Where a rule must
+survive into a specific argument of a specific call, state it at that call —
+a rule that lives only in the document describing the process is not available
+at the moment the process executes.
