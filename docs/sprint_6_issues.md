@@ -214,3 +214,100 @@ plan is written in one system and executed from another, the plan's own
 completeness is no evidence that the execution list matches it. State the
 membership where the tooling reads it, or check the two against each other on a
 cadence — remembering to do it by hand has now failed twice.
+
+---
+
+## S6-3 — An assignment clause in a comprehension is a FILTER, so a lookup returning `nil` silently deletes the row it was supposed to check
+
+**Found:** MES-63 (F1), 2026-08-22 — the misdiagnosis by CODE_CREATOR, the
+mechanism by the PM, both on the same three lines. **Status:** the instance is
+fixed in `test/conformance/classification_test.exs`; the *class* is recorded
+here because nothing prevents the next one.
+
+### The defect
+
+`classification_test.exs` checked that every committed classification block
+still equals what `Classification.fetch/1` returns. It was written as one
+comprehension:
+
+```elixir
+for path <- Path.wildcard(...),
+    scenario <- ... |> Map.fetch!("scenarios"),
+    block = scenario["classification"],
+    block != nil,
+    entry = Classification.fetch(scenario["id"]),   # <-- returns nil for an unknown id
+    expected = %{...entry.why...},
+    block != expected,
+    do: {Path.basename(path), scenario["id"]}
+```
+
+`fetch/1` is `Map.get/2`: it returns `nil` for an id the table does not carry.
+A reader — including the seat that raised this — reads the next line's
+`entry.why` and concludes that an unknown id **crashes**. It does not. In a
+comprehension, `entry = ...` is a generator-position assignment, and an
+assignment clause acts as a **filter**: a falsy binding drops the row and the
+clauses after it never run for it.
+
+```elixir
+for x <- [1, 2], m = (if x == 2, do: nil, else: %{k: x}), out = m.k, do: out
+#=> [1]        # no BadMapError — row 2 was filtered out before `m.k`
+```
+
+**Measured** in a worktree at `276b22e`, by mutating `server-2026-07-28.json`:
+
+| shape | result |
+|---|---|
+| untouched tree (control) | green, 11 tests 0 failures |
+| id **known**, `why` mutated | **red** — drift reported, names file and scenario |
+| id renamed to `bogus-scenario-not-in-table`, block set to `class: "nonsense"` | **green, 0 failures** |
+
+So arbitrary nonsense could sit in a classification block indefinitely, provided
+the scenario id was one the table did not carry, and the guard whose entire
+purpose is to catch hand-edited artefacts stayed green and said nothing.
+
+### The mechanism, which is the transferable part
+
+**A filter and a lookup look identical at the point of use, and the language
+resolves the ambiguity in the direction that produces no output.** The author's
+intent — "look this up so I can compare it" — and the language's reading —
+"skip this row if the lookup is falsy" — differ only in what happens when the
+lookup fails, which is the case nobody writes a test for.
+
+The failure is a **false green**, not a crash, and that is the whole cost. A
+crash is loud, lands on the person who caused it, and gets fixed. A row that
+deletes itself removes exactly the input that would have failed the check, so
+the check reports success **because** it was given something wrong.
+
+### Why the misdiagnosis mattered more than the defect
+
+The obvious remedy for the crash-that-does-not-exist is to guard the `nil` —
+add `entry != nil` as a filter clause. **That is a no-op: it is already the
+behaviour.** It would change nothing, pass every test, and convert an accidental
+false-green into a *designed* one — thereafter the skip would look deliberate
+and reviewed, and the next reader would have no reason to question it.
+
+**A wrong mechanism does not merely fail to fix the defect; it selects a fix
+that makes the defect permanent and invisible.** This is the argument for
+probing the mechanism directly — two lines in `iex` settled it — rather than
+reasoning from what the code looks like it does.
+
+### The fix, and the control that proves it
+
+Selection is now two passes: collect the blocks, then assert separately that no
+block names an unknown id, then check drift over the blocks that remain. An
+unknown id **fails, naming the file and the id** — the same standard applied to
+a file that claims to be a census and is not, and for the same reason: a file
+claiming to be a census is held to the census contract.
+
+The proving control (S7 in MES-63's matrix) is the mutation above: green before,
+red after. **Without it the evidence is compatible with the fix not having
+happened**, because every other shape in the matrix asks the test to stop
+failing and this is the one that asks it to start.
+
+### Transferable form
+
+**Where a language lets a lookup double as a filter, a failed lookup does not
+raise — it removes the evidence.** Before trusting a guard that iterates, ask
+what it does with an input it cannot resolve, and *measure* the answer: the
+mechanism that produces silence is the one least visible from reading the code,
+and a check that skips its own hardest input reports success for it.

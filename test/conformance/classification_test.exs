@@ -9,6 +9,18 @@ defmodule MCP.Conformance.ClassificationTest do
 
   alias MCP.Conformance.{Classification, RequirementSet, TestHarness}
 
+  # MES-63. The censuses committed at the time of writing. See
+  # `classify_glob_matches/0` below for why this is the floor and not the rule.
+  @committed_censuses [
+    "client-2026-07-28-null-connect.json",
+    "client-2026-07-28-null-exit0.json",
+    "client-2026-07-28-null-request.json",
+    "client-2026-07-28-probe-strict-connect.json",
+    "client-2026-07-28.json",
+    "server-2026-07-28-null-control.json",
+    "server-2026-07-28.json"
+  ]
+
   describe "the vocabulary" do
     test "the six classes are the six the ticket names, and no others" do
       assert Enum.sort(Classification.classes()) ==
@@ -153,26 +165,100 @@ defmodule MCP.Conformance.ClassificationTest do
     # reason is TRUE — round 4's defect was a false claim faithfully copied into
     # every artefact, and this test would have been green throughout. Only a reader
     # catches that, which is why S5-24 is a register entry and not a test.
-    test "every classification block equals what Classification.fetch/1 returns" do
-      docs = Path.expand("../../docs/conformance", __DIR__)
+    test "every census in docs/conformance is recognised as one" do
+      {censuses, malformed, skipped} = classify_glob_matches()
 
-      drift =
-        for path <- Path.wildcard(Path.join(docs, "*-2026-07-28*.json")),
-            scenario <- path |> File.read!() |> Jason.decode!() |> Map.fetch!("scenarios"),
+      assert malformed == [],
+             "these files claim to be censuses (they carry census_schema_version) but do " <>
+               "not have a top-level \"scenarios\" list — a file claiming to be a census is " <>
+               "held to the census contract: #{inspect(malformed)}"
+
+      # The FLOOR, and it is deliberately not the selection. The marker above
+      # over-covers safely: a census added later is picked up with no edit here.
+      # This list under-covers safely: it can only ever complain that something
+      # known has stopped being recognised. MES-63 — neither alone is enough, so
+      # the two are used together, and they fail in opposite directions.
+      missing = @committed_censuses -- Enum.map(censuses, fn {basename, _} -> basename end)
+
+      assert missing == [],
+             "these committed censuses are no longer recognised as censuses — did one lose " <>
+               "its census_schema_version marker? A census that stops being detected is " <>
+               "silently no longer checked: #{inspect(missing)}. Skipped as non-censuses " <>
+               "this run: #{inspect(skipped)}"
+    end
+
+    test "every classification block equals what Classification.fetch/1 returns" do
+      {censuses, _malformed, _skipped} = classify_glob_matches()
+
+      # Split into two passes deliberately. An assignment clause in a comprehension
+      # acts as a FILTER, so writing `entry = Classification.fetch(id)` inline meant
+      # a block naming an id the table does not know REMOVED its own row and the
+      # census came back clean — a malformed census, silently skipped (MES-63).
+      blocks =
+        for {basename, scenarios} <- censuses,
+            scenario <- scenarios,
             block = scenario["classification"],
             block != nil,
-            entry = Classification.fetch(scenario["id"]),
+            do: {basename, scenario["id"], block}
+
+      unknown = for {b, id, _} <- blocks, Classification.fetch(id) == nil, do: {b, id}
+
+      assert unknown == [],
+             "these committed classification blocks name scenario ids this table does not " <>
+               "carry, so nothing checked them — a classification for an unknown scenario " <>
+               "is not a passing check, it is an unasked question: #{inspect(Enum.uniq(unknown))}"
+
+      drift =
+        for {basename, id, block} <- blocks,
+            entry = Classification.fetch(id),
+            entry != nil,
             expected = %{
               "class" => to_string(entry.class),
               "why" => entry.why,
               "owner" => entry.owner
             },
             block != expected,
-            do: {Path.basename(path), scenario["id"]}
+            do: {basename, id}
 
       assert drift == [],
              "these committed classification blocks are not what this table says today — " <>
                "regenerate the census, do not edit the artefact: #{inspect(Enum.uniq(drift))}"
     end
+  end
+
+  # MES-63. The glob is a LOCATION claim and location claims are weak: the first
+  # non-census JSON dropped into docs/conformance raised KeyError before the test
+  # could assert anything. Selection is by the census's own marker instead, and
+  # every match lands in exactly one of three NAMED outcomes — none of them a crash,
+  # and none of them a silent skip of something claiming to be a census.
+  #
+  # Rejected: keying on a top-level "scenarios" key (it classifies A1's in-scope
+  # manifest AS a census and compares it against this table); an explicit filename
+  # set as the whole rule (a later census not added to the list is never checked
+  # and the suite stays green — the wrong failure direction, so it is the floor
+  # above, not the selection); a census/ subdirectory (still a location claim, in
+  # a smaller room, and it pushes discipline onto every future ticket — which is
+  # the thing that just failed); a narrower glob (a tighter name claim is still a
+  # name claim: it would close this instance and leave the class open).
+  defp classify_glob_matches do
+    docs = Path.expand("../../docs/conformance", __DIR__)
+
+    Path.join(docs, "*-2026-07-28*.json")
+    |> Path.wildcard()
+    |> Enum.reduce({[], [], []}, fn path, {censuses, malformed, skipped} ->
+      basename = Path.basename(path)
+
+      case path |> File.read!() |> Jason.decode!() do
+        %{"census_schema_version" => v, "scenarios" => scenarios}
+        when is_integer(v) and is_list(scenarios) ->
+          {censuses ++ [{basename, scenarios}], malformed, skipped}
+
+        %{"census_schema_version" => _} ->
+          {censuses, malformed ++ [basename], skipped}
+
+        _ ->
+          {censuses, malformed, skipped ++ [basename]}
+      end
+    end)
   end
 end
