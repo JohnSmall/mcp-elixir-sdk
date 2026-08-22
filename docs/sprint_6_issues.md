@@ -951,3 +951,136 @@ else's artefact, establish which field is the one the artefact acts on.** A
 human-readable description and an executable predicate are two records of one
 requirement, and the one a reader reaches for first is not the one the tool
 obeys — the same shape as S6-2, one system further out.
+
+---
+
+## S6-9 — A captured denominator records what WAS measured, so an absence in it conflates "the instrument cannot score this" with "this run did not drive it"
+
+**Found:** MES-69 (Sprint 6, A4), 2026-08-22, by CODE_CREATOR while reconciling
+CG1–CG7 to OC check keys. **Status:** open as a class; the immediate instance is
+bounded in `docs/conformance/cg-reconciliation.md` §5 and §9, and the general
+form is A3/D1's to rule on.
+
+### The defect
+
+A1's manifest freezes **175 check keys** and is the denominator every downstream
+bucket resolves against. A3's `oc:none/<reason>/<native-id>` token means *"this
+ET-CC member has no counterpart"*, and the guard **asserts** the token does not
+resolve in those 175.
+
+That is sound. What is not sound is the sentence a reader takes away from it:
+**"the official suite does not cover this."** The 175 were harvested from **one
+accepted run**, and at least one scenario mints its check keys *from what the
+client actually sent*.
+
+Measured, from the `http-standard-headers` evaluator at
+`dist/index.js` sha `a10085d0…f268aae`:
+
+```
+checkMcpMethodHeader(e,t){
+  let n=t.method;
+  if(!n||this.methodHeaderChecks.has(n))return;
+  ...
+  this.checks.push({ name:`ClientMcpMethodHeader_${n.replace(/\//g,`_`)}`, ... })
+}
+```
+
+There is **no whitelist**. `handlePost` calls it on every POST, so *any* method
+the client sends mints a check key. The SKIPPED loop in `getChecks()` covers a
+fixed eight; the SUCCESS/FAILURE path covers **whatever arrived**.
+
+**The instance is not hypothetical — it is already in a committed artefact.**
+`client-2026-07-28-null-request.json` records `http-standard-headers` with
+**12** checks where the manifest froze **11**, the twelfth being:
+
+```
+ClientMcpMethodHeader_conformance_null-control   FAILURE
+  "Missing Mcp-Method header on conformance/null-control request."
+```
+
+A check key that exists in a control run, is perfectly emittable by the frozen
+build, and **resolves in no manifest**. The discounts document already recorded
+the *symptom* — "sending anything makes a twelfth `http-standard-headers` check
+appear and fail" — without naming the mechanism, so the inversion read as a
+quirk of one control rather than as a property of the denominator.
+
+### The mechanism, which is the transferable part
+
+**A captured denominator is a record of an interaction, not an inventory of an
+instrument.** Where the instrument's output space is a function of the input it
+receives, freezing one run's output freezes one *slice* — and the slice is
+indistinguishable from the whole, because both are just a list of keys.
+
+So an absence in the frozen set has (at least) three causes that the artefact
+cannot separate:
+
+| cause | true statement | what a reader hears |
+| --- | --- | --- |
+| no scenario or check exists anywhere | the suite cannot score this | "the suite cannot score this" ✔ |
+| the scenario exists; its fixture holds no such case | the suite does not *currently* exercise this | "the suite cannot score this" ✘ |
+| the key is minted from input, and this run did not send it | **this run did not drive it** | "the suite cannot score this" ✘ |
+
+Only the first is bucket 1 in the sense the epic means — *our coverage exceeds
+the official suite's*. The third is not a coverage finding about the suite at
+all; it is a fact about our adapter's drive list, and it belongs to A5/B2b.
+
+### Why this is the same shape as S6-5, one system out
+
+S6-5: a field recording *why something failed* is null for everything that
+succeeded, so a rule derived from it is wrong about passes — and wrong in the
+flattering direction. Here: a set recording *what was scored* is silent about
+everything not driven, so a rule derived from it is wrong about undriven
+behaviour — and wrong in the flattering direction, because "no counterpart"
+reads as *our suite is ahead* when it may mean *we never asked*.
+
+**In both cases the artefact is correct and the inference is not.** Nothing is
+mis-recorded; the reader supplies a universal where the data supports only an
+existential.
+
+### The remedy, as applied on A4
+
+Not a fix — a **bound plus a distinction**, because the frozen 175 is the right
+denominator for A3's relation and should not be widened.
+
+1. **Two reason-slugs, not one.** `no-oc-scenario` (measured: zero hits over all
+   175, e.g. CG2's `/extension/`) is separated from `no-oc-fixture-case` (the
+   scenario exists *and is matched*; its fixture holds no such case, e.g. CG7's
+   three annotation constraints). The slug carries the evidence class.
+2. **The third cause is not tokened at all.** CG1's discharge covers
+   `server/discover`, `completion/complete` and `notifications/cancelled` —
+   methods with no key in the frozen 175 *because the adapter did not send them
+   in that scenario*, not because the harness would refuse to score them. Those
+   were **not** recorded as bucket-1 claims; they are routed to A5/B2b as
+   drive-coverage evidence.
+3. **The bound is stated where the tokens are** (`cg-reconciliation.md` §9.6):
+   `oc:none` means *no key in A1's 175*, which is **not** the same claim as *the
+   suite could never score this*.
+
+### What is NOT wrong, and should be said
+
+- **A1 is not defective.** Freezing the accepted run's key set is exactly right
+  for a relation that must be stable and resolvable; a denominator that shifted
+  with each run would resolve nothing. A1's residual R3 already says a harness
+  bump invalidates keys.
+- **A3's guard is not defective either.** It asserts precisely what it claims —
+  that the token does not resolve — and never claims the stronger property. The
+  gap is between the guard's assertion and the sentence a reader writes under it.
+- **The null-request inversion was published, not hidden.** The discounts
+  document named the twelfth check and its effect. What was missing was the
+  generalisation, and it took a second ticket needing the denominator for a
+  different purpose to surface it.
+
+### Transferable form
+
+**When an instrument's output vocabulary depends on its input, a captured run
+bounds the instrument only from below.** Before reading an absence as a limit of
+the tool, establish whether the tool's key space is fixed or minted — and if it
+is minted, say which of *"cannot"*, *"does not"* and *"was not asked to"* the
+absence supports. The three are one word apart in English and one bucket apart
+in a register.
+
+The corollary: **a control run is a second sample of the instrument's output
+space, and it is free.** The twelfth check had been sitting in a committed
+control artefact for a day; nobody compared the control's key set to the frozen
+one, because controls are read for their *verdicts*. Diffing a control's keys
+against the manifest is a cheap check that this class of conflation exists.
