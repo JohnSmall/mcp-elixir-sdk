@@ -311,3 +311,223 @@ raise — it removes the evidence.** Before trusting a guard that iterates, ask
 what it does with an input it cannot resolve, and *measure* the answer: the
 mechanism that produces silence is the one least visible from reading the code,
 and a check that skips its own hardest input reports success for it.
+
+---
+
+## S6-4 — An artefact regenerated from the WRONG input is internally consistent, so every semantic check passes; only reproduction against the committed bytes discriminates
+
+**Found:** MES-61 (Sprint 6, F2), 2026-08-22, by CODE_CREATOR, planning the
+census regeneration the ticket asks for.
+**Status:** closed by amendment — the defective acceptance criterion it
+falsified was rewritten by the PM before any work was done against it.
+
+### The defect
+
+MES-61's AC3 required that the regenerated census differ from the committed one
+in the reason string alone, and named the way to show it: *"no count, no bucket,
+no per-scenario verdict moves, and the headline stays 35/37 with 29
+discriminating."*
+
+The ticket's own hazard section warned that `/tmp` holds **many** MES-56-era
+server-stateless runs — null controls, a mutation control, several superseded
+rounds — and that regenerating from the wrong one would produce a census that is
+wrong but internally consistent. AC3 was the criterion standing between the
+ticket and that outcome.
+
+**It could not fail.** Four decoy runs — `mes56r2-sdk`, `mes56r4-final-sdk`,
+`mes56r5-final-sdk`, `mes56r5-tip-sdk` — were each put through the census
+builder. Every one was **accepted by the adjudicator and built a census with
+exit 0**. Measured against the committed census, all four gave:
+
+| property AC3 names | decoy result |
+|---|---|
+| totals | **identical** (all four) |
+| per-scenario passes / scored / checks | **identical** (all four) |
+| headline 35/37, 29 discriminating | **identical** (all four) |
+| `Classification` projection guard | **would be green** (all four) |
+
+The only fields that moved were the `run` block — `run_dir`, `commit`,
+`started_at`, `console_sha256` and `manifest_sha256` in every case, plus
+`adapter_command` in three of the four — and each scenario's `artefact_dir`
+timestamp. That is 216 diff lines for `mes56r2-sdk` and 220 for the other three:
+pure provenance, and not one line of substance.
+
+Note what the last row means. The projection guard compares each committed
+classification block against `Classification.fetch/1`, so it is green for a
+decoy census **for the same reason it is green for the right one** — the block
+is a copy of the table either way. Re-measured at this ticket's own tip, the
+*corrected* sub-cause (d) text appears in all four decoy censuses too. Fixing
+the reason string does not make the artefact self-identifying; nothing in the
+projection ever will.
+
+### The mechanism, which is the transferable part
+
+**A census is a projection of a run, and every check AC3 named reads the
+projection.** Runs of the same SDK at the same commit against the same frozen
+requirement set project to the same numbers *by construction* — that is what it
+means for the measurement to be reproducible. So the numbers cannot distinguish
+between them, and a check built out of numbers inherits that blindness no matter
+how many numbers it looks at.
+
+Provenance is not in the projection. It is in the *correspondence* between the
+artefact and the bytes of one specific run — and the only instrument that reads
+correspondence is regeneration compared byte-for-byte against what is committed.
+
+**Adding more semantic checks does not help.** Each one is another reading of
+the same projection. The checks were not too few; they were the wrong kind.
+
+### Why this one generalises past its own ticket
+
+MES-61 exists because a classification `why` restated the harness's *generic*
+error wording as an observation — a claim never tested against the case it was
+supposed to exclude. **AC3 was the same defect, one level up:** a set of
+plausible-sounding checks written as an oracle, by an author explicitly trying
+to be rigorous, and still unable to fail.
+
+That is the part worth carrying. The AC was not sloppy. It named four distinct
+properties, quoted exact figures, and demanded they be *shown* rather than
+asserted. None of that helped, because every one of those properties is
+invariant across the very inputs the criterion existed to tell apart. **The
+question a criterion must answer is not "is this hard to satisfy?" but "what
+does its passing rule out?"** — and that is answerable only by constructing the
+case it is meant to exclude and running it.
+
+### The remedy, as applied
+
+AC3 was amended mid-ticket by the PM to require, **first**, that the
+unedited-table reproduction come back byte-identical to the committed artefact
+*before any edit is made*. That baseline is what converts the semantic checks
+from detectors into attributors: once the pipeline is known to be deterministic
+over these inputs at this commit, any post-edit delta is attributable to the
+edit and nothing else. Without it, a clean-looking diff proves nothing.
+
+Executed on MES-61: three artefacts, **0 diff lines**, md5
+`9db0e67a…` / `f72c05e2…` / `55f5fe35…`, before the reason string was touched.
+
+### The standing fragility this rests on, stated because it is not fixed
+
+Every regeneration claim above depends on two directories in `/tmp`
+(`mes56r3-sdk`, `mes56r3-null`) that **no commit holds** — only the censuses are
+committed. A container restart destroys the ability to prove provenance for any
+artefact in `docs/conformance/`, and by this entry's own argument no substitute
+run could be detected as a substitute. The window is one restart wide and it is
+open now. Not fixed here; recorded so that the next ticket needing a
+regeneration knows it may open, find the provenance gone, and have to stop.
+
+### One consequence of MES-61's scope, routable rather than fixed
+
+`docs/conformance/report-2026-07-28.md` and its published Confluence snapshot
+`docs/conformance/confluence/report-2026-07-28.json` carry a correction
+paragraph describing the census's *defective* sub-cause (d) — correctly, as the
+thing they were reporting. After MES-61 merges, that paragraph describes a
+census state `main` no longer has. Both were left untouched deliberately: they
+quote the defect as evidence, and the report is a dated MES-58 deliverable whose
+Confluence twin MES-61 may not write, so editing the local copy alone would
+desynchronise a pair that is currently consistent. **A reader of the report has
+no reason to open this file**, so the desync is flagged to the PM as a routable
+backlog item rather than left to this register alone.
+
+### The correction rounds: not one false claim but every claim in the sentence
+
+MES-61 was raised to correct **one** sub-cause. Two PM-ordered correction rounds
+later, the count is different, and the difference is the finding.
+
+The sentence as it stood at `6fe529d` named four sub-causes and claimed "four
+distinct defects". Audited claim by claim against the accepted run's own check
+sheet, **all four were wrong**, and one of the four ways is only visible once
+the other three are:
+
+| sub-cause, as written | what the run shows | found by |
+|---|---|---|
+| (a) "a request whose `_meta` is **absent or invalid**" | only absence is exercised — no `_meta`, no `protocolVersion`, no `clientCapabilities`. No malformed-but-present case exists in the scenario | round 2 |
+| (b) "the supported-versions payload **does not have the shape** the check reads" | there is no payload. The probe is answered HTTP 200 with a normal `result` and **no `error` object at all** | round 2 |
+| (c) "the JSON-RPC code **is already right**, the HTTP status is not" | true of five checks; `initialize` observes `-32022`, not `-32601` | round 1 |
+| (d) "`error.data.requiredCapabilities` **is an array** where the schema defines an object" | there is no `error.data`. The error object's keys are exactly `['code', 'message']` | the original ticket |
+
+Plus the coverage error S5-30 caught independently: "four distinct defects"
+covered 16 of the 17 failing checks. Four false claims and one arithmetic gap,
+in one sentence, none of which any gate, test or reviewer had caught.
+
+### Why "three more" is a different finding from "one"
+
+A single false claim is a mistake. **Four, all failing the same way, is evidence
+that the sentence was never checked against the run at all** — and the shared
+failure mode says what it was checked against instead:
+
+* (d) — harness: *"...is not a ClientCapabilities object naming 'sampling'... not
+  an array"*. Census: *"is an array where the schema defines an object."*
+* (b) — harness: *"Returned supported versions data layout does not correlate to
+  active server metrics: undefined"*. Census: *"does not have the shape the check
+  reads."*
+* (c) — harness: *"Expected HTTP 404 and code -32601 for removed methods, got
+  HTTP 200 and code ..."*. Census: *"the code is already right, the status is
+  not."*
+
+Every one is a faithful paraphrase of the **harness's error string** and a false
+statement about the **server**. That is the whole mechanism. A generic
+diagnostic states what the check *required*, parameterised by whatever it found;
+it reads like an observation and is not one. Paraphrasing it produces prose that
+is fluent, specific, plausible, and unrelated to the response on disk — and
+which no reader can tell from a real observation, because a real observation
+would be worded identically.
+
+The tell, once you know to look for it, is that these messages describe the
+*schema* in the present tense. "Is an array", "does not have the shape", "is
+already right" are claims about a value. If the check had actually read that
+value it would normally print it — and where it does, the printed value is the
+refutation: (b)'s message ends in the literal token `undefined`, which is the
+harness echoing back `JSON.stringify(undefined)` after finding nothing at
+`error.data.supported`.
+
+### How (b) was established when the check saved no response
+
+Worth recording as a method, because the obvious route was closed.
+`sep-2575-server-unsupported-version-error` stores `details: {}` — the harness
+does not save the response on that branch, so the claim could not be settled by
+reading it. It was settled by arithmetic instead:
+
+* The scenario's last check, `sep-2575-http-server-error-jsonrpc-id`, records
+  `errorResponsesObserved: 7`. That counter is incremented once per probe whose
+  response body carries an `error` key.
+* Exactly seven checks in the sheet quote an observed error code: `-32021`
+  (undeclared capability), `-32022` (`initialize`), and `-32601` five times
+  (`ping`, `logging/setLevel`, `resources/subscribe`, `resources/unsubscribe`,
+  generic unknown method).
+* Seven counted, seven named, none left over — so **no other probe returned an
+  error at all**, and the unsupported-version probe is not among them.
+
+The same arithmetic independently confirms (e): the header-mismatch probe also
+returned no error object, which is what its `code undefined` means.
+**A saved artefact can carry the answer to a question it does not answer
+directly.** Counters, totals and invariants elsewhere in the same file
+constrain what the missing value can have been, sometimes to a single
+possibility.
+
+### The cost asymmetry that decided all of this
+
+Each correction cost one round on an unmerged branch while `/tmp` still held the
+run. Finding the same claims after merge would cost something categorically
+different: editing the table makes `ClassificationTest`'s drift guard go red,
+and the only legitimate way to clear it is to regenerate from the run — which by
+then may not exist. **The window is not merely expensive to lose; losing it
+makes the fix unavailable.** That is why the second and third false claims were
+ruled into this ticket rather than routed, against the ordinary presumption that
+new scope routes.
+
+### Transferable form
+
+**An artefact rebuilt from the wrong source is not corrupt — it is coherent, and
+coherence is what every semantic check measures.** Before trusting a
+regeneration, reproduce the *existing* committed bytes from the source you
+believe produced them, unedited, and require byte equality. Then edit. A check
+that reads only the output can tell you the output is well-formed; it can never
+tell you which input it came from, and no number of such checks adds up to one
+that can.
+
+**And the second, which this entry acquired by being corrected twice: a generic
+diagnostic message is not an observation.** When a tool reports that X "is not a
+Y", it has told you what it required, not what it saw. Attribute a cause to the
+response the run actually saved — or, where the run saved nothing, to an
+invariant that constrains it — and where neither is available, say that you
+could not establish it. A paraphrase of the requirement, written in the past
+tense, is indistinguishable from a finding and carries none of its content.
