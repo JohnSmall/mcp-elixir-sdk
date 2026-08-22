@@ -1084,3 +1084,146 @@ space, and it is free.** The twelfth check had been sitting in a committed
 control artefact for a day; nobody compared the control's key set to the frozen
 one, because controls are read for their *verdicts*. Diffing a control's keys
 against the manifest is a cheap check that this class of conflation exists.
+
+---
+
+## S6-10 — A scoring reducer that maps the non-evaluated verdict to "ignored" passes a run that evaluated nothing, so an all-SKIPPED scenario is indistinguishable from a clean one
+
+**Found:** MES-70 (Sprint 6, A5), 2026-08-22, by CODE_CREATOR while building the
+bucket-0 falsification control. **Status:** open; instrument defect, upstream —
+belongs to the conformance harness, not to this SDK. Recorded here and flagged;
+**it does not touch bucket 0's count**, which is the point of keeping it on its
+own axis.
+
+### The defect
+
+The client-leg summary reducer's disposition, as committed in
+`docs/conformance/client-2026-07-28-null-exit0.json`:
+
+```
+SUCCESS -> pass    FAILURE -> fail    WARNING -> fail
+SKIPPED -> ignored INFO    -> ignored
+```
+
+`scope: all_ran`, and the verdict is `process.exit(+(failed > 0 || warnings > 0))`.
+A scenario therefore passes when **no check failed**, which a scenario where no
+check *ran* satisfies vacuously.
+
+Measured on the null-exit0 control — a client that connects and exits 0, driving
+nothing at all:
+
+```
+http-standard-headers   SKIPPED 11 / 11   empty: true
+  passes.client_summary    true
+  passes.requirements_exit true
+```
+
+**Eleven of eleven checks not evaluated, and the scenario reports PASS on both
+reducers.** The census does record `empty: true`, which is what makes the defect
+visible at all — but `empty` is a census field this project added, not a harness
+one. Read from the harness alone, the run is clean.
+
+### Why it is a separate axis from bucket 0
+
+Bucket 0 asks whether a check **can evaluate**. This asks how a check that
+**did not** evaluate is **scored**. The two are one word apart and a whole
+ticket apart:
+
+- Fold this into bucket 0 and its count becomes 11 on the control, which is
+  wrong by nine — those nine are methods a conforming client may drive.
+- Fold bucket 0 into this and the two genuinely unreachable checks read as a
+  scoring bug to be fixed upstream, which they are not.
+
+A5's brief required the separation by name, and the control is where the cost of
+collapsing them is a number rather than an argument.
+
+### Transferable form
+
+**A reducer over verdicts is only as strong as its treatment of the
+non-verdict.** Any disposition that maps "did not evaluate" to "ignored" makes
+*passing* the default for absence, so the reducer's greenness is evidence about
+the checks that ran and about nothing else. Before quoting a pass rate, ask what
+the denominator was — and run a null implementation, because that is the input
+on which the answer is most wrong and it costs one run.
+
+The corollary this ticket adds to S6-9's: **the null control is worth extracting
+KEYS from, not just verdicts.** Its verdict was already published; its key set is
+what turned "a SKIPPED-reading classifier would be wrong" from a claim into
+`2 vs 11`.
+
+---
+
+## S6-11 — "Can evaluate" is existential over conforming implementations, but an artefact samples exactly one, and a histogram of that sample discards the distinction entirely
+
+**Found:** MES-70 (Sprint 6, A5), 2026-08-22, by CODE_CREATOR while sweeping the
+in-scope 175 for structural unmatchability. **Status:** open as a class; the
+immediate instance is bounded in `docs/conformance/bucket-0-2026-07-28.json`.
+
+**Cross-references [S6-9](#s6-9), and is not a restatement of it.** S6-9 is about
+a captured **denominator**: an absence in it conflates *cannot score* with *did
+not drive*. This is about a captured **verdict**: evaluability is a joint fact
+about the instrument **and the subject**, so a status column is a claim about
+one implementation where the rule quantifies over all conforming ones. S6-9 is
+about which keys exist; this is about what a key's value means.
+
+### The defect
+
+The ratified match-target rule reads:
+
+> A check is a match target only if a conforming 2026-07-28 implementation **can**
+> cause it to evaluate.
+
+`can` is **existential**. A run artefact records what **one** implementation
+**did**. So `status: SUCCESS` proves matchability (that implementation is the
+witness), while `status: SKIPPED` proves nothing either way — it is one sample
+of a space the rule quantifies over.
+
+Twenty-two of the in-scope 175 are reachable by a skip site, and for **ten** of
+them the gate is a capability **we ourselves declare**:
+
+```
+server-stateless   ServerSendsToolsListChangedOnSubscription    skipped unless tools.listChanged
+                   ServerSendsPromptsListChangedOnSubscription  skipped unless prompts.listChanged
+                   ServerSendsSubscriptionAck  }  skipped unless the server advertises
+                   ServerTagsSubscriptionId    }  SOME subscription-delivered capability
+                   ServerHonorsNotificationFilter }
+                   ServerIdentifiesInResultMeta                 skipped if a prerequisite failed
+request-metadata   ClientDeclaresRootsCapability       }  the check reads "if present";
+                   ClientDeclaresSamplingCapability    }  a client declaring none is
+                   ClientDeclaresElicitationCapability }  still conforming
+caching            ResourcesReadCachingHints                    skipped unless resources/read ran
+```
+
+All ten are SUCCESS in the in-scope run **because of choices our implementation
+made**. A differently-conforming implementation would have seen them SKIPPED,
+and a classifier reading the status column would then have called them
+unmatchable. They are matchable, and the reason is the quantifier: ours is a
+witness that a conforming implementation *can* drive them.
+
+### The sharper instance: the distinction was discarded at capture time
+
+The committed null-exit0 census records that scenario's checks as a **status
+histogram**:
+
+```
+"checks": {"FAILURE":0,"INFO":0,"SKIPPED":11,"SUCCESS":0,"WARNING":0,"total":11}
+```
+
+The count is exactly the thing that cannot tell 2 from 11. The **keys** — which
+would have distinguished them — were never written down, so this ticket's
+control had to be extracted from a run tree surviving in `/tmp` by accident.
+**A control that cannot be rebuilt from the repository is not a control**, and
+one round of this ticket was spent discovering that.
+
+### Transferable form
+
+**When a rule quantifies over a population and your evidence samples one member,
+say which direction the sample can carry.** A positive observation discharges an
+existential; a negative one does not refute it. Write the rule's quantifier into
+the classifier's reason string, so the next reader sees *why* a SUCCESS settles
+the question and a SKIPPED does not.
+
+And: **aggregate at the point of USE, never at the point of capture.** A
+histogram is a projection, and the field it projects away is invisible in the
+artefact rather than merely absent from it. Committing keys costs bytes;
+recovering them costs a run tree that may not exist.

@@ -1,0 +1,4230 @@
+{
+  "arithmetic": {
+    "equation": "total = in_denominator + out_of_denominator",
+    "in_denominator": 173,
+    "out_of_denominator": 2,
+    "total": 175,
+    "word": "MATCHABLE, never MATCHED"
+  },
+  "artefact_schema_version": 1,
+  "checks": [
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "caching",
+        "sep-2549-tools-list-caching-hints",
+        "ToolsListCachingHints",
+        "tools/list response includes ttlMs and cacheScope caching hints",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ToolsListCachingHints",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "caching",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/caching/sep-2549-tools-list-caching-hints/ToolsListCachingHints"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "caching",
+        "sep-2549-prompts-list-caching-hints",
+        "PromptsListCachingHints",
+        "prompts/list response includes ttlMs and cacheScope caching hints",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "PromptsListCachingHints",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "caching",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/caching/sep-2549-prompts-list-caching-hints/PromptsListCachingHints"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "caching",
+        "sep-2549-resources-list-caching-hints",
+        "ResourcesListCachingHints",
+        "resources/list response includes ttlMs and cacheScope caching hints",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ResourcesListCachingHints",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "caching",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/caching/sep-2549-resources-list-caching-hints/ResourcesListCachingHints"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "caching",
+        "sep-2549-resources-templates-list-caching-hints",
+        "ResourcesTemplatesListCachingHints",
+        "resources/templates/list response includes ttlMs and cacheScope caching hints",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ResourcesTemplatesListCachingHints",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "caching",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/caching/sep-2549-resources-templates-list-caching-hints/ResourcesTemplatesListCachingHints"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "caching",
+        "sep-2549-resources-read-caching-hints",
+        "ResourcesReadCachingHints",
+        "resources/read response includes ttlMs and cacheScope caching hints",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ResourcesReadCachingHints",
+      "reason": "A skip site can reach this check (resources/read was not exercised), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "caching",
+      "skip_gate": "resources/read was not exercised",
+      "skip_site": "1790:4634",
+      "status": "SUCCESS",
+      "token": "oc:server/caching/sep-2549-resources-read-caching-hints/ResourcesReadCachingHints"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "caching",
+        "sep-2549-ttl-non-negative",
+        "TtlNonNegative",
+        "All ttlMs values are non-negative integers",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "TtlNonNegative",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "caching",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/caching/sep-2549-ttl-non-negative/TtlNonNegative"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "caching",
+        "sep-2549-cache-scope-valid",
+        "CacheScopeValid",
+        "All cacheScope values are \"public\" or \"private\"",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "CacheScopeValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "caching",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/caching/sep-2549-cache-scope-valid/CacheScopeValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "caching",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "caching",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/caching/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "completion-complete",
+        "completion-complete",
+        "CompletionComplete",
+        "Server responds to completion requests",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "CompletionComplete",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "completion-complete",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/completion-complete/completion-complete/CompletionComplete"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "completion-complete",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "completion-complete",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/completion-complete/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "dns-rebinding-protection",
+        "localhost-host-rebinding-rejected",
+        "DNSRebindingRejected",
+        "Server rejects requests with non-localhost Host/Origin headers",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "DNSRebindingRejected",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "dns-rebinding-protection",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/dns-rebinding-protection/localhost-host-rebinding-rejected/DNSRebindingRejected"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "dns-rebinding-protection",
+        "localhost-host-valid-accepted",
+        "LocalhostHostAccepted",
+        "Server accepts requests with valid localhost Host/Origin headers",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "LocalhostHostAccepted",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "dns-rebinding-protection",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/dns-rebinding-protection/localhost-host-valid-accepted/LocalhostHostAccepted"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-basic-elicitation",
+        "sep-2322-elicitation-incomplete",
+        "InputRequiredResultElicitationIncomplete",
+        "Server returns InputRequiredResult with elicitation inputRequest",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "InputRequiredResultElicitationIncomplete",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-basic-elicitation",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-basic-elicitation/sep-2322-elicitation-incomplete/InputRequiredResultElicitationIncomplete"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-basic-elicitation",
+        "sep-2322-elicitation-complete",
+        "InputRequiredResultElicitationComplete",
+        "Server returns complete result after retry with inputResponses",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "InputRequiredResultElicitationComplete",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-basic-elicitation",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-basic-elicitation/sep-2322-elicitation-complete/InputRequiredResultElicitationComplete"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-basic-elicitation",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-basic-elicitation",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-basic-elicitation/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-basic-list-roots",
+        "sep-2322-list-roots-incomplete",
+        "InputRequiredResultListRootsIncomplete",
+        "Server returns InputRequiredResult with roots/list inputRequest",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "InputRequiredResultListRootsIncomplete",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-basic-list-roots",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-basic-list-roots/sep-2322-list-roots-incomplete/InputRequiredResultListRootsIncomplete"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-basic-list-roots",
+        "sep-2322-list-roots-complete",
+        "InputRequiredResultListRootsComplete",
+        "Server returns complete result after retry with roots response",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "InputRequiredResultListRootsComplete",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-basic-list-roots",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-basic-list-roots/sep-2322-list-roots-complete/InputRequiredResultListRootsComplete"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-basic-list-roots",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-basic-list-roots",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-basic-list-roots/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-basic-sampling",
+        "sep-2322-sampling-incomplete",
+        "InputRequiredResultSamplingIncomplete",
+        "Server returns InputRequiredResult with sampling inputRequest",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "InputRequiredResultSamplingIncomplete",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-basic-sampling",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-basic-sampling/sep-2322-sampling-incomplete/InputRequiredResultSamplingIncomplete"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-basic-sampling",
+        "sep-2322-sampling-complete",
+        "InputRequiredResultSamplingComplete",
+        "Server returns complete result after retry with sampling response",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "InputRequiredResultSamplingComplete",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-basic-sampling",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-basic-sampling/sep-2322-sampling-complete/InputRequiredResultSamplingComplete"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-basic-sampling",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-basic-sampling",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-basic-sampling/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-capability-check",
+        "sep-2322-respect-client-capabilities",
+        "RespectClientCapabilities",
+        "Server only includes inputRequests for declared client capabilities",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "RespectClientCapabilities",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-capability-check",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-capability-check/sep-2322-respect-client-capabilities/RespectClientCapabilities"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-capability-check",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-capability-check",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-capability-check/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-ignore-extra-params",
+        "sep-2322-ignore-unexpected-params",
+        "IgnoreUnexpectedParams",
+        "Server ignores extra unrecognized keys in inputResponses",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "IgnoreUnexpectedParams",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-ignore-extra-params",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "WARNING",
+      "token": "oc:server/input-required-result-ignore-extra-params/sep-2322-ignore-unexpected-params/IgnoreUnexpectedParams"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-ignore-extra-params",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-ignore-extra-params",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-ignore-extra-params/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-missing-input-response",
+        "sep-2322-missing-response-rerequests",
+        "InputRequiredResultMissingResponseRerequests",
+        "Server re-requests missing inputResponses via new InputRequiredResult",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "InputRequiredResultMissingResponseRerequests",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-missing-input-response",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-missing-input-response/sep-2322-missing-response-rerequests/InputRequiredResultMissingResponseRerequests"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-missing-input-response",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-missing-input-response",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-missing-input-response/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-multi-round",
+        "sep-2322-multi-round-r1",
+        "InputRequiredResultMultiRoundR1",
+        "Round 1: Server returns InputRequiredResult with requestState",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "InputRequiredResultMultiRoundR1",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-multi-round",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-multi-round/sep-2322-multi-round-r1/InputRequiredResultMultiRoundR1"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-multi-round",
+        "sep-2322-multi-round-r2",
+        "InputRequiredResultMultiRoundR2",
+        "Round 2: Server returns another InputRequiredResult with updated requestState",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "InputRequiredResultMultiRoundR2",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-multi-round",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-multi-round/sep-2322-multi-round-r2/InputRequiredResultMultiRoundR2"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-multi-round",
+        "sep-2322-multi-round-r3",
+        "InputRequiredResultMultiRoundR3",
+        "Round 3: Server returns complete result",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "InputRequiredResultMultiRoundR3",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-multi-round",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-multi-round/sep-2322-multi-round-r3/InputRequiredResultMultiRoundR3"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-multi-round",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-multi-round",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-multi-round/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-multiple-input-requests",
+        "sep-2322-multiple-inputs-incomplete",
+        "InputRequiredResultMultipleInputsIncomplete",
+        "Server returns InputRequiredResult with multiple inputRequests of different types",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "InputRequiredResultMultipleInputsIncomplete",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-multiple-input-requests",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-multiple-input-requests/sep-2322-multiple-inputs-incomplete/InputRequiredResultMultipleInputsIncomplete"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-multiple-input-requests",
+        "sep-2322-multiple-inputs-complete",
+        "InputRequiredResultMultipleInputsComplete",
+        "Server returns complete result after all inputResponses are provided",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "InputRequiredResultMultipleInputsComplete",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-multiple-input-requests",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-multiple-input-requests/sep-2322-multiple-inputs-complete/InputRequiredResultMultipleInputsComplete"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-multiple-input-requests",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-multiple-input-requests",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-multiple-input-requests/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-non-tool-request",
+        "sep-2322-non-tool-incomplete",
+        "InputRequiredResultNonToolIncomplete",
+        "prompts/get returns InputRequiredResult with inputRequests",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "InputRequiredResultNonToolIncomplete",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-non-tool-request",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/input-required-result-non-tool-request/sep-2322-non-tool-incomplete/InputRequiredResultNonToolIncomplete"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-non-tool-request",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-non-tool-request",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/input-required-result-non-tool-request/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-request-state",
+        "sep-2322-request-state-incomplete",
+        "InputRequiredResultRequestStateIncomplete",
+        "Server returns InputRequiredResult with both inputRequests and requestState",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "InputRequiredResultRequestStateIncomplete",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-request-state",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-request-state",
+        "sep-2322-request-state-complete",
+        "InputRequiredResultRequestStateComplete",
+        "Server validates echoed requestState and returns complete result",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "InputRequiredResultRequestStateComplete",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-request-state",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-request-state/sep-2322-request-state-complete/InputRequiredResultRequestStateComplete"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-request-state",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-request-state",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-request-state/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-result-type",
+        "sep-2322-result-type-included",
+        "ResultTypeIncluded",
+        "Server includes resultType field in InputRequiredResult response",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ResultTypeIncluded",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-result-type",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-result-type",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-result-type",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-result-type/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-tampered-state",
+        "sep-2322-reject-tampered-state",
+        "RejectTamperedState",
+        "Server rejects tampered requestState with error",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "RejectTamperedState",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-tampered-state",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-tampered-state/sep-2322-reject-tampered-state/RejectTamperedState"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-tampered-state",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-tampered-state",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-tampered-state/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-unsupported-methods",
+        "sep-2322-not-on-unsupported-requests",
+        "NotOnUnsupportedRequests",
+        "Server does not return InputRequiredResult on unsupported methods",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "NotOnUnsupportedRequests",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-unsupported-methods",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-unsupported-methods/sep-2322-not-on-unsupported-requests/NotOnUnsupportedRequests"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-unsupported-methods",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-unsupported-methods",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-unsupported-methods/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-validate-input",
+        "sep-2322-validate-input-responses",
+        "ValidateInputResponses",
+        "Server validates InputResponses structure",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ValidateInputResponses",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-validate-input",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-validate-input/sep-2322-validate-input-responses/ValidateInputResponses"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-validate-input",
+        "sep-2322-error-on-protocol-error",
+        "ErrorOnProtocolError",
+        "Server returns JSON-RPC error for protocol-level input errors",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ErrorOnProtocolError",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-validate-input",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-validate-input/sep-2322-error-on-protocol-error/ErrorOnProtocolError"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "input-required-result-validate-input",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "input-required-result-validate-input",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/input-required-result-validate-input/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "prompts-get-embedded-resource",
+        "prompts-get-embedded-resource",
+        "PromptsGetEmbeddedResource",
+        "Get prompt with embedded resource",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "PromptsGetEmbeddedResource",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "prompts-get-embedded-resource",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/prompts-get-embedded-resource/prompts-get-embedded-resource/PromptsGetEmbeddedResource"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "prompts-get-embedded-resource",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "prompts-get-embedded-resource",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/prompts-get-embedded-resource/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "prompts-get-simple",
+        "prompts-get-simple",
+        "PromptsGetSimple",
+        "Get simple prompt successfully",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "PromptsGetSimple",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "prompts-get-simple",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/prompts-get-simple/prompts-get-simple/PromptsGetSimple"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "prompts-get-simple",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "prompts-get-simple",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/prompts-get-simple/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "prompts-get-with-args",
+        "prompts-get-with-args",
+        "PromptsGetWithArgs",
+        "Get parameterized prompt with argument substitution",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "PromptsGetWithArgs",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "prompts-get-with-args",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/prompts-get-with-args/prompts-get-with-args/PromptsGetWithArgs"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "prompts-get-with-args",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "prompts-get-with-args",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/prompts-get-with-args/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "prompts-get-with-image",
+        "prompts-get-with-image",
+        "PromptsGetWithImage",
+        "Get prompt with image content",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "PromptsGetWithImage",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "prompts-get-with-image",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/prompts-get-with-image/prompts-get-with-image/PromptsGetWithImage"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "prompts-get-with-image",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "prompts-get-with-image",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/prompts-get-with-image/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "prompts-list",
+        "prompts-list",
+        "PromptsList",
+        "Server lists available prompts with valid structure",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "PromptsList",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "prompts-list",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/prompts-list/prompts-list/PromptsList"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "prompts-list",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "prompts-list",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/prompts-list/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "resources-list",
+        "resources-list",
+        "ResourcesList",
+        "Server lists available resources with valid structure",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ResourcesList",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "resources-list",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/resources-list/resources-list/ResourcesList"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "resources-list",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "resources-list",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/resources-list/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "resources-read-binary",
+        "resources-read-binary",
+        "ResourcesReadBinary",
+        "Read binary resource successfully",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ResourcesReadBinary",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "resources-read-binary",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/resources-read-binary/resources-read-binary/ResourcesReadBinary"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "resources-read-binary",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "resources-read-binary",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/resources-read-binary/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "resources-read-text",
+        "resources-read-text",
+        "ResourcesReadText",
+        "Read text resource successfully",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ResourcesReadText",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "resources-read-text",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/resources-read-text/resources-read-text/ResourcesReadText"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "resources-read-text",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "resources-read-text",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/resources-read-text/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "resources-templates-read",
+        "resources-templates-read",
+        "ResourcesTemplateRead",
+        "Read resource from template with parameter substitution",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ResourcesTemplateRead",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "resources-templates-read",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/resources-templates-read/resources-templates-read/ResourcesTemplateRead"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "resources-templates-read",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "resources-templates-read",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/resources-templates-read/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "sep-2164-resource-not-found",
+        "sep-2164-no-empty-contents",
+        "ResourcesNotFoundNoEmptyContents",
+        "Server does not return an empty contents array for a non-existent resource",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ResourcesNotFoundNoEmptyContents",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "sep-2164-resource-not-found",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/sep-2164-resource-not-found/sep-2164-no-empty-contents/ResourcesNotFoundNoEmptyContents"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "sep-2164-resource-not-found",
+        "sep-2164-error-code",
+        "ResourcesNotFoundErrorCode",
+        "Server returns -32602 (Invalid Params) for non-existent resource (SHOULD)",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ResourcesNotFoundErrorCode",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "sep-2164-resource-not-found",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/sep-2164-resource-not-found/sep-2164-error-code/ResourcesNotFoundErrorCode"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "sep-2164-resource-not-found",
+        "sep-2164-data-uri",
+        "ResourcesNotFoundDataUri",
+        "Server includes the requested URI in the error data field (SHOULD)",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ResourcesNotFoundDataUri",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "sep-2164-resource-not-found",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "WARNING",
+      "token": "oc:server/sep-2164-resource-not-found/sep-2164-data-uri/ResourcesNotFoundDataUri"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "sep-2164-resource-not-found",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "sep-2164-resource-not-found",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/sep-2164-resource-not-found/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-sse-multiple-streams",
+        "server-accepts-multiple-post-streams",
+        "ServerAcceptsMultiplePostStreams",
+        "Server allows multiple concurrent POST requests (each may return SSE or JSON)",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ServerAcceptsMultiplePostStreams",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-sse-multiple-streams",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/server-sse-multiple-streams/server-accepts-multiple-post-streams/ServerAcceptsMultiplePostStreams"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-sse-multiple-streams",
+        "server-sse-streams-functional",
+        "ServerSSEStreamsFunctional",
+        "Multiple POST SSE streams should be functional",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ServerSSEStreamsFunctional",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-sse-multiple-streams",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/server-sse-multiple-streams/server-sse-streams-functional/ServerSSEStreamsFunctional"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-request-meta-invalid-missing-meta",
+        "RequestMetaInvalid",
+        "Rejects request with missing _meta with -32602 Invalid params",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "RequestMetaInvalid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-meta-invalid-400",
+        "HttpServerMetaInvalid400",
+        "Rejections of requests missing required _meta fields use HTTP 400 Bad Request.",
+        "missing-meta"
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "HttpServerMetaInvalid400",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-meta"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-request-meta-invalid-missing-protocol-version",
+        "RequestMetaInvalid",
+        "Rejects request with _meta missing io.modelcontextprotocol/protocolVersion",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "RequestMetaInvalid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-protocol-version/RequestMetaInvalid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-meta-invalid-400",
+        "HttpServerMetaInvalid400",
+        "Rejections of requests missing required _meta fields use HTTP 400 Bad Request.",
+        "missing-protocol-version"
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "HttpServerMetaInvalid400",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-protocol-version"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-request-meta-invalid-missing-client-capabilities",
+        "RequestMetaInvalid",
+        "Rejects request with _meta missing io.modelcontextprotocol/clientCapabilities",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "RequestMetaInvalid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-meta-invalid-400",
+        "HttpServerMetaInvalid400",
+        "Rejections of requests missing required _meta fields use HTTP 400 Bad Request.",
+        "missing-client-capabilities"
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "HttpServerMetaInvalid400",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-request-meta-client-info-optional",
+        "RequestMetaClientInfoOptional",
+        "Serves requests whose _meta omits io.modelcontextprotocol/clientInfo (clientInfo is a SHOULD).",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "RequestMetaClientInfoOptional",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/server-stateless/sep-2575-request-meta-client-info-optional/RequestMetaClientInfoOptional"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-implements-discover",
+        "ServerImplementsDiscover",
+        "Servers MUST implement server/discover.",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ServerImplementsDiscover",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-identifies-in-result-meta",
+        "ServerIdentifiesInResultMeta",
+        "Servers SHOULD identify themselves via _meta['io.modelcontextprotocol/serverInfo'] on responses (spec PR #3002).",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ServerIdentifiesInResultMeta",
+      "reason": "A skip site can reach this check (a prerequisite request failed), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "server-stateless",
+      "skip_gate": "a prerequisite request failed",
+      "skip_site": "1153:12520",
+      "status": "SUCCESS",
+      "token": "oc:server/server-stateless/sep-2575-server-identifies-in-result-meta/ServerIdentifiesInResultMeta"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-declares-prompts-in-discover",
+        "ServerDeclaresPromptsInDiscover",
+        "Servers that support prompts MUST declare the prompts capability in their DiscoverResult.",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ServerDeclaresPromptsInDiscover",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/server-stateless/sep-2575-server-declares-prompts-in-discover/ServerDeclaresPromptsInDiscover"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-discover-capabilities-match-handlers",
+        "DiscoverCapabilitiesMatchHandlers",
+        "capabilities matches what the server honors on real RPC calls",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "DiscoverCapabilitiesMatchHandlers",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-unsupported-version-error",
+        "ServerUnsupportedVersionError",
+        "If the server does not implement the requested version (whether the version is unknown to the server, or is a known version the server has chosen not to support), it MUST respond with an UnsupportedProtocolVersionError listing the versions it does support; the error data carries the supported versions and echoes the requested version.",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ServerUnsupportedVersionError",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-unsupported-version-400",
+        "HttpServerUnsupportedVersion400",
+        "If the server does not implement the requested protocol version, it MUST respond with 400 Bad Request and an UnsupportedProtocolVersionError listing its supported versions.",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "HttpServerUnsupportedVersion400",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/server-stateless/sep-2575-http-server-unsupported-version-400/HttpServerUnsupportedVersion400"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-header-mismatch-400",
+        "HttpServerHeaderMismatch400",
+        "If the values do not match, the server MUST reject the request with 400 Bad Request and a HeaderMismatch JSON-RPC error.",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "HttpServerHeaderMismatch400",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/server-stateless/sep-2575-http-server-header-mismatch-400/HttpServerHeaderMismatch400"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-rejects-undeclared-capability",
+        "ServerRejectsUndeclaredCapability",
+        "A server MUST NOT rely on capabilities the client has not declared. If processing a request requires a capability the client did not include in io.modelcontextprotocol/clientCapabilities, the server MUST return a MissingRequiredClientCapabilityError (-32021).",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ServerRejectsUndeclaredCapability",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/server-stateless/sep-2575-server-rejects-undeclared-capability/ServerRejectsUndeclaredCapability"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-missing-capability-http-400",
+        "MissingCapabilityHttp400",
+        "On HTTP, the response status MUST be 400 Bad Request [for MissingRequiredClientCapabilityError].",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "MissingCapabilityHttp400",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/server-stateless/sep-2575-missing-capability-http-400/MissingCapabilityHttp400"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404-initialize",
+        "HttpServerMethodNotFound404initialize",
+        "If the server does not implement the removed RPC method 'initialize', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "HttpServerMethodNotFound404initialize",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404-ping",
+        "HttpServerMethodNotFound404ping",
+        "If the server does not implement the removed RPC method 'ping', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "HttpServerMethodNotFound404ping",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404-logging-setlevel",
+        "HttpServerMethodNotFound404loggingsetLevel",
+        "If the server does not implement the removed RPC method 'logging/setLevel', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "HttpServerMethodNotFound404loggingsetLevel",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404-resources-subscribe",
+        "HttpServerMethodNotFound404resourcessubscribe",
+        "If the server does not implement the removed RPC method 'resources/subscribe', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "HttpServerMethodNotFound404resourcessubscribe",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-resources-subscribe/HttpServerMethodNotFound404resourcessubscribe"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404-resources-unsubscribe",
+        "HttpServerMethodNotFound404resourcesunsubscribe",
+        "If the server does not implement the removed RPC method 'resources/unsubscribe', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "HttpServerMethodNotFound404resourcesunsubscribe",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-resources-unsubscribe/HttpServerMethodNotFound404resourcesunsubscribe"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404",
+        "HttpServerMethodNotFound404",
+        "If the server does not implement the requested RPC method, it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "HttpServerMethodNotFound404",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "FAILURE",
+      "token": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-no-independent-requests-on-stream",
+        "HttpServerNoIndependentRequestsOnStream",
+        "Request stream contains only IncompleteResult, never independent JSON-RPC requests",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "HttpServerNoIndependentRequestsOnStream",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/server-stateless/sep-2575-http-server-no-independent-requests-on-stream/HttpServerNoIndependentRequestsOnStream"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-no-log-without-loglevel",
+        "ServerNoLogWithoutLogLevel",
+        "No notifications/message for requests that didn't set _meta.../logLevel",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ServerNoLogWithoutLogLevel",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/server-stateless/sep-2575-server-no-log-without-loglevel/ServerNoLogWithoutLogLevel"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-sends-subscription-ack",
+        "ServerSendsSubscriptionAck",
+        "notifications/subscriptions/acknowledged is the first message on a subscriptions/listen stream",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ServerSendsSubscriptionAck",
+      "reason": "A skip site can reach this check (server advertises no subscription-delivered capability), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "server-stateless",
+      "skip_gate": "server advertises no subscription-delivered capability",
+      "skip_site": "1153:22300",
+      "status": "SUCCESS",
+      "token": "oc:server/server-stateless/sep-2575-server-sends-subscription-ack/ServerSendsSubscriptionAck"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-tags-subscription-id",
+        "ServerTagsSubscriptionId",
+        "Listen-stream notifications carry _meta.../subscriptionId",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ServerTagsSubscriptionId",
+      "reason": "A skip site can reach this check (server advertises no subscription-delivered capability), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "server-stateless",
+      "skip_gate": "server advertises no subscription-delivered capability",
+      "skip_site": "1153:22300",
+      "status": "SUCCESS",
+      "token": "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-honors-notification-filter",
+        "ServerHonorsNotificationFilter",
+        "Server doesn't send notification types the client didn't request",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ServerHonorsNotificationFilter",
+      "reason": "A skip site can reach this check (server advertises no subscription-delivered capability), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "server-stateless",
+      "skip_gate": "server advertises no subscription-delivered capability",
+      "skip_site": "1153:22300",
+      "status": "SUCCESS",
+      "token": "oc:server/server-stateless/sep-2575-server-honors-notification-filter/ServerHonorsNotificationFilter"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-sends-prompts-list-changed-on-subscription",
+        "ServerSendsPromptsListChangedOnSubscription",
+        "List-changed-capable servers notify listen streams with promptsListChanged: true (SHOULD)",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ServerSendsPromptsListChangedOnSubscription",
+      "reason": "A skip site can reach this check (server did not declare prompts.listChanged), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "server-stateless",
+      "skip_gate": "server did not declare prompts.listChanged",
+      "skip_site": "1153:25325",
+      "status": "SUCCESS",
+      "token": "oc:server/server-stateless/sep-2575-server-sends-prompts-list-changed-on-subscription/ServerSendsPromptsListChangedOnSubscription"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-sends-tools-list-changed-on-subscription",
+        "ServerSendsToolsListChangedOnSubscription",
+        "List-changed-capable servers notify listen streams with toolsListChanged: true (SHOULD)",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ServerSendsToolsListChangedOnSubscription",
+      "reason": "A skip site can reach this check (server did not declare tools.listChanged), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "server-stateless",
+      "skip_gate": "server did not declare tools.listChanged",
+      "skip_site": "1153:26468",
+      "status": "SUCCESS",
+      "token": "oc:server/server-stateless/sep-2575-server-sends-tools-list-changed-on-subscription/ServerSendsToolsListChangedOnSubscription"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-error-jsonrpc-id",
+        "HttpServerErrorJsonrpcId",
+        "All error responses carry the request JSON-RPC id",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "HttpServerErrorJsonrpcId",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "server-stateless",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/server-stateless/sep-2575-http-server-error-jsonrpc-id/HttpServerErrorJsonrpcId"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "tools-call-audio",
+        "tools-call-audio",
+        "ToolsCallAudio",
+        "Tool returns audio content",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ToolsCallAudio",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools-call-audio",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/tools-call-audio/tools-call-audio/ToolsCallAudio"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "tools-call-audio",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools-call-audio",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/tools-call-audio/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "tools-call-embedded-resource",
+        "tools-call-embedded-resource",
+        "ToolsCallEmbeddedResource",
+        "Tool returns embedded resource content",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ToolsCallEmbeddedResource",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools-call-embedded-resource",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/tools-call-embedded-resource/tools-call-embedded-resource/ToolsCallEmbeddedResource"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "tools-call-embedded-resource",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools-call-embedded-resource",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/tools-call-embedded-resource/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "tools-call-error",
+        "tools-call-error",
+        "ToolsCallError",
+        "Tool returns error correctly",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ToolsCallError",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools-call-error",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/tools-call-error/tools-call-error/ToolsCallError"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "tools-call-error",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools-call-error",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/tools-call-error/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "tools-call-image",
+        "tools-call-image",
+        "ToolsCallImage",
+        "Tool returns image content",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ToolsCallImage",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools-call-image",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/tools-call-image/tools-call-image/ToolsCallImage"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "tools-call-image",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools-call-image",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/tools-call-image/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "tools-call-mixed-content",
+        "tools-call-mixed-content",
+        "ToolsCallMixedContent",
+        "Tool returns multiple content types",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ToolsCallMixedContent",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools-call-mixed-content",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/tools-call-mixed-content/tools-call-mixed-content/ToolsCallMixedContent"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "tools-call-mixed-content",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools-call-mixed-content",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/tools-call-mixed-content/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "tools-call-simple-text",
+        "tools-call-simple-text",
+        "ToolsCallSimpleText",
+        "Tool returns simple text content",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ToolsCallSimpleText",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools-call-simple-text",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "tools-call-simple-text",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools-call-simple-text",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/tools-call-simple-text/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "tools-call-with-progress",
+        "tools-call-with-progress",
+        "ToolsCallWithProgress",
+        "Tool reports progress notifications",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ToolsCallWithProgress",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools-call-with-progress",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/tools-call-with-progress/tools-call-with-progress/ToolsCallWithProgress"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "tools-call-with-progress",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools-call-with-progress",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/tools-call-with-progress/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "tools-list",
+        "tools-list",
+        "ToolsList",
+        "Server lists available tools with valid structure",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ToolsList",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools-list",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/tools-list/tools-list/ToolsList"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "tools-list",
+        "tools-name-format",
+        "ToolsNameFormat",
+        "Tool names are 1-64 characters and match ^[A-Za-z0-9_./-]+$",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "ToolsNameFormat",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools-list",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/tools-list/tools-name-format/ToolsNameFormat"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "server",
+        "tools-list",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "server",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools-list",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:server/tools-list/wire-schema-valid/WireSchemaValid"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-supports-custom-headers",
+        "ClientSupportsCustomHeaders",
+        "Client supports custom headers: calls the x-mcp-header annotated tool and mirrors at least one parameter",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientSupportsCustomHeaders",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-custom-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-custom-headers/sep-2243-client-supports-custom-headers/ClientSupportsCustomHeaders"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_Region",
+        "Client sends correct Mcp-Param-Region header (string value)",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientCustomHeader_Region",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-custom-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-encode-values",
+        "ClientCustomHeader_Priority",
+        "Client sends correct Mcp-Param-Priority header (integer value)",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientCustomHeader_Priority",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-custom-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Priority"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-encode-values",
+        "ClientCustomHeader_Verbose",
+        "Client sends correct Mcp-Param-Verbose header (boolean value)",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientCustomHeader_Verbose",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-custom-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Verbose"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-encode-values",
+        "ClientCustomHeader_Debug",
+        "Client sends correct Mcp-Param-Debug header (boolean value)",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientCustomHeader_Debug",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-custom-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Debug"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_EmptyVal",
+        "Client sends correct Mcp-Param-EmptyVal header (string value)",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientCustomHeader_EmptyVal",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-custom-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_EmptyVal"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_Method",
+        "Client sends correct Mcp-Param-Method header (string value)",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientCustomHeader_Method",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-custom-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Method"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeaderNoMirrorNumber",
+        "Client MUST NOT add Mcp-Param headers for parameters without x-mcp-header (number-typed float_val is served unannotated per SEP-2243)",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientCustomHeaderNoMirrorNumber",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-custom-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorNumber"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_NonAscii",
+        "Client sends correct Mcp-Param-NonAscii header (string value)",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientCustomHeader_NonAscii",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-custom-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_NonAscii"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_Whitespace",
+        "Client sends correct Mcp-Param-Whitespace header (string value)",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientCustomHeader_Whitespace",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-custom-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Whitespace"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_LeadingSpace",
+        "Client sends correct Mcp-Param-LeadingSpace header (string value)",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientCustomHeader_LeadingSpace",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-custom-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_LeadingSpace"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_TrailingSpace",
+        "Client sends correct Mcp-Param-TrailingSpace header (string value)",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientCustomHeader_TrailingSpace",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-custom-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_TrailingSpace"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_InternalSpace",
+        "Client sends correct Mcp-Param-InternalSpace header (string value)",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientCustomHeader_InternalSpace",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-custom-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_InternalSpace"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_ControlChar",
+        "Client sends correct Mcp-Param-ControlChar header (string value)",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientCustomHeader_ControlChar",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-custom-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_ControlChar"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_CrLf",
+        "Client sends correct Mcp-Param-CrLf header (string value)",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientCustomHeader_CrLf",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-custom-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_CrLf"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_Tab",
+        "Client sends correct Mcp-Param-Tab header (string value)",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientCustomHeader_Tab",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-custom-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Tab"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeaderNoMirrorUnannotated",
+        "Client MUST NOT add Mcp-Param headers for parameters without x-mcp-header",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientCustomHeaderNoMirrorUnannotated",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-custom-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorUnannotated"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-omit-null",
+        "ClientCustomHeaderOmitNull",
+        "Client MUST omit Mcp-Param header when parameter value is null or not provided",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientCustomHeaderOmitNull",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-custom-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-custom-headers/sep-2243-client-omit-null/ClientCustomHeaderOmitNull"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-invalid-tool-headers",
+        "sep-2243-client-reject-invalid-tool",
+        "ClientKeepsValidTool",
+        "Client MUST keep valid tools while excluding invalid ones",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientKeepsValidTool",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-invalid-tool-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-invalid-tool-headers/sep-2243-client-reject-invalid-tool/ClientKeepsValidTool"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-invalid-tool-headers",
+        "sep-2243-x-mcp-header-not-empty",
+        "ClientRejectsInvalidTool_invalid_empty_header",
+        "Client MUST NOT call tool 'invalid_empty_header' with invalid x-mcp-header",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientRejectsInvalidTool_invalid_empty_header",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-invalid-tool-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-not-empty/ClientRejectsInvalidTool_invalid_empty_header"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-invalid-tool-headers",
+        "sep-2243-x-mcp-header-primitive-only",
+        "ClientRejectsInvalidTool_invalid_object_header",
+        "Client MUST NOT call tool 'invalid_object_header' with invalid x-mcp-header",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientRejectsInvalidTool_invalid_object_header",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-invalid-tool-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-invalid-tool-headers",
+        "sep-2243-x-mcp-header-primitive-only",
+        "ClientRejectsInvalidTool_invalid_array_header",
+        "Client MUST NOT call tool 'invalid_array_header' with invalid x-mcp-header",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientRejectsInvalidTool_invalid_array_header",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-invalid-tool-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_array_header"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-invalid-tool-headers",
+        "sep-2243-x-mcp-header-primitive-only",
+        "ClientRejectsInvalidTool_invalid_null_header",
+        "Client MUST NOT call tool 'invalid_null_header' with invalid x-mcp-header",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientRejectsInvalidTool_invalid_null_header",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-invalid-tool-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_null_header"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-invalid-tool-headers",
+        "sep-2243-x-mcp-header-unique",
+        "ClientRejectsInvalidTool_invalid_duplicate_same_case",
+        "Client MUST NOT call tool 'invalid_duplicate_same_case' with invalid x-mcp-header",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientRejectsInvalidTool_invalid_duplicate_same_case",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-invalid-tool-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_same_case"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-invalid-tool-headers",
+        "sep-2243-x-mcp-header-unique",
+        "ClientRejectsInvalidTool_invalid_duplicate_diff_case",
+        "Client MUST NOT call tool 'invalid_duplicate_diff_case' with invalid x-mcp-header",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientRejectsInvalidTool_invalid_duplicate_diff_case",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-invalid-tool-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_diff_case"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-invalid-tool-headers",
+        "sep-2243-x-mcp-header-charset",
+        "ClientRejectsInvalidTool_invalid_space_in_name",
+        "Client MUST NOT call tool 'invalid_space_in_name' with invalid x-mcp-header",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientRejectsInvalidTool_invalid_space_in_name",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-invalid-tool-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_space_in_name"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-invalid-tool-headers",
+        "sep-2243-x-mcp-header-charset",
+        "ClientRejectsInvalidTool_invalid_colon_in_name",
+        "Client MUST NOT call tool 'invalid_colon_in_name' with invalid x-mcp-header",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientRejectsInvalidTool_invalid_colon_in_name",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-invalid-tool-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_colon_in_name"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-invalid-tool-headers",
+        "sep-2243-x-mcp-header-charset",
+        "ClientRejectsInvalidTool_invalid_non_ascii_name",
+        "Client MUST NOT call tool 'invalid_non_ascii_name' with invalid x-mcp-header",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientRejectsInvalidTool_invalid_non_ascii_name",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-invalid-tool-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_non_ascii_name"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-invalid-tool-headers",
+        "sep-2243-x-mcp-header-charset",
+        "ClientRejectsInvalidTool_invalid_control_char_name",
+        "Client MUST NOT call tool 'invalid_control_char_name' with invalid x-mcp-header",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientRejectsInvalidTool_invalid_control_char_name",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "http-invalid-tool-headers",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_control_char_name"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_tools_list",
+        "Client sends correct Mcp-Method header on tools/list request",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientMcpMethodHeader_tools_list",
+      "reason": "A skip site can reach this check (client sent no tools/list request), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "http-standard-headers",
+      "skip_gate": "client sent no tools/list request",
+      "skip_site": "2181:1993",
+      "status": "SUCCESS",
+      "token": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_list"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_tools_call",
+        "Client sends correct Mcp-Method header on tools/call request",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientMcpMethodHeader_tools_call",
+      "reason": "A skip site can reach this check (client sent no tools/call request), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "http-standard-headers",
+      "skip_gate": "client sent no tools/call request",
+      "skip_site": "2181:1993",
+      "status": "SUCCESS",
+      "token": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_call"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpNameHeader_tools_call",
+        "Client sends correct Mcp-Name header on tools/call request",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientMcpNameHeader_tools_call",
+      "reason": "A skip site can reach this check (client sent no tools/call request), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "http-standard-headers",
+      "skip_gate": "client sent no tools/call request",
+      "skip_site": "2181:2432",
+      "status": "SUCCESS",
+      "token": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_resources_list",
+        "Client sends correct Mcp-Method header on resources/list request",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientMcpMethodHeader_resources_list",
+      "reason": "A skip site can reach this check (client sent no resources/list request), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "http-standard-headers",
+      "skip_gate": "client sent no resources/list request",
+      "skip_site": "2181:1993",
+      "status": "SUCCESS",
+      "token": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_list"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_resources_read",
+        "Client sends correct Mcp-Method header on resources/read request",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientMcpMethodHeader_resources_read",
+      "reason": "A skip site can reach this check (client sent no resources/read request), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "http-standard-headers",
+      "skip_gate": "client sent no resources/read request",
+      "skip_site": "2181:1993",
+      "status": "SUCCESS",
+      "token": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_read"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpNameHeader_resources_read",
+        "Client sends correct Mcp-Name header on resources/read request",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientMcpNameHeader_resources_read",
+      "reason": "A skip site can reach this check (client sent no resources/read request), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "http-standard-headers",
+      "skip_gate": "client sent no resources/read request",
+      "skip_site": "2181:2432",
+      "status": "SUCCESS",
+      "token": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_resources_read"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_prompts_list",
+        "Client sends correct Mcp-Method header on prompts/list request",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientMcpMethodHeader_prompts_list",
+      "reason": "A skip site can reach this check (client sent no prompts/list request), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "http-standard-headers",
+      "skip_gate": "client sent no prompts/list request",
+      "skip_site": "2181:1993",
+      "status": "SUCCESS",
+      "token": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_list"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_prompts_get",
+        "Client sends correct Mcp-Method header on prompts/get request",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientMcpMethodHeader_prompts_get",
+      "reason": "A skip site can reach this check (client sent no prompts/get request), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "http-standard-headers",
+      "skip_gate": "client sent no prompts/get request",
+      "skip_site": "2181:1993",
+      "status": "SUCCESS",
+      "token": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_get"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpNameHeader_prompts_get",
+        "Client sends correct Mcp-Name header on prompts/get request",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientMcpNameHeader_prompts_get",
+      "reason": "A skip site can reach this check (client sent no prompts/get request), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "http-standard-headers",
+      "skip_gate": "client sent no prompts/get request",
+      "skip_site": "2181:2432",
+      "status": "SUCCESS",
+      "token": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_prompts_get"
+    },
+    {
+      "bucket": 0,
+      "key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_initialize",
+        "Client sends correct Mcp-Method header on initialize request",
+        ""
+      ],
+      "leg": "client",
+      "matchable": false,
+      "name": "ClientMcpMethodHeader_initialize",
+      "reason": "Making this check evaluate would require the client to send a initialize request, which 2026-07-28 removed (SEP-2575). Driving it would mean being LESS conformant, which is the bucket-0 definition. Out of denominator.",
+      "reason_code": "removed_by_spec",
+      "scenario": "http-standard-headers",
+      "skip_gate": "client sent no initialize request",
+      "skip_site": "2181:1993",
+      "status": "SKIPPED",
+      "token": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_initialize"
+    },
+    {
+      "bucket": 0,
+      "key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_notifications_initialized",
+        "Client sends correct Mcp-Method header on notifications/initialized request",
+        ""
+      ],
+      "leg": "client",
+      "matchable": false,
+      "name": "ClientMcpMethodHeader_notifications_initialized",
+      "reason": "Making this check evaluate would require the client to send a notifications/initialized request, which 2026-07-28 removed (SEP-2575). Driving it would mean being LESS conformant, which is the bucket-0 definition. Out of denominator.",
+      "reason_code": "removed_by_spec",
+      "scenario": "http-standard-headers",
+      "skip_gate": "client sent no notifications/initialized request",
+      "skip_site": "2181:1993",
+      "status": "SKIPPED",
+      "token": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_notifications_initialized"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "json-schema-ref-no-deref",
+        "sep-2106-no-network-ref-deref",
+        "NoNetworkRefDereference",
+        "Client did not dereference the network-URI $ref in the tool inputSchema",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "NoNetworkRefDereference",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "json-schema-ref-no-deref",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/json-schema-ref-no-deref/sep-2106-no-network-ref-deref/NoNetworkRefDereference"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "request-metadata",
+        "sep-2575-http-client-sends-version-header",
+        "ClientSendsVersionHeader",
+        "Client sends MCP-Protocol-Version header on every POST",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientSendsVersionHeader",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "request-metadata",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/request-metadata/sep-2575-http-client-sends-version-header/ClientSendsVersionHeader"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "request-metadata",
+        "sep-2575-client-populates-meta",
+        "ClientPopulatesMeta",
+        "Client populates _meta on every request with the required fields (protocolVersion, clientCapabilities)",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientPopulatesMeta",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "request-metadata",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "request-metadata",
+        "sep-2575-client-sends-client-info",
+        "ClientSendsClientInfo",
+        "Client SHOULD include io.modelcontextprotocol/clientInfo in every request's _meta (spec PR #3002)",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientSendsClientInfo",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "request-metadata",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/request-metadata/sep-2575-client-sends-client-info/ClientSendsClientInfo"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "request-metadata",
+        "sep-2575-http-version-header-matches-meta",
+        "ClientVersionHeaderMatchesMeta",
+        "MCP-Protocol-Version header matches _meta.protocolVersion",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientVersionHeaderMatchesMeta",
+      "reason": "A skip site can reach this check (MCP-Protocol-Version header or _meta.protocolVersion absent), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "request-metadata",
+      "skip_gate": "MCP-Protocol-Version header or _meta.protocolVersion absent",
+      "skip_site": "1128:14832",
+      "status": "SUCCESS",
+      "token": "oc:client/request-metadata/sep-2575-http-version-header-matches-meta/ClientVersionHeaderMatchesMeta"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "request-metadata",
+        "sep-2575-client-declares-roots-capability",
+        "ClientDeclaresRootsCapability",
+        "Client declares valid roots capability if present",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientDeclaresRootsCapability",
+      "reason": "A skip site can reach this check (client declared no roots capability (the check reads \"if present\")), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "request-metadata",
+      "skip_gate": "client declared no roots capability (the check reads \"if present\")",
+      "skip_site": "1128:15125",
+      "status": "SUCCESS",
+      "token": "oc:client/request-metadata/sep-2575-client-declares-roots-capability/ClientDeclaresRootsCapability"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "request-metadata",
+        "sep-2575-client-declares-sampling-capability",
+        "ClientDeclaresSamplingCapability",
+        "Client declares valid sampling capability if present",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientDeclaresSamplingCapability",
+      "reason": "A skip site can reach this check (client declared no sampling capability (the check reads \"if present\")), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "request-metadata",
+      "skip_gate": "client declared no sampling capability (the check reads \"if present\")",
+      "skip_site": "1128:15125",
+      "status": "SUCCESS",
+      "token": "oc:client/request-metadata/sep-2575-client-declares-sampling-capability/ClientDeclaresSamplingCapability"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "request-metadata",
+        "sep-2575-client-declares-elicitation-capability",
+        "ClientDeclaresElicitationCapability",
+        "Client declares valid elicitation capability if present",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientDeclaresElicitationCapability",
+      "reason": "A skip site can reach this check (client declared no elicitation capability (the check reads \"if present\")), and it evaluated as SUCCESS in the in-scope run. The rule's \"can cause it to evaluate\" is existential over conforming implementations; ours is the witness. Matchable — the verdict is not the question.",
+      "reason_code": "skip_reachable_evaluated",
+      "scenario": "request-metadata",
+      "skip_gate": "client declared no elicitation capability (the check reads \"if present\")",
+      "skip_site": "1128:15125",
+      "status": "SUCCESS",
+      "token": "oc:client/request-metadata/sep-2575-client-declares-elicitation-capability/ClientDeclaresElicitationCapability"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "request-metadata",
+        "sep-2575-client-retry-supported-version",
+        "ClientRetrySupportedVersion",
+        "Client retries with a supported version when first choice is rejected",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ClientRetrySupportedVersion",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "request-metadata",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "sep-2322-client-request-state",
+        "sep-2322-client-request-state-echoed",
+        "MRTRClientRequestStateEchoed",
+        "Client MUST echo back the exact value of requestState when retrying",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "MRTRClientRequestStateEchoed",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "sep-2322-client-request-state",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/sep-2322-client-request-state/sep-2322-client-request-state-echoed/MRTRClientRequestStateEchoed"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "sep-2322-client-request-state",
+        "sep-2322-client-jsonrpc-id-different",
+        "MRTRClientJsonRpcIdDifferent",
+        "The JSON-RPC id MUST be different between the initial request and the retry",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "MRTRClientJsonRpcIdDifferent",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "sep-2322-client-request-state",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/sep-2322-client-request-state/sep-2322-client-jsonrpc-id-different/MRTRClientJsonRpcIdDifferent"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "sep-2322-client-request-state",
+        "sep-2322-client-parallel-isolation",
+        "MRTRClientParallelIsolation",
+        "inputRequests and requestState MUST NOT be used for any other request the client may be sending",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "MRTRClientParallelIsolation",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "sep-2322-client-request-state",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/sep-2322-client-request-state/sep-2322-client-parallel-isolation/MRTRClientParallelIsolation"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "sep-2322-client-request-state",
+        "sep-2322-client-no-state-omitted",
+        "MRTRClientNoStateOmitted",
+        "If InputRequiredResult does not contain requestState, client MUST NOT include one in the retry",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "MRTRClientNoStateOmitted",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "sep-2322-client-request-state",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/sep-2322-client-request-state/sep-2322-client-no-state-omitted/MRTRClientNoStateOmitted"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "sep-2322-client-request-state",
+        "sep-2322-default-result-type-complete",
+        "DefaultResultTypeComplete",
+        "Client MUST assume resultType \"complete\" when not specified",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "DefaultResultTypeComplete",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "sep-2322-client-request-state",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/sep-2322-client-request-state/sep-2322-default-result-type-complete/DefaultResultTypeComplete"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "tools_call",
+        "tool-add-numbers",
+        "ToolAddNumbers",
+        "Validates that the add_numbers tool works correctly",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "ToolAddNumbers",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools_call",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/tools_call/tool-add-numbers/ToolAddNumbers"
+    },
+    {
+      "bucket": null,
+      "key": [
+        "client",
+        "tools_call",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "leg": "client",
+      "matchable": true,
+      "name": "WireSchemaValid",
+      "reason": "No site in the harness's complete skip vocabulary can reach this check, so it evaluates unconditionally on any run that reaches its scenario. Matchable.",
+      "reason_code": "no_skip_site",
+      "scenario": "tools_call",
+      "skip_gate": null,
+      "skip_site": null,
+      "status": "SUCCESS",
+      "token": "oc:client/tools_call/wire-schema-valid/WireSchemaValid"
+    }
+  ],
+  "control": {
+    "artefact_dir": "/tmp/mes57-f/null_exit0/http-standard-headers-2026-08-21T07-25-30-828Z",
+    "checks_json_sha256": "c00cc1da4950342c88279ebdc7a2c597b25b5342f03f561421f6ea23ed7f4982",
+    "classifier_result": {
+      "in_denominator": 9,
+      "out_of_denominator": 2
+    },
+    "key_set_equals_a1": true,
+    "keys": [
+      [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_initialize",
+        "Client sends correct Mcp-Method header on initialize request",
+        ""
+      ],
+      [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_notifications_initialized",
+        "Client sends correct Mcp-Method header on notifications/initialized request",
+        ""
+      ],
+      [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_tools_list",
+        "Client sends correct Mcp-Method header on tools/list request",
+        ""
+      ],
+      [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_tools_call",
+        "Client sends correct Mcp-Method header on tools/call request",
+        ""
+      ],
+      [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_resources_list",
+        "Client sends correct Mcp-Method header on resources/list request",
+        ""
+      ],
+      [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_resources_read",
+        "Client sends correct Mcp-Method header on resources/read request",
+        ""
+      ],
+      [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_prompts_list",
+        "Client sends correct Mcp-Method header on prompts/list request",
+        ""
+      ],
+      [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_prompts_get",
+        "Client sends correct Mcp-Method header on prompts/get request",
+        ""
+      ],
+      [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpNameHeader_tools_call",
+        "Client sends correct Mcp-Name header on tools/call request",
+        ""
+      ],
+      [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpNameHeader_resources_read",
+        "Client sends correct Mcp-Name header on resources/read request",
+        ""
+      ],
+      [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpNameHeader_prompts_get",
+        "Client sends correct Mcp-Name header on prompts/get request",
+        ""
+      ]
+    ],
+    "naive_skipped_classifier_result": {
+      "out_of_denominator": 11
+    },
+    "name": "null-exit0 / http-standard-headers",
+    "rows": 11,
+    "statuses": {
+      "SKIPPED": 11
+    },
+    "what_it_establishes": "The rule is not \"SKIPPED is excluded\", written as a measurement instead of an assertion: on this population a SKIPPED-reading classifier returns 11 where the truth is 2. The other 9 are methods a conforming client MAY drive and that client did not — coverage gaps, bucket 2, in the denominator.",
+    "what_it_is": "a null client that connects and exits 0, driving nothing. Every one of the eleven synthesised rows comes back SKIPPED.",
+    "why_it_matters": "It is what makes the criterion falsifiable. A classifier that could only ever return the in-scope run's answer would pass this ticket while ruling nothing out."
+  },
+  "generated_by": "mix conformance.bucket_zero",
+  "harness": {
+    "version": "0.2.0-alpha.11",
+    "file": "dist/index.js",
+    "package": "@modelcontextprotocol/conformance",
+    "sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+    "audit": "grep -o SKIPPED dist/index.js | wc -l"
+  },
+  "keyed_by": {
+    "fields": [
+      "leg",
+      "scenario",
+      "check_id",
+      "name",
+      "description",
+      "discriminator"
+    ],
+    "manifest": "docs/conformance/in-scope-2026-07-28.json",
+    "note": "A5's term is keyed BY A1's key, not stored IN A1's file. A1's manifest stays byte-untouched and both its denominator terms stay null; the cross-file test fails if these two disagree on the total or on any key.",
+    "total": 175
+  },
+  "match_target_rule": {
+    "byte_equal_to": "in-scope-2026-07-28.json match_target_rule.text",
+    "establishes": "MATCHABILITY only — never that any ET-CC member claims the check (D2b)",
+    "text": "A check is a match target only if a conforming 2026-07-28 implementation can cause it to evaluate.",
+    "wording_note": "Stated as \"structurally unreachable for a conforming implementation\", NOT as \"SKIPPED is excluded\". The distinction is load-bearing: a check skipped because our implementation did not exercise an optional but available path is a COVERAGE GAP, not an exclusion. There are no such checks in the current in-scope run, so the rule is written to distinguish them anyway — otherwise the next one is dropped silently on this precedent."
+  },
+  "members": [
+    {
+      "corroboration_limit": null,
+      "harness_source": "2181:1993",
+      "key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_initialize",
+        "Client sends correct Mcp-Method header on initialize request",
+        ""
+      ],
+      "lead_source": "harness scenario metadata",
+      "name": "ClientMcpMethodHeader_initialize",
+      "removed_method": "initialize",
+      "sources": [
+        "harness `initialize` scenario declares source:{introducedIn:`2025-06-18`,removedIn:F}, F = `2026-07-28` (dist/index.js 2:3379)",
+        "requirements/2026-07-28.yaml lines 15-16: the dated revisions through 2025-11-25 use the stateful initialize handshake and 2026-07-28 is stateless with per-request _meta",
+        "cross-leg: the SAME build requires a 2026-07-28 SERVER to answer initialize with 404 + -32601 (in-scope check sep-2575-http-server-method-not-found-404-initialize)"
+      ],
+      "token": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_initialize",
+      "what_would_make_it_evaluate": "The client sending an initialize request — i.e. becoming NON-conformant with 2026-07-28. That is the bucket-0 definition, not a consequence of it.",
+      "what_would_make_it_leave_the_bucket": "A future revision reinstating initialize, or the harness dropping it from the hardcoded synthesis loop at 2181:1993. Neither is a change to OUR implementation: nothing we can write moves this member."
+    },
+    {
+      "corroboration_limit": "the cross-leg argument does NOT reach this member: the server-leg removed-method loop is [initialize, ping, logging/setLevel, resources/subscribe, resources/unsubscribe] and a notification has no response to assert on",
+      "harness_source": "2181:1993",
+      "key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_notifications_initialized",
+        "Client sends correct Mcp-Method header on notifications/initialized request",
+        ""
+      ],
+      "lead_source": "frozen requirements file",
+      "name": "ClientMcpMethodHeader_notifications_initialized",
+      "removed_method": "notifications/initialized",
+      "sources": [
+        "requirements/2026-07-28.yaml lines 15-16: 2026-07-28 has no stateful initialize HANDSHAKE, and notifications/initialized is that handshake's acknowledgement rather than a separate method — one sentence covering both members as a unit",
+        "SEP-2575 removed the handshake; our client omits both halves BECAUSE it is conformant"
+      ],
+      "token": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_notifications_initialized",
+      "what_would_make_it_evaluate": "The client sending a notifications/initialized request — i.e. becoming NON-conformant with 2026-07-28. That is the bucket-0 definition, not a consequence of it.",
+      "what_would_make_it_leave_the_bucket": "A future revision reinstating notifications/initialized, or the harness dropping it from the hardcoded synthesis loop at 2181:1993. Neither is a change to OUR implementation: nothing we can write moves this member."
+    }
+  ],
+  "revision": "2026-07-28",
+  "scenario_gate": {
+    "contrast": "The `initialize` scenario DOES reach it — source:{introducedIn:`2025-06-18`,removedIn:F} — which is the harness's own statement that the method is removed at 2026-07-28, and the strongest single source for member 1.",
+    "predicate": "Po(source, v) = not extension and introducedIn <= v and (removedIn == nil or v < removedIn)",
+    "result": "NONE of A1's 44 in-scope scenarios can reach this gate at 2026-07-28. All 44 carry a non-extension source with introducedIn <= 2026-07-28 and no removedIn, resolved from the scenario class or its base class (the http-* client scenarios inherit source={introducedIn:F} from base class Ia).",
+    "sites": [
+      "2203:1021",
+      "2210:828"
+    ],
+    "stated_as": "a result, not by silence (A2d)",
+    "version_order": [
+      "2025-03-26",
+      "2025-06-18",
+      "2025-11-25",
+      "2026-07-28"
+    ]
+  },
+  "subset_hypothesis": {
+    "direction_1": {
+      "candidates_tested": {
+        "not_a_member": {
+          "ruling": "It has NO ROW OF ITS OWN and is therefore not a member of the 175 at all. It is a shared branch, consumed by three checks that ARE members — sep-2575-server-sends-subscription-ack, sep-2575-server-tags-subscription-id and sep-2575-server-honors-notification-filter — all three SUCCESS, all three classified skip_reachable_evaluated above.",
+          "what": "the subscriptions/listen applicability branch at 1153:22300"
+        },
+        "r3_r6": [
+          "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError",
+          "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize"
+        ],
+        "skip_reachable_yet_evaluated": [
+          "oc:server/caching/sep-2549-resources-read-caching-hints/ResourcesReadCachingHints",
+          "oc:server/server-stateless/sep-2575-server-identifies-in-result-meta/ServerIdentifiesInResultMeta",
+          "oc:server/server-stateless/sep-2575-server-sends-subscription-ack/ServerSendsSubscriptionAck",
+          "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
+          "oc:server/server-stateless/sep-2575-server-honors-notification-filter/ServerHonorsNotificationFilter",
+          "oc:server/server-stateless/sep-2575-server-sends-prompts-list-changed-on-subscription/ServerSendsPromptsListChangedOnSubscription",
+          "oc:server/server-stateless/sep-2575-server-sends-tools-list-changed-on-subscription/ServerSendsToolsListChangedOnSubscription",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_list",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_call",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_list",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_read",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_resources_read",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_list",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_get",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_prompts_get",
+          "oc:client/request-metadata/sep-2575-http-version-header-matches-meta/ClientVersionHeaderMatchesMeta",
+          "oc:client/request-metadata/sep-2575-client-declares-roots-capability/ClientDeclaresRootsCapability",
+          "oc:client/request-metadata/sep-2575-client-declares-sampling-capability/ClientDeclaresSamplingCapability",
+          "oc:client/request-metadata/sep-2575-client-declares-elicitation-capability/ClientDeclaresElicitationCapability"
+        ]
+      },
+      "count": 0,
+      "members": [],
+      "question": "any NON-SKIPPED check unmatchable?",
+      "result": "ZERO. The R3/R6 FAILUREs are the tempting false members and both are MATCHABLE: a conforming server would evaluate them SUCCESS where we evaluate them FAILURE. Conformance moves the VERDICT, never the evaluation."
+    },
+    "direction_2": {
+      "count": 0,
+      "holds": true,
+      "members": [],
+      "question": "any SKIPPED check matchable?",
+      "result": "ZERO on this population — both SKIPPED rows are bucket 0. This direction is CONTINGENT, not structural: on the null-exit0 control the same classifier returns nine of them. See `control`."
+    },
+    "hypothesis": "unmatchable is a subset of SKIPPED",
+    "verdict": "SKIPPED is NECESSARY but not SUFFICIENT for bucket 0, and the sufficiency half is what the control measures rather than asserts."
+  },
+  "vocabulary": {
+    "complete_by": "every occurrence of the token, and every producer and consumer of the `skipped` flag, classified. Re-run the audit grep, get 29, find 29 rows.",
+    "flag_read_false_positives": {
+      "addresses": [
+        "2179:126",
+        "2179:538"
+      ],
+      "why": "`this.skippedCheck(` matches a naive `\\.skipped` regex and is a METHOD CALL, not a read of the flag. A regex sweep reports 7 reads; there are 5."
+    },
+    "flag_reads": [
+      {
+        "at": "1153:7270",
+        "level": "check",
+        "quote": "t s=await a(),c=s?.error,l=c?s?.warning?`WARNING`:`FAILURE`:s?.skipped?`SKIPPED`:`SUCCESS`;r.push({id:e,name:t,descripti",
+        "site": "s?.skipped ? SKIPPED : SUCCESS — the ONLY check-level reader"
+      },
+      {
+        "at": "2249:5375",
+        "level": "scenario",
+        "quote": ",o,e.force||!!a));return{scenario:t,checks:r.checks,skipped:r.skipped,error:null}}catch(e){return{scenario:t,checks:[{id",
+        "site": "r.skipped"
+      },
+      {
+        "at": "2251:43",
+        "level": "scenario",
+        "quote": "`);let u=0,d=0,f=0,p=0;for(let e of l){if(e.skipped){p++,console.log(`- ${e.scenario}: skipped`);continue}let t=e.checks",
+        "site": "e.skipped"
+      },
+      {
+        "at": "2253:245",
+        "level": "scenario",
+        "quote": "(0));let c=await Ko(s.command,s.scenario,n,i,o,e.force??!1);c.skipped&&process.exit(0);let{overallFailure:l}=qo(c.checks",
+        "site": "c.skipped"
+      },
+      {
+        "at": "2254:1433",
+        "level": "scenario",
+        "quote": ".scenario){let t=await Xo(n.url,n.scenario,i,o,e.force??!1);t.skipped&&process.exit(0);let{failed:a}=Zo(t.checks,t.scena",
+        "site": "t.skipped"
+      }
+    ],
+    "flag_write_totals": {
+      "check": 4,
+      "homonym": 1,
+      "scenario": 4,
+      "total": 9
+    },
+    "flag_writes": [
+      {
+        "at": "1153:12520",
+        "level": "check",
+        "quote": "erverInfo'] on responses (spec PR #3002).`,()=>{if(_)return{skipped:!0,details:{note:`Prerequisite missing: ${_.message}",
+        "site": "sep-2575-server-identifies-in-result-meta prerequisite"
+      },
+      {
+        "at": "1153:22300",
+        "level": "check",
+        "quote": "e),re=!_&&g!=null,ie=e=>e[0]?.error?.code===-32601?re&&!ne?{skipped:!0,details:{note:`Server advertises no subscription-",
+        "site": "shared branch ie/1 — NO ROW OF ITS OWN, consumed by 3 checks"
+      },
+      {
+        "at": "1153:25325",
+        "level": "check",
+        "quote": "true (SHOULD)`,async()=>{if(!h?.prompts?.listChanged)return{skipped:!0,details:{note:`Server did not declare prompts.lis",
+        "site": "sep-2575-server-sends-prompts-list-changed-on-subscription"
+      },
+      {
+        "at": "1153:26468",
+        "level": "check",
+        "quote": ": true (SHOULD)`,async()=>{if(!h?.tools?.listChanged)return{skipped:!0,details:{note:`Server did not declare tools.listC",
+        "site": "sep-2575-server-sends-tools-list-changed-on-subscription"
+      },
+      {
+        "at": "1538:18221",
+        "level": "homonym",
+        "quote": ")?.includes(`text/event-stream`))return{index:t,type:`json`,skipped:!0};if(!e.ok||!e.body)return{index:t,type:`sse`,erro",
+        "site": "per-STREAM record field, never read as a check verdict"
+      },
+      {
+        "at": "2203:1387",
+        "level": "scenario",
+        "quote": " c=go(t);if(Wo(c.source,t,i,a))return{checks:[],resultDir:o,skipped:!0};let l=Go(c.source,i),u={specVersion:l,createServ",
+        "site": "runner Ko/6, scenario-level; emits no rows"
+      },
+      {
+        "at": "2210:989",
+        "level": "scenario",
+        "quote": "`),{checks:[],resultDir:a,scenarioDescription:o.description,skipped:!0}}let c=r??(`extensionId`in o.source||o.source.int",
+        "site": "runner Xo/5, scenario-level; emits no rows"
+      },
+      {
+        "at": "2249:5367",
+        "level": "scenario",
+        "quote": "nd,t,n,i,o,e.force||!!a));return{scenario:t,checks:r.checks,skipped:r.skipped,error:null}}catch(e){return{scenario:t,che",
+        "site": "runner, PROPAGATION of the scenario-level flag"
+      },
+      {
+        "at": "2249:5588",
+        "level": "scenario",
+        "quote": "ing(),errorMessage:e instanceof Error?e.message:String(e)}],skipped:void 0,error:e}}}));console.log(`",
+        "site": "runner, explicit undefined on the error path"
+      }
+    ],
+    "grep_forms": {
+      "note": "written as they actually grep. `{skipped:!0}` with the braces returns 0 — the bare form is what matches.",
+      "reads": "\\.skipped",
+      "token": "SKIPPED",
+      "writes": "skipped:"
+    },
+    "token_site_totals": {
+      "compares": 7,
+      "emits_check": 17,
+      "emits_scenario": 2,
+      "message_only": 3,
+      "total": 29
+    },
+    "token_sites": [
+      {
+        "at": "1128:10941",
+        "category": "compares",
+        "quote": "):t=>It(t,e)}const Rt={FAILURE:3,WARNING:2,SUCCESS:1,INFO:1,SKIPPED:0},zt=[`sep-2575-http-client-sends-version-header`,`",
+        "site": "severity rank table for the run reducer"
+      },
+      {
+        "at": "1128:14832",
+        "category": "emits_check",
+        "quote": " _meta.protocolVersion`,status:u?o===a?`SUCCESS`:`FAILURE`:`SKIPPED`,timestamp:new Date().toISOString(),specReferences:[",
+        "site": "request-metadata ClientVersionHeaderMatchesMeta"
+      },
+      {
+        "at": "1128:15125",
+        "category": "emits_check",
+        "quote": "odelcontextprotocol/clientCapabilities`],f=(e,t,n)=>{let r=`SKIPPED`;if(d&&e in d){let t=d[e];r=typeof t==`object`&&t&&!",
+        "site": "request-metadata capability-declaration lambda"
+      },
+      {
+        "at": "1153:64",
+        "category": "message_only",
+        "quote": "vers without session management (stateless) are reported as SKIPPED.`}async run(e){let{serverUrl:t,specVersion:n}=e,r=[]",
+        "site": "server-session-lifecycle description prose"
+      },
+      {
+        "at": "1153:1843",
+        "category": "emits_check",
+        "quote": ",u=c.status===405,d=c.status===404;if(u)return r.push(I(Qt,`SKIPPED`,{details:{statusCode:405,message:`Server returned 4",
+        "site": "server-session-lifecycle, HTTP 405 branch"
+      },
+      {
+        "at": "1153:3605",
+        "category": "emits_check",
+        "quote": ")}finally{i.abort()}return r}};function nn(e,t){return I(e,`SKIPPED`,{details:{message:t}})}function rn(e){return`Not te",
+        "site": "helper nn/2, called only from server-session-lifecycle"
+      },
+      {
+        "at": "1153:7282",
+        "category": "emits_check",
+        "quote": "),c=s?.error,l=c?s?.warning?`WARNING`:`FAILURE`:s?.skipped?`SKIPPED`:`SUCCESS`;r.push({id:e,name:t,description:n,status:",
+        "site": "server-stateless check helper"
+      },
+      {
+        "at": "1483:2172",
+        "category": "emits_check",
+        "quote": "tion kn(e,t){return e?`SUCCESS`:t===`2026-07-28`?`FAILURE`:`SKIPPED`}var An=class{constructor(){this.name=`json-schema-2",
+        "site": "helper kn/2 — CANNOT return SKIPPED at 2026-07-28"
+      },
+      {
+        "at": "1493:3178",
+        "category": "compares",
+        "quote": "putSchema - composition keyword was likely stripped`)+(C===`SKIPPED`?v:``),specReferences:r,details:{hasAllOf:b,hasNeste",
+        "site": "json-schema-2020-12 errorMessage suffix"
+      },
+      {
+        "at": "1493:3668",
+        "category": "compares",
+        "quote": "ng (if=${w}, then=${T}, else=${E}) - likely stripped`+(O===`SKIPPED`?v:``),specReferences:r,details:{hasIf:w,hasThen:T,h",
+        "site": "json-schema-2020-12 errorMessage suffix"
+      },
+      {
+        "at": "1493:4133",
+        "category": "compares",
+        "quote": "efs.address - reference keyword was likely stripped`+(ee===`SKIPPED`?v:``),specReferences:r,details:{hasAnchor:A,anchorV",
+        "site": "json-schema-2020-12 errorMessage suffix"
+      },
+      {
+        "at": "1790:4634",
+        "category": "emits_check",
+        "quote": "sponse includes ttlMs and cacheScope caching hints`,status:`SKIPPED`,timestamp:new Date().toISOString(),errorMessage:`re",
+        "site": "caching ResourcesReadCachingHints"
+      },
+      {
+        "at": "2053:1933",
+        "category": "emits_check",
+        "quote": "tion Sr(e,t,n,r,i){return{id:e,name:t,description:n,status:`SKIPPED`,timestamp:new Date().toISOString(),errorMessage:`Sk",
+        "site": "helper Sr/5, called only from tasks-status-notifications"
+      },
+      {
+        "at": "2179:4724",
+        "category": "emits_check",
+        "quote": "Grant`,description:`Valid authorization code grant`,status:`SKIPPED`,timestamp:new Date().toISOString(),errorMessage:e,s",
+        "site": "authorization-code-grant skippedCheck/1"
+      },
+      {
+        "at": "2181:1993",
+        "category": "emits_check",
+        "quote": "nt sends correct Mcp-Method header on ${t} request`,status:`SKIPPED`,timestamp:new Date().toISOString(),errorMessage:`Cl",
+        "site": "http-standard-headers, Mcp-Method 8-method loop"
+      },
+      {
+        "at": "2181:2432",
+        "category": "emits_check",
+        "quote": "ient sends correct Mcp-Name header on ${t} request`,status:`SKIPPED`,timestamp:new Date().toISOString(),errorMessage:`Cl",
+        "site": "http-standard-headers, Mcp-Name 3-method loop"
+      },
+      {
+        "at": "2201:292",
+        "category": "message_only",
+        "quote": " also survive; for dated protocol versions these checks are SKIPPED rather than FAILURE since SEP-2106 applies from the ",
+        "site": "json-schema-2020-12-preservation description prose"
+      },
+      {
+        "at": "2201:2238",
+        "category": "message_only",
+        "quote": "ho back the inputSchema; downstream preservation checks are SKIPPED`:void 0,details:{echoCompleted:n!==null}}),n===null)",
+        "site": "json-schema-2020-12-preservation errorMessage prose"
+      },
+      {
+        "at": "2201:2566",
+        "category": "emits_check",
+        "quote": "ed the $schema field of the focal tool inputSchema`,status:`SKIPPED`,timestamp:e,specReferences:[no],errorMessage:t},{id",
+        "site": "json-schema-2020-12-preservation $schema"
+      },
+      {
+        "at": "2201:2802",
+        "category": "emits_check",
+        "quote": "rved the $defs field of the focal tool inputSchema`,status:`SKIPPED`,timestamp:e,specReferences:[no],errorMessage:t},{id",
+        "site": "json-schema-2020-12-preservation $defs"
+      },
+      {
+        "at": "2201:3083",
+        "category": "emits_check",
+        "quote": "onalProperties field of the focal tool inputSchema`,status:`SKIPPED`,timestamp:e,specReferences:[no],errorMessage:t},{id",
+        "site": "json-schema-2020-12-preservation additionalProperties"
+      },
+      {
+        "at": "2201:3356",
+        "category": "emits_check",
+        "quote": "ywords (allOf/anyOf) on the focal tool inputSchema`,status:`SKIPPED`,timestamp:e,specReferences:[ro],errorMessage:t},{id",
+        "site": "json-schema-2020-12-preservation composition"
+      },
+      {
+        "at": "2201:3630",
+        "category": "emits_check",
+        "quote": "words (if/then/else) on the focal tool inputSchema`,status:`SKIPPED`,timestamp:e,specReferences:[ro],errorMessage:t},{id",
+        "site": "json-schema-2020-12-preservation conditional"
+      },
+      {
+        "at": "2201:3867",
+        "category": "emits_check",
+        "quote": "preserved the $anchor keyword inside $defs.address`,status:`SKIPPED`,timestamp:e,specReferences:[ro],errorMessage:t}),r}",
+        "site": "json-schema-2020-12-preservation $anchor"
+      },
+      {
+        "at": "2201:6192",
+        "category": "compares",
+        "quote": "putSchema — composition keyword was likely stripped`)+(g===`SKIPPED`?d:``),details:{hasAllOf:p,hasNestedAnyOf:m,targetPr",
+        "site": "json-schema-2020-12-preservation errorMessage suffix"
+      },
+      {
+        "at": "2201:6693",
+        "category": "compares",
+        "quote": "ng (if=${_}, then=${v}, else=${y}) — likely stripped`+(x===`SKIPPED`?d:``),details:{hasIf:_,hasThen:v,hasElse:y,targetPr",
+        "site": "json-schema-2020-12-preservation errorMessage suffix"
+      },
+      {
+        "at": "2201:7147",
+        "category": "compares",
+        "quote": "defs.address — reference keyword was likely stripped`+(w===`SKIPPED`?d:``),details:{hasAnchor:C,anchorValue:S?.$anchor}}",
+        "site": "json-schema-2020-12-preservation errorMessage suffix"
+      },
+      {
+        "at": "2203:1021",
+        "category": "emits_scenario",
+        "quote": "ion scenario, not on the spec timeline`;return console.log(`SKIPPED: scenario '${t}' is not applicable at spec version $",
+        "site": "applicability gate Wo/4 in the runner"
+      },
+      {
+        "at": "2210:828",
+        "category": "emits_scenario",
+        "quote": "ion scenario, not on the spec timeline`;return console.log(`SKIPPED: scenario '${t}' is not applicable at spec version $",
+        "site": "applicability gate in Xo/5 in the runner"
+      }
+    ]
+  }
+}
