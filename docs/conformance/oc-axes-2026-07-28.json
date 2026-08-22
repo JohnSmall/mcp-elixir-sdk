@@ -1,0 +1,543 @@
+{
+  "axes_schema_version": 1,
+  "axis_source_rule": "AXES COME FROM THE PREDICATE, NEVER FROM THE DESCRIPTION. A check's description is prose about the requirement; its predicate is the requirement as scored. Reading axes off descriptions invents obligations the suite never checks — see `sep-2575-http-server-unsupported-version-400`, whose description names 400 AND an UnsupportedProtocolVersionError and whose predicate is `S.status===400` alone.",
+  "checks": [
+    {
+      "axes": [
+        {
+          "axis": "http_status",
+          "expr": "n.status===400",
+          "requires": "HTTP 400 on a _meta-invalid rejection"
+        }
+      ],
+      "axis_count": 1,
+      "carries_http_status_in_error_message": true,
+      "emitting_site": {
+        "dist_byte_span": [
+          366385,
+          366776
+        ],
+        "dist_char_span": [
+          366301,
+          366692
+        ],
+        "form": "literal",
+        "id_source": "sep-2575-http-server-meta-invalid-400"
+      },
+      "error_message_at_accepted_run": "Expected HTTP 400 Bad Request, got status code 200",
+      "evaluator_excerpt": "a(`sep-2575-http-server-meta-invalid-400`,`HttpServerMetaInvalid400`,`Rejections of requests missing required _meta fields use HTTP 400 Bad Request.`,()=>n?n.status===400?{details:{fieldIssue:e.slug,response:r}}:{error:`Expected HTTP 400 Bad Request, got status code ${n.status}`,details:{fieldIssue:e.slug,response:r}}:{error:`_meta validation probe failed completely`},{fieldIssue:e.slug})",
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-meta-invalid-400",
+        "HttpServerMetaInvalid400",
+        "Rejections of requests missing required _meta fields use HTTP 400 Bad Request.",
+        "missing-meta"
+      ],
+      "preconditions": [],
+      "status_at_accepted_run": "FAILURE"
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_status",
+          "expr": "n.status===400",
+          "requires": "HTTP 400 on a _meta-invalid rejection"
+        }
+      ],
+      "axis_count": 1,
+      "carries_http_status_in_error_message": true,
+      "emitting_site": {
+        "dist_byte_span": [
+          366385,
+          366776
+        ],
+        "dist_char_span": [
+          366301,
+          366692
+        ],
+        "form": "literal",
+        "id_source": "sep-2575-http-server-meta-invalid-400"
+      },
+      "error_message_at_accepted_run": "Expected HTTP 400 Bad Request, got status code 200",
+      "evaluator_excerpt": "a(`sep-2575-http-server-meta-invalid-400`,`HttpServerMetaInvalid400`,`Rejections of requests missing required _meta fields use HTTP 400 Bad Request.`,()=>n?n.status===400?{details:{fieldIssue:e.slug,response:r}}:{error:`Expected HTTP 400 Bad Request, got status code ${n.status}`,details:{fieldIssue:e.slug,response:r}}:{error:`_meta validation probe failed completely`},{fieldIssue:e.slug})",
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-meta-invalid-400",
+        "HttpServerMetaInvalid400",
+        "Rejections of requests missing required _meta fields use HTTP 400 Bad Request.",
+        "missing-protocol-version"
+      ],
+      "preconditions": [],
+      "status_at_accepted_run": "FAILURE"
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_status",
+          "expr": "n.status===400",
+          "requires": "HTTP 400 on a _meta-invalid rejection"
+        }
+      ],
+      "axis_count": 1,
+      "carries_http_status_in_error_message": true,
+      "emitting_site": {
+        "dist_byte_span": [
+          366385,
+          366776
+        ],
+        "dist_char_span": [
+          366301,
+          366692
+        ],
+        "form": "literal",
+        "id_source": "sep-2575-http-server-meta-invalid-400"
+      },
+      "error_message_at_accepted_run": "Expected HTTP 400 Bad Request, got status code 200",
+      "evaluator_excerpt": "a(`sep-2575-http-server-meta-invalid-400`,`HttpServerMetaInvalid400`,`Rejections of requests missing required _meta fields use HTTP 400 Bad Request.`,()=>n?n.status===400?{details:{fieldIssue:e.slug,response:r}}:{error:`Expected HTTP 400 Bad Request, got status code ${n.status}`,details:{fieldIssue:e.slug,response:r}}:{error:`_meta validation probe failed completely`},{fieldIssue:e.slug})",
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-meta-invalid-400",
+        "HttpServerMetaInvalid400",
+        "Rejections of requests missing required _meta fields use HTTP 400 Bad Request.",
+        "missing-client-capabilities"
+      ],
+      "preconditions": [],
+      "status_at_accepted_run": "FAILURE"
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_status",
+          "expr": "S.status===400",
+          "requires": "HTTP 400 on an unsupported protocol version"
+        }
+      ],
+      "axis_count": 1,
+      "carries_http_status_in_error_message": true,
+      "emitting_site": {
+        "dist_byte_span": [
+          371043,
+          371464
+        ],
+        "dist_char_span": [
+          370959,
+          371380
+        ],
+        "form": "literal",
+        "id_source": "sep-2575-http-server-unsupported-version-400"
+      },
+      "error_message_at_accepted_run": "Expected HTTP 400 Bad Request, got status code 200",
+      "evaluator_excerpt": "a(`sep-2575-http-server-unsupported-version-400`,`HttpServerUnsupportedVersion400`,`If the server does not implement the requested protocol version, it MUST respond with 400 Bad Request and an UnsupportedProtocolVersionError listing its supported versions.`,()=>S?S.status===400?{details:{response:C}}:{error:`Expected HTTP 400 Bad Request, got status code ${S.status}`}:{error:`Network transaction context unavailable`})",
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-unsupported-version-400",
+        "HttpServerUnsupportedVersion400",
+        "If the server does not implement the requested protocol version, it MUST respond with 400 Bad Request and an UnsupportedProtocolVersionError listing its supported versions.",
+        ""
+      ],
+      "preconditions": [],
+      "status_at_accepted_run": "FAILURE"
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_status",
+          "expr": "T.status!==400",
+          "requires": "HTTP 400 on a header/_meta version mismatch"
+        },
+        {
+          "axis": "jsonrpc_error_code",
+          "expr": "E?.error?.code!==-32020",
+          "requires": "JSON-RPC error -32020"
+        }
+      ],
+      "axis_count": 2,
+      "carries_http_status_in_error_message": true,
+      "emitting_site": {
+        "dist_byte_span": [
+          371650,
+          372081
+        ],
+        "dist_char_span": [
+          371566,
+          371997
+        ],
+        "form": "literal",
+        "id_source": "sep-2575-http-server-header-mismatch-400"
+      },
+      "error_message_at_accepted_run": "Expected HTTP 400 and JSON-RPC error -32020, got status 200 with code undefined",
+      "evaluator_excerpt": "a(`sep-2575-http-server-header-mismatch-400`,`HttpServerHeaderMismatch400`,`If the values do not match, the server MUST reject the request with 400 Bad Request and a HeaderMismatch JSON-RPC error.`,()=>T?T.status!==400||E?.error?.code!==-32020?{error:`Expected HTTP 400 and JSON-RPC error -32020, got status ${T.status} with code ${E?.error?.code}`}:{details:{response:E}}:{error:`Header verification endpoint network hit failed`})",
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-header-mismatch-400",
+        "HttpServerHeaderMismatch400",
+        "If the values do not match, the server MUST reject the request with 400 Bad Request and a HeaderMismatch JSON-RPC error.",
+        ""
+      ],
+      "preconditions": [],
+      "status_at_accepted_run": "FAILURE"
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_status",
+          "expr": "O.status===400",
+          "requires": "HTTP 400 on a MissingRequiredClientCapabilityError"
+        }
+      ],
+      "axis_count": 1,
+      "carries_http_status_in_error_message": true,
+      "emitting_site": {
+        "dist_byte_span": [
+          373709,
+          374422
+        ],
+        "dist_char_span": [
+          373623,
+          374336
+        ],
+        "form": "literal",
+        "id_source": "sep-2575-missing-capability-http-400"
+      },
+      "error_message_at_accepted_run": "Expected HTTP status code 400 Bad Request for an undeclared capability error response, got 200",
+      "evaluator_excerpt": "a(`sep-2575-missing-capability-http-400`,`MissingCapabilityHttp400`,`On HTTP, the response status MUST be 400 Bad Request [for MissingRequiredClientCapabilityError].`,()=>O?A?O.status===400?{details:{response:k}}:{error:`Expected HTTP status code 400 Bad Request for an undeclared capability error response, got ${O.status}`,details:{response:k}}:{error:rn(ee?`server did not return MissingRequiredClientCapabilityError, so its HTTP status could not be validated`:`server does not list the diagnostic tool 'test_missing_capability' in tools/list, so the -32021 HTTP status could not be validated`),details:{untestable:!0,httpStatus:O.status}}:{error:`Network transport layer layer context failed to instantiate`})",
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-missing-capability-http-400",
+        "MissingCapabilityHttp400",
+        "On HTTP, the response status MUST be 400 Bad Request [for MissingRequiredClientCapabilityError].",
+        ""
+      ],
+      "preconditions": [
+        "`A` (`k?.error?.code===-32021`) — the check reports an untestable error rather than a verdict unless the server first returned the -32021 error. A precondition, not an axis: it gates whether the requirement is evaluated at all."
+      ],
+      "status_at_accepted_run": "FAILURE"
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_status",
+          "expr": "r.status!==404",
+          "requires": "HTTP 404 for a removed RPC method"
+        },
+        {
+          "axis": "jsonrpc_error_code",
+          "expr": "i?.error?.code!==-32601",
+          "requires": "JSON-RPC error -32601"
+        }
+      ],
+      "axis_count": 2,
+      "carries_http_status_in_error_message": true,
+      "emitting_site": {
+        "dist_byte_span": [
+          374649,
+          375169
+        ],
+        "dist_char_span": [
+          374563,
+          375083
+        ],
+        "form": "template",
+        "id_source": "sep-2575-http-server-method-not-found-404-${t}"
+      },
+      "error_message_at_accepted_run": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32022",
+      "evaluator_excerpt": "a(`sep-2575-http-server-method-not-found-404-${t}`,`HttpServerMethodNotFound404${e.replace(`/`,``)}`,`If the server does not implement the removed RPC method '${e}', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).`,()=>!r||!i?{error:`Removed method validation hit dropped connections unexpectedly`}:r.status!==404||i?.error?.code!==-32601?{error:`Expected HTTP 404 and code -32601 for removed methods, got HTTP ${r.status} and code ${i?.error?.code}`}:{details:{response:i}})",
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404-initialize",
+        "HttpServerMethodNotFound404initialize",
+        "If the server does not implement the removed RPC method 'initialize', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "preconditions": [
+        "`!r||!i` — a dropped connection is reported as a probe failure, not as a status/code verdict."
+      ],
+      "status_at_accepted_run": "FAILURE"
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_status",
+          "expr": "r.status!==404",
+          "requires": "HTTP 404 for a removed RPC method"
+        },
+        {
+          "axis": "jsonrpc_error_code",
+          "expr": "i?.error?.code!==-32601",
+          "requires": "JSON-RPC error -32601"
+        }
+      ],
+      "axis_count": 2,
+      "carries_http_status_in_error_message": true,
+      "emitting_site": {
+        "dist_byte_span": [
+          374649,
+          375169
+        ],
+        "dist_char_span": [
+          374563,
+          375083
+        ],
+        "form": "template",
+        "id_source": "sep-2575-http-server-method-not-found-404-${t}"
+      },
+      "error_message_at_accepted_run": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601",
+      "evaluator_excerpt": "a(`sep-2575-http-server-method-not-found-404-${t}`,`HttpServerMethodNotFound404${e.replace(`/`,``)}`,`If the server does not implement the removed RPC method '${e}', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).`,()=>!r||!i?{error:`Removed method validation hit dropped connections unexpectedly`}:r.status!==404||i?.error?.code!==-32601?{error:`Expected HTTP 404 and code -32601 for removed methods, got HTTP ${r.status} and code ${i?.error?.code}`}:{details:{response:i}})",
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404-ping",
+        "HttpServerMethodNotFound404ping",
+        "If the server does not implement the removed RPC method 'ping', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "preconditions": [
+        "`!r||!i` — a dropped connection is reported as a probe failure, not as a status/code verdict."
+      ],
+      "status_at_accepted_run": "FAILURE"
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_status",
+          "expr": "r.status!==404",
+          "requires": "HTTP 404 for a removed RPC method"
+        },
+        {
+          "axis": "jsonrpc_error_code",
+          "expr": "i?.error?.code!==-32601",
+          "requires": "JSON-RPC error -32601"
+        }
+      ],
+      "axis_count": 2,
+      "carries_http_status_in_error_message": true,
+      "emitting_site": {
+        "dist_byte_span": [
+          374649,
+          375169
+        ],
+        "dist_char_span": [
+          374563,
+          375083
+        ],
+        "form": "template",
+        "id_source": "sep-2575-http-server-method-not-found-404-${t}"
+      },
+      "error_message_at_accepted_run": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601",
+      "evaluator_excerpt": "a(`sep-2575-http-server-method-not-found-404-${t}`,`HttpServerMethodNotFound404${e.replace(`/`,``)}`,`If the server does not implement the removed RPC method '${e}', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).`,()=>!r||!i?{error:`Removed method validation hit dropped connections unexpectedly`}:r.status!==404||i?.error?.code!==-32601?{error:`Expected HTTP 404 and code -32601 for removed methods, got HTTP ${r.status} and code ${i?.error?.code}`}:{details:{response:i}})",
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404-logging-setlevel",
+        "HttpServerMethodNotFound404loggingsetLevel",
+        "If the server does not implement the removed RPC method 'logging/setLevel', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "preconditions": [
+        "`!r||!i` — a dropped connection is reported as a probe failure, not as a status/code verdict."
+      ],
+      "status_at_accepted_run": "FAILURE"
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_status",
+          "expr": "r.status!==404",
+          "requires": "HTTP 404 for a removed RPC method"
+        },
+        {
+          "axis": "jsonrpc_error_code",
+          "expr": "i?.error?.code!==-32601",
+          "requires": "JSON-RPC error -32601"
+        }
+      ],
+      "axis_count": 2,
+      "carries_http_status_in_error_message": true,
+      "emitting_site": {
+        "dist_byte_span": [
+          374649,
+          375169
+        ],
+        "dist_char_span": [
+          374563,
+          375083
+        ],
+        "form": "template",
+        "id_source": "sep-2575-http-server-method-not-found-404-${t}"
+      },
+      "error_message_at_accepted_run": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601",
+      "evaluator_excerpt": "a(`sep-2575-http-server-method-not-found-404-${t}`,`HttpServerMethodNotFound404${e.replace(`/`,``)}`,`If the server does not implement the removed RPC method '${e}', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).`,()=>!r||!i?{error:`Removed method validation hit dropped connections unexpectedly`}:r.status!==404||i?.error?.code!==-32601?{error:`Expected HTTP 404 and code -32601 for removed methods, got HTTP ${r.status} and code ${i?.error?.code}`}:{details:{response:i}})",
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404-resources-subscribe",
+        "HttpServerMethodNotFound404resourcessubscribe",
+        "If the server does not implement the removed RPC method 'resources/subscribe', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "preconditions": [
+        "`!r||!i` — a dropped connection is reported as a probe failure, not as a status/code verdict."
+      ],
+      "status_at_accepted_run": "FAILURE"
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_status",
+          "expr": "r.status!==404",
+          "requires": "HTTP 404 for a removed RPC method"
+        },
+        {
+          "axis": "jsonrpc_error_code",
+          "expr": "i?.error?.code!==-32601",
+          "requires": "JSON-RPC error -32601"
+        }
+      ],
+      "axis_count": 2,
+      "carries_http_status_in_error_message": true,
+      "emitting_site": {
+        "dist_byte_span": [
+          374649,
+          375169
+        ],
+        "dist_char_span": [
+          374563,
+          375083
+        ],
+        "form": "template",
+        "id_source": "sep-2575-http-server-method-not-found-404-${t}"
+      },
+      "error_message_at_accepted_run": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601",
+      "evaluator_excerpt": "a(`sep-2575-http-server-method-not-found-404-${t}`,`HttpServerMethodNotFound404${e.replace(`/`,``)}`,`If the server does not implement the removed RPC method '${e}', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).`,()=>!r||!i?{error:`Removed method validation hit dropped connections unexpectedly`}:r.status!==404||i?.error?.code!==-32601?{error:`Expected HTTP 404 and code -32601 for removed methods, got HTTP ${r.status} and code ${i?.error?.code}`}:{details:{response:i}})",
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404-resources-unsubscribe",
+        "HttpServerMethodNotFound404resourcesunsubscribe",
+        "If the server does not implement the removed RPC method 'resources/unsubscribe', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "preconditions": [
+        "`!r||!i` — a dropped connection is reported as a probe failure, not as a status/code verdict."
+      ],
+      "status_at_accepted_run": "FAILURE"
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_status",
+          "expr": "te.status!==404",
+          "requires": "HTTP 404 for an unimplemented RPC method"
+        },
+        {
+          "axis": "jsonrpc_error_code",
+          "expr": "M?.error?.code!==-32601",
+          "requires": "JSON-RPC error -32601"
+        }
+      ],
+      "axis_count": 2,
+      "carries_http_status_in_error_message": true,
+      "emitting_site": {
+        "dist_byte_span": [
+          375277,
+          375758
+        ],
+        "dist_char_span": [
+          375191,
+          375672
+        ],
+        "form": "literal",
+        "id_source": "sep-2575-http-server-method-not-found-404"
+      },
+      "error_message_at_accepted_run": "Expected HTTP 404 and JSON-RPC error code -32601, got HTTP 200 and code -32601",
+      "evaluator_excerpt": "a(`sep-2575-http-server-method-not-found-404`,`HttpServerMethodNotFound404`,`If the server does not implement the requested RPC method, it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).`,()=>!te||!M?{error:`Unknown fallback test target returned an invalid layout`}:te.status!==404||M?.error?.code!==-32601?{error:`Expected HTTP 404 and JSON-RPC error code -32601, got HTTP ${te.status} and code ${M?.error?.code}`}:{details:{response:M}})",
+      "key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404",
+        "HttpServerMethodNotFound404",
+        "If the server does not implement the requested RPC method, it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "preconditions": [
+        "`!te||!M` — same shape as the loop form."
+      ],
+      "status_at_accepted_run": "FAILURE"
+    },
+    {
+      "axes": [
+        {
+          "axis": "canary_not_fetched",
+          "expr": "this.canaryRequests.length>0",
+          "requires": "the client MUST NOT dereference a network-URI $ref (counter must stay at 0)"
+        }
+      ],
+      "axis_count": 1,
+      "carries_http_status_in_error_message": false,
+      "emitting_site": {
+        "dist_byte_span": [
+          721626,
+          722596
+        ],
+        "dist_char_span": [
+          721385,
+          722355
+        ],
+        "form": "constant",
+        "id_source": "sep-2106-no-network-ref-deref (bound to `Za`)"
+      },
+      "error_message_at_accepted_run": null,
+      "evaluator_excerpt": "getChecks(){let e=new Date().toISOString(),t=this.canaryRequests.length>0;return this.toolsListed?[{id:Za,name:`NoNetworkRefDereference`,description:t?`Client automatically dereferenced a network-URI $ref in a tool inputSchema. Implementations MUST NOT automatically dereference $ref values that resolve to a network URI (SEP-2106).`:`Client did not dereference the network-URI $ref in the tool inputSchema`,status:t?`FAILURE`:`SUCCESS`,timestamp:e,errorMessage:t?`Canary URL ${Xa} was fetched ${this.canaryRequests.length} time(s)`:void 0,specReferences:Qa,details:{toolsListed:!0,canaryRequestCount:this.canaryRequests.length,canaryRequests:this.canaryRequests}}]:[{id:Za,name:`NoNetworkRefDereference`,description:`Client never requested tools/list, so $ref handling could not be evaluated`,status:`FAILURE`,timestamp:e,errorMessage:`Client did not call tools/list against a server advertising a tool with a network $ref`,specReferences:Qa,details:{toolsListed:!1}}]}",
+      "key": [
+        "client",
+        "json-schema-ref-no-deref",
+        "sep-2106-no-network-ref-deref",
+        "NoNetworkRefDereference",
+        "Client did not dereference the network-URI $ref in the tool inputSchema",
+        ""
+      ],
+      "preconditions": [
+        "`this.toolsListed` — if the client never called tools/list the check reports FAILURE with a different description, because $ref handling could not be evaluated. A precondition on evaluability, not a second required behaviour."
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    }
+  ],
+  "generated_by": "MES-68 (A3) — hand-run extraction, procedure below. NOT a mix task: the input is a /tmp harness build, so a task would be unrunnable on any tree where that build is absent.",
+  "provenance": {
+    "equals_manifest_harness_dist_sha256": "both legs — docs/conformance/in-scope-2026-07-28.json provenance.server and provenance.client carry this same sha, so these axes are read from the exact build behind the accepted runs, not a lookalike",
+    "extraction_procedure": [
+      "1. Locate the axis expression verbatim in the dist. Each of the seven used here occurs EXACTLY ONCE in the file, so the location is unambiguous.",
+      "2. Walk back to the nearest enclosing `a(` check-emitting call (or, for the client-leg class-based scenario, the enclosing `getChecks(){`).",
+      "3. Balanced-scan forward to the matching close, honouring ' \" ` string contexts and ${} template nesting, and record the span.",
+      "4. `evaluator_excerpt` is that span verbatim; `dist_byte_span` addresses it in the file named by `harness_dist_sha256`, so any reader with that build can re-cut it."
+    ],
+    "harness_dist_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+    "harness_version_reported": "0.2.0-alpha.11",
+    "read_from": "/tmp/confalpha/package/dist/index.js",
+    "residual": "Committed axes are a READING OF A PREDICATE AT ONE BUILD. A harness bump invalidates them exactly as A1's residual R3 says it invalidates keys. The sha is recorded so a reader can tell whether it has been invalidated; nothing here detects it automatically."
+  },
+  "provisional_pending": "B2a (unbriefed at 891300b) — the server-leg ET-CC sweep",
+  "revision": "2026-07-28",
+  "scope": {
+    "checks_decomposed": 13,
+    "not_decomposed": "162 of the 175. Stated by enumeration of the RULE rather than of the rows: every in-scope check not listed in `checks` below has no committed axis decomposition, and C1 must extract it by the procedure above before bucketing any edge onto it. A3 defines the rule; it does not pre-compute C1's inputs.",
+    "of_in_scope_total": 175,
+    "rule": "The checks A3's ruling is computed from: the 12 `server-stateless` FAILURE checks whose own errorMessage carries an HTTP status (the R2 class the epic sized at 12), plus the client-leg CG4 counterpart used as AC3's worked example.",
+    "why_not_all_175": "An axis decomposition is only consumed where an edge exists, and the edge set is C1's (PM amendment 2). Decomposing all 175 here would be A3 building C1's artefact — the MES-24 two-owners defect — and 162 of them would be built before anyone knows which have an ET counterpart at all."
+  },
+  "the_7_5_split": {
+    "claim": "A3's partial-axis ruling moves at most 7 of the 12, not 12. The other 5 move the OTHER way — into bucket 2, 'write the test', not 'extend the assertion'.",
+    "one_axis": 5,
+    "reasoning": "For a SINGLE-axis check, 'we assert the code but not the status' is NO match, not a partial one: covering zero of one axis has nothing partial about it, and the code assertion is evidence about a DIFFERENT check (`RequestMetaInvalid`, `ServerUnsupportedVersionError`, `ServerRejectsUndeclaredCapability`), which is why those three also appear among server-stateless's 17 failures. Recording it as partial would credit us with coverage filed elsewhere.",
+    "status": "PROVISIONAL. The OC side is measured here; the ET side is not swept until B2a. MES-65's 'A3's partial-axis ruling alone moves 12 checks between buckets' is superseded by this and the PM will correct the epic body once B2a confirms.",
+    "two_axis": 7
+  },
+  "what_this_is": "The per-check AXIS DECOMPOSITION the match relation's `partial` ruling is computed from. An OC check's predicate is a conjunction of axes; against each axis an ET claim is exactly one of agrees/contradicts/silent. This file records the axes, each as a verbatim substring of the evaluator it was read from."
+}

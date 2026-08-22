@@ -851,3 +851,103 @@ whoever calls it, and they will complete it plausibly.** Where a rule must
 survive into a specific argument of a specific call, state it at that call —
 a rule that lives only in the document describing the process is not available
 at the moment the process executes.
+
+---
+
+## S6-8 — A classifier keyed on too few inputs still returns an answer for every case, and two candidate rules that agree on the whole sample in front of you are not the same rule
+
+**Found:** MES-68 (Sprint 6, A3), 2026-08-22, by CODE_CREATOR while executing
+the PM's ratification, and upheld by the PM the same day. **Status:** closed —
+the rule shipped in `docs/conformance/match-relation.md` is the corrected one.
+
+### The defect
+
+MES-68's brief carried a PM amendment: *"Bucket is a function of the verdict
+pair; `partial` is carried alongside."* It was written against a contributed
+architecture page that said the opposite (*"partial edges land in bucket 4b"*),
+and its reasoning was right — a `partial` edge over a **green** OC check is
+bucket 5, so `partial ⇒ 4b` is false.
+
+But the replacement does not work either, and the epic's own bucket table is
+what settles it:
+
+```
+4a | red OC / green ET-CC — contradiction   | D4a
+4b | red OC / green ET-CC — incompleteness  | D4b
+```
+
+**Identical verdict pair.** Any rule of the form `bucket = f(verdict pair)`
+narrows to `{4a, 4b}` and then stops — and it stops *silently*, because a
+partial function over pairs still returns something for every pair it does
+handle. The domain is too small to separate two of the eight output buckets,
+and nothing in the shape of the rule says so.
+
+### Why nobody caught it, and this is the transferable part
+
+**On the sample in front of both of us, the two rules agree.** The case that
+motivated the amendment is the R2 class — 12 `server-stateless` checks where
+our tests assert a JSON-RPC code and the check also requires an HTTP status.
+Every one of those 12 is **OC-red**. Over an OC-red population, "bucket from the
+pair" and "bucket from the pair plus the edge shape" return the same answer for
+every row. The disagreement lives entirely in a case the worked example does not
+contain: a partial edge whose check is **green**.
+
+So the rule was checked against the instance that prompted it, agreed with the
+alternative on every row of that instance, and was wrong about the rest of the
+space. **A rule validated on the case that motivated it has been validated
+against the one sample guaranteed not to discriminate.**
+
+### The second instance, same ticket: the artefact's prose is not the artefact's rule
+
+The same shape appeared one system over. An OC check's `description` is prose
+about the requirement; its predicate is the requirement as scored. They
+disagree:
+
+```
+HttpServerUnsupportedVersion400
+  description: "...MUST respond with 400 Bad Request AND an
+                UnsupportedProtocolVersionError listing its supported versions."
+  predicate:   S.status === 400        <- ONE axis
+```
+
+Decomposing checks into axes by reading their descriptions agrees with the
+predicate on most checks and invents an axis here — and then scores us against
+an obligation the suite never checks. Read from the predicates, the ruling the
+epic sized at **12 checks** moves at most **7**; the other **5** are single-axis
+and move the other way, into "write the test" rather than "extend the
+assertion". The epic's figure was superseded by measurement, not by argument.
+
+### What was done
+
+- `bucket = f(verdict pair, edge shape)`, with **stated precedence** —
+  contradicts beats silent — so 4a and 4b are exclusive *by construction*
+  rather than by adjudication. Without the precedence the `:83` `initialize`
+  edge, which is **both** contradicting and partial, files under whichever axis
+  an implementation happens to test first, and the epic's own worked 4a example
+  lands in 4b.
+- Two `(pair, shape)` combinations that should not occur **escalate** instead of
+  bucketing — one of which was implicit in the ratified table and is now
+  explicit, because an implicit case in a total-looking function is this same
+  defect in miniature.
+- The axis decomposition is **committed as data** with the harness build's
+  sha256 alongside, so the inputs to the rule are auditable rather than
+  derivable only from a `/tmp` tree.
+- Three **mutation controls** on the test suite, each restoring a rejected rule
+  and showing which assertions catch it: dropping the discriminator from
+  resolution (5 failures), inverting the precedence (2), and collapsing 4a into
+  4b — the withdrawn `f(verdict pair)` rule — (2).
+
+### Transferable form
+
+**Check a classification rule against its own output vocabulary, not against
+its worked example.** If two outputs can be produced from the same inputs, the
+inputs are not the rule's domain — and the example that motivated the rule is
+the one sample least able to tell you so. The question to ask is not *"does this
+give the right answer here?"* but *"is there a pair of outputs this rule cannot
+tell apart, and what in the space would separate them?"*
+
+The corollary, from the second instance: **when a rule reads a field of someone
+else's artefact, establish which field is the one the artefact acts on.** A
+human-readable description and an executable predicate are two records of one
+requirement, and the one a reader reaches for first is not the one the tool
+obeys — the same shape as S6-2, one system further out.
