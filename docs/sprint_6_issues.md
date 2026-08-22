@@ -1227,3 +1227,58 @@ And: **aggregate at the point of USE, never at the point of capture.** A
 histogram is a projection, and the field it projects away is invisible in the
 artefact rather than merely absent from it. Committing keys costs bytes;
 recovering them costs a run tree that may not exist.
+
+---
+
+## Sprint 6 close-out — the end-of-sprint dependency sweep (second execution)
+
+**PM, 2026-08-22, at the sprint's final tip `0c95ead` (`2.0.0-dev.22`).** Recorded here
+**because the procedure requires a clean result to be written down**: "checked, and zero" and
+"never asked" read identically when only the answer is printed.
+
+| step | result |
+|---|---|
+| hex floor, checked FIRST | `Hex v2.5.1` — at the documented minimum |
+| **6a** baseline-lock sentinel @ `d697093` | **PASS** — all 22 known advisory ids present |
+| **6b** `mix hex.audit` on this project | **exit 0** — no retired or security advisory packages found |
+| dependency surface swept | **26 locked packages** |
+| lock last moved | `7749d29` (MES-51, 2026-08-20) — unchanged since the Sprint 5 sweep |
+
+**No advisory found, so no ticket raised.** Had one been found it would have become a Jira
+ticket rather than a fix in place.
+
+**Why this ran, given gate 6 fired on no Sprint 6 ticket either.** Not one of the seven —
+MES-63, 61, 66, 67, 68, 69, 70 — changed `mix.exs` or `mix.lock` on its branch, so gate 6 was
+correctly skipped seven times under the applicability rule. That is now **two consecutive
+sprints, eleven tickets, in which no per-ticket run occurred.** The cadence sweep is the whole
+of the project's advisory coverage between releases, and this is the second time it has been the
+only thing that asked.
+
+**The lock has not moved since the Sprint 5 sweep.** So the *tree* half of the question has an
+identical answer to last time — and that is precisely why the sweep is not redundant. Gate 6's
+verdict is a function of *(lock, wall-clock)*, and only the second term moved. A sweep that
+returned "same lock, therefore same answer" would be assuming the very thing it exists to
+check.
+
+**One thing this run establishes that Sprint 5's did not, and it is worth the line.** S6-6
+recorded a gate-6b result flipping from exit 0 to exit 1 on an *unchanged* lock roughly 34
+minutes apart, and the cause was **recency, not staleness** — an advisory published between the
+two runs. That is the mechanism this cadence is built to catch, observed. It did not fire today;
+the point is that the instrument is known to be capable of firing on an untouched dependency,
+so today's exit 0 is a measurement rather than a formality.
+
+**What this sweep does NOT establish, stated so the green is not over-read.** `mix hex.audit`
+reads the **local registry cache**. It detects absence and corruption of advisory rows — 6a is
+what makes that green mean anything, and it validates rows for the five packages that have ever
+carried an advisory here — but it **cannot detect staleness**: a complete-but-old snapshot
+passes both steps while missing every advisory published since it was written. **21 of the 26
+locked packages remain outside 6a's sentinel entirely**, including `finch` and
+`thousand_island`, which are runtime deps on this SDK's transport path. The
+freshness-independent control is the live whole-tree OSV cross-check owned by MES-19, which
+runs at release; this sweep is upstream of it and does not replace it.
+
+**PA-9 remains open and is now two sprints old.** Whether the OSV cross-check should also run at
+the sprint boundary is the PO's. Recording the recommendation rather than the ruling: two
+consecutive sprints have now produced zero per-ticket gate-6 runs, which makes the boundary the
+only cadence that exists, and the boundary is where network dependence costs nothing — no work
+in flight, no merge blocked, PM-owned rather than on a seat's critical path.
