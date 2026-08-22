@@ -531,3 +531,106 @@ response the run actually saved — or, where the run saved nothing, to an
 invariant that constrains it — and where neither is available, say that you
 could not establish it. A paraphrase of the requirement, written in the past
 tense, is indistinguishable from a finding and carries none of its content.
+
+---
+
+## S6-5 — A field that records why something FAILED is null for everything that succeeds, so a scope rule derived from it is systematically wrong about passes — and wrong in the flattering direction
+
+**Found:** MES-66 (Sprint 6, A1), 2026-08-22, by CODE_CREATOR, re-deriving the
+in-scope denominator from the accepted censuses rather than inheriting the
+brief's figures. **Status:** open — narrowed, not closed. The manifest is now
+the single place the scope rule is written down, but the censuses still carry no
+in-scope flag, so a consumer that does not read the manifest can still
+re-implement the rule and get a plausible wrong answer.
+
+### The defect
+
+The committed censuses record, per scenario, a `classification` block naming the
+class of a non-passing result (`real_gap`, `extension`, `pending`,
+`out_of_scope_adr_003`, …). They record **nothing at all** about whether a
+scenario is inside the published denominator. There is no `in_scope` field.
+
+So every consumer that needs the denominator re-implements the rule, and the
+most natural re-implementation reads the field that is *there*: "in scope =
+scored, and not classified `out_of_scope_adr_003`". Measured on the committed
+client census, that yields **8 scenarios / 57 checks**. The published, ratified
+figure is **7 / 56**.
+
+The extra scenario is `auth/resource-mismatch`. It is scored. It is in the
+`auth/` namespace that ADR-003 puts out of 2.0.0. And it **passes** — so the
+census refuses it a classification entry, because the classification table
+exists to explain failures. Filtering on that field therefore readmits exactly
+the auth scenarios we happen to pass.
+
+### The mechanism, which is the transferable part
+
+**A field populated only on the failure path is `null` on the success path, and
+`null` is indistinguishable from "does not have this property".** Any predicate
+of the form *"…and not classified X"* silently becomes *"…and not classified X,
+**or passing**"*. The rule does not fail loudly on the passes; it admits them.
+
+Two properties make this worse than an ordinary off-by-one:
+
+* **It is directional.** The rows wrongly readmitted are, by construction, the
+  ones that PASS. A denominator inflated only by passes moves the numerator and
+  the denominator together, so the resulting rate looks *better*, not worse.
+  Here it would have turned 7/7 in-scope into a figure computed over 8.
+* **It is plausible.** `out_of_scope_adr_003` is a field whose literal name is
+  the exclusion being applied. Reading it is not a careless shortcut; it is the
+  obvious thing to do, and it is what the field appears to be for.
+
+### Not one instance — four, across both legs
+
+The shape is not a quirk of one scenario. Every scenario in the censuses that
+carries `classification: null` while being excluded from the in-scope set is an
+instance of it:
+
+| leg | scenario | scored | passes | `classification.class` |
+|---|---|---|---|---|
+| client | `auth/resource-mismatch` | yes | yes | `null` |
+| client | `json-schema-2020-12-preservation` | no | yes | `null` |
+| server | `tasks-status-notifications` | no | yes | `null` |
+| server | `json-schema-2020-12` | no | yes | `null` |
+
+Three of the four are excluded by a second, independent mechanism (the frozen
+requirement set does not score them), so a classification-keyed rule that also
+checks `scored` gets those three right **by luck** — the two mechanisms happen
+to agree. `auth/resource-mismatch` is the one where they disagree, and it is the
+one that moves the number.
+
+This is why the same table is the right place to look for the *reason* an
+excluded scenario is excluded and the wrong place to look for the *fact* that it
+is. The reasons this manifest publishes come from the frozen requirement set's
+own `harness_reason`, which is populated for every not-scored scenario
+regardless of whether it passed.
+
+### What is NOT wrong, and should be said
+
+The published figure is correct and the published derivation is correct.
+`client-2026-07-28-discounts.md` already states the rule as *"the scored client
+scenarios not in the `auth/` namespace"*, names all 25 exclusions, and says in
+so many words that the raw 8/32 exceeds the in-scope numerator "by exactly the
+auth scenarios that pass: `auth/resource-mismatch`". `MCP.Conformance.Discounts`
+implements the namespace rule and carries a module-doc paragraph explaining why
+the table-driven derivation would be wrong.
+
+So nothing shipped a wrong number, and the hazard was already known to the one
+module that had to get it right. The defect is that **the knowledge lives in the
+consumer rather than in the artefact**: every *new* consumer must rediscover it,
+and the way to rediscover it is to get the wrong answer first.
+
+### Transferable form
+
+**Do not derive a category from a field that only speaks about one outcome.**
+Before keying a rule on a field, ask what that field holds for the rows where
+nothing went wrong — if the answer is "nothing", the rule has a silent second
+clause admitting every such row, and it will be wrong in whichever direction
+success points.
+
+**And the artefact should carry the classification the consumers need, not
+merely the evidence they could compute it from.** When N consumers each derive
+the same category from raw fields, the derivation is N times as likely to be
+wrong somewhere as it is to be wrong once, and there is no single place to fix
+it. Emitting the derived flag beside the evidence costs one field and converts
+"everyone re-implements it" into "everyone reads it, and one place is
+authoritative".

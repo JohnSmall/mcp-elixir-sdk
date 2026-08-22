@@ -1,0 +1,3775 @@
+{
+  "arithmetic": {
+    "equation": "total = in_denominator + out_of_denominator",
+    "in_denominator": null,
+    "note": "A1 fixes `total` and the rule. The out-of-denominator term is the set of checks the ratified rule excludes, and enumerating it is A5's job — so `in_denominator` is null here too, because it is the first term minus a set A1 does not own. Every row carries `status` and `errorMessage` so A5 can apply the rule without re-running anything.",
+    "out_of_denominator": null,
+    "owner": "MES-70 (A5)",
+    "total": 175
+  },
+  "check_key": {
+    "discriminator_rules": [
+      {
+        "discriminator": "empty string",
+        "order": 1,
+        "rule": "unique",
+        "when": "the row is alone on {scenario, id, name, description}"
+      },
+      {
+        "discriminator": "that slug, which the scenario definition declares",
+        "order": 2,
+        "rule": "field_issue",
+        "when": "tied, and the tied rows carry pairwise-distinct details.fieldIssue"
+      },
+      {
+        "discriminator": "1-based position WITHIN THE TIE-GROUP, never within the scenario",
+        "order": 3,
+        "rule": "ordinal",
+        "when": "tied and rule 2 cannot separate them"
+      }
+    ],
+    "distinct_keys": 175,
+    "fields": [
+      "leg",
+      "scenario",
+      "check_id",
+      "name",
+      "description",
+      "discriminator"
+    ],
+    "rows": 175,
+    "rows_by_discriminator_source": {
+      "field_issue": 3,
+      "ordinal": 0,
+      "unique": 172
+    },
+    "shape": "an ordered array of the six field values, in `fields` order"
+  },
+  "derivation": {
+    "excluded": [
+      {
+        "checks": 10,
+        "leg": "server",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: pending — the harness does not yet hold it to the revision.",
+        "scenario": "http-custom-header-server-validation"
+      },
+      {
+        "checks": 14,
+        "leg": "server",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: pending — the harness does not yet hold it to the revision.",
+        "scenario": "http-header-validation"
+      },
+      {
+        "checks": 8,
+        "leg": "server",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: pending — the harness does not yet hold it to the revision.",
+        "scenario": "json-schema-2020-12"
+      },
+      {
+        "checks": 5,
+        "leg": "server",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: an extension, not part of the revision.",
+        "scenario": "tasks-capability-negotiation"
+      },
+      {
+        "checks": 9,
+        "leg": "server",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: an extension, not part of the revision.",
+        "scenario": "tasks-dispatch-and-envelope"
+      },
+      {
+        "checks": 9,
+        "leg": "server",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: an extension, not part of the revision.",
+        "scenario": "tasks-lifecycle"
+      },
+      {
+        "checks": 2,
+        "leg": "server",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: an extension, not part of the revision.",
+        "scenario": "tasks-mrtr-composition"
+      },
+      {
+        "checks": 4,
+        "leg": "server",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: an extension, not part of the revision.",
+        "scenario": "tasks-mrtr-input"
+      },
+      {
+        "checks": 5,
+        "leg": "server",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: an extension, not part of the revision.",
+        "scenario": "tasks-request-headers"
+      },
+      {
+        "checks": 2,
+        "leg": "server",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: an extension, not part of the revision.",
+        "scenario": "tasks-request-state-removal"
+      },
+      {
+        "checks": 2,
+        "leg": "server",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: an extension, not part of the revision.",
+        "scenario": "tasks-required-task-error"
+      },
+      {
+        "checks": 1,
+        "leg": "server",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: an extension, not part of the revision.",
+        "scenario": "tasks-status-notifications"
+      },
+      {
+        "checks": 4,
+        "leg": "server",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: an extension, not part of the revision.",
+        "scenario": "tasks-wire-fields"
+      },
+      {
+        "checks": 3,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/authorization-server-migration` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/authorization-server-migration"
+      },
+      {
+        "checks": 1,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/basic-cimd` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/basic-cimd"
+      },
+      {
+        "checks": 1,
+        "leg": "client",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: an extension, not part of the revision.",
+        "scenario": "auth/client-credentials-basic"
+      },
+      {
+        "checks": 1,
+        "leg": "client",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: an extension, not part of the revision.",
+        "scenario": "auth/client-credentials-jwt"
+      },
+      {
+        "checks": 3,
+        "leg": "client",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: an extension, not part of the revision.",
+        "scenario": "auth/dpop"
+      },
+      {
+        "checks": 5,
+        "leg": "client",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: an extension, not part of the revision.",
+        "scenario": "auth/dpop-nonce"
+      },
+      {
+        "checks": 2,
+        "leg": "client",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: an extension, not part of the revision.",
+        "scenario": "auth/enterprise-managed-authorization"
+      },
+      {
+        "checks": 1,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/iss-normalized` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/iss-normalized"
+      },
+      {
+        "checks": 1,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/iss-not-advertised` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/iss-not-advertised"
+      },
+      {
+        "checks": 1,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/iss-supported` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/iss-supported"
+      },
+      {
+        "checks": 1,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/iss-supported-missing` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/iss-supported-missing"
+      },
+      {
+        "checks": 1,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/iss-unexpected` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/iss-unexpected"
+      },
+      {
+        "checks": 1,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/iss-wrong-issuer` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/iss-wrong-issuer"
+      },
+      {
+        "checks": 5,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/metadata-default` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/metadata-default"
+      },
+      {
+        "checks": 1,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/metadata-issuer-mismatch` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/metadata-issuer-mismatch"
+      },
+      {
+        "checks": 5,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/metadata-var1` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/metadata-var1"
+      },
+      {
+        "checks": 4,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/metadata-var2` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/metadata-var2"
+      },
+      {
+        "checks": 4,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/metadata-var3` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/metadata-var3"
+      },
+      {
+        "checks": 1,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/offline-access-not-supported` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/offline-access-not-supported"
+      },
+      {
+        "checks": 2,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/offline-access-scope` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/offline-access-scope"
+      },
+      {
+        "checks": 1,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/pre-registration` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/pre-registration"
+      },
+      {
+        "checks": 1,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/resource-mismatch` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/resource-mismatch"
+      },
+      {
+        "checks": 1,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/scope-from-scopes-supported` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/scope-from-scopes-supported"
+      },
+      {
+        "checks": 1,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/scope-from-www-authenticate` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/scope-from-www-authenticate"
+      },
+      {
+        "checks": 1,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/scope-omitted-when-undefined` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/scope-omitted-when-undefined"
+      },
+      {
+        "checks": 1,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/scope-retry-limit` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/scope-retry-limit"
+      },
+      {
+        "checks": 3,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/scope-step-up` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/scope-step-up"
+      },
+      {
+        "checks": 3,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/token-endpoint-auth-basic` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/token-endpoint-auth-basic"
+      },
+      {
+        "checks": 3,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/token-endpoint-auth-none` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/token-endpoint-auth-none"
+      },
+      {
+        "checks": 3,
+        "leg": "client",
+        "mechanism": "adr_003_auth_namespace",
+        "reason": "ADR-003 puts the OAuth 2.1 authorization profile out of 2.0.0. `auth/token-endpoint-auth-post` is scored by the frozen set and so sits inside the raw n/32, but outside the in-scope denominator.",
+        "scenario": "auth/token-endpoint-auth-post"
+      },
+      {
+        "checks": 1,
+        "leg": "client",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: an extension, not part of the revision.",
+        "scenario": "auth/wif-jwt-bearer"
+      },
+      {
+        "checks": 9,
+        "leg": "client",
+        "mechanism": "not_scored_by_frozen_set",
+        "reason": "Not scored by the frozen 2026-07-28 set: added to the harness after the revision was released.",
+        "scenario": "json-schema-2020-12-preservation"
+      }
+    ],
+    "rule": "In scope = the SCORED scenarios of the frozen 2026-07-28 requirement set, minus (client leg only) every scenario in the `auth/` namespace, which ADR-003 puts out of 2.0.0. Scope is read from the scenario id's namespace — a fact the harness authors — and NEVER from our own classification table.",
+    "why_not_classification": "`classification.class` explains why a scenario FAILED, so it is null for every scenario that passes. Filtering on it readmits `auth/resource-mismatch` (scored, 1 check, passing) and yields a plausible 8 scenarios / 57 checks against the correct 7 / 56."
+  },
+  "generated_by": "mix conformance.in_scope",
+  "manifest_schema_version": 1,
+  "match_target_rule": {
+    "applied_by": "MES-66 (A1) states the rule; it does not enumerate its members.",
+    "member_set_owner": "MES-70 (A5)",
+    "text": "A check is a match target only if a conforming 2026-07-28 implementation can cause it to evaluate.",
+    "wording_note": "Stated as \"structurally unreachable for a conforming implementation\", NOT as \"SKIPPED is excluded\". The distinction is load-bearing: a check skipped because our implementation did not exercise an optional but available path is a COVERAGE GAP, not an exclusion. There are no such checks in the current in-scope run, so the rule is written to distinguish them anyway — otherwise the next one is dropped silently on this precedent."
+  },
+  "provenance": {
+    "client": {
+      "adjudication_verdict": "accepted",
+      "branch": "MES-57",
+      "checks_sha256": {
+        "http-custom-headers": "87adad6f7cd744b5a2f148092ee6ef7a45a624c000ea02e4bc526c80ceaa82af",
+        "http-invalid-tool-headers": "73dc3652ed973007e257cf82ab220f8af94e080e62fd5388202ac775d10b316a",
+        "http-standard-headers": "00d0606a3ee7c35f7e5660777b3c7ccf46db0593f8e3b67a5efc46339868a611",
+        "json-schema-ref-no-deref": "2dcb340b7e4ede8a25fc8c19529ad0d4121dc0c3cde03c4e7e369e1babb1ca91",
+        "request-metadata": "46aa3c716c93fd301302133fbd0168a7d9269f9e77b988324ff9a0cc1c8ff23f",
+        "sep-2322-client-request-state": "6897195a35a88e10806ee09145468f3e268831fd6f0550855b44ed0d1bcc0e14",
+        "tools_call": "450e1bc31c4571e8b8a9dec864e38641388968ce8a58026ff1630a42a0c72c78"
+      },
+      "commit": "f4be9eb4624813ebcf5418898180f0ca433ab562",
+      "harness_dist_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+      "harness_version_reported": "0.2.0-alpha.11",
+      "read_from": "/tmp/mes57-f/sdk",
+      "requirements_revision": "2026-07-28",
+      "run_dir": "/tmp/mes57-f/sdk"
+    },
+    "server": {
+      "adjudication_verdict": "accepted",
+      "branch": "MES-56",
+      "checks_sha256": {
+        "input-required-result-multiple-input-requests": "f564d5a6045fdfb01c1ae0f67f249616e734560adc268b32052d7fe87bffbdf4",
+        "completion-complete": "617f537a1a139c92c32a268e97739c09f70c7ab8621e9c63e97cd303e2a66e5d",
+        "input-required-result-capability-check": "900a99e7dd5b44865284745a0808757f2178ddb76a2312fc997ecc5cd0b28186",
+        "resources-list": "9816c1d990009becb2cf483eb0d00116eb0a04c78c3653aa20310acc6a5c1797",
+        "input-required-result-result-type": "609ec45bc1c7e601bd1492dead9fec32acca4fd821c47db04b3f1c96ef423ba2",
+        "tools-call-error": "bed7c5f9d4b1c054f6d45f3e9fddd1714ed6680975a06a9d53486394e1bcc681",
+        "tools-call-simple-text": "6e7281e1449c4c2601bcb348e746ac0b1bf1447fa11ef073163ba204949180ed",
+        "dns-rebinding-protection": "0ef6546d64be878cf66f524af0c8ab61ff57bc82b8b95b1a2441da6bf7177992",
+        "tools-list": "1eb79cae62448cdb3951512d11c6fcb7a461ef50cb2e41a615004adeac511647",
+        "input-required-result-basic-sampling": "f979144e44f48639227a5aa88dccebf5dba00bfb9a6b0df8e36eb2fb6519dc02",
+        "input-required-result-non-tool-request": "1a7846b983c80a529e7ee9b6a6235cb615522272f51774880c6c603a020816a2",
+        "resources-read-text": "a75e5a68a266a0212c1681b456e8c0d1fb12194d3a1f805b31b87ab0d47834da",
+        "tools-call-image": "51edecbed510d5983d9e19f3bae30652d96484c9e1b34301e69439e8e8a90c69",
+        "input-required-result-basic-elicitation": "05f7f1bef827e64e0dbdc1ff4941edfdf42710d96f1674eea7818bbbd36c795d",
+        "tools-call-with-progress": "4060925fc023b5ad65360c933292f25c6928837afdc5bb1a9018d149e7efa122",
+        "input-required-result-ignore-extra-params": "b00a01cb50a852383817e8dcb6032cd130cdaad083c632e527bd5ea89189eeb3",
+        "prompts-get-embedded-resource": "03000e381738ead9169a08e5a9b82f1175b3b3f1bdf298f7a238da89eeb0f4e1",
+        "resources-read-binary": "63531c2de77a8381b4b2d89eda6b5adacda2fc84830c8efe98ab4c3eb5a4ed86",
+        "server-stateless": "8d79fb32940e5ecf0f5b111a3d8b03a8cce0c9009be65a008062bf1d44902b31",
+        "resources-templates-read": "a3558d56f525f600ce84ef79d44da5825f7bc05dcd9188336694056877f8c3c4",
+        "sep-2164-resource-not-found": "ea6493c8dde12fe75e2291407d74057e9d95b2d3fcbd51e0c4f99baad1aba213",
+        "server-sse-multiple-streams": "1230dc9c3dad34f194dbd10143e43c86d114436878db96ffbdd8af7329df69ff",
+        "prompts-get-with-image": "6cf7a62128d263b263b7fe0324047d618fff598384d860eb1f48e1a9dbd6a8af",
+        "tools-call-mixed-content": "1fd9c6a9a3c2d37d273fc82d4bfb0ab25726dbd27b10d15d231146de7d8d4c9f",
+        "input-required-result-basic-list-roots": "762cedb8faf2e716626aee24c941ae927bc1e4d4a971e8e39573a03c664567c5",
+        "input-required-result-request-state": "7183af85a4667fcd38e4b931906ab80e28361e6fca9f12999fbdd071cecbf2eb",
+        "prompts-get-simple": "21a2b524b9bb9283dfac63610f9013d06de5b19f12a37cbd9522243c0a7b86fb",
+        "prompts-list": "32dd5a8ac4e56a4bd25191ee4ad4b3c207a1cf58035dde13c17c51be1f620fff",
+        "tools-call-audio": "573be9576ec221cf3f2d83a2b7503980e5ba3f82e94d92f9efc73883b5509a06",
+        "caching": "cf510a55a817e94a76a9843caf898d60c22308953d5b636f5cd5a7e4854f52ab",
+        "input-required-result-missing-input-response": "056aca8a7447f9c1f1447de658c9a81b8d75b35c1542591f329ee4ba36dd5e5e",
+        "input-required-result-validate-input": "2ae809e9f13ccb1cfae796e27733fcc617fee214fbf4cf8dc258f51c0f0e11cb",
+        "input-required-result-unsupported-methods": "3f89247b3af7ed464eb4068e3e2d61b6a4986252f2624109de492873c52001e0",
+        "prompts-get-with-args": "31a12b3f960285c599059905afc1bd992a221285925dce9d6e82d0cad1bbe42a",
+        "tools-call-embedded-resource": "ce34f9f54ddc3887d21480e75908a22728beb5c9b281337b88b110fde70293b8",
+        "input-required-result-multi-round": "828c6f2c091957b94a977ca0fc2b9de589d58dc0aa4ad4c9aefd3081eac349c7",
+        "input-required-result-tampered-state": "62b57ac94e5e2949e13f36b712158b824ebada9045ddb79c01ac9d782d3257b8"
+      },
+      "commit": "940445cef85ebad7ad7181db93ca1d7fbe4d98ad",
+      "harness_dist_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+      "harness_version_reported": "0.2.0-alpha.11",
+      "read_from": "/tmp/mes56r3-sdk",
+      "requirements_revision": "2026-07-28",
+      "run_dir": "/tmp/mes56r3-sdk"
+    }
+  },
+  "residual": [
+    {
+      "id": "R1",
+      "text": "3 of the rows hang on `details.fieldIssue`, a slug the harness scenario declares. If upstream renames one, those keys change. It fails VISIBLY — one key disappears and one appears — rather than merging two rows, which is the failure mode being bought off."
+    },
+    {
+      "id": "R2",
+      "text": "Rule 3 (`ordinal`) has no members today. It exists so a future tie is keyed rather than dropped or crashed on. When it fires, those rows ARE positional and every objection to a global-ordinal key applies to them. `discriminator_source` is the field to inspect, not the key."
+    },
+    {
+      "id": "R3",
+      "text": "The key identifies a check within a leg under ONE harness build. It says nothing across harness versions; a renamed check id is a new key. `provenance.*.harness_dist_sha256` is recorded so a version change is visible rather than inferred."
+    },
+    {
+      "id": "R4",
+      "text": "The key says nothing about whether a check is reachable, meaningful, or a match target. That is `match_target_rule`'s job and MES-70 (A5)'s set. A key is an address, not a verdict."
+    },
+    {
+      "id": "R5",
+      "status": "CLOSED by construction",
+      "text": "Rule 2 needs `details` to be present, and the harness has a branch that returns `{error: ...}` with no details object. Settled by running the server leg against a dead port, which takes that branch for every check: `details.fieldIssue` is still present and the three slugs are still pairwise distinct. The emitter is `details: s?.details || o` and the call site passes `{fieldIssue: e.slug}` as the fallback `o`, so the slug survives the probe-failure and throw paths alike. Rule 3 gains no members from it."
+    },
+    {
+      "id": "R6",
+      "status": "OPEN — tracked as MES-72",
+      "text": "This manifest's rows are derived from run trees that live only in /tmp. The `checks_sha256` values recorded above become unverifiable once those trees are cleared, so provenance here is by ASSERTION, not by reproduction — the opposite of what S6-4 established for censuses. The manifest's agreement with the COMMITTED censuses (test T1) is what survives a /tmp wipe, and it is weaker: it checks scenario membership and per-scenario check counts, not the content of any row."
+    }
+  ],
+  "revision": "2026-07-28",
+  "scenarios": [
+    {
+      "artefact_dir": "server-caching-2026-08-21T03-55-03-448Z",
+      "checks": [
+        {
+          "description": "tools/list response includes ttlMs and cacheScope caching hints",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2549-tools-list-caching-hints",
+          "key": [
+            "server",
+            "caching",
+            "sep-2549-tools-list-caching-hints",
+            "ToolsListCachingHints",
+            "tools/list response includes ttlMs and cacheScope caching hints",
+            ""
+          ],
+          "name": "ToolsListCachingHints",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "prompts/list response includes ttlMs and cacheScope caching hints",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2549-prompts-list-caching-hints",
+          "key": [
+            "server",
+            "caching",
+            "sep-2549-prompts-list-caching-hints",
+            "PromptsListCachingHints",
+            "prompts/list response includes ttlMs and cacheScope caching hints",
+            ""
+          ],
+          "name": "PromptsListCachingHints",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "resources/list response includes ttlMs and cacheScope caching hints",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2549-resources-list-caching-hints",
+          "key": [
+            "server",
+            "caching",
+            "sep-2549-resources-list-caching-hints",
+            "ResourcesListCachingHints",
+            "resources/list response includes ttlMs and cacheScope caching hints",
+            ""
+          ],
+          "name": "ResourcesListCachingHints",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "resources/templates/list response includes ttlMs and cacheScope caching hints",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2549-resources-templates-list-caching-hints",
+          "key": [
+            "server",
+            "caching",
+            "sep-2549-resources-templates-list-caching-hints",
+            "ResourcesTemplatesListCachingHints",
+            "resources/templates/list response includes ttlMs and cacheScope caching hints",
+            ""
+          ],
+          "name": "ResourcesTemplatesListCachingHints",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "resources/read response includes ttlMs and cacheScope caching hints",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2549-resources-read-caching-hints",
+          "key": [
+            "server",
+            "caching",
+            "sep-2549-resources-read-caching-hints",
+            "ResourcesReadCachingHints",
+            "resources/read response includes ttlMs and cacheScope caching hints",
+            ""
+          ],
+          "name": "ResourcesReadCachingHints",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "All ttlMs values are non-negative integers",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2549-ttl-non-negative",
+          "key": [
+            "server",
+            "caching",
+            "sep-2549-ttl-non-negative",
+            "TtlNonNegative",
+            "All ttlMs values are non-negative integers",
+            ""
+          ],
+          "name": "TtlNonNegative",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "All cacheScope values are \"public\" or \"private\"",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2549-cache-scope-valid",
+          "key": [
+            "server",
+            "caching",
+            "sep-2549-cache-scope-valid",
+            "CacheScopeValid",
+            "All cacheScope values are \"public\" or \"private\"",
+            ""
+          ],
+          "name": "CacheScopeValid",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "caching",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "caching"
+    },
+    {
+      "artefact_dir": "server-completion-complete-2026-08-21T03-55-03-166Z",
+      "checks": [
+        {
+          "description": "Server responds to completion requests",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "completion-complete",
+          "key": [
+            "server",
+            "completion-complete",
+            "completion-complete",
+            "CompletionComplete",
+            "Server responds to completion requests",
+            ""
+          ],
+          "name": "CompletionComplete",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "completion-complete",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "completion-complete"
+    },
+    {
+      "artefact_dir": "server-dns-rebinding-protection-2026-08-21T03-55-03-441Z",
+      "checks": [
+        {
+          "description": "Server rejects requests with non-localhost Host/Origin headers",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "localhost-host-rebinding-rejected",
+          "key": [
+            "server",
+            "dns-rebinding-protection",
+            "localhost-host-rebinding-rejected",
+            "DNSRebindingRejected",
+            "Server rejects requests with non-localhost Host/Origin headers",
+            ""
+          ],
+          "name": "DNSRebindingRejected",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Server accepts requests with valid localhost Host/Origin headers",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "localhost-host-valid-accepted",
+          "key": [
+            "server",
+            "dns-rebinding-protection",
+            "localhost-host-valid-accepted",
+            "LocalhostHostAccepted",
+            "Server accepts requests with valid localhost Host/Origin headers",
+            ""
+          ],
+          "name": "LocalhostHostAccepted",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "dns-rebinding-protection"
+    },
+    {
+      "artefact_dir": "server-input-required-result-basic-elicitation-2026-08-21T03-55-03-456Z",
+      "checks": [
+        {
+          "description": "Server returns InputRequiredResult with elicitation inputRequest",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-elicitation-incomplete",
+          "key": [
+            "server",
+            "input-required-result-basic-elicitation",
+            "sep-2322-elicitation-incomplete",
+            "InputRequiredResultElicitationIncomplete",
+            "Server returns InputRequiredResult with elicitation inputRequest",
+            ""
+          ],
+          "name": "InputRequiredResultElicitationIncomplete",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Server returns complete result after retry with inputResponses",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-elicitation-complete",
+          "key": [
+            "server",
+            "input-required-result-basic-elicitation",
+            "sep-2322-elicitation-complete",
+            "InputRequiredResultElicitationComplete",
+            "Server returns complete result after retry with inputResponses",
+            ""
+          ],
+          "name": "InputRequiredResultElicitationComplete",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "input-required-result-basic-elicitation",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "input-required-result-basic-elicitation"
+    },
+    {
+      "artefact_dir": "server-input-required-result-basic-list-roots-2026-08-21T03-55-03-477Z",
+      "checks": [
+        {
+          "description": "Server returns InputRequiredResult with roots/list inputRequest",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-list-roots-incomplete",
+          "key": [
+            "server",
+            "input-required-result-basic-list-roots",
+            "sep-2322-list-roots-incomplete",
+            "InputRequiredResultListRootsIncomplete",
+            "Server returns InputRequiredResult with roots/list inputRequest",
+            ""
+          ],
+          "name": "InputRequiredResultListRootsIncomplete",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Server returns complete result after retry with roots response",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-list-roots-complete",
+          "key": [
+            "server",
+            "input-required-result-basic-list-roots",
+            "sep-2322-list-roots-complete",
+            "InputRequiredResultListRootsComplete",
+            "Server returns complete result after retry with roots response",
+            ""
+          ],
+          "name": "InputRequiredResultListRootsComplete",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "input-required-result-basic-list-roots",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "input-required-result-basic-list-roots"
+    },
+    {
+      "artefact_dir": "server-input-required-result-basic-sampling-2026-08-21T03-55-03-474Z",
+      "checks": [
+        {
+          "description": "Server returns InputRequiredResult with sampling inputRequest",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-sampling-incomplete",
+          "key": [
+            "server",
+            "input-required-result-basic-sampling",
+            "sep-2322-sampling-incomplete",
+            "InputRequiredResultSamplingIncomplete",
+            "Server returns InputRequiredResult with sampling inputRequest",
+            ""
+          ],
+          "name": "InputRequiredResultSamplingIncomplete",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Server returns complete result after retry with sampling response",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-sampling-complete",
+          "key": [
+            "server",
+            "input-required-result-basic-sampling",
+            "sep-2322-sampling-complete",
+            "InputRequiredResultSamplingComplete",
+            "Server returns complete result after retry with sampling response",
+            ""
+          ],
+          "name": "InputRequiredResultSamplingComplete",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "input-required-result-basic-sampling",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "input-required-result-basic-sampling"
+    },
+    {
+      "artefact_dir": "server-input-required-result-capability-check-2026-08-21T03-55-03-494Z",
+      "checks": [
+        {
+          "description": "Server only includes inputRequests for declared client capabilities",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-respect-client-capabilities",
+          "key": [
+            "server",
+            "input-required-result-capability-check",
+            "sep-2322-respect-client-capabilities",
+            "RespectClientCapabilities",
+            "Server only includes inputRequests for declared client capabilities",
+            ""
+          ],
+          "name": "RespectClientCapabilities",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "input-required-result-capability-check",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "input-required-result-capability-check"
+    },
+    {
+      "artefact_dir": "server-input-required-result-ignore-extra-params-2026-08-21T03-55-03-495Z",
+      "checks": [
+        {
+          "description": "Server ignores extra unrecognized keys in inputResponses",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Server did not return complete result when valid inputResponses were provided alongside extra keys. Servers SHOULD ignore information they do not recognize.",
+          "id": "sep-2322-ignore-unexpected-params",
+          "key": [
+            "server",
+            "input-required-result-ignore-extra-params",
+            "sep-2322-ignore-unexpected-params",
+            "IgnoreUnexpectedParams",
+            "Server ignores extra unrecognized keys in inputResponses",
+            ""
+          ],
+          "name": "IgnoreUnexpectedParams",
+          "status": "WARNING"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "input-required-result-ignore-extra-params",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "input-required-result-ignore-extra-params"
+    },
+    {
+      "artefact_dir": "server-input-required-result-missing-input-response-2026-08-21T03-55-03-486Z",
+      "checks": [
+        {
+          "description": "Server re-requests missing inputResponses via new InputRequiredResult",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-missing-response-rerequests",
+          "key": [
+            "server",
+            "input-required-result-missing-input-response",
+            "sep-2322-missing-response-rerequests",
+            "InputRequiredResultMissingResponseRerequests",
+            "Server re-requests missing inputResponses via new InputRequiredResult",
+            ""
+          ],
+          "name": "InputRequiredResultMissingResponseRerequests",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "input-required-result-missing-input-response",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "input-required-result-missing-input-response"
+    },
+    {
+      "artefact_dir": "server-input-required-result-multi-round-2026-08-21T03-55-03-483Z",
+      "checks": [
+        {
+          "description": "Round 1: Server returns InputRequiredResult with requestState",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-multi-round-r1",
+          "key": [
+            "server",
+            "input-required-result-multi-round",
+            "sep-2322-multi-round-r1",
+            "InputRequiredResultMultiRoundR1",
+            "Round 1: Server returns InputRequiredResult with requestState",
+            ""
+          ],
+          "name": "InputRequiredResultMultiRoundR1",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Round 2: Server returns another InputRequiredResult with updated requestState",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-multi-round-r2",
+          "key": [
+            "server",
+            "input-required-result-multi-round",
+            "sep-2322-multi-round-r2",
+            "InputRequiredResultMultiRoundR2",
+            "Round 2: Server returns another InputRequiredResult with updated requestState",
+            ""
+          ],
+          "name": "InputRequiredResultMultiRoundR2",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Round 3: Server returns complete result",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-multi-round-r3",
+          "key": [
+            "server",
+            "input-required-result-multi-round",
+            "sep-2322-multi-round-r3",
+            "InputRequiredResultMultiRoundR3",
+            "Round 3: Server returns complete result",
+            ""
+          ],
+          "name": "InputRequiredResultMultiRoundR3",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "input-required-result-multi-round",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "input-required-result-multi-round"
+    },
+    {
+      "artefact_dir": "server-input-required-result-multiple-input-requests-2026-08-21T03-55-03-481Z",
+      "checks": [
+        {
+          "description": "Server returns InputRequiredResult with multiple inputRequests of different types",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-multiple-inputs-incomplete",
+          "key": [
+            "server",
+            "input-required-result-multiple-input-requests",
+            "sep-2322-multiple-inputs-incomplete",
+            "InputRequiredResultMultipleInputsIncomplete",
+            "Server returns InputRequiredResult with multiple inputRequests of different types",
+            ""
+          ],
+          "name": "InputRequiredResultMultipleInputsIncomplete",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Server returns complete result after all inputResponses are provided",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-multiple-inputs-complete",
+          "key": [
+            "server",
+            "input-required-result-multiple-input-requests",
+            "sep-2322-multiple-inputs-complete",
+            "InputRequiredResultMultipleInputsComplete",
+            "Server returns complete result after all inputResponses are provided",
+            ""
+          ],
+          "name": "InputRequiredResultMultipleInputsComplete",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "input-required-result-multiple-input-requests",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "input-required-result-multiple-input-requests"
+    },
+    {
+      "artefact_dir": "server-input-required-result-non-tool-request-2026-08-21T03-55-03-487Z",
+      "checks": [
+        {
+          "description": "prompts/get returns InputRequiredResult with inputRequests",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Expected InputRequiredResult from prompts/get",
+          "id": "sep-2322-non-tool-incomplete",
+          "key": [
+            "server",
+            "input-required-result-non-tool-request",
+            "sep-2322-non-tool-incomplete",
+            "InputRequiredResultNonToolIncomplete",
+            "prompts/get returns InputRequiredResult with inputRequests",
+            ""
+          ],
+          "name": "InputRequiredResultNonToolIncomplete",
+          "status": "FAILURE"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "[implementation] SSE event during 'prompts/get' (spec 2026-07-28): GetPromptResult: must have required property 'messages' (result of 'prompts/get') — message: {\"id\":39,\"jsonrpc\":\"2.0\",\"result\":{\"inputRequests\":{\"user_context\":{\"method\":\"elicitation/create\",\"params\":{\"message\":\"What context should the prompt use?\",\"requestedSchema\":{\"properties\":{\"context\":{\"type\":\"string\"}},\"required\":[\"context\"],\"type\":\"object\"}}}},\"resultType\":\"complete\"}}",
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "input-required-result-non-tool-request",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "FAILURE"
+        }
+      ],
+      "leg": "server",
+      "scenario": "input-required-result-non-tool-request"
+    },
+    {
+      "artefact_dir": "server-input-required-result-request-state-2026-08-21T03-55-03-479Z",
+      "checks": [
+        {
+          "description": "Server returns InputRequiredResult with both inputRequests and requestState",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-request-state-incomplete",
+          "key": [
+            "server",
+            "input-required-result-request-state",
+            "sep-2322-request-state-incomplete",
+            "InputRequiredResultRequestStateIncomplete",
+            "Server returns InputRequiredResult with both inputRequests and requestState",
+            ""
+          ],
+          "name": "InputRequiredResultRequestStateIncomplete",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Server validates echoed requestState and returns complete result",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-request-state-complete",
+          "key": [
+            "server",
+            "input-required-result-request-state",
+            "sep-2322-request-state-complete",
+            "InputRequiredResultRequestStateComplete",
+            "Server validates echoed requestState and returns complete result",
+            ""
+          ],
+          "name": "InputRequiredResultRequestStateComplete",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "input-required-result-request-state",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "input-required-result-request-state"
+    },
+    {
+      "artefact_dir": "server-input-required-result-result-type-2026-08-21T03-55-03-488Z",
+      "checks": [
+        {
+          "description": "Server includes resultType field in InputRequiredResult response",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-result-type-included",
+          "key": [
+            "server",
+            "input-required-result-result-type",
+            "sep-2322-result-type-included",
+            "ResultTypeIncluded",
+            "Server includes resultType field in InputRequiredResult response",
+            ""
+          ],
+          "name": "ResultTypeIncluded",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "input-required-result-result-type",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "input-required-result-result-type"
+    },
+    {
+      "artefact_dir": "server-input-required-result-tampered-state-2026-08-21T03-55-03-492Z",
+      "checks": [
+        {
+          "description": "Server rejects tampered requestState with error",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-reject-tampered-state",
+          "key": [
+            "server",
+            "input-required-result-tampered-state",
+            "sep-2322-reject-tampered-state",
+            "RejectTamperedState",
+            "Server rejects tampered requestState with error",
+            ""
+          ],
+          "name": "RejectTamperedState",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "input-required-result-tampered-state",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "input-required-result-tampered-state"
+    },
+    {
+      "artefact_dir": "server-input-required-result-unsupported-methods-2026-08-21T03-55-03-490Z",
+      "checks": [
+        {
+          "description": "Server does not return InputRequiredResult on unsupported methods",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-not-on-unsupported-requests",
+          "key": [
+            "server",
+            "input-required-result-unsupported-methods",
+            "sep-2322-not-on-unsupported-requests",
+            "NotOnUnsupportedRequests",
+            "Server does not return InputRequiredResult on unsupported methods",
+            ""
+          ],
+          "name": "NotOnUnsupportedRequests",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "input-required-result-unsupported-methods",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "input-required-result-unsupported-methods"
+    },
+    {
+      "artefact_dir": "server-input-required-result-validate-input-2026-08-21T03-55-03-496Z",
+      "checks": [
+        {
+          "description": "Server validates InputResponses structure",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-validate-input-responses",
+          "key": [
+            "server",
+            "input-required-result-validate-input",
+            "sep-2322-validate-input-responses",
+            "ValidateInputResponses",
+            "Server validates InputResponses structure",
+            ""
+          ],
+          "name": "ValidateInputResponses",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Server returns JSON-RPC error for protocol-level input errors",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-error-on-protocol-error",
+          "key": [
+            "server",
+            "input-required-result-validate-input",
+            "sep-2322-error-on-protocol-error",
+            "ErrorOnProtocolError",
+            "Server returns JSON-RPC error for protocol-level input errors",
+            ""
+          ],
+          "name": "ErrorOnProtocolError",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "input-required-result-validate-input",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "input-required-result-validate-input"
+    },
+    {
+      "artefact_dir": "server-prompts-get-embedded-resource-2026-08-21T03-55-03-438Z",
+      "checks": [
+        {
+          "description": "Get prompt with embedded resource",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "prompts-get-embedded-resource",
+          "key": [
+            "server",
+            "prompts-get-embedded-resource",
+            "prompts-get-embedded-resource",
+            "PromptsGetEmbeddedResource",
+            "Get prompt with embedded resource",
+            ""
+          ],
+          "name": "PromptsGetEmbeddedResource",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "prompts-get-embedded-resource",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "prompts-get-embedded-resource"
+    },
+    {
+      "artefact_dir": "server-prompts-get-simple-2026-08-21T03-55-03-433Z",
+      "checks": [
+        {
+          "description": "Get simple prompt successfully",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "prompts-get-simple",
+          "key": [
+            "server",
+            "prompts-get-simple",
+            "prompts-get-simple",
+            "PromptsGetSimple",
+            "Get simple prompt successfully",
+            ""
+          ],
+          "name": "PromptsGetSimple",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "prompts-get-simple",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "prompts-get-simple"
+    },
+    {
+      "artefact_dir": "server-prompts-get-with-args-2026-08-21T03-55-03-437Z",
+      "checks": [
+        {
+          "description": "Get parameterized prompt with argument substitution",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "prompts-get-with-args",
+          "key": [
+            "server",
+            "prompts-get-with-args",
+            "prompts-get-with-args",
+            "PromptsGetWithArgs",
+            "Get parameterized prompt with argument substitution",
+            ""
+          ],
+          "name": "PromptsGetWithArgs",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "prompts-get-with-args",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "prompts-get-with-args"
+    },
+    {
+      "artefact_dir": "server-prompts-get-with-image-2026-08-21T03-55-03-439Z",
+      "checks": [
+        {
+          "description": "Get prompt with image content",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "prompts-get-with-image",
+          "key": [
+            "server",
+            "prompts-get-with-image",
+            "prompts-get-with-image",
+            "PromptsGetWithImage",
+            "Get prompt with image content",
+            ""
+          ],
+          "name": "PromptsGetWithImage",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "prompts-get-with-image",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "prompts-get-with-image"
+    },
+    {
+      "artefact_dir": "server-prompts-list-2026-08-21T03-55-03-427Z",
+      "checks": [
+        {
+          "description": "Server lists available prompts with valid structure",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "prompts-list",
+          "key": [
+            "server",
+            "prompts-list",
+            "prompts-list",
+            "PromptsList",
+            "Server lists available prompts with valid structure",
+            ""
+          ],
+          "name": "PromptsList",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "prompts-list",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "prompts-list"
+    },
+    {
+      "artefact_dir": "server-resources-list-2026-08-21T03-55-03-405Z",
+      "checks": [
+        {
+          "description": "Server lists available resources with valid structure",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "resources-list",
+          "key": [
+            "server",
+            "resources-list",
+            "resources-list",
+            "ResourcesList",
+            "Server lists available resources with valid structure",
+            ""
+          ],
+          "name": "ResourcesList",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "resources-list",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "resources-list"
+    },
+    {
+      "artefact_dir": "server-resources-read-binary-2026-08-21T03-55-03-419Z",
+      "checks": [
+        {
+          "description": "Read binary resource successfully",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "resources-read-binary",
+          "key": [
+            "server",
+            "resources-read-binary",
+            "resources-read-binary",
+            "ResourcesReadBinary",
+            "Read binary resource successfully",
+            ""
+          ],
+          "name": "ResourcesReadBinary",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "resources-read-binary",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "resources-read-binary"
+    },
+    {
+      "artefact_dir": "server-resources-read-text-2026-08-21T03-55-03-414Z",
+      "checks": [
+        {
+          "description": "Read text resource successfully",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "resources-read-text",
+          "key": [
+            "server",
+            "resources-read-text",
+            "resources-read-text",
+            "ResourcesReadText",
+            "Read text resource successfully",
+            ""
+          ],
+          "name": "ResourcesReadText",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "resources-read-text",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "resources-read-text"
+    },
+    {
+      "artefact_dir": "server-resources-templates-read-2026-08-21T03-55-03-420Z",
+      "checks": [
+        {
+          "description": "Read resource from template with parameter substitution",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "resources-templates-read",
+          "key": [
+            "server",
+            "resources-templates-read",
+            "resources-templates-read",
+            "ResourcesTemplateRead",
+            "Read resource from template with parameter substitution",
+            ""
+          ],
+          "name": "ResourcesTemplateRead",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "resources-templates-read",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "resources-templates-read"
+    },
+    {
+      "artefact_dir": "server-sep-2164-resource-not-found-2026-08-21T03-55-03-422Z",
+      "checks": [
+        {
+          "description": "Server does not return an empty contents array for a non-existent resource",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2164-no-empty-contents",
+          "key": [
+            "server",
+            "sep-2164-resource-not-found",
+            "sep-2164-no-empty-contents",
+            "ResourcesNotFoundNoEmptyContents",
+            "Server does not return an empty contents array for a non-existent resource",
+            ""
+          ],
+          "name": "ResourcesNotFoundNoEmptyContents",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Server returns -32602 (Invalid Params) for non-existent resource (SHOULD)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2164-error-code",
+          "key": [
+            "server",
+            "sep-2164-resource-not-found",
+            "sep-2164-error-code",
+            "ResourcesNotFoundErrorCode",
+            "Server returns -32602 (Invalid Params) for non-existent resource (SHOULD)",
+            ""
+          ],
+          "name": "ResourcesNotFoundErrorCode",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Server includes the requested URI in the error data field (SHOULD)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Error data.uri is undefined, expected \"test://nonexistent-resource-for-conformance-testing\". This is a SHOULD requirement.",
+          "id": "sep-2164-data-uri",
+          "key": [
+            "server",
+            "sep-2164-resource-not-found",
+            "sep-2164-data-uri",
+            "ResourcesNotFoundDataUri",
+            "Server includes the requested URI in the error data field (SHOULD)",
+            ""
+          ],
+          "name": "ResourcesNotFoundDataUri",
+          "status": "WARNING"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "sep-2164-resource-not-found",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "sep-2164-resource-not-found"
+    },
+    {
+      "artefact_dir": "server-server-sse-multiple-streams-2026-08-21T03-55-03-399Z",
+      "checks": [
+        {
+          "description": "Server allows multiple concurrent POST requests (each may return SSE or JSON)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "server-accepts-multiple-post-streams",
+          "key": [
+            "server",
+            "server-sse-multiple-streams",
+            "server-accepts-multiple-post-streams",
+            "ServerAcceptsMultiplePostStreams",
+            "Server allows multiple concurrent POST requests (each may return SSE or JSON)",
+            ""
+          ],
+          "name": "ServerAcceptsMultiplePostStreams",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Multiple POST SSE streams should be functional",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "server-sse-streams-functional",
+          "key": [
+            "server",
+            "server-sse-multiple-streams",
+            "server-sse-streams-functional",
+            "ServerSSEStreamsFunctional",
+            "Multiple POST SSE streams should be functional",
+            ""
+          ],
+          "name": "ServerSSEStreamsFunctional",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "server-sse-multiple-streams"
+    },
+    {
+      "artefact_dir": "server-server-stateless-2026-08-21T03-55-01-582Z",
+      "checks": [
+        {
+          "description": "Rejects request with missing _meta with -32602 Invalid params",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Expected error code -32602, got undefined",
+          "id": "sep-2575-request-meta-invalid-missing-meta",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-request-meta-invalid-missing-meta",
+            "RequestMetaInvalid",
+            "Rejects request with missing _meta with -32602 Invalid params",
+            ""
+          ],
+          "name": "RequestMetaInvalid",
+          "status": "FAILURE"
+        },
+        {
+          "description": "Rejections of requests missing required _meta fields use HTTP 400 Bad Request.",
+          "discriminator": "missing-meta",
+          "discriminator_source": "field_issue",
+          "errorMessage": "Expected HTTP 400 Bad Request, got status code 200",
+          "id": "sep-2575-http-server-meta-invalid-400",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-http-server-meta-invalid-400",
+            "HttpServerMetaInvalid400",
+            "Rejections of requests missing required _meta fields use HTTP 400 Bad Request.",
+            "missing-meta"
+          ],
+          "name": "HttpServerMetaInvalid400",
+          "status": "FAILURE"
+        },
+        {
+          "description": "Rejects request with _meta missing io.modelcontextprotocol/protocolVersion",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Expected error code -32602, got undefined",
+          "id": "sep-2575-request-meta-invalid-missing-protocol-version",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-request-meta-invalid-missing-protocol-version",
+            "RequestMetaInvalid",
+            "Rejects request with _meta missing io.modelcontextprotocol/protocolVersion",
+            ""
+          ],
+          "name": "RequestMetaInvalid",
+          "status": "FAILURE"
+        },
+        {
+          "description": "Rejections of requests missing required _meta fields use HTTP 400 Bad Request.",
+          "discriminator": "missing-protocol-version",
+          "discriminator_source": "field_issue",
+          "errorMessage": "Expected HTTP 400 Bad Request, got status code 200",
+          "id": "sep-2575-http-server-meta-invalid-400",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-http-server-meta-invalid-400",
+            "HttpServerMetaInvalid400",
+            "Rejections of requests missing required _meta fields use HTTP 400 Bad Request.",
+            "missing-protocol-version"
+          ],
+          "name": "HttpServerMetaInvalid400",
+          "status": "FAILURE"
+        },
+        {
+          "description": "Rejects request with _meta missing io.modelcontextprotocol/clientCapabilities",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Expected error code -32602, got undefined",
+          "id": "sep-2575-request-meta-invalid-missing-client-capabilities",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-request-meta-invalid-missing-client-capabilities",
+            "RequestMetaInvalid",
+            "Rejects request with _meta missing io.modelcontextprotocol/clientCapabilities",
+            ""
+          ],
+          "name": "RequestMetaInvalid",
+          "status": "FAILURE"
+        },
+        {
+          "description": "Rejections of requests missing required _meta fields use HTTP 400 Bad Request.",
+          "discriminator": "missing-client-capabilities",
+          "discriminator_source": "field_issue",
+          "errorMessage": "Expected HTTP 400 Bad Request, got status code 200",
+          "id": "sep-2575-http-server-meta-invalid-400",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-http-server-meta-invalid-400",
+            "HttpServerMetaInvalid400",
+            "Rejections of requests missing required _meta fields use HTTP 400 Bad Request.",
+            "missing-client-capabilities"
+          ],
+          "name": "HttpServerMetaInvalid400",
+          "status": "FAILURE"
+        },
+        {
+          "description": "Serves requests whose _meta omits io.modelcontextprotocol/clientInfo (clientInfo is a SHOULD).",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-request-meta-client-info-optional",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-request-meta-client-info-optional",
+            "RequestMetaClientInfoOptional",
+            "Serves requests whose _meta omits io.modelcontextprotocol/clientInfo (clientInfo is a SHOULD).",
+            ""
+          ],
+          "name": "RequestMetaClientInfoOptional",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Servers MUST implement server/discover.",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-server-implements-discover",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-server-implements-discover",
+            "ServerImplementsDiscover",
+            "Servers MUST implement server/discover.",
+            ""
+          ],
+          "name": "ServerImplementsDiscover",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Servers SHOULD identify themselves via _meta['io.modelcontextprotocol/serverInfo'] on responses (spec PR #3002).",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-server-identifies-in-result-meta",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-server-identifies-in-result-meta",
+            "ServerIdentifiesInResultMeta",
+            "Servers SHOULD identify themselves via _meta['io.modelcontextprotocol/serverInfo'] on responses (spec PR #3002).",
+            ""
+          ],
+          "name": "ServerIdentifiesInResultMeta",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Servers that support prompts MUST declare the prompts capability in their DiscoverResult.",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-server-declares-prompts-in-discover",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-server-declares-prompts-in-discover",
+            "ServerDeclaresPromptsInDiscover",
+            "Servers that support prompts MUST declare the prompts capability in their DiscoverResult.",
+            ""
+          ],
+          "name": "ServerDeclaresPromptsInDiscover",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "capabilities matches what the server honors on real RPC calls",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-discover-capabilities-match-handlers",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-discover-capabilities-match-handlers",
+            "DiscoverCapabilitiesMatchHandlers",
+            "capabilities matches what the server honors on real RPC calls",
+            ""
+          ],
+          "name": "DiscoverCapabilitiesMatchHandlers",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "If the server does not implement the requested version (whether the version is unknown to the server, or is a known version the server has chosen not to support), it MUST respond with an UnsupportedProtocolVersionError listing the versions it does support; the error data carries the supported versions and echoes the requested version.",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Returned supported versions data layout does not correlate to active server metrics: undefined",
+          "id": "sep-2575-server-unsupported-version-error",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-server-unsupported-version-error",
+            "ServerUnsupportedVersionError",
+            "If the server does not implement the requested version (whether the version is unknown to the server, or is a known version the server has chosen not to support), it MUST respond with an UnsupportedProtocolVersionError listing the versions it does support; the error data carries the supported versions and echoes the requested version.",
+            ""
+          ],
+          "name": "ServerUnsupportedVersionError",
+          "status": "FAILURE"
+        },
+        {
+          "description": "If the server does not implement the requested protocol version, it MUST respond with 400 Bad Request and an UnsupportedProtocolVersionError listing its supported versions.",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Expected HTTP 400 Bad Request, got status code 200",
+          "id": "sep-2575-http-server-unsupported-version-400",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-http-server-unsupported-version-400",
+            "HttpServerUnsupportedVersion400",
+            "If the server does not implement the requested protocol version, it MUST respond with 400 Bad Request and an UnsupportedProtocolVersionError listing its supported versions.",
+            ""
+          ],
+          "name": "HttpServerUnsupportedVersion400",
+          "status": "FAILURE"
+        },
+        {
+          "description": "If the values do not match, the server MUST reject the request with 400 Bad Request and a HeaderMismatch JSON-RPC error.",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Expected HTTP 400 and JSON-RPC error -32020, got status 200 with code undefined",
+          "id": "sep-2575-http-server-header-mismatch-400",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-http-server-header-mismatch-400",
+            "HttpServerHeaderMismatch400",
+            "If the values do not match, the server MUST reject the request with 400 Bad Request and a HeaderMismatch JSON-RPC error.",
+            ""
+          ],
+          "name": "HttpServerHeaderMismatch400",
+          "status": "FAILURE"
+        },
+        {
+          "description": "A server MUST NOT rely on capabilities the client has not declared. If processing a request requires a capability the client did not include in io.modelcontextprotocol/clientCapabilities, the server MUST return a MissingRequiredClientCapabilityError (-32021).",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Server responded with error code -32021 but error.data.requiredCapabilities is not a ClientCapabilities object naming 'sampling' (the schema defines it as an object of capability objects, e.g. { \"sampling\": {} }, not an array)",
+          "id": "sep-2575-server-rejects-undeclared-capability",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-server-rejects-undeclared-capability",
+            "ServerRejectsUndeclaredCapability",
+            "A server MUST NOT rely on capabilities the client has not declared. If processing a request requires a capability the client did not include in io.modelcontextprotocol/clientCapabilities, the server MUST return a MissingRequiredClientCapabilityError (-32021).",
+            ""
+          ],
+          "name": "ServerRejectsUndeclaredCapability",
+          "status": "FAILURE"
+        },
+        {
+          "description": "On HTTP, the response status MUST be 400 Bad Request [for MissingRequiredClientCapabilityError].",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Expected HTTP status code 400 Bad Request for an undeclared capability error response, got 200",
+          "id": "sep-2575-missing-capability-http-400",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-missing-capability-http-400",
+            "MissingCapabilityHttp400",
+            "On HTTP, the response status MUST be 400 Bad Request [for MissingRequiredClientCapabilityError].",
+            ""
+          ],
+          "name": "MissingCapabilityHttp400",
+          "status": "FAILURE"
+        },
+        {
+          "description": "If the server does not implement the removed RPC method 'initialize', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32022",
+          "id": "sep-2575-http-server-method-not-found-404-initialize",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-http-server-method-not-found-404-initialize",
+            "HttpServerMethodNotFound404initialize",
+            "If the server does not implement the removed RPC method 'initialize', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+            ""
+          ],
+          "name": "HttpServerMethodNotFound404initialize",
+          "status": "FAILURE"
+        },
+        {
+          "description": "If the server does not implement the removed RPC method 'ping', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601",
+          "id": "sep-2575-http-server-method-not-found-404-ping",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-http-server-method-not-found-404-ping",
+            "HttpServerMethodNotFound404ping",
+            "If the server does not implement the removed RPC method 'ping', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+            ""
+          ],
+          "name": "HttpServerMethodNotFound404ping",
+          "status": "FAILURE"
+        },
+        {
+          "description": "If the server does not implement the removed RPC method 'logging/setLevel', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601",
+          "id": "sep-2575-http-server-method-not-found-404-logging-setlevel",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-http-server-method-not-found-404-logging-setlevel",
+            "HttpServerMethodNotFound404loggingsetLevel",
+            "If the server does not implement the removed RPC method 'logging/setLevel', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+            ""
+          ],
+          "name": "HttpServerMethodNotFound404loggingsetLevel",
+          "status": "FAILURE"
+        },
+        {
+          "description": "If the server does not implement the removed RPC method 'resources/subscribe', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601",
+          "id": "sep-2575-http-server-method-not-found-404-resources-subscribe",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-http-server-method-not-found-404-resources-subscribe",
+            "HttpServerMethodNotFound404resourcessubscribe",
+            "If the server does not implement the removed RPC method 'resources/subscribe', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+            ""
+          ],
+          "name": "HttpServerMethodNotFound404resourcessubscribe",
+          "status": "FAILURE"
+        },
+        {
+          "description": "If the server does not implement the removed RPC method 'resources/unsubscribe', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601",
+          "id": "sep-2575-http-server-method-not-found-404-resources-unsubscribe",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-http-server-method-not-found-404-resources-unsubscribe",
+            "HttpServerMethodNotFound404resourcesunsubscribe",
+            "If the server does not implement the removed RPC method 'resources/unsubscribe', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+            ""
+          ],
+          "name": "HttpServerMethodNotFound404resourcesunsubscribe",
+          "status": "FAILURE"
+        },
+        {
+          "description": "If the server does not implement the requested RPC method, it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Expected HTTP 404 and JSON-RPC error code -32601, got HTTP 200 and code -32601",
+          "id": "sep-2575-http-server-method-not-found-404",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-http-server-method-not-found-404",
+            "HttpServerMethodNotFound404",
+            "If the server does not implement the requested RPC method, it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+            ""
+          ],
+          "name": "HttpServerMethodNotFound404",
+          "status": "FAILURE"
+        },
+        {
+          "description": "Request stream contains only IncompleteResult, never independent JSON-RPC requests",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-http-server-no-independent-requests-on-stream",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-http-server-no-independent-requests-on-stream",
+            "HttpServerNoIndependentRequestsOnStream",
+            "Request stream contains only IncompleteResult, never independent JSON-RPC requests",
+            ""
+          ],
+          "name": "HttpServerNoIndependentRequestsOnStream",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "No notifications/message for requests that didn't set _meta.../logLevel",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-server-no-log-without-loglevel",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-server-no-log-without-loglevel",
+            "ServerNoLogWithoutLogLevel",
+            "No notifications/message for requests that didn't set _meta.../logLevel",
+            ""
+          ],
+          "name": "ServerNoLogWithoutLogLevel",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "notifications/subscriptions/acknowledged is the first message on a subscriptions/listen stream",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-server-sends-subscription-ack",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-server-sends-subscription-ack",
+            "ServerSendsSubscriptionAck",
+            "notifications/subscriptions/acknowledged is the first message on a subscriptions/listen stream",
+            ""
+          ],
+          "name": "ServerSendsSubscriptionAck",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Listen-stream notifications carry _meta.../subscriptionId",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-server-tags-subscription-id",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-server-tags-subscription-id",
+            "ServerTagsSubscriptionId",
+            "Listen-stream notifications carry _meta.../subscriptionId",
+            ""
+          ],
+          "name": "ServerTagsSubscriptionId",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Server doesn't send notification types the client didn't request",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-server-honors-notification-filter",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-server-honors-notification-filter",
+            "ServerHonorsNotificationFilter",
+            "Server doesn't send notification types the client didn't request",
+            ""
+          ],
+          "name": "ServerHonorsNotificationFilter",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "List-changed-capable servers notify listen streams with promptsListChanged: true (SHOULD)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-server-sends-prompts-list-changed-on-subscription",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-server-sends-prompts-list-changed-on-subscription",
+            "ServerSendsPromptsListChangedOnSubscription",
+            "List-changed-capable servers notify listen streams with promptsListChanged: true (SHOULD)",
+            ""
+          ],
+          "name": "ServerSendsPromptsListChangedOnSubscription",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "List-changed-capable servers notify listen streams with toolsListChanged: true (SHOULD)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-server-sends-tools-list-changed-on-subscription",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-server-sends-tools-list-changed-on-subscription",
+            "ServerSendsToolsListChangedOnSubscription",
+            "List-changed-capable servers notify listen streams with toolsListChanged: true (SHOULD)",
+            ""
+          ],
+          "name": "ServerSendsToolsListChangedOnSubscription",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "All error responses carry the request JSON-RPC id",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-http-server-error-jsonrpc-id",
+          "key": [
+            "server",
+            "server-stateless",
+            "sep-2575-http-server-error-jsonrpc-id",
+            "HttpServerErrorJsonrpcId",
+            "All error responses carry the request JSON-RPC id",
+            ""
+          ],
+          "name": "HttpServerErrorJsonrpcId",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "server-stateless"
+    },
+    {
+      "artefact_dir": "server-tools-call-audio-2026-08-21T03-55-03-284Z",
+      "checks": [
+        {
+          "description": "Tool returns audio content",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "tools-call-audio",
+          "key": [
+            "server",
+            "tools-call-audio",
+            "tools-call-audio",
+            "ToolsCallAudio",
+            "Tool returns audio content",
+            ""
+          ],
+          "name": "ToolsCallAudio",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "tools-call-audio",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "tools-call-audio"
+    },
+    {
+      "artefact_dir": "server-tools-call-embedded-resource-2026-08-21T03-55-03-285Z",
+      "checks": [
+        {
+          "description": "Tool returns embedded resource content",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "tools-call-embedded-resource",
+          "key": [
+            "server",
+            "tools-call-embedded-resource",
+            "tools-call-embedded-resource",
+            "ToolsCallEmbeddedResource",
+            "Tool returns embedded resource content",
+            ""
+          ],
+          "name": "ToolsCallEmbeddedResource",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "tools-call-embedded-resource",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "tools-call-embedded-resource"
+    },
+    {
+      "artefact_dir": "server-tools-call-error-2026-08-21T03-55-03-291Z",
+      "checks": [
+        {
+          "description": "Tool returns error correctly",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "tools-call-error",
+          "key": [
+            "server",
+            "tools-call-error",
+            "tools-call-error",
+            "ToolsCallError",
+            "Tool returns error correctly",
+            ""
+          ],
+          "name": "ToolsCallError",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "tools-call-error",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "tools-call-error"
+    },
+    {
+      "artefact_dir": "server-tools-call-image-2026-08-21T03-55-03-282Z",
+      "checks": [
+        {
+          "description": "Tool returns image content",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "tools-call-image",
+          "key": [
+            "server",
+            "tools-call-image",
+            "tools-call-image",
+            "ToolsCallImage",
+            "Tool returns image content",
+            ""
+          ],
+          "name": "ToolsCallImage",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "tools-call-image",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "tools-call-image"
+    },
+    {
+      "artefact_dir": "server-tools-call-mixed-content-2026-08-21T03-55-03-289Z",
+      "checks": [
+        {
+          "description": "Tool returns multiple content types",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "tools-call-mixed-content",
+          "key": [
+            "server",
+            "tools-call-mixed-content",
+            "tools-call-mixed-content",
+            "ToolsCallMixedContent",
+            "Tool returns multiple content types",
+            ""
+          ],
+          "name": "ToolsCallMixedContent",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "tools-call-mixed-content",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "tools-call-mixed-content"
+    },
+    {
+      "artefact_dir": "server-tools-call-simple-text-2026-08-21T03-55-03-254Z",
+      "checks": [
+        {
+          "description": "Tool returns simple text content",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "tools-call-simple-text",
+          "key": [
+            "server",
+            "tools-call-simple-text",
+            "tools-call-simple-text",
+            "ToolsCallSimpleText",
+            "Tool returns simple text content",
+            ""
+          ],
+          "name": "ToolsCallSimpleText",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "tools-call-simple-text",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "tools-call-simple-text"
+    },
+    {
+      "artefact_dir": "server-tools-call-with-progress-2026-08-21T03-55-03-292Z",
+      "checks": [
+        {
+          "description": "Tool reports progress notifications",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "tools-call-with-progress",
+          "key": [
+            "server",
+            "tools-call-with-progress",
+            "tools-call-with-progress",
+            "ToolsCallWithProgress",
+            "Tool reports progress notifications",
+            ""
+          ],
+          "name": "ToolsCallWithProgress",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "tools-call-with-progress",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "tools-call-with-progress"
+    },
+    {
+      "artefact_dir": "server-tools-list-2026-08-21T03-55-03-238Z",
+      "checks": [
+        {
+          "description": "Server lists available tools with valid structure",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "tools-list",
+          "key": [
+            "server",
+            "tools-list",
+            "tools-list",
+            "ToolsList",
+            "Server lists available tools with valid structure",
+            ""
+          ],
+          "name": "ToolsList",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Tool names are 1-64 characters and match ^[A-Za-z0-9_./-]+$",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "tools-name-format",
+          "key": [
+            "server",
+            "tools-list",
+            "tools-name-format",
+            "ToolsNameFormat",
+            "Tool names are 1-64 characters and match ^[A-Za-z0-9_./-]+$",
+            ""
+          ],
+          "name": "ToolsNameFormat",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "server",
+            "tools-list",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "server",
+      "scenario": "tools-list"
+    },
+    {
+      "artefact_dir": "http-custom-headers-2026-08-21T07-25-24-334Z",
+      "checks": [
+        {
+          "description": "Client supports custom headers: calls the x-mcp-header annotated tool and mirrors at least one parameter",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-supports-custom-headers",
+          "key": [
+            "client",
+            "http-custom-headers",
+            "sep-2243-client-supports-custom-headers",
+            "ClientSupportsCustomHeaders",
+            "Client supports custom headers: calls the x-mcp-header annotated tool and mirrors at least one parameter",
+            ""
+          ],
+          "name": "ClientSupportsCustomHeaders",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Param-Region header (string value)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-mirrors-designated-params",
+          "key": [
+            "client",
+            "http-custom-headers",
+            "sep-2243-client-mirrors-designated-params",
+            "ClientCustomHeader_Region",
+            "Client sends correct Mcp-Param-Region header (string value)",
+            ""
+          ],
+          "name": "ClientCustomHeader_Region",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Param-Priority header (integer value)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-encode-values",
+          "key": [
+            "client",
+            "http-custom-headers",
+            "sep-2243-client-encode-values",
+            "ClientCustomHeader_Priority",
+            "Client sends correct Mcp-Param-Priority header (integer value)",
+            ""
+          ],
+          "name": "ClientCustomHeader_Priority",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Param-Verbose header (boolean value)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-encode-values",
+          "key": [
+            "client",
+            "http-custom-headers",
+            "sep-2243-client-encode-values",
+            "ClientCustomHeader_Verbose",
+            "Client sends correct Mcp-Param-Verbose header (boolean value)",
+            ""
+          ],
+          "name": "ClientCustomHeader_Verbose",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Param-Debug header (boolean value)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-encode-values",
+          "key": [
+            "client",
+            "http-custom-headers",
+            "sep-2243-client-encode-values",
+            "ClientCustomHeader_Debug",
+            "Client sends correct Mcp-Param-Debug header (boolean value)",
+            ""
+          ],
+          "name": "ClientCustomHeader_Debug",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Param-EmptyVal header (string value)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-mirrors-designated-params",
+          "key": [
+            "client",
+            "http-custom-headers",
+            "sep-2243-client-mirrors-designated-params",
+            "ClientCustomHeader_EmptyVal",
+            "Client sends correct Mcp-Param-EmptyVal header (string value)",
+            ""
+          ],
+          "name": "ClientCustomHeader_EmptyVal",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Param-Method header (string value)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-mirrors-designated-params",
+          "key": [
+            "client",
+            "http-custom-headers",
+            "sep-2243-client-mirrors-designated-params",
+            "ClientCustomHeader_Method",
+            "Client sends correct Mcp-Param-Method header (string value)",
+            ""
+          ],
+          "name": "ClientCustomHeader_Method",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client MUST NOT add Mcp-Param headers for parameters without x-mcp-header (number-typed float_val is served unannotated per SEP-2243)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-mirrors-designated-params",
+          "key": [
+            "client",
+            "http-custom-headers",
+            "sep-2243-client-mirrors-designated-params",
+            "ClientCustomHeaderNoMirrorNumber",
+            "Client MUST NOT add Mcp-Param headers for parameters without x-mcp-header (number-typed float_val is served unannotated per SEP-2243)",
+            ""
+          ],
+          "name": "ClientCustomHeaderNoMirrorNumber",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Param-NonAscii header (string value)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-base64-unsafe",
+          "key": [
+            "client",
+            "http-custom-headers",
+            "sep-2243-client-base64-unsafe",
+            "ClientCustomHeader_NonAscii",
+            "Client sends correct Mcp-Param-NonAscii header (string value)",
+            ""
+          ],
+          "name": "ClientCustomHeader_NonAscii",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Param-Whitespace header (string value)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-base64-unsafe",
+          "key": [
+            "client",
+            "http-custom-headers",
+            "sep-2243-client-base64-unsafe",
+            "ClientCustomHeader_Whitespace",
+            "Client sends correct Mcp-Param-Whitespace header (string value)",
+            ""
+          ],
+          "name": "ClientCustomHeader_Whitespace",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Param-LeadingSpace header (string value)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-base64-unsafe",
+          "key": [
+            "client",
+            "http-custom-headers",
+            "sep-2243-client-base64-unsafe",
+            "ClientCustomHeader_LeadingSpace",
+            "Client sends correct Mcp-Param-LeadingSpace header (string value)",
+            ""
+          ],
+          "name": "ClientCustomHeader_LeadingSpace",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Param-TrailingSpace header (string value)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-base64-unsafe",
+          "key": [
+            "client",
+            "http-custom-headers",
+            "sep-2243-client-base64-unsafe",
+            "ClientCustomHeader_TrailingSpace",
+            "Client sends correct Mcp-Param-TrailingSpace header (string value)",
+            ""
+          ],
+          "name": "ClientCustomHeader_TrailingSpace",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Param-InternalSpace header (string value)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-mirrors-designated-params",
+          "key": [
+            "client",
+            "http-custom-headers",
+            "sep-2243-client-mirrors-designated-params",
+            "ClientCustomHeader_InternalSpace",
+            "Client sends correct Mcp-Param-InternalSpace header (string value)",
+            ""
+          ],
+          "name": "ClientCustomHeader_InternalSpace",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Param-ControlChar header (string value)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-base64-unsafe",
+          "key": [
+            "client",
+            "http-custom-headers",
+            "sep-2243-client-base64-unsafe",
+            "ClientCustomHeader_ControlChar",
+            "Client sends correct Mcp-Param-ControlChar header (string value)",
+            ""
+          ],
+          "name": "ClientCustomHeader_ControlChar",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Param-CrLf header (string value)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-base64-unsafe",
+          "key": [
+            "client",
+            "http-custom-headers",
+            "sep-2243-client-base64-unsafe",
+            "ClientCustomHeader_CrLf",
+            "Client sends correct Mcp-Param-CrLf header (string value)",
+            ""
+          ],
+          "name": "ClientCustomHeader_CrLf",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Param-Tab header (string value)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-base64-unsafe",
+          "key": [
+            "client",
+            "http-custom-headers",
+            "sep-2243-client-base64-unsafe",
+            "ClientCustomHeader_Tab",
+            "Client sends correct Mcp-Param-Tab header (string value)",
+            ""
+          ],
+          "name": "ClientCustomHeader_Tab",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client MUST NOT add Mcp-Param headers for parameters without x-mcp-header",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-mirrors-designated-params",
+          "key": [
+            "client",
+            "http-custom-headers",
+            "sep-2243-client-mirrors-designated-params",
+            "ClientCustomHeaderNoMirrorUnannotated",
+            "Client MUST NOT add Mcp-Param headers for parameters without x-mcp-header",
+            ""
+          ],
+          "name": "ClientCustomHeaderNoMirrorUnannotated",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client MUST omit Mcp-Param header when parameter value is null or not provided",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-omit-null",
+          "key": [
+            "client",
+            "http-custom-headers",
+            "sep-2243-client-omit-null",
+            "ClientCustomHeaderOmitNull",
+            "Client MUST omit Mcp-Param header when parameter value is null or not provided",
+            ""
+          ],
+          "name": "ClientCustomHeaderOmitNull",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "client",
+      "scenario": "http-custom-headers"
+    },
+    {
+      "artefact_dir": "http-invalid-tool-headers-2026-08-21T07-25-24-334Z",
+      "checks": [
+        {
+          "description": "Client MUST keep valid tools while excluding invalid ones",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-reject-invalid-tool",
+          "key": [
+            "client",
+            "http-invalid-tool-headers",
+            "sep-2243-client-reject-invalid-tool",
+            "ClientKeepsValidTool",
+            "Client MUST keep valid tools while excluding invalid ones",
+            ""
+          ],
+          "name": "ClientKeepsValidTool",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client MUST NOT call tool 'invalid_empty_header' with invalid x-mcp-header",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-x-mcp-header-not-empty",
+          "key": [
+            "client",
+            "http-invalid-tool-headers",
+            "sep-2243-x-mcp-header-not-empty",
+            "ClientRejectsInvalidTool_invalid_empty_header",
+            "Client MUST NOT call tool 'invalid_empty_header' with invalid x-mcp-header",
+            ""
+          ],
+          "name": "ClientRejectsInvalidTool_invalid_empty_header",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client MUST NOT call tool 'invalid_object_header' with invalid x-mcp-header",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-x-mcp-header-primitive-only",
+          "key": [
+            "client",
+            "http-invalid-tool-headers",
+            "sep-2243-x-mcp-header-primitive-only",
+            "ClientRejectsInvalidTool_invalid_object_header",
+            "Client MUST NOT call tool 'invalid_object_header' with invalid x-mcp-header",
+            ""
+          ],
+          "name": "ClientRejectsInvalidTool_invalid_object_header",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client MUST NOT call tool 'invalid_array_header' with invalid x-mcp-header",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-x-mcp-header-primitive-only",
+          "key": [
+            "client",
+            "http-invalid-tool-headers",
+            "sep-2243-x-mcp-header-primitive-only",
+            "ClientRejectsInvalidTool_invalid_array_header",
+            "Client MUST NOT call tool 'invalid_array_header' with invalid x-mcp-header",
+            ""
+          ],
+          "name": "ClientRejectsInvalidTool_invalid_array_header",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client MUST NOT call tool 'invalid_null_header' with invalid x-mcp-header",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-x-mcp-header-primitive-only",
+          "key": [
+            "client",
+            "http-invalid-tool-headers",
+            "sep-2243-x-mcp-header-primitive-only",
+            "ClientRejectsInvalidTool_invalid_null_header",
+            "Client MUST NOT call tool 'invalid_null_header' with invalid x-mcp-header",
+            ""
+          ],
+          "name": "ClientRejectsInvalidTool_invalid_null_header",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client MUST NOT call tool 'invalid_duplicate_same_case' with invalid x-mcp-header",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-x-mcp-header-unique",
+          "key": [
+            "client",
+            "http-invalid-tool-headers",
+            "sep-2243-x-mcp-header-unique",
+            "ClientRejectsInvalidTool_invalid_duplicate_same_case",
+            "Client MUST NOT call tool 'invalid_duplicate_same_case' with invalid x-mcp-header",
+            ""
+          ],
+          "name": "ClientRejectsInvalidTool_invalid_duplicate_same_case",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client MUST NOT call tool 'invalid_duplicate_diff_case' with invalid x-mcp-header",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-x-mcp-header-unique",
+          "key": [
+            "client",
+            "http-invalid-tool-headers",
+            "sep-2243-x-mcp-header-unique",
+            "ClientRejectsInvalidTool_invalid_duplicate_diff_case",
+            "Client MUST NOT call tool 'invalid_duplicate_diff_case' with invalid x-mcp-header",
+            ""
+          ],
+          "name": "ClientRejectsInvalidTool_invalid_duplicate_diff_case",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client MUST NOT call tool 'invalid_space_in_name' with invalid x-mcp-header",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-x-mcp-header-charset",
+          "key": [
+            "client",
+            "http-invalid-tool-headers",
+            "sep-2243-x-mcp-header-charset",
+            "ClientRejectsInvalidTool_invalid_space_in_name",
+            "Client MUST NOT call tool 'invalid_space_in_name' with invalid x-mcp-header",
+            ""
+          ],
+          "name": "ClientRejectsInvalidTool_invalid_space_in_name",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client MUST NOT call tool 'invalid_colon_in_name' with invalid x-mcp-header",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-x-mcp-header-charset",
+          "key": [
+            "client",
+            "http-invalid-tool-headers",
+            "sep-2243-x-mcp-header-charset",
+            "ClientRejectsInvalidTool_invalid_colon_in_name",
+            "Client MUST NOT call tool 'invalid_colon_in_name' with invalid x-mcp-header",
+            ""
+          ],
+          "name": "ClientRejectsInvalidTool_invalid_colon_in_name",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client MUST NOT call tool 'invalid_non_ascii_name' with invalid x-mcp-header",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-x-mcp-header-charset",
+          "key": [
+            "client",
+            "http-invalid-tool-headers",
+            "sep-2243-x-mcp-header-charset",
+            "ClientRejectsInvalidTool_invalid_non_ascii_name",
+            "Client MUST NOT call tool 'invalid_non_ascii_name' with invalid x-mcp-header",
+            ""
+          ],
+          "name": "ClientRejectsInvalidTool_invalid_non_ascii_name",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client MUST NOT call tool 'invalid_control_char_name' with invalid x-mcp-header",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-x-mcp-header-charset",
+          "key": [
+            "client",
+            "http-invalid-tool-headers",
+            "sep-2243-x-mcp-header-charset",
+            "ClientRejectsInvalidTool_invalid_control_char_name",
+            "Client MUST NOT call tool 'invalid_control_char_name' with invalid x-mcp-header",
+            ""
+          ],
+          "name": "ClientRejectsInvalidTool_invalid_control_char_name",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "client",
+      "scenario": "http-invalid-tool-headers"
+    },
+    {
+      "artefact_dir": "http-standard-headers-2026-08-21T07-25-24-334Z",
+      "checks": [
+        {
+          "description": "Client sends correct Mcp-Method header on tools/list request",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-includes-standard-headers",
+          "key": [
+            "client",
+            "http-standard-headers",
+            "sep-2243-client-includes-standard-headers",
+            "ClientMcpMethodHeader_tools_list",
+            "Client sends correct Mcp-Method header on tools/list request",
+            ""
+          ],
+          "name": "ClientMcpMethodHeader_tools_list",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Method header on tools/call request",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-includes-standard-headers",
+          "key": [
+            "client",
+            "http-standard-headers",
+            "sep-2243-client-includes-standard-headers",
+            "ClientMcpMethodHeader_tools_call",
+            "Client sends correct Mcp-Method header on tools/call request",
+            ""
+          ],
+          "name": "ClientMcpMethodHeader_tools_call",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Name header on tools/call request",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-includes-standard-headers",
+          "key": [
+            "client",
+            "http-standard-headers",
+            "sep-2243-client-includes-standard-headers",
+            "ClientMcpNameHeader_tools_call",
+            "Client sends correct Mcp-Name header on tools/call request",
+            ""
+          ],
+          "name": "ClientMcpNameHeader_tools_call",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Method header on resources/list request",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-includes-standard-headers",
+          "key": [
+            "client",
+            "http-standard-headers",
+            "sep-2243-client-includes-standard-headers",
+            "ClientMcpMethodHeader_resources_list",
+            "Client sends correct Mcp-Method header on resources/list request",
+            ""
+          ],
+          "name": "ClientMcpMethodHeader_resources_list",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Method header on resources/read request",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-includes-standard-headers",
+          "key": [
+            "client",
+            "http-standard-headers",
+            "sep-2243-client-includes-standard-headers",
+            "ClientMcpMethodHeader_resources_read",
+            "Client sends correct Mcp-Method header on resources/read request",
+            ""
+          ],
+          "name": "ClientMcpMethodHeader_resources_read",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Name header on resources/read request",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-includes-standard-headers",
+          "key": [
+            "client",
+            "http-standard-headers",
+            "sep-2243-client-includes-standard-headers",
+            "ClientMcpNameHeader_resources_read",
+            "Client sends correct Mcp-Name header on resources/read request",
+            ""
+          ],
+          "name": "ClientMcpNameHeader_resources_read",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Method header on prompts/list request",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-includes-standard-headers",
+          "key": [
+            "client",
+            "http-standard-headers",
+            "sep-2243-client-includes-standard-headers",
+            "ClientMcpMethodHeader_prompts_list",
+            "Client sends correct Mcp-Method header on prompts/list request",
+            ""
+          ],
+          "name": "ClientMcpMethodHeader_prompts_list",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Method header on prompts/get request",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-includes-standard-headers",
+          "key": [
+            "client",
+            "http-standard-headers",
+            "sep-2243-client-includes-standard-headers",
+            "ClientMcpMethodHeader_prompts_get",
+            "Client sends correct Mcp-Method header on prompts/get request",
+            ""
+          ],
+          "name": "ClientMcpMethodHeader_prompts_get",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Name header on prompts/get request",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2243-client-includes-standard-headers",
+          "key": [
+            "client",
+            "http-standard-headers",
+            "sep-2243-client-includes-standard-headers",
+            "ClientMcpNameHeader_prompts_get",
+            "Client sends correct Mcp-Name header on prompts/get request",
+            ""
+          ],
+          "name": "ClientMcpNameHeader_prompts_get",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client sends correct Mcp-Method header on initialize request",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Client did not send a initialize request; Mcp-Method header was not exercised for this method.",
+          "id": "sep-2243-client-includes-standard-headers",
+          "key": [
+            "client",
+            "http-standard-headers",
+            "sep-2243-client-includes-standard-headers",
+            "ClientMcpMethodHeader_initialize",
+            "Client sends correct Mcp-Method header on initialize request",
+            ""
+          ],
+          "name": "ClientMcpMethodHeader_initialize",
+          "status": "SKIPPED"
+        },
+        {
+          "description": "Client sends correct Mcp-Method header on notifications/initialized request",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": "Client did not send a notifications/initialized request; Mcp-Method header was not exercised for this method.",
+          "id": "sep-2243-client-includes-standard-headers",
+          "key": [
+            "client",
+            "http-standard-headers",
+            "sep-2243-client-includes-standard-headers",
+            "ClientMcpMethodHeader_notifications_initialized",
+            "Client sends correct Mcp-Method header on notifications/initialized request",
+            ""
+          ],
+          "name": "ClientMcpMethodHeader_notifications_initialized",
+          "status": "SKIPPED"
+        }
+      ],
+      "leg": "client",
+      "scenario": "http-standard-headers"
+    },
+    {
+      "artefact_dir": "json-schema-ref-no-deref-2026-08-21T07-25-24-334Z",
+      "checks": [
+        {
+          "description": "Client did not dereference the network-URI $ref in the tool inputSchema",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2106-no-network-ref-deref",
+          "key": [
+            "client",
+            "json-schema-ref-no-deref",
+            "sep-2106-no-network-ref-deref",
+            "NoNetworkRefDereference",
+            "Client did not dereference the network-URI $ref in the tool inputSchema",
+            ""
+          ],
+          "name": "NoNetworkRefDereference",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "client",
+      "scenario": "json-schema-ref-no-deref"
+    },
+    {
+      "artefact_dir": "request-metadata-2026-08-21T07-25-24-334Z",
+      "checks": [
+        {
+          "description": "Client sends MCP-Protocol-Version header on every POST",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-http-client-sends-version-header",
+          "key": [
+            "client",
+            "request-metadata",
+            "sep-2575-http-client-sends-version-header",
+            "ClientSendsVersionHeader",
+            "Client sends MCP-Protocol-Version header on every POST",
+            ""
+          ],
+          "name": "ClientSendsVersionHeader",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client populates _meta on every request with the required fields (protocolVersion, clientCapabilities)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-client-populates-meta",
+          "key": [
+            "client",
+            "request-metadata",
+            "sep-2575-client-populates-meta",
+            "ClientPopulatesMeta",
+            "Client populates _meta on every request with the required fields (protocolVersion, clientCapabilities)",
+            ""
+          ],
+          "name": "ClientPopulatesMeta",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client SHOULD include io.modelcontextprotocol/clientInfo in every request's _meta (spec PR #3002)",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-client-sends-client-info",
+          "key": [
+            "client",
+            "request-metadata",
+            "sep-2575-client-sends-client-info",
+            "ClientSendsClientInfo",
+            "Client SHOULD include io.modelcontextprotocol/clientInfo in every request's _meta (spec PR #3002)",
+            ""
+          ],
+          "name": "ClientSendsClientInfo",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "MCP-Protocol-Version header matches _meta.protocolVersion",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-http-version-header-matches-meta",
+          "key": [
+            "client",
+            "request-metadata",
+            "sep-2575-http-version-header-matches-meta",
+            "ClientVersionHeaderMatchesMeta",
+            "MCP-Protocol-Version header matches _meta.protocolVersion",
+            ""
+          ],
+          "name": "ClientVersionHeaderMatchesMeta",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client declares valid roots capability if present",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-client-declares-roots-capability",
+          "key": [
+            "client",
+            "request-metadata",
+            "sep-2575-client-declares-roots-capability",
+            "ClientDeclaresRootsCapability",
+            "Client declares valid roots capability if present",
+            ""
+          ],
+          "name": "ClientDeclaresRootsCapability",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client declares valid sampling capability if present",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-client-declares-sampling-capability",
+          "key": [
+            "client",
+            "request-metadata",
+            "sep-2575-client-declares-sampling-capability",
+            "ClientDeclaresSamplingCapability",
+            "Client declares valid sampling capability if present",
+            ""
+          ],
+          "name": "ClientDeclaresSamplingCapability",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client declares valid elicitation capability if present",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-client-declares-elicitation-capability",
+          "key": [
+            "client",
+            "request-metadata",
+            "sep-2575-client-declares-elicitation-capability",
+            "ClientDeclaresElicitationCapability",
+            "Client declares valid elicitation capability if present",
+            ""
+          ],
+          "name": "ClientDeclaresElicitationCapability",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client retries with a supported version when first choice is rejected",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2575-client-retry-supported-version",
+          "key": [
+            "client",
+            "request-metadata",
+            "sep-2575-client-retry-supported-version",
+            "ClientRetrySupportedVersion",
+            "Client retries with a supported version when first choice is rejected",
+            ""
+          ],
+          "name": "ClientRetrySupportedVersion",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "client",
+      "scenario": "request-metadata"
+    },
+    {
+      "artefact_dir": "sep-2322-client-request-state-2026-08-21T07-25-24-334Z",
+      "checks": [
+        {
+          "description": "Client MUST echo back the exact value of requestState when retrying",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-client-request-state-echoed",
+          "key": [
+            "client",
+            "sep-2322-client-request-state",
+            "sep-2322-client-request-state-echoed",
+            "MRTRClientRequestStateEchoed",
+            "Client MUST echo back the exact value of requestState when retrying",
+            ""
+          ],
+          "name": "MRTRClientRequestStateEchoed",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "The JSON-RPC id MUST be different between the initial request and the retry",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-client-jsonrpc-id-different",
+          "key": [
+            "client",
+            "sep-2322-client-request-state",
+            "sep-2322-client-jsonrpc-id-different",
+            "MRTRClientJsonRpcIdDifferent",
+            "The JSON-RPC id MUST be different between the initial request and the retry",
+            ""
+          ],
+          "name": "MRTRClientJsonRpcIdDifferent",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "inputRequests and requestState MUST NOT be used for any other request the client may be sending",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-client-parallel-isolation",
+          "key": [
+            "client",
+            "sep-2322-client-request-state",
+            "sep-2322-client-parallel-isolation",
+            "MRTRClientParallelIsolation",
+            "inputRequests and requestState MUST NOT be used for any other request the client may be sending",
+            ""
+          ],
+          "name": "MRTRClientParallelIsolation",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "If InputRequiredResult does not contain requestState, client MUST NOT include one in the retry",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-client-no-state-omitted",
+          "key": [
+            "client",
+            "sep-2322-client-request-state",
+            "sep-2322-client-no-state-omitted",
+            "MRTRClientNoStateOmitted",
+            "If InputRequiredResult does not contain requestState, client MUST NOT include one in the retry",
+            ""
+          ],
+          "name": "MRTRClientNoStateOmitted",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Client MUST assume resultType \"complete\" when not specified",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "sep-2322-default-result-type-complete",
+          "key": [
+            "client",
+            "sep-2322-client-request-state",
+            "sep-2322-default-result-type-complete",
+            "DefaultResultTypeComplete",
+            "Client MUST assume resultType \"complete\" when not specified",
+            ""
+          ],
+          "name": "DefaultResultTypeComplete",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "client",
+      "scenario": "sep-2322-client-request-state"
+    },
+    {
+      "artefact_dir": "tools_call-2026-08-21T07-25-24-333Z",
+      "checks": [
+        {
+          "description": "Validates that the add_numbers tool works correctly",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "tool-add-numbers",
+          "key": [
+            "client",
+            "tools_call",
+            "tool-add-numbers",
+            "ToolAddNumbers",
+            "Validates that the add_numbers tool works correctly",
+            ""
+          ],
+          "name": "ToolAddNumbers",
+          "status": "SUCCESS"
+        },
+        {
+          "description": "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+          "discriminator": "",
+          "discriminator_source": "unique",
+          "errorMessage": null,
+          "id": "wire-schema-valid",
+          "key": [
+            "client",
+            "tools_call",
+            "wire-schema-valid",
+            "WireSchemaValid",
+            "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+            ""
+          ],
+          "name": "WireSchemaValid",
+          "status": "SUCCESS"
+        }
+      ],
+      "leg": "client",
+      "scenario": "tools_call"
+    }
+  ],
+  "totals": {
+    "by_leg": {
+      "client": {
+        "checks": 56,
+        "scenarios": 7
+      },
+      "server": {
+        "checks": 119,
+        "scenarios": 37
+      }
+    },
+    "checks": 175,
+    "scenarios": 44
+  }
+}
