@@ -109,3 +109,108 @@ where it was inherited — and because it arrives as a flat rejection rather tha
 as a stated policy, the caller experiences it as a bug in their own payload. Ask
 which artefact a profile was designed for before reusing it, and name it after
 the artefact it validates, not after the one it was first written for.
+
+---
+
+## S6-2 — A ticket ruled into a sprint by the epic's prose is not thereby in the Jira sprint, and nothing reconciles the two
+
+**Found:** Sprint 6 dispatch, 2026-08-22, by the PM, about to dispatch F1.
+**Status:** open. **Second confirmed occurrence** — this is a class, not an incident.
+
+### The defect
+
+MES-65's *Composition* section names 28 tickets in six groups and ends with
+`Sequencing: F → A → B → C1/C2 → C3 → D → E2/E3`. Group F is enumerated
+explicitly: **F1 = MES-63**, **F2 = MES-61**. The epic therefore states, in
+writing, that these two are sprint members and that they run *first*.
+
+Both carried `sprint: []` and the trailing line **"Backlog — not Sprint 5."**
+They were never added to the Jira sprint. The board showed six tickets
+(MES-65..70) for a sprint the epic describes as twenty-eight.
+
+### The mechanism, which is the transferable part
+
+**The same fact is recorded twice, in two systems, and neither can see the
+other.**
+
+| record | form | who reads it |
+|---|---|---|
+| epic body, *Composition* + *Sequencing* | prose | humans planning the sprint |
+| `customfield_10020` on each issue | data | the board, JQL, any sprint report |
+
+Prose is where the *reasoning* lives — why F precedes A, what F1 unblocks. The
+sprint field is where the *membership* lives. Writing the reasoning does not
+write the membership, and there is no check that closes the gap in either
+direction. So the discrepancy is invisible from both sides: the board looks
+complete because six tickets are genuinely in it, and the epic looks complete
+because it genuinely lists twenty-eight.
+
+**It fails toward silence, not toward error.** Nothing raises. The sprint simply
+proceeds against a smaller set than was planned, and the shortfall surfaces —
+if at all — as "we seem to be finished" at a point where a third of the work was
+never on the board.
+
+### Why this one is a class and not a slip
+
+**Sprint 4, MES-24.** Ruled into the sprint at planning; absent from the Jira
+sprint. Recorded then as a thing to remember: *the sprint is MES-13…19 plus
+MES-24; do not call the sprint done without checking.*
+
+**Sprint 6, MES-63 and MES-61.** Same shape, two tickets, and this time they sit
+at the *head* of the declared sequencing rather than the tail — so the omission
+was load-bearing rather than merely untidy.
+
+Two occurrences in three sprints, in a project that otherwise reconciles its
+numbers obsessively. The remembering did not work, which is the argument for
+writing it down as a defect rather than as a habit.
+
+### The measured consequence, this time
+
+F1 (MES-63) is not decorative. `test/conformance/classification_test.exs:161`
+globs `docs/conformance/*-2026-07-28*.json` and `Map.fetch!`es `"scenarios"`.
+A1's brief (MES-66, scope item 1) requires committing
+`docs/conformance/in-scope-2026-07-28.json`. Measured by the PM in a worktree at
+`dbcb124`:
+
+| manifest present? | top-level shape | gate 5 |
+|---|---|---|
+| yes | no `"scenarios"` key | **red** — `KeyError` at `classification_test.exs:161` |
+| yes | has a `"scenarios"` array | green |
+| no (control) | — | green |
+
+So had the sprint run as the board described it, **A1 would have gone first and
+failed gate 5 on a defect raised, understood and scheduled a day earlier.** The
+finder would have spent their time on a `KeyError` about a missing key rather
+than on the manifest they were writing — which is precisely the cost MES-63's
+own brief predicts.
+
+### What is NOT wrong
+
+- **The epic prose was right.** It named F1 and F2, explained why they come
+  first, and sequenced them correctly. The planning was sound; only its
+  transcription into Jira was incomplete.
+- **Nothing was lost.** Both tickets existed, briefed, with their evidence
+  intact. This is a bookkeeping gap, not forgotten work — which is exactly why
+  it is easy to keep making.
+
+### The ask
+
+**At sprint open, reconcile the epic's composition list against the sprint's
+actual membership, and record the result — including a clean one.** The
+project already applies this standard to advisories ("checked, and zero" and
+"never asked" read identically when only the answer is printed); sprint
+membership deserves the same treatment. One JQL against the epic, compared to
+the enumeration in the epic body, would have caught both occurrences.
+
+Whether that becomes a step in the End-of-Sprint Procedure — which currently
+covers the *closing* boundary but says nothing about the *opening* one — is the
+PO's call. It is raised here rather than decided.
+
+### Transferable form
+
+**Prose that assigns work and a field that schedules it are two records of one
+fact, and the one a human reads is not the one the tooling obeys.** Anywhere a
+plan is written in one system and executed from another, the plan's own
+completeness is no evidence that the execution list matches it. State the
+membership where the tooling reads it, or check the two against each other on a
+cadence — remembering to do it by hand has now failed twice.
