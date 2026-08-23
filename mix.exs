@@ -1,7 +1,7 @@
 defmodule MCPElixirSDK.MixProject do
   use Mix.Project
 
-  @version "2.0.0-dev.25"
+  @version "2.0.0-dev.26"
   @source_url "https://github.com/JohnSmall/mcp-elixir-sdk"
 
   def project do

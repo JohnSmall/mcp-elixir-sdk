@@ -39,9 +39,24 @@
 # A complete gate-5 run therefore requires `node` on PATH and the harness
 # installed at MCP.Conformance.TestHarness.install_dir/0. A run reporting
 # "3 excluded" is NOT a complete gate 5.
+# MES-83 (B3). The ET result-capture instrument, and it is OFF unless asked.
+# `MCP_ETCC_ROWS` names the artefact path; with it unset the formatter is not
+# attached at all, so a plain `mix test` is byte-for-byte the run it was before.
+# Gate 5 runs on every ticket at three seats and must not be coupled to an
+# instrument one ticket owns — ruled at MES-83's ratification, following
+# `MCP.Conformance.Beacon`'s precedent. The path decision is
+# `MCP.Conformance.ExUnitRows.output_path/0` in both places, so the attach and
+# the write cannot disagree about whether capture is on.
+etcc_formatters =
+  if MCP.Conformance.ExUnitRows.output_path() do
+    [ExUnit.CLIFormatter, MCP.Conformance.ExUnitRows]
+  else
+    [ExUnit.CLIFormatter]
+  end
+
 case MCP.Conformance.TestHarness.unavailable_reason() do
   nil ->
-    ExUnit.start()
+    ExUnit.start(formatters: etcc_formatters)
 
   why ->
     IO.puts(:stderr, """
@@ -52,5 +67,5 @@ case MCP.Conformance.TestHarness.unavailable_reason() do
     count below is the evidence they did not run. This is NOT a complete gate 5.
     """)
 
-    ExUnit.start(exclude: [:requires_live_harness])
+    ExUnit.start(exclude: [:requires_live_harness], formatters: etcc_formatters)
 end

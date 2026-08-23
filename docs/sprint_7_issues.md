@@ -500,3 +500,70 @@ tells the next reader whether anybody checked.
 **Generalises:** [S7-1](#s7-1) is this rule applied across time rather than across
 documents — a figure that was true at the tip it was measured at, cited at a tip that has
 moved. Same object, same remedy: re-run it.
+
+## S7-8 — A tool's own summary is a lossy projection of its own event stream, so it is neither a safe denominator nor an independent witness
+
+**Found:** MES-83, 2026-08-23, by CODE_CREATOR, while working out what AC1's
+"reconciles with `mix test`'s own reported count" could actually establish. The PM had
+asked at dispatch which direction a mismatch would point, which is the question that
+surfaced it.
+**Status:** CLOSED in this ticket — the artefact counts from the stream and carries a
+second witness. Recorded because the mechanism is not about ExUnit.
+
+### What happened
+
+ExUnit's headline — `13 doctests, 979 tests, 0 failures (3 excluded)` — looks like a
+census of the run. It is not. `update_test_counter/2` (`cli_formatter.ex:263-265`)
+returns the counter **unchanged** for `{:excluded, _reason}`, so the per-type totals
+omit excluded tests entirely while including skipped and invalid ones. The excluded
+count is printed, but in a separate term, in parentheses, only when non-zero.
+
+Two consequences, and this ticket would have hit both:
+
+1. **As a denominator it is lossy in exactly the category that mattered.** Hazard 2 of
+   this ticket exists to keep "excluded" distinguishable from "not run" and from "no
+   longer exists" (S6-9). An artefact that took its denominator from the headline would
+   have dropped precisely that category — reproducing S6-9 *inside the fix for S6-9*.
+   Measured: on a host without `node`, the same tree reports `976 tests ... (3 excluded)`
+   against `979 tests` with it. The headline moves by 3; the population does not move at
+   all.
+
+2. **As a cross-check it is not independent.** Both the headline and the row count are
+   computed from the *same* broadcast — `event_manager.ex:87-93` casts every event to
+   every formatter. So a test that never reached the event manager (a module that failed
+   to load, `--only-test-ids`, a `--max-failures` cut-off) is invisible to **both** sides
+   and cancels. The reconciliation checks the projection from events to rows. It cannot
+   check that the suite was discovered, and a green from it does not mean it did.
+
+### The mechanism
+
+A summary is produced by the same process, from the same stream, as the thing it
+summarises. It therefore fails in the two ways every projection fails: it **discards
+categories silently** (nothing in the output says "excluded tests are not in this
+number"), and it **shares every upstream defect** with the stream it projects. Neither
+failure is visible from the summary alone — a lossy projection and a faithful one print
+the same shape.
+
+This is S6-11 one level up (`sprint_6_issues.md`). S6-11 is about *our* artefacts aggregating at the point
+of capture; this is about *someone else's* aggregate being borrowed as if it were a
+measurement.
+
+### Transferable form
+
+**Count from the stream, never from the tool's summary — and when you reconcile against
+that summary, say what the reconciliation cannot see.**
+
+The remedy that worked here, and it is general: **find a second witness inside the same
+run whose code path differs.** ExUnit's `module_finished` carries the module's own test
+list, assembled at `runner.ex:275` by a different path from the counters, so it catches a
+dropped `test_finished` that the headline cannot. Its **membership had to be established
+rather than described** — it holds run and invalid tests only, because excluded and
+skipped are emitted earlier at `runner.ex:243-249` and are never joined back in. The
+control run establishes that by arithmetic (7 keys in the lists, 7 run/invalid rows, 2
+excluded/skipped rows absent from them) rather than by reading the source and believing
+it.
+
+**The corollary is the cheap half:** a reconciliation that states its own blind spot is
+worth more than one that does not, and costs a sentence. "These two numbers agree" and
+"these two numbers agree, and here is the class of defect that would leave them agreeing"
+are the same green and different claims.
