@@ -49,6 +49,26 @@ defmodule MCP.Conformance.MatchKey do
   lookup**, so that a stale key and a declared non-match fail differently and
   for stated reasons rather than both arriving as "not found".
 
+  ## The native-id slot names a CLAIM, not a requirement heading (MES-77)
+
+  A3 first said A4's `CG` numbers land in the `<native-id>` slot as they stand.
+  That is a two-way split over a three-way space, and it inherits the
+  assumption §1 rejects — that a CG is a unit of matching. A requirement
+  heading can be **matched and bucket-1 at the same time**: CG7 corresponds to
+  29 OC checks *and* carries 3 constraint families the suite's fixture never
+  exercises. A slot holding `CG7` names all three at once, so a register keyed
+  on it cannot tell them apart.
+
+  So the slot carries `<origin-id>-<claim-slug>` — `native_id/2` builds it,
+  `none/3` composes the whole token, and `declared_claim_index/1` is the
+  register-assembly check that refuses one id naming two claims. `none/2`
+  keeps its open contract: it cannot know the caller's taxonomy, and some
+  taxonomies are already claim-level.
+
+  A requirement with **no ET-CC member at all** is a third thing again, and it
+  is out of this module's domain by rule rather than by omission — see
+  `docs/conformance/match-relation.md` §6.
+
   ## What a green run of this module does NOT establish
 
   It establishes that a token addresses at most one row of the **committed**
@@ -157,9 +177,15 @@ defmodule MCP.Conformance.MatchKey do
   Build the reserved token for an ET-CC member that has no OC counterpart.
 
   `reason` is a slug saying *why* there is no counterpart; `native_id` is the
-  member's own identifier in whatever private taxonomy already names it (for
-  the client leg, A4's `CG` numbers land here — that is the client-leg instance
-  of guard state 3 and needs no separate mechanism).
+  member's own identifier in whatever private taxonomy already names it.
+
+  **`native_id` must name a claim, not a requirement heading** (MES-77) — but
+  that is NOT enforced here, and the omission is deliberate. This arity cannot
+  know the caller's taxonomy: a unit-level id like `T-CG1a` is already
+  claim-level and has no heading part to suffix, so refusing an unsuffixed id
+  here would produce false refusals rather than safety. The enforcement points
+  are `native_id/2` at build time and `declared_claim_index/1` at register
+  assembly. `none/3` is the sanctioned builder.
   """
   @spec none(String.t(), String.t()) :: {:ok, String.t()} | {:error, term()}
   def none(reason, native_id) do
@@ -170,6 +196,92 @@ defmodule MCP.Conformance.MatchKey do
       {:ok, "oc:none/#{reason}/#{native_id}"}
     end
   end
+
+  @doc """
+  Build the reserved token from its three parts — the sanctioned builder
+  (MES-77). Composes `native_id/2`, so a heading-only native id cannot be
+  produced through this call.
+  """
+  @spec none(String.t(), String.t(), String.t()) :: {:ok, String.t()} | {:error, term()}
+  def none(reason, origin_id, claim_slug) do
+    with {:ok, native_id} <- native_id(origin_id, claim_slug) do
+      none(reason, native_id)
+    end
+  end
+
+  @doc """
+  Compose a **claim-level** native id: the scope that names the claim, and the
+  claim within it.
+
+      native_id("CG7", "annotated-number-excluded")
+      #=> {:ok, "CG7-annotated-number-excluded"}
+
+  `origin_id` is whatever private taxonomy already names the scope — a `CG`
+  number where one exists, a ticket key where none does. Both parts must be
+  non-empty and stay inside the measured carried charset, so a `/` or `#` is
+  **refused** rather than emitted as a token `decode/1` would mis-split.
+
+  **The result is deliberately NOT lexically decomposable back into its two
+  parts.** Reserving the first `-` as a separator would require origin ids to
+  contain none, which holds for `CG1`-`CG7` and fails for every Jira key — and
+  a bucket-1 claim belonging to no CG has a ticket key as its natural origin.
+  Rollup from a native id to its origin is therefore a lookup in D1's register,
+  not a parse, exactly the stance §5 already takes on `description`. Stating
+  the weaker property is the point: claiming a decomposability that would break
+  within the sprint would be worse than not claiming it.
+  """
+  @spec native_id(String.t(), String.t()) :: {:ok, String.t()} | {:error, term()}
+  def native_id(origin_id, claim_slug) do
+    fields = %{"origin_id" => origin_id, "claim_slug" => claim_slug}
+
+    with :ok <- check_charset(fields),
+         :ok <- check_non_empty(fields) do
+      {:ok, "#{origin_id}-#{claim_slug}"}
+    end
+  end
+
+  @doc """
+  Index declared bucket-1 rows by native id, refusing the one thing the slot
+  exists to prevent: **one native id naming two different claims** (MES-77,
+  gap (a)). This is what a register builder calls before counting.
+
+  Takes `[{native_id, claim}]` — `claim` being the field an edge record already
+  carries — and returns `{:ok, %{native_id => claim}}`.
+
+  **Repeats of one id with the SAME claim are legal, and that is not a
+  leniency.** A claim can be asserted by several members: CG7's three
+  constraint families are discharged by nine ET-CC units, so **nine members
+  legitimately share three native ids**. A rule of the form "no two members
+  share an id" would reject correct data — the same category error this
+  mechanism exists to fix, one level down. The enforceable converse is what
+  this checks, and it returns
+  `{:error, {:native_id_names_two_claims, id, claims}}`.
+
+  The offender reported is the lexically first, so a refusal is reproducible
+  rather than dependent on map ordering.
+  """
+  @spec declared_claim_index([{String.t(), String.t()}]) :: {:ok, map()} | {:error, term()}
+  def declared_claim_index(rows) when is_list(rows) do
+    with :ok <- check_rows(rows) do
+      grouped =
+        Enum.reduce(rows, %{}, fn {native_id, claim}, acc ->
+          Map.update(acc, native_id, [claim], &[claim | &1])
+        end)
+
+      conflicts =
+        grouped
+        |> Enum.map(fn {id, claims} -> {id, claims |> Enum.uniq() |> Enum.sort()} end)
+        |> Enum.filter(fn {_id, claims} -> length(claims) > 1 end)
+        |> Enum.sort_by(fn {id, _claims} -> id end)
+
+      case conflicts do
+        [] -> {:ok, Map.new(grouped, fn {id, [claim | _]} -> {id, claim} end)}
+        [{id, claims} | _] -> {:error, {:native_id_names_two_claims, id, claims}}
+      end
+    end
+  end
+
+  def declared_claim_index(other), do: {:error, {:not_a_row_list, other}}
 
   @doc """
   Decode a token into its parts. Purely lexical: it performs no lookup, so a
@@ -473,6 +585,13 @@ defmodule MCP.Conformance.MatchKey do
   defp check_non_empty(fields) do
     Enum.find_value(fields, :ok, fn {field, value} ->
       if field != "discriminator" and value == "", do: {:error, {:empty, field}}
+    end)
+  end
+
+  defp check_rows(rows) do
+    Enum.find_value(rows, :ok, fn
+      {id, claim} when is_binary(id) and is_binary(claim) and id != "" and claim != "" -> nil
+      other -> {:error, {:bad_row, other}}
     end)
   end
 

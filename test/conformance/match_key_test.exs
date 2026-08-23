@@ -149,10 +149,16 @@ defmodule MCP.Conformance.MatchKeyTest do
     end
 
     test "an oc:none token decodes but must not resolve as a key", %{rows: rows} do
-      {:ok, token} = MatchKey.none("no-oc-counterpart", "CG4")
+      # Claim-level native id per MES-77 — the module's own tests must not go on
+      # illustrating the heading-only form §6 now forbids.
+      {:ok, token} = MatchKey.none("no-oc-counterpart", "CG4", "network-ref-not-dereferenced")
 
-      assert {:ok, %{kind: :none, reason: "no-oc-counterpart", native_id: "CG4"}} =
-               MatchKey.decode(token)
+      assert {:ok,
+              %{
+                kind: :none,
+                reason: "no-oc-counterpart",
+                native_id: "CG4-network-ref-not-dereferenced"
+              }} = MatchKey.decode(token)
 
       assert {:error, :not_an_oc_key} = MatchKey.resolve(token, rows)
     end
@@ -191,8 +197,10 @@ defmodule MCP.Conformance.MatchKeyTest do
     end
 
     test "state 3: a declared non-match is a distinct, non-failing state", %{rows: rows} do
-      {:ok, token} = MatchKey.none("no-oc-counterpart", "CG4")
-      assert {:declared_unmatched, %{native_id: "CG4"}} = MatchKey.guard_state(token, rows)
+      {:ok, token} = MatchKey.none("no-oc-counterpart", "CG4", "network-ref-not-dereferenced")
+
+      assert {:declared_unmatched, %{native_id: "CG4-network-ref-not-dereferenced"}} =
+               MatchKey.guard_state(token, rows)
     end
 
     test "state 4: an untagged member FAILS — the cost, ratified with the cost named", %{
@@ -483,6 +491,150 @@ defmodule MCP.Conformance.MatchKeyTest do
       sha = axes["provenance"]["harness_dist_sha256"]
       assert sha == manifest["provenance"]["server"]["harness_dist_sha256"]
       assert sha == manifest["provenance"]["client"]["harness_dist_sha256"]
+    end
+  end
+
+  describe "MES-77 — the native-id slot names a CLAIM, not a requirement heading" do
+    # A4's real seven (cg-reconciliation.md §5), not synthesised pairs: two
+    # invented claims would demonstrate the arithmetic of deduplication and
+    # nothing about this tree.
+    @a4_claims [
+      {"CG2", "inbound-parse"},
+      {"CG2", "absent-yields-nil"},
+      {"CG2", "unknown-not-a-fault"},
+      {"CG2", "outbound-meta"},
+      {"CG7", "annotated-number-excluded"},
+      {"CG7", "integer-safe-range"},
+      {"CG7", "static-reachability"}
+    ]
+
+    test "native_id/2 composes the two parts" do
+      assert {:ok, "CG7-annotated-number-excluded"} =
+               MatchKey.native_id("CG7", "annotated-number-excluded")
+    end
+
+    test "an origin id containing a hyphen is fine — a Jira key is a legal origin" do
+      # MES-82 will meet bucket-1 claims belonging to NO CG, whose natural
+      # origin is the owning ticket. A separator rule reserving the first `-`
+      # would forbid exactly those.
+      assert {:ok, "MES-38-listen-stream-consumed"} =
+               MatchKey.native_id("MES-38", "listen-stream-consumed")
+    end
+
+    test "native_id/2 REFUSES rather than emitting a token decode/1 would mis-split" do
+      assert {:error, {:empty, "claim_slug"}} = MatchKey.native_id("CG7", "")
+      assert {:error, {:empty, "origin_id"}} = MatchKey.native_id("", "a-claim")
+      assert {:error, {:not_a_string, "claim_slug"}} = MatchKey.native_id("CG7", nil)
+      assert {:error, {:charset, "claim_slug"}} = MatchKey.native_id("CG7", "a/b")
+      assert {:error, {:charset, "claim_slug"}} = MatchKey.native_id("CG7", "a#b")
+      assert {:error, {:charset, "claim_slug"}} = MatchKey.native_id("CG7", "a b")
+      assert {:error, {:charset, "origin_id"}} = MatchKey.native_id("CG/7", "a-claim")
+    end
+
+    test "none/3 composes native_id/2, and propagates its refusal" do
+      assert {:ok, "oc:none/no-oc-fixture-case/CG7-integer-safe-range"} =
+               MatchKey.none("no-oc-fixture-case", "CG7", "integer-safe-range")
+
+      assert {:error, {:charset, "claim_slug"}} =
+               MatchKey.none("no-oc-fixture-case", "CG7", "a/b")
+    end
+
+    test "none/2 keeps its open contract — it cannot know the caller's taxonomy" do
+      # A unit-level id is ALREADY claim-level and has no heading part to
+      # suffix. Refusing it here would be a false refusal, not safety.
+      assert {:ok, "oc:none/no-oc-scenario/T-CG1a"} = MatchKey.none("no-oc-scenario", "T-CG1a")
+    end
+
+    test "none/2 accepts a HYPHEN-FREE origin id — the open contract is not a separator rule" do
+      # CR-M8: `none/2` made to reject a heading-only id survived gate 5,
+      # because the re-point left `T-CG1a` as the sole witness and it happens
+      # to contain a hyphen. A bare `CG4` has none, so it pins the contract
+      # ruling (3) preserved against the natural over-strict implementation.
+      assert {:ok, "oc:none/no-oc-counterpart/CG4"} = MatchKey.none("no-oc-counterpart", "CG4")
+    end
+
+    test "the new form round-trips: builder -> decode/1 -> the same native id" do
+      for {origin_id, claim_slug} <- @a4_claims do
+        {:ok, expected} = MatchKey.native_id(origin_id, claim_slug)
+        {:ok, token} = MatchKey.none("no-oc-scenario", origin_id, claim_slug)
+
+        assert {:ok, %{kind: :none, reason: "no-oc-scenario", native_id: ^expected}} =
+                 MatchKey.decode(token)
+      end
+    end
+
+    test "and still guards to state 3 — the scheme change must not move the guard", %{rows: rows} do
+      for {origin_id, claim_slug} <- @a4_claims do
+        {:ok, token} = MatchKey.none("no-oc-scenario", origin_id, claim_slug)
+        assert {:declared_unmatched, %{kind: :none}} = MatchKey.guard_state(token, rows)
+      end
+    end
+
+    test "THE OLD SCHEME FAILS: a bare CG number names all of that CG's claims" do
+      # The demonstration AC4 asks for, held here so gate 5 carries it. Under
+      # §6 as first ratified, all three CG7 claims carried native id "CG7".
+      rows =
+        for {origin_id, claim_slug} <- @a4_claims, origin_id == "CG7", do: {origin_id, claim_slug}
+
+      assert {:error, {:native_id_names_two_claims, "CG7", claims}} =
+               MatchKey.declared_claim_index(rows)
+
+      assert claims == [
+               "annotated-number-excluded",
+               "integer-safe-range",
+               "static-reachability"
+             ]
+    end
+
+    test "the new scheme is accepted, one entry per claim" do
+      rows =
+        for {origin_id, claim_slug} <- @a4_claims do
+          {:ok, id} = MatchKey.native_id(origin_id, claim_slug)
+          {id, claim_slug}
+        end
+
+      assert {:ok, index} = MatchKey.declared_claim_index(rows)
+      assert map_size(index) == 7
+      assert index["CG7-integer-safe-range"] == "integer-safe-range"
+    end
+
+    test "REPEATS OF ONE ID WITH THE SAME CLAIM ARE LEGAL, and that is not a leniency" do
+      # CG7's three constraint families are discharged by NINE ET-CC units
+      # (header_mirror_test.exs:113,120,133,156,168,194,205,222,231), so nine
+      # members legitimately share three native ids. A "no two members share an
+      # id" rule would reject correct data.
+      rows =
+        List.duplicate({"CG7-static-reachability", "static-reachability"}, 6) ++
+          List.duplicate({"CG7-annotated-number-excluded", "annotated-number-excluded"}, 2) ++
+          [{"CG7-integer-safe-range", "integer-safe-range"}]
+
+      assert length(rows) == 9
+      assert {:ok, index} = MatchKey.declared_claim_index(rows)
+      assert map_size(index) == 3
+    end
+
+    test "the offender reported is the lexically first, so a refusal is reproducible" do
+      rows = [
+        {"ZZ", "one"},
+        {"ZZ", "two"},
+        {"AA", "one"},
+        {"AA", "two"}
+      ]
+
+      assert {:error, {:native_id_names_two_claims, "AA", ["one", "two"]}} =
+               MatchKey.declared_claim_index(rows)
+    end
+
+    test "malformed rows are refused by shape, before any grouping" do
+      assert {:error, {:bad_row, :nope}} = MatchKey.declared_claim_index([:nope])
+      assert {:error, {:bad_row, {"id", ""}}} = MatchKey.declared_claim_index([{"id", ""}])
+      assert {:error, {:bad_row, {"", "claim"}}} = MatchKey.declared_claim_index([{"", "claim"}])
+      assert {:error, {:not_a_row_list, :nope}} = MatchKey.declared_claim_index(:nope)
+    end
+
+    test "an empty register is legal — no rows is not a collision" do
+      assert {:ok, index} = MatchKey.declared_claim_index([])
+      assert index == %{}
     end
   end
 

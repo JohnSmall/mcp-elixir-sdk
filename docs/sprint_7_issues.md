@@ -205,3 +205,112 @@ it.
 
 **Wording of the mechanism, the bound and the S7-1 contrast owed to CODE_REVIEWER's
 MES-75 merge-gate review.**
+
+---
+
+## S7-3 — An acceptance criterion borrows the check that is right for the artefact's usual case, and the ticket is about the exception
+
+**Found:** MES-77, 2026-08-23, by CODE_CREATOR at the plan hop, while trying to
+satisfy AC1 literally. **Second occurrence in two consecutive tickets**, which is
+what promotes it from an incident to a mechanism — the PM named the count and asked
+for the decision to be made with it in view (MES-77 comment 25982).
+
+### The two occurrences
+
+| ticket | the AC | why it could not be satisfied as written |
+| --- | --- | --- |
+| **MES-75** | AC5 — regenerate the census and diff byte-identically | the census's *change* was the deliverable, so byte-identity with the committed file was false **by construction** |
+| **MES-77** | AC1 — `encode/1`/`decode/1` round-trip the new form | the new form is the `oc:none` token, and `encode/1` structurally cannot build it: it gates on `check_leg/1` against `@legs = ~w(server client)`, so leg `none` returns `{:error, {:unknown_leg, "none"}}`. The builder is `none/2` (`match_key.ex:165-172` **at `main` = `32dd7c2`, the tip the AC was read against**; MES-77 moved it to `:191`) |
+
+### The mechanism
+
+Both ACs name a check that is **correct for the artefact's ordinary case**, and in
+both the ticket is about the case that is not ordinary. "Regenerate and diff" is the
+standing way to prove a generated artefact's provenance — except when the
+regeneration target *is* the change. "`encode/1` round-trips it" is the standing way
+to prove a token scheme reversible — except for the one token `encode/1` is
+constructed to refuse.
+
+That is why neither is caught in the writing. The AC names a **real** procedure and a
+**real** function, so it reads as concrete and already-verified. The error is not in
+the identifier; it is in the identifier's **scope**, and scope is invisible at the
+altitude a brief is written at.
+
+### What made both detectable in advance — and it is the same property that caused them
+
+Both ACs named a **specific identifier**. That is precisely what let them be read
+against the code at plan time and falsified before a line was written. An AC phrased
+as *"prove the new form round-trips"* would have been unfalsifiable at the plan hop
+and would have surfaced at the gate instead, as a correction round.
+
+**So the remedy is not "write vaguer ACs".** Precision is what made the catch
+possible; the defect and its detection come from the same property. The remedy is on
+the reading side.
+
+### Transferable form
+
+**Before executing, run every AC that names a function or a procedure literally
+against the code — not charitably.** A charitable reading substitutes the AC the
+author meant, which is exactly the substitution that hides the defect. Where the
+literal reading fails, propose the substitute *and say it is a substitute*, at the
+plan hop where it costs one comment rather than at the gate where it costs a round.
+
+Both times the substitute was accepted unchanged. Neither cost more than a paragraph.
+
+**Generalises past ACs:** this is the same shape as
+[stated-check-must-be-run-literally] — a stated check returning the opposite when
+actually run. Here the check does not return the opposite; it cannot be run at all.
+
+---
+
+## S7-4 — A textual mutation that fails to apply is indistinguishable from a mutation that was not caught
+
+**Found:** MES-77, 2026-08-23, by CODE_CREATOR, live, in this ticket's own mutation
+sweep over `MCP.Conformance.MatchKey`.
+
+### What happened
+
+Six mutations were run against the new tests to show they discriminate. The fourth
+substituted a source line by exact-string anchor; the anchor was mistyped, so the
+patch script raised and **applied nothing**. The runner then executed the suite
+against the *unmutated* file and printed:
+
+```
+MUT offender not sorted (last, not first) -> 49 tests, 0 failures
+```
+
+which is the exact output a **genuinely uncaught mutation** produces. Read down a
+column of results, it is a finding: "this mutation is not detected". It is not one.
+Re-run against the real line, the mutation was caught — 1 failure.
+
+### The mechanism
+
+A mutation sweep reports the *suite's* verdict. It does not report whether the
+**mutation was applied**, and those are two different questions that share one output
+line. The failure is silent in the direction that matters: a mutation that never
+lands reads as a **gap in coverage**, which is the alarming direction, so it will be
+believed and acted on.
+
+This is the **gate-6a sentinel shape** arriving in mutation testing: a green (or here,
+a zero-failure) that means "the instrument did not fire" rather than "the answer is
+none". The project has recorded that shape against greps and against `hex.audit`;
+this is the same thing one layer over.
+
+**It is specific to TEXTUAL-anchor mutation.**
+`conformance/controls/manifest_mutation_sweep.exs` (S7-2's reference implementation)
+mutates **decoded JSON structurally** — `Map.put` on a parsed row — so it has no
+anchor to miss, and this entry is not a defect in it. The hazard belongs to any
+runner that patches source by exact string, which is the natural way to mutate code
+rather than data.
+
+### Transferable form
+
+**A mutation runner must assert the mutation LANDED, and report an anchor miss as a
+distinct outcome from a zero-failure run.** The cheap form is an anchor-count
+assertion (`count == 1`, so a missing *or* duplicated anchor both fail) plus a
+distinct label in the output — `ANCHOR MISS (no mutation applied; NOT a result)`
+rather than a test summary. That is what the corrected runner in this ticket printed.
+
+**The general rule:** whenever an instrument can fail in a way that produces a
+well-formed answer, the "did the instrument fire" question needs its own reported
+result, next to the answer and not folded into it.
