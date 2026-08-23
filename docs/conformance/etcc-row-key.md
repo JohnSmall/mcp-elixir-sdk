@@ -219,9 +219,17 @@ them is a finding.**
 
 The artefact is generated on the branch, so `run.tip` names the branch commit
 whose tree the rows were measured at — and the PM's squash-merge collapses that
-branch into a single commit on `main` and deletes it. **`git show` on the
-recorded `run.tip` will therefore fail for any copy generated before a merge**,
-including this one, whose `run.tip` was `8a305d3` on branch `MES-83`.
+branch into a single commit on `main` and deletes it. **The recorded `run.tip` is
+therefore left UNREFERENCED — on no branch — for any copy generated before a
+merge**, including this one, whose `run.tip` was `8a305d3` on branch `MES-83`.
+
+Measured at the merge gate rather than assumed: immediately after the squash and
+the branch delete, `git cat-file -e 8a305d3` still *succeeds*. The object is not
+gone, only unreferenced, and it survives until `git gc` prunes it. **That is
+worse than a clean failure, not better** — `git show` works today, works for
+whoever checks soon after, and stops working later with no signal and no
+diagnosable moment. A reader who verified once cannot conclude anything about
+the next reader.
 
 This is not drift and it does not weaken the artefact. The measurement happened;
 what is gone is the *address*, not the bytes. **`run.rows_md5` is the field to
