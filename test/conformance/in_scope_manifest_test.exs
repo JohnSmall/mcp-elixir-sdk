@@ -5,17 +5,57 @@ defmodule MCP.Conformance.InScopeManifestTest do
   properties that must hold of the COMMITTED file — read from disk, not from a
   fixture this test also builds.
 
-  ## What each test can actually fail on
+  ## What each test can actually fail on, in three tiers
 
-  `T1` is the load-bearing one and the only one that survives `/tmp` being
-  wiped: it compares the manifest to the committed CENSUSES, two files it does
-  not write. Everything else is internal consistency, which a wrong-but-tidy
-  manifest would satisfy.
+  The tiers are not a ranking of importance. They say what a green run is
+  EVIDENCE OF, and they differ in what a determined wrong answer would have to
+  do to survive them.
+
+    1. **Independent** — `T1`. It compares the manifest to the committed
+       CENSUSES, two files this tooling wrote from the run trees on a different
+       ticket and which the manifest generator does not author. A manifest
+       edited by hand disagrees with them. This is the tier that survives
+       `/tmp` being wiped.
+    2. **Consistency** — `T5`, and `T2`'s key test. These join the manifest to
+       `bucket-0`, or the manifest to itself. `bucket-0` is GENERATED FROM the
+       manifest, so agreement between them is not provenance: a fabrication
+       that regenerated both would agree. It catches every SINGLE-FILE edit,
+       which is the whole of what has ever gone wrong here, and it reaches the
+       152 SUCCESS rows that no census `failed_checks` list mentions.
+    3. **Internal** — everything else. A wrong-but-tidy manifest satisfies it.
 
   Stated plainly because a test suite's greenness is easy to over-read: **none
   of these proves the manifest was derived from the accepted RUN TREES**. Those
   are not committed, so the `checks_sha256` values are unverifiable once /tmp is
-  cleared. That is residual R6, tracked as MES-72.
+  cleared. That is residual R6, tracked as MES-72 — narrowed by MES-75, not
+  closed.
+
+  ## What tier 1 pins, exactly (MES-75)
+
+  `T1` used to compare only each scenario's check TOTAL, so a row whose status
+  was flipped from FAILURE to SUCCESS changed no count, changed no key, and
+  passed the whole suite. `status` is the field A5 applied the match-target rule
+  to and the field C1 computes the verdict pair from, so that drift would have
+  moved every bucket in the epic and nothing would have noticed.
+
+  It now compares, per scenario:
+
+    * the FULL status distribution — `SUCCESS / FAILURE / WARNING / SKIPPED /
+      INFO / total` — against the census's `checks` block; and
+    * the manifest's FAILURE|WARNING rows against the census's `failed_checks`,
+      on id, name, status AND message.
+
+  `failed_checks` is FAILURE|WARNING only, by construction at
+  `conformance/lib/mcp/conformance/census.ex:935`
+  (`for c <- checks, c["status"] in ["FAILURE", "WARNING"]`). SKIPPED and INFO
+  never appear in it, so the 2 SKIPPED rows are pinned by the distribution
+  above and by nothing finer. Their `errorMessage` is pinned by no committed
+  artefact at all — see R6.
+
+  Both tests iterate the CENSUS's in-scope set and demand a manifest entry for
+  each, never the reverse. Driven from the manifest they would both be
+  vacuously green on an empty one, which is the exact shape of defect this file
+  exists to reject.
 
   ## The controls (C1-C3), and why they are here rather than in a run log
 
@@ -24,6 +64,13 @@ defmodule MCP.Conformance.InScopeManifestTest do
   the failure mode, so the case against `details` and against global ordinal is
   a result rather than a paragraph. They need nothing outside this repository,
   so they keep discriminating long after the run trees are gone.
+
+  The same argument applies to this file as a whole, and it is discharged the
+  same way: `conformance/controls/manifest_mutation_sweep.exs` mutates the
+  committed manifest one row at a time and reads this suite's verdict off each
+  mutation. What these tests reject is therefore a measured result, and the
+  mutation DEFINITIONS are committed alongside the runner so the measurement
+  can be repeated rather than reconstructed from prose (S7-1).
   """
 
   use ExUnit.Case, async: true
@@ -31,6 +78,7 @@ defmodule MCP.Conformance.InScopeManifestTest do
   alias MCP.Conformance.InScope
 
   @manifest_path "docs/conformance/in-scope-2026-07-28.json"
+  @bucket_zero_path "docs/conformance/bucket-0-2026-07-28.json"
   @censuses %{
     "server" => "docs/conformance/server-2026-07-28.json",
     "client" => "docs/conformance/client-2026-07-28.json"
@@ -38,11 +86,17 @@ defmodule MCP.Conformance.InScopeManifestTest do
 
   setup_all do
     manifest = @manifest_path |> File.read!() |> Jason.decode!()
+    bucket_zero = @bucket_zero_path |> File.read!() |> Jason.decode!()
 
     censuses =
       Map.new(@censuses, fn {leg, path} -> {leg, path |> File.read!() |> Jason.decode!()} end)
 
-    %{manifest: manifest, censuses: censuses, rows: rows(manifest)}
+    %{
+      manifest: manifest,
+      bucket_zero: bucket_zero,
+      censuses: censuses,
+      rows: rows(manifest)
+    }
   end
 
   describe "T1 — the manifest agrees with the committed censuses" do
@@ -70,20 +124,73 @@ defmodule MCP.Conformance.InScopeManifestTest do
       end
     end
 
-    test "every scenario's check count equals the count the census records for it", %{
+    # Was: `total` alone. A flipped status changes no total, so the assertion
+    # this replaces was green on the one mutation it most needed to reject.
+    # Comparing the whole distribution strictly subsumes it — the census's
+    # `checks` block carries `total` as one of its keys — so nothing is given up.
+    test "every scenario's FULL status distribution is the one the census records", %{
       manifest: manifest,
       censuses: censuses
     } do
-      for entry <- manifest["scenarios"] do
-        census = Map.fetch!(censuses, entry["leg"])
-        scenario = Enum.find(census["scenarios"], &(&1["id"] == entry["scenario"]))
+      by_scenario =
+        Map.new(manifest["scenarios"], &{{&1["leg"], &1["scenario"]}, &1})
 
-        assert scenario, "#{entry["leg"]}/#{entry["scenario"]} is not in the census at all"
+      # Driven from the CENSUS. An empty manifest must fail this, not skip it.
+      for {leg, census} <- censuses,
+          scenario <- census["scenarios"],
+          InScope.in_scope?(leg, scenario) do
+        entry = by_scenario[{leg, scenario["id"]}]
 
-        assert length(entry["checks"]) == scenario["checks"]["total"],
-               "#{entry["leg"]}/#{entry["scenario"]}: manifest carries " <>
-                 "#{length(entry["checks"])} rows, census records " <>
-                 "#{scenario["checks"]["total"]}"
+        assert entry,
+               "#{leg}/#{scenario["id"]} is in scope by the rule but absent from the manifest"
+
+        assert distribution(entry["checks"]) == scenario["checks"],
+               "#{leg}/#{scenario["id"]}: manifest rows give " <>
+                 "#{inspect(distribution(entry["checks"]))}, census records " <>
+                 "#{inspect(scenario["checks"])}"
+      end
+    end
+
+    # AC2. The census's `failed_checks` is FAILURE|WARNING only — `census.ex:935`
+    # — so this is the manifest's 21 non-passing rows compared on every field
+    # both files carry, and NOT "every non-passing check": the 2 SKIPPED rows
+    # appear in no `failed_checks` list and are pinned by the distribution above.
+    #
+    # A sorted LIST, not a MapSet. The three `field_issue`-tied rows are
+    # `sep-2575-http-server-meta-invalid-400` three times over with the same id,
+    # name, status and message; a set collapses them to one and stops noticing
+    # if two go missing. Equality is bidirectional, so a dropped row and an
+    # invented row both fail.
+    test "every scenario's FAILURE|WARNING rows match the census's failed_checks", %{
+      manifest: manifest,
+      censuses: censuses
+    } do
+      by_scenario =
+        Map.new(manifest["scenarios"], &{{&1["leg"], &1["scenario"]}, &1})
+
+      for {leg, census} <- censuses,
+          scenario <- census["scenarios"],
+          InScope.in_scope?(leg, scenario) do
+        entry = by_scenario[{leg, scenario["id"]}]
+
+        assert entry,
+               "#{leg}/#{scenario["id"]} is in scope by the rule but absent from the manifest"
+
+        actual =
+          entry["checks"]
+          |> Enum.filter(&(&1["status"] in ~w(FAILURE WARNING)))
+          |> Enum.map(&{&1["id"], &1["name"], &1["status"], &1["errorMessage"]})
+          |> Enum.sort()
+
+        expected =
+          (scenario["failed_checks"] || [])
+          |> Enum.map(&{&1["id"], &1["name"], &1["status"], &1["message"]})
+          |> Enum.sort()
+
+        assert actual == expected,
+               "#{leg}/#{scenario["id"]}: non-passing rows disagree with the census. " <>
+                 "only in manifest: #{inspect(actual -- expected)}; " <>
+                 "only in census: #{inspect(expected -- actual)}"
       end
     end
 
@@ -122,14 +229,24 @@ defmodule MCP.Conformance.InScopeManifestTest do
       end
     end
 
-    test "the census and the manifest agree that no in-scope scenario is an auth/ one", %{
-      manifest: manifest
-    } do
-      client = Enum.filter(manifest["scenarios"], &(&1["leg"] == "client"))
+    # Over BOTH legs since MES-75. It used to run over the client leg only,
+    # mirroring a scope rule that excluded `auth/` on the client leg only, so
+    # the asymmetry was carried identically by the rule and by its guard and
+    # neither could catch the other. `in_scope?/2` now excludes the namespace on
+    # both legs; this is the assertion that says so, rather than a comment.
+    test "no in-scope scenario on EITHER leg is an auth/ one", %{manifest: manifest} do
+      for leg <- ~w(server client) do
+        offenders =
+          manifest["scenarios"]
+          |> Enum.filter(&(&1["leg"] == leg))
+          |> Enum.map(& &1["scenario"])
+          |> Enum.filter(&String.starts_with?(&1, "auth/"))
 
-      refute Enum.any?(client, &String.starts_with?(&1["scenario"], "auth/")),
-             "the auth/ namespace is out of 2.0.0 by ADR-003; deriving scope from " <>
-               "classification.class instead readmits auth/resource-mismatch because it PASSES"
+        assert offenders == [],
+               "#{leg}: the auth/ namespace is out of 2.0.0 by ADR-003, in scope anyway: " <>
+                 "#{inspect(offenders)}. Deriving scope from classification.class instead " <>
+                 "readmits auth/resource-mismatch because it PASSES"
+      end
     end
   end
 
@@ -160,6 +277,29 @@ defmodule MCP.Conformance.InScopeManifestTest do
 
       assert manifest["check_key"]["fields"] == InScope.key_fields()
       assert Enum.all?(keys, &(length(&1) == 6))
+    end
+
+    # Tier 3, and named as such: the key is built FROM these fields by
+    # `InScope.key_checks/3`, so this is the file agreeing with itself. It earns
+    # its place by catching the one thing the census-driven tests structurally
+    # cannot — a SUCCESS row's identity fields edited without its key, which no
+    # `failed_checks` list mentions and no count moves.
+    test "every row's key is its own six fields, not a value stored beside them", %{rows: rows} do
+      drifted =
+        Enum.reject(rows, fn row ->
+          row["key"] == [
+            row["leg"],
+            row["scenario"],
+            row["id"],
+            row["name"],
+            row["description"],
+            row["discriminator"]
+          ]
+        end)
+
+      assert drifted == [],
+             "#{length(drifted)} rows carry a key that disagrees with their own fields: " <>
+               inspect(Enum.map(drifted, &{&1["key"], &1["id"], &1["name"], &1["description"]}))
     end
   end
 
@@ -249,6 +389,67 @@ defmodule MCP.Conformance.InScopeManifestTest do
       assert Enum.sort(Map.keys(by_id)) == ~w(R1 R2 R3 R4 R5 R6)
       assert by_id["R5"]["status"] =~ "CLOSED"
       assert by_id["R6"]["status"] =~ "MES-72"
+    end
+  end
+
+  describe "T5 — the manifest and bucket-0 agree, on keys AND on status" do
+    @describetag :consistency
+
+    # WHAT THIS IS, so its name does not imply more than it delivers.
+    #
+    # `bucket-0-2026-07-28.json` is GENERATED FROM this manifest — `mix
+    # conformance.bucket_zero --manifest docs/conformance/in-scope-2026-07-28.json`
+    # — so this is a CONSISTENCY join between two artefacts, one of which is
+    # downstream of the other. It is NOT provenance and it is not tier 1: a
+    # fabrication that regenerated both would agree, and neither file traces to
+    # a run tree here.
+    #
+    # What it does buy, and why it is worth a test rather than a paragraph: the
+    # key's six fields CONTAIN id, name and description, so bucket-0 pins the
+    # identity and the status of all 175 rows including the 152 SUCCESS ones.
+    # Those are exactly the rows tier 1 cannot reach, because a passing check
+    # appears in no `failed_checks` list. Every defect this artefact has
+    # actually suffered has been a single-file edit, and a single-file edit is
+    # what this catches.
+    #
+    # `bucket_zero_test.exs` already holds the key SETS equal from A5's side.
+    # This is stated from A1's side and adds per-row STATUS, which nothing held
+    # before MES-75 — and status is the field A5's rule and C1's verdict pair
+    # both read.
+    test "the key sets are equal in both directions", %{
+      rows: rows,
+      bucket_zero: bucket_zero
+    } do
+      manifest_keys = MapSet.new(rows, & &1["key"])
+      bucket_keys = MapSet.new(bucket_zero["checks"], & &1["key"])
+
+      assert MapSet.difference(manifest_keys, bucket_keys) |> MapSet.to_list() == [],
+             "keys in the manifest that bucket-0 does not address"
+
+      assert MapSet.difference(bucket_keys, manifest_keys) |> MapSet.to_list() == [],
+             "keys bucket-0 addresses that the manifest does not carry"
+    end
+
+    # Driven from BUCKET-0 and demanding a manifest row for each of its keys,
+    # for the same reason T1's two are driven from the censuses: iterated over
+    # the manifest instead, this is vacuously green on an empty one. Measured,
+    # not assumed — written the other way round it was silent under the sweep's
+    # EMPTY mutation while the key-set test above caught it.
+    test "every row bucket-0 addresses is present, and agrees on status", %{
+      rows: rows,
+      bucket_zero: bucket_zero
+    } do
+      by_key = Map.new(rows, &{&1["key"], &1["status"]})
+
+      disagreeing =
+        for check <- bucket_zero["checks"],
+            by_key[check["key"]] != check["status"],
+            do: {check["key"], by_key[check["key"]], check["status"]}
+
+      assert disagreeing == [],
+             "#{length(disagreeing)} of bucket-0's #{length(bucket_zero["checks"])} rows are " <>
+               "absent from the manifest or disagree on status " <>
+               "{key, manifest, bucket-0}: #{inspect(disagreeing)}"
     end
   end
 
@@ -351,6 +552,18 @@ defmodule MCP.Conformance.InScopeManifestTest do
 
   defp identity(row),
     do: {row["leg"], row["scenario"], row["id"], row["name"], row["description"]}
+
+  # Shaped to equal the census's `checks` block exactly: all five statuses
+  # present with an explicit zero, plus `total`. A distribution that omitted its
+  # zeroes would compare unequal to a census that states them, and — worse —
+  # would make a status vanishing from a scenario look like a key that was never
+  # there rather than a count that moved.
+  defp distribution(checks) do
+    checks
+    |> Enum.frequencies_by(& &1["status"])
+    |> Enum.into(%{"SUCCESS" => 0, "FAILURE" => 0, "WARNING" => 0, "SKIPPED" => 0, "INFO" => 0})
+    |> Map.put("total", length(checks))
+  end
 
   # Rows a crosswalk keyed this way would silently absorb into another.
   defp losses(rows, keyer) do

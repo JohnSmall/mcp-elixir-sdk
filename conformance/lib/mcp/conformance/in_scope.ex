@@ -12,8 +12,28 @@ defmodule MCP.Conformance.InScope do
 
   ## The scope rule, and the derivation that looks right and is not
 
-  In scope is **the scored scenarios, minus (client leg) everything in the
-  `auth/` namespace** — ADR-003 puts the authorization profile out of 2.0.0.
+  In scope is **the scored scenarios, minus everything in the `auth/`
+  namespace, on both legs** — ADR-003 puts the authorization profile out of
+  2.0.0.
+
+  ### Why the exclusion is applied to the server leg, which has no auth/ scenarios
+
+  It applies to both legs since MES-75, and it changed no row: the server
+  census carries 50 scenarios and **0** in the namespace, against the client's
+  39 and 31. So this is not a fix; it is the rule and the code saying the same
+  thing.
+
+  Before, `in_scope?("server", _)` was `scored` alone. That is a fact about
+  TODAY'S HARNESS wearing the clothes of an ADR: ADR-003 puts the authorization
+  **profile** out of the release, not the client leg's copy of it. A server-side
+  `auth/` scenario in a later harness would have been silently in scope, and it
+  would have widened the denominator every downstream ticket counts against.
+
+  **What this does NOT buy, stated because the tempting claim is wrong.** It
+  does not make that future scenario fail loudly. With the guard it would be
+  silently EXCLUDED; without it, silently INCLUDED. Neither is loud. The case
+  for the guard is correct-by-default, and the mechanism that makes a harness
+  change visible is R3's forced re-derivation, not this clause.
 
   The namespace is a fact the HARNESS authors. Deriving scope instead from our
   own census `classification.class` — "scored and not `out_of_scope_adr_003`" —
@@ -150,9 +170,15 @@ defmodule MCP.Conformance.InScope do
   Two arguments rather than one because the rule is per leg, and a single
   predicate that guessed the leg from the scenario id would be the same class
   of silent wrongness this module exists to avoid.
+
+  The two clauses now have the same body, and they are kept apart deliberately.
+  Collapsing them to one clause over any binary would make an unrecognised leg
+  return an answer instead of raising, and a leg this module has never heard of
+  is a refusal, not a default. The clauses being equal is a fact about the
+  current rule, not a licence to stop stating it per leg.
   """
   @spec in_scope?(String.t(), map()) :: boolean()
-  def in_scope?("server", scenario), do: !!scenario["scored"]
+  def in_scope?("server", scenario), do: !!scenario["scored"] and not auth?(scenario["id"])
   def in_scope?("client", scenario), do: !!scenario["scored"] and not auth?(scenario["id"])
 
   @doc """
@@ -175,9 +201,13 @@ defmodule MCP.Conformance.InScope do
       "derivation" => %{
         "rule" =>
           "In scope = the SCORED scenarios of the frozen #{@revision} requirement set, " <>
-            "minus (client leg only) every scenario in the `auth/` namespace, which ADR-003 " <>
+            "minus every scenario in the `auth/` namespace ON BOTH LEGS, which ADR-003 " <>
             "puts out of 2.0.0. Scope is read from the scenario id's namespace — a fact the " <>
-            "harness authors — and NEVER from our own classification table.",
+            "harness authors — and NEVER from our own classification table. The namespace " <>
+            "exclusion applied to the client leg alone until MES-75; it selects no server " <>
+            "scenario today (server census: 50 scenarios, 0 in `auth/`), so applying it to " <>
+            "both legs moved no row. It is applied to both because ADR-003 puts the " <>
+            "authorization PROFILE out of 2.0.0, not the client leg's copy of it.",
         "why_not_classification" =>
           "`classification.class` explains why a scenario FAILED, so it is null for every " <>
             "scenario that passes. Filtering on it readmits `auth/resource-mismatch` (scored, " <>
@@ -454,15 +484,33 @@ defmodule MCP.Conformance.InScope do
       },
       %{
         "id" => "R6",
-        "status" => "OPEN — tracked as MES-72",
+        "status" => "OPEN — tracked as MES-72; NARROWED by MES-75, not closed",
         "text" =>
           "This manifest's rows are derived from run trees that live only in /tmp. The " <>
             "`checks_sha256` values recorded above become unverifiable once those trees are " <>
-            "cleared, so provenance here is by ASSERTION, not by reproduction — the opposite " <>
-            "of what S6-4 established for censuses. The manifest's agreement with the " <>
-            "COMMITTED censuses (test T1) is what survives a /tmp wipe, and it is weaker: it " <>
-            "checks scenario membership and per-scenario check counts, not the content of any " <>
-            "row."
+            "cleared, so PROVENANCE here is by ASSERTION, not by reproduction — the opposite " <>
+            "of what S6-4 established for censuses. What survives a /tmp wipe is enumerated " <>
+            "below rather than described as 'weaker', because that word is what let this sit " <>
+            "for a sprint reading as though the committed data pinned nothing about row " <>
+            "content. It pins most of it, in three tiers that fail differently (A2d).",
+        "pinned_independently" =>
+          "By the COMMITTED CENSUSES, which this generator does not author (test T1): every " <>
+            "in-scope scenario's membership; its FULL check status distribution " <>
+            "(SUCCESS/FAILURE/WARNING/SKIPPED/INFO/total); and the complete content — id, " <>
+            "name, status, message — of all 21 FAILURE|WARNING rows. `failed_checks` is " <>
+            "FAILURE|WARNING by construction (census.ex:935), so it reaches no other row.",
+        "pinned_consistently" =>
+          "By `docs/conformance/bucket-0-2026-07-28.json` (test T5): all 175 keys, in both " <>
+            "directions, and every row's status. The key's six fields contain id, name and " <>
+            "description, so this reaches the 152 SUCCESS rows that no `failed_checks` list " <>
+            "mentions. It is NOT provenance: bucket-0 is generated FROM this manifest, so a " <>
+            "fabrication that regenerated both would agree. It catches every single-file " <>
+            "edit, which is the only way this artefact has ever been wrong.",
+        "not_pinned" =>
+          "Independently of this manifest, nothing commits the identity fields of the 152 " <>
+            "SUCCESS rows, and nothing at all commits the `errorMessage` of the 2 SKIPPED " <>
+            "rows. The /tmp run trees remain the only artefact that would, and that is the " <>
+            "residual MES-72 still tracks."
       }
     ]
   end

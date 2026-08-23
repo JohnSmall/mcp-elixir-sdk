@@ -363,7 +363,7 @@
         "scenario": "json-schema-2020-12-preservation"
       }
     ],
-    "rule": "In scope = the SCORED scenarios of the frozen 2026-07-28 requirement set, minus (client leg only) every scenario in the `auth/` namespace, which ADR-003 puts out of 2.0.0. Scope is read from the scenario id's namespace — a fact the harness authors — and NEVER from our own classification table.",
+    "rule": "In scope = the SCORED scenarios of the frozen 2026-07-28 requirement set, minus every scenario in the `auth/` namespace ON BOTH LEGS, which ADR-003 puts out of 2.0.0. Scope is read from the scenario id's namespace — a fact the harness authors — and NEVER from our own classification table. The namespace exclusion applied to the client leg alone until MES-75; it selects no server scenario today (server census: 50 scenarios, 0 in `auth/`), so applying it to both legs moved no row. It is applied to both because ADR-003 puts the authorization PROFILE out of 2.0.0, not the client leg's copy of it.",
     "why_not_classification": "`classification.class` explains why a scenario FAILED, so it is null for every scenario that passes. Filtering on it readmits `auth/resource-mismatch` (scored, 1 check, passing) and yields a plausible 8 scenarios / 57 checks against the correct 7 / 56."
   },
   "generated_by": "mix conformance.in_scope",
@@ -468,8 +468,11 @@
     },
     {
       "id": "R6",
-      "status": "OPEN — tracked as MES-72",
-      "text": "This manifest's rows are derived from run trees that live only in /tmp. The `checks_sha256` values recorded above become unverifiable once those trees are cleared, so provenance here is by ASSERTION, not by reproduction — the opposite of what S6-4 established for censuses. The manifest's agreement with the COMMITTED censuses (test T1) is what survives a /tmp wipe, and it is weaker: it checks scenario membership and per-scenario check counts, not the content of any row."
+      "not_pinned": "Independently of this manifest, nothing commits the identity fields of the 152 SUCCESS rows, and nothing at all commits the `errorMessage` of the 2 SKIPPED rows. The /tmp run trees remain the only artefact that would, and that is the residual MES-72 still tracks.",
+      "pinned_consistently": "By `docs/conformance/bucket-0-2026-07-28.json` (test T5): all 175 keys, in both directions, and every row's status. The key's six fields contain id, name and description, so this reaches the 152 SUCCESS rows that no `failed_checks` list mentions. It is NOT provenance: bucket-0 is generated FROM this manifest, so a fabrication that regenerated both would agree. It catches every single-file edit, which is the only way this artefact has ever been wrong.",
+      "pinned_independently": "By the COMMITTED CENSUSES, which this generator does not author (test T1): every in-scope scenario's membership; its FULL check status distribution (SUCCESS/FAILURE/WARNING/SKIPPED/INFO/total); and the complete content — id, name, status, message — of all 21 FAILURE|WARNING rows. `failed_checks` is FAILURE|WARNING by construction (census.ex:935), so it reaches no other row.",
+      "status": "OPEN — tracked as MES-72; NARROWED by MES-75, not closed",
+      "text": "This manifest's rows are derived from run trees that live only in /tmp. The `checks_sha256` values recorded above become unverifiable once those trees are cleared, so PROVENANCE here is by ASSERTION, not by reproduction — the opposite of what S6-4 established for censuses. What survives a /tmp wipe is enumerated below rather than described as 'weaker', because that word is what let this sit for a sprint reading as though the committed data pinned nothing about row content. It pins most of it, in three tiers that fail differently (A2d)."
     }
   ],
   "revision": "2026-07-28",
