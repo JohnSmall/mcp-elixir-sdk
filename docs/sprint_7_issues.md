@@ -314,3 +314,62 @@ rather than a test summary. That is what the corrected runner in this ticket pri
 **The general rule:** whenever an instrument can fail in a way that produces a
 well-formed answer, the "did the instrument fire" question needs its own reported
 result, next to the answer and not folded into it.
+
+---
+
+## S7-5 — A re-point can remove the last witness for a property that no individual test ever claimed to be testing
+
+**Found:** MES-77, 2026-08-23, by CODE_REVIEWER, with a mutation of its own (CR-M8)
+after the PM asked for one in the over-strict direction. Surviving mutation, so the
+gap was demonstrated and not inferred.
+
+### What happened
+
+Ruling (3) on MES-77 deliberately preserved `MatchKey.none/2`'s open contract: it
+accepts a heading-only origin id such as a bare `CG4`. The same ruling re-pointed
+`match_key_test.exs:152,194` away from that form onto the new `none/3` builder,
+because the heading-only form is forbidden *in the new scheme*.
+
+CR-M8 then made `none/2` **reject** a heading-only id — inverting the preserved
+contract — and gate 5 returned **49 tests, 0 failures**, with the mutation confirmed
+applied. The property was unwitnessed.
+
+The mechanism, established rather than guessed: after the re-point, the only surviving
+`none/2` call anywhere in `test/` was `match_key_test.exs:545`, which passes
+`T-CG1a` — and that **contains a hyphen**. The natural way to implement the forbidden
+strictness is "must contain a separator", and the sole remaining witness happened to
+satisfy it. The two re-pointed tests had been the last hyphen-free callers.
+
+### The mechanism
+
+Neither re-pointed test *claimed* to test the hyphen-free contract. Both were named
+and written for their decode and `guard_state/2` properties, and — checked line by
+line, before and after — they still assert exactly those. **The re-point was correct
+and lost nothing either test was for.** What left was a property those tests happened
+to witness as a side effect of their fixture data.
+
+That is what makes this different from S7-3's family and from an ordinary regression:
+there is no wrong assertion to find and no reviewer reading either test would notice,
+because the property's name appears in neither. A test's fixture values are load-bearing
+for properties beyond the one in its name, and **changing a fixture is not visibly a
+coverage change**.
+
+Two bounds, so this is not read as larger than it is. The property was never
+*uncovered* — the AC4 control catches CR-M8 (rc=1, `MatchError` at
+`native_id_collision.exs:78`, which builds `none(reason, "CG7")`). So the coverage had
+moved **out of the gate and into a control run by hand**, which is pinned by whoever
+remembers to run it. And the behaviour itself was correct throughout; only its witness
+was gone.
+
+### Transferable form
+
+**When a ruling preserves a behaviour deliberately, pin it with a test whose NAME says
+so — otherwise the witness is a fixture value, and the next edit that changes the
+fixture removes it silently.** The remedy shipped in this ticket is one such test, and
+it was verified by re-running CR-M8 against it: 50 tests, 1 failure, the new test and
+only the new test.
+
+**The general rule:** a deliberate exception is exactly the thing no test is named
+after, because tests get named after the rule. Whoever writes the exception owes it a
+witness — and the seat that ruled the exception is the one who owes it, not the one who
+later trips over its absence.
