@@ -40,7 +40,12 @@ restored        -> 24 tests, 0 failures
 
 That table is the whole evidentiary basis for a ticket. **The script that
 produced it was never committed and no longer exists** —
-`grep -rl 'FLIP_STATUS\|FABRICATE_ROW' /tmp` returns nothing. What survived is
+`grep -rl 'FLIP_STATUS\|FABRICATE_ROW' /tmp` returned nothing **when taken,
+2026-08-23 at the start of this ticket**. Re-run after the ticket it returns many
+paths — this ticket's own committed script and its working copies. The dated
+qualifier is not pedantry: a stated check in a committed register must survive
+being re-run literally, and without the date this one now reads as refuted by
+the very work that fixed it. Raised by CODE_REVIEWER at the MES-75 merge gate. What survived is
 five numbers in a Jira comment, in a project whose standing rule is that every
 claim carries an address *and* the bytes at it.
 
@@ -138,3 +143,65 @@ result.** Commit the definitions with the number, or expect the next reader to
 reconstruct them from prose and to have no way of telling a bad reconstruction
 from a changed tree. A table in a comment is a claim; a table plus the script
 that emits it is a measurement.
+
+---
+
+## S7-2 — An interrupted mutation sweep leaves the tree falsified, and nothing marks it
+
+**Found:** MES-75 (Sprint 7), 2026-08-23, by the PM, from a lost CODE_REVIEWER turn.
+**Status:** open as a class. The reference remedy already exists in-tree — see below.
+
+**Sibling of [S7-1](#s7-1), and they fail in opposite directions.** S7-1 *loses*
+information: the script goes, the number stays, and the next reader at least knows
+they are stuck. **S7-2 leaves false information behind** — a falsified artefact with
+no marker saying so, which the next reader measures against and gets a confident
+wrong answer from. That is the worse failure, and it is why this is a separate
+entry rather than a restatement.
+
+### What happened, measured
+
+```
+15:50:50Z  CODE_REVIEWER ASSIGNED + PICKUP   ticket=MES-75
+15:51:55Z  erl_crash.dump written in /tmp/cr75 (5.7 MB)
+             "Runtime terminating during boot ({badarg,[{io,put_chars,
+              [standard_error, ..."
+16:17:13Z  CODE_REVIEWER ENGINE_EXIT rc=0
+           comments posted: ZERO.  elapsed: 26 minutes
+```
+
+The turn ended mid-sweep. `/tmp/cr75` was left with an **uncommitted
+`FABRICATE_ROW` mutation still applied** to `docs/conformance/in-scope-2026-07-28.json`
+— `id` → `fabricated-check-id`, `description` → "a check that was never run", the
+six-field `key` left stale. Diff preserved at `/tmp/cr75-leftover-mutation.diff`;
+restored by the PM to md5 `f121edf6f18666cc27c44c4dfa8e7ac5`, verified against the
+committed blob rather than against an asserted number.
+
+### Why a restart is exactly when this bites
+
+Nobody re-checks a starting state that looks like the one they left. The seat would
+have resumed in a worktree it recognised, run the suite against a manifest with a
+fabricated row in it, and reported a verdict — and neither seat nor PM would have had
+any signal. The tree carries no marker distinguishing "mid-sweep" from "clean".
+
+**Bound, stated so the entry is not read as wider than it is.** Worktree isolation
+held: `main` and the branch were never touched. The exposure is confined to whoever
+next uses that worktree, which on a restart is the same seat.
+
+### Transferable form
+
+**A sweep's scaffolding and the sweep's lifetime are not the same length, and the
+tree is not a scratch buffer.** Anything that mutates a committed artefact in place
+must be able to restore it *without* reaching the end of its own happy path.
+
+### The remedy already exists and is committed
+
+`conformance/controls/manifest_mutation_sweep.exs`, delivered by this same ticket, is
+the reference implementation: it holds the original bytes in memory, restores after
+**every single run** rather than at the end of the batch, re-checks the md5 at exit,
+and exits non-zero if the restore did not take. CODE_REVIEWER built the same guard
+into its own independent runner and verified all five of its worktrees clean before
+removing them. The pattern is established; what is missing is anything that *requires*
+it.
+
+**Wording of the mechanism, the bound and the S7-1 contrast owed to CODE_REVIEWER's
+MES-75 merge-gate review.**
