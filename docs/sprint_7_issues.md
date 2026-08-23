@@ -373,3 +373,130 @@ only the new test.
 after, because tests get named after the rule. Whoever writes the exception owes it a
 witness — and the seat that ruled the exception is the one who owes it, not the one who
 later trips over its absence.
+
+## S7-6 — A ratification distributed across a comment thread cannot be relocated faithfully without per-element provenance, and a single comment id per element cannot carry it
+
+**Found:** MES-80, 2026-08-23, by CODE_CREATOR at the plan hop, while working out how to
+discharge an AC that asked for exactly one comment id per transcribed element.
+**Status:** CLOSED — the two-id scheme was ratified (MES-80 comment `25998`) and is what
+`docs/conformance/etcc-membership.md` uses. Recorded because the next
+definition-shaped deliverable will hit the same thing.
+
+### The defect
+
+MES-67 (A2) ratified the ET-CC membership criterion. Its acceptance criteria required the
+criterion to be **ratified**; nothing required it to be **written down anywhere durable**.
+A1, A3 and A4 all produced files because their deliverables were file-shaped. A2's was
+definition-shaped, and the brief did not notice the difference — the PM's own diagnosis, in
+MES-80's body.
+
+So the criterion lived only in the thread, and the thread is not a document. Measured:
+**14 of MES-67's 21 comments carry ratified criterion text** — `25596`, `25597`, `25598`,
+`25600`, `25601`, `25603`, `25604`, `25605`, `25610`, `25612`, `25613`, `25614`, `25615`,
+`25616` — written by **three different seats** across a plan hop, a ratification, a
+close-out, a review and a correction round.
+
+### The mechanism — why one id per element is not merely thin, but wrong
+
+**The unit of ratification is not the comment. It is the element, and an element has two
+events that need not be in the same comment or by the same seat.**
+
+| element | authored at | ratified at |
+| --- | --- | --- |
+| gate 2's decision procedure | `25610` — **CODE_REVIEWER**, as a review *recommendation* | `25612` — PM, *"I am ruling it in"* |
+| the `ET-ADJ` positive test | `25603` — CODE_CREATOR, as a flagged **deviation** from the PM's condition | `25612` — PM, withdrawing their own condition as "the weaker formulation" |
+| gate 4 records, never excludes | `25596` — PM, as an amendment **in the dispatch** | `25601` — PM, after CC argued for it |
+
+A single-id citation on the first row must either **attribute a ratified rule to a review
+recommendation** or **lose where it came from**. There is no third option. The scheme the
+AC specified could not have carried that element correctly.
+
+Two consequences follow immediately, and neither is available from one id:
+
+1. **An element with an authored-at and no ratified-at is a PROPOSAL.** Without the
+   distinction, transcribing the *ratification* and transcribing the *conversation* are the
+   same operation, and nothing afterwards can tell them apart.
+2. **Superseded values are indistinguishable from current ones.** Two of MES-67's nine
+   worked examples were corrected after first statement — example 4 from `47 / 0` to
+   `31 ET-CC / 16 ET-OUT` (`25604` → `25613`) and example 5 from `9/2/2` to `6/5/2`
+   (`25605` → `25614`). A transcription that takes a first statement puts a figure the PM
+   has since ruled **wrong** into the file the next three tickets read.
+
+### Why "regenerate and diff" was not available, which is the reason it needed a scheme at all
+
+Every other artefact in `docs/conformance/` has a generator, so its provenance is proved by
+regenerating it and diffing. A transcription has no generator. **The check has to be
+carried by the document itself** — every element naming the ids it came from, so a reader
+can walk each row back — and anything in the document with no id behind it is an addition
+rather than an edit.
+
+### Transferable form
+
+**When a deliverable is definition-shaped rather than file-shaped, the brief must name the
+file, and the relocation must carry per-element `authored-at | ratified-at` provenance.**
+One id per element is not a lighter version of this; it is a scheme that cannot express a
+rule authored by one seat and ruled in by another, which is the normal case in a mediated
+`PM→CC→PM→CR→PM` flow.
+
+**Generalises:** the general form is that **a brief whose output is a ruling rather than a
+file must name the file, or the ruling lives only in Jira comments** — the class MES-80's
+own body names, alongside MES-78. It also has S6-5's shape one level up: N consumers
+reconstructing one rule from a conversation, each reconstructing a slightly different rule,
+with nothing to detect the divergence.
+
+---
+
+## S7-7 — A literal reading is the right discipline for a named IDENTIFIER and the wrong one for a named CARDINALITY. Amends S7-3's remedy.
+
+**Found:** MES-80, 2026-08-23, by the PM, in the PM's own brief, one ticket after S7-3 was
+written — and corrected before dispatch (MES-80 comment `25994`).
+**Status:** OPEN as an amendment to [S7-3](#s7-3). S7-3's finding stands; its **remedy** is
+under-specified and this entry narrows it. Appended rather than edited in place, because
+the register is append-only.
+
+### The instance
+
+MES-80's brief, in draft, said *"the **nine** comments on MES-67 are the record"* — twice,
+once inside the sentence **"anything not in them is not ratified."** MES-67 carries **21**.
+The PM counted them rather than trusting their own text, and corrected the brief before
+dispatch.
+
+### Why it is not simply a third data point for S7-3
+
+S7-3's remedy is: *"run every AC that names a function or a procedure literally, not
+charitably, because the charitable reading substitutes the AC the author meant and that
+substitution is what hides the defect."*
+
+**Here the literal reading was the harmful one and the charitable reading was safe** — the
+reverse. Read literally, "the nine comments are the record, anything not in them is not
+ratified" instructs a seat to pick nine comments and treat twelve ratified ones as
+non-existent. Read charitably — "all of them" — it is correct.
+
+### The mechanism — the two cases are one rule stated at the wrong altitude
+
+The difference is **what kind of thing the AC names.**
+
+| the AC names | wrong value fails… | so the right discipline is |
+| --- | --- | --- |
+| an **identifier** — a function, a file, a procedure (`encode/1`; "regenerate and diff") | **closed**. The identifier does not exist, or the procedure cannot be run. It fails loudly, at the plan hop, for free. | **read it literally.** The literal reading is what surfaces the failure; the charitable reading substitutes a working identifier and buries it. |
+| a **cardinality** — a count of a population (`nine` comments; `537` tests; `37` tests in a file) | **open**. A wrong count still names a real, non-empty set. It selects a subset and returns success, and *from inside, a subset and the whole read identically*. | **neither. Re-derive it from the source.** Reading it literally selects the wrong subset; reading it charitably discards the figure the author may have meant precisely. |
+
+So S7-3's remedy is right about identifiers and does not reach cardinalities. A count in an
+AC is not a claim to be read at all — it is a **measurement to be re-run**, and the register
+already carries three instances of a count going wrong in exactly this way: S6-6's `537`
+declarations presented as `566` tests, MES-67's `37` tests in a file that holds `47` units,
+and now `nine` comments in a thread of `21`.
+
+### Transferable form
+
+**Read a named identifier literally; re-measure a named cardinality.** A figure in an AC is
+never evidence — it is a hypothesis about the tree, and the tree is one command away.
+
+The corollary is the part that costs nothing and is skipped anyway: **when an AC's figure
+turns out to be right, say that you re-derived it.** "579, re-measured at the delivered tip
+and it agrees" and "579" are the same number and different claims, and only the first one
+tells the next reader whether anybody checked.
+
+**Generalises:** [S7-1](#s7-1) is this rule applied across time rather than across
+documents — a figure that was true at the tip it was measured at, cited at a tip that has
+moved. Same object, same remedy: re-run it.
