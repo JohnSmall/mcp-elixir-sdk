@@ -213,7 +213,26 @@ disappears — which is §4.1 working: the artefact says *"could not run here"*,
 never *absent*.
 
 **So: a diff confined to those fields is expected host variation. A diff outside
-them is a finding.** In particular a diff in `key`, `module`, `name`,
+them is a finding.**
+
+### §5.2 `run.tip` names a commit the squash-merge makes UNREACHABLE. Verify against `rows_md5`.
+
+The artefact is generated on the branch, so `run.tip` names the branch commit
+whose tree the rows were measured at — and the PM's squash-merge collapses that
+branch into a single commit on `main` and deletes it. **`git show` on the
+recorded `run.tip` will therefore fail for any copy generated before a merge**,
+including this one, whose `run.tip` was `8a305d3` on branch `MES-83`.
+
+This is not drift and it does not weaken the artefact. The measurement happened;
+what is gone is the *address*, not the bytes. **`run.rows_md5` is the field to
+verify against** — it is a function of the rows alone, it survives the merge
+unchanged, and comparing it is what §5 already tells a reader to do. `run.tip`
+remains useful on an unmerged branch and as a record that a specific tree was
+measured; it is not a handle you can resolve after the fact.
+
+Recorded by the PM at MES-83's merge gate, because the merge is what creates the
+condition — B3 could not have avoided it without regenerating after every commit,
+which moves the tip again. There is no fixed point here, only a field to trust. In particular a diff in `key`, `module`, `name`,
 `test_type`, `file`, `line`, `describe` or `tags` is a finding regardless of
 host.
 
