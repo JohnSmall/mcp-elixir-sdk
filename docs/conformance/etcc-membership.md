@@ -555,6 +555,25 @@ not membership criterion** — it is a B4 finding about how a tag is applied. It
 as `S6-6` in `docs/sprint_6_issues.md` and routed to B4. It is named here so its absence
 from Part A reads as a decision rather than an omission.
 
+**(i-b) The membership/correctness separation is NOT in Part A, and that is a PM
+ruling rather than an oversight.** `25596` states it — *membership asks whether a test is
+a conformance CLAIM; whether the claim is RIGHT is a separate question answered
+downstream, so a wrong conformance claim is still a conformance claim* — and warns that a
+criterion excluding tests which contradict the official suite would empty bucket 4a by
+construction. **It is not transcribed, because no ratifying comment states it as a rule.**
+Under §0's own two-id scheme that makes it a proposal, and Part A admits only elements
+carrying both ids. Bending that rule for a rule the PM authored and agrees with is exactly
+the failure the scheme exists to prevent, so it is not bent here.
+
+**The rule is embodied in the criterion without being stated by it.** Gates 1-3 ask about
+scope, subject and referent; none of them asks whether an assertion is correct, so a
+sweeper applying Part A literally already cannot exclude on correctness. What Part A does
+not do is *forbid* a sweeper from adding that test themselves — which is the residual
+risk, and it is why this paragraph exists rather than the absence being left silent.
+**The obligation is discharged in the consuming briefs, not here:** MES-81 carries it as a
+named hazard, and MES-82 the same. Raised by CODE_REVIEWER at MES-80's review and ruled by
+the PM; recorded so the absence reads as a decision.
+
 **(ii) The "nine comments" figure does not reproduce.** `25616` says the criterion "lives
 across nine comments", and `docs/conformance/match-relation.md:8` repeats it. Counting the
 comments that carry ratified criterion text — the ids cited in Part A — gives **14**:
