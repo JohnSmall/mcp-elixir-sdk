@@ -92,6 +92,7 @@ defmodule MCP.Transport.StreamableHTTPCacheScopeWarningTest do
 
   # --- AC7(c): exactly once across N requests (config-time, not per request) ---
 
+  @tag :etcc
   test "AC7(c): N requests against a warned configuration produce exactly ONE line" do
     log =
       capture_log(fn ->

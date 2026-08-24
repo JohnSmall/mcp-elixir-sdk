@@ -93,6 +93,7 @@ defmodule MCP.Transport.SelfCompatibilityTest do
 
   defp body(conn), do: Jason.decode!(conn.resp_body)
 
+  @tag :etcc
   test "REACHABILITY CONTROL: an encoded Mcp-Name is decoded before comparison, so our own client is not self-rejected" do
     name = Handler.tool_name()
     # Exactly what the client now puts on the wire for this name.
@@ -111,6 +112,7 @@ defmodule MCP.Transport.SelfCompatibilityTest do
     assert %{"content" => [%{"text" => "sunny"}]} = body(conn)["result"]
   end
 
+  @tag :etcc
   test "NEGATIVE CONTROL: an encoded header naming a DIFFERENT tool is still -32020" do
     # W2 must not become "stop comparing". This encodes a name the body does
     # not carry; decoding is what makes the mismatch visible.
@@ -125,6 +127,7 @@ defmodule MCP.Transport.SelfCompatibilityTest do
     assert body(conn)["error"]["code"] == -32_020
   end
 
+  @tag :etcc
   test "NEGATIVE CONTROL: a PLAIN mismatched header is still -32020" do
     conn =
       post(call_tool_message("weather"), [
@@ -137,6 +140,7 @@ defmodule MCP.Transport.SelfCompatibilityTest do
     assert body(conn)["error"]["code"] == -32_020
   end
 
+  @tag :etcc
   test "a plain header matching a plain name still passes — decoding leaves it alone" do
     conn =
       post(call_tool_message("unknown_but_matching"), [
@@ -152,6 +156,7 @@ defmodule MCP.Transport.SelfCompatibilityTest do
     refute body(conn)["error"]["code"] == -32_020
   end
 
+  @tag :etcc
   test "a sentinel-shaped header that is not valid Base64 is compared as-is, not crashed on" do
     conn =
       post(call_tool_message("weather"), [
@@ -164,6 +169,7 @@ defmodule MCP.Transport.SelfCompatibilityTest do
     assert body(conn)["error"]["code"] == -32_020
   end
 
+  @tag :etcc
   test "END TO END: our client calls our server's non-header-safe tool over real HTTP" do
     # The whole loop — client encodes, server decodes, tool runs. This is the
     # test that would have caught the self-incompatibility as a shipped bug.

@@ -52,6 +52,7 @@ defmodule MCP.Server.CapabilityHonestyTest do
       assert caps.prompts.list_changed == nil
     end
 
+    @tag :etcc
     test "absent, not present-and-false: the key never reaches the wire" do
       # `false` would be a different claim ("I support the concept and decline")
       # and is not what a server without the feature has ever sent. Assert the

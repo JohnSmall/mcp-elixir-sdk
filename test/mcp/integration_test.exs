@@ -124,6 +124,7 @@ defmodule MCP.IntegrationTest do
 
   # --- Tests ---
 
+  @tag :etcc
   test "connect discovers server capabilities via server/discover (no handshake)" do
     %{client: client} = start_pair()
     {:ok, result} = Client.connect(client)
@@ -134,6 +135,7 @@ defmodule MCP.IntegrationTest do
     assert Client.status(client) == :ready
   end
 
+  @tag :etcc
   test "tools: list, echo, add, isError, unknown" do
     %{client: client} = start_pair()
     {:ok, _} = Client.connect(client)
@@ -154,6 +156,7 @@ defmodule MCP.IntegrationTest do
     assert error.code == -32_601
   end
 
+  @tag :etcc
   test "resources: list, read, unknown, templates" do
     %{client: client} = start_pair()
     {:ok, _} = Client.connect(client)
@@ -171,6 +174,7 @@ defmodule MCP.IntegrationTest do
     assert length(templates["resourceTemplates"]) == 1
   end
 
+  @tag :etcc
   test "prompts: list, get, unknown" do
     %{client: client} = start_pair()
     {:ok, _} = Client.connect(client)
@@ -185,6 +189,7 @@ defmodule MCP.IntegrationTest do
     assert error.code == -32_601
   end
 
+  @tag :etcc
   test "completion/complete round-trips" do
     %{client: client} = start_pair()
     {:ok, _} = Client.connect(client)
@@ -195,6 +200,7 @@ defmodule MCP.IntegrationTest do
     assert result["completion"]["values"] == ["foo", "foobar"]
   end
 
+  @tag :etcc
   test "MRTR: call_tool transparently completes an input-required round-trip" do
     %{client: client} = start_pair(on_input_required: fn _requests -> [%{"name" => "Ada"}] end)
     {:ok, _} = Client.connect(client)

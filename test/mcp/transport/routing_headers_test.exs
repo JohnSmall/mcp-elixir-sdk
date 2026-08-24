@@ -86,6 +86,7 @@ defmodule MCP.Transport.RoutingHeadersTest do
   end
 
   describe "T-CG1a — Mcp-Method on every POST" do
+    @tag :etcc
     test "a request carries the body method", %{agent: agent, url: url} do
       transport = start_transport(url)
 
@@ -105,6 +106,7 @@ defmodule MCP.Transport.RoutingHeadersTest do
                ~w(server/discover tools/list resources/list prompts/list completion/complete)
     end
 
+    @tag :etcc
     test "a NOTIFICATION carries it too — the spec says all requests, not all responses-bearing ones",
          %{agent: agent, url: url} do
       transport = start_transport(url)
@@ -119,6 +121,7 @@ defmodule MCP.Transport.RoutingHeadersTest do
       assert headers_of(agent, 0)["mcp-method"] == "notifications/cancelled"
     end
 
+    @tag :etcc
     test "a message with no method carries no routing headers", %{agent: agent, url: url} do
       transport = start_transport(url)
       :ok = HTTPClient.send_message(transport, %{"jsonrpc" => "2.0", "id" => 1, "result" => %{}})
@@ -130,6 +133,7 @@ defmodule MCP.Transport.RoutingHeadersTest do
   end
 
   describe "T-CG1b — Mcp-Name for the three name-bearing methods" do
+    @tag :etcc
     test "tools/call and prompts/get take params.name; resources/read takes params.uri", %{
       agent: agent,
       url: url
@@ -158,6 +162,7 @@ defmodule MCP.Transport.RoutingHeadersTest do
       end
     end
 
+    @tag :etcc
     test "a method with no name target carries Mcp-Method but NO Mcp-Name", %{
       agent: agent,
       url: url
@@ -177,6 +182,7 @@ defmodule MCP.Transport.RoutingHeadersTest do
       refute Map.has_key?(headers, "mcp-name")
     end
 
+    @tag :etcc
     test "a tools/call whose params carry no name emits no Mcp-Name rather than an empty one", %{
       agent: agent,
       url: url
@@ -196,6 +202,7 @@ defmodule MCP.Transport.RoutingHeadersTest do
   end
 
   describe "T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel" do
+    @tag :etcc
     test "a non-ASCII tool name is encoded, and decodes back to the body value", %{
       agent: agent,
       url: url
@@ -219,6 +226,7 @@ defmodule MCP.Transport.RoutingHeadersTest do
       assert Enum.at(requests(agent), 0).message["params"]["name"] == name
     end
 
+    @tag :etcc
     test "a resource URI with a space is encoded", %{agent: agent, url: url} do
       transport = start_transport(url)
       uri = "file:///my documents/notes.md"
@@ -236,6 +244,7 @@ defmodule MCP.Transport.RoutingHeadersTest do
       assert headers_of(agent, 0)["mcp-name"] == uri
     end
 
+    @tag :etcc
     test "a name that would inject a header is neutralised", %{agent: agent, url: url} do
       transport = start_transport(url)
       hostile = "tool\r\nX-Injected: yes"
@@ -256,6 +265,7 @@ defmodule MCP.Transport.RoutingHeadersTest do
   end
 
   describe "the version header rides the message (D-4), on the wire" do
+    @tag :etcc
     test "it matches the body _meta, not the transport's configured default", %{
       agent: agent,
       url: url
@@ -304,6 +314,7 @@ defmodule MCP.Transport.RoutingHeadersTest do
       end
     end
 
+    @tag :etcc
     test "an annotated tool's arguments are mirrored, unannotated ones are not", %{
       agent: agent,
       url: url
@@ -339,6 +350,7 @@ defmodule MCP.Transport.RoutingHeadersTest do
       assert headers["mcp-name"] == "test_custom_headers"
     end
 
+    @tag :etcc
     test "a null argument omits its header", %{agent: agent, url: url} do
       respond_with(agent, tools_responder([@tool]))
 
@@ -356,6 +368,7 @@ defmodule MCP.Transport.RoutingHeadersTest do
       refute Map.has_key?(headers, "mcp-param-verbose")
     end
 
+    @tag :etcc
     test "with no prior tools/list, nothing is mirrored and the client says so", %{
       agent: agent,
       url: url

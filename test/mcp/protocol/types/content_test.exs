@@ -33,6 +33,7 @@ defmodule MCP.Protocol.Types.ContentTest do
       assert content.annotations.priority == 0.8
     end
 
+    @tag :etcc
     test "round-trips through JSON" do
       original = %TextContent{text: "test"}
       json = Jason.encode!(original)
@@ -55,6 +56,7 @@ defmodule MCP.Protocol.Types.ContentTest do
       assert content.mime_type == "image/png"
     end
 
+    @tag :etcc
     test "round-trips through JSON" do
       original = %ImageContent{data: "abc", mime_type: "image/jpeg"}
       json = Jason.encode!(original)
@@ -76,6 +78,7 @@ defmodule MCP.Protocol.Types.ContentTest do
       assert content.mime_type == "audio/wav"
     end
 
+    @tag :etcc
     test "round-trips through JSON" do
       original = %AudioContent{data: "xyz", mime_type: "audio/mp3"}
       json = Jason.encode!(original)
@@ -103,6 +106,7 @@ defmodule MCP.Protocol.Types.ContentTest do
       assert content.resource.text == "file contents"
     end
 
+    @tag :etcc
     test "round-trips through JSON" do
       alias MCP.Protocol.Types.ResourceContents
 
@@ -136,6 +140,7 @@ defmodule MCP.Protocol.Types.ContentTest do
       assert content.mime_type == "text/markdown"
     end
 
+    @tag :etcc
     test "round-trips through JSON" do
       original = %ResourceLink{uri: "file:///a", name: "a", mime_type: "text/plain"}
       json = Jason.encode!(original)

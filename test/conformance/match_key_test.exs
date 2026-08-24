@@ -600,7 +600,7 @@ defmodule MCP.Conformance.MatchKeyTest do
 
     test "REPEATS OF ONE ID WITH THE SAME CLAIM ARE LEGAL, and that is not a leniency" do
       # CG7's three constraint families are discharged by NINE ET-CC units
-      # (header_mirror_test.exs:113,120,133,156,168,194,205,222,231), so nine
+      # (header_mirror_test.exs:113,120,134,157,169,195,207,224,233), so nine
       # members legitimately share three native ids. A "no two members share an
       # id" rule would reject correct data.
       rows =

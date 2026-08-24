@@ -8,6 +8,7 @@ defmodule MCP.Protocol.MetaTest do
   defp params_with_meta(meta), do: %{"arguments" => %{}, "_meta" => meta}
 
   describe "from_params/1" do
+    @tag :etcc
     test "extracts the io.modelcontextprotocol/* keys" do
       meta =
         Meta.from_params(
@@ -42,6 +43,7 @@ defmodule MCP.Protocol.MetaTest do
       assert Meta.validate_protocol_version(meta, @version) == {:error, :missing}
     end
 
+    @tag :etcc
     test "mismatched (e.g. legacy 2025-11-25) → {:error, {:unsupported, got}}" do
       meta = Meta.from_meta(%{"io.modelcontextprotocol/protocolVersion" => "2025-11-25"})
 

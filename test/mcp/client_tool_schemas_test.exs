@@ -79,6 +79,7 @@ defmodule MCP.ClientToolSchemasTest do
   end
 
   describe "W6 — SEP-2243 tool exclusion" do
+    @tag :etcc
     test "an invalid tool is dropped and the valid ones are kept" do
       {client, transport} = start_client()
 
@@ -120,6 +121,7 @@ defmodule MCP.ClientToolSchemasTest do
       assert reason =~ "only string, integer and boolean are permitted"
     end
 
+    @tag :etcc
     test "an excluded tool leaves no annotations behind, so calling it mirrors nothing" do
       {client, transport} = start_client()
 
@@ -150,6 +152,7 @@ defmodule MCP.ClientToolSchemasTest do
   end
 
   describe "W5 — the cache's reset/merge rule (the pagination trap)" do
+    @tag :etcc
     test "a cursor-BEARING page MERGES, so paging does not discard earlier pages" do
       {client, transport} = start_client()
 
@@ -171,6 +174,7 @@ defmodule MCP.ClientToolSchemasTest do
       assert headers_for_call(client, transport, "page2_tool") == [{"mcp-param-two", "us-west1"}]
     end
 
+    @tag :etcc
     test "a cursor-LESS listing RESETS, so a removed tool does not linger" do
       {client, transport} = start_client()
 
@@ -227,6 +231,7 @@ defmodule MCP.ClientToolSchemasTest do
       assert occurrences == 1
     end
 
+    @tag :etcc
     test "M-2: the warn-once record shares the cache's GENERATION — a reset re-arms it" do
       {client, transport} = start_client()
 
@@ -270,6 +275,7 @@ defmodule MCP.ClientToolSchemasTest do
       refute log2 =~ ~s(calling tool #{inspect(name)} with no cached inputSchema)
     end
 
+    @tag :etcc
     test "a -32020 triggers a tools/list refresh and ONE retry, which then mirrors" do
       {client, transport} = start_client()
 
@@ -317,6 +323,7 @@ defmodule MCP.ClientToolSchemasTest do
       assert log =~ "HeaderMismatch"
     end
 
+    @tag :etcc
     test "a SECOND -32020 is surfaced — the recovery is one-shot, not a loop" do
       {client, transport} = start_client()
       task = Task.async(fn -> Client.call_tool(client, "t", %{"region" => "x"}) end)
@@ -342,6 +349,7 @@ defmodule MCP.ClientToolSchemasTest do
       end)
     end
 
+    @tag :etcc
     test "a FAILED refresh surfaces the ORIGINAL -32020, not the refresh's error" do
       {client, transport} = start_client()
       task = Task.async(fn -> Client.call_tool(client, "t", %{}) end)
@@ -364,6 +372,7 @@ defmodule MCP.ClientToolSchemasTest do
       end)
     end
 
+    @tag :etcc
     test "a -32020 on a NON-tools/call request is not retried" do
       {client, transport} = start_client()
       task = Task.async(fn -> Client.list_tools(client) end)
@@ -376,6 +385,7 @@ defmodule MCP.ClientToolSchemasTest do
   end
 
   describe "the transport seam" do
+    @tag :etcc
     test "a tools/call for a known tool carries :headers; other methods carry none" do
       {client, transport} = start_client()
       {:ok, _} = list_tools(client, transport, %{"tools" => [annotated("t", "Region")]})
@@ -396,6 +406,7 @@ defmodule MCP.ClientToolSchemasTest do
     # unguarded `Map.get(result, "tools")` and raised BadMapError inside the
     # GenServer — one bad field from a remote peer took the client, every other
     # pending request and the linked transport down.
+    @tag :etcc
     test "a null result is reported to the caller and the client survives" do
       {client, transport} = start_client()
 
@@ -412,6 +423,7 @@ defmodule MCP.ClientToolSchemasTest do
                list_tools(client, transport, %{"tools" => [annotated("good", "Region")]})
     end
 
+    @tag :etcc
     test "a string result likewise, and it leaves the tool caches untouched" do
       {client, transport} = start_client()
 
@@ -439,6 +451,7 @@ defmodule MCP.ClientToolSchemasTest do
     # one clause up — on a path that does not exist on `main` at all. Measured
     # before the fix: the caller got an EXIT, not `{:error, _}`, and
     # `Process.alive?(client)` was false.
+    @tag :etcc
     test "a null refresh result returns the ORIGINAL -32020 alongside the malformed term" do
       {client, transport} = start_client()
 

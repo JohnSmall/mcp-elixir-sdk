@@ -95,6 +95,7 @@ defmodule MCP.ClientTest do
   end
 
   describe "connect/1 (server/discover)" do
+    @tag :etcc
     test "probes capabilities and returns server info" do
       {client, transport} = start_client()
       task = Task.async(fn -> Client.connect(client) end)
@@ -121,6 +122,7 @@ defmodule MCP.ClientTest do
       assert result.protocol_version == "2026-07-28"
     end
 
+    @tag :etcc
     test "returns error on discover failure" do
       {client, transport} = start_client()
       task = Task.async(fn -> Client.connect(client) end)
@@ -138,6 +140,7 @@ defmodule MCP.ClientTest do
   end
 
   describe "per-request _meta" do
+    @tag :etcc
     test "every request carries protocolVersion + client identity/capabilities" do
       {client, transport} = start_client()
       do_connect(client, transport)
@@ -161,6 +164,7 @@ defmodule MCP.ClientTest do
   end
 
   describe "requests" do
+    @tag :etcc
     test "list_tools returns tools" do
       {client, transport} = start_client()
       do_connect(client, transport)
@@ -179,6 +183,7 @@ defmodule MCP.ClientTest do
       assert hd(result["tools"])["name"] == "echo"
     end
 
+    @tag :etcc
     test "call_tool sends name and arguments" do
       {client, transport} = start_client()
       do_connect(client, transport)
@@ -199,6 +204,7 @@ defmodule MCP.ClientTest do
       assert hd(result["content"])["text"] == "hi"
     end
 
+    @tag :etcc
     test "call_tool surfaces an error response" do
       {client, transport} = start_client()
       do_connect(client, transport)
@@ -216,6 +222,7 @@ defmodule MCP.ClientTest do
       assert error.code == -32_601
     end
 
+    @tag :etcc
     test "read_resource sends the uri" do
       {client, transport} = start_client()
       do_connect(client, transport)
@@ -235,6 +242,7 @@ defmodule MCP.ClientTest do
       assert hd(result["contents"])["text"] == "hello"
     end
 
+    @tag :etcc
     test "get_prompt sends name and arguments" do
       {client, transport} = start_client()
       do_connect(client, transport)
@@ -258,6 +266,7 @@ defmodule MCP.ClientTest do
   end
 
   describe "MRTR client retry" do
+    @tag :etcc
     test "an input_required result is transparently completed via :on_input_required" do
       {client, transport} =
         start_client(on_input_required: fn _requests -> [%{"name" => "Ada"}] end)
@@ -296,6 +305,7 @@ defmodule MCP.ClientTest do
       assert hd(result["content"])["text"] == "hi Ada"
     end
 
+    @tag :etcc
     test "without a resolver the input_required result is returned as-is" do
       {client, transport} = start_client()
       do_connect(client, transport)
@@ -315,6 +325,7 @@ defmodule MCP.ClientTest do
   end
 
   describe "notifications" do
+    @tag :etcc
     test "dispatches to a pid handler" do
       {client, transport} = start_client(notification_handler: self())
       do_connect(client, transport)
@@ -327,6 +338,7 @@ defmodule MCP.ClientTest do
       assert_receive {:mcp_notification, "notifications/tools/list_changed", nil}, 1000
     end
 
+    @tag :etcc
     test "dispatches to a function handler" do
       test_pid = self()
       handler = fn method, params -> send(test_pid, {:notif, method, params}) end
@@ -350,12 +362,14 @@ defmodule MCP.ClientTest do
       assert :ok = Client.close(client)
     end
 
+    @tag :etcc
     test "times out a pending request" do
       {client, transport} = start_client(request_timeout: 50)
       do_connect(client, transport)
       assert {:error, :timeout} = Client.list_tools(client, timeout: 200)
     end
 
+    @tag :etcc
     test "notifies pending requests when the transport closes" do
       {client, transport} = start_client()
       do_connect(client, transport)
@@ -370,6 +384,7 @@ defmodule MCP.ClientTest do
   end
 
   describe "cancel/3" do
+    @tag :etcc
     test "sends a cancellation notification" do
       {client, transport} = start_client()
       do_connect(client, transport)
@@ -383,6 +398,7 @@ defmodule MCP.ClientTest do
   end
 
   describe "pagination" do
+    @tag :etcc
     test "list_all_tools paginates through pages" do
       {client, transport} = start_client()
       do_connect(client, transport)
@@ -412,6 +428,7 @@ defmodule MCP.ClientTest do
   end
 
   describe "server_capabilities/1 and server_info/1" do
+    @tag :etcc
     test "returns discovered capabilities and info" do
       {client, transport} = start_client()
       do_connect(client, transport)
@@ -422,6 +439,7 @@ defmodule MCP.ClientTest do
   end
 
   describe "concurrent requests" do
+    @tag :etcc
     test "handles multiple concurrent requests" do
       {client, transport} = start_client()
       do_connect(client, transport)
@@ -466,6 +484,7 @@ defmodule MCP.ClientTest do
 
     # T4. schema.ts:91-98 — the client's capabilities ride EVERY request's
     # `_meta`, per request, because there is no handshake to declare them once.
+    @tag :etcc
     test "T4 — a declared extension is stamped into every request's _meta" do
       {client, transport} =
         start_client(client_capabilities: %ClientCapabilities{extensions: @extensions})
@@ -477,6 +496,7 @@ defmodule MCP.ClientTest do
       assert request["params"]["_meta"][@capabilities_key]["extensions"] == @extensions
     end
 
+    @tag :etcc
     test "T4 — and into the server/discover probe itself" do
       {client, transport} =
         start_client(client_capabilities: %ClientCapabilities{extensions: @extensions})
@@ -488,6 +508,7 @@ defmodule MCP.ClientTest do
     end
 
     # T5. Absent, not `{}` — the default client declares nothing at all.
+    @tag :etcc
     test "T5 — the key is omitted entirely when nothing is declared" do
       {client, transport} = start_client()
 
@@ -503,6 +524,7 @@ defmodule MCP.ClientTest do
     # emit an identifier that violates schema.ts:779-780" guarantee has to hold
     # in both directions or it is not a guarantee.
     @tag :capture_log
+    @tag :etcc
     test "an invalid identifier is dropped on the way out; an all-invalid declaration vanishes" do
       {client, transport} =
         start_client(
@@ -530,6 +552,7 @@ defmodule MCP.ClientTest do
     # zero": a server's advertised extensions must survive the round trip
     # instead of being silently discarded by `ServerCapabilities.from_map/1`,
     # which keeps only the keys it knows.
+    @tag :etcc
     test "T15 — a server's advertised extensions are surfaced, not discarded" do
       {client, transport} = start_client()
       task = Task.async(fn -> Client.connect(client) end)
@@ -556,6 +579,7 @@ defmodule MCP.ClientTest do
 
     # Inbound is never validated: a server may advertise whatever it likes and
     # the client reports it verbatim rather than rewriting the peer's claim.
+    @tag :etcc
     test "a server's malformed advertisement is reported verbatim, not rewritten" do
       {client, transport} = start_client()
       task = Task.async(fn -> Client.connect(client) end)
@@ -588,6 +612,7 @@ defmodule MCP.ClientTest do
     # that caused it. It is dropped at the seam, named in a warning, and the
     # request that follows is well-formed and encodable.
     @tag :capture_log
+    @tag :etcc
     test "an unencodable settings value never reaches the wire (dropped at start_link)" do
       {client, transport} =
         start_client(
@@ -615,6 +640,7 @@ defmodule MCP.ClientTest do
     # This half is R-1's class: a MUST-violating identifier on the wire, no
     # drop, no warning. The value is now discarded whole and the default used,
     # so the identifier cannot appear.
+    @tag :etcc
     test "R-8 — a non-struct :client_capabilities is discarded, not passed through" do
       log =
         capture_log(fn ->
@@ -642,6 +668,7 @@ defmodule MCP.ClientTest do
     # failure the round-1 property exists to rule out, reachable through a
     # bypass of the code that implements it.
     @tag :capture_log
+    @tag :etcc
     test "R-8 — and the first request no longer kills the client" do
       {client, transport} =
         start_client(

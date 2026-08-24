@@ -28,7 +28,7 @@ defmodule MCP.Protocol.HeaderMirrorTest do
 
   alias MCP.Protocol.HeaderMirror
 
-  doctest MCP.Protocol.HeaderMirror
+  doctest MCP.Protocol.HeaderMirror, tags: [:etcc]
 
   defp schema(properties), do: %{"type" => "object", "properties" => properties}
 
@@ -130,6 +130,7 @@ defmodule MCP.Protocol.HeaderMirrorTest do
 
     # Spec-only 2/3 — the integer safe range, which is a VALUE-level rule: the
     # tool definition cannot state it, so it can only be enforced at call time.
+    @tag :etcc
     test "an integer outside the IEEE 754 safe range is not mirrored, and says so" do
       annotations = annotations!(schema(%{"n" => %{"type" => "integer", "x-mcp-header" => "N"}}))
 
@@ -202,6 +203,7 @@ defmodule MCP.Protocol.HeaderMirrorTest do
                })
     end
 
+    @tag :etcc
     test "a NESTED object property IS reachable — every step is a `properties` key" do
       annotations =
         annotations!(
@@ -324,11 +326,13 @@ defmodule MCP.Protocol.HeaderMirrorTest do
       %{headers: Map.new(HeaderMirror.headers_for(annotations, @fixture_arguments))}
     end
 
+    @tag :etcc
     test "plain ASCII is sent as-is", %{headers: headers} do
       assert headers["mcp-param-region"] == "us-west1"
       assert headers["mcp-param-method"] == "test-method"
     end
 
+    @tag :etcc
     test "an integer becomes its decimal string, a boolean lowercase true/false", %{
       headers: headers
     } do
@@ -337,6 +341,7 @@ defmodule MCP.Protocol.HeaderMirrorTest do
       assert headers["mcp-param-debug"] == "true"
     end
 
+    @tag :etcc
     test "an EMPTY string is present with an empty value, not omitted", %{headers: headers} do
       # `empty_val` is present in the arguments, so a header is required: the
       # rule is "omit when no value is PRESENT", and "" is a value. The fixture
@@ -345,6 +350,7 @@ defmodule MCP.Protocol.HeaderMirrorTest do
       assert headers["mcp-param-emptyval"] == ""
     end
 
+    @tag :etcc
     test "non-ASCII, padded, control and CRLF values are Base64 sentinels", %{headers: headers} do
       assert headers["mcp-param-nonascii"] == "=?base64?SGVsbG8sIOS4lueVjA==?="
       assert headers["mcp-param-whitespace"] == "=?base64?IHBhZGRlZCA=?="
@@ -357,6 +363,7 @@ defmodule MCP.Protocol.HeaderMirrorTest do
       end
     end
 
+    @tag :etcc
     test "every encoded value decodes back to exactly the body value", %{headers: headers} do
       # The server-side comparison the spec mandates, run against our own
       # output: a value that does not round-trip is a -32020 waiting to happen.
@@ -371,12 +378,14 @@ defmodule MCP.Protocol.HeaderMirrorTest do
       end
     end
 
+    @tag :etcc
     test "INTERNAL spaces stay plain — only leading/trailing whitespace forces encoding", %{
       headers: headers
     } do
       assert headers["mcp-param-internalspace"] == "us west 1"
     end
 
+    @tag :etcc
     test "no header carries a raw CR or LF — injection is closed by construction", %{
       headers: headers
     } do
@@ -389,6 +398,7 @@ defmodule MCP.Protocol.HeaderMirrorTest do
       end
     end
 
+    @tag :etcc
     test "unannotated parameters are NOT mirrored", %{headers: headers} do
       # Both fixture negatives: an unannotated string, and an unannotated
       # `number` (which could not be annotated even if the server wanted to).
@@ -396,6 +406,7 @@ defmodule MCP.Protocol.HeaderMirrorTest do
       refute Map.has_key?(headers, "mcp-param-floatval")
     end
 
+    @tag :etcc
     test "the `Method` annotation produces Mcp-Param-Method, never Mcp-Method", %{
       headers: headers
     } do
@@ -407,6 +418,7 @@ defmodule MCP.Protocol.HeaderMirrorTest do
   end
 
   describe "value encoding — omission and the sentinel's ambiguity rule" do
+    @tag :etcc
     test "a null value omits the header; so does an absent one" do
       annotations =
         annotations!(
@@ -422,6 +434,7 @@ defmodule MCP.Protocol.HeaderMirrorTest do
       assert [] = HeaderMirror.headers_for(annotations, %{})
     end
 
+    @tag :etcc
     test "a plain-ASCII value that LOOKS like a sentinel is itself encoded" do
       # `streamable-http.mdx:508-510`: clients MUST also Base64-encode any
       # plain-ASCII value matching the sentinel pattern, or a server cannot
@@ -433,6 +446,7 @@ defmodule MCP.Protocol.HeaderMirrorTest do
                "=?base64?literal?="
     end
 
+    @tag :etcc
     test "decode leaves a plain value alone and survives a malformed sentinel" do
       assert HeaderMirror.decode_value("us-west1") == "us-west1"
       # Not valid Base64 inside the markers: returned unchanged, so it fails
@@ -454,12 +468,14 @@ defmodule MCP.Protocol.HeaderMirrorTest do
       assert log =~ "Mcp-Param-A"
     end
 
+    @tag :etcc
     test "a non-map arguments value yields no headers rather than raising" do
       annotations = annotations!(schema(%{"a" => %{"type" => "string", "x-mcp-header" => "A"}}))
       assert [] = HeaderMirror.headers_for(annotations, nil)
       assert [] = HeaderMirror.headers_for(annotations, "not a map")
     end
 
+    @tag :etcc
     test "the exact property path is read — a same-named key elsewhere is not" do
       annotations =
         annotations!(

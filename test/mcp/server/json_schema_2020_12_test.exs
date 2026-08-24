@@ -83,10 +83,12 @@ defmodule MCP.Server.JsonSchema202012Test do
     # check would fail on changes that lose nothing while catching nothing a
     # map comparison misses. Only the name over-claimed. Same slip as MES-16's
     # R-6, which is why the reason is written down rather than just fixed.
+    @tag :etcc
     test "the whole fixture arrives intact — decoded-map equality, not bytes", %{schema: schema} do
       assert schema == SchemaHandler.fixture_schema()
     end
 
+    @tag :etcc
     test "reference keywords survive: $schema, $defs, $anchor, $ref", %{schema: schema} do
       assert schema["$schema"] == "https://json-schema.org/draft/2020-12/schema"
       assert schema["$defs"]["address"]["type"] == "object"
@@ -94,23 +96,27 @@ defmodule MCP.Server.JsonSchema202012Test do
       assert schema["properties"]["address"]["$ref"] == "#/$defs/address"
     end
 
+    @tag :etcc
     test "composition keywords survive: allOf, anyOf", %{schema: schema} do
       assert [%{"anyOf" => any_of}] = schema["allOf"]
       assert any_of == [%{"required" => ["phone"]}, %{"required" => ["email"]}]
     end
 
+    @tag :etcc
     test "conditional keywords survive: if, then, else", %{schema: schema} do
       assert schema["if"]["required"] == ["contactMethod"]
       assert schema["then"] == %{"required" => ["phone"]}
       assert schema["else"] == %{"required" => ["email"]}
     end
 
+    @tag :etcc
     test "validation keywords survive: enum, const, additionalProperties", %{schema: schema} do
       assert schema["properties"]["contactMethod"]["enum"] == ["phone", "email"]
       assert schema["if"]["properties"]["contactMethod"]["const"] == "phone"
       assert schema["additionalProperties"] == false
     end
 
+    @tag :etcc
     test "an explicit non-default dialect is carried, not coerced or refused" do
       # schema.ts:1962-1963 — "With explicit draft-07 input schema". This SDK
       # implements no dialect, so it neither honours nor refuses one.
@@ -139,6 +145,7 @@ defmodule MCP.Server.JsonSchema202012Test do
 
   # --- W-4: the $ref MUST NOT, checked against a live canary ---
 
+  @tag :etcc
   test "W-4 — no $ref is ever dereferenced: a canary listener is never connected to" do
     {:ok, listen} = :gen_tcp.listen(0, [:binary, active: false, reuseaddr: true])
     {:ok, port} = :inet.port(listen)
@@ -198,6 +205,7 @@ defmodule MCP.Server.JsonSchema202012Test do
           {"object", %{"a" => 1}},
           {"null", nil}
         ] do
+      @tag :etcc
       test "#{label} survives to the wire", _ctx do
         value = unquote(Macro.escape(value))
         # A TextContent block carrying the serialized JSON, so the array and
@@ -211,22 +219,26 @@ defmodule MCP.Server.JsonSchema202012Test do
       end
     end
 
+    @tag :etcc
     test "an absent key omits the field entirely — absent is not null" do
       result = call("structured", %{"content" => []})
       refute Map.has_key?(result, "structuredContent")
     end
 
+    @tag :etcc
     test "a present nil key emits JSON null — null is not absent" do
       result = call("structured", %{"structured" => nil, "content" => []})
       assert Map.has_key?(result, "structuredContent")
       assert result["structuredContent"] == nil
     end
 
+    @tag :etcc
     test "the extras map also carries isError, and false does not become absent" do
       assert call("structured", %{"isError" => true, "content" => []})["isError"] == true
       refute Map.has_key?(call("structured", %{"isError" => false, "content" => []}), "isError")
     end
 
+    @tag :etcc
     test "the pre-SEP-2106 return shapes still work unchanged" do
       assert call("plain", %{})["content"] == [%{"type" => "text", "text" => "ok"}]
       refute Map.has_key?(call("plain", %{}), "structuredContent")
@@ -276,6 +288,7 @@ defmodule MCP.Server.JsonSchema202012Test do
     end
 
     @tag capture_log: true
+    @tag :etcc
     test "the content list is never modified — the SDK notices, it does not inject" do
       result = call("structured", %{"structured" => [1, 2], "content" => []})
       assert result["content"] == []
@@ -293,6 +306,7 @@ defmodule MCP.Server.JsonSchema202012Test do
   # all-`optional()`, so a misspelled key is not a mismatch).
 
   describe "R-3 — an unusable extras map is named in a warning, and never raises" do
+    @tag :etcc
     test "a camelCase key is named, and the call still succeeds" do
       {result, log} =
         with_log(fn -> call("raw_extras", %{"extras" => %{structuredContent: 1}}) end)
@@ -312,6 +326,7 @@ defmodule MCP.Server.JsonSchema202012Test do
       assert log =~ ~s("structured_content")
     end
 
+    @tag :etcc
     test "a struct in slot 3 is named by its module, and nothing is raised" do
       {result, log} = with_log(fn -> call("raw_extras", %{"extras" => %URI{}}) end)
 
@@ -325,6 +340,7 @@ defmodule MCP.Server.JsonSchema202012Test do
       assert result["resultType"] == "complete"
     end
 
+    @tag :etcc
     test "a non-boolean :is_error is named, and no isError reaches the wire" do
       {result, log} = with_log(fn -> call("raw_extras", %{"extras" => %{is_error: "true"}}) end)
 
@@ -361,6 +377,7 @@ defmodule MCP.Server.JsonSchema202012Test do
     # IGNORED") happened to read true and could not be falsified there. A
     # struct IS a map: dispatch reads both fields off it and both reach the
     # wire, and at `209999e` the log asserted the exact opposite while doing so.
+    @tag :etcc
     test "a struct that DOES carry the fields has them read, and the warning says so" do
       extras = %ExtrasStruct{structured_content: [1, 2], is_error: true}
       {result, log} = with_log(fn -> call("raw_extras", %{"extras" => extras}) end)
@@ -379,6 +396,7 @@ defmodule MCP.Server.JsonSchema202012Test do
       assert log =~ "every OTHER field is IGNORED"
     end
 
+    @tag :etcc
     test "a struct carrying one of the two fields names that one, and only that one" do
       extras = %ExtrasStruct{structured_content: nil, is_error: true}
       {result, log} = with_log(fn -> call("raw_extras", %{"extras" => extras}) end)
@@ -402,6 +420,7 @@ defmodule MCP.Server.JsonSchema202012Test do
     # `209999e` every one of them logged the empty string. A keyword list is
     # the shape that matters: it is the idiomatic Elixir spelling of an options
     # map, and newly plausible precisely because this ticket made slot 3 a map.
+    @tag :etcc
     test "a keyword list, an empty list, an atom and a string are each named" do
       for extras <- [[structured_content: %{"a" => 1}], [], :structured_content, "true"] do
         {result, log} = with_log(fn -> call("raw_extras", %{"extras" => extras}) end)
@@ -420,6 +439,7 @@ defmodule MCP.Server.JsonSchema202012Test do
 
     # The control that keeps the new clause from swallowing the legacy shape:
     # `boolean()` was slot 3's only meaning before SEP-2106 and stays silent.
+    @tag :etcc
     test "the legacy boolean slot 3 still works, in both directions, and warns about nothing" do
       {errored, error_log} = with_log(fn -> call("raw_extras", %{"extras" => true}) end)
       {plain, plain_log} = with_log(fn -> call("raw_extras", %{"extras" => false}) end)
@@ -535,6 +555,7 @@ defmodule MCP.Server.JsonSchema202012Test do
 
   # --- Adversarial item 1: a valid call still delivers byte-identical arguments ---
 
+  @tag :etcc
   test "arguments reach the handler unchanged — nothing is coerced, defaulted or expanded" do
     args = %{
       "name" => "Ada",

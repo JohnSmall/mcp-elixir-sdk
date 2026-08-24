@@ -66,6 +66,7 @@ defmodule MCP.ClientDefectsTest do
     #   code:  assert Map.has_key?(retry["params"], "requestState") == false
     #   left:  true
     #   right: false
+    @tag :etcc
     test "an absent server requestState produces a retry with NO requestState key" do
       {client, transport} =
         start_client(on_input_required: fn _requests -> %{"answer" => "42"} end)
@@ -105,6 +106,7 @@ defmodule MCP.ClientDefectsTest do
     # the SAME wire fact as an absent field — no state was sent — so it must
     # produce the same absent key. This is the clause that would regress if
     # someone "fixed" D-1 with `if Map.has_key?(result, "requestState")`.
+    @tag :etcc
     test "an explicit null server requestState also produces NO requestState key" do
       {client, transport} =
         start_client(on_input_required: fn _requests -> %{} end)
@@ -137,6 +139,7 @@ defmodule MCP.ClientDefectsTest do
     # The other half of the property: when the server DOES send state, the
     # client MUST echo it. Positive control, and it is what stops the fix
     # from degenerating into "never send requestState".
+    @tag :etcc
     test "a server requestState is echoed verbatim on the retry (control)" do
       {client, transport} =
         start_client(on_input_required: fn _requests -> %{"a" => 1} end)
@@ -244,6 +247,7 @@ defmodule MCP.ClientDefectsTest do
     # practice. It is a control on a MUST (`streamable-http.mdx:255-259`) and a
     # precondition of D-3 — after a retry changes the version, the header must
     # change with it.
+    @tag :etcc
     test "the transport derives mcp-protocol-version from the message's own _meta" do
       alias MCP.Transport.StreamableHTTP.Client, as: HTTPClient
 
@@ -259,6 +263,7 @@ defmodule MCP.ClientDefectsTest do
       assert {"mcp-protocol-version", "1999-01-01"} in headers
     end
 
+    @tag :etcc
     test "it falls back to its configured default when the message carries no _meta version" do
       alias MCP.Transport.StreamableHTTP.Client, as: HTTPClient
 
@@ -280,6 +285,7 @@ defmodule MCP.ClientDefectsTest do
     # the `supported` list and retry the request, or surface an error to the
     # user if no compatible version exists." A SHOULD, cited from the spec and
     # not from the harness check name `sep-2575-client-retry-supported-version`.
+    @tag :etcc
     test "a -32022 naming a version we support is retried exactly once" do
       {client, transport} = start_client()
 
@@ -317,6 +323,7 @@ defmodule MCP.ClientDefectsTest do
       assert length(MockTransport.sent_messages(transport)) == 2
     end
 
+    @tag :etcc
     test "a -32022 offering only versions we do not support is surfaced, never retried" do
       # ADR-003 sub-decision 5: this client is 2026-07-28 only and negotiates
       # down to nothing. The retry can never reach for 2025-11-25.
@@ -339,6 +346,7 @@ defmodule MCP.ClientDefectsTest do
       assert length(MockTransport.sent_messages(transport)) == 1
     end
 
+    @tag :etcc
     test "a -32022 with no usable data is surfaced, never retried" do
       {client, transport} = start_client()
 
@@ -355,6 +363,7 @@ defmodule MCP.ClientDefectsTest do
       assert length(MockTransport.sent_messages(transport)) == 1
     end
 
+    @tag :etcc
     test "the retry re-stamps the version chosen from `supported`" do
       # The client advertises something the server rejects; the server offers
       # 2026-07-28, which we do support, so the retry must carry THAT version
@@ -387,6 +396,7 @@ defmodule MCP.ClientDefectsTest do
       assert {:ok, %{"tools" => []}} = Task.await(task)
     end
 
+    @tag :etcc
     test "a non-32022 error is never retried" do
       {client, transport} = start_client()
 

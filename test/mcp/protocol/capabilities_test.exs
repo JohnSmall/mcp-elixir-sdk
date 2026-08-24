@@ -4,6 +4,7 @@ defmodule MCP.Protocol.CapabilitiesTest do
   alias MCP.Protocol.Capabilities.{ClientCapabilities, ServerCapabilities}
 
   describe "ServerCapabilities" do
+    @tag :etcc
     test "from_map/1 parses full capabilities" do
       map = %{
         "tools" => %{"listChanged" => true},
@@ -23,6 +24,7 @@ defmodule MCP.Protocol.CapabilitiesTest do
       assert %MCP.Protocol.Capabilities.CompletionCapabilities{} = caps.completions
     end
 
+    @tag :etcc
     test "from_map/1 handles missing capabilities" do
       caps = ServerCapabilities.from_map(%{})
 
@@ -33,12 +35,14 @@ defmodule MCP.Protocol.CapabilitiesTest do
       assert caps.completions == nil
     end
 
+    @tag :etcc
     test "from_map/1 handles experimental capabilities" do
       map = %{"experimental" => %{"custom" => %{"enabled" => true}}}
       caps = ServerCapabilities.from_map(map)
       assert caps.experimental == %{"custom" => %{"enabled" => true}}
     end
 
+    @tag :etcc
     test "round-trips through JSON" do
       map = %{
         "tools" => %{"listChanged" => true},
@@ -80,6 +84,7 @@ defmodule MCP.Protocol.CapabilitiesTest do
       assert caps.elicitation == nil
     end
 
+    @tag :etcc
     test "round-trips through JSON" do
       map = %{
         "roots" => %{"listChanged" => true},
@@ -112,6 +117,7 @@ defmodule MCP.Protocol.CapabilitiesTest do
     @extensions %{"io.modelcontextprotocol/tasks" => %{}}
     @experimental %{"custom" => %{"enabled" => true}}
 
+    @tag :etcc
     test "T6 — ServerCapabilities encode keeps the two apart" do
       decoded =
         %ServerCapabilities{extensions: @extensions}
@@ -130,6 +136,7 @@ defmodule MCP.Protocol.CapabilitiesTest do
       refute Map.has_key?(decoded, "extensions")
     end
 
+    @tag :etcc
     test "T7 — ServerCapabilities decode keeps the two apart" do
       caps = ServerCapabilities.from_map(%{"extensions" => @extensions})
       assert caps.extensions == @extensions
@@ -140,6 +147,7 @@ defmodule MCP.Protocol.CapabilitiesTest do
       assert caps.extensions == nil
     end
 
+    @tag :etcc
     test "T8 — ClientCapabilities encode keeps the two apart" do
       decoded =
         %ClientCapabilities{extensions: @extensions}
@@ -168,6 +176,7 @@ defmodule MCP.Protocol.CapabilitiesTest do
       assert caps.extensions == nil
     end
 
+    @tag :etcc
     test "both may be carried at once, each under its own key" do
       decoded =
         %ServerCapabilities{extensions: @extensions, experimental: @experimental}
@@ -178,6 +187,7 @@ defmodule MCP.Protocol.CapabilitiesTest do
       assert decoded["experimental"] == @experimental
     end
 
+    @tag :etcc
     test "neither is emitted when unset" do
       decoded = %ServerCapabilities{} |> Jason.encode!() |> Jason.decode!()
       refute Map.has_key?(decoded, "extensions")

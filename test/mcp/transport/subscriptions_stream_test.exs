@@ -266,6 +266,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- the acknowledgment ---
 
   describe "the stream opens with its acknowledgment" do
+    @tag :etcc
     test "the first message is notifications/subscriptions/acknowledged", %{a: port} do
       stream = open_listen(port, %{"toolsListChanged" => true, "promptsListChanged" => true})
 
@@ -282,6 +283,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       close(stream)
     end
 
+    @tag :etcc
     test "the response carries the SSE headers the spec SHOULDs", %{a: port} do
       stream = open_listen(port, %{"toolsListChanged" => true})
       assert {:ok, _ack, stream} = next_event(stream)
@@ -296,6 +298,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       close(stream)
     end
 
+    @tag :etcc
     test "nothing bearing this subscription's id precedes its acknowledgment", %{a: port} do
       # SubscribingHandler emits INSIDE handle_listen/3 for the id "eager" —
       # i.e. strictly before the acknowledgment can have been written. Emitting
@@ -317,6 +320,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- delivery and filtering, end to end ---
 
   describe "delivery over the wire" do
+    @tag :etcc
     test "an opted-in notification arrives, stamped with the subscription id", %{a: port} do
       stream = open_listen(port, %{"toolsListChanged" => true})
       assert {:ok, _ack, stream} = next_event(stream)
@@ -333,6 +337,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       close(stream)
     end
 
+    @tag :etcc
     test "an unrequested type never reaches the wire", %{a: port} do
       stream = open_listen(port, %{"toolsListChanged" => true})
       assert {:ok, _ack, stream} = next_event(stream)
@@ -356,6 +361,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- T-8: keep-alive frames, both directions ---
 
   describe "T-8 keep-alive comment lines" do
+    @tag :etcc
     test "the encoder emits a bare comment line" do
       assert SSE.comment() == ":\r\n"
       # encode_event/1 cannot produce one — it always appends a data: line —
@@ -364,6 +370,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       assert SSE.encode_event(%{}) =~ "data:"
     end
 
+    @tag :etcc
     test "our parser ignores a comment line arriving between two events" do
       first = SSE.encode_message(%{"jsonrpc" => "2.0", "method" => "one"})
       second = SSE.encode_message(%{"jsonrpc" => "2.0", "method" => "two"})
@@ -374,6 +381,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       assert methods == ["one", "two"]
     end
 
+    @tag :etcc
     test "an idle stream actually emits comment frames, and stays open", %{a: port} do
       # keepalive_interval is 150ms in this harness, so ~500ms of silence should
       # produce several. Read the RAW payload rather than parsed events: the SSE
@@ -431,6 +439,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- T-12: graceful close vs abrupt drop ---
 
   describe "T-12 the close asymmetry a client depends on" do
+    @tag :etcc
     test "lifetime expiry sends the listen response, then closes" do
       # A 400ms lifetime, so expiry is the teardown reason rather than a
       # disconnect. This is the graceful path.
@@ -457,6 +466,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       close(stream)
     end
 
+    @tag :etcc
     test "the close-frame decision refuses to write after a peer close" do
       # The half of the asymmetry end-to-end testing CANNOT reach: once the peer
       # is gone, "sent nothing" and "tried and failed" are indistinguishable
@@ -489,6 +499,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- T-10: the multi-instance boundary (Ruling 1), with its positive control ---
 
   describe "T-10 the documented multi-instance boundary" do
+    @tag :etcc
     test "a change on instance B does not reach a stream held by instance A", %{a: a, b: b} do
       stream = open_listen(a, %{"toolsListChanged" => true}, id: "on-a")
       assert {:ok, _ack, stream} = next_event(stream)
@@ -522,6 +533,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- MC-6: clean failure when the stream cannot be started ---
 
   describe "MC-6 a stream that cannot start fails cleanly" do
+    @tag :etcc
     test "controlled -32603, nothing streamed, and the handler is told" do
       # The failure is injected through the :stream_start seam, for the same
       # reason MES-14 made the collector start injectable: a chunked-response
@@ -572,6 +584,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- Correction round 1 (review F4): the collector/stream lifetime property ---
 
   describe "the collector's lifetime ends strictly before the stream's" do
+    @tag :etcc
     test "the collector is gone by the time the stream is live", %{a: port} do
       # Replaces the T-7 case that could not fail. The claim it guarded — "the
       # listen path starts no NotificationCollector" — was false: the driver
@@ -638,6 +651,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- Correction round 1 (review F1/F2): teardown on every exit ---
 
   describe "every exit from a listen runs teardown" do
+    @tag :etcc
     test "a REFUSED listen tells the handler and kills the sink (F1)" do
       # The handler is handed a live sink and then refuses. Before the fix
       # `release_stream/1` and `notify_listen_closed/4` were reachable only from
@@ -792,6 +806,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       assert {:error, :closed} = sink.("notifications/tools/list_changed", %{})
     end
 
+    @tag :etcc
     test "a listen answered ABOVE the handler is owed no teardown callback" do
       # The other half of the same property, and the only reason the obligation
       # is ever disarmed: a malformed filter never reaches `handle_listen/3`, so
@@ -825,6 +840,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       refute_receive {:listen_closed, "no-filter", _}, 500
     end
 
+    @tag :etcc
     test "a handler-side exit in teardown does not replace the refusal response (R3)" do
       # The residue of c4b6578: `notify_listen_closed/4` rescued but did not
       # catch exits, and on the refusal exit teardown ran BEFORE the response —
@@ -939,6 +955,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       assert_receive {:listen_closed, "raise-in-listen", "alice"}, 2_000
     end
 
+    @tag :etcc
     test "a second client cannot tear down a live subscription it does not own (R4)", %{a: port} do
       # THE REACH, and why R4 was blocking rather than an over-approximation:
       # the id is whatever the client put in the message, so it can name a
@@ -987,6 +1004,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- JSON mode ---
 
   describe "JSON mode refuses the method" do
+    @tag :etcc
     test "subscriptions/listen returns -32601 rather than an empty stream" do
       port = start_instance(self(), enable_json_response: true)
 

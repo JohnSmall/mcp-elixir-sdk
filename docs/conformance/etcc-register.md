@@ -272,7 +272,7 @@ moved under it.
 | **A** — dead-path boundary (`26034`) | 45 | **40** | −40 |
 | **B** — identity (`26035`) | 23 | 0, upheld as ruled | 0 |
 | **C** — inherited assertions (`26035`) | 3 | 3 | +3 |
-| **D** — `meta_test.exs:45` (`26035`) | 1 | 1 | +1 |
+| **D** — `meta_test.exs:47` (`26035`) | 1 | 1 | +1 |
 | **E** — absence markers (`26036`) | 6 | 4 | +3 |
 | | **78** | **48** | **−33** |
 
@@ -311,7 +311,7 @@ its work.
 
 | unit | why |
 | --- | --- |
-| `capabilities_test.exs:60`, `:75`, `:161` — `ClientCapabilities` `from_map/1` ×2 and the T9 decode half | `ClientCapabilities.from_map/1` has exactly **one** `lib/` call site, `initialize.ex:28`, inside `MCP.Protocol.Messages.Initialize` — a module `lib/` never uses. The server keeps `io.modelcontextprotocol/clientCapabilities` as a **raw map** (`meta.ex:105`) and never decodes it into this struct |
+| `capabilities_test.exs:64`, `:75`, `:161` — `ClientCapabilities` `from_map/1` ×2 and the T9 decode half | `ClientCapabilities.from_map/1` has exactly **one** `lib/` call site, `initialize.ex:28`, inside `MCP.Protocol.Messages.Initialize` — a module `lib/` never uses. The server keeps `io.modelcontextprotocol/clientCapabilities` as a **raw map** (`meta.ex:105`) and never decodes it into this struct |
 | `content_test.exs:15`, `:24` — `TextContent` `from_map/1` ×2 | the PM named these in advance (`26058`): they were `ET-CC` on `TextContent`'s **encode** liveness, and under the split they must be re-established on the **decode** side's own verdict. They are not; `TextContent.from_map/1` is reached only through the `Content.from_map/1` dispatcher, dead |
 
 **All five go to `ET-OUT` with excluding gate 2** and carry
@@ -357,7 +357,7 @@ five it does not move are established per row in §7 below, which is what the ru
 itself asked for — *"establish that per row; do not apply it as a family sweep."*
 
 Ruling E is 6 rows put and 4 moved because the ratified `from_meta/1 (9)` doctest
-keeps its label (the ruling upholds it) and `extensions_test.exs:411` keeps its
+keeps its label (the ruling upholds it) and `extensions_test.exs:414` keeps its
 label while its **excluding gate** moves 2 → 3.
 
 ### Against the prior declared before the sweep
@@ -459,11 +459,11 @@ yourself against has stopped being a control.
 
 **Re-checked at round 2 (PM item 7: *"§11 stays a control: report any ratified label
 that stops reproducing"*): all eight still reproduce, and none of the 48 rows the
-adjudications moved is a §11 unit.** `dispatch_test.exs:81` `ET-CC`;
-`methods_test.exs:6` `ET-ADJ`; `client_conformance_test.exs:133` `ET-CTRL`;
+adjudications moved is a §11 unit.** `dispatch_test.exs:82` `ET-CC`;
+`methods_test.exs:6` `ET-ADJ`; `client_conformance_test.exs:134` `ET-CTRL`;
 `JsonSchema202012Test` **31/16** with **15** at gate 2 and **1** at gate 3;
 the 13 doctests **6/5/2**; `tool_test.exs`'s two generated units `ET-OUT` at gate 3;
-`routing_headers_test.exs:89` `ET-CC`; `capability_honesty_test.exs:25` `ET-ADJ`.
+`routing_headers_test.exs:90` `ET-CC`; `capability_honesty_test.exs:25` `ET-ADJ`.
 Stated as a checked result, not as an absence of news.
 
 **Re-checked at round 4** (PM `26059` item 8 — §11 stays the control). **All eight
@@ -471,11 +471,11 @@ still reproduce, and none of the 14 rows round 4 moved is a §11 unit**: the 14 
 `capabilities_test.exs`, `types/content_test.exs`, `types/resource_test.exs` and
 `types/tool_test.exs`, none is a doctest, and none is one of `ToolTest`'s two
 generated booleans. Re-derived from the delivered register rather than carried:
-`dispatch_test.exs:81` `ET-CC`; `methods_test.exs:6` `ET-ADJ`;
-`client_conformance_test.exs:133` `ET-CTRL`; `JsonSchema202012Test` **47 units,
+`dispatch_test.exs:82` `ET-CC`; `methods_test.exs:6` `ET-ADJ`;
+`client_conformance_test.exs:134` `ET-CTRL`; `JsonSchema202012Test` **47 units,
 31/16, 15 at gate 2 and 1 at gate 3**; the 13 doctests **6 `ET-CC` / 5 `ET-ADJ` /
 2 `ET-OUT`**; `tool_test.exs`'s two generated units `ET-OUT` at gate 3;
-`routing_headers_test.exs:89` `ET-CC`; `capability_honesty_test.exs:25` `ET-ADJ`.
+`routing_headers_test.exs:90` `ET-CC`; `capability_honesty_test.exs:25` `ET-ADJ`.
 `tool_test.exs` is the one to look at twice, since four rows returned to `ET-CC` in
 that very file — but §11 example 6 names the two `boolean outputSchema` units, which
 are `ET-OUT` by **gate 3** and were never ruling A's to move.
@@ -484,11 +484,11 @@ are `ET-OUT` by **gate 3** and were never ruling A's to move.
 5 moved no label at all**: the round-5 diff against the round-4 register is exactly
 four rows' `boundary` and `evidence` fields and nothing else, so no §11 unit could
 have moved — but the eight were re-derived rather than argued from that.
-`dispatch_test.exs:81` `ET-CC`; `methods_test.exs:6` `ET-ADJ`, `mixed`;
-`client_conformance_test.exs:133` `ET-CTRL`; `MCP.Server.JsonSchema202012Test`
+`dispatch_test.exs:82` `ET-CC`; `methods_test.exs:6` `ET-ADJ`, `mixed`;
+`client_conformance_test.exs:134` `ET-CTRL`; `MCP.Server.JsonSchema202012Test`
 **47 units, 31/16, 15 at gate 2 and 1 at gate 3**; the 13 doctests **6 `ET-CC` /
-5 `ET-ADJ` / 2 `ET-OUT`**; `tool_test.exs:109`'s two generated units `ET-OUT` at gate
-3; `routing_headers_test.exs:89` `ET-CC`; `capability_honesty_test.exs:25` `ET-ADJ`.
+5 `ET-ADJ` / 2 `ET-OUT`**; `tool_test.exs:111`'s two generated units `ET-OUT` at gate
+3; `routing_headers_test.exs:90` `ET-CC`; `capability_honesty_test.exs:25` `ET-ADJ`.
 `tool_test.exs` is again the file to look at twice — two of the four rows round 5
 touched are in it (`:73`, `:84`) — and again example 6's units are the two at `:109`,
 which round 5 did not touch and whose labels did not move.
@@ -504,7 +504,7 @@ figure in this thread not reproducing, and a fourth is worth naming.
    (`client.ex:314,324,330,333,336,339,342,346`, `dispatch.ex:126`). The
    `ET-ADJ, mixed` label is unaffected — one consumed constant is enough for §6.
 2. **§11 example 4 says "two bind the response to `_result` and discard it". It is
-   four** — `json_schema_2020_12_test.exs:307`, `:340`, `:439`, `:451`. The 15/1
+   four** — `json_schema_2020_12_test.exs:321`, `:340`, `:439`, `:451`. The 15/1
    gate split and the 31/16 total both reproduce exactly.
 
 ### S7-13 — where this register carried one fact under two labels, and how it was answered
@@ -634,7 +634,7 @@ grep and confirmed by one mutation.**
 
 | unit | path to the wire | gate 2 |
 | --- | --- | --- |
-| `client_test.exs:141` — asserts `req["params"]["_meta"][…]` | `client.ex:868` encodes it, `:839` sends it | **SURVIVES** |
+| `client_test.exs:144` — asserts `req["params"]["_meta"][…]` | `client.ex:868` encodes it, `:839` sends it | **SURVIVES** |
 | `tools_test.exs` on `Messages.Tools` (36 rows) | **NONE.** `grep -rn "\bTools\b" lib/` returns `messages/tools.ex` itself plus two lines of doc prose. Mutating the module's `from_map`/encoder keys reddened **18 units, all in `ToolsTest`; 0 of the other 961** | **FAILS** |
 
 It is the same separation §5.2 already draws between `valid_identifier?/1` and
@@ -764,13 +764,13 @@ applied to attribution rather than to a boundary:
 
 | row | mutation of the DECODE producer | reddened |
 | --- | --- | ---: |
-| `capabilities_test.exs:42` | `server_capabilities.ex:30` `Map.get("tools")` → `Map.get("toolsX")` | this unit + `:7` |
-| `capabilities_test.exs:83` | `client_capabilities.ex:26` `Map.get("roots")` → `Map.get("rootsX")` | this unit + `:60` |
-| `tool_test.exs:73` | `tool.ex:84` `Map.fetch!(map, "inputSchema")` → `Map.get(map, "inputSchemaX", %{})` | this unit + `:20`, `:131` |
-| `tool_test.exs:84` | `tool.ex:88` `Map.get(map, "_meta")` → `Map.get(map, "_meta") \|\| %{}` | **this unit alone**, 1 of the file's 11 |
+| `capabilities_test.exs:46` | `server_capabilities.ex:30` `Map.get("tools")` → `Map.get("toolsX")` | this unit + `:7` |
+| `capabilities_test.exs:88` | `client_capabilities.ex:26` `Map.get("roots")` → `Map.get("rootsX")` | this unit + `:60` |
+| `tool_test.exs:74` | `tool.ex:84` `Map.fetch!(map, "inputSchema")` → `Map.get(map, "inputSchemaX", %{})` | this unit + `:20`, `:131` |
+| `tool_test.exs:86` | `tool.ex:88` `Map.get(map, "_meta")` → `Map.get(map, "_meta") \|\| %{}` | **this unit alone**, 1 of the file's 11 |
 
 **(F15, corrected in round 6.** The first cell read *"this unit + `:29`"*. **There is
-no unit at `capabilities_test.exs:29`** — the file's `test` declarations are `:7`,
+no unit at `capabilities_test.exs:31`** — the file's `test` declarations are `:7`,
 `:26`, `:36`, `:42`, `:60`, `:75`, `:83`, `:115`, `:133`, `:143`, `:161`, `:171`,
 `:181`, and the register has no row at `:29` either, so the address resolved to
 nothing at all. `:29` is `assert caps.tools == nil`, an assertion **inside** the unit
@@ -787,25 +787,25 @@ delivered tip against the `test`/`describe`/`doctest` declarations in the file i
 names — **99 occurrences**, machine-checked. **22 of them, 12 distinct, land on a
 line that is not a declaration**, and every one of those was then read by hand: eleven
 cite an **assertion** on purpose and each carries the bytes claimed for it —
-`client_test.exs:62`, `self_compatibility_test.exs:124`,
-`streamable_http_stateless_test.exs:80`, `:85`, `:278`, `dispatch_test.exs:83`,
-`subscriptions_stream_test.exs:853`, `:857`, `:1011`, `client_conformance_test.exs:130`
+`client_test.exs:62`, `self_compatibility_test.exs:126`,
+`streamable_http_stateless_test.exs:84`, `:85`, `:278`, `dispatch_test.exs:84`,
+`subscriptions_stream_test.exs:869`, `:857`, `:1011`, `client_conformance_test.exs:131`
 (assertions) and `tool_order_test.exs:8` (the `server/tools.mdx` md5 the file records
-for itself). The twelfth is `capabilities_test.exs:29`, and it appears now only in
+for itself). The twelfth is `capabilities_test.exs:31`, and it appears now only in
 this note, which cites it *as* the line that is not a unit.
 
 **The bare `:NN` continuations are NOT machine-checkable here, and that is why F15
 survived five rounds.** There are **127** of them, and a bare `:NN` takes its file
 from whatever the prose last named — which is a `lib/` file as often as a test file
 (`client.ex:839` → `:864`; `server_capabilities.ex:30`, then `:29` meaning
-`capabilities_test.exs:29`). **The antecedent is carried by the sentence, not by the
+`capabilities_test.exs:31`). **The antecedent is carried by the sentence, not by the
 notation**, so no resolver reads them without a rule the document does not state.
 The four cells of the table above were therefore resolved by hand against each row's
 own test file, which is what surfaced this one. **The general form is MES-85's and
 MES-88's**, per `26080`'s stopping rule: extractable prose figures and re-runnable
 addresses, with the antecedent rule written down rather than inferred.**)**
 
-**`tool_test.exs:84` was put to the test separately, because it asserts only ABSENCES
+**`tool_test.exs:86` was put to the test separately, because it asserts only ABSENCES
 — the S7-19 shape — and the answer has a boundary worth stating.** A `from_map/1` that
 **wrongly populates** an absent optional fails it, and that is the whole fault class
 the row exists to catch: *an unset optional must be ABSENT on the wire, not null*. A
@@ -969,7 +969,7 @@ Six of the seven are CODE_REVIEWER's F6 findings (`26055`) **re-established at t
 seat rather than taken** — every byte string above was produced by this ticket's own
 probe run and matches CR's character for character. The seventh, `TextContent`, was
 already live at round 3, and round 4 **narrows its warrant rather than widening it**:
-L1's single live unit there was `json_schema_2020_12_test.exs:468`, which reddens
+L1's single live unit there was `json_schema_2020_12_test.exs:488`, which reddens
 because `dispatch.ex:662` pattern-matches `type: "text", text: text` on the
 **struct's fields**, not on encoded bytes. A struct-field match is neither encode nor
 decode, so that signal is **not** cited (PM, `26058`). The encode direction now rests
@@ -1019,7 +1019,7 @@ decide it.
 carries 112.** Every row
 added after round 1 carries `adjudication.raised_by: "PM"`, so the two readings of
 `escalated` stay distinguishable (§3). Ruling E named six rows and three
-of them (`meta_test.exs:28`, `capabilities_test.exs:26`, `:75`) had been decided
+of them (`meta_test.exs:29`, `capabilities_test.exs:28`, `:75`) had been decided
 without escalation in round 1, so they are now escalated and adjudicated alongside
 the three that were.
 
@@ -1028,7 +1028,7 @@ the three that were.
 | A | the dead-path question | 45 | `ET-CC` | **A** (`26034`) | **overturned**, per row | 40 |
 | B | the identity family | 23 | `ET-OUT` | **B** (`26035`) | **upheld as ruled** | 0 |
 | C | inherited assertions | 3 | `ET-OUT` | **C** (`26035`) | **overturned** | 3 |
-| D | `meta_test.exs:45` | 1 | `ET-ADJ` | **D** (`26035`) | gate 2 passes; gate 3 applied | 1 |
+| D | `meta_test.exs:47` | 1 | `ET-ADJ` | **D** (`26035`) | gate 2 passes; gate 3 applied | 1 |
 | E | the absence markers | 6 | mixed | **E** (`26036`) | **reconciled with §11.1** | 4 |
 
 ---
@@ -1061,10 +1061,10 @@ consumes the artefact, so `ET-ADJ` is unreachable).
 | ---: | --- | --- |
 | 36 | `Messages.Tools` (`ListParams`, `CallParams`, `CallResult`, `ListResult`) | broke the `cursor` / `content` / `isError` keys and the `structuredContent` encoder key → **18 units, all `ToolsTest`; 0 of the other 961** |
 | 2 | `%MCP.Protocol.Error{}`'s derived `Jason.Encoder` (`error_test.exs:84`, `:94`) | replaced it with one emitting `codeX/messageX/dataX` → **3 units, all on dead paths; 0 live**. The outbound error object is built **by hand** at `dispatch.ex:724-728` and `plug.ex:1019-1023` |
-| 2 | `%Response{}`'s `defimpl Jason.Encoder` (`protocol_test.exs:37`, `:48`) | `idX/errorX/resultX` → **exactly 2 units, both `ProtocolTest`; 0 of the other 977** |
+| 2 | `%Response{}`'s `defimpl Jason.Encoder` (`protocol_test.exs:39`, `:48`) | `idX/errorX/resultX` → **exactly 2 units, both `ProtocolTest`; 0 of the other 977** |
 
 **The 5 that did NOT move, and this is reported rather than absorbed.** `ET-CC`
-stands on `protocol_test.exs:15`, `:26`, `:171` (`%Request{}`) and `:61`, `:72`
+stands on `protocol_test.exs:16`, `:26`, `:171` (`%Request{}`) and `:61`, `:72`
 (`%Notification{}`), because **ruling A's antecedent is not satisfied for them**: a
 `lib/` call site *does* route those encoders' output to a transport.
 
@@ -1155,7 +1155,7 @@ test sharing an asserting setup helper becomes a member — is a reason to **ame
 
 ---
 
-### Family D — `meta_test.exs:45`. Ruling D (`26035`). 1 row, moved to `ET-CC`, `mixed`.
+### Family D — `meta_test.exs:47`. Ruling D (`26035`). 1 row, moved to `ET-CC`, `mixed`.
 
 The asserted value `{:error, {:unsupported, "2025-11-25"}}` carries the
 wire-supplied version string **verbatim** inside an SDK-invented container. Round 1
@@ -1176,13 +1176,13 @@ SDK that treated `2025-11-25` as supported returns `:ok` and reddens the equalit
 ### Family E — the absence markers. Ruling E (`26036`). 6 rows put, **4 moved.**
 
 **Family E is the round-2 record and is left as it stood — and unlike Family A, one
-of its `result` cells no longer matches the delivered label.** `capabilities_test.exs:75`
+of its `result` cells no longer matches the delivered label.** `capabilities_test.exs:79`
 reads `ET-OUT` → **`ET-CC`** below; **at the delivered tip that row is `ET-OUT`**.
 Round 4's ruling A took it back out (`26058`) — it is one of the F13 trio `:60`,
 `:75`, `:161` — so its `adjudication` in the register now names ruling **A**, and
 `etcc-register.json` carries **5** rows under ruling E against this heading's **6**.
-Of the four rows ruling E moved, **three still stand**: `extensions_test.exs:391` and
-`capabilities_test.exs:26` are `ET-CC`, `meta_test.exs:28` is `ET-OUT`; the fourth,
+Of the four rows ruling E moved, **three still stand**: `extensions_test.exs:393` and
+`capabilities_test.exs:28` are `ET-CC`, `meta_test.exs:29` is `ET-OUT`; the fourth,
 `:75`, was moved back. The table below records **what ruling E decided in round 2**,
 not what the delivered labels are — §3 and the register are the current statement.
 (Raised by CODE_REVIEWER at round 5 as F13's shape one section along, ruled in by the
@@ -1194,13 +1194,13 @@ gate 3 was applied per row and the outcome reported.**
 | row | gate 3 | anchor, or why none | result |
 | --- | --- | --- | --- |
 | `extensions_test.exs:35` — `from_meta/1 (9)` doctest | **passes** | `schema.ts:98`, `:785` | `ET-CC` **unchanged**, now for a reason that generalises |
-| `extensions_test.exs:391` — `%{}` for nil / absent key / absent field | **passes** | `schema.ts:98`, `:95-96` (*"an empty object means the client supports no optional capabilities"*), `:785` (`extensions?:`) | `ET-OUT` → **`ET-CC`**, `falsifiable: undetermined` |
-| `capabilities_test.exs:26` — `ServerCapabilities.from_map(%{})` all nil | **passes** | `schema.ts:799`+`:808` (*"Present if the server supports sending log messages"*), `:810`+`:815`, `:825`, `:846`, `:865` — absence **means** unsupported | `ET-OUT` → **`ET-CC`**, `falsifiable: undetermined` |
-| `capabilities_test.exs:75` — `ClientCapabilities.from_map(%{})` all nil | **passes** | `schema.ts:95-96` states it in words | `ET-OUT` → **`ET-CC`**, `falsifiable: undetermined` |
-| `extensions_test.exs:411` — `%{}` when the shape is **wrong** | **FAILS** | the four shapes asserted are states `schema.ts:785` **forbids**, and no 2026-07-28 line requires a particular recovery from a peer that violates it | `ET-OUT` **unchanged**, excluding gate **2 → 3** (§5 way (ii)) |
-| `meta_test.exs:28` — absent `_meta` yields an empty struct | **FAILS** | `schema.ts:179-181` types `RequestParams._meta` as `_meta: RequestMetaObject;` with **no `?`** — an absent `_meta` is forbidden, not an optional field's admissible absence | `ET-ADJ` → **`ET-OUT`**, gate 3 |
+| `extensions_test.exs:393` — `%{}` for nil / absent key / absent field | **passes** | `schema.ts:98`, `:95-96` (*"an empty object means the client supports no optional capabilities"*), `:785` (`extensions?:`) | `ET-OUT` → **`ET-CC`**, `falsifiable: undetermined` |
+| `capabilities_test.exs:28` — `ServerCapabilities.from_map(%{})` all nil | **passes** | `schema.ts:799`+`:808` (*"Present if the server supports sending log messages"*), `:810`+`:815`, `:825`, `:846`, `:865` — absence **means** unsupported | `ET-OUT` → **`ET-CC`**, `falsifiable: undetermined` |
+| `capabilities_test.exs:79` — `ClientCapabilities.from_map(%{})` all nil | **passes** | `schema.ts:95-96` states it in words | `ET-OUT` → **`ET-CC`**, `falsifiable: undetermined` |
+| `extensions_test.exs:414` — `%{}` when the shape is **wrong** | **FAILS** | the four shapes asserted are states `schema.ts:785` **forbids**, and no 2026-07-28 line requires a particular recovery from a peer that violates it | `ET-OUT` **unchanged**, excluding gate **2 → 3** (§5 way (ii)) |
+| `meta_test.exs:29` — absent `_meta` yields an empty struct | **FAILS** | `schema.ts:179-181` types `RequestParams._meta` as `_meta: RequestMetaObject;` with **no `?`** — an absent `_meta` is forbidden, not an optional field's admissible absence | `ET-ADJ` → **`ET-OUT`**, gate 3 |
 
-**`meta_test.exs:28` changes label as well as gate, and the reason is structural:**
+**`meta_test.exs:29` changes label as well as gate, and the reason is structural:**
 §5's `ET-ADJ` positive test requires **failing gate 2**. Once ruling E makes gate 2
 pass, `ET-ADJ` is unreachable whatever the call site, and §5 way (ii) gives
 `ET-OUT`. Its call site `dispatch.ex:163` (→ `:165` → the `-32022` reply at `:167`)
@@ -1235,9 +1235,9 @@ above is what was actually run, and it is the form stated here so a reader can r
 the sentence. The result is the same: zero.)*
 
 And the HTTP status assertions in the tree are enumerable — `grep -rn "\.status ==" test/mcp/`
-returns **27**, of which only **four** assert a 400: `self_compatibility_test.exs:124`,
+returns **27**, of which only **four** assert a 400: `self_compatibility_test.exs:126`,
 `:136` and `:163` (all `Mcp-Name` mismatch, each also asserting `-32020`), plus
-`streamable_http_stateless_test.exs:278` (a parse error, `-32700`, not one of the 13).
+`streamable_http_stateless_test.exs:292` (a parse error, `-32700`, not one of the 13).
 **No 400 is asserted for a missing `_meta`, an unsupported version, or a missing
 capability.**
 
@@ -1245,7 +1245,7 @@ capability.**
 than left implicit.** Found by CODE_REVIEWER (`26045`) in answer to a request to
 sweep for checks that can only fail toward their own conclusion; folded into round 3
 per `26048` item 7. Requiring the dot misses a status bound to a bare variable, and
-there is one: `subscriptions_stream_test.exs:857` asserts `status == 200`, bound at
+there is one: `subscriptions_stream_test.exs:873` asserts `status == 200`, bound at
 `:853` by `{status, response_body} = post_until_closed(port, body)`. So the true
 count is **at least 28**, and the miss is **directional** — under-counting always
 returns the reassuring *"no ET coverage here"*. Reproduced at this tip: the dotted
@@ -1269,17 +1269,17 @@ this section is not ratified, so it is simply corrected rather than left as erra
 
 | # | OC check | axes | ET coverage | lands in |
 | --- | --- | --- | --- | --- |
-| 1-3 | `meta-invalid-400` ×3 (missing-meta / -protocol-version / -client-capabilities) | status 400 | **none** — `-32022` is asserted (`streamable_http_stateless_test.exs:80`) but no status | **bucket 2** |
+| 1-3 | `meta-invalid-400` ×3 (missing-meta / -protocol-version / -client-capabilities) | status 400 | **none** — `-32022` is asserted (`streamable_http_stateless_test.exs:84`) but no status | **bucket 2** |
 | 4 | `unsupported-version-400` | status 400 | **none** | **bucket 2** |
 | 5 | `missing-capability-http-400` | status 400 | **none** — `-32021` appears only as a bare constant (`error_test.exs:15`, `ET-ADJ`) | **bucket 2** |
-| 6 | `header-mismatch-400` | status 400 **+** code `-32020` | **BOTH** (`self_compatibility_test.exs:114`, `:128`, `:155`) | **FULL, not partial** — see the caveat below |
-| 7 | `mnf-404-initialize` | status 404 + code `-32601` | status silent; code **CONTRADICTS** (we answer `-32022`, `dispatch_test.exs:83`) | partial-with-contradiction |
-| 8 | `mnf-404-ping` | status 404 + code `-32601` | status silent; code **agrees** (`streamable_http_stateless_test.exs:85`) | **partial** |
+| 6 | `header-mismatch-400` | status 400 **+** code `-32020` | **BOTH** (`self_compatibility_test.exs:116`, `:128`, `:155`) | **FULL, not partial** — see the caveat below |
+| 7 | `mnf-404-initialize` | status 404 + code `-32601` | status silent; code **CONTRADICTS** (we answer `-32022`, `dispatch_test.exs:84`) | partial-with-contradiction |
+| 8 | `mnf-404-ping` | status 404 + code `-32601` | status silent; code **agrees** (`streamable_http_stateless_test.exs:90`) | **partial** |
 | 9 | `mnf-404-logging-setlevel` | status 404 + code `-32601` | status silent; code **agrees** (`:86`) | **partial** |
 | 10 | `mnf-404-resources-subscribe` | status 404 + code `-32601` | **neither** — the only ET claims are absence-of-constants (`methods_test.exs:21`, `resources_test.exs:85`), both `ET-OUT` | **bucket 2** |
 | 11 | `mnf-404-resources-unsubscribe` | as above | **neither** | **bucket 2** |
-| 12 | `mnf-404` (generic) | status 404 + code `-32601` | code **agrees** (`subscriptions_stream_test.exs:1011`); status **CONTRADICTS** (we answer 200, `:1010`) | partial-with-contradiction |
-| 13 | `sep-2106-no-network-ref-deref` (client leg, AC3's example) | canary counter stays 0 | **covered** — `client_conformance_test.exs:130` asserts `Agent.get(hits, & &1) == 0` | **FULL** |
+| 12 | `mnf-404` (generic) | status 404 + code `-32601` | code **agrees** (`subscriptions_stream_test.exs:1029`); status **CONTRADICTS** (we answer 200, `:1010`) | partial-with-contradiction |
+| 13 | `sep-2106-no-network-ref-deref` (client leg, AC3's example) | canary counter stays 0 | **covered** — `client_conformance_test.exs:131` asserts `Agent.get(hits, & &1) == 0` | **FULL** |
 
 **Caveat on #6, stated rather than resolved.** The axes file's `requires` gloss
 says *"HTTP 400 on a header/`_meta` **VERSION** mismatch"*, while the check's own
@@ -1337,21 +1337,21 @@ And the returning rows cannot supply an axis, checked literally rather than argu
 The two decisive greps also reproduce at the round-4 tip: `grep -rn "404" test/mcp/`
 returns **0**, `grep -rn "\.status ==" test/mcp/` returns **27**, and the one
 bare-variable status assertion F4 named is still
-`subscriptions_stream_test.exs:857`. **All 13 cells stand.**
+`subscriptions_stream_test.exs:873`. **All 13 cells stand.**
 
 ### Re-run against the ROUND-5 register — **no cell moved, and no cell could have**
 
 Round 5 moved **no label**: the diff against the round-4 register is exactly four
 rows' `boundary` and `evidence` and nothing else (`et_cc_by_boundary` follows from the
 first). Every unit §8 cites therefore keeps the label it was cited with, and that was
-re-derived from the delivered register rather than inferred — `dispatch_test.exs:81`
-`ET-CC`, `streamable_http_stateless_test.exs:78`/`:83` `ET-CC`,
-`self_compatibility_test.exs:114`/`:128`/`:155` `ET-CC`, `error_test.exs:15` `ET-ADJ`,
+re-derived from the delivered register rather than inferred — `dispatch_test.exs:82`
+`ET-CC`, `streamable_http_stateless_test.exs:82`/`:83` `ET-CC`,
+`self_compatibility_test.exs:116`/`:128`/`:155` `ET-CC`, `error_test.exs:15` `ET-ADJ`,
 `methods_test.exs:21` and `messages/resources_test.exs:85` `ET-OUT`.
 
 The three decisive greps reproduce at this tip: `grep -rn "404" test/mcp/` returns
 **0**, `grep -rn "\.status ==" test/mcp/` returns **27**, and F4's one bare-variable
-status assertion is still `subscriptions_stream_test.exs:857`. **All 13 cells stand.**
+status assertion is still `subscriptions_stream_test.exs:873`. **All 13 cells stand.**
 
 ### Re-run against the ROUND-3 register — **no cell moved, and it was re-run not assumed**
 
@@ -1364,11 +1364,11 @@ cited unit re-checked at the round-3 tip:
 
 | cited as | unit | round-3 label |
 | --- | --- | --- |
-| coverage | `streamable_http_stateless_test.exs:78`, `:83` | `ET-CC` |
-| coverage | `self_compatibility_test.exs:114`, `:128`, `:155` | `ET-CC` |
-| coverage | `dispatch_test.exs:81` | `ET-CC` |
-| coverage | `subscriptions_stream_test.exs:990` | `ET-CC` |
-| coverage | `client_conformance_test.exs:115` | `ET-CC` |
+| coverage | `streamable_http_stateless_test.exs:82`, `:83` | `ET-CC` |
+| coverage | `self_compatibility_test.exs:116`, `:128`, `:155` | `ET-CC` |
+| coverage | `dispatch_test.exs:82` | `ET-CC` |
+| coverage | `subscriptions_stream_test.exs:1008` | `ET-CC` |
+| coverage | `client_conformance_test.exs:116` | `ET-CC` |
 | **non**-coverage | `error_test.exs:15` | `ET-ADJ` |
 | **non**-coverage | `methods_test.exs:21`, `resources_test.exs:85` | `ET-OUT` |
 
@@ -1383,10 +1383,10 @@ a cell. It was re-run rather than assumed (PM item 6: *"an expectation is not a
 result"*). **Every one of the 13 cells is unchanged.** Checked both directions:
 
 **Nothing left.** Every unit this table cites as coverage is still `ET-CC` at round
-2 — `streamable_http_stateless_test.exs:78`(→`:80`), `self_compatibility_test.exs:114`,
-`:128`, `:155`, `dispatch_test.exs:81`(→`:83`), `streamable_http_stateless_test.exs:83`
-(→`:85`,`:86`), `subscriptions_stream_test.exs:990`(→`:1010`,`:1011`),
-`client_conformance_test.exs:115`(→`:130`) — and the two units cited as evidence of
+2 — `streamable_http_stateless_test.exs:82`(→`:80`), `self_compatibility_test.exs:116`,
+`:128`, `:155`, `dispatch_test.exs:82`(→`:83`), `streamable_http_stateless_test.exs:88`
+(→`:85`,`:86`), `subscriptions_stream_test.exs:1008`(→`:1010`,`:1011`),
+`client_conformance_test.exs:116`(→`:130`) — and the two units cited as evidence of
 **non**-coverage are still non-members: `error_test.exs:15` `ET-ADJ`,
 `methods_test.exs:21` and `resources_test.exs:85` `ET-OUT`. None of the three files
 ruling A moved (`tools_test.exs`, `protocol_test.exs`, `error_test.exs:84`/`:94`) is
@@ -1400,7 +1400,7 @@ decoded `_meta` and capability values. *(**F5, corrected in round 3.** Round 2 s
 what §3's own table says and what the register returns when queried; **10** is how
 many rows C, D and E were **put over**. Found by CODE_REVIEWER at `26045`; the
 enumeration that follows the number was already the right 7, so no verdict moves.)* The nearest miss is worth naming —
-`meta_test.exs:45` is now an `ET-CC` member **about an unsupported protocol
+`meta_test.exs:47` is now an `ET-CC` member **about an unsupported protocol
 version**, which is check #4's subject — but check #4's single axis is
 `http_status: 400` and that row asserts no status, so #4 stays **bucket 2**. And the
 decisive fact is a property of the tree, not of the labelling: `404` still occurs
@@ -1481,7 +1481,7 @@ ticket that needed it.
 * **It does not judge whether an assertion is CORRECT.** Gates 1–3 ask about scope,
   subject and referent; none asks whether a claim is right. A test that asserts wire
   behaviour and **contradicts the official suite is still a member** —
-  `dispatch_test.exs:81` (`initialize` → `-32022`, against
+  `dispatch_test.exs:82` (`initialize` → `-32022`, against
   `sep-2575-http-server-method-not-found-404-initialize`) is `ET-CC` here, and
   excluding it would empty bucket 4a by construction. No correctness test was added
   by this sweep.

@@ -41,6 +41,7 @@ defmodule MCP.Protocol.Types.ResourceTest do
   end
 
   describe "JSON encoding" do
+    @tag :etcc
     test "round-trips with camelCase keys" do
       resource = Resource.from_map(@resource_map)
       json = Jason.encode!(resource)

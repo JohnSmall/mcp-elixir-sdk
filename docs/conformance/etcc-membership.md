@@ -475,15 +475,15 @@ commit cannot contain its own hash.
 | `client.ex:314` | **`lib/mcp/client.ex`** | `Methods.tools_list(),` | agrees |
 | `server_capabilities.ex:43-52` / `:47-49` | `lib/mcp/protocol/capabilities/server_capabilities.ex` | `defimpl Jason.Encoder` …; `:48` is `{_key, nil}, acc -> acc` | agrees |
 | `client_capabilities.ex:37-47` | `lib/mcp/protocol/capabilities/client_capabilities.ex` | `defimpl Jason.Encoder` …; `:42` is `{_key, nil}, acc -> acc` | agrees |
-| `dispatch_test.exs:81` | `test/mcp/server/dispatch_test.exs` | `test "initialize is removed → UnsupportedProtocolVersion (-32022)" do` | agrees |
+| `dispatch_test.exs:82` | `test/mcp/server/dispatch_test.exs` | `test "initialize is removed → UnsupportedProtocolVersion (-32022)" do` | agrees |
 | `methods_test.exs:6` | `test/mcp/protocol/methods_test.exs` | `test "request methods" do` (`:7` is the first assertion) | agrees |
-| `client_conformance_test.exs:133` | `test/mcp/client_conformance_test.exs` | `test "CONTROL ON THE CONTROL: the canary really does count a fetch" do` | agrees |
-| `tool_test.exs:108` / `:109` | `test/mcp/protocol/types/tool_test.exs` | `:108` `for value <- [true, false] do`; `:109` the `test` declaration | agrees |
-| `routing_headers_test.exs:89` | `test/mcp/transport/routing_headers_test.exs` | `test "a request carries the body method", %{agent: agent, url: url} do` | agrees |
+| `client_conformance_test.exs:134` | `test/mcp/client_conformance_test.exs` | `test "CONTROL ON THE CONTROL: the canary really does count a fetch" do` | agrees |
+| `tool_test.exs:110` / `:109` | `test/mcp/protocol/types/tool_test.exs` | `:108` `for value <- [true, false] do`; `:109` the `test` declaration | agrees |
+| `routing_headers_test.exs:90` | `test/mcp/transport/routing_headers_test.exs` | `test "a request carries the body method", %{agent: agent, url: url} do` | agrees |
 | `census_test.exs:313` | `test/conformance/census_test.exs` | `test "builds a census, once every non-pass is classified" do` | agrees |
 | `capability_honesty_test.exs:25` | `test/mcp/server/capability_honesty_test.exs` | `test "a handler with list callbacks but no handle_listen/3 advertises no listChanged" do` | agrees |
 | `json_schema_2020_12_test.exs:49/:56/:64` | `test/mcp/server/json_schema_2020_12_test.exs` | `defp round_trip(method, params, opts \\ []) do`; the two wrappers | agrees |
-| `json_schema_2020_12_test.exs:188` | as above | `for {label, value} <- [` — the ×11 generator | agrees |
+| `json_schema_2020_12_test.exs:195` | as above | `for {label, value} <- [` — the ×11 generator | agrees |
 | `messages/tools_test.exs:131` | `test/mcp/protocol/messages/tools_test.exs` | `for {label, value} <- [` | agrees |
 
 **Note (a) — a precision limit, present at ratification and NOT drift.** `25614` quotes
@@ -604,9 +604,9 @@ ratified criterion decide this?**
 
 | # | the page's case | decided by MES-67? | where |
 | --- | --- | --- | --- |
-| 1 | `dispatch_test.exs:81`, `initialize → -32022` | **yes** — same verdict (`ET-CC`) | §11 ex. 1 |
+| 1 | `dispatch_test.exs:82`, `initialize → -32022` | **yes** — same verdict (`ET-CC`) | §11 ex. 1 |
 | 2 | `methods_test.exs:7`, `Methods.initialize() == "initialize"` | **yes** — decided against membership | §11 ex. 2 |
-| 3 | `client_conformance_test.exs:133`, control on the control | **yes** — same verdict (`ET-CTRL`) | §11 ex. 3 |
+| 3 | `client_conformance_test.exs:134`, control on the control | **yes** — same verdict (`ET-CTRL`) | §11 ex. 3 |
 | 4 | `json_schema_2020_12_test.exs` | **yes** — decided **differently** | §11 ex. 4 |
 | 5 | a doctest (13 exist) | **yes** — decided **differently** | §11 ex. 5, §11.1 |
 | — | the residual class: gate 2's spec-mandated-wire-shape / public-API-convenience boundary | **yes** — ruled out of `ET-CC` by default, tie-break named | §9 R1 |

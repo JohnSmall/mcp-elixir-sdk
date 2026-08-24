@@ -10,6 +10,7 @@ defmodule MCP.Protocol.Messages.DiscoverTest do
   # (DiscoverResult extends CacheableResult): supportedVersions + resultType/
   # ttlMs/cacheScope; serverInfo under _meta["io.modelcontextprotocol/serverInfo"].
 
+  @tag :etcc
   test "to_map/1 produces the schema shape" do
     result = %Discover.Result{
       supported_versions: ["2026-07-28"],
@@ -32,6 +33,7 @@ defmodule MCP.Protocol.Messages.DiscoverTest do
     refute Map.has_key?(map, "protocolVersions")
   end
 
+  @tag :etcc
   test "from_map/1 round-trips the schema shape" do
     map = %{
       "supportedVersions" => ["2026-07-28"],

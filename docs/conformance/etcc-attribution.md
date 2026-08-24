@@ -104,7 +104,7 @@ permitted by that parenthetical and they do not agree:
 it to be inferred.** The loose reading is printed beside it because it does *not*
 have the one-directional property below — which is exactly why the reading has to
 be named. The three opposite-direction cells under the loose reading are the
-reviewer's finding, reproduced (it measured two; `self_compatibility_test.exs:96`
+reviewer's finding, reproduced (it measured two; `self_compatibility_test.exs:97`
 became a third when §2.3's new rule moved it).
 
 **WHAT THE CORRELATION DOES NOT DO, stated because this file previously implied
@@ -182,7 +182,7 @@ test this file shipped in round 1, which a reviewer broke with one mutation.**
 the outcome.** It happens when a member carries one client-definite assertion and
 one server-definite assertion — two independent single-leg claims, not a
 round-trip. Resolved as **`none_determinable`**, by the precedent already in this
-file and unchallenged at review: `capabilities_test.exs:181` (§2.4 class 3). The
+file and unchallenged at review: `capabilities_test.exs:191` (§2.4 class 3). The
 argument is the consumer's: C1 asks *which OC checks can this member match*, and a
 member whose claims span both legs can match on either — which is what
 `none_determinable` means here (§2.4's opening, §7(5)). **Recorded as a gap in the
@@ -209,7 +209,7 @@ primary failure signature**.
 **Result under the ratified mechanical rule: 145 server, 107 client, 29
 `none_determinable` — 10.3% residue.**
 
-**What moved, and it is one row.** `transport/self_compatibility_test.exs:96`
+**What moved, and it is one row.** `transport/self_compatibility_test.exs:97`
 (*"REACHABILITY CONTROL: an encoded Mcp-Name is decoded before comparison"*) was
 `server` in round 1 and is `none_determinable` now. Round 1's figures were
 146 / 107 / 28. **The reviewer expected a wording change rather than a
@@ -241,14 +241,14 @@ rests on.**
 ### §2.3 The discriminator, re-derived — the wording test a reviewer broke, and the mechanical rule that replaced it
 
 **What round 1 shipped, and why it failed.** It separated
-`routing_headers_test.exs:199` from `header_mirror_test.exs:360` on whether the
+`routing_headers_test.exs:206` from `header_mirror_test.exs:367` on whether the
 wording made the decode *"the claim"*. The reviewer showed in one move that this
 does not separate the rows it is applied to. The two test names are:
 
 | | test name |
 | --- | --- |
-| `routing_headers_test.exs:199` | *"a non-ASCII tool name is encoded, **and decodes back to the body value**"* |
-| `header_mirror_test.exs:360` | *"**every encoded value decodes back to exactly the body value**"* |
+| `routing_headers_test.exs:206` | *"a non-ASCII tool name is encoded, **and decodes back to the body value**"* |
+| `header_mirror_test.exs:367` | *"**every encoded value decodes back to exactly the body value**"* |
 
 Applied as stated, the round-1 rule puts the first on the second's side. **A test
 name is written to describe the scenario, not to identify the implementation under
@@ -281,26 +281,26 @@ because a reader must not read "47 candidates" as "47 doubtful rows".
 neutralised to the identity function:
 
     decode_value/1 -> identity      994 tests, 6 failures
-      header_mirror_test.exs:360, :425
-      routing_headers_test.exs:199, :239
-      self_compatibility_test.exs:96, :167
+      header_mirror_test.exs:367, :425
+      routing_headers_test.exs:206, :239
+      self_compatibility_test.exs:97, :167
 
     encode_value/1 -> identity      994 tests, 11 failures
       header_mirror_test.exs:31 (x3 of its 4 doctests), :348, :380, :425
-      routing_headers_test.exs:199, :239, :307
-      self_compatibility_test.exs:96, :167
+      routing_headers_test.exs:206, :239, :307
+      self_compatibility_test.exs:97, :167
 
 `decode_value/1 -> identity` reproduces the reviewer's six exactly, which is the
 cross-seat check on the instrument itself.
 
-**The row that moves: `self_compatibility_test.exs:96`, `server` → `none_determinable`.**
+**The row that moves: `self_compatibility_test.exs:97`, `server` → `none_determinable`.**
 It is reddened by *both* mutations, and the failure lines say why — two assertions,
 one definite on each leg:
 
 | assertion | falsified by | not falsified by | leg |
 | --- | --- | --- | --- |
 | `:100 assert String.starts_with?(header, "=?base64?")` | `encode_value` mutation — fails **at :100** | any server mutation: `header` is computed before the post, and the recorder never reaches our server | **client-definite** |
-| `:109 assert conn.status == 200` | `decode_value` mutation — fails **at :109** | the `encode_value` mutation — **measured**: with `:100` replaced by `_ = header`, the client mutation leaves `self_compatibility_test.exs:96` GREEN and only `self_compatibility_test.exs:167` reddens | **server-definite** |
+| `:109 assert conn.status == 200` | `decode_value` mutation — fails **at :109** | the `encode_value` mutation — **measured**: with `:100` replaced by `_ = header`, the client mutation leaves `self_compatibility_test.exs:97` GREEN and only `self_compatibility_test.exs:173` reddens | **server-definite** |
 
 The second row's negative half is a **measurement, not a reachability argument**:
 ExUnit aborts at the first failure, so the only way to see whether `:109` survives
@@ -309,31 +309,31 @@ a client mutation is to remove `:100` and re-run. It survives. **Two definite le
 
 **The rows that do NOT move, with the reason each stays.**
 
-* **`routing_headers_test.exs:199` and `routing_headers_test.exs:239` stay `client`.** Each carries an assertion about the
+* **`routing_headers_test.exs:206` and `routing_headers_test.exs:248` stay `client`.** Each carries an assertion about the
   header our client produced (`assert String.starts_with?(header, "=?base64?")`;
   `refute headers["mcp-name"] =~ "\r"` and `refute Map.has_key?(headers, "x-injected")`)
   which no server mutation can reach, because the far end is `CapturePlug`. Their
   decode call is **not** server-definite, and this is measured rather than argued:
-  the `decode_value` mutation fails `routing_headers_test.exs:199` at **:216** and `routing_headers_test.exs:239` at **:252**
+  the `decode_value` mutation fails `routing_headers_test.exs:206` at **:216** and `routing_headers_test.exs:248` at **:252**
   — the decode assertions — and the `encode_value` mutation reddens the same two
   members. **The same assertion falsified from both sides is not definite for
   either.** That is the second limb: the decode consumes our own encoder's output.
-* **`header_mirror_test.exs:425` stays `none_determinable`, for a DIFFERENT reason than round 1 gave.**
+* **`header_mirror_test.exs:438` stays `none_determinable`, for a DIFFERENT reason than round 1 gave.**
   Round 1 called it a round-trip. It is not: both of its calls take a **literal**
   (`encode_value("=?base64?literal?=")` and
   `decode_value("=?base64?PT9iYXNlNjQ/bGl0ZXJhbD89?=")`), so neither consumes the
   other's output. It is **two independent single-leg claims on opposite legs** —
-  the same class as `capabilities_test.exs:181`, and the reviewer was right that
+  the same class as `capabilities_test.exs:191`, and the reviewer was right that
   round 1's rule needed a third case for it. The label is unchanged; the reason in
   the artefact is corrected.
-* **`header_mirror_test.exs:360` stays `none_determinable`, and now by the second limb explicitly.**
+* **`header_mirror_test.exs:367` stays `none_determinable`, and now by the second limb explicitly.**
   Its `headers` come from `HeaderMirror.headers_for/2` in the `describe`'s own
   `setup`, so the decode is applied to our own encoder's output. Single assertion,
   falsified from either side, neither leg definite.
-* **`self_compatibility_test.exs:114`, `:128`, `:140`, `:155` stay `server`** — they name `encode_value`
+* **`self_compatibility_test.exs:116`, `:128`, `:140`, `:155` stay `server`** — they name `encode_value`
   but assert nothing about its output, and the `encode_value` mutation **does not
   redden them**, which is the negative half measured rather than argued.
-* **`header_mirror_test.exs:436` stays `server`** — `decode_value` applied to two literals, and the
+* **`header_mirror_test.exs:450` stays `server`** — `decode_value` applied to two literals, and the
   `encode_value` mutation does not redden it.
 * **The 14 `subscriptions_stream_test.exs` rows that parse with `SSE.feed/2`
   (client-only) stay `server`.** Second limb again: the parse is applied to **our
@@ -342,7 +342,7 @@ a client mutation is to remove `:100` and re-run. It survives. **Two definite le
   of the parser (`assert response.status == 200`, `assert_receive`/`refute_receive`
   over the handler) touch no client code at all. Same for the 15 `Bandit`
   false-candidates, whose far end is a double.
-* **`capabilities_test.exs:42`, `sse_test.exs:168`, `subscriptions_stream_test.exs:367` stay `none_determinable`** as round-trips under
+* **`capabilities_test.exs:46`, `sse_test.exs:187`, `subscriptions_stream_test.exs:374` stay `none_determinable`** as round-trips under
   the second limb, each a single assertion over a decode of our own encoder's
   output.
 
@@ -354,22 +354,22 @@ candidates.
 
 **(1) End-to-end, both legs in one test — 7.** A mutation on either leg reddens
 it, so the assertion constrains the pair.
-`integration_test.exs:127,137,157,174,188,198`;
-`transport/self_compatibility_test.exs:167`.
+`integration_test.exs:128,139,160,178,193,204`;
+`transport/self_compatibility_test.exs:173`.
 
 **(2) Round-trip — the decode/parse consumes OUR OWN encoder's output, so the one
 assertion is falsified from either side — 4.**
-`protocol/capabilities_test.exs:42`; `protocol/header_mirror_test.exs:360`;
-`transport/sse_test.exs:168`; `transport/subscriptions_stream_test.exs:367`.
+`protocol/capabilities_test.exs:46`; `protocol/header_mirror_test.exs:367`;
+`transport/sse_test.exs:187`; `transport/subscriptions_stream_test.exs:374`.
 This is the rule's second limb; §2.3 names the call each one's decode consumes.
 
 **(3) Two independent single-leg claims on OPPOSITE legs, so the rule makes both
 legs definite and neither alone owns the member — 3.**
-`protocol/capabilities_test.exs:181` ("neither is emitted when unset", asserted
+`protocol/capabilities_test.exs:191` ("neither is emitted when unset", asserted
 over `ClientCapabilities` **and** `ServerCapabilities`);
-`protocol/header_mirror_test.exs:425` (an `encode_value` literal **and** a
+`protocol/header_mirror_test.exs:438` (an `encode_value` literal **and** a
 `decode_value` literal — moved here from class 2 in correction round 1, where it
-was miscalled a round-trip); `transport/self_compatibility_test.exs:96` (the
+was miscalled a round-trip); `transport/self_compatibility_test.exs:97` (the
 client-produced sentinel at `:100` **and** our server's 200 at `:109` — the one
 row the ratified rule re-attributed, §2.3).
 
@@ -383,11 +383,11 @@ check, because the harness drives our server or our client and this code is on
 neither path.
 
 **(5) Notification framing, which both legs emit — 3.**
-`protocol_test.exs:61,72,116`. `Notification.new/2` is called from `client.ex`
+`protocol_test.exs:64,76,125`. `Notification.new/2` is called from `client.ex`
 **and** from `server/connection.ex`, `subscription.ex` and
 `notification_collector.ex`.
 
-**(6) A leg-agnostic transport — 5.** `transport/stdio_test.exs:27,48,71,89,111`.
+**(6) A leg-agnostic transport — 5.** `transport/stdio_test.exs:28,50,74,93,116`.
 `MCP.Transport.Stdio` implements the `MCP.Transport` behaviour and is driven by
 `MCP.Client` and by `MCP.Server.Connection` alike — `connection.ex:3` names stdio
 as an owner-based transport in as many words.
@@ -457,19 +457,19 @@ accuses **nothing**: every sweep hit is already assigned a CG.
 
 ### §3.3 The assignments, per item
 
-**CG1 — 10** (A4: 9). `routing_headers_test.exs:89,108,122,133,161,180,199,222,239`
-(client) + `self_compatibility_test.exs:167` (`none_determinable`; CG1's T-CG1c
+**CG1 — 10** (A4: 9). `routing_headers_test.exs:90,110,125,137,166,186,206,230,248`
+(client) + `self_compatibility_test.exs:173` (`none_determinable`; CG1's T-CG1c
 sentinel claim asserted end to end).
 
-**CG2 — 14** (A4: 4 units, of which 2 are ET-CC). `client_conformance_test.exs:184,232`;
-`client_test.exs:469,480,491,506,533,559,591,618,645`;
-`capabilities_test.exs:133,143` (client) and `:181` (`none_determinable`).
+**CG2 — 14** (A4: 4 units, of which 2 are ET-CC). `client_conformance_test.exs:186,235`;
+`client_test.exs:488,500,512,528,556,583,616,644,672`;
+`capabilities_test.exs:140,151` (client) and `:181` (`none_determinable`).
 
 **CG3 — 0.** No ET-CC member. Not implemented; owned by MES-38. Agrees with A4.
 
-**CG4 — 1.** `client_conformance_test.exs:115`. Agrees with A4.
+**CG4 — 1.** `client_conformance_test.exs:116`. Agrees with A4.
 
-**CG5 — 0.** No ET-CC member. `discover_test.exs:35` **mentions** `cacheScope`
+**CG5 — 0.** No ET-CC member. `discover_test.exs:37` **mentions** `cacheScope`
 and asserts it **parses**; CG5 requires the client to **honour** it. Recorded as
 `cg: none` with that basis — carrying `match-relation.md` §6's ratified
 exclusion rather than re-deciding it, and agreeing with it.
@@ -478,8 +478,8 @@ exclusion rather than re-deciding it, and agreeing with it.
 
 **CG7 — 31** (A4 named 3 discharge sites). `header_mirror_test.exs:31` (×4
 doctests), `:133,205,327,332,340,348,374,380,392,399,410,457,463` (client) and
-`:360,425` (`none_determinable`); `routing_headers_test.exs:307,342,359`;
-`client_tool_schemas_test.exs:82,123,153,174,230,273,379,415,442`.
+`:360,425` (`none_determinable`); `routing_headers_test.exs:318,354,372`;
+`client_tool_schemas_test.exs:83,125,156,178,235,279,389,427,455`.
 
 **CG7 was 35 in round 1. Four rows left on review finding F2 — see §4.5**, which
 reports the check against A4's CG7 **gap** statement either way, as the PM
@@ -508,17 +508,17 @@ collapsed, per `match-relation.md` §1):
 
 | check | members |
 | --- | --- |
-| `ClientSendsVersionHeader` | `routing_headers_test.exs:259`, `client_defects_test.exs:247,262` |
-| `ClientVersionHeaderMatchesMeta` | `routing_headers_test.exs:259`, `client_defects_test.exs:247` |
-| `ClientPopulatesMeta` | `client_test.exs:141` |
-| `ClientSendsClientInfo` | `client_test.exs:141` |
-| `ClientRetrySupportedVersion` | `client_defects_test.exs:283,320,342,358` |
-| `ClientDeclaresRootsCapability` | `capabilities_test.exs:83` |
-| `ClientDeclaresSamplingCapability` | `capabilities_test.exs:83` |
-| `ClientDeclaresElicitationCapability` | `capabilities_test.exs:83` |
-| `MRTRClientRequestStateEchoed` | `client_test.exs:261`, `client_defects_test.exs:140` |
-| `MRTRClientNoStateOmitted` | `client_defects_test.exs:69,108` |
-| `ToolAddNumbers` | `integration_test.exs:137` — **flagged, see below** |
+| `ClientSendsVersionHeader` | `routing_headers_test.exs:269`, `client_defects_test.exs:251,267` |
+| `ClientVersionHeaderMatchesMeta` | `routing_headers_test.exs:269`, `client_defects_test.exs:251` |
+| `ClientPopulatesMeta` | `client_test.exs:144` |
+| `ClientSendsClientInfo` | `client_test.exs:144` |
+| `ClientRetrySupportedVersion` | `client_defects_test.exs:289,327,350,367` |
+| `ClientDeclaresRootsCapability` | `capabilities_test.exs:88` |
+| `ClientDeclaresSamplingCapability` | `capabilities_test.exs:88` |
+| `ClientDeclaresElicitationCapability` | `capabilities_test.exs:88` |
+| `MRTRClientRequestStateEchoed` | `client_test.exs:270`, `client_defects_test.exs:143` |
+| `MRTRClientNoStateOmitted` | `client_defects_test.exs:70,110` |
+| `ToolAddNumbers` | `integration_test.exs:139` — **flagged, see below** |
 
 **The four with NO ET-CC member, enumerated rather than left as a silence:**
 `MRTRClientJsonRpcIdDifferent`, `MRTRClientParallelIsolation`,
@@ -529,7 +529,7 @@ collapsed, per `match-relation.md` §1):
   per the spec JSON schema"* — a **run-wide** property over all traffic, not a
   claim any single member asserts. Assigning it to the per-message encode tests
   in `protocol_test.exs` would be A5's "right count of the wrong question".
-* `ToolAddNumbers` **is** assigned to `integration_test.exs:137`, **with the
+* `ToolAddNumbers` **is** assigned to `integration_test.exs:139`, **with the
   caveat carried into `cg_basis`**: the check drives our client against the
   harness's own `add_numbers` fixture, while our member drives our client against
   our own handler's `add`. Same required behaviour, different fixture. Recorded
@@ -548,11 +548,11 @@ and the reason for the difference is named.
 
 | | A4 says | this file says | reading |
 | --- | --- | --- | --- |
-| **D1** | CG2 discharge = **4 ET-CC units**, `client_conformance_test.exs:184,209,217,232` | **2** of those are ET-CC (`:184`, `:232`); `:209` and `:217` are **ET-OUT** on gate 2. And the member set is **14**, not 4 | one defect with D2 — see below |
-| **D2** | CG7's bucket-1 constraints = **9 ET-CC units**, `header_mirror_test.exs:113,120,133,156,168,194,205,222,231` | only `:133` and `:205` are ET-CC; the other **seven are ET-ADJ**. And CG7's member set is **31** (35 before §4.5's correction) | same defect |
+| **D1** | CG2 discharge = **4 ET-CC units**, `client_conformance_test.exs:186,211,219,235` | **2** of those are ET-CC (`:184`, `:232`); `:209` and `:217` are **ET-OUT** on gate 2. And the member set is **14**, not 4 | one defect with D2 — see below |
+| **D2** | CG7's bucket-1 constraints = **9 ET-CC units**, `header_mirror_test.exs:113,120,134,157,169,195,207,224,233` | only `:133` and `:205` are ET-CC; the other **seven are ET-ADJ**. And CG7's member set is **31** (35 before §4.5's correction) | same defect |
 | **D3** | CG7's W6 exclusion unit is `client_tool_schemas_test.exs:81` | **no row at 81.** `81` is the `describe` line; the `test` declaration is **82**, and 82 is ET-CC | S7-23, cross-referenced |
-| **D4** | `conformance_request_state_test.exs` is "an obvious candidate" for the unclaimed MRTR five; B2b's sweep decides it | that file has **12 in-scope units, every one ET-OUT** — zero members. **But the sweep finds carriers elsewhere:** `client_defects_test.exs:69,108,140` and `client_test.exs:261` match two of the five | **overturns this file's own pre-measured answer** — see §4.2 |
-| **D5** | CG5's mentioning-not-discharging witness is `discover_test.exs:35` (A4 §3) and `:47` (`match-relation.md` §6) | **NOT a disagreement.** Both are right: `35` is the `test` declaration (the register's key) and `47` is the `cache_scope` assertion. See §4.4 — this ticket's own plan got this one wrong | S7-23, cross-referenced |
+| **D4** | `conformance_request_state_test.exs` is "an obvious candidate" for the unclaimed MRTR five; B2b's sweep decides it | that file has **12 in-scope units, every one ET-OUT** — zero members. **But the sweep finds carriers elsewhere:** `client_defects_test.exs:70,110,143` and `client_test.exs:270` match two of the five | **overturns this file's own pre-measured answer** — see §4.2 |
+| **D5** | CG5's mentioning-not-discharging witness is `discover_test.exs:37` (A4 §3) and `:47` (`match-relation.md` §6) | **NOT a disagreement.** Both are right: `35` is the `test` declaration (the register's key) and `47` is the `cache_scope` assertion. See §4.4 — this ticket's own plan got this one wrong | S7-23, cross-referenced |
 | **D6** | CG7's gap is *mirror designated parameters / encode unsafe values / exclude invalidly-annotated tools* | round 1 assigned CG7 to **4 rows none of those three limbs reaches**, on a *purposive* basis. **Overturns this file's own round-1 count: CG7 35 → 31** | §4.5 — the second self-overturn, and the only one a reviewer found rather than this ticket |
 
 ### §4.1 D1 and D2 are ONE defect, and naming it is worth more than the rows
@@ -586,11 +586,11 @@ finds carriers in two files A4 never had cause to look at:
 
 * `MRTRClientNoStateOmitted` — *"If InputRequiredResult does not contain
   requestState, client MUST NOT include one in the retry"* — is asserted verbatim
-  by `client_defects_test.exs:69` and `:108`
+  by `client_defects_test.exs:70` and `:108`
   (`refute Map.has_key?(retry["params"], "requestState")`).
 * `MRTRClientRequestStateEchoed` — *"Client MUST echo back the exact value of
-  requestState when retrying"* — by `client_defects_test.exs:140` and
-  `client_test.exs:261`.
+  requestState when retrying"* — by `client_defects_test.exs:143` and
+  `client_test.exs:270`.
 
 **Why the pre-measured answer was wrong, stated plainly:** it inherited A4's
 *candidate*, and a candidate-driven answer is an answer about its candidates.
@@ -608,7 +608,7 @@ though nothing had been checked:
 * **CG3, CG5 and CG6 have no ET-CC member** — independently re-derived here from
   the member side, matching `match-relation.md` §6's table and
   `cg-reconciliation.md` §3's three bare `NONE`s.
-* **CG5's exclusion survives the hard rule.** `discover_test.exs:35` asserts
+* **CG5's exclusion survives the hard rule.** `discover_test.exs:37` asserts
   parsing, not honouring — the member-side read reaches §6's answer by §6's own
   argument.
 * **`ClientCustomHeaderNoMirrorNumber` is not a counterpart.** A4 rejected it on
@@ -620,7 +620,7 @@ though nothing had been checked:
 The plan (comment `26087`) recorded D5 as *"one fact, two addresses, and one of
 them is wrong at this tip — the `cache_scope` assertion is at **48**, not 47"*.
 
-**Run literally at the delivered tip, that is false.** `discover_test.exs:47` is
+**Run literally at the delivered tip, that is false.** `discover_test.exs:49` is
 `assert result.cache_scope == "public"`, exactly as `match-relation.md` §6 cites
 it; there is no assertion at 48 (`:48` is `assert result.server_info.name`).
 
@@ -718,17 +718,17 @@ it read as a live count (`26097`(iii)).
 
 | token | carrier | B2a label |
 | --- | --- | --- |
-| `oc:none/no-oc-scenario/CG2-inbound-parse` | `client_conformance_test.exs:184` | ET-CC |
-| `oc:none/no-oc-scenario/CG2-outbound-meta` | `client_conformance_test.exs:232` | ET-CC |
-| `oc:none/no-oc-scenario/CG2-absent-yields-nil` | **`capabilities_test.exs:133`** | ET-CC |
-| `oc:none/no-oc-fixture-case/CG7-integer-safe-range` | `header_mirror_test.exs:133` | ET-CC |
-| `oc:none/no-oc-fixture-case/CG7-static-reachability` | `header_mirror_test.exs:205` | ET-CC |
+| `oc:none/no-oc-scenario/CG2-inbound-parse` | `client_conformance_test.exs:186` | ET-CC |
+| `oc:none/no-oc-scenario/CG2-outbound-meta` | `client_conformance_test.exs:235` | ET-CC |
+| `oc:none/no-oc-scenario/CG2-absent-yields-nil` | **`capabilities_test.exs:140`** | ET-CC |
+| `oc:none/no-oc-fixture-case/CG7-integer-safe-range` | `header_mirror_test.exs:134` | ET-CC |
+| `oc:none/no-oc-fixture-case/CG7-static-reachability` | `header_mirror_test.exs:207` | ET-CC |
 
 **`CG2-absent-yields-nil` acquires a carrier, and this overturns the plan's
 count of four.** The plan looked only at A4's own carrier for that claim
-(`client_conformance_test.exs:209`, ET-OUT) and concluded the token had none.
+(`client_conformance_test.exs:211`, ET-OUT) and concluded the token had none.
 The member-side sweep finds the same claim one layer down, at
-`capabilities_test.exs:133` (T7):
+`capabilities_test.exs:140` (T7):
 
     caps = ServerCapabilities.from_map(%{"experimental" => @experimental})
     assert caps.extensions == nil
@@ -744,20 +744,20 @@ leg, not a look-alike. Its leg is `client`, consistently.
 
 | claim | A4's unit(s) | B2a label | why no ET-CC member |
 | --- | --- | --- | --- |
-| `CG2-unknown-not-a-fault` | `client_conformance_test.exs:217` | **ET-OUT** (gate 2) | asserts only that nothing is logged — a captured-log claim with no wire artefact |
+| `CG2-unknown-not-a-fault` | `client_conformance_test.exs:219` | **ET-OUT** (gate 2) | asserts only that nothing is logged — a captured-log claim with no wire artefact |
 | `CG7-annotated-number-excluded` | `header_mirror_test.exs:113,120` | **ET-ADJ** ×2 | assert `validate_schema/1` returns an error tuple — an SDK-internal result, no wire artefact |
 
 **Both were re-checked against the whole member set before being called
 carrier-less, not inherited from the plan.**
 
 * For `CG2-unknown-not-a-fault`, the nearest candidate is
-  `extensions_negotiation_test.exs:275` (T10, *"tools/call succeeds normally; no
+  `extensions_negotiation_test.exs:285` (T10, *"tools/call succeeds normally; no
   error, no -32021"*). **Rejected:** T10 is our **server** not faulting on an
   unknown **client** extension; the claim is our **client** not faulting on an
   unknown **server** extension. Different implementation under test — the
   false-positive guard doing work.
 * For `CG7-annotated-number-excluded`, the nearest candidate is
-  `header_mirror_test.exs:392` (*"unannotated parameters are NOT mirrored"*).
+  `header_mirror_test.exs:402` (*"unannotated parameters are NOT mirrored"*).
   **Rejected on exactly A4's own grounds:** that is the *unannotated* case, which
   is what `ClientCustomHeaderNoMirrorNumber` covers. Our constraint is that an
   *annotated* `number` is rejected outright.
@@ -787,21 +787,21 @@ join was most likely to drop:**
 
 | member | leg | contradicts |
 | --- | --- | --- |
-| `dispatch_test.exs:81` — *"initialize is removed → -32022"* | server | `oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize` |
-| `streamable_http_stateless_test.exs:83` — *"initialize is gone → -32022; ping/logging.setLevel → -32601"* | server | the same check |
+| `dispatch_test.exs:82` — *"initialize is removed → -32022"* | server | `oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize` |
+| `streamable_http_stateless_test.exs:88` — *"initialize is gone → -32022; ping/logging.setLevel → -32601"* | server | the same check |
 
 The check requires **404 + -32601**; both members assert **-32022**. They are
 `ET-CC` in B2a's register **deliberately** — excluding them would empty bucket 4a
 by construction, and 4a is a finding this epic exists to surface.
 `etcc-membership.md` §B.4(i-b) records why that rule is not in Part A.
 
-`streamable_http_stateless_test.exs:83` bundles three claims and only the
+`streamable_http_stateless_test.exs:88` bundles three claims and only the
 `initialize` one contradicts; the two `-32601` claims agree. Under
 `match-relation.md` §1 that member contributes **three edges**, and C1 preserves
 all three verdicts — this file records the contradiction at member granularity
 and does not collapse them.
 
-`test/conformance/etcc_attribution_test.exs` asserts the `dispatch_test.exs:81`
+`test/conformance/etcc_attribution_test.exs` asserts the `dispatch_test.exs:82`
 row by name, so the one row most likely to be lost cannot be lost silently.
 
 ---
@@ -830,7 +830,7 @@ row by name, so the one row most likely to be lost cannot be lost silently.
    call site at `messages/initialize.ex:72`, inside
    `MCP.Protocol.Messages.Initialize` — a module nothing in `lib/` references under
    stateless core. The four members attributed `client` on that decoder —
-   `capabilities_test.exs:7`, `:26`, `:36` and `:133`, the last being §5.1's
+   `capabilities_test.exs:8`, `:26`, `:36` and `:133`, the last being §5.1's
    `CG2-absent-yields-nil` carrier — rest on a **reachability** claim,
    *"reached only by our client"*,
    which **holds as written at this tip** and which **reviving `Initialize` would

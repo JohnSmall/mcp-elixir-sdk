@@ -383,11 +383,13 @@ defmodule MCP.Protocol.ExtensionsTest do
   describe "from_meta/1 — the inbound read (T12)" do
     @key "io.modelcontextprotocol/clientCapabilities"
 
+    @tag :etcc
     test "reads the peer's declared extensions" do
       meta = %{@key => %{"extensions" => %{"io.modelcontextprotocol/tasks" => %{}}}}
       assert Extensions.from_meta(meta) == %{"io.modelcontextprotocol/tasks" => %{}}
     end
 
+    @tag :etcc
     test "returns %{} for nil, an absent key, or an absent extensions field" do
       assert Extensions.from_meta(nil) == %{}
       assert Extensions.from_meta(%{}) == %{}
@@ -402,6 +404,7 @@ defmodule MCP.Protocol.ExtensionsTest do
     # same peer to us. It was only ever asserted for the omission half, which
     # left the collapse looking like an oversight rather than a decision; both
     # halves are pinned here, and the reasoning is now on `from_meta/1`.
+    @tag :etcc
     test "a peer's `{}` and an omitted key collapse to the same %{} (deliberately)" do
       assert Extensions.from_meta(%{@key => %{"extensions" => %{}}}) == %{}
       assert Extensions.from_meta(%{@key => %{}}) == %{}
@@ -420,6 +423,7 @@ defmodule MCP.Protocol.ExtensionsTest do
     # claim would misreport what the peer actually said. This asserts the
     # difference between the two directions directly, so the split cannot decay
     # into "validate everywhere" without a test going red.
+    @tag :etcc
     test "does NOT validate: a malformed identifier reaches the caller verbatim" do
       malformed = %{"no-prefix" => %{}, "com.example/-bad" => %{"x" => 1}}
       meta = %{@key => %{"extensions" => malformed}}
@@ -432,6 +436,7 @@ defmodule MCP.Protocol.ExtensionsTest do
     # schema.ts:96 — "Servers MUST NOT infer capabilities from prior requests."
     # Held by shape here: the answer is a function of the argument, so there is
     # no state in which a previous request's declaration could survive.
+    @tag :etcc
     test "caches nothing between calls" do
       declared = %{@key => %{"extensions" => %{"com.example/thing" => %{}}}}
 

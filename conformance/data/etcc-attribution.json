@@ -816,7 +816,7 @@
  {
   "key": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a plain-ASCII value that LOOKS like a sentinel is itself encoded",
   "leg": "none_determinable",
-  "leg_reason": "TWO INDEPENDENT SINGLE-LEG CLAIMS ON OPPOSITE LEGS, not a round-trip: both calls take a LITERAL, so neither consumes the other's output. `encode_value(\"=?base64?literal?=\")` is client-only and `decode_value(\"=?base64?PT9iYXNlNjQ/bGl0ZXJhbD89?=\")` is server-only, so the mechanical rule makes both legs definite and neither one alone owns the member. Same class as capabilities_test.exs:181.",
+  "leg_reason": "TWO INDEPENDENT SINGLE-LEG CLAIMS ON OPPOSITE LEGS, not a round-trip: both calls take a LITERAL, so neither consumes the other's output. `encode_value(\"=?base64?literal?=\")` is client-only and `decode_value(\"=?base64?PT9iYXNlNjQ/bGl0ZXJhbD89?=\")` is server-only, so the mechanical rule makes both legs definite and neither one alone owns the member. Same class as capabilities_test.exs:191.",
   "cg": "CG7",
   "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
   "tokens": [],
@@ -2145,7 +2145,7 @@
  {
   "key": "MCP.Transport.SelfCompatibilityTest/test REACHABILITY CONTROL: an encoded Mcp-Name is decoded before comparison, so our own client is not self-rejected",
   "leg": "none_determinable",
-  "leg_reason": "TWO INDEPENDENT SINGLE-LEG CLAIMS ON OPPOSITE LEGS, so the mechanical rule makes both legs definite and neither one alone owns the member. :100 `assert String.starts_with?(header, \"=?base64?\")` is about `HeaderMirror.encode_value/1` (client-only: streamable_http/client.ex:379) and is MEASURED to break under an encode_value mutation and under no server mutation; :109 `assert conn.status == 200` is about the plug's decode-before-compare (server-only: plug.ex:906) and is MEASURED to break under a decode_value mutation and to SURVIVE the encode_value mutation once :100 is removed. Same class as capabilities_test.exs:181.",
+  "leg_reason": "TWO INDEPENDENT SINGLE-LEG CLAIMS ON OPPOSITE LEGS, so the mechanical rule makes both legs definite and neither one alone owns the member. :100 `assert String.starts_with?(header, \"=?base64?\")` is about `HeaderMirror.encode_value/1` (client-only: streamable_http/client.ex:379) and is MEASURED to break under an encode_value mutation and under no server mutation; :109 `assert conn.status == 200` is about the plug's decode-before-compare (server-only: plug.ex:906) and is MEASURED to break under a decode_value mutation and to SURVIVE the encode_value mutation once :100 is removed. Same class as capabilities_test.exs:191.",
   "cg": null,
   "cg_basis": "No CG. Asserts the SEP-2243 value-encoding sentinel's DECODE side, run by our server's plug; CG7 is the client-side mirroring requirement and does not reach decoding.",
   "tokens": [],

@@ -75,6 +75,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
   # --- T-1: wire shapes, pinned against the schema's own examples ---
 
   describe "T-1 wire shapes (pinned to schema/2026-07-28 examples)" do
+    @tag :etcc
     test "the request parses as the pinned SubscriptionsListenRequest example" do
       # schema/2026-07-28/examples/SubscriptionsListenRequest/listen-for-list-changes.json
       params = %{
@@ -93,6 +94,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
              }
     end
 
+    @tag :etcc
     test "the acknowledgment matches the pinned SubscriptionsAcknowledgedNotification example" do
       # schema/2026-07-28/examples/SubscriptionsAcknowledgedNotification/listen-acknowledged.json
       honoured = %{
@@ -110,6 +112,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
              }
     end
 
+    @tag :etcc
     test "the graceful-close response matches the pinned example exactly" do
       # schema/2026-07-28/examples/SubscriptionsListenResultResponse/
       #   listen-closed-response.json — NOT `result: {}`. The prose calls it
@@ -126,6 +129,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
              }
     end
 
+    @tag :etcc
     test "a resources/updated frame matches the pinned notification example" do
       sub =
         Subscription.new("listen-1", %{"resourceSubscriptions" => ["file:///project/src/main.rs"]})
@@ -145,6 +149,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
              }
     end
 
+    @tag :etcc
     test "the id is echoed, never coerced — RequestId is string OR integer" do
       # The pinned examples use a string id; the mdx prose uses an integer. Both
       # are legal RequestIds, so the implementation must echo what it was given.
@@ -156,6 +161,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       assert %{"id" => "listen-1"} = Subscriptions.close_response("listen-1")
     end
 
+    @tag :etcc
     test "notifications is required; {} is legal and means subscribe to nothing" do
       assert {:ok, %{}} = Subscriptions.parse_filter(%{"notifications" => %{}})
       assert {:error, :missing_notifications} = Subscriptions.parse_filter(%{})
@@ -164,6 +170,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
                Subscriptions.parse_filter(%{"notifications" => []})
     end
 
+    @tag :etcc
     test "an absent notifications object is -32602, not a silently empty stream" do
       assert {:reply, %{"error" => error}, _} = open(:omitted)
       assert error["code"] == -32_602
@@ -180,6 +187,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
   # --- T-2: ack first, and the honoured subset rather than the requested one ---
 
   describe "T-2 the acknowledgment reports what was honoured" do
+    @tag :etcc
     test "a requested-but-refused type is absent from the ack" do
       requested = %{
         "toolsListChanged" => true,
@@ -195,6 +203,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       refute Map.has_key?(sub.ack["params"]["notifications"], "promptsListChanged")
     end
 
+    @tag :etcc
     test "the ack is built from the same value the stream enforces" do
       assert {:stream, %Subscription{} = sub, _} = open(%{"toolsListChanged" => true})
 
@@ -204,6 +213,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       assert MapSet.equal?(promised, sub.allowed)
     end
 
+    @tag :etcc
     test "the ack carries this subscription's id in _meta" do
       assert {:stream, %Subscription{} = sub, _} = open(%{"toolsListChanged" => true}, id: 42)
       assert sub.id == 42
@@ -234,6 +244,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       assert :drop == Subscription.frame(sub, Methods.resources_updated(), %{"uri" => other})
     end
 
+    @tag :etcc
     test "the URI filter reads either key style, so nothing is dropped for writing %{uri: ...}" do
       # Review F6: this filter used to read only the string key, so an
       # atom-keyed emission was dropped while the sink answered :ok — the one
@@ -352,6 +363,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
   end
 
   describe "T-5 JSON mode refuses the method outright" do
+    @tag :etcc
     test "a non-streaming driver gets -32601, never a silent black hole" do
       json_mode = config(streaming: false)
 
@@ -370,6 +382,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       assert Subscriptions.permitted_by(json_mode.capabilities) == %{}
     end
 
+    @tag :etcc
     test "a handler with no handle_listen/3 also gets -32601" do
       {:ok, no_listen} = Config.build(MCP.Test.StatelessHandler, streaming: true)
 
@@ -464,6 +477,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
   # --- Authorization at open time ---
 
   describe "open-time authorization via the honoured subset" do
+    @tag :etcc
     test "a URI this principal may not observe is absent from the ack" do
       allowed = SubscribingHandler.allowed_uri_prefix() <> "a.txt"
 
@@ -481,6 +495,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       assert sub.honoured["resourceSubscriptions"] == [allowed]
     end
 
+    @tag :etcc
     test "a handler may refuse the subscription outright" do
       # `{:listen_refused, ...}`, NOT `{:reply, ...}`: the response is an
       # ordinary error, but the handler ran and holds a live sink, so the driver
@@ -492,6 +507,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       assert error["code"] == -32_603
     end
 
+    @tag :etcc
     test "the two refusals that never reach the handler stay {:reply, ...}" do
       # A malformed filter, and a deployment that cannot stream. Neither ran
       # `handle_listen/3`, so neither handler is holding a sink and neither is

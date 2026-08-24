@@ -167,6 +167,7 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
 
   # --- AC7 — non-localhost origin rejected over real HTTP (parity) ---
 
+  @tag :etcc
   test "AC7 — non-localhost origin is rejected 403 (acceptance parity)", %{std: url} do
     resp =
       post(url, "tools/call", with_meta(%{"name" => "whoami"}),
@@ -179,6 +180,7 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
 
   # --- AC8 — factory raise / non-keyword → clean -32603, nothing leaked ---
 
+  @tag :etcc
   test "AC8 — a factory that raises fails cleanly (-32603); the secret never leaks" do
     url = start_instance(handler_opts: fn _conn -> raise "boom secret=xyz789" end)
 
@@ -190,6 +192,7 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
     refute Jason.encode!(resp.body) =~ "xyz789"
   end
 
+  @tag :etcc
   test "AC8 — a factory that returns a non-keyword fails cleanly (-32603)" do
     url = start_instance(handler_opts: fn _conn -> :not_a_keyword end)
 
@@ -238,6 +241,7 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
   # Vector: MRTR continuation (SEP-2567 state handle). requestState +
   # inputResponses are model-passed; identity must be re-resolved from THIS
   # request's pipeline on the retry, never taken from the continuation.
+  @tag :etcc
   test "spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
        %{std: url} do
     first = post(url, "tools/call", with_meta(%{"name" => "needs_input_id"}), role: "PM")
@@ -263,6 +267,7 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
   # Vector: caches shared across requests/instances — the shipped default is
   # no-store (ttlMs 0), so nothing is cached to leak. (AC6′ proves no
   # cross-request/instance identity leakage directly.)
+  @tag :etcc
   test "default caching policy is no-store (ttlMs 0)", %{std: url} do
     r = result(post(url, "tools/list", with_meta(%{}), role: "PM"))
     assert r["ttlMs"] == 0

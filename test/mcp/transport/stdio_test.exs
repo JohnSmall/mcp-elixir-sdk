@@ -24,6 +24,7 @@ defmodule MCP.Transport.StdioTest do
   end
 
   describe "client mode with echo server" do
+    @tag :etcc
     test "sends a request and receives echo response" do
       transport = start_echo_transport()
 
@@ -45,6 +46,7 @@ defmodule MCP.Transport.StdioTest do
       Stdio.close(transport)
     end
 
+    @tag :etcc
     test "handles multiple requests sequentially" do
       transport = start_echo_transport()
 
@@ -68,6 +70,7 @@ defmodule MCP.Transport.StdioTest do
       Stdio.close(transport)
     end
 
+    @tag :etcc
     test "handles request without params" do
       transport = start_echo_transport()
 
@@ -86,6 +89,7 @@ defmodule MCP.Transport.StdioTest do
       Stdio.close(transport)
     end
 
+    @tag :etcc
     test "notifications get no response" do
       transport = start_echo_transport()
 
@@ -108,6 +112,7 @@ defmodule MCP.Transport.StdioTest do
   end
 
   describe "line buffering" do
+    @tag :etcc
     test "handles rapid sequential messages" do
       transport = start_echo_transport()
 

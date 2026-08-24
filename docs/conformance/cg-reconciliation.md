@@ -75,7 +75,7 @@ label is not one wrong answer, it is a suppressed distribution.
 **S6-6 checked, and it does not bite here.** Every `for` in the CG discharge
 files is *inside* a test body, not wrapping a `test` declaration, so in these
 files one declaration is one runtime unit. Established by reading, not assumed:
-`header_mirror_test.exs:53,88,100,169,182`, `routing_headers_test.exs:92,146,156,396,448`
+`header_mirror_test.exs:53,88,100,170,183`, `routing_headers_test.exs:93,150,160,409,461`
 are all in-body; `client_conformance_test.exs` and `client_tool_schemas_test.exs`
 contain none.
 
@@ -119,7 +119,7 @@ semantic-sameness residual (A3 §7.1) is not load-bearing for any of them.
 | layer | |
 | --- | --- |
 | **gap** | SEP-2243: a client MUST send `Mcp-Method` on all POSTs, and `Mcp-Name` on the three name-bearing methods, so a gateway can route without body inspection. |
-| **discharge** | **9 ET-CC units**, all `MCP.Transport.RoutingHeadersTest`: `routing_headers_test.exs:89,108,122` (T-CG1a), `:133,161,180` (T-CG1b), `:199,222,239` (T-CG1c). Gate 1 in scope, gate 2 wire assertions, gate 3 SEP-2243. |
+| **discharge** | **9 ET-CC units**, all `MCP.Transport.RoutingHeadersTest`: `routing_headers_test.exs:90,110,125` (T-CG1a), `:133,161,180` (T-CG1b), `:199,222,239` (T-CG1c). Gate 1 in scope, gate 2 wire assertions, gate 3 SEP-2243. |
 | **oc** | **MATCHED — 11 check keys**, all `http-standard-headers`. 9 SUCCESS + **2 SKIPPED** at the accepted run. |
 
 **Evidence: E2 + E3 + E4 — and E2 needs a precision the scenario-level figure
@@ -147,7 +147,7 @@ ratified match-target rule is A5's to apply; this is the evidence, not a ruling.
 | layer | |
 | --- | --- |
 | **gap** | SEP-2133: the client must parse, store and expose a server's declared extensions, and treat an unknown extension as data rather than a fault. |
-| **discharge** | **4 ET-CC units**, `MCP.ClientConformanceTest`: `client_conformance_test.exs:184,209,217,232`. |
+| **discharge** | **4 ET-CC units**, `MCP.ClientConformanceTest`: `client_conformance_test.exs:186,211,219,235`. |
 | **oc** | **`oc:none` — E0. Measured: `/extension/i` over all 175 descriptions returns 0, on both legs.** Widened to the whole key (scenario + check_id + name + description): still **0**. |
 
 **A genuine bucket-1 CG: our coverage exceeds the suite's, permanently.** Agrees
@@ -181,7 +181,7 @@ asset.
 | layer | |
 | --- | --- |
 | **gap** | `basic/index.mdx:299-310` at `5f5440bb` — "Implementations MUST NOT automatically dereference `$ref` values that resolve to a network URI." SEP-2106 security implications. |
-| **discharge** | **1 ET-CC unit** — `client_conformance_test.exs:115`. **`:133` is ET-CTRL** ("CONTROL ON THE CONTROL: the canary really does count a fetch") and contributes **no edge** — MES-67's ruling, applied, not re-decided. |
+| **discharge** | **1 ET-CC unit** — `client_conformance_test.exs:116`. **`:133` is ET-CTRL** ("CONTROL ON THE CONTROL: the canary really does count a fetch") and contributes **no edge** — MES-67's ruling, applied, not re-decided. |
 | **oc** | **MATCHED — exactly 1 check key, 1 edge.** |
 
     oc:client/json-schema-ref-no-deref/sep-2106-no-network-ref-deref/NoNetworkRefDereference
@@ -217,7 +217,7 @@ red, but that falsifies the precondition, not the requirement.)
 
 **The overturn, reported as an overturn.** The plan asked a conditional: *if the
 parse half has ET-CC members, CG5 is partially discharged.* The parse half does
-have a member — `discover_test.exs:35` asserts `result.cache_scope == "public"`
+have a member — `discover_test.exs:37` asserts `result.cache_scope == "public"`
 — **but it does not discharge CG5.** CG5's requirement is *honouring*; that unit
 asserts *parsing*. Citing it as CG5's discharge would be the CG5↔`caching` error
 one level down: **same words, different subject** — applied to our own side of
@@ -259,7 +259,7 @@ trace key. The "none" survives the candidate most likely to overturn it.
 | layer | |
 | --- | --- |
 | **gap** | SEP-2243: mirror designated tool parameters into `Mcp-Param-*` headers; encode unsafe values; exclude tools with invalid `x-mcp-header` annotations. |
-| **discharge** | `header_mirror_test.exs` — 34 units across 5 `describe`s; `routing_headers_test.exs:307,342,359` (T-CG7enc, end-to-end through `MCP.Client`); `client_tool_schemas_test.exs:81` (W6, exclusion). |
+| **discharge** | `header_mirror_test.exs` — 34 units across 5 `describe`s; `routing_headers_test.exs:318,354,372` (T-CG7enc, end-to-end through `MCP.Client`); `client_tool_schemas_test.exs:81` (W6, exclusion). |
 | **oc** | **MATCHED — 29 check keys**: `http-custom-headers` 18 + `http-invalid-tool-headers` 11. All 29 SUCCESS. |
 
 **Evidence E1 + E3 + E4.** Both scenarios survive **both** discounts (they are
@@ -346,7 +346,7 @@ there schedules work that may already exist.
 
 Two adjacencies worth naming, since both are near-misses rather than matches:
 `ClientSendsVersionHeader` is a *header* check but `MCP-Protocol-Version`, not
-CG1's `Mcp-Method`/`Mcp-Name` (ours is `routing_headers_test.exs:259`, labelled
+CG1's `Mcp-Method`/`Mcp-Name` (ours is `routing_headers_test.exs:269`, labelled
 D-4, not CG1); and `ClientPopulatesMeta` is a `_meta` check but not CG6's, per §3.
 
 ---

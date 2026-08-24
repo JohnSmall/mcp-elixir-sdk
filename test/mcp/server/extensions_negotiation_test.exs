@@ -107,7 +107,8 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # T1. seps/2133-extensions.md:99 — "extensions MUST be disabled by default
     # and require explicit opt-in". Absence, not `{}`: `"extensions": {}` claims
     # "I do extensions, none of them", and this SDK makes no such claim.
-    # Same `refute Map.has_key?/2` form as discover_test.exs:31-32.
+    # Same `refute Map.has_key?/2` form as discover_test.exs:32-33.
+    @tag :etcc
     test "T1 — `extensions` is absent from a default server/discover result" do
       capabilities = discover()
 
@@ -118,6 +119,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # T2. The two ways a declaration can come to nothing both reach the same
     # absent wire — so "absent by default" is not a special case of the default
     # value, it is what an empty declaration means.
+    @tag :etcc
     test "T2 — an empty or fully-invalid declaration is absent, not `{}`" do
       refute Map.has_key?(discover(extensions: %{}), "extensions")
       refute Map.has_key?(discover(extensions: %{"no-prefix" => %{}}), "extensions")
@@ -127,6 +129,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # T3. The permanent presence half of T1's control: the absence assertions
     # above are only worth anything if the field CAN appear. schema.ts:882 —
     # `extensions?: { [key: string]: JSONObject }` on ServerCapabilities.
+    @tag :etcc
     test "T3 — a declared extension appears verbatim under capabilities.extensions" do
       declared = %{"io.modelcontextprotocol/tasks" => %{}, "com.example/x" => %{"n" => 1}}
       capabilities = discover(extensions: declared)
@@ -136,6 +139,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
 
     # The declaration is validated on the way out — the one point at which this
     # SDK could help a consumer emit a key that violates schema.ts:876-877.
+    @tag :etcc
     test "an invalid identifier is dropped from the declaration, valid ones kept" do
       capabilities =
         discover(extensions: %{"com.example/kept" => %{}, "dropped" => %{}})
@@ -146,6 +150,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # The server's set is launch-static (frozen at `init/1`, beside
     # `:instructions` and `:server_info`); the client's is per request
     # (schema.ts:91-98). Two lifetimes, and the API must not imply they are one.
+    @tag :etcc
     test "the server's declaration is fixed at build time, not per request" do
       config = config(extensions: %{"com.example/x" => %{}})
 
@@ -173,6 +178,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # The assertion is `Jason.encode!/1` over the whole response rather than a
     # look at the capabilities map: encodability is the actual property, and
     # the encoder is the thing that used to raise.
+    @tag :etcc
     test "a settings value that cannot be encoded is dropped at launch, not raised at request time" do
       capture_log(fn ->
         capabilities =
@@ -197,6 +203,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # property; being an object is, and this asserts it where it is observable:
     # every advertised settings value is a map after a real round trip through
     # `Jason`.
+    @tag :etcc
     test "a settings value that encodes to a non-object is dropped, never advertised" do
       capture_log(fn ->
         capabilities =
@@ -221,6 +228,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # itself: a struct is a map, so it passed the guard and then died in the
     # comprehension. `build/2` now returns `{:ok, _}` for every one of them and
     # the server starts, advertising nothing.
+    @tag :etcc
     test "a non-object :extensions value leaves build/2 successful and the wire silent" do
       capture_log(fn ->
         for declared <- [%URI{}, "not a map", 42, [a: 1]] do
@@ -255,6 +263,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # capture is VM-wide, so `client_test.exs` emitting this exact prefix
     # concurrently still failed it. The module is `async: false` for that; see
     # the note on `use ExUnit.Case` above.
+    @tag :etcc
     test "a valid declaration is advertised and warns about nothing" do
       log =
         capture_log(fn ->
@@ -272,6 +281,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # party and the obligation is the client's: a client offering extensions we
     # do not support is NOT an error condition. Rejecting here would be
     # over-building against the spec.
+    @tag :etcc
     test "T10 — tools/call succeeds normally; no error, no -32021" do
       params = %{
         "name" => "whoami",
@@ -292,6 +302,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # DECODED maps with `==`, and map equality is key-order-insensitive, so it
     # is not a byte comparison and could not be one — nothing on this path is
     # serialised. The assertion is the right one; only the name over-claimed.
+    @tag :etcc
     test "T10 — the result is identical to the same call without extensions" do
       base = %{"name" => "whoami", "arguments" => %{}}
 
@@ -310,6 +321,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
 
     # T11. "Nothing breaks" must not be route-specific: a rejection path added
     # to one family and not another would pass a single-route test.
+    @tag :etcc
     test "T11 — tools/list is unaffected" do
       response = dispatch("tools/list", %{"_meta" => meta_offering_extensions()})
 
@@ -317,6 +329,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
       assert is_list(response["result"]["tools"])
     end
 
+    @tag :etcc
     test "T11 — server/discover is unaffected, and still advertises nothing" do
       response = dispatch("server/discover", %{"_meta" => meta_offering_extensions()})
 
@@ -325,6 +338,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
       refute Map.has_key?(response["result"]["capabilities"], "extensions")
     end
 
+    @tag :etcc
     test "T11 — resources/list and prompts/list are unaffected" do
       for method <- ["resources/list", "prompts/list"] do
         response = dispatch(method, %{"_meta" => meta_offering_extensions()})
@@ -335,6 +349,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # A malformed declaration is still not an error: inbound is never validated,
     # so there is no shape a client can send that turns a serviceable request
     # into a failure.
+    @tag :etcc
     test "a malformed or non-object extensions declaration still breaks nothing" do
       for extensions <- [%{"no-prefix" => %{}}, "not an object", nil, 42] do
         meta = %{
@@ -358,6 +373,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # change: the raw client `_meta` already reaches every identity-capable
     # callback as `ctx.meta` (tool_context.ex:84, populated at plug.ex:396 and
     # connection.ex:133,210), and `from_meta/1` is a pure read over it.
+    @tag :etcc
     test "a handler can read the client's declaration off ctx.meta" do
       ctx = %ToolContext{request_id: 1, meta: meta_offering_extensions()}
 

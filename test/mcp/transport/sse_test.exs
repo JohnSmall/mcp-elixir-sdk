@@ -4,6 +4,7 @@ defmodule MCP.Transport.SSETest do
   alias MCP.Transport.SSE
 
   describe "encode_event/1" do
+    @tag :etcc
     test "encodes event with all fields" do
       event = %{event: "message", id: "42", data: ~s({"key":"value"}), retry: 3000}
       result = SSE.encode_event(event)
@@ -15,22 +16,26 @@ defmodule MCP.Transport.SSETest do
       assert String.ends_with?(result, "\n\n")
     end
 
+    @tag :etcc
     test "encodes event with only data" do
       result = SSE.encode_event(%{data: "hello"})
       assert result == "data: hello\n\n"
     end
 
+    @tag :etcc
     test "encodes event with event type and data" do
       result = SSE.encode_event(%{event: "message", data: "hello"})
       assert result == "event: message\ndata: hello\n\n"
     end
 
+    @tag :etcc
     test "encodes event with empty data" do
       result = SSE.encode_event(%{id: "1"})
       assert result =~ "id: 1\n"
       assert result =~ "data: \n"
     end
 
+    @tag :etcc
     test "encodes multi-line data as multiple data fields" do
       result = SSE.encode_event(%{data: "line1\nline2\nline3"})
       assert result == "data: line1\ndata: line2\ndata: line3\n\n"
@@ -38,6 +43,7 @@ defmodule MCP.Transport.SSETest do
   end
 
   describe "encode_message/2" do
+    @tag :etcc
     test "encodes a JSON-RPC message as SSE event" do
       message = %{"jsonrpc" => "2.0", "id" => 1, "result" => %{"tools" => []}}
       result = SSE.encode_message(message)
@@ -57,6 +63,7 @@ defmodule MCP.Transport.SSETest do
       assert decoded["id"] == 1
     end
 
+    @tag :etcc
     test "includes event ID when provided" do
       message = %{"jsonrpc" => "2.0", "id" => 1, "result" => %{}}
       result = SSE.encode_message(message, id: "evt-42")
@@ -64,6 +71,7 @@ defmodule MCP.Transport.SSETest do
       assert result =~ "id: evt-42\n"
     end
 
+    @tag :etcc
     test "uses custom event type" do
       message = %{"jsonrpc" => "2.0", "id" => 1, "result" => %{}}
       result = SSE.encode_message(message, event: "response")
@@ -73,6 +81,7 @@ defmodule MCP.Transport.SSETest do
   end
 
   describe "decode_event/1" do
+    @tag :etcc
     test "decodes event with all fields" do
       text = "event: message\nid: 42\ndata: hello\nretry: 3000"
       assert {:ok, event} = SSE.decode_event(text)
@@ -83,6 +92,7 @@ defmodule MCP.Transport.SSETest do
       assert event.retry == 3000
     end
 
+    @tag :etcc
     test "decodes event with only data" do
       assert {:ok, event} = SSE.decode_event("data: hello world")
       assert event.data == "hello world"
@@ -90,24 +100,28 @@ defmodule MCP.Transport.SSETest do
       refute Map.has_key?(event, :id)
     end
 
+    @tag :etcc
     test "decodes event with JSON data" do
       json = ~s({"jsonrpc":"2.0","id":1})
       assert {:ok, event} = SSE.decode_event("data: #{json}")
       assert event.data == json
     end
 
+    @tag :etcc
     test "joins multiple data lines with newlines" do
       text = "data: line1\ndata: line2\ndata: line3"
       assert {:ok, event} = SSE.decode_event(text)
       assert event.data == "line1\nline2\nline3"
     end
 
+    @tag :etcc
     test "ignores comment lines" do
       text = ": this is a comment\ndata: hello"
       assert {:ok, event} = SSE.decode_event(text)
       assert event.data == "hello"
     end
 
+    @tag :etcc
     test "ignores unknown fields" do
       text = "custom: value\ndata: hello"
       assert {:ok, event} = SSE.decode_event(text)
@@ -118,6 +132,7 @@ defmodule MCP.Transport.SSETest do
       assert {:error, :empty_event} = SSE.decode_event("")
     end
 
+    @tag :etcc
     test "handles fields without space after colon" do
       text = "data:hello"
       assert {:ok, event} = SSE.decode_event(text)
@@ -126,6 +141,7 @@ defmodule MCP.Transport.SSETest do
   end
 
   describe "stream parser" do
+    @tag :etcc
     test "parses complete events" do
       parser = SSE.new_parser()
       data = "event: message\ndata: hello\n\nevent: message\ndata: world\n\n"
@@ -136,6 +152,7 @@ defmodule MCP.Transport.SSETest do
       assert Enum.at(events, 1).data == "world"
     end
 
+    @tag :etcc
     test "buffers incomplete events" do
       parser = SSE.new_parser()
 
@@ -149,6 +166,7 @@ defmodule MCP.Transport.SSETest do
       assert Enum.at(events2, 0).data == "hello"
     end
 
+    @tag :etcc
     test "handles multiple chunks" do
       parser = SSE.new_parser()
 
@@ -165,6 +183,7 @@ defmodule MCP.Transport.SSETest do
       assert Enum.at(events3, 0).data == "three"
     end
 
+    @tag :etcc
     test "round-trip encode then decode" do
       message = %{"jsonrpc" => "2.0", "id" => 1, "result" => %{"tools" => []}}
       encoded = SSE.encode_message(message, id: "evt-1")

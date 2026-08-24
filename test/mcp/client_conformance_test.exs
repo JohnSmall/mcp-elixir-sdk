@@ -112,6 +112,7 @@ defmodule MCP.ClientConformanceTest do
       %{hits: hits, url: "http://127.0.0.1:#{server_port}/mcp", canary_port: canary_port}
     end
 
+    @tag :etcc
     test "listing and calling a tool whose inputSchema $refs a network URI never fetches it", %{
       hits: hits,
       url: url
@@ -181,6 +182,7 @@ defmodule MCP.ClientConformanceTest do
       {result, request}
     end
 
+    @tag :etcc
     test "the client can read what the server declared, with the settings map intact" do
       {:ok, client} = Client.start_link(transport: {MockTransport, []})
       transport = Client.transport(client)
@@ -229,6 +231,7 @@ defmodule MCP.ClientConformanceTest do
       refute log =~ "[warning]"
     end
 
+    @tag :etcc
     test "the OUTBOUND half (MES-16) still rides every request's _meta" do
       {:ok, client} =
         Client.start_link(

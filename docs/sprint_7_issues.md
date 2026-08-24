@@ -1804,3 +1804,278 @@ sentence that is about that row.
 per-item reason field with a group of 13 identical values is either a genuine
 regularity worth naming as one rule, or 13 rows nobody looked at individually.
 Both are worth knowing, and the query costs one line.
+
+---
+
+## S7-31 — A selection mechanism whose granularity option silently REWRITES the identifier it selects on, so narrowing the selection re-keys the rows
+
+**Found on MES-84 (B4), at planning**, while establishing how the 6 doctest
+members could be tagged. Ruled by the PM at `26115` / `26117` (E1).
+
+### The mechanism
+
+`ExUnit.DocTest` numbers generated examples with a **module-wide counter over the
+selected set**. `doctest Mod` and `doctest Mod, only: [f: 1]` therefore produce
+*different names for the same example*:
+
+```
+doctest Mod                       doctest Mod, only: [b?: 1]
+  ...a/1 (1)  ...a/1 (2)
+  ...b?/1 (3) ...b?/1 (4)   -->     ...b?/1 (1)  ...b?/1 (2)
+  ...c/1 (5)
+```
+
+`only:` is documented as a way to *narrow* a selection. It is also, undocumented
+and unannounced, a way to **renumber** it. Nothing warns, nothing fails, and both
+runs are green.
+
+That would be a curiosity except that the number is inside the row key
+(`docs/conformance/etcc-row-key.md` §1), and the row key is the **authored join
+key** of `conformance/data/etcc-decisions.json`. Narrowing one directive from 9
+examples to 2 would have re-keyed 9 entries of a *merged* deliverable and forced
+a rebuild of the register, the attribution and the rows artefact — to buy a source
+marker on 2 tests.
+
+### Why it was worth a ruling rather than a workaround
+
+The PM's HAZARD 1 verdict was "resolvable, split it", reached before anyone had
+measured what `only:` does to the index. The corrected verdict is **resolvable in
+principle, and we decline the resolution because it costs more than the gap**. The
+distinction matters: an unmeasured "resolvable" invites the next person to do it.
+
+### Transferable form
+
+**Before using a mechanism's narrowing option, ask what the option does to the
+IDENTIFIERS of the things it keeps.** A filter that only removes rows is safe; a
+filter that renumbers what it keeps is a rename, and a rename of a join key is a
+migration. The cheap detector is one run of each form side by side with the names
+printed — which is `conformance/controls/etcc_tags_controls.exs doctest_options`,
+committed for exactly that reason.
+
+---
+
+## S7-32 — A source marker cannot be added without moving every address below it, and the blast radius is not confined to the artefact that predicted it
+
+**Found on MES-84 (B4), at planning and then re-measured at the delivered tip.**
+Ruled by the PM at `26116` (E2, option (ii): re-sync at the end of the ticket).
+
+### The mechanism
+
+Adding `@tag :etcc` above a test inserts a line. Every `file:line` address below
+it in that file is now off by one, cumulatively. 265 insertions over 30 files.
+
+**Row keys are unaffected** — a key carries module and name and never a line —
+which is what makes the repair mechanical rather than a re-decision. Only the
+human-readable addresses move.
+
+### The part that was under-measured, and it is the transferable half
+
+Planning measured the authored citations in **one** file's one field:
+`conformance/data/etcc-decisions.json` `evidence`, 1108 citations of which 393
+pointed into a file about to be tagged. That number was reproduced by the PM and
+ruled on. At the delivered tip, scanning **every tracked file** found **1319
+citations into a tagged file, across 17 files** — the boundaries file, five
+`docs/conformance/*.md` documents, three sprint issue registers and two test
+files, none of which the estimate had looked at.
+
+The estimate was not wrong about what it measured. It was scoped to the artefact
+the ticket was *thinking* about, and an address shift does not respect that scope.
+
+### The second grammar problem
+
+A naive `\.exs?:(\d+)` scan also **under-counts**, because citations are written
+in more than one grammar:
+
+```
+header_mirror_test.exs:113,120,133,156,168,194,205,222,231     a LIST
+discover_test.exs:31-32                                        a RANGE
+```
+
+A rewriter matching only the first number produces a **half-corrected citation**,
+which is worse than an uncorrected one: it looks repaired. The grammar has to be
+`:\d+((,|-|/:)\d+)*` and every number in it remapped.
+
+### The invariant that makes the repair safe
+
+> **the bytes at the new line equal the bytes that were at the old line before
+> tagging.**
+
+Checked mechanically for every citation, not for the subset expected to move.
+Result at the delivered tip: **738 moved, 138 unmoved, 2 escalated** over the
+files rewritten. The 2 are the same address twice — the one line whose *content*
+this ticket deliberately rewrote — so no rewrite could satisfy the invariant and
+none was attempted.
+
+### Transferable form
+
+**A mechanical repair needs a mechanical acceptance test, and the test must run
+over the whole population rather than the part you expect to move.** A citation
+predicted not to move is a prediction until the check runs. And the scan that
+finds the population must be written against the *grammars in use*, established by
+looking, not against the one grammar you had in mind.
+
+---
+
+## S7-33 — Declining a resolution leaves a residual, and a residual that no control watches is the shape the ticket existed to prevent
+
+**Found on MES-84 (B4).** The PM's condition on the E1 ruling (`26115`).
+
+### The residual, stated as a cost
+
+`test/mcp/protocol/extensions_test.exs` carries a `doctest` directive generating
+9 examples, 2 of which are ET-CC members. Since the directive is left unsplit
+(S7-31), those 2 members carry **no marker in the source at all**. A reader of
+that file sees nothing on them. They are selected by an exact test-name filter
+derived from the register.
+
+**2 of 281 members, and the cost is legibility rather than coverage.**
+
+### Why it is not a special case
+
+The two keys are in `expected_keys/1` exactly like every other member, so
+`mix test.etcc` refuses if the name filter ever stops selecting them, in the same
+comparison and with the same message. There is no branch that treats them
+differently and therefore no branch that could stop watching them.
+
+The name filter is exact only because **no two tests in this tree share a name** —
+a property of the tree, not a guarantee of the mechanism. So it is asserted as its
+own check (`name_collisions/1`), and a future collision goes red rather than
+silently widening the selection.
+
+### Transferable form
+
+**When a ruling declines a resolution, the residual has to be named AND guarded.**
+Named, because a declined resolution and an unnoticed gap read identically a
+sprint later. Guarded, because the argument for declining is always "the cheaper
+mechanism covers it" — and that argument is only true while something checks that
+the cheaper mechanism still does.
+
+---
+
+## S7-34 — An unknown option to `doctest` is ignored in silence, so a misspelling is a mark that was never applied over a suite that stays green
+
+**Found on MES-84 (B4), AC4, measured at CODE_CREATOR's seat** rather than taken
+from the brief that predicted it.
+
+### The mechanism
+
+`ExUnit.DocTest`'s documented option vocabulary is `:only`, `:except`, `:import`,
+`:tags`, `:inspect_opts`. An option outside it produces **no error, no warning,
+exit 0, and no tag**:
+
+```
+doctest Subject, only: [c: 1], tagz: [:etcc]     # tagz, not tags
+  MES84.DoctestTypoFixture/doctest ...c/1 (1)    etcc=nil
+```
+
+Compare the correctly spelled form, which does place the tag on **every** example
+of the selected `{function, arity}`:
+
+```
+doctest Subject, only: [b?: 1], tags: [:etcc]
+  MES84.DoctestOnlyFixture/doctest ...b?/1 (1)   etcc=true
+  MES84.DoctestOnlyFixture/doctest ...b?/1 (2)   etcc=true
+```
+
+### Why this is a procedure defect and not a trivium
+
+The whole tagging mechanism rests on the mark actually reaching the test. A
+misspelling here is indistinguishable, from the suite's output, from a correctly
+applied mark on a test that happens to pass. It cannot be caught where it is made;
+it has to be caught somewhere that compares **what was intended** against **what
+ExUnit actually reports**, which is what `mix conformance.etcc_tags --check` and
+the runtime guard do.
+
+### Transferable form
+
+**A configuration surface that ignores what it does not recognise converts every
+typo into a silent no-op**, and a no-op in a marking mechanism is invisible by
+construction. The detector is a committed negative fixture — one deliberately
+misspelled option whose *absence of effect* is asserted — because a mechanism
+nobody has watched fail is a mechanism nobody has watched.
+
+---
+
+## S7-35 — A selection mechanism's green means "everything selected passed", never "everything intended was selected", and no exit status can tell them apart
+
+**Found on MES-84 (B4).** The brief's HAZARD 4 stated the risk one notch too
+strongly; the correction is the useful part.
+
+### What the brief said, and what is actually true
+
+HAZARD 4 said a zero-selection run "would exit 0 having run zero tests, and read
+as success". Measured: it does not.
+
+```
+$ mix test --only no_such_tag --seed 0
+All tests have been excluded.
+0 tests, 0 failures (41 excluded)
+The --only option was given to "mix test" but no test was executed
+rc=1
+```
+
+**ExUnit already refuses a totally vacuous `--only` run and names the cause.** The
+zero case was never ours to discover.
+
+### The case that IS ours, and it is the likelier one
+
+**Partial selection exits 0.** 1 of 281 tagged and passing prints a green summary;
+so does 280 of 281, and so does 281 of 281. No exit status can separate them,
+because all three are truthfully "everything selected passed". Demonstrated: with
+one `@tag :etcc` line removed, `mix test` ran 280 tests and passed all 280 — the
+run is green and the claim set is short by one.
+
+So the check cannot be on the status. It has to be on the **captured key set**,
+compared to the register in both directions.
+
+### What makes that comparison possible at all
+
+MES-83's rule that **an excluded test still gets a row, carrying its exclusion
+reason**. Without it, "selected" would not be readable off the artefact and
+"absent from the artefact" would collapse three different things into one silence.
+A detectable vacuity is a property somebody had to build.
+
+### Transferable form
+
+**Whenever a tool reports on a subset it chose, the report must state the subset,
+not just the verdict over it.** The question "did everything pass?" is answerable
+by a status; the question "was everything asked?" is not, and it is the one that
+goes wrong quietly.
+
+---
+
+## S7-36 — Runtime units and source declarations are two different populations, and the distinction has to be restated at every use rather than established once
+
+**Found on MES-84 (B4), at planning**, in the PM's own dispatch. Accepted and
+reproduced by the PM at `26115` (E3).
+
+### What happened
+
+Sprint 7 spent most of B1–B3 separating **runtime tests** from **source
+declarations** — S6-6 is that distinction, and the row key exists because of it.
+One paragraph after stating the rule that depends on it, MES-84's dispatch said:
+
+> "573 of the 579 declarations produce exactly one unit each"
+
+Both figures are wrong in the same way. **579 is the count of runtime units.** The
+declarations are **539**, of which 533 produce exactly one unit and 6 produce 46
+between them; 533 + 46 = 579. 573 is not a count of anything.
+
+The ruling the sentence supports was unaffected — a `@tag` on an individual test
+reaches exactly one runtime unit, and that is true of 533 declarations.
+
+### The mechanism
+
+The two populations are near enough in size (539 vs 579) that a wrong one reads as
+plausible, and the arithmetic that would catch it (`single + units-in-multi =
+total`) is only obvious once you already have both figures. A conflation of two
+close numbers survives review in a way that an order-of-magnitude error does not.
+
+### Transferable form
+
+**A distinction established at the start of a sprint does not stay established.**
+It has to be re-stated at each use, in the sentence that uses it — "539
+declarations producing 579 runtime units", never "the 579". And any figure about
+either population should be published with the bridging arithmetic beside it, so
+that the reader can tell which population is being counted without knowing which
+one the author meant.

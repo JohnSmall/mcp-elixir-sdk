@@ -85,6 +85,7 @@ defmodule MCP.Server.ToolOrderTest do
 
   # --- SUBJECT: the arm that was red before the fix ---
 
+  @tag :etcc
   test "SUBJECT — two instances holding the same tool set answer in the same order" do
     fwd = config(EtsRegistryHandler, order: :forward)
     rev = config(EtsRegistryHandler, order: :reverse)
@@ -92,11 +93,13 @@ defmodule MCP.Server.ToolOrderTest do
     assert list_tool_names(fwd) == list_tool_names(rev)
   end
 
+  @tag :etcc
   test "SUBJECT — one instance answers in the same order on every request" do
     cfg = config(EtsRegistryHandler, order: :forward)
     assert Enum.uniq(for _ <- 1..5, do: list_tool_names(cfg)) |> length() == 1
   end
 
+  @tag :etcc
   test "SUBJECT — the default order is by name, and the tool SET is untouched" do
     cfg = config(EtsRegistryHandler, order: :forward)
     names = list_tool_names(cfg)
@@ -118,6 +121,7 @@ defmodule MCP.Server.ToolOrderTest do
 
   # --- CONTROL-1: the escape hatch preserves a curated, conformant order ---
 
+  @tag :etcc
   test "CONTROL-1 — :tool_order = :handler keeps a curated non-alphabetical order verbatim" do
     curated = ["tool_9", "tool_1", "tool_24", "tool_3"]
     cfg = config(EtsRegistryHandler, [order: curated], %{tool_order: :handler})
@@ -131,6 +135,7 @@ defmodule MCP.Server.ToolOrderTest do
 
   # --- CONTROL-2: discriminates nothing, and says so ---
 
+  @tag :etcc
   test "CONTROL-2 (discriminates nothing) — an already-deterministic handler is unaffected" do
     cfg = config(MCP.Test.StatelessHandler, [])
     assert Enum.uniq(for _ <- 1..3, do: list_tool_names(cfg)) |> length() == 1
@@ -138,6 +143,7 @@ defmodule MCP.Server.ToolOrderTest do
 
   # --- BOUND: what the guarantee does NOT cover (A2d) ---
 
+  @tag :etcc
   test "BOUND — sorting is per RESPONSE; a paginated listing is not made deterministic" do
     # Each page is sorted on its way out. That does not make the concatenation of
     # two pages sorted, and it does nothing at all about a handler whose own

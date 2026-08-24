@@ -12,6 +12,7 @@ defmodule MCP.ProtocolTest do
   end
 
   describe "encode/1" do
+    @tag :etcc
     test "encodes a request" do
       request = Request.new(1, "tools/list", %{"cursor" => "abc"})
       assert {:ok, json} = Protocol.encode(request)
@@ -23,6 +24,7 @@ defmodule MCP.ProtocolTest do
       assert decoded["params"] == %{"cursor" => "abc"}
     end
 
+    @tag :etcc
     test "encodes a request without params" do
       request = Request.new(1, "ping")
       assert {:ok, json} = Protocol.encode(request)
@@ -58,6 +60,7 @@ defmodule MCP.ProtocolTest do
       refute Map.has_key?(decoded, "result")
     end
 
+    @tag :etcc
     test "encodes a notification" do
       notification = Notification.new("notifications/tools/list_changed")
       assert {:ok, json} = Protocol.encode(notification)
@@ -69,6 +72,7 @@ defmodule MCP.ProtocolTest do
       refute Map.has_key?(decoded, "params")
     end
 
+    @tag :etcc
     test "encodes a notification with params" do
       notification = Notification.new("notifications/resources/updated", %{"uri" => "file:///a"})
       assert {:ok, json} = Protocol.encode(notification)
@@ -79,6 +83,7 @@ defmodule MCP.ProtocolTest do
   end
 
   describe "decode/1" do
+    @tag :etcc
     test "decodes a request" do
       json = ~s({"jsonrpc":"2.0","id":42,"method":"tools/call","params":{"name":"weather"}})
       assert {:ok, %Request{} = request} = Protocol.decode(json)
@@ -88,12 +93,14 @@ defmodule MCP.ProtocolTest do
       assert request.params == %{"name" => "weather"}
     end
 
+    @tag :etcc
     test "decodes a request with string id" do
       json = ~s({"jsonrpc":"2.0","id":"abc-123","method":"ping"})
       assert {:ok, %Request{} = request} = Protocol.decode(json)
       assert request.id == "abc-123"
     end
 
+    @tag :etcc
     test "decodes a success response" do
       json = ~s({"jsonrpc":"2.0","id":1,"result":{"tools":[]}})
       assert {:ok, %Response{} = response} = Protocol.decode(json)
@@ -103,6 +110,7 @@ defmodule MCP.ProtocolTest do
       assert response.error == nil
     end
 
+    @tag :etcc
     test "decodes an error response" do
       json = ~s({"jsonrpc":"2.0","id":1,"error":{"code":-32601,"message":"Method not found"}})
       assert {:ok, %Response{} = response} = Protocol.decode(json)
@@ -113,6 +121,7 @@ defmodule MCP.ProtocolTest do
       assert response.error.message == "Method not found"
     end
 
+    @tag :etcc
     test "decodes a notification" do
       json = ~s({"jsonrpc":"2.0","method":"notifications/initialized"})
       assert {:ok, %Notification{} = notification} = Protocol.decode(json)
@@ -168,6 +177,7 @@ defmodule MCP.ProtocolTest do
   end
 
   describe "encode!/1" do
+    @tag :etcc
     test "returns JSON string" do
       request = Request.new(1, "ping")
       json = Protocol.encode!(request)

@@ -47,6 +47,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
   # --- lifecycle (no handshake, no session) ---
 
+  @tag :etcc
   test "server/discover returns the schema-shaped result with no version gate" do
     conn = post(opts(), rpc("server/discover", %{}))
     r = result(conn)
@@ -56,6 +57,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert r["_meta"]["io.modelcontextprotocol/serverInfo"]["name"]
   end
 
+  @tag :etcc
   test "tools/list then tools/call work directly, no initialize first" do
     list = post(opts(), rpc("tools/list", with_meta(%{}))) |> result()
     assert Enum.any?(list["tools"], &(&1["name"] == "whoami"))
@@ -69,17 +71,20 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert hd(call["content"])["text"] == ""
   end
 
+  @tag :etcc
   test "list/read results carry caching hints (ttlMs/cacheScope)" do
     r = post(opts(), rpc("tools/list", with_meta(%{}))) |> result()
     assert r["ttlMs"] == 0
     assert r["cacheScope"] == "public"
   end
 
+  @tag :etcc
   test "a request without a protocolVersion _meta fails fast (-32022)" do
     conn = post(opts(), rpc("tools/call", %{"name" => "whoami"}))
     assert error(conn)["code"] == -32_022
   end
 
+  @tag :etcc
   test "initialize is gone → -32022; ping/logging.setLevel → -32601" do
     assert error(post(opts(), rpc("initialize", %{})))["code"] == -32_022
     assert error(post(opts(), rpc("ping", %{})))["code"] == -32_601
@@ -88,6 +93,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
   # --- routing headers (SEP-2243) ---
 
+  @tag :etcc
   test "matching Mcp-Method routes normally; a mismatch is rejected (-32020)" do
     ok = post(opts(), rpc("tools/list", with_meta(%{})), [{"mcp-method", "tools/list"}])
     assert ok.status == 200
@@ -96,6 +102,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert error(bad)["code"] == -32_020
   end
 
+  @tag :etcc
   test "Mcp-Name mismatch against params.name is rejected (-32020)" do
     msg = rpc("tools/call", with_meta(%{"name" => "whoami", "arguments" => %{}}))
     bad = post(opts(), msg, [{"mcp-name", "other"}])
@@ -103,6 +110,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
   end
 
   # SEP-2243 (F1): for resources/read the Mcp-Name target is params.uri.
+  @tag :etcc
   test "resources/read — Mcp-Name is validated against params.uri (mismatch → -32020)" do
     msg = rpc("resources/read", with_meta(%{"uri" => "mem://res"}))
 
@@ -116,6 +124,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
   # --- origin enforcement (AC7 re-homed) ---
 
+  @tag :etcc
   test "AC7 — non-localhost origin is rejected 403; the identity factory never runs" do
     test_pid = self()
 
@@ -187,6 +196,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert hd(result(call.("REVIEWER"))["content"])["text"] == "REVIEWER"
   end
 
+  @tag :etcc
   test "MC-6 — a factory that raises fails cleanly (-32603) with no handler invoked" do
     plug_opts = opts(handler_opts: fn _conn -> raise "boom secret=abc123" end)
 
@@ -208,6 +218,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
   # AC5 claimed it satisfied. The `collector_start` seam makes Codex's manual
   # injection a permanent test (A7); shown FAILING against the unguarded match
   # and passing here.
+  @tag :etcc
   test "MC-6 — a collector that fails to start fails cleanly (-32603), no handler invoked" do
     plug_opts =
       opts(collector_start: fn -> {:error, :injected_collector_failure_secret} end)
@@ -229,6 +240,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
   # --- MRTR round-trip (SEP-2322) ---
 
+  @tag :etcc
   test "tools/call input-required → retry with requestState → completion" do
     first = post(opts(), rpc("tools/call", with_meta(%{"name" => "needs_input"}))) |> result()
     assert first["resultType"] == "input_required"
@@ -250,6 +262,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
   # --- transport errors ---
 
+  @tag :etcc
   test "GET and DELETE are not allowed (405), and allow names only POST" do
     # Ruling 2 (MES-15): no backward compatibility. GET previously answered 200
     # with an empty text/event-stream — a vestige of the standing stream Sprint 3
@@ -267,6 +280,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     end
   end
 
+  @tag :etcc
   test "a malformed body is a parse error → -32700" do
     bad =
       :post
@@ -281,6 +295,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
   # --- Ruling 7: no cross-request notification residue after a handler raises ---
 
+  @tag :etcc
   test "a raising handler leaves no notification residue for the next request (SSE)" do
     # SSE mode so notifications are flushed into the response body — exactly
     # where the leak was visible. Two calls in THIS process: request 1 (PM)
@@ -328,6 +343,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
       %{urls: [url1, url2]}
     end
 
+    @tag :etcc
     test "interleaving requests round-robin across two stateless instances succeeds identically",
          %{urls: urls} do
       # No shared session state between the two Bandit instances; every request

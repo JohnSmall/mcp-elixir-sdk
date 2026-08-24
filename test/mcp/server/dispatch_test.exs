@@ -78,11 +78,13 @@ defmodule MCP.Server.DispatchTest do
 
   # --- Removed methods: stateless behaviour, no legacy path ---
 
+  @tag :etcc
   test "initialize is removed → UnsupportedProtocolVersion (-32022)" do
     {:reply, resp, _} = Dispatch.dispatch(req("initialize", %{}), ctx(), config())
     assert resp["error"]["code"] == -32_022
   end
 
+  @tag :etcc
   test "ping and logging/setLevel are removed → method not found (-32601)" do
     {:reply, ping_resp, _} = Dispatch.dispatch(req("ping", %{}), ctx(), config())
 
@@ -95,6 +97,7 @@ defmodule MCP.Server.DispatchTest do
 
   # --- Per-request version gate ---
 
+  @tag :etcc
   test "request without a protocolVersion _meta fails fast (-32022)" do
     {:reply, resp, _} =
       Dispatch.dispatch(req("tools/call", %{"name" => "whoami"}), ctx("PM"), config())
@@ -102,6 +105,7 @@ defmodule MCP.Server.DispatchTest do
     assert resp["error"]["code"] == -32_022
   end
 
+  @tag :etcc
   test "old-shape (2025-11-25) version fails fast (-32022)" do
     params = %{"name" => "whoami", "arguments" => %{}, "_meta" => meta("2025-11-25")}
     {:reply, resp, _} = Dispatch.dispatch(req("tools/call", params), ctx("PM"), config())
@@ -110,6 +114,7 @@ defmodule MCP.Server.DispatchTest do
 
   # --- server/discover: no version gate; schema-shaped result ---
 
+  @tag :etcc
   test "server/discover: schema shape (supportedVersions + CacheableResult fields; serverInfo in _meta)" do
     {:reply, resp, _} = Dispatch.dispatch(req("server/discover", %{}), ctx(), config())
     result = resp["result"]

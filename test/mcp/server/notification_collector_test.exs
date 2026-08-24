@@ -10,6 +10,7 @@ defmodule MCP.Server.NotificationCollectorTest do
 
   alias MCP.Server.NotificationCollector, as: Collector
 
+  @tag :etcc
   test "drain returns pushed notifications as wire maps, in emission order (G3)" do
     {:ok, c} = Collector.start_link()
 

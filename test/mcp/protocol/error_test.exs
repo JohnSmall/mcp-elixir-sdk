@@ -102,6 +102,7 @@ defmodule MCP.Protocol.ErrorTest do
   end
 
   describe "from_map/1" do
+    @tag :etcc
     test "parses error from wire format" do
       map = %{"code" => -32_601, "message" => "Method not found", "data" => "foo/bar"}
       error = Error.from_map(map)
@@ -111,6 +112,7 @@ defmodule MCP.Protocol.ErrorTest do
       assert error.data == "foo/bar"
     end
 
+    @tag :etcc
     test "parses error without data" do
       map = %{"code" => -32_603, "message" => "Internal error"}
       error = Error.from_map(map)

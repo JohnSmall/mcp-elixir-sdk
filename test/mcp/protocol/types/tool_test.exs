@@ -70,6 +70,7 @@ defmodule MCP.Protocol.Types.ToolTest do
   end
 
   describe "JSON encoding" do
+    @tag :etcc
     test "round-trips through JSON with camelCase keys" do
       tool = Tool.from_map(@tool_map)
       json = Jason.encode!(tool)
@@ -81,6 +82,7 @@ defmodule MCP.Protocol.Types.ToolTest do
       refute Map.has_key?(decoded, "outputSchema")
     end
 
+    @tag :etcc
     test "omits nil fields" do
       tool = Tool.from_map(@tool_map)
       json = Jason.encode!(tool)
@@ -118,6 +120,7 @@ defmodule MCP.Protocol.Types.ToolTest do
       end
     end
 
+    @tag :etcc
     test "an absent outputSchema is still absent" do
       tool = Tool.from_map(@tool_map)
 
@@ -128,6 +131,7 @@ defmodule MCP.Protocol.Types.ToolTest do
 
   # --- MES-17 / SEP-2106: any 2020-12 keyword survives, in either schema ---
 
+  @tag :etcc
   test "inputSchema keywords beyond `type` are carried verbatim, including `not` and `$anchor`" do
     schema = %{
       "type" => "object",
