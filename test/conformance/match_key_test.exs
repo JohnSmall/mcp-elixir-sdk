@@ -494,6 +494,337 @@ defmodule MCP.Conformance.MatchKeyTest do
     end
   end
 
+  describe "MES-76 F1 — the artefact can be reached the way a consumer travels" do
+    test "the authoring procedure is kept, renamed, and says what it presupposes", %{axes: axes} do
+      # The old procedure is not wrong; it is the wrong DIRECTION, and it records
+      # how the rows were actually cut. Deleting it would trade one gap for
+      # another, so it is renamed and labelled rather than removed.
+      provenance = axes["provenance"]
+
+      refute Map.has_key?(provenance, "extraction_procedure")
+      assert is_list(provenance["authoring_procedure"])
+
+      preamble = hd(provenance["authoring_procedure"])
+      assert preamble =~ "axis -> site"
+      assert preamble =~ "presupposes"
+      assert preamble =~ "reverse_lookup_procedure"
+
+      # the original four steps survive the rename
+      assert length(provenance["authoring_procedure"]) == 5
+      assert Enum.any?(provenance["authoring_procedure"], &(&1 =~ "Locate the axis expression"))
+    end
+
+    test "the reverse-lookup procedure runs check_id -> site and names all three forms", %{
+      axes: axes
+    } do
+      reverse = axes["provenance"]["reverse_lookup_procedure"]
+
+      assert reverse["direction"] =~ "check_id -> emitting site"
+
+      # The clause that matters most: a consumer meeting an empty grep is
+      # exactly where the fallback to reading the check's `description` happens,
+      # and that is the one move MES-68 exists to forbid.
+      empty_grep = reverse["cases"]["0_occurrences_TEMPLATE"]
+      assert empty_grep =~ "THE GREP RETURNED NOTHING"
+      assert empty_grep =~ "must NOT fall back"
+      assert empty_grep =~ "description"
+
+      assert MapSet.new(Map.keys(reverse["cases"])) ==
+               MapSet.new([
+                 "0_occurrences_TEMPLATE",
+                 "1_occurrence_LITERAL_or_CONSTANT",
+                 "2_occurrences_LITERAL_PLUS_PREFIX"
+               ])
+    end
+
+    test "every row carries a locator, and its occurrence count agrees with its form", %{
+      axes: axes
+    } do
+      # The taxonomy was already honest — `form` and `id_source` carried this
+      # distinction before MES-76. What was missing is the locator that consumes
+      # it. This asserts the two cannot drift apart.
+      by_form =
+        for check <- axes["checks"] do
+          locator = check["emitting_site"]["locator"]
+          form = check["emitting_site"]["form"]
+
+          assert is_integer(locator["check_id_occurrences"])
+          assert locator["grep_for"] != ""
+          assert locator["disambiguate"] != ""
+
+          case form do
+            "template" ->
+              # 0 occurrences, so grep_for MUST be something other than the id
+              assert locator["check_id_occurrences"] == 0
+              refute locator["grep_for"] == Enum.at(check["key"], 2)
+              assert String.starts_with?(Enum.at(check["key"], 2), locator["grep_for"])
+
+            _ ->
+              assert locator["check_id_occurrences"] > 0
+          end
+
+          form
+        end
+
+      # 7 literal, 5 template, 1 constant = 13, enumerated rather than counted.
+      assert Enum.frequencies(by_form) == %{"literal" => 7, "template" => 5, "constant" => 1}
+    end
+
+    test "the 6 of 13 a check_id grep cannot reach are exactly the 5 templates + the constant", %{
+      axes: axes
+    } do
+      # F1's central figure, stated as a set rather than a count.
+      unreachable =
+        for check <- axes["checks"],
+            check["emitting_site"]["locator"]["check_id_occurrences"] == 0 or
+              check["emitting_site"]["form"] == "constant",
+            into: MapSet.new(),
+            do: Enum.at(check["key"], 2)
+
+      assert unreachable ==
+               MapSet.new([
+                 "sep-2575-http-server-method-not-found-404-initialize",
+                 "sep-2575-http-server-method-not-found-404-ping",
+                 "sep-2575-http-server-method-not-found-404-logging-setlevel",
+                 "sep-2575-http-server-method-not-found-404-resources-subscribe",
+                 "sep-2575-http-server-method-not-found-404-resources-unsubscribe",
+                 "sep-2106-no-network-ref-deref"
+               ])
+
+      assert MapSet.size(unreachable) == 6
+    end
+
+    test "the two-hit row is flagged, and its disambiguator names both hits", %{axes: axes} do
+      two_hit =
+        Enum.filter(
+          axes["checks"],
+          &(&1["emitting_site"]["locator"]["check_id_occurrences"] == 2)
+        )
+
+      assert length(two_hit) == 1
+      row = hd(two_hit)
+      assert Enum.at(row["key"], 2) == "sep-2575-http-server-method-not-found-404"
+
+      # It is a prefix of the template ids, which is WHY it has two hits.
+      disambiguate = row["emitting_site"]["locator"]["disambiguate"]
+      assert disambiguate =~ "PREFIX"
+      assert disambiguate =~ "closing backtick"
+
+      template_ids =
+        for c <- axes["checks"],
+            c["emitting_site"]["form"] == "template",
+            do: Enum.at(c["key"], 2)
+
+      assert length(template_ids) == 5
+
+      for id <- template_ids do
+        assert String.starts_with?(id, Enum.at(row["key"], 2))
+      end
+    end
+
+    test "the three rows sharing ONE emitting site say so", %{axes: axes} do
+      # Finding the site does not finish the job of identifying the row: three
+      # manifest rows are separated by `discriminator`, not by position in the
+      # dist. A consumer who stops at the site would read three rows as one.
+      shared =
+        Enum.filter(axes["checks"], fn c ->
+          Enum.at(c["key"], 2) == "sep-2575-http-server-meta-invalid-400"
+        end)
+
+      assert length(shared) == 3
+
+      assert MapSet.new(shared, &Enum.at(&1["key"], 5)) ==
+               MapSet.new([
+                 "missing-meta",
+                 "missing-protocol-version",
+                 "missing-client-capabilities"
+               ])
+
+      # one site: identical spans, and the locator warns about it
+      assert shared
+             |> Enum.map(& &1["emitting_site"]["dist_byte_span"])
+             |> Enum.uniq()
+             |> length() ==
+               1
+
+      for row <- shared do
+        assert row["emitting_site"]["locator"]["disambiguate"] =~
+                 "THREE manifest rows share this ONE site"
+      end
+    end
+
+    test "step 0 is the recorded span, and every row still carries both span kinds", %{axes: axes} do
+      # The claim the procedure rests on: for a row already in this file the
+      # traversal is skipped entirely. The spans' agreement with the excerpt is
+      # measured against the real build in
+      # conformance/controls/oc_axes_reverse_lookup_control.exs (that needs the
+      # /tmp harness build, which this suite must not require). Here we assert
+      # the artefact carries what that control needs.
+      assert axes["provenance"]["reverse_lookup_procedure"]["step_0_if_the_row_is_already_here"] =~
+               "SKIP THE TRAVERSAL ENTIRELY"
+
+      for check <- axes["checks"] do
+        assert [b_start, b_end] = check["emitting_site"]["dist_byte_span"]
+        assert [c_start, c_end] = check["emitting_site"]["dist_char_span"]
+        assert b_end > b_start
+        assert c_end > c_start
+        # the excerpt's own length ties the two: same characters, same count
+        assert c_end - c_start == String.length(check["evaluator_excerpt"])
+        assert b_end - b_start == byte_size(check["evaluator_excerpt"])
+      end
+    end
+  end
+
+  describe "MES-76 F2 — axis polarity is AUTHORED, total, and checked against the rows" do
+    test "every axis carries a polarity drawn from the two-value vocabulary", %{axes: axes} do
+      # Totality proved by SET COMPARISON over the axes, not by a pattern that
+      # matched most of them. F2 exists because an operator-keyed classifier
+      # returned 5/14/1-undecidable here — it could not see the one row that
+      # uses neither `===` nor `!==`.
+      all_axes = Enum.flat_map(axes["checks"], & &1["axes"])
+      assert length(all_axes) == 20
+
+      with_polarity = Enum.filter(all_axes, &Map.has_key?(&1, "polarity"))
+      assert length(with_polarity) == length(all_axes)
+
+      assert MapSet.new(all_axes, & &1["polarity"]) ==
+               MapSet.new(["pass_when_true", "fail_when_true"])
+
+      for axis <- all_axes do
+        assert is_binary(axis["polarity_reading"]) and axis["polarity_reading"] != "",
+               "#{axis["axis"]} carries a polarity with no stated reading"
+      end
+    end
+
+    test "the stated totals are RECOMPUTED from the rows, not asserted alongside them", %{
+      axes: axes
+    } do
+      # A total written next to the data it describes can drift from it. This
+      # recomputes and compares, so the artefact's own summary cannot lie.
+      counted =
+        axes["checks"]
+        |> Enum.flat_map(& &1["axes"])
+        |> Enum.frequencies_by(& &1["polarity"])
+
+      totals = axes["polarity_totals"]
+
+      assert counted["pass_when_true"] == totals["pass_when_true"]
+      assert counted["fail_when_true"] == totals["fail_when_true"]
+      assert counted["pass_when_true"] + counted["fail_when_true"] == totals["total_axes"]
+      assert totals["total_axes"] == 20
+      assert %{"pass_when_true" => 5, "fail_when_true" => 15} == counted
+    end
+
+    test "the row an operator-keyed derivation CANNOT classify is polarised anyway", %{axes: axes} do
+      # The specific row that makes authorship necessary rather than tidy. If a
+      # future edit ever derives polarity from the operator, this is the
+      # assertion that catches it.
+      canary =
+        axes["checks"]
+        |> Enum.flat_map(& &1["axes"])
+        |> Enum.find(&(&1["axis"] == "canary_not_fetched"))
+
+      assert canary["expr"] == "this.canaryRequests.length>0"
+      refute String.contains?(canary["expr"], "===")
+      refute String.contains?(canary["expr"], "!==")
+      assert canary["polarity"] == "fail_when_true"
+      assert axes["polarity_rule"] =~ "AUTHORED, NOT DERIVED"
+    end
+  end
+
+  describe "MES-76 F3 — preconditions are checkable, and `[]` is not a legal value" do
+    test "no check records an empty precondition list", %{axes: axes} do
+      # The sentinel rule, enforced. Before MES-76, 5 of 13 recorded `[]` while
+      # having guards of exactly the shape the other 8 did record — so `[]` read
+      # as "checked, and none" when it meant "not recorded". This project's rule
+      # is that those two must not print identically; this is that rule one
+      # field down, inside the artefact built to enforce it.
+      empty = Enum.filter(axes["checks"], &(&1["preconditions"] == []))
+
+      assert empty == [],
+             "rows recording []: #{inspect(Enum.map(empty, &Enum.at(&1["key"], 2)))}"
+
+      assert length(axes["checks"]) == 13
+      assert axes["preconditions_rule"] =~ "NOT A LEGAL VALUE"
+    end
+
+    test "every guard and on_failure is a VERBATIM substring of its own row's excerpt", %{
+      axes: axes
+    } do
+      # This is what the object form buys, and the reason Q1 was worth its cost:
+      # the same discipline `expr` already keeps. Prose would have been
+      # unverifiable, and F3 is a finding about a field that understates what it
+      # records — repairing it with something uncheckable would reproduce the
+      # defect one level up.
+      counted =
+        for check <- axes["checks"], precondition <- check["preconditions"] do
+          check_id = Enum.at(check["key"], 2)
+
+          assert String.contains?(check["evaluator_excerpt"], precondition["guard"]),
+                 "#{check_id}: guard #{inspect(precondition["guard"])} is not in its excerpt"
+
+          assert String.contains?(check["evaluator_excerpt"], precondition["on_failure"]),
+                 "#{check_id}: on_failure #{inspect(precondition["on_failure"])} is not in its excerpt"
+
+          assert is_binary(precondition["reads"]) and precondition["reads"] != ""
+          precondition["kind"]
+        end
+
+      # 8 converted from the prose form + 6 added by MES-76 = 14, enumerated
+      # rather than counted: 12 rows with one, and missing-capability with two.
+      assert length(counted) == 14
+      assert Enum.frequencies(counted) == %{"network" => 12, "semantic" => 2}
+    end
+
+    test "the sixth row's TWO guards are both recorded, and they are different kinds", %{
+      axes: axes
+    } do
+      # `missing-capability-http-400` was not among the five `[]` rows: it
+      # recorded its semantic guard and omitted its network one. A different
+      # omission from an empty list, and collapsing the two would lose that.
+      row =
+        Enum.find(axes["checks"], fn c ->
+          Enum.at(c["key"], 2) == "sep-2575-missing-capability-http-400"
+        end)
+
+      assert length(row["preconditions"]) == 2
+      assert MapSet.new(row["preconditions"], & &1["kind"]) == MapSet.new(["network", "semantic"])
+
+      assert Enum.any?(row["preconditions"], &(&1["guard"] == "()=>O?"))
+      assert Enum.any?(row["preconditions"], &(&1["guard"] == "()=>O?A?"))
+    end
+
+    test "the five rows that recorded [] now each carry their guard", %{axes: axes} do
+      # Enumerated, not counted (epic ruling 4 / A2d) — F3 is in this ticket
+      # precisely because a count and an enumeration disagreed.
+      five = [
+        {"sep-2575-http-server-meta-invalid-400", "missing-meta"},
+        {"sep-2575-http-server-meta-invalid-400", "missing-protocol-version"},
+        {"sep-2575-http-server-meta-invalid-400", "missing-client-capabilities"},
+        {"sep-2575-http-server-unsupported-version-400", ""},
+        {"sep-2575-http-server-header-mismatch-400", ""}
+      ]
+
+      for {check_id, discriminator} <- five do
+        row =
+          Enum.find(axes["checks"], fn c ->
+            Enum.at(c["key"], 2) == check_id and Enum.at(c["key"], 5) == discriminator
+          end)
+
+        assert row, "#{check_id}##{discriminator} is not in the artefact"
+        assert row["preconditions"] != []
+        assert hd(row["preconditions"])["kind"] == "network"
+      end
+
+      assert length(five) == 5
+    end
+
+    test "the schema version records that the shape changed", %{axes: axes} do
+      # A consumer written against version 1 must be able to tell.
+      assert axes["axes_schema_version"] == 2
+    end
+  end
+
   describe "MES-77 — the native-id slot names a CLAIM, not a requirement heading" do
     # A4's real seven (cg-reconciliation.md §5), not synthesised pairs: two
     # invented claims would demonstrate the arithmetic of deduplication and
@@ -635,6 +966,264 @@ defmodule MCP.Conformance.MatchKeyTest do
     test "an empty register is legal — no rows is not a collision" do
       assert {:ok, index} = MatchKey.declared_claim_index([])
       assert index == %{}
+    end
+  end
+
+  describe "MES-76 — bucket/1 is EXHAUSTIVE over its domain, and the domain is READ" do
+    # MES-68's contribution was finding an implicit case in a total-looking
+    # table: {:red, :green, :full} fell through to :undecidable in a table that
+    # read as complete. Five hand-written examples covered all 12 combinations
+    # between them, but nothing asserted that 12 WAS the count — so the same
+    # defect could recur and the suite would still be green.
+    #
+    # The domain therefore comes from the module (`run_verdicts/0`,
+    # `edge_shapes/0`) rather than from a literal in this file. A literal 2x2x3
+    # asserting its own completeness would be a total-looking table with an
+    # implicit case, which is the exact shape under repair.
+
+    test "the domain is 2 x 2 x 3, and the accessors are the real vocabularies" do
+      # An accessor that merely DECLARES a vocabulary could be wrong in the same
+      # way the bucket table was. So: assert the sizes, then prove below that
+      # each value is genuinely reachable through the module's own functions.
+      assert length(MatchKey.run_verdicts()) == 2
+      assert length(MatchKey.edge_shapes()) == 3
+      assert MapSet.new(MatchKey.run_verdicts()) == MapSet.new([:green, :red])
+      assert MapSet.new(MatchKey.edge_shapes()) == MapSet.new([:contradicting, :partial, :full])
+    end
+
+    test "every shape in edge_shapes/0 is producible by shape_from_axes/1, and nothing else is" do
+      # Ties `edge_shapes/0` to the function that actually derives a shape, so
+      # the accessor cannot drift into naming a shape the module never yields.
+      # Enumerated over the full axis-verdict product up to arity 2 rather than
+      # over chosen examples.
+      verdicts = [:agrees, :contradicts, :silent]
+
+      produced =
+        for a <- verdicts, b <- verdicts, into: MapSet.new() do
+          axes = [%{axis: "a", verdict: a}, %{axis: "b", verdict: b}]
+          {:ok, shape} = MatchKey.shape_from_axes(axes)
+          shape
+        end
+
+      assert produced == MapSet.new(MatchKey.edge_shapes())
+    end
+
+    test "every verdict in run_verdicts/0 is accepted by new_edge/1, and nothing else is", %{
+      rows: rows
+    } do
+      # The converse tie for the other accessor: the pair vocabulary bucket/1
+      # ranges over is the pair vocabulary an edge can actually carry.
+      attrs = valid_edge_attrs(rows)
+
+      for oc <- MatchKey.run_verdicts(), et <- MatchKey.run_verdicts() do
+        assert {:ok, edge} = MatchKey.new_edge(%{attrs | verdicts: %{oc: oc, et: et}})
+        assert edge.verdicts == %{oc: oc, et: et}
+      end
+
+      # and a verdict outside the vocabulary is refused, so "accepted" above is
+      # a discriminating result rather than a function that accepts anything.
+      assert {:error, {:bad_verdicts, _}} =
+               MatchKey.new_edge(%{attrs | verdicts: %{oc: :amber, et: :green}})
+    end
+
+    test "all 12 cells are decided: a bucket, or one of the TWO NAMED escalations" do
+      # The assertion the suite was missing. Nothing may reach :undecidable —
+      # that clause is the fall-through, and a cell landing there means the
+      # table has an implicit case again.
+      cells =
+        for oc <- MatchKey.run_verdicts(),
+            et <- MatchKey.run_verdicts(),
+            shape <- MatchKey.edge_shapes() do
+          {{oc, et, shape}, MatchKey.bucket(%{verdicts: %{oc: oc, et: et}, shape: shape})}
+        end
+
+      # 2 x 2 x 3, and the count is derived from the accessors, not written here.
+      assert length(cells) ==
+               length(MatchKey.run_verdicts()) * length(MatchKey.run_verdicts()) *
+                 length(MatchKey.edge_shapes())
+
+      assert length(cells) == 12
+
+      for {domain_point, result} <- cells do
+        case result do
+          {:ok, bucket, attrs} when is_binary(bucket) and is_list(attrs) ->
+            :ok
+
+          {:escalate, reason}
+          when reason in [:divergent_despite_agreement, :inconsistent_verdict_pair] ->
+            :ok
+
+          other ->
+            flunk("#{inspect(domain_point)} is undecided: #{inspect(other)}")
+        end
+      end
+    end
+
+    test "the 12 cells are compared as a SET against the domain, so none can be skipped" do
+      # A `for` comprehension that silently produced 11 cells would pass the
+      # loop above. This is the check that it did not: the keys of the result
+      # are exactly the domain product.
+      domain =
+        for oc <- MatchKey.run_verdicts(),
+            et <- MatchKey.run_verdicts(),
+            shape <- MatchKey.edge_shapes(),
+            into: MapSet.new(),
+            do: {oc, et, shape}
+
+      covered =
+        for oc <- MatchKey.run_verdicts(),
+            et <- MatchKey.run_verdicts(),
+            shape <- MatchKey.edge_shapes(),
+            match?({:ok, _, _}, MatchKey.bucket(%{verdicts: %{oc: oc, et: et}, shape: shape})) or
+              match?(
+                {:escalate, _},
+                MatchKey.bucket(%{verdicts: %{oc: oc, et: et}, shape: shape})
+              ),
+            into: MapSet.new(),
+            do: {oc, et, shape}
+
+      assert MapSet.size(domain) == 12
+      assert covered == domain
+      assert MapSet.difference(domain, covered) == MapSet.new()
+    end
+
+    test "the two named escalations land on exactly the cells they are named for" do
+      # Exhaustiveness alone would be satisfied by a table that escalated
+      # everywhere. This pins WHICH cells escalate, so the previous test cannot
+      # be passed by a degenerate implementation.
+      escalating =
+        for oc <- MatchKey.run_verdicts(),
+            et <- MatchKey.run_verdicts(),
+            shape <- MatchKey.edge_shapes(),
+            {:escalate, reason} <-
+              [MatchKey.bucket(%{verdicts: %{oc: oc, et: et}, shape: shape})],
+            into: %{},
+            do: {{oc, et, shape}, reason}
+
+      assert escalating == %{
+               {:red, :green, :full} => :divergent_despite_agreement,
+               {:green, :green, :contradicting} => :inconsistent_verdict_pair
+             }
+    end
+
+    test ":undecidable is still reachable — from OUTSIDE the domain, which is its job" do
+      # The fall-through clause is not dead code and this ticket does not remove
+      # it. It is what catches a value that is not in the vocabulary at all. If
+      # it were unreachable the exhaustiveness claim above would be vacuous.
+      assert {:escalate, {:undecidable, :amber, :green, :full}} =
+               MatchKey.bucket(%{verdicts: %{oc: :amber, et: :green}, shape: :full})
+
+      assert {:escalate, {:undecidable, :green, :green, :sideways}} =
+               MatchKey.bucket(%{verdicts: %{oc: :green, et: :green}, shape: :sideways})
+
+      assert {:escalate, {:not_an_edge, :nope}} = MatchKey.bucket(:nope)
+    end
+  end
+
+  describe "MES-76 F4 — the token is INJECTIVE: one string per decoded value" do
+    # The defect this closes was not "a second spelling exists". It was that two
+    # DIFFERENT token strings decoded to a BYTE-IDENTICAL map while `render/1`
+    # could emit only one of them — so the relation accepted a key its own
+    # encoder cannot produce and had no basis for saying which string was the
+    # key. `validate_edge/1` caught it on a stored edge (`:derived_field_mismatch`);
+    # `guard_state/2` did not, and `guard_state/2` is the path Sprint 7's drift
+    # guard travels.
+    #
+    # Measured at 18df3a6 BEFORE the fix, against these same 175 rows:
+    #   decode("oc:server/caching/…/ToolsListCachingHints#")
+    #     == decode("oc:server/caching/…/ToolsListCachingHints")   -> true
+    #   guard_state(that token, rows) -> {:matched, key}           -> the drift guard's blind spot
+
+    test "no token in the manifest admits a second, '#'-suffixed spelling", %{rows: rows} do
+      # The injectivity claim stated over the whole domain, not one example: for
+      # every one of the 175, the emitted string decodes and the one other string
+      # that could decode to the same value is REFUSED.
+      #
+      # The refusal reason is not uniform, and enumerating the partition is the
+      # point rather than a detail — appending `#` to a row that ALREADY carries
+      # a discriminator produces a three-segment split, which was refused before
+      # MES-76 too. So the fix moves 172 of 175 from accepted to refused, and the
+      # remaining 3 were never the defect. A test asserting one reason for all
+      # 175 would be false; asserting "refused, somehow" would hide which 172
+      # actually moved.
+      refusals =
+        for row <- rows do
+          token = MatchKey.encode!(row)
+
+          assert {:ok, decoded} = MatchKey.decode(token)
+          # the refusal is not collateral damage: the well-formed token is
+          # untouched, discriminator and all.
+          assert decoded.discriminator == Enum.at(row, 5)
+
+          case MatchKey.decode(token <> "#") do
+            {:error, reason} -> reason
+            {:ok, _} -> flunk("#{token}# still decodes — the token is not injective")
+          end
+        end
+
+      assert Enum.frequencies(refusals) == %{
+               empty_discriminator: 172,
+               multiple_discriminators: 3
+             }
+
+      assert length(refusals) == 175
+    end
+
+    test "guard_state/2 refuses it against the REAL manifest rows", %{rows: rows} do
+      token =
+        MatchKey.encode!(Enum.find(rows, fn row -> Enum.at(row, 5) == "" end))
+
+      # state 1 for the emittable spelling ...
+      assert {:matched, _key} = MatchKey.guard_state(token, rows)
+
+      # ... and a stated refusal for the one that is unreachable from encode/1.
+      # This is the assertion that would have been RED before the fix: it
+      # returned {:matched, key}, indistinguishable from the line above.
+      assert {:error, {:malformed, :empty_discriminator}} =
+               MatchKey.guard_state(token <> "#", rows)
+    end
+
+    test "refusing it costs nothing — all 175 still round-trip", %{rows: rows} do
+      # The fix is only free if no legitimate token was collateral. Asserted over
+      # the full 175 rather than sampled, and as a SET comparison so a silently
+      # dropped row cannot pass.
+      resolved =
+        for row <- rows, into: MapSet.new() do
+          token = MatchKey.encode!(row)
+          {:ok, back} = MatchKey.resolve(token, rows)
+          back
+        end
+
+      assert MapSet.size(resolved) == 175
+      assert resolved == MapSet.new(rows)
+    end
+
+    test "the 3 rows that DO carry a discriminator are unaffected", %{rows: rows} do
+      # The refused sentinel is an EXPLICITLY EMPTY discriminator. A real one
+      # must still decode, or the fix would have closed the defect by removing
+      # the feature. These are the RequestMetaInvalid siblings.
+      with_discriminator = Enum.filter(rows, fn row -> Enum.at(row, 5) != "" end)
+      assert length(with_discriminator) == 3
+
+      for row <- with_discriminator do
+        token = MatchKey.encode!(row)
+        assert String.contains?(token, "#")
+        assert {:ok, decoded} = MatchKey.decode(token)
+        assert decoded.discriminator == Enum.at(row, 5)
+        assert {:matched, ^row} = MatchKey.guard_state(token, rows)
+      end
+    end
+
+    test "the two split sentinels fail differently, and neither is silent" do
+      # `:empty_discriminator` and `:multiple_discriminators` are distinct
+      # refusals for distinct malformations. Collapsing them would reintroduce
+      # the F4 shape one level up: two causes, one answer.
+      base = "oc:server/caching/sep-2549-tools-list-caching-hints/ToolsListCachingHints"
+
+      assert {:error, :empty_discriminator} = MatchKey.decode(base <> "#")
+      assert {:error, :multiple_discriminators} = MatchKey.decode(base <> "#a#b")
+      assert {:error, :multiple_discriminators} = MatchKey.decode(base <> "##")
+      assert {:ok, _} = MatchKey.decode(base <> "#a")
     end
   end
 

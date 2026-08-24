@@ -1,5 +1,5 @@
 {
-  "axes_schema_version": 1,
+  "axes_schema_version": 2,
   "axis_source_rule": "AXES COME FROM THE PREDICATE, NEVER FROM THE DESCRIPTION. A check's description is prose about the requirement; its predicate is the requirement as scored. Reading axes off descriptions invents obligations the suite never checks — see `sep-2575-http-server-unsupported-version-400`, whose description names 400 AND an UnsupportedProtocolVersionError and whose predicate is `S.status===400` alone.",
   "checks": [
     {
@@ -7,6 +7,8 @@
         {
           "axis": "http_status",
           "expr": "n.status===400",
+          "polarity": "pass_when_true",
+          "polarity_reading": "the excerpt branches `n.status===400?{details:...}:{error:...}` — the TRUE arm carries `details` (the pass), the FALSE arm carries `error`",
           "requires": "HTTP 400 on a _meta-invalid rejection"
         }
       ],
@@ -22,7 +24,12 @@
           366692
         ],
         "form": "literal",
-        "id_source": "sep-2575-http-server-meta-invalid-400"
+        "id_source": "sep-2575-http-server-meta-invalid-400",
+        "locator": {
+          "check_id_occurrences": 1,
+          "disambiguate": "1 hit, in the first argument position of an `a(` call — that IS the emitting site. NOTE: THREE manifest rows share this ONE site, separated by `discriminator` (missing-meta / missing-protocol-version / missing-client-capabilities) and not by position in the dist. One site, three rows — so finding the site does not finish the job of identifying the row.",
+          "grep_for": "sep-2575-http-server-meta-invalid-400"
+        }
       },
       "error_message_at_accepted_run": "Expected HTTP 400 Bad Request, got status code 200",
       "evaluator_excerpt": "a(`sep-2575-http-server-meta-invalid-400`,`HttpServerMetaInvalid400`,`Rejections of requests missing required _meta fields use HTTP 400 Bad Request.`,()=>n?n.status===400?{details:{fieldIssue:e.slug,response:r}}:{error:`Expected HTTP 400 Bad Request, got status code ${n.status}`,details:{fieldIssue:e.slug,response:r}}:{error:`_meta validation probe failed completely`},{fieldIssue:e.slug})",
@@ -34,7 +41,14 @@
         "Rejections of requests missing required _meta fields use HTTP 400 Bad Request.",
         "missing-meta"
       ],
-      "preconditions": [],
+      "preconditions": [
+        {
+          "guard": "()=>n?",
+          "kind": "network",
+          "on_failure": "_meta validation probe failed completely",
+          "reads": "the `_meta` validation probe's response object; absent when the probe did not complete"
+        }
+      ],
       "status_at_accepted_run": "FAILURE"
     },
     {
@@ -42,6 +56,8 @@
         {
           "axis": "http_status",
           "expr": "n.status===400",
+          "polarity": "pass_when_true",
+          "polarity_reading": "same site as row 0, sibling discriminator: `n.status===400?{details:...}:{error:...}`, TRUE arm is the pass",
           "requires": "HTTP 400 on a _meta-invalid rejection"
         }
       ],
@@ -57,7 +73,12 @@
           366692
         ],
         "form": "literal",
-        "id_source": "sep-2575-http-server-meta-invalid-400"
+        "id_source": "sep-2575-http-server-meta-invalid-400",
+        "locator": {
+          "check_id_occurrences": 1,
+          "disambiguate": "1 hit, in the first argument position of an `a(` call — that IS the emitting site. NOTE: THREE manifest rows share this ONE site, separated by `discriminator` (missing-meta / missing-protocol-version / missing-client-capabilities) and not by position in the dist. One site, three rows — so finding the site does not finish the job of identifying the row.",
+          "grep_for": "sep-2575-http-server-meta-invalid-400"
+        }
       },
       "error_message_at_accepted_run": "Expected HTTP 400 Bad Request, got status code 200",
       "evaluator_excerpt": "a(`sep-2575-http-server-meta-invalid-400`,`HttpServerMetaInvalid400`,`Rejections of requests missing required _meta fields use HTTP 400 Bad Request.`,()=>n?n.status===400?{details:{fieldIssue:e.slug,response:r}}:{error:`Expected HTTP 400 Bad Request, got status code ${n.status}`,details:{fieldIssue:e.slug,response:r}}:{error:`_meta validation probe failed completely`},{fieldIssue:e.slug})",
@@ -69,7 +90,14 @@
         "Rejections of requests missing required _meta fields use HTTP 400 Bad Request.",
         "missing-protocol-version"
       ],
-      "preconditions": [],
+      "preconditions": [
+        {
+          "guard": "()=>n?",
+          "kind": "network",
+          "on_failure": "_meta validation probe failed completely",
+          "reads": "the `_meta` validation probe's response object; absent when the probe did not complete"
+        }
+      ],
       "status_at_accepted_run": "FAILURE"
     },
     {
@@ -77,6 +105,8 @@
         {
           "axis": "http_status",
           "expr": "n.status===400",
+          "polarity": "pass_when_true",
+          "polarity_reading": "same site as row 0, sibling discriminator: `n.status===400?{details:...}:{error:...}`, TRUE arm is the pass",
           "requires": "HTTP 400 on a _meta-invalid rejection"
         }
       ],
@@ -92,7 +122,12 @@
           366692
         ],
         "form": "literal",
-        "id_source": "sep-2575-http-server-meta-invalid-400"
+        "id_source": "sep-2575-http-server-meta-invalid-400",
+        "locator": {
+          "check_id_occurrences": 1,
+          "disambiguate": "1 hit, in the first argument position of an `a(` call — that IS the emitting site. NOTE: THREE manifest rows share this ONE site, separated by `discriminator` (missing-meta / missing-protocol-version / missing-client-capabilities) and not by position in the dist. One site, three rows — so finding the site does not finish the job of identifying the row.",
+          "grep_for": "sep-2575-http-server-meta-invalid-400"
+        }
       },
       "error_message_at_accepted_run": "Expected HTTP 400 Bad Request, got status code 200",
       "evaluator_excerpt": "a(`sep-2575-http-server-meta-invalid-400`,`HttpServerMetaInvalid400`,`Rejections of requests missing required _meta fields use HTTP 400 Bad Request.`,()=>n?n.status===400?{details:{fieldIssue:e.slug,response:r}}:{error:`Expected HTTP 400 Bad Request, got status code ${n.status}`,details:{fieldIssue:e.slug,response:r}}:{error:`_meta validation probe failed completely`},{fieldIssue:e.slug})",
@@ -104,7 +139,14 @@
         "Rejections of requests missing required _meta fields use HTTP 400 Bad Request.",
         "missing-client-capabilities"
       ],
-      "preconditions": [],
+      "preconditions": [
+        {
+          "guard": "()=>n?",
+          "kind": "network",
+          "on_failure": "_meta validation probe failed completely",
+          "reads": "the `_meta` validation probe's response object; absent when the probe did not complete"
+        }
+      ],
       "status_at_accepted_run": "FAILURE"
     },
     {
@@ -112,6 +154,8 @@
         {
           "axis": "http_status",
           "expr": "S.status===400",
+          "polarity": "pass_when_true",
+          "polarity_reading": "`S.status===400?{details:{response:C}}:{error:...}` — TRUE arm is the pass",
           "requires": "HTTP 400 on an unsupported protocol version"
         }
       ],
@@ -127,7 +171,12 @@
           371380
         ],
         "form": "literal",
-        "id_source": "sep-2575-http-server-unsupported-version-400"
+        "id_source": "sep-2575-http-server-unsupported-version-400",
+        "locator": {
+          "check_id_occurrences": 1,
+          "disambiguate": "1 hit, in the first argument position of an `a(` call — that IS the emitting site.",
+          "grep_for": "sep-2575-http-server-unsupported-version-400"
+        }
       },
       "error_message_at_accepted_run": "Expected HTTP 400 Bad Request, got status code 200",
       "evaluator_excerpt": "a(`sep-2575-http-server-unsupported-version-400`,`HttpServerUnsupportedVersion400`,`If the server does not implement the requested protocol version, it MUST respond with 400 Bad Request and an UnsupportedProtocolVersionError listing its supported versions.`,()=>S?S.status===400?{details:{response:C}}:{error:`Expected HTTP 400 Bad Request, got status code ${S.status}`}:{error:`Network transaction context unavailable`})",
@@ -139,7 +188,14 @@
         "If the server does not implement the requested protocol version, it MUST respond with 400 Bad Request and an UnsupportedProtocolVersionError listing its supported versions.",
         ""
       ],
-      "preconditions": [],
+      "preconditions": [
+        {
+          "guard": "()=>S?",
+          "kind": "network",
+          "on_failure": "Network transaction context unavailable",
+          "reads": "the network transaction context for the unsupported-version request"
+        }
+      ],
       "status_at_accepted_run": "FAILURE"
     },
     {
@@ -147,11 +203,15 @@
         {
           "axis": "http_status",
           "expr": "T.status!==400",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the two axes share ONE disjunctive test `T.status!==400||E?.error?.code!==-32020?{error:...}:{details:...}` — the TRUE arm carries `error`, so either disjunct being true is a failure",
           "requires": "HTTP 400 on a header/_meta version mismatch"
         },
         {
           "axis": "jsonrpc_error_code",
           "expr": "E?.error?.code!==-32020",
+          "polarity": "fail_when_true",
+          "polarity_reading": "second disjunct of the same `||` test as this row's http_status axis; TRUE arm carries `error`",
           "requires": "JSON-RPC error -32020"
         }
       ],
@@ -167,7 +227,12 @@
           371997
         ],
         "form": "literal",
-        "id_source": "sep-2575-http-server-header-mismatch-400"
+        "id_source": "sep-2575-http-server-header-mismatch-400",
+        "locator": {
+          "check_id_occurrences": 1,
+          "disambiguate": "1 hit, in the first argument position of an `a(` call — that IS the emitting site.",
+          "grep_for": "sep-2575-http-server-header-mismatch-400"
+        }
       },
       "error_message_at_accepted_run": "Expected HTTP 400 and JSON-RPC error -32020, got status 200 with code undefined",
       "evaluator_excerpt": "a(`sep-2575-http-server-header-mismatch-400`,`HttpServerHeaderMismatch400`,`If the values do not match, the server MUST reject the request with 400 Bad Request and a HeaderMismatch JSON-RPC error.`,()=>T?T.status!==400||E?.error?.code!==-32020?{error:`Expected HTTP 400 and JSON-RPC error -32020, got status ${T.status} with code ${E?.error?.code}`}:{details:{response:E}}:{error:`Header verification endpoint network hit failed`})",
@@ -179,7 +244,14 @@
         "If the values do not match, the server MUST reject the request with 400 Bad Request and a HeaderMismatch JSON-RPC error.",
         ""
       ],
-      "preconditions": [],
+      "preconditions": [
+        {
+          "guard": "()=>T?",
+          "kind": "network",
+          "on_failure": "Header verification endpoint network hit failed",
+          "reads": "the response from the header-verification endpoint"
+        }
+      ],
       "status_at_accepted_run": "FAILURE"
     },
     {
@@ -187,6 +259,8 @@
         {
           "axis": "http_status",
           "expr": "O.status===400",
+          "polarity": "pass_when_true",
+          "polarity_reading": "`O.status===400?{details:{response:k}}:{error:...}` — TRUE arm is the pass. Reached only after both preconditions hold",
           "requires": "HTTP 400 on a MissingRequiredClientCapabilityError"
         }
       ],
@@ -202,7 +276,12 @@
           374336
         ],
         "form": "literal",
-        "id_source": "sep-2575-missing-capability-http-400"
+        "id_source": "sep-2575-missing-capability-http-400",
+        "locator": {
+          "check_id_occurrences": 1,
+          "disambiguate": "1 hit, in the first argument position of an `a(` call — that IS the emitting site.",
+          "grep_for": "sep-2575-missing-capability-http-400"
+        }
       },
       "error_message_at_accepted_run": "Expected HTTP status code 400 Bad Request for an undeclared capability error response, got 200",
       "evaluator_excerpt": "a(`sep-2575-missing-capability-http-400`,`MissingCapabilityHttp400`,`On HTTP, the response status MUST be 400 Bad Request [for MissingRequiredClientCapabilityError].`,()=>O?A?O.status===400?{details:{response:k}}:{error:`Expected HTTP status code 400 Bad Request for an undeclared capability error response, got ${O.status}`,details:{response:k}}:{error:rn(ee?`server did not return MissingRequiredClientCapabilityError, so its HTTP status could not be validated`:`server does not list the diagnostic tool 'test_missing_capability' in tools/list, so the -32021 HTTP status could not be validated`),details:{untestable:!0,httpStatus:O.status}}:{error:`Network transport layer layer context failed to instantiate`})",
@@ -215,7 +294,18 @@
         ""
       ],
       "preconditions": [
-        "`A` (`k?.error?.code===-32021`) — the check reports an untestable error rather than a verdict unless the server first returned the -32021 error. A precondition, not an axis: it gates whether the requirement is evaluated at all."
+        {
+          "guard": "()=>O?",
+          "kind": "network",
+          "on_failure": "Network transport layer layer context failed to instantiate",
+          "reads": "the HTTP transport context for the missing-capability probe"
+        },
+        {
+          "guard": "()=>O?A?",
+          "kind": "semantic",
+          "on_failure": "server did not return MissingRequiredClientCapabilityError, so its HTTP status could not be validated",
+          "reads": "`A`, bound outside this excerpt to `k?.error?.code===-32021` — whether the server first returned the -32021 error. Gates whether the requirement is evaluated at all; reports UNTESTABLE, not a verdict"
+        }
       ],
       "status_at_accepted_run": "FAILURE"
     },
@@ -224,11 +314,15 @@
         {
           "axis": "http_status",
           "expr": "r.status!==404",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`r.status!==404||i?.error?.code!==-32601?{error:...}:{details:...}` — TRUE arm carries `error`, so either disjunct being true is a failure",
           "requires": "HTTP 404 for a removed RPC method"
         },
         {
           "axis": "jsonrpc_error_code",
           "expr": "i?.error?.code!==-32601",
+          "polarity": "fail_when_true",
+          "polarity_reading": "second disjunct of the same `||` test as this row's http_status axis; TRUE arm carries `error`",
           "requires": "JSON-RPC error -32601"
         }
       ],
@@ -244,7 +338,12 @@
           375083
         ],
         "form": "template",
-        "id_source": "sep-2575-http-server-method-not-found-404-${t}"
+        "id_source": "sep-2575-http-server-method-not-found-404-${t}",
+        "locator": {
+          "check_id_occurrences": 0,
+          "disambiguate": "0 hits on the check_id — it is built as ``sep-2575-http-server-method-not-found-404-${t}``. The prefix in `grep_for` occurs EXACTLY ONCE (measured) and lands on the loop's emitting call; read the `${t}` iteration values to recover this concrete id.",
+          "grep_for": "sep-2575-http-server-method-not-found-404-"
+        }
       },
       "error_message_at_accepted_run": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32022",
       "evaluator_excerpt": "a(`sep-2575-http-server-method-not-found-404-${t}`,`HttpServerMethodNotFound404${e.replace(`/`,``)}`,`If the server does not implement the removed RPC method '${e}', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).`,()=>!r||!i?{error:`Removed method validation hit dropped connections unexpectedly`}:r.status!==404||i?.error?.code!==-32601?{error:`Expected HTTP 404 and code -32601 for removed methods, got HTTP ${r.status} and code ${i?.error?.code}`}:{details:{response:i}})",
@@ -257,7 +356,12 @@
         ""
       ],
       "preconditions": [
-        "`!r||!i` — a dropped connection is reported as a probe failure, not as a status/code verdict."
+        {
+          "guard": "!r||!i",
+          "kind": "network",
+          "on_failure": "Removed method validation hit dropped connections unexpectedly",
+          "reads": "the removed-method response and parsed body; either missing is reported as a probe failure, not as a status/code verdict"
+        }
       ],
       "status_at_accepted_run": "FAILURE"
     },
@@ -266,11 +370,15 @@
         {
           "axis": "http_status",
           "expr": "r.status!==404",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`r.status!==404||i?.error?.code!==-32601?{error:...}:{details:...}` — TRUE arm carries `error`, so either disjunct being true is a failure",
           "requires": "HTTP 404 for a removed RPC method"
         },
         {
           "axis": "jsonrpc_error_code",
           "expr": "i?.error?.code!==-32601",
+          "polarity": "fail_when_true",
+          "polarity_reading": "second disjunct of the same `||` test as this row's http_status axis; TRUE arm carries `error`",
           "requires": "JSON-RPC error -32601"
         }
       ],
@@ -286,7 +394,12 @@
           375083
         ],
         "form": "template",
-        "id_source": "sep-2575-http-server-method-not-found-404-${t}"
+        "id_source": "sep-2575-http-server-method-not-found-404-${t}",
+        "locator": {
+          "check_id_occurrences": 0,
+          "disambiguate": "0 hits on the check_id — it is built as ``sep-2575-http-server-method-not-found-404-${t}``. The prefix in `grep_for` occurs EXACTLY ONCE (measured) and lands on the loop's emitting call; read the `${t}` iteration values to recover this concrete id.",
+          "grep_for": "sep-2575-http-server-method-not-found-404-"
+        }
       },
       "error_message_at_accepted_run": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601",
       "evaluator_excerpt": "a(`sep-2575-http-server-method-not-found-404-${t}`,`HttpServerMethodNotFound404${e.replace(`/`,``)}`,`If the server does not implement the removed RPC method '${e}', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).`,()=>!r||!i?{error:`Removed method validation hit dropped connections unexpectedly`}:r.status!==404||i?.error?.code!==-32601?{error:`Expected HTTP 404 and code -32601 for removed methods, got HTTP ${r.status} and code ${i?.error?.code}`}:{details:{response:i}})",
@@ -299,7 +412,12 @@
         ""
       ],
       "preconditions": [
-        "`!r||!i` — a dropped connection is reported as a probe failure, not as a status/code verdict."
+        {
+          "guard": "!r||!i",
+          "kind": "network",
+          "on_failure": "Removed method validation hit dropped connections unexpectedly",
+          "reads": "the removed-method response and parsed body; either missing is reported as a probe failure, not as a status/code verdict"
+        }
       ],
       "status_at_accepted_run": "FAILURE"
     },
@@ -308,11 +426,15 @@
         {
           "axis": "http_status",
           "expr": "r.status!==404",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`r.status!==404||i?.error?.code!==-32601?{error:...}:{details:...}` — TRUE arm carries `error`, so either disjunct being true is a failure",
           "requires": "HTTP 404 for a removed RPC method"
         },
         {
           "axis": "jsonrpc_error_code",
           "expr": "i?.error?.code!==-32601",
+          "polarity": "fail_when_true",
+          "polarity_reading": "second disjunct of the same `||` test as this row's http_status axis; TRUE arm carries `error`",
           "requires": "JSON-RPC error -32601"
         }
       ],
@@ -328,7 +450,12 @@
           375083
         ],
         "form": "template",
-        "id_source": "sep-2575-http-server-method-not-found-404-${t}"
+        "id_source": "sep-2575-http-server-method-not-found-404-${t}",
+        "locator": {
+          "check_id_occurrences": 0,
+          "disambiguate": "0 hits on the check_id — it is built as ``sep-2575-http-server-method-not-found-404-${t}``. The prefix in `grep_for` occurs EXACTLY ONCE (measured) and lands on the loop's emitting call; read the `${t}` iteration values to recover this concrete id.",
+          "grep_for": "sep-2575-http-server-method-not-found-404-"
+        }
       },
       "error_message_at_accepted_run": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601",
       "evaluator_excerpt": "a(`sep-2575-http-server-method-not-found-404-${t}`,`HttpServerMethodNotFound404${e.replace(`/`,``)}`,`If the server does not implement the removed RPC method '${e}', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).`,()=>!r||!i?{error:`Removed method validation hit dropped connections unexpectedly`}:r.status!==404||i?.error?.code!==-32601?{error:`Expected HTTP 404 and code -32601 for removed methods, got HTTP ${r.status} and code ${i?.error?.code}`}:{details:{response:i}})",
@@ -341,7 +468,12 @@
         ""
       ],
       "preconditions": [
-        "`!r||!i` — a dropped connection is reported as a probe failure, not as a status/code verdict."
+        {
+          "guard": "!r||!i",
+          "kind": "network",
+          "on_failure": "Removed method validation hit dropped connections unexpectedly",
+          "reads": "the removed-method response and parsed body; either missing is reported as a probe failure, not as a status/code verdict"
+        }
       ],
       "status_at_accepted_run": "FAILURE"
     },
@@ -350,11 +482,15 @@
         {
           "axis": "http_status",
           "expr": "r.status!==404",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`r.status!==404||i?.error?.code!==-32601?{error:...}:{details:...}` — TRUE arm carries `error`, so either disjunct being true is a failure",
           "requires": "HTTP 404 for a removed RPC method"
         },
         {
           "axis": "jsonrpc_error_code",
           "expr": "i?.error?.code!==-32601",
+          "polarity": "fail_when_true",
+          "polarity_reading": "second disjunct of the same `||` test as this row's http_status axis; TRUE arm carries `error`",
           "requires": "JSON-RPC error -32601"
         }
       ],
@@ -370,7 +506,12 @@
           375083
         ],
         "form": "template",
-        "id_source": "sep-2575-http-server-method-not-found-404-${t}"
+        "id_source": "sep-2575-http-server-method-not-found-404-${t}",
+        "locator": {
+          "check_id_occurrences": 0,
+          "disambiguate": "0 hits on the check_id — it is built as ``sep-2575-http-server-method-not-found-404-${t}``. The prefix in `grep_for` occurs EXACTLY ONCE (measured) and lands on the loop's emitting call; read the `${t}` iteration values to recover this concrete id.",
+          "grep_for": "sep-2575-http-server-method-not-found-404-"
+        }
       },
       "error_message_at_accepted_run": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601",
       "evaluator_excerpt": "a(`sep-2575-http-server-method-not-found-404-${t}`,`HttpServerMethodNotFound404${e.replace(`/`,``)}`,`If the server does not implement the removed RPC method '${e}', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).`,()=>!r||!i?{error:`Removed method validation hit dropped connections unexpectedly`}:r.status!==404||i?.error?.code!==-32601?{error:`Expected HTTP 404 and code -32601 for removed methods, got HTTP ${r.status} and code ${i?.error?.code}`}:{details:{response:i}})",
@@ -383,7 +524,12 @@
         ""
       ],
       "preconditions": [
-        "`!r||!i` — a dropped connection is reported as a probe failure, not as a status/code verdict."
+        {
+          "guard": "!r||!i",
+          "kind": "network",
+          "on_failure": "Removed method validation hit dropped connections unexpectedly",
+          "reads": "the removed-method response and parsed body; either missing is reported as a probe failure, not as a status/code verdict"
+        }
       ],
       "status_at_accepted_run": "FAILURE"
     },
@@ -392,11 +538,15 @@
         {
           "axis": "http_status",
           "expr": "r.status!==404",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`r.status!==404||i?.error?.code!==-32601?{error:...}:{details:...}` — TRUE arm carries `error`, so either disjunct being true is a failure",
           "requires": "HTTP 404 for a removed RPC method"
         },
         {
           "axis": "jsonrpc_error_code",
           "expr": "i?.error?.code!==-32601",
+          "polarity": "fail_when_true",
+          "polarity_reading": "second disjunct of the same `||` test as this row's http_status axis; TRUE arm carries `error`",
           "requires": "JSON-RPC error -32601"
         }
       ],
@@ -412,7 +562,12 @@
           375083
         ],
         "form": "template",
-        "id_source": "sep-2575-http-server-method-not-found-404-${t}"
+        "id_source": "sep-2575-http-server-method-not-found-404-${t}",
+        "locator": {
+          "check_id_occurrences": 0,
+          "disambiguate": "0 hits on the check_id — it is built as ``sep-2575-http-server-method-not-found-404-${t}``. The prefix in `grep_for` occurs EXACTLY ONCE (measured) and lands on the loop's emitting call; read the `${t}` iteration values to recover this concrete id.",
+          "grep_for": "sep-2575-http-server-method-not-found-404-"
+        }
       },
       "error_message_at_accepted_run": "Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601",
       "evaluator_excerpt": "a(`sep-2575-http-server-method-not-found-404-${t}`,`HttpServerMethodNotFound404${e.replace(`/`,``)}`,`If the server does not implement the removed RPC method '${e}', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).`,()=>!r||!i?{error:`Removed method validation hit dropped connections unexpectedly`}:r.status!==404||i?.error?.code!==-32601?{error:`Expected HTTP 404 and code -32601 for removed methods, got HTTP ${r.status} and code ${i?.error?.code}`}:{details:{response:i}})",
@@ -425,7 +580,12 @@
         ""
       ],
       "preconditions": [
-        "`!r||!i` — a dropped connection is reported as a probe failure, not as a status/code verdict."
+        {
+          "guard": "!r||!i",
+          "kind": "network",
+          "on_failure": "Removed method validation hit dropped connections unexpectedly",
+          "reads": "the removed-method response and parsed body; either missing is reported as a probe failure, not as a status/code verdict"
+        }
       ],
       "status_at_accepted_run": "FAILURE"
     },
@@ -434,11 +594,15 @@
         {
           "axis": "http_status",
           "expr": "te.status!==404",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`te.status!==404||M?.error?.code!==-32601?{error:...}:{details:...}` — TRUE arm carries `error`; same idiom as the loop form with different minified names",
           "requires": "HTTP 404 for an unimplemented RPC method"
         },
         {
           "axis": "jsonrpc_error_code",
           "expr": "M?.error?.code!==-32601",
+          "polarity": "fail_when_true",
+          "polarity_reading": "second disjunct of the same `||` test as this row's http_status axis; TRUE arm carries `error`",
           "requires": "JSON-RPC error -32601"
         }
       ],
@@ -454,7 +618,12 @@
           375672
         ],
         "form": "literal",
-        "id_source": "sep-2575-http-server-method-not-found-404"
+        "id_source": "sep-2575-http-server-method-not-found-404",
+        "locator": {
+          "check_id_occurrences": 2,
+          "disambiguate": "2 hits. One is this check's own literal id (followed by a closing backtick); the other is this id serving as the PREFIX of the 404 template belonging to the five loop rows (followed by ``-${``). Pick by what follows the id.",
+          "grep_for": "sep-2575-http-server-method-not-found-404"
+        }
       },
       "error_message_at_accepted_run": "Expected HTTP 404 and JSON-RPC error code -32601, got HTTP 200 and code -32601",
       "evaluator_excerpt": "a(`sep-2575-http-server-method-not-found-404`,`HttpServerMethodNotFound404`,`If the server does not implement the requested RPC method, it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).`,()=>!te||!M?{error:`Unknown fallback test target returned an invalid layout`}:te.status!==404||M?.error?.code!==-32601?{error:`Expected HTTP 404 and JSON-RPC error code -32601, got HTTP ${te.status} and code ${M?.error?.code}`}:{details:{response:M}})",
@@ -467,7 +636,12 @@
         ""
       ],
       "preconditions": [
-        "`!te||!M` — same shape as the loop form."
+        {
+          "guard": "!te||!M",
+          "kind": "network",
+          "on_failure": "Unknown fallback test target returned an invalid layout",
+          "reads": "the fallback target's response and parsed body; either missing is a probe failure, not a status/code verdict"
+        }
       ],
       "status_at_accepted_run": "FAILURE"
     },
@@ -476,6 +650,8 @@
         {
           "axis": "canary_not_fetched",
           "expr": "this.canaryRequests.length>0",
+          "polarity": "fail_when_true",
+          "polarity_reading": "NEITHER `===` NOR `!==` — `t=this.canaryRequests.length>0` and the row reads `status:t?`FAILURE`:`SUCCESS``, so TRUE is the failure. This is the row an operator-keyed derivation cannot classify, and the reason polarity is AUTHORED",
           "requires": "the client MUST NOT dereference a network-URI $ref (counter must stay at 0)"
         }
       ],
@@ -491,7 +667,12 @@
           722355
         ],
         "form": "constant",
-        "id_source": "sep-2106-no-network-ref-deref (bound to `Za`)"
+        "id_source": "sep-2106-no-network-ref-deref (bound to `Za`)",
+        "locator": {
+          "check_id_occurrences": 1,
+          "disambiguate": "1 hit, and it is the BINDING ``Za=`sep-2106-no-network-ref-deref` ``, not the emitting site. Take the bound name and grep `id:Za` to reach the site. This is why an occurrence count of 1 does not on its own mean the site has been found.",
+          "grep_for": "sep-2106-no-network-ref-deref"
+        }
       },
       "error_message_at_accepted_run": null,
       "evaluator_excerpt": "getChecks(){let e=new Date().toISOString(),t=this.canaryRequests.length>0;return this.toolsListed?[{id:Za,name:`NoNetworkRefDereference`,description:t?`Client automatically dereferenced a network-URI $ref in a tool inputSchema. Implementations MUST NOT automatically dereference $ref values that resolve to a network URI (SEP-2106).`:`Client did not dereference the network-URI $ref in the tool inputSchema`,status:t?`FAILURE`:`SUCCESS`,timestamp:e,errorMessage:t?`Canary URL ${Xa} was fetched ${this.canaryRequests.length} time(s)`:void 0,specReferences:Qa,details:{toolsListed:!0,canaryRequestCount:this.canaryRequests.length,canaryRequests:this.canaryRequests}}]:[{id:Za,name:`NoNetworkRefDereference`,description:`Client never requested tools/list, so $ref handling could not be evaluated`,status:`FAILURE`,timestamp:e,errorMessage:`Client did not call tools/list against a server advertising a tool with a network $ref`,specReferences:Qa,details:{toolsListed:!1}}]}",
@@ -504,24 +685,52 @@
         ""
       ],
       "preconditions": [
-        "`this.toolsListed` — if the client never called tools/list the check reports FAILURE with a different description, because $ref handling could not be evaluated. A precondition on evaluability, not a second required behaviour."
+        {
+          "guard": "this.toolsListed?",
+          "kind": "semantic",
+          "on_failure": "Client never requested tools/list, so $ref handling could not be evaluated",
+          "reads": "whether the client ever called tools/list; without it $ref handling cannot be evaluated. Reports FAILURE with a DIFFERENT description, so it is a precondition on evaluability, not a second required behaviour"
+        }
       ],
       "status_at_accepted_run": "SUCCESS"
     }
   ],
   "generated_by": "MES-68 (A3) — hand-run extraction, procedure below. NOT a mix task: the input is a /tmp harness build, so a task would be unrunnable on any tree where that build is absent.",
+  "polarity_rule": "Every axis carries `polarity` — `pass_when_true` (the expr being TRUE means the requirement is MET) or `fail_when_true` (TRUE means it is VIOLATED) — and a `polarity_reading` naming the branch of the row's OWN `evaluator_excerpt` that decides it. IT IS AUTHORED, NOT DERIVED, and that is a measured decision rather than a stylistic one: a classifier keying on `===` versus `!==` returns 5 / 14 / 1-undecidable over these 20 axes, because `sep-2106-no-network-ref-deref` axis `canary_not_fetched` has expr `this.canaryRequests.length>0` and contains NEITHER operator. A derived polarity would therefore be absent on exactly the row nobody would think to check. `requires` carries the human reading and always did; `polarity` is what a consumer computing a verdict FROM `expr` needs.",
+  "polarity_totals": {
+    "checked_by": "test/conformance/match_key_test.exs — totals recomputed from the per-axis values and compared as a SET against the 20, so a total that drifts from the rows cannot pass",
+    "fail_when_true": 15,
+    "pass_when_true": 5,
+    "total_axes": 20,
+    "why_the_split_is_not_random": "The split falls along the 7/5 call-site line: the `===` idiom writes the PASS condition, the `!==`/`||` idiom writes the FAIL condition. Two harness authoring styles, not randomness."
+  },
+  "preconditions_rule": "Every check carries `preconditions` as a LIST OF OBJECTS `{guard, on_failure, reads, kind}`. `guard` and `on_failure` are VERBATIM SUBSTRINGS of that row's own `evaluator_excerpt` — the same discipline `expr` already keeps — so the field can be checked rather than believed. `kind` is `network` (the probe did not complete) or `semantic` (the probe completed but the requirement is not evaluable). `[]` IS NOT A LEGAL VALUE, and a test enforces it. Before MES-76, 5 of the 13 rows recorded `[]` while having guards of exactly the shape the other 8 did record, so `[]` read as \"checked, and none\" when it meant \"not recorded\". A row that genuinely has no guard must say so with an explicit sentinel entry (`kind: \"none\"`, sole entry in its row) — so that silence cannot encode the answer. No row in this artefact currently needs the sentinel: all 13 have at least one guard.",
   "provenance": {
-    "equals_manifest_harness_dist_sha256": "both legs — docs/conformance/in-scope-2026-07-28.json provenance.server and provenance.client carry this same sha, so these axes are read from the exact build behind the accepted runs, not a lookalike",
-    "extraction_procedure": [
+    "authoring_procedure": [
+      "DIRECTION: axis -> site. This is how the 13 rows below were actually CUT, and it is kept for that reason. It is NOT the path a consumer travels: its step 1 presupposes you already know the axis expression, which is the thing a consumer is trying to find. A3 could write it this way because A3 already had the answers. For the consumer's direction see `reverse_lookup_procedure`.",
       "1. Locate the axis expression verbatim in the dist. Each of the seven used here occurs EXACTLY ONCE in the file, so the location is unambiguous.",
       "2. Walk back to the nearest enclosing `a(` check-emitting call (or, for the client-leg class-based scenario, the enclosing `getChecks(){`).",
       "3. Balanced-scan forward to the matching close, honouring ' \" ` string contexts and ${} template nesting, and record the span.",
       "4. `evaluator_excerpt` is that span verbatim; `dist_byte_span` addresses it in the file named by `harness_dist_sha256`, so any reader with that build can re-cut it."
     ],
+    "equals_manifest_harness_dist_sha256": "both legs — docs/conformance/in-scope-2026-07-28.json provenance.server and provenance.client carry this same sha, so these axes are read from the exact build behind the accepted runs, not a lookalike",
     "harness_dist_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
     "harness_version_reported": "0.2.0-alpha.11",
     "read_from": "/tmp/confalpha/package/dist/index.js",
-    "residual": "Committed axes are a READING OF A PREDICATE AT ONE BUILD. A harness bump invalidates them exactly as A1's residual R3 says it invalidates keys. The sha is recorded so a reader can tell whether it has been invalidated; nothing here detects it automatically."
+    "residual": "Committed axes are a READING OF A PREDICATE AT ONE BUILD. A harness bump invalidates them exactly as A1's residual R3 says it invalidates keys. The sha is recorded so a reader can tell whether it has been invalidated; nothing here detects it automatically.",
+    "reverse_lookup_procedure": {
+      "cases": {
+        "0_occurrences_TEMPLATE": "THE GREP RETURNED NOTHING. You are in the template case — you are NOT looking at a missing check, and you must NOT fall back to reading the check's `description`. The id is BUILT at runtime, e.g. ``a(`sep-2575-http-server-method-not-found-404-${t}`,...)``. Grep instead for the LONGEST LITERAL PREFIX of the id (drop trailing segments until the grep hits): for the five 404 rows that prefix is `sep-2575-http-server-method-not-found-404-`, which occurs EXACTLY ONCE and lands directly on the loop's emitting call. Then read the loop's iteration values to recover which concrete ids it produces.",
+        "1_occurrence_LITERAL_or_CONSTANT": "One hit. If it sits in the FIRST argument position of an `a(` call, that IS the emitting site (form `literal`). If instead it sits on the right of an assignment to a minified name — e.g. ``Za=`sep-2106-no-network-ref-deref` `` — you are in the CONSTANT case and the hit is the BINDING, not the site: take the bound name and grep THAT (`id:Za`) to reach the emitting site. One hit does not by itself mean you have found the site.",
+        "2_occurrences_LITERAL_PLUS_PREFIX": "Two hits, and they are not duplicates. This happens when one check's id is a PREFIX of another's template: `sep-2575-http-server-method-not-found-404` occurs both as its own literal id and as the prefix inside ``sep-2575-http-server-method-not-found-404-${t}``. Disambiguate by what follows the id: a closing backtick means this check's own site; a `-${` means you have landed on the template loop belonging to a DIFFERENT check."
+      },
+      "direction": "check_id -> emitting site -> predicate -> axes. This is the direction a consumer travels, and the FIRST hop is the hard one: a grep on the check_id reaches the emitting site for only 7 of the 13 rows.",
+      "measured_at": "18df3a6, against harness_dist_sha256 — the occurrence counts in each row's `emitting_site.locator` were re-measured there, not copied forward.",
+      "step_0_if_the_row_is_already_here": "If the check_id is one of the 13 below, SKIP THE TRAVERSAL ENTIRELY. Read `emitting_site.dist_byte_span` (or `dist_char_span`) and cut that range out of the file named by `harness_dist_sha256`. Measured at 18df3a6 against that build: all 13 rows re-cut BYTE-IDENTICAL to their committed `evaluator_excerpt` on BOTH span kinds, 26 of 26 comparisons. The reverse lookup for a known row is therefore a constant-time cut, not a search.",
+      "step_1_branch_on_form": "For a check_id NOT below, grep the dist for it and branch on the occurrence count. `emitting_site.form` tells you which of the three cases a KNOWN row is in; for an unknown one the occurrence count tells you, by the rules in `cases`.",
+      "step_2_site_to_axes": "From the emitting site, the predicate is the arrow function passed as the `a(` call's fourth argument (or, on the client leg's class-based scenario, the object literal returned by `getChecks(){`). Decompose it per `axis_source_rule`: axes come from the PREDICATE, never from the description. Each axis's `expr` is a verbatim substring of the excerpt, and its `polarity` says which way the expression reads.",
+      "why_this_is_not_a_mix_task": "The input is a /tmp harness build, so a task would be unrunnable on any tree where that build is absent — the same reasoning `generated_by` already gives, unchanged. A written procedure plus the recorded spans is the deliverable."
+    }
   },
   "provisional_pending": "B2a (unbriefed at 891300b) — the server-leg ET-CC sweep",
   "revision": "2026-07-28",

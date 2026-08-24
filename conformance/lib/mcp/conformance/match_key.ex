@@ -126,6 +126,11 @@ defmodule MCP.Conformance.MatchKey do
   @axis_verdicts [:agrees, :contradicts, :silent]
   @run_verdicts [:green, :red]
 
+  # The edge-shape vocabulary, in `shape_from_axes/1`'s own precedence order.
+  # It exists as an attribute so `bucket/1`'s domain can be READ rather than
+  # restated — see `edge_shapes/0`.
+  @edge_shapes [:contradicting, :partial, :full]
+
   @doc "A1's six key fields, in manifest order."
   @spec key_fields() :: [String.t()]
   def key_fields, do: @key_fields
@@ -137,6 +142,24 @@ defmodule MCP.Conformance.MatchKey do
   @doc "The measured-exhaustive leg vocabulary. `none` is reserved against it."
   @spec legs() :: [String.t()]
   def legs, do: @legs
+
+  @doc """
+  The run-verdict vocabulary — one component of `bucket/1`'s domain.
+
+  Exposed so a test can enumerate that domain instead of restating it
+  (MES-76). A hand-written `[:green, :red]` in a test is a literal that can
+  drift from this module without anything noticing; a read cannot.
+  """
+  @spec run_verdicts() :: [atom()]
+  def run_verdicts, do: @run_verdicts
+
+  @doc """
+  The edge-shape vocabulary, in `shape_from_axes/1`'s precedence order — the
+  other component of `bucket/1`'s domain. Exposed for the same reason as
+  `run_verdicts/0`.
+  """
+  @spec edge_shapes() :: [atom()]
+  def edge_shapes, do: @edge_shapes
 
   @doc """
   Encode an A1 key as a token.
@@ -288,6 +311,26 @@ defmodule MCP.Conformance.MatchKey do
   well-formed token for a check that does not exist decodes cleanly and is
   refused later, by `resolve/2`. Keeping the two steps apart is what lets
   `guard_state/2` tell a typo from a declared non-match.
+
+  ## The trailing `#` is refused, because the token must be injective (MES-76)
+
+  `render/1` emits the `#` form **only** for a non-empty discriminator, so
+  `"…/Name#"` is unreachable from `encode/1`. Before MES-76 it nonetheless
+  decoded, and to a map **byte-identical** to the one `"…/Name"` produces:
+  two token strings, one decoded value, and only one of the two emittable.
+  That is a failure of injectivity, not a cosmetic second spelling, and it is
+  what makes it a defect — a relation that silently accepts a string its own
+  encoder cannot produce has no basis for saying which of the two is the key.
+
+  `validate_edge/1` already caught it on a *stored* edge, as
+  `:derived_field_mismatch`. `guard_state/2` did not, and that is the path
+  Sprint 7's drift guard travels: measured at `18df3a6` against the real 175
+  manifest rows, `guard_state("oc:server/caching/…/ToolsListCachingHints#",
+  rows)` returned `{:matched, key}` — the same `{:matched, key}` as the
+  well-formed token. It is now `{:error, {:malformed, :empty_discriminator}}`.
+
+  Refusing it costs nothing, and that is measured rather than assumed: all 175
+  legitimate tokens still round-trip.
   """
   @spec decode(String.t()) :: {:ok, decoded()} | {:error, term()}
   def decode("oc:" <> body) when byte_size(body) > 0 do
@@ -530,6 +573,7 @@ defmodule MCP.Conformance.MatchKey do
     {name, discriminator} =
       case String.split(tail, "#") do
         [name] -> {name, ""}
+        [name, ""] -> {name, :empty}
         [name, discriminator] -> {name, discriminator}
         _many -> {tail, nil}
       end
@@ -558,7 +602,11 @@ defmodule MCP.Conformance.MatchKey do
     end
   end
 
+  # Two sentinels, both standing for "the split produced something no token
+  # should carry", refused before any other check so the reason is the lexical
+  # one rather than a downstream charset complaint.
   defp check_discriminator(nil), do: {:error, :multiple_discriminators}
+  defp check_discriminator(:empty), do: {:error, :empty_discriminator}
   defp check_discriminator(_), do: :ok
 
   defp fetch_carried(key) do

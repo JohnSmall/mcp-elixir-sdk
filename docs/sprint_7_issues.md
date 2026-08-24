@@ -2079,3 +2079,183 @@ declarations producing 579 runtime units", never "the 579". And any figure about
 either population should be published with the bridging arithmetic beside it, so
 that the reader can tell which population is being counted without knowing which
 one the author meant.
+
+---
+
+## S7-37 — Four merged artefacts now disagree with the tree by a known, enumerable amount, and that is a decision rather than a drift
+
+**Found on MES-76 (F1–F4), 2026-08-24, by CODE_CREATOR at planning; ruled by the
+PM at `26128` (Q3).** Recorded here as the condition of that ruling.
+
+### The arithmetic, stated so a later reader can act on it
+
+`docs/conformance/etcc-exunit-rows.json` records **1007** runtime units, captured
+at a named tip. Gate 5 at `18df3a6` reported `13 doctests, 994 tests` = **1007**,
+so the census matched the tree exactly up to the moment this ticket landed.
+MES-76 adds **27** tests and the delivered tip reports `13 doctests, 1021 tests`
+= **1034**. The difference is **+27**, and it is precisely the tests this ticket
+added, enumerated:
+
+| deliverable | tests | file |
+| --- | --- | --- |
+| D4 — token injectivity | 5 | `test/conformance/match_key_test.exs` |
+| D5 — `bucket/1` exhaustiveness | 7 | same |
+| D2+D3 — polarity and preconditions | 8 | same |
+| D1 — reverse lookup | 7 | same |
+| **total** | **27** | |
+
+All 27 are untagged, so the ET-CC selection is untouched: `mix test.etcc` reports
+**selected 281, expected 281, missing 0, stray 0** before and after.
+
+### Why no re-capture, and what that costs
+
+The census is a **records-then** document, not a **describes-now** one: it carries
+`run.tip`, `rows_md5`, `tree_clean` and `complete`, and claims to be the tree *at
+a named tip* rather than the tree now. Re-capturing would move the register's
+inputs on a ticket that adds no ET-CC member and changes no membership — the
+in-scope 579 and ET-CC 281 cannot move whatever the out-of-scope count does.
+
+What it costs is that four merged artefacts now disagree with the live tree by
+27. **That is the whole reason this entry exists.** "Four artefacts disagree with
+the tree by N, and here are the N" is a fact a later reader can act on; a silent
+drift is not.
+
+### The mechanism
+
+A committed census is an instrument that **changes its own denominator by
+existing** — any ticket that adds a test moves the population the census
+measured. So the question "should the census be re-captured?" has no per-ticket
+answer: answering it inside a ticket either blocks unrelated work or absorbs the
+decision silently. It belongs at a **cadence boundary**, scoped and scheduled
+like any other work — the same rule the end-of-sprint procedure already applies
+to dependency advisories.
+
+### Transferable form
+
+**When an artefact is a snapshot at a named tip, a ticket that invalidates the
+snapshot should publish the delta, not repair the snapshot.** Repairing it inside
+the ticket makes the artefact's provenance depend on whatever work happened to
+notice, which is exactly the property a content-hashed snapshot exists to avoid.
+Publish the arithmetic; let the cadence decide the re-capture.
+
+---
+
+## S7-38 — A test asserting a uniform reason over a population is a stronger claim than the fix supports, and it fails toward the author's framing
+
+**Found on MES-76 (D4), 2026-08-24, by CODE_CREATOR — by running the test, not by
+reading it.**
+
+### What happened
+
+D4 makes the `oc:` token injective: `oc:…/Name#` decoded to a map byte-identical
+to the one `oc:…/Name` produces, so two token strings named one value while
+`render/1` could emit only one of them. The fix refuses the explicitly-empty
+discriminator.
+
+The obvious test is "for every one of the 175 manifest rows, appending `#` is
+refused as `:empty_discriminator`". It went **red on the first run**. Appending
+`#` to a row that *already carries* a discriminator produces a **three**-segment
+split, refused as `:multiple_discriminators` — and refused that way **before the
+fix as well**.
+
+So the honest figure is that D4 moves **172 of 175** rows from accepted to
+refused, not 175. The three that did not move were never the defect.
+
+### The mechanism
+
+Two ways to write that test both pass, and both mislead:
+
+* assert one reason for all 175 — **false**, and it fails loudly, which is the
+  good case;
+* assert "refused, somehow" — **true, and it hides the partition**. It would have
+  passed, and the close-out would have reported 175.
+
+The second is the dangerous one because the weaker assertion is the *easier* one
+to write and it reads as more robust. A test that accepts any refusal cannot
+distinguish "the fix caught this row" from "something else already did", so it
+silently credits the fix with rows it never touched.
+
+### Transferable form
+
+**When a fix is claimed over a population, assert the reason per item and compare
+the frequencies as a partition summing to the population** — here
+`%{empty_discriminator: 172, multiple_discriminators: 3}`, sum 175. A single
+reason asserted over a whole population is a claim about uniformity that the fix
+usually does not make; "refused, somehow" is a claim so weak it cannot be wrong.
+The partition is the only form that both passes and reports the truth.
+
+---
+
+## S7-39 — A mutation that the existing suite already catches is not evidence for a new test, and the temptation is to report the first mutation that goes red
+
+**Found on MES-76 (D5), 2026-08-24, by CODE_CREATOR.**
+
+### What happened
+
+D5 adds an exhaustiveness assertion over `bucket/1`'s 2×2×3 domain, guarding
+MES-68's own lesson: an implicit case in a total-looking table. To show it works,
+the natural mutation is to **reintroduce the original defect** — delete the
+`{:red, :green, :full}` clause so that cell falls through to `:undecidable`.
+
+It went red: 3 failures. Reported alone, that reads as proof the new tests work.
+It is not. **One of the three was a pre-existing test** — MES-68 added a test for
+exactly that cell when it fixed it. The mutation is caught with or without the
+new work, so it discriminates nothing.
+
+The mutation that *does* discriminate is vocabulary drift: extend `@edge_shapes`
+to a fourth shape and leave the bucket table behind. That gives **5 red, all five
+among the new tests, zero pre-existing tests red** — because the hand-written
+examples are written against today's three shapes and cannot see a fourth.
+
+### The mechanism
+
+A mutation is chosen to demonstrate a *specific* test, but it is scored against
+the *whole suite*. When the defect being re-injected is one a previous ticket
+already fixed **and tested**, the old test fires too, and a red count alone
+cannot separate the two contributions. The failure mode is not a wrong
+measurement — it is a correct measurement of the wrong thing, reported as
+evidence for a claim it does not support.
+
+### Transferable form
+
+**Score a mutation by *which* tests reddened, never by how many** — and state
+whether any of them pre-date the work. A mutation whose casualties are all
+pre-existing tests is evidence about the *old* suite. The discriminating mutation
+for a generalising test is one that breaks the *generalisation* (extend the
+domain, drift the vocabulary), not one that re-breaks the specific case the
+generalisation was derived from.
+
+---
+
+## S7-40 — Gate 1's blindness to `conformance/controls/` is worth re-measuring per ticket, because reading `.formatter.exs` answers a different question than running the gate
+
+**Found on MES-76, 2026-08-24, by CODE_CREATOR.** Confirms S7-11 by mutation
+rather than inheriting it.
+
+### What happened
+
+The brief said to format any new `conformance/controls/` file explicitly because
+gate 1 does not see it (S7-11). Rather than repeat that, it was tested: a
+deliberately misformatted line (`x   =  1`) was appended to the new control and
+`mix format --check-formatted` was run.
+
+**Gate 1 exited 0.** The claim holds, and the explicit format was necessary.
+
+### The mechanism
+
+Reading `.formatter.exs` shows `inputs:` scoped to `conformance/lib/**` and
+invites the inference that `conformance/controls/` is unreached. That inference is
+*usually* right, but it is an inference about a config file, not a measurement of
+the gate: a `.formatter.exs` can be overridden, a subproject formatter can widen
+the set, and a path can be reached by more than one pattern. The distinction
+matters because the two failure directions differ in cost — believing the gate is
+blind when it sees costs a redundant `mix format`; believing it sees when it is
+blind ships an unformatted file that no gate will ever flag.
+
+### Transferable form
+
+**A claim of the form "gate X does not reach path P" is falsifiable in one
+command: break P deliberately and run gate X.** Prefer that to reading the gate's
+configuration, and re-run it per ticket rather than citing an earlier ticket's
+finding — the config is exactly the kind of file another ticket can widen without
+anyone re-testing the claims that rested on it.
