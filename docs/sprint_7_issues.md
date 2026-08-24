@@ -2259,3 +2259,242 @@ command: break P deliberately and run gate X.** Prefer that to reading the gate'
 configuration, and re-run it per ticket rather than citing an earlier ticket's
 finding — the config is exactly the kind of file another ticket can widen without
 anyone re-testing the claims that rested on it.
+
+---
+
+## S7-41 — An identifier pattern that cannot spell the language's own naming convention under-counts silently, and a count that can only be short reads as ABSENCE
+
+**Found at the PM seat, 2026-08-24, while preparing MES-84's dispatch — one step from
+reporting that MES-81's just-merged register had lost four rows.**
+
+Censusing the runtime doctests in `docs/conformance/etcc-register.json`:
+
+```python
+re.compile(r'^doctest (\S+)\.(\w+/\d+) \((\d+)\)$')
+```
+
+returned **9**, where `etcc-exunit-rows.json` and `mix test` both say **13**.
+
+### The mechanism
+
+`\w+` is `[A-Za-z0-9_]`. It does not match `?` or `!`, so
+`Extensions.reserved_prefix?/1` and `Extensions.valid_identifier?/1` — four rows between
+them — could never match. Elixir *conventionally* ends predicates in `?` and raising
+variants in `!`, so in an Elixir tree this is not an edge case, it is a naming convention
+the pattern is structurally blind to. The correct class is `[A-Za-z_][A-Za-z0-9_?!]*`.
+
+### Why it belongs with the sprint's other directional failures
+
+A name pattern can only ever **under**-count. So it can only ever return "fewer than you
+expected", which reads as *absence* — and absence was the alarming answer here, exactly as
+it was the reassuring one when S7-16's grep asked whether code was dead. Same defect,
+opposite-signed conclusion. **A check that can only fail in one direction tells you about
+the check, not about the subject.**
+
+### Transferable form
+
+For "how many X are in this artefact": (1) do not key on a name pattern when the artefact
+carries a **field** for it — the register has `test_type` (`test` / `doctest`), which is
+mechanical and cannot mis-lex; and (2) settle totality by **set comparison against the
+source population**, not by a pattern count. `{register keys} == {artefact keys}` returned
+992 = 992, zero either way, and that — not the corrected regex — is what actually proved
+the register intact.
+
+---
+
+## S7-42 — "Records then" and "describes now" are two kinds of document, and the same stale address demands opposite remedies in each
+
+**Ruled at the PM seat on MES-84 (comment `26121`) and applied again on MES-76 (`26128`)
+within four hours — the second application is what makes it a rule rather than an answer.**
+
+MES-84's tagging moved line addresses that other files cite. CODE_CREATOR asked whether the
+32 citations in `sprint_4_issues.md`, `sprint_6_issues.md` and `sprint_7_issues.md` should be
+re-addressed along with the live conformance artefacts. MES-76 then asked the structurally
+identical question about `etcc-exunit-rows.json`, whose 1007-row census the ticket's new
+tests would leave 27 short of the tree.
+
+### The mechanism
+
+A **live artefact** asserts something about the tree as it is now. A stale address in one is
+simply wrong, and repairing it restores the claim.
+
+A **historical record** asserts that on a date, at a tip, someone measured something at an
+address. Rewriting that address to today's line does not repair the record — it *falsifies*
+it. The finding did not happen at today's line, and a reader who follows the new address and
+reads today's bytes concludes something that was never measured.
+
+`etcc-exunit-rows.json` sits in the second class despite looking like the first, and it says
+so itself: `run.tip`, `rows_md5`, `tree_clean`, `complete`. It does not claim to be the tree;
+it claims to be the tree **at a named tip**. Confirmed by measurement rather than by reading:
+no control asserts totality over the live tree — `etcc_register_controls.exs`'s `totality`
+recomputes from the committed register's own rows and never looks at the working tree.
+
+### Transferable form
+
+Before repairing a stale address, ask which class the document is in. **The discriminator is
+whether it claims to describe now or to record then** — and a document that carries its own
+tip and hash has already answered. Where the answer is "records then", the remedy is a
+sentence saying the addresses are as-of, never a rewrite.
+
+---
+
+## S7-43 — An invariant is a proxy for the question it was built for, and it answers a DIFFERENT event with the wrong sign
+
+**Found on MES-84, escalation 1 — the invariant fired, and the correct response was to look
+rather than to act.**
+
+MES-84's re-address held every rewrite to: *the bytes at the new line equal the bytes that
+were at the old line before tagging*. Two citations to `header_mirror_test.exs:31` failed it.
+CODE_CREATOR escalated instead of rewriting. The line number had not moved; the **content**
+had, because the ticket deliberately edited that line from `doctest MCP.Protocol.HeaderMirror`
+to `doctest MCP.Protocol.HeaderMirror, tags: [:etcc]`.
+
+Adjudicated by opening both citations rather than reasoning about them: neither quotes line
+31's bytes, and both name the *declaration* and what it generates — "(×4 doctests)". The
+declaration is still at `:31` and still generates the same four. Nothing to repair.
+
+### The mechanism
+
+Byte-equality is a proxy for **"does this citation still point at the thing it named?"** It
+answers correctly for the event it was designed against — an insertion above pushing the line
+out from under a citation — and incorrectly for a different event: a deliberate edit *to* the
+cited line. Two events, one signal, opposite right answers.
+
+### Transferable form
+
+Keep the invariant; it failed **safe**, which is the direction worth having. What it needs is
+the accompanying rule: **a red from a proxy means "look", not "act"**. A remedy wired directly
+to a proxy's red would have silently rewritten two correct citations here.
+
+---
+
+## S7-44 — A deliverable held in a seat's context, or in an uncommitted worktree, is lost when the engine dies — and the tidy-up reflex destroys what survived
+
+**Four `rc=1` engine deaths on 2026-08-24, against zero in the entire prior dispatch log.**
+
+Two shapes. Two deaths were mid-work (15 and 42 minutes in). Two were at **startup** — ~3¼
+minutes in, having produced nothing at all: no commit, no comment, no worktree — and both
+followed a Jira thread that had grown long.
+
+### What it cost, and what saved it
+
+The 42-minute death left **865 uncommitted insertions across 5 files** in an orphaned
+worktree. The first recovery of the day had removed a previous orphan without looking,
+because that one happened to be clean. **The same reflex would have destroyed the round.**
+`git status --porcelain` before removal is what made the difference.
+
+### The recovery sequence, validated four times
+
+Confirm `rc != 0` with no comment posted and the ticket still assigned → **inspect the
+worktree and preserve any uncommitted work before removing it** → unassign → wait ~10s for
+the loop to clear `/tmp/seat-MES-<SEAT>.last` → re-assign. Re-assigning before the marker
+clears is a no-op: `seat_loop.sh` edge-triggers on the ticket key.
+
+For the startup shape, a re-dispatch opening **"DO NOT RE-READ THE COMMENT THREAD"**, naming
+only the one or two comments that matter and compressing every ruling inline, recovered both
+occurrences. *Correlational, not proven* — recorded as a working hypothesis.
+
+### Transferable form
+
+Ask the executing seat to **commit after each scope item and post close-out parts as they
+land**. A commit made and a part posted both survive an engine death; a deliverable held in
+context does not. Six partial reports beat one complete one that never arrives — and on
+MES-84 and MES-76 both, this is exactly what happened.
+
+---
+
+## S7-45 — Having the fact recorded is not the same as applying it, and the failure mode looks identical to not knowing
+
+**Found at the PM seat on MES-84, 2026-08-24.**
+
+The dispatch for MES-84 ruled HAZARD 1 "resolvable — split `extensions_test.exs:35` with
+`only:`". CODE_CREATOR's plan then measured that `only:` **renumbers the doctest example
+index**, that the index is inside the row key, and that the key is the authored join key of
+an already-merged deliverable. The ruling was withdrawn and the split declined.
+
+The renumbering was already written down. It had been measured on an earlier ticket and
+recorded, in those words, in the PM seat's own notes — *"`only:`/`except:` RENUMBER the (n)
+that is part of the test name"*. It was not consulted before the ruling was written.
+
+### The mechanism
+
+A prior finding protects nothing unless something forces a lookup at the moment of decision.
+A ruling written from a fresh reading of the code will re-derive whatever the code shows and
+**silently omit whatever only the notes know** — and the output is indistinguishable from the
+output of never having found it. Nothing in the ruling looked uncertain.
+
+### Transferable form
+
+**Before ruling on a mechanism, search the register for that mechanism by name** — the cost is
+one grep, the failure mode is a correction round. And where a finding constrains a *decision*
+rather than a line of code, say so in the entry, so a later reader knows it is meant to be
+consulted rather than merely recorded.
+
+---
+
+## S7-46 — Prose can contradict EXECUTABLE CODE that derives the same number from the same file, and the code being right is what makes the prose invisible
+
+**Found on MES-82 as F14, and distinct from S7-24.**
+
+S7-24 is prose-vs-artefact: a delivered document keeps the previous round's numbers because
+no generator reaches prose. S7-46 is narrower and worse. Here the document contains **a
+control that derives the figure from the artefact**, and prose elsewhere in the same document
+states a different figure for the same population. The control is green, because the control
+does not read the prose.
+
+### The mechanism
+
+Adding executable verification to a document raises confidence across the *whole* document,
+including the parts it does not reach. A reader who has seen the control pass has no
+prompting to check a sentence — the presence of a green instrument is read as coverage of the
+file rather than coverage of the instrument's own inputs. The figure and its check live in one
+file and never meet.
+
+### Transferable form
+
+**A control's reach is its inputs, not its file.** When a document carries both derived and
+asserted figures, the derived ones need no check and the asserted ones need every check — so
+enumerate the asserted figures explicitly and re-resolve each at the delivered tip. "The
+controls are green" is a statement about the controls.
+
+---
+
+# End-of-sprint dependency sweep — Sprint 7
+
+**Run at the PM seat, 2026-08-24, at the sprint's final tip `c807733` /
+`2.0.0-dev.30`, tree clean.** Recorded whether clean or not, because "checked, and
+zero" and "never asked" read identically when only the answer is printed.
+
+**The per-ticket gate-6 applicability rule does not apply here.** That rule is about
+tickets; this is a cadence sweep and it runs every sprint boundary regardless of what
+changed. Sprint 7 changed no dependency — no ticket touched `mix.exs` or `mix.lock` —
+and the sweep ran anyway, which is precisely its purpose: to catch advisories published
+against dependencies nobody touched.
+
+```
+hex version        Hex v2.5.1        meets the >= 2.5.1 gate-6 floor (checked, not assumed)
+
+GATE 6a  baseline-lock sentinel at d697093
+         advisory ids present   22 of 22        PASS
+         validates local advisory data for bandit, hpax, mint, plug, req
+
+GATE 6b  mix hex.audit on this project at c807733
+         "No retired or security advisory packages found"      rc=0
+
+RESULT   CLEAN.  Zero advisories, zero retired packages.
+         No Jira ticket raised, because there was nothing to raise.
+```
+
+**What this result does and does not mean.** 6a passing is what makes 6b's green worth
+reading: a bare `mix hex.audit` exits 0 over an outstanding advisory when the local
+registry cache is incomplete, and 6a is the control that rules that out. But 6a narrows
+limitation 1 to the five advisory-bearing packages — **21 of the 26 locked packages
+remain unvalidated**, including `finch` and `thousand_island`, which are runtime deps on
+this SDK's transport path. And neither half detects **staleness**: a complete-but-old
+registry passes both while missing every advisory published since the snapshot. The
+compensating control for both residuals is the live whole-tree OSV cross-check, owned by
+MES-19 at release.
+
+**PA-9 remains open and is unchanged by this sweep.** The live question is whether the
+OSV cross-check should also run at the sprint boundary — where network dependence costs
+nothing, since no work is in flight and no merge is blocked. Still the PO's call.
