@@ -1421,3 +1421,386 @@ document states about an artefact are a checkable set.** `75 / 37`, `34 distinct
 boundary ids`, `194 anchors`, `27 status assertions` — each is one query against the
 committed JSON. A checker that extracts them is the only thing that makes "this document
 was re-derived" distinguishable from "this document was re-read".
+
+---
+
+## S7-25 — Two artefacts counting "the same" units against different questions produce figures that look like a disagreement and are not one; reading one side's count as the other's member list is the actual defect
+
+**Found on MES-82 (B2b)** while joining B2a's member register to A4's CG-side
+reconciliation. Raised as the general form of D1 and D2 in
+`docs/conformance/etcc-attribution.md` §4.1.
+
+### What happened
+
+`cg-reconciliation.md` §3 records CG2's discharge as **4 ET-CC units**
+(`client_conformance_test.exs:184,209,217,232`) and CG7's bucket-1 constraints as
+**9 ET-CC units** (`header_mirror_test.exs:113,120,133,156,168,194,205,222,231`).
+
+In B2a's delivered register, **2 of that 4** and **2 of that 9** carry the label
+`ET-CC`. `:209` and `:217` are `ET-OUT` on gate 2; seven of the nine are `ET-ADJ`.
+
+### It is NOT a defect in A4, and saying so is half the entry
+
+A4 built and guard-checked all seven CGs validly, and it ran **before** A2's gates
+had been applied per unit — so it could not have used B2a's answer, and its own
+answer is true of its own question.
+
+The two artefacts are counting different things:
+
+* **A4's discharge layer** counts units that **CLOSE THE GAP** — does this test
+  establish the required behaviour?
+* **B2a's ET-CC criterion** counts units that **ASSERT A WIRE ARTEFACT** (gate 2)
+  — does this test's assertion address bytes a peer could observe?
+
+A test can do the first without the second: `:217` asserts only that nothing is
+logged, and `:113`/`:120` assert that a validator returns an error tuple. Real
+discharge, no wire artefact.
+
+### The actual defect, and where it would have landed
+
+**Reading one artefact's count as the other's member list.** B2b's Job 2 would
+have done exactly that had it taken A4's discharge rows as its member set instead
+of joining from the member side: it would have attributed four members where two
+exist, and inherited two labels that are not `ET-CC`.
+
+The same shape produced **three** instances in one ticket — D1, D2, and AC4's
+carrier-less tokens (`etcc-attribution.md` §5.2), which is not a separate residual
+but this defect arriving a third time.
+
+### Transferable form
+
+**A count is a function of the question that produced it, so two artefacts'
+counts of "the same" units are not comparable until both questions are stated.**
+Before joining on another artefact's enumeration, ask what its rows are rows *of*.
+Where the questions differ, join from your own side and report the difference —
+never reconcile it by preferring a side, and never treat the other side's count as
+a member list.
+
+**The tell is that both figures survive scrutiny.** Neither "4" nor "2" is wrong,
+so a reviewer checking either one in isolation finds it correct. Only the
+predicate — *units that close the gap* versus *units that assert a wire artefact*
+— separates them, and neither artefact had to state it to be right on its own
+terms.
+
+---
+
+## S7-26 — A module-level attribute cannot answer a function-level question, and read as one it fails silently toward "shared"
+
+**Found on MES-82 (B2b)** attributing a leg to each of B2a's 281 members.
+
+### What happened
+
+B2a's register carries a `boundary` per `ET-CC` row — the `lib/` encode/decode
+boundary-direction the asserted bytes come from. The brief warned it is not a leg
+attribution. Measured against the delivered attribution, a boundary-driven rule
+(`MCP.Client` → client, `MCP.Server.*`/plug → server, anything else →
+`none_determinable`) agrees on **163 of 281 — 58%**.
+
+**All 118 disagreements have one shape**: the proxy answers `none_determinable`
+where a per-**function** measurement resolves a definite leg. There is no
+`client`→`server` or `server`→`client` cell in the table.
+
+The reason is that a shared `MCP.Protocol.*` module is not shared function by
+function:
+
+| function | only `lib/` call site | leg |
+| --- | --- | --- |
+| `HeaderMirror.encode_value/1`, `headers_for/2` | `client.ex`, `streamable_http/client.ex` | client |
+| `HeaderMirror.decode_value/1` | `plug.ex:906` | **server** |
+| `SSE.encode_message/2` | `plug.ex` | server |
+| `SSE.feed/2` (→ `decode_event/1`) | `streamable_http/client.ex:569` | **client** |
+| `Discover.Result.to_map/1` / `from_map/1` | `dispatch.ex:150` / `client.ex:539` | server / **client** |
+| `Extensions.from_meta/1` | **none on either leg** | neither |
+
+`test/mcp/transport/sse_test.exs` is the clearest consequence: **19 members in one
+file**, splitting 8 server / 10 client / 1 round-trip. A module-level read puts all
+19 in the residue.
+
+### Why it fails silently, and toward the reassuring answer
+
+`none_determinable` is the *safe-looking* answer — it claims less. So a
+module-level read never produces an obviously wrong client-versus-server flip; it
+produces an over-large residue that reads as appropriate caution. **42% of the
+member set would have been described as "no determinable leg" when the leg is
+determinable and measurable.**
+
+### Transferable form
+
+**Before using an artefact's field to answer a question it was not built for,
+state the granularity of each.** A field recorded per module answers per module; a
+question about which implementation runs the code is answered per function, and
+the gap between them is invisible in the field's own values.
+
+And the check that catches it is cheap: **compute the agreement rate between the
+proxy and the real reading, and look at the shape of the disagreements, not the
+percentage.** A one-directional disagreement table is a granularity mismatch; a
+scattered one is two unrelated instruments. Here the direction was uniform across
+all 118, which is what identified the cause.
+
+---
+
+## S7-27 — A discriminator stated as a WORDING test does not separate the rows it is applied to, because a test name describes the scenario and not the implementation under test
+
+**Found on MES-82 (B2b).** Shipped in round 1 as a wording test; **broken by a
+reviewer in one mutation** (`26096` F1) and replaced by the PM's mechanical rule
+(`26100`). Recorded in the form the rule ended in, with the failure that produced
+it kept, because the failure is the transferable part.
+
+### What was shipped, and how it broke
+
+The leg rule was *"the implementation whose observable behaviour the assertion
+constrains"*, and its hard case is a test that uses one leg's code as the **oracle**
+for the other leg's behaviour:
+
+    assert HeaderMirror.decode_value(headers["mcp-name"]) == hostile
+
+`decode_value/1`'s only `lib/` call site is `plug.ex:906` — our **server** — so a
+server-side mutation reddens `routing_headers_test.exs:239`, which is a claim about
+our **client**. Round 1 separated the oracle case from the genuine round-trip case
+on **whether the test's wording made the decode "the claim"**:
+
+| | test name |
+| --- | --- |
+| `routing_headers_test.exs:199` | *"a non-ASCII tool name is encoded, **and decodes back to the body value**"* |
+| `header_mirror_test.exs:360` | *"**every encoded value decodes back to exactly the body value**"* |
+
+**The wording is the same.** Applied as stated, the rule put the client-leg member
+on the round-trip member's side — so the discriminator did not discriminate, and
+the answer it produced was right for reasons the rule did not state.
+
+### The rule that replaced it, and it is per ASSERTION not per test
+
+> A member has a **definite leg** iff it carries **at least one assertion that a
+> mutation of that leg's code falsifies and no mutation of the other leg's code
+> falsifies**. It is **`none_determinable`** iff no leg is definite.
+>
+> **Second limb.** A decode/parse applied to **our own encoder's output** is a
+> **round-trip** — its assertion is falsified from either side, so it makes neither
+> leg definite. A decode/parse applied to a **literal** is an **independent
+> single-leg claim**. Whose output the decode consumes is checkable by reading the
+> call, which is what keeps it mechanical.
+
+The oracle case then resolves without any appeal to wording:
+`routing_headers_test.exs:199` also carries
+`assert String.starts_with?(header, "=?base64?")`, which no server mutation can
+reach — one client-definite assertion, so `client`. `header_mirror_test.exs:360`
+carries **only** the round-trip, so `none_determinable`. **The unit of the rule is
+the assertion; a test is a bundle of them, and attributing the bundle was the
+error underneath the wording.**
+
+### Two things the mechanical rule does NOT settle, both found by applying it
+
+**(a) A member can be definite for BOTH legs, and the rule has no word for it.**
+`self_compatibility_test.exs:96` carries a client-definite assertion at `:100` and
+a server-definite one at `:109`; `header_mirror_test.exs:425` encodes one literal
+and decodes another. Resolved as `none_determinable` — a member whose claims span
+both legs can match an OC check on either, which is what that value means for the
+consumer — but it is a third outcome wearing the second one's name. **This is the
+one row the new rule re-attributed**: 146/107/28 became 145/107/29.
+
+**(b) The rule's negative half is not mutation-checkable, and cannot be made so.**
+*"Some assertion this leg's mutation falsifies"* is positive and runnable. *"No
+mutation of the other leg's code falsifies it"* quantifies over mutations nobody
+has run — **a mutation proves LIVE, never DEAD** (S7-19). So the negative half is
+discharged by a **reachability argument over `lib/` call sites**, and every claim
+of a definite leg rests on an argument at exactly one point. Where a mutation
+*can* settle it, it is because a mutation of the *other* leg reddened the **same
+assertion**, proving that assertion is not single-leg — which runs in the
+permitted direction.
+
+### Transferable form
+
+**A discriminator has to be tested against the rows it will be applied to, not
+against the example that motivated it.** The round-1 rule was stated in front of
+one pair and separated that pair; the first reviewer to fetch a second pair broke
+it in one command. Before shipping a rule, apply it to the *hardest* rows on both
+sides and print what it returns — and if a mechanical restatement and the words
+disagree, that is not a licence to use the words, it is evidence the rule is not
+yet stated.
+
+**And name the unit.** "Which mutation reddens this test" and "what does this test
+claim" diverge whenever a test bundles claims, which is most tests. A rule whose
+unit is the test cannot express a member that claims one thing about each side.
+
+**Direction still matters for the audit.** The oracle defect inflates the residue —
+it moves members *into* `none_determinable` — so it fails toward the cautious
+answer and will not announce itself. The both-legs case does the same. The
+countermeasure is a bounded candidate sweep **with a positive control**: every
+member whose unit names a leg-specific function or entry point from both legs,
+adjudicated one at a time. B2b's first version of that sweep read the unit body
+alone and found **1 of the 7** members it was known to have to find, because the
+driving happened in a helper. **A candidate sweep that finds one of seven is what a
+missing positive control looks like.**
+
+
+## S7-28 — An address arrived at by counting from a citation instead of resolving it is wrong in the one way re-reading the citation cannot catch
+
+**Found on MES-82 (B2b)**, against this ticket's own ratified plan.
+
+### What happened
+
+The plan (MES-82 comment `26087`) reported as an AC3 disagreement:
+
+> **D5** — one fact, two addresses, and one of them is wrong at this tip.
+> Declaration line is 35 (the register's key); the `cache_scope` assertion is at
+> **48**, not 47.
+
+Run literally at the delivered tip, that is false.
+`test/mcp/protocol/messages/discover_test.exs:47` **is**
+`assert result.cache_scope == "public"`, exactly as `match-relation.md` §6 cites
+it. Line 48 is `assert result.server_info.name`.
+
+So D5 is not a disagreement at all: A4 §3 cites the `test` declaration line (35,
+the register's key under `etcc-row-key.md` §1) and §6 cites the assertion line
+(47). Both addresses are correct for one test and differ only by the
+decl-versus-assert convention.
+
+### Why the error had the shape it did
+
+The plan's figure was reached by *counting* — taking the cited line and reasoning
+about what must be near it — rather than by resolving the address against the
+tree. That is a variant of the move the PM's one standing instruction for this
+ticket forbade (`26090`: read the test body, not a secondary copy), and it fails
+in a way re-reading cannot catch: **re-reading the citation reproduces the
+citation.** Only opening the file at that line falsifies it.
+
+It also inverted a real relationship. The plan reported the *live* document as
+wrong and the archive as right; the truth was the reverse of the error and neither
+document was wrong at all.
+
+### Transferable form
+
+**Never state a line address you have not resolved at the tip you are delivering
+from — including one you are asserting is WRONG.** S7-23 says a citation dies to a
+later commit; this is its complement: *a citation you never opened was never alive
+to begin with*, and a claim that someone else's address is stale needs the same
+evidence as the address itself.
+
+**The specific trap is a near-miss.** An address off by one or two lands inside
+the same test and looks plausible against every summary of it. The only check that
+discriminates is printing the line — which costs one command, and which this entry
+exists because nobody ran until delivery.
+
+---
+
+## S7-29 — A remedy is an instrument, and an instrument has a reach nobody states when they build it: the S7-24 column re-derives from the ARTEFACT, so it cannot reach a figure asserted about another SECTION
+
+**Found on MES-82 (B2b), correction round 1.** Not an instance of S7-24 — **a
+bound on S7-24's own remedy**. Raised by the reviewer (`26097`), adopted by the PM
+(`26101`), and the recurrence is itself the finding.
+
+### What happened
+
+S7-24 says prose figures accumulate the previous round's numbers "in exactly the
+places a generator cannot reach". B2b's remedy was a **column**: after the last
+change, re-derive **every** prose figure from the committed artefact. It ran, and
+three figures did not survive it — they were fixed in `6ae97d5` and reported as
+the column's result.
+
+The reviewer then found **two more**, both of which the column had passed over:
+
+* `etcc-attribution.md:537` (§7 bullet 3): *"The **five** unmatched checks in §3.4"*,
+  where §3.4 enumerates **four** and closes `11 matched + 4 unmatched = 15`. The
+  same commit that changed "five" → "four" in §3.4 left §7(3).
+* `etcc-attribution.md:354` (§4.1): *"§5's **three** carrier-less tokens"*, where
+  §5.2 is headed *"**Two** tokens have no carrier"*. The 4/3 → 5/2 overturn was
+  applied in §5 and not in §4.1.
+
+**The column could not have caught either, by construction.** It re-derives each
+figure *from the artefact*, so it reaches every figure with an artefact
+counterpart — and both survivors are figures asserted about **another section of
+the same prose**, which has none. There is no `unmatched_checks` field to compare
+"five" against; the referent is §3.4's own sentence.
+
+### The instrument that does reach them
+
+An **internal-consistency check**: every figure stated *about another section*,
+re-read against that section. Mechanically: find each line that names a `§` other
+than its own and carries a figure, then resolve the figure against the named
+section. On this file that is ~50 lines and one pass, and it earned its keep
+immediately: §4's D2 row said *"CG7's member set is **35**"* after §4.5 had moved
+it to 31. **That one was made stale by correction round 1's own edit rather than
+surviving round 1** — which is the point, not a caveat: the same edit that fixed
+the count elsewhere created the mismatch here, and the artefact column would have
+passed it too, because D2's figure is a claim about a count stated *elsewhere in
+the same file*.
+
+The two checks are complementary and neither subsumes the other:
+
+| check | reaches | blind to |
+| --- | --- | --- |
+| artefact column (S7-24's remedy) | every figure with a counterpart in the built artefact | figures whose referent is other prose |
+| internal-consistency read (this entry) | figures asserted about another section | figures asserted about the artefact but never restated in prose |
+
+### Transferable form
+
+**When you add a remedy, state its reach in the same breath — because the reach is
+what the next reviewer will find.** A remedy is built while looking at the cases
+that motivated it, so it inherits their shape; the cases it cannot see are exactly
+the ones nobody had in hand. Write the bound down at the moment the remedy is
+added, when the shape of what it consults is still in view.
+
+**And this is a recurring shape, not a one-off.** S7-19 bounds S7-16's remedy (a
+narrow mutation carries the same directional bias as the grep it replaced); F6 on
+B2a bounds L2's; this bounds S7-24's. **Three instances in two tickets of the same
+second-order defect.** So the practice generalises: after adding an instrument,
+ask *what class of case is invisible to this*, and record the answer beside the
+instrument rather than waiting for a reviewer to supply it.
+
+---
+
+## S7-30 — A per-item field carrying one shared string reads as per-item evidence and is a single claim, and it hides the items the claim does not fit
+
+**Found on MES-82 (B2b), correction round 1**, from review finding F2 (`26096`).
+
+### What happened
+
+The enriched register carries a `cg_basis` per member — the reason that member
+corresponds to the CG it is assigned. **13 of CG7's 35 members carried this
+verbatim, character for character:**
+
+> *"The client-side inputSchema/annotation cache and the SEP-2243 tool-exclusion
+> rule; this machinery exists solely to drive CG7's `Mcp-Param-*` mirroring, so its
+> claims are CG7's."*
+
+Two defects, and they compound:
+
+**(1) The basis is PURPOSIVE.** It argues from what the machinery is *for*, not
+from what the member asserts. The brief establishes correspondence against the
+check's `description` — never a title, and by the same reasoning never a purpose.
+It is the false-positive shape with a different label on it.
+
+**(2) One string thirteen times cannot be audited per row.** The field's *shape*
+promises a per-item reason; its *content* is one reason. So a reviewer checking row
+`n` learns nothing about row `n+1`, and the 13 rows are only as good as the single
+weakest of them.
+
+Checked per row against the members' own assertions, **8 assert `Mcp-Param-*`
+mirroring directly**, one asserts the SEP-2243 exclusion, and **4 assert neither**
+— three are the client's `-32020` recovery policy and one is malformed-`tools/list`
+robustness. Checked against A4's CG7 **gap** statement (*mirror designated
+parameters / encode unsafe values / exclude invalidly-annotated tools*), none of
+the three limbs reaches those four. **They left, and CG7 went 35 → 31.**
+
+### The discriminator was in the file the whole time
+
+`client_tool_schemas_test.exs:399` and `:415` sit in the **same `describe`** and
+make the same kind of claim, yet `:415` asserts
+`headers_for_call(client, transport, "t") == [{"mcp-param-region", "us-west1"}]`
+and `:399` asserts nothing about a header. A per-row basis surfaces that in one
+line; a shared basis buries it. **The evidence that separated the rows was
+available to whoever wrote the shared string** — what was missing was the
+obligation to write it down once per row.
+
+### Transferable form
+
+**A field whose name is singular but whose scope is a group is a count wearing an
+enumeration's clothes** (epic ruling 4). Before writing the same justification into
+n rows, ask whether it is *true of each* or merely *true of the set* — and if the
+honest answer is the set, put it in the set's own record and give each row the
+sentence that is about that row.
+
+**The cheap detector: group the field by value and look at the group sizes.** A
+per-item reason field with a group of 13 identical values is either a genuine
+regularity worth naming as one rule, or 13 rows nobody looked at individually.
+Both are worth knowing, and the query costs one line.

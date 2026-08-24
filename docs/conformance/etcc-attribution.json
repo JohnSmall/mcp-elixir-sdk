@@ -1,0 +1,2619 @@
+{
+  "authorities": {
+    "cg_reconciliation": "docs/conformance/cg-reconciliation.md",
+    "match_relation": "docs/conformance/match-relation.md",
+    "reasoning": "docs/conformance/etcc-attribution.md",
+    "row_key": "docs/conformance/etcc-row-key.md"
+  },
+  "joins": {
+    "member_set": "the register rows with label == \"ET-CC\"",
+    "note": "This artefact carries ONLY the attributes B2b establishes. Every other fact about a member is the register's and is not duplicated here.",
+    "on": "docs/conformance/etcc-row-key.md §1, verbatim",
+    "register": "docs/conformance/etcc-register.json"
+  },
+  "rows": [
+    {
+      "cg": "CG2",
+      "cg_basis": "SEP-2133 client-side extensions negotiation — the requirement CG2 states, asserted from the member side.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": [
+        "oc:none/no-oc-scenario/CG2-outbound-meta"
+      ]
+    },
+    {
+      "cg": "CG2",
+      "cg_basis": "SEP-2133 client-side extensions negotiation — the requirement CG2 states, asserted from the member side.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": [
+        "oc:none/no-oc-scenario/CG2-inbound-parse"
+      ]
+    },
+    {
+      "cg": "CG4",
+      "cg_basis": "SEP-2106 `$ref` MUST NOT be dereferenced, asserted against a live canary on the CLIENT leg — CG4's own discharge site.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientConformanceTest/test CG4 / T-CG4 — the client MUST NOT dereference a network $ref listing and calling a tool whose inputSchema $refs a network URI never fetches it",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG — CG1-CG7 are the CG client series and none of the seven states this requirement. But this member DOES match an unclaimed OC check with no CG (cg-reconciliation.md §4's 15); the counterpart is recorded in `tokens`, because \"cg: none\" alone would lose a C1 row.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) a server requestState is echoed verbatim on the retry (control)",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": [
+        "oc:client/sep-2322-client-request-state/sep-2322-client-request-state-echoed/MRTRClientRequestStateEchoed"
+      ]
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG — CG1-CG7 are the CG client series and none of the seven states this requirement. But this member DOES match an unclaimed OC check with no CG (cg-reconciliation.md §4's 15); the counterpart is recorded in `tokens`, because \"cg: none\" alone would lose a C1 row.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an absent server requestState produces a retry with NO requestState key",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": [
+        "oc:client/sep-2322-client-request-state/sep-2322-client-no-state-omitted/MRTRClientNoStateOmitted"
+      ]
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG — CG1-CG7 are the CG client series and none of the seven states this requirement. But this member DOES match an unclaimed OC check with no CG (cg-reconciliation.md §4's 15); the counterpart is recorded in `tokens`, because \"cg: none\" alone would lose a C1 row.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an explicit null server requestState also produces NO requestState key",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": [
+        "oc:client/sep-2322-client-request-state/sep-2322-client-no-state-omitted/MRTRClientNoStateOmitted"
+      ]
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG — CG1-CG7 are the CG client series and none of the seven states this requirement. But this member DOES match an unclaimed OC check with no CG (cg-reconciliation.md §4's 15); the counterpart is recorded in `tokens`, because \"cg: none\" alone would lose a C1 row.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 naming a version we support is retried exactly once",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": [
+        "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion"
+      ]
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG — CG1-CG7 are the CG client series and none of the seven states this requirement. But this member DOES match an unclaimed OC check with no CG (cg-reconciliation.md §4's 15); the counterpart is recorded in `tokens`, because \"cg: none\" alone would lose a C1 row.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 offering only versions we do not support is surfaced, never retried",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": [
+        "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion"
+      ]
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG — CG1-CG7 are the CG client series and none of the seven states this requirement. But this member DOES match an unclaimed OC check with no CG (cg-reconciliation.md §4's 15); the counterpart is recorded in `tokens`, because \"cg: none\" alone would lose a C1 row.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 with no usable data is surfaced, never retried",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": [
+        "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion"
+      ]
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a non-32022 error is never retried",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG — CG1-CG7 are the CG client series and none of the seven states this requirement. But this member DOES match an unclaimed OC check with no CG (cg-reconciliation.md §4's 15); the counterpart is recorded in `tokens`, because \"cg: none\" alone would lose a C1 row.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) the retry re-stamps the version chosen from `supported`",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": [
+        "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion"
+      ]
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG — CG1-CG7 are the CG client series and none of the seven states this requirement. But this member DOES match an unclaimed OC check with no CG (cg-reconciliation.md §4's 15); the counterpart is recorded in `tokens`, because \"cg: none\" alone would lose a C1 row.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) it falls back to its configured default when the message carries no _meta version",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": [
+        "oc:client/request-metadata/sep-2575-http-client-sends-version-header/ClientSendsVersionHeader"
+      ]
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG — CG1-CG7 are the CG client series and none of the seven states this requirement. But this member DOES match an unclaimed OC check with no CG (cg-reconciliation.md §4's 15); the counterpart is recorded in `tokens`, because \"cg: none\" alone would lose a C1 row.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) the transport derives mcp-protocol-version from the message's own _meta",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": [
+        "oc:client/request-metadata/sep-2575-http-client-sends-version-header/ClientSendsVersionHeader",
+        "oc:client/request-metadata/sep-2575-http-version-header-matches-meta/ClientVersionHeaderMatchesMeta"
+      ]
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG — CG1-CG7 are the CG client series and none of the seven states this requirement. But this member DOES match an unclaimed OC check with no CG (cg-reconciliation.md §4's 15); the counterpart is recorded in `tokens`, because \"cg: none\" alone would lose a C1 row.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test MRTR client retry an input_required result is transparently completed via :on_input_required",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": [
+        "oc:client/sep-2322-client-request-state/sep-2322-client-request-state-echoed/MRTRClientRequestStateEchoed"
+      ]
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test MRTR client retry without a resolver the input_required result is returned as-is",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test cancel/3 sends a cancellation notification",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test concurrent requests handles multiple concurrent requests",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test connect/1 (server/discover) probes capabilities and returns server info",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test connect/1 (server/discover) returns error on discover failure",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG2",
+      "cg_basis": "SEP-2133 client-side extensions negotiation — the requirement CG2 states, asserted from the member side.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — a non-struct :client_capabilities is discarded, not passed through",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG2",
+      "cg_basis": "SEP-2133 client-side extensions negotiation — the requirement CG2 states, asserted from the member side.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — and the first request no longer kills the client",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG2",
+      "cg_basis": "SEP-2133 client-side extensions negotiation — the requirement CG2 states, asserted from the member side.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T15 — a server's advertised extensions are surfaced, not discarded",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG2",
+      "cg_basis": "SEP-2133 client-side extensions negotiation — the requirement CG2 states, asserted from the member side.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — a declared extension is stamped into every request's _meta",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG2",
+      "cg_basis": "SEP-2133 client-side extensions negotiation — the requirement CG2 states, asserted from the member side.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — and into the server/discover probe itself",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG2",
+      "cg_basis": "SEP-2133 client-side extensions negotiation — the requirement CG2 states, asserted from the member side.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T5 — the key is omitted entirely when nothing is declared",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG2",
+      "cg_basis": "SEP-2133 client-side extensions negotiation — the requirement CG2 states, asserted from the member side.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 a server's malformed advertisement is reported verbatim, not rewritten",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG2",
+      "cg_basis": "SEP-2133 client-side extensions negotiation — the requirement CG2 states, asserted from the member side.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an invalid identifier is dropped on the way out; an all-invalid declaration vanishes",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG2",
+      "cg_basis": "SEP-2133 client-side extensions negotiation — the requirement CG2 states, asserted from the member side.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an unencodable settings value never reaches the wire (dropped at start_link)",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test lifecycle notifies pending requests when the transport closes",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test lifecycle times out a pending request",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test notifications dispatches to a function handler",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test notifications dispatches to a pid handler",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test pagination list_all_tools paginates through pages",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG — CG1-CG7 are the CG client series and none of the seven states this requirement. But this member DOES match an unclaimed OC check with no CG (cg-reconciliation.md §4's 15); the counterpart is recorded in `tokens`, because \"cg: none\" alone would lose a C1 row.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test per-request _meta every request carries protocolVersion + client identity/capabilities",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": [
+        "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta",
+        "oc:client/request-metadata/sep-2575-client-sends-client-info/ClientSendsClientInfo"
+      ]
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test requests call_tool sends name and arguments",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test requests call_tool surfaces an error response",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test requests get_prompt sends name and arguments",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test requests list_tools returns tools",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test requests read_resource sends the uri",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientTest/test server_capabilities/1 and server_info/1 returns discovered capabilities and info",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "CG7, limb (i). THIS ROW'S OWN ASSERTION: :242 `assert headers_for_call(client, transport, name) == [{\"mcp-param-region\", \"us-west1\"}]` — mirroring still happens on the generation after a reset — limb (i), asserted on the header value. Checked against A4's CG7 GAP statement (cg-reconciliation.md, CG7 table row `gap`), whose three limbs are: (i) mirror designated tool parameters into `Mcp-Param-*` headers; (ii) encode unsafe values; (iii) exclude tools with invalid `x-mcp-header` annotations.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy M-2: the warn-once record shares the cache's GENERATION — a reset re-arms it",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG — DROPPED FROM CG7 on review finding F2 (CG7 35 -> 31). THIS ROW'S OWN ASSERTION: :373 `assert {:error, %MCP.Protocol.Error{code: -32_020}} = Task.await(task)` and :374 `assert length(MockTransport.sent_messages(transport)) == 1` — the client's -32020 RECOVERY POLICY — the retry is confined to the tools/call path. Checked against A4's CG7 GAP statement (cg-reconciliation.md, CG7 table row `gap`), whose three limbs are: (i) mirror designated tool parameters into `Mcp-Param-*` headers; (ii) encode unsafe values; (iii) exclude tools with invalid `x-mcp-header` annotations. None of the three limbs states this requirement, so the only support the row ever had was purposive (\"this machinery exists to drive CG7's mirroring\"), which is HAZARD 2's false-positive shape and is rejected. No unclaimed OC check (cg-reconciliation.md section 4's 15) covers -32020 recovery or malformed-result robustness either, so `tokens` stays empty.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a -32020 on a NON-tools/call request is not retried",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "CG7, limb (i). THIS ROW'S OWN ASSERTION: :305-306 `assert Enum.at(MockTransport.sent_opts(transport), 2)[:headers] == [{\"mcp-param-region\", \"us-west1\"}]` — the RETRY carries the mirrored header — limb (i), asserted on the header value of the third sent message. Checked against A4's CG7 GAP statement (cg-reconciliation.md, CG7 table row `gap`), whose three limbs are: (i) mirror designated tool parameters into `Mcp-Param-*` headers; (ii) encode unsafe values; (iii) exclude tools with invalid `x-mcp-header` annotations.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a -32020 triggers a tools/list refresh and ONE retry, which then mirrors",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG — DROPPED FROM CG7 on review finding F2 (CG7 35 -> 31). THIS ROW'S OWN ASSERTION: :363 `assert {:error, %MCP.Protocol.Error{code: -32_020}} = Task.await(task)` — the client's -32020 RECOVERY POLICY — which error survives a failed refresh. Checked against A4's CG7 GAP statement (cg-reconciliation.md, CG7 table row `gap`), whose three limbs are: (i) mirror designated tool parameters into `Mcp-Param-*` headers; (ii) encode unsafe values; (iii) exclude tools with invalid `x-mcp-header` annotations. None of the three limbs states this requirement, so the only support the row ever had was purposive (\"this machinery exists to drive CG7's mirroring\"), which is HAZARD 2's false-positive shape and is rejected. No unclaimed OC check (cg-reconciliation.md section 4's 15) covers -32020 recovery or malformed-result robustness either, so `tokens` stays empty.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a FAILED refresh surfaces the ORIGINAL -32020, not the refresh's error",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG — DROPPED FROM CG7 on review finding F2 (CG7 35 -> 31). THIS ROW'S OWN ASSERTION: :339 `assert {:error, %MCP.Protocol.Error{code: -32_020}} = Task.await(task)` and :341 `assert length(MockTransport.sent_messages(transport)) == 3` — the client's -32020 RECOVERY POLICY — refresh once, retry once, then surface. Checked against A4's CG7 GAP statement (cg-reconciliation.md, CG7 table row `gap`), whose three limbs are: (i) mirror designated tool parameters into `Mcp-Param-*` headers; (ii) encode unsafe values; (iii) exclude tools with invalid `x-mcp-header` annotations. None of the three limbs states this requirement, so the only support the row ever had was purposive (\"this machinery exists to drive CG7's mirroring\"), which is HAZARD 2's false-positive shape and is rejected. No unclaimed OC check (cg-reconciliation.md section 4's 15) covers -32020 recovery or malformed-result robustness either, so `tokens` stays empty.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a SECOND -32020 is surfaced — the recovery is one-shot, not a loop",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG — DROPPED FROM CG7 on review finding F2 (CG7 35 -> 31). THIS ROW'S OWN ASSERTION: :404 `assert {:error, {:malformed_result, nil}} = list_tools(client, transport, nil)` and :408 `assert Process.alive?(client)` — malformed-tools/list ROBUSTNESS — the request fails and the client survives. Checked against A4's CG7 GAP statement (cg-reconciliation.md, CG7 table row `gap`), whose three limbs are: (i) mirror designated tool parameters into `Mcp-Param-*` headers; (ii) encode unsafe values; (iii) exclude tools with invalid `x-mcp-header` annotations. None of the three limbs states this requirement, so the only support the row ever had was purposive (\"this machinery exists to drive CG7's mirroring\"), which is HAZARD 2's false-positive shape and is rejected. No unclaimed OC check (cg-reconciliation.md section 4's 15) covers -32020 recovery or malformed-result robustness either, so `tokens` stays empty.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientToolSchemasTest/test M-1 — a malformed tools/list result fails the REQUEST, not the client a null result is reported to the caller and the client survives",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "CG7, limb (i). THIS ROW'S OWN ASSERTION: :431 `assert headers_for_call(client, transport, \"t\") == [{\"mcp-param-region\", \"us-west1\"}]` — a malformed result leaves mirroring intact — limb (i), asserted on the header value. Checked against A4's CG7 GAP statement (cg-reconciliation.md, CG7 table row `gap`), whose three limbs are: (i) mirror designated tool parameters into `Mcp-Param-*` headers; (ii) encode unsafe values; (iii) exclude tools with invalid `x-mcp-header` annotations.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientToolSchemasTest/test M-1 — a malformed tools/list result fails the REQUEST, not the client a string result likewise, and it leaves the tool caches untouched",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "CG7, limb (i). THIS ROW'S OWN ASSERTION: :479 `assert headers_for_call(client, transport, \"t\") == [{\"mcp-param-region\", \"us-west1\"}]` — a malformed refresh leaves mirroring intact — limb (i), asserted on the header value. Checked against A4's CG7 GAP statement (cg-reconciliation.md, CG7 table row `gap`), whose three limbs are: (i) mirror designated tool parameters into `Mcp-Param-*` headers; (ii) encode unsafe values; (iii) exclude tools with invalid `x-mcp-header` annotations.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientToolSchemasTest/test M-5 — a malformed REFRESH result fails the call, not the client a null refresh result returns the ORIGINAL -32020 alongside the malformed term",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "CG7, limb (i). THIS ROW'S OWN ASSERTION: :170 `assert headers_for_call(client, transport, \"page1_tool\") == [{\"mcp-param-one\", \"us-west1\"}]` — the designated parameter of a tool learned on an earlier page is still mirrored — limb (i), asserted on the header value. Checked against A4's CG7 GAP statement (cg-reconciliation.md, CG7 table row `gap`), whose three limbs are: (i) mirror designated tool parameters into `Mcp-Param-*` headers; (ii) encode unsafe values; (iii) exclude tools with invalid `x-mcp-header` annotations.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-BEARING page MERGES, so paging does not discard earlier pages",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "CG7, limb (i). THIS ROW'S OWN ASSERTION: :180 `assert headers_for_call(client, transport, \"kept\") == [{\"mcp-param-kept\", \"us-west1\"}]` — a surviving tool's designated parameter is still mirrored after a cursor-less reset — limb (i), asserted on the header value. Checked against A4's CG7 GAP statement (cg-reconciliation.md, CG7 table row `gap`), whose three limbs are: (i) mirror designated tool parameters into `Mcp-Param-*` headers; (ii) encode unsafe values; (iii) exclude tools with invalid `x-mcp-header` annotations.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-LESS listing RESETS, so a removed tool does not linger",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "CG7, limb (iii)+(i). THIS ROW'S OWN ASSERTION: :143 `assert [] = Enum.at(MockTransport.sent_opts(transport), 1) |> Keyword.get(:headers, [])` — an EXCLUDED tool mirrors nothing: the assertion is over the `Mcp-Param-*` header list itself, so it discharges limb (iii) through limb (i). Checked against A4's CG7 GAP statement (cg-reconciliation.md, CG7 table row `gap`), whose three limbs are: (i) mirror designated tool parameters into `Mcp-Param-*` headers; (ii) encode unsafe values; (iii) exclude tools with invalid `x-mcp-header` annotations.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an excluded tool leaves no annotations behind, so calling it mirrors nothing",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "CG7, limb (iii). THIS ROW'S OWN ASSERTION: :96 `assert Enum.map(tools, & &1[\"name\"]) == [\"good\", \"plain\"]` and :106 `assert log =~ ~s(EXCLUDING tool \"bad\" from tools/list)` — an invalid `x-mcp-header` annotation excludes the tool from tools/list and leaves the valid ones — limb (iii) verbatim. Checked against A4's CG7 GAP statement (cg-reconciliation.md, CG7 table row `gap`), whose three limbs are: (i) mirror designated tool parameters into `Mcp-Param-*` headers; (ii) encode unsafe values; (iii) exclude tools with invalid `x-mcp-header` annotations.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "CG7, limb (i). THIS ROW'S OWN ASSERTION: :385 `assert Enum.at(MockTransport.sent_opts(transport), 0) == []` and :387-388 `assert Enum.at(MockTransport.sent_opts(transport), 1)[:headers] == [{\"mcp-param-region\", \"us-west1\"}]` — a tools/call for a known tool carries `Mcp-Param-*` and no other method does — limb (i) in both directions. Checked against A4's CG7 GAP statement (cg-reconciliation.md, CG7 table row `gap`), whose three limbs are: (i) mirror designated tool parameters into `Mcp-Param-*` headers; (ii) encode unsafe values; (iii) exclude tools with invalid `x-mcp-header` annotations.",
+      "contradicts_oc": null,
+      "key": "MCP.ClientToolSchemasTest/test the transport seam a tools/call for a known tool carries :headers; other methods carry none",
+      "leg": "client",
+      "leg_reason": "Drives MCP.Client and asserts what our client sends, or how it handles what it receives; no mutation confined to the server path can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.IntegrationTest/test MRTR: call_tool transparently completes an input-required round-trip",
+      "leg": "none_determinable",
+      "leg_reason": "END-TO-END: drives our client against our server in one test. A mutation on EITHER leg reddens it, so the assertion constrains the pair rather than one side — it can match an OC check on either leg.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.IntegrationTest/test completion/complete round-trips",
+      "leg": "none_determinable",
+      "leg_reason": "END-TO-END: drives our client against our server in one test. A mutation on EITHER leg reddens it, so the assertion constrains the pair rather than one side — it can match an OC check on either leg.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.IntegrationTest/test connect discovers server capabilities via server/discover (no handshake)",
+      "leg": "none_determinable",
+      "leg_reason": "END-TO-END: drives our client against our server in one test. A mutation on EITHER leg reddens it, so the assertion constrains the pair rather than one side — it can match an OC check on either leg.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.IntegrationTest/test prompts: list, get, unknown",
+      "leg": "none_determinable",
+      "leg_reason": "END-TO-END: drives our client against our server in one test. A mutation on EITHER leg reddens it, so the assertion constrains the pair rather than one side — it can match an OC check on either leg.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.IntegrationTest/test resources: list, read, unknown, templates",
+      "leg": "none_determinable",
+      "leg_reason": "END-TO-END: drives our client against our server in one test. A mutation on EITHER leg reddens it, so the assertion constrains the pair rather than one side — it can match an OC check on either leg.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. Matches the unclaimed check `ToolAddNumbers` in `tokens` — FLAGGED, NOT SETTLED: that check drives our client against the harness's own `add_numbers` fixture, while this member drives our client against our own handler's `add`. Same required behaviour, different fixture. For C1 to adjudicate.",
+      "contradicts_oc": null,
+      "key": "MCP.IntegrationTest/test tools: list, echo, add, isError, unknown",
+      "leg": "none_determinable",
+      "leg_reason": "END-TO-END: drives our client against our server in one test. A mutation on EITHER leg reddens it, so the assertion constrains the pair rather than one side — it can match an OC check on either leg.",
+      "tokens": [
+        "oc:client/tools_call/tool-add-numbers/ToolAddNumbers"
+      ]
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG — CG1-CG7 are the CG client series and none of the seven states this requirement. But this member DOES match an unclaimed OC check with no CG (cg-reconciliation.md §4's 15); the counterpart is recorded in `tokens`, because \"cg: none\" alone would lose a C1 row.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON",
+      "leg": "client",
+      "leg_reason": "Asserts the ClientCapabilities ENCODER — what our client declares in per-request _meta; the server never encodes a ClientCapabilities.",
+      "tokens": [
+        "oc:client/request-metadata/sep-2575-client-declares-roots-capability/ClientDeclaresRootsCapability",
+        "oc:client/request-metadata/sep-2575-client-declares-sampling-capability/ClientDeclaresSamplingCapability",
+        "oc:client/request-metadata/sep-2575-client-declares-elicitation-capability/ClientDeclaresElicitationCapability"
+      ]
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 handles experimental capabilities",
+      "leg": "client",
+      "leg_reason": "Asserts the ServerCapabilities DECODER, reached only by our client (client.ex:539 -> Discover.Result.from_map -> ServerCapabilities.from_map).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 handles missing capabilities",
+      "leg": "client",
+      "leg_reason": "Asserts the ServerCapabilities DECODER, reached only by our client (client.ex:539 -> Discover.Result.from_map -> ServerCapabilities.from_map).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 parses full capabilities",
+      "leg": "client",
+      "leg_reason": "Asserts the ServerCapabilities DECODER, reached only by our client (client.ex:539 -> Discover.Result.from_map -> ServerCapabilities.from_map).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.CapabilitiesTest/test ServerCapabilities round-trips through JSON",
+      "leg": "none_determinable",
+      "leg_reason": "A ROUND-TRIP claim under the ratified rule's SECOND LIMB: the decode/parse is applied to OUR OWN encoder's output, so the single assertion is falsified by a mutation on either side and neither leg is definite. Not two single-leg claims — the two directions are not separable here.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T6 — ServerCapabilities encode keeps the two apart",
+      "leg": "server",
+      "leg_reason": "Asserts the ServerCapabilities ENCODER — what our server advertises; the client never encodes a ServerCapabilities.",
+      "tokens": []
+    },
+    {
+      "cg": "CG2",
+      "cg_basis": "SEP-2133 extensions carried DISTINCTLY from `experimental` by the codec our client runs; CG2's inbound/outbound wiring one layer down from client_conformance_test.exs.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart",
+      "leg": "client",
+      "leg_reason": "Asserts the ServerCapabilities DECODER, reached only by our client (client.ex:539 -> Discover.Result.from_map -> ServerCapabilities.from_map).",
+      "tokens": [
+        "oc:none/no-oc-scenario/CG2-absent-yields-nil"
+      ]
+    },
+    {
+      "cg": "CG2",
+      "cg_basis": "SEP-2133 extensions carried DISTINCTLY from `experimental` by the codec our client runs; CG2's inbound/outbound wiring one layer down from client_conformance_test.exs.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T8 — ClientCapabilities encode keeps the two apart",
+      "leg": "client",
+      "leg_reason": "Asserts the ClientCapabilities ENCODER — what our client declares in per-request _meta; the server never encodes a ClientCapabilities.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) both may be carried at once, each under its own key",
+      "leg": "server",
+      "leg_reason": "Asserts the ServerCapabilities ENCODER — what our server advertises; the client never encodes a ServerCapabilities.",
+      "tokens": []
+    },
+    {
+      "cg": "CG2",
+      "cg_basis": "The ClientCapabilities half is CG2's outbound wiring; the ServerCapabilities half in the same assertion is the SERVER side and has no CG (see finding F3).",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) neither is emitted when unset",
+      "leg": "none_determinable",
+      "leg_reason": "TWO INDEPENDENT SINGLE-LEG CLAIMS ON OPPOSITE LEGS: the refutes over `%ServerCapabilities{}` are about the server-run encoder and the refutes over `%ClientCapabilities{}` about the client-run one, and neither pair consumes the other's output. The mechanical rule makes both legs definite, so neither one alone owns the member.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.ErrorTest/test from_map/1 parses error from wire format",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.Error.from_map/1, reached only on protocol.ex:95's RESPONSE-decode branch; our server receives requests and notifications, never responses.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.ErrorTest/test from_map/1 parses error without data",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.Error.from_map/1, reached only on protocol.ex:95's RESPONSE-decode branch; our server receives requests and notifications, never responses.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The constrained behaviour is a library codec on neither leg's own path, so no client-series requirement corresponds to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (8)",
+      "leg": "none_determinable",
+      "leg_reason": "Asserts MCP.Protocol.Extensions.from_meta/1, which has NO lib/ call site on either leg (measured: only its own module, doc examples, and consumer handlers). A mutation changes what a consumer's handler sees, not what either of our implementations puts on or takes off the wire.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The constrained behaviour is a library codec on neither leg's own path, so no client-series requirement corresponds to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (9)",
+      "leg": "none_determinable",
+      "leg_reason": "Asserts MCP.Protocol.Extensions.from_meta/1, which has NO lib/ call site on either leg (measured: only its own module, doc examples, and consumer handlers). A mutation changes what a consumer's handler sees, not what either of our implementations puts on or takes off the wire.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The constrained behaviour is a library codec on neither leg's own path, so no client-series requirement corresponds to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) a peer's `{}` and an omitted key collapse to the same %{} (deliberately)",
+      "leg": "none_determinable",
+      "leg_reason": "Asserts MCP.Protocol.Extensions.from_meta/1, which has NO lib/ call site on either leg (measured: only its own module, doc examples, and consumer handlers). A mutation changes what a consumer's handler sees, not what either of our implementations puts on or takes off the wire.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The constrained behaviour is a library codec on neither leg's own path, so no client-series requirement corresponds to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) caches nothing between calls",
+      "leg": "none_determinable",
+      "leg_reason": "Asserts MCP.Protocol.Extensions.from_meta/1, which has NO lib/ call site on either leg (measured: only its own module, doc examples, and consumer handlers). A mutation changes what a consumer's handler sees, not what either of our implementations puts on or takes off the wire.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The constrained behaviour is a library codec on neither leg's own path, so no client-series requirement corresponds to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) does NOT validate: a malformed identifier reaches the caller verbatim",
+      "leg": "none_determinable",
+      "leg_reason": "Asserts MCP.Protocol.Extensions.from_meta/1, which has NO lib/ call site on either leg (measured: only its own module, doc examples, and consumer handlers). A mutation changes what a consumer's handler sees, not what either of our implementations puts on or takes off the wire.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The constrained behaviour is a library codec on neither leg's own path, so no client-series requirement corresponds to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) reads the peer's declared extensions",
+      "leg": "none_determinable",
+      "leg_reason": "Asserts MCP.Protocol.Extensions.from_meta/1, which has NO lib/ call site on either leg (measured: only its own module, doc examples, and consumer handlers). A mutation changes what a consumer's handler sees, not what either of our implementations puts on or takes off the wire.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The constrained behaviour is a library codec on neither leg's own path, so no client-series requirement corresponds to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) returns %{} for nil, an absent key, or an absent extensions field",
+      "leg": "none_determinable",
+      "leg_reason": "Asserts MCP.Protocol.Extensions.from_meta/1, which has NO lib/ call site on either leg (measured: only its own module, doc examples, and consumer handlers). A mutation changes what a consumer's handler sees, not what either of our implementations puts on or takes off the wire.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (1)",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (2)",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (3)",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (4)",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) a NESTED object property IS reachable — every step is a `properties` key",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": [
+        "oc:none/no-oc-fixture-case/CG7-static-reachability"
+      ]
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) an integer outside the IEEE 754 safe range is not mirrored, and says so",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": [
+        "oc:none/no-oc-fixture-case/CG7-integer-safe-range"
+      ]
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a non-map arguments value yields no headers rather than raising",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a null value omits the header; so does an absent one",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a plain-ASCII value that LOOKS like a sentinel is itself encoded",
+      "leg": "none_determinable",
+      "leg_reason": "TWO INDEPENDENT SINGLE-LEG CLAIMS ON OPPOSITE LEGS, not a round-trip: both calls take a LITERAL, so neither consumes the other's output. `encode_value(\"=?base64?literal?=\")` is client-only and `decode_value(\"=?base64?PT9iYXNlNjQ/bGl0ZXJhbD89?=\")` is server-only, so the mechanical rule makes both legs definite and neither one alone owns the member. Same class as capabilities_test.exs:181.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. Asserts the SEP-2243 value-encoding sentinel's DECODE side, run by our server's plug; CG7 is the client-side mirroring requirement and does not reach decoding.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule decode leaves a plain value alone and survives a malformed sentinel",
+      "leg": "server",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror.decode_value/1, whose only lib/ call site is plug.ex:906 where our SERVER decodes an inbound Mcp-Name.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule the exact property path is read — a same-named key elsewhere is not",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector INTERNAL spaces stay plain — only leading/trailing whitespace forces encoding",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an EMPTY string is present with an empty value, not omitted",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value",
+      "leg": "none_determinable",
+      "leg_reason": "A ROUND-TRIP claim under the ratified rule's SECOND LIMB: the decode/parse is applied to OUR OWN encoder's output, so the single assertion is falsified by a mutation on either side and neither leg is definite. Not two single-leg claims — the two directions are not separable here.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector no header carries a raw CR or LF — injection is closed by construction",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector plain ASCII is sent as-is",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector unannotated parameters are NOT mirrored",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. Asserts that `cacheScope` PARSES; CG5 requires the client to HONOUR it. Carrying the ratified exclusion at match-relation.md §6 - same words, different subject.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.Messages.DiscoverTest/test from_map/1 round-trips the schema shape",
+      "leg": "client",
+      "leg_reason": "Asserts Discover.Result.from_map/1, called only from client.ex:539 (measured).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.Messages.DiscoverTest/test to_map/1 produces the schema shape",
+      "leg": "server",
+      "leg_reason": "Asserts Discover.Result.to_map/1, called only from server/dispatch.ex:150 (measured).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.MetaTest/test from_params/1 extracts the io.modelcontextprotocol/* keys",
+      "leg": "server",
+      "leg_reason": "Asserts MCP.Protocol.Meta.from_params/validate_protocol_version, called only from server/dispatch.ex:163,165 (measured).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.MetaTest/test validate_protocol_version/2 mismatched (e.g. legacy 2025-11-25) → {:error, {:unsupported, got}}",
+      "leg": "server",
+      "leg_reason": "Asserts MCP.Protocol.Meta.from_params/validate_protocol_version, called only from server/dispatch.ex:163,165 (measured).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.Types.ContentTest/test AudioContent round-trips through JSON",
+      "leg": "server",
+      "leg_reason": "Asserts a MCP.Protocol.Types.* ENCODER. Only our server emits result payloads (content/tools/resources), reaching the encoder through a handler-supplied struct — demonstrated in-tree at conformance/etcc_l2_probe.exs:46,66,72. Our client never encodes one.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.Types.ContentTest/test EmbeddedResource round-trips through JSON",
+      "leg": "server",
+      "leg_reason": "Asserts a MCP.Protocol.Types.* ENCODER. Only our server emits result payloads (content/tools/resources), reaching the encoder through a handler-supplied struct — demonstrated in-tree at conformance/etcc_l2_probe.exs:46,66,72. Our client never encodes one.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.Types.ContentTest/test ImageContent round-trips through JSON",
+      "leg": "server",
+      "leg_reason": "Asserts a MCP.Protocol.Types.* ENCODER. Only our server emits result payloads (content/tools/resources), reaching the encoder through a handler-supplied struct — demonstrated in-tree at conformance/etcc_l2_probe.exs:46,66,72. Our client never encodes one.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.Types.ContentTest/test ResourceLink round-trips through JSON",
+      "leg": "server",
+      "leg_reason": "Asserts a MCP.Protocol.Types.* ENCODER. Only our server emits result payloads (content/tools/resources), reaching the encoder through a handler-supplied struct — demonstrated in-tree at conformance/etcc_l2_probe.exs:46,66,72. Our client never encodes one.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.Types.ContentTest/test TextContent round-trips through JSON",
+      "leg": "server",
+      "leg_reason": "Asserts a MCP.Protocol.Types.* ENCODER. Only our server emits result payloads (content/tools/resources), reaching the encoder through a handler-supplied struct — demonstrated in-tree at conformance/etcc_l2_probe.exs:46,66,72. Our client never encodes one.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.Types.ResourceTest/test JSON encoding round-trips with camelCase keys",
+      "leg": "server",
+      "leg_reason": "Asserts a MCP.Protocol.Types.* ENCODER. Only our server emits result payloads (content/tools/resources), reaching the encoder through a handler-supplied struct — demonstrated in-tree at conformance/etcc_l2_probe.exs:46,66,72. Our client never encodes one.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.Types.ToolTest/test JSON encoding omits nil fields",
+      "leg": "server",
+      "leg_reason": "Asserts a MCP.Protocol.Types.* ENCODER. Only our server emits result payloads (content/tools/resources), reaching the encoder through a handler-supplied struct — demonstrated in-tree at conformance/etcc_l2_probe.exs:46,66,72. Our client never encodes one.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.Types.ToolTest/test JSON encoding round-trips through JSON with camelCase keys",
+      "leg": "server",
+      "leg_reason": "Asserts a MCP.Protocol.Types.* ENCODER. Only our server emits result payloads (content/tools/resources), reaching the encoder through a handler-supplied struct — demonstrated in-tree at conformance/etcc_l2_probe.exs:46,66,72. Our client never encodes one.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.Types.ToolTest/test inputSchema keywords beyond `type` are carried verbatim, including `not` and `$anchor`",
+      "leg": "server",
+      "leg_reason": "Asserts a MCP.Protocol.Types.* ENCODER. Only our server emits result payloads (content/tools/resources), reaching the encoder through a handler-supplied struct — demonstrated in-tree at conformance/etcc_l2_probe.exs:46,66,72. Our client never encodes one.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Protocol.Types.ToolTest/test outputSchema is carried verbatim, and false is not an absence an absent outputSchema is still absent",
+      "leg": "server",
+      "leg_reason": "Asserts a MCP.Protocol.Types.* ENCODER. Only our server emits result payloads (content/tools/resources), reaching the encoder through a handler-supplied struct — demonstrated in-tree at conformance/etcc_l2_probe.exs:46,66,72. Our client never encodes one.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ProtocolTest/test decode/1 decodes a notification",
+      "leg": "none_determinable",
+      "leg_reason": "Asserts NOTIFICATION framing. Notification.new/2 is called from client.ex AND from server/connection.ex, subscription.ex and notification_collector.ex (measured), so both legs put notifications on the wire.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.ProtocolTest/test decode/1 decodes a request",
+      "leg": "server",
+      "leg_reason": "Asserts decoding a REQUEST. Under stateless core there is no server->client request path (CLAUDE.md rule 8), so only our server decodes requests.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.ProtocolTest/test decode/1 decodes a request with string id",
+      "leg": "server",
+      "leg_reason": "Asserts decoding a REQUEST. Under stateless core there is no server->client request path (CLAUDE.md rule 8), so only our server decodes requests.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ProtocolTest/test decode/1 decodes a success response",
+      "leg": "client",
+      "leg_reason": "Asserts decoding a RESPONSE. Only our client receives responses.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ProtocolTest/test decode/1 decodes an error response",
+      "leg": "client",
+      "leg_reason": "Asserts decoding a RESPONSE. Only our client receives responses.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ProtocolTest/test encode!/1 returns JSON string",
+      "leg": "client",
+      "leg_reason": "Asserts encoding a REQUEST. Requests are sent by clients; Request.new/2's only lib/ call site is client.ex (measured).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ProtocolTest/test encode/1 encodes a notification",
+      "leg": "none_determinable",
+      "leg_reason": "Asserts NOTIFICATION framing. Notification.new/2 is called from client.ex AND from server/connection.ex, subscription.ex and notification_collector.ex (measured), so both legs put notifications on the wire.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ProtocolTest/test encode/1 encodes a notification with params",
+      "leg": "none_determinable",
+      "leg_reason": "Asserts NOTIFICATION framing. Notification.new/2 is called from client.ex AND from server/connection.ex, subscription.ex and notification_collector.ex (measured), so both legs put notifications on the wire.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ProtocolTest/test encode/1 encodes a request",
+      "leg": "client",
+      "leg_reason": "Asserts encoding a REQUEST. Requests are sent by clients; Request.new/2's only lib/ call site is client.ex (measured).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.ProtocolTest/test encode/1 encodes a request without params",
+      "leg": "client",
+      "leg_reason": "Asserts encoding a REQUEST. Requests are sent by clients; Request.new/2's only lib/ call site is client.ex (measured).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.CapabilityHonestyTest/test a listChanged claim needs a channel to honour it on absent, not present-and-false: the key never reaches the wire",
+      "leg": "server",
+      "leg_reason": "Asserts the ServerCapabilities ENCODER — what our server advertises; the client never encodes a ServerCapabilities.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": {
+        "check": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
+        "note": "Asserts `initialize` -> -32022. The check requires 404 + -32601. The member is ET-CC deliberately (etcc-membership.md §B.4(i-b)); membership is not correctness, and this row is exactly what bucket 4a is for."
+      },
+      "key": "MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.DispatchTest/test old-shape (2025-11-25) version fails fast (-32022)",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.DispatchTest/test request without a protocolVersion _meta fails fast (-32022)",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.DispatchTest/test server/discover: schema shape (supportedVersions + CacheableResult fields; serverInfo in _meta)",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. This is SEP-2133 extensions negotiation on the SERVER leg. CG2 is scoped to the CLIENT-side wiring, and Register 2 enumerates no server-side row - so the server half of this requirement has no CG at all (finding F3).",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) T10 — the result is identical to the same call without extensions",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. This is SEP-2133 extensions negotiation on the SERVER leg. CG2 is scoped to the CLIENT-side wiring, and Register 2 enumerates no server-side row - so the server half of this requirement has no CG at all (finding F3).",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) T10 — tools/call succeeds normally; no error, no -32021",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. This is SEP-2133 extensions negotiation on the SERVER leg. CG2 is scoped to the CLIENT-side wiring, and Register 2 enumerates no server-side row - so the server half of this requirement has no CG at all (finding F3).",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) T11 — resources/list and prompts/list are unaffected",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. This is SEP-2133 extensions negotiation on the SERVER leg. CG2 is scoped to the CLIENT-side wiring, and Register 2 enumerates no server-side row - so the server half of this requirement has no CG at all (finding F3).",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) T11 — server/discover is unaffected, and still advertises nothing",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. This is SEP-2133 extensions negotiation on the SERVER leg. CG2 is scoped to the CLIENT-side wiring, and Register 2 enumerates no server-side row - so the server half of this requirement has no CG at all (finding F3).",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) T11 — tools/list is unaffected",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. This is SEP-2133 extensions negotiation on the SERVER leg. CG2 is scoped to the CLIENT-side wiring, and Register 2 enumerates no server-side row - so the server half of this requirement has no CG at all (finding F3).",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) a malformed or non-object extensions declaration still breaks nothing",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. This is SEP-2133 extensions negotiation on the SERVER leg. CG2 is scoped to the CLIENT-side wiring, and Register 2 enumerates no server-side row - so the server half of this requirement has no CG at all (finding F3).",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a non-object :extensions value leaves build/2 successful and the wire silent",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. This is SEP-2133 extensions negotiation on the SERVER leg. CG2 is scoped to the CLIENT-side wiring, and Register 2 enumerates no server-side row - so the server half of this requirement has no CG at all (finding F3).",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a settings value that cannot be encoded is dropped at launch, not raised at request time",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. This is SEP-2133 extensions negotiation on the SERVER leg. CG2 is scoped to the CLIENT-side wiring, and Register 2 enumerates no server-side row - so the server half of this requirement has no CG at all (finding F3).",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a settings value that encodes to a non-object is dropped, never advertised",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. This is SEP-2133 extensions negotiation on the SERVER leg. CG2 is scoped to the CLIENT-side wiring, and Register 2 enumerates no server-side row - so the server half of this requirement has no CG at all (finding F3).",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a valid declaration is advertised and warns about nothing",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. This is SEP-2133 extensions negotiation on the SERVER leg. CG2 is scoped to the CLIENT-side wiring, and Register 2 enumerates no server-side row - so the server half of this requirement has no CG at all (finding F3).",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ExtensionsNegotiationTest/test the handler-visible read a handler can read the client's declaration off ctx.meta",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. This is SEP-2133 extensions negotiation on the SERVER leg. CG2 is scoped to the CLIENT-side wiring, and Register 2 enumerates no server-side row - so the server half of this requirement has no CG at all (finding F3).",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) T1 — `extensions` is absent from a default server/discover result",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. This is SEP-2133 extensions negotiation on the SERVER leg. CG2 is scoped to the CLIENT-side wiring, and Register 2 enumerates no server-side row - so the server half of this requirement has no CG at all (finding F3).",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) T2 — an empty or fully-invalid declaration is absent, not `{}`",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. This is SEP-2133 extensions negotiation on the SERVER leg. CG2 is scoped to the CLIENT-side wiring, and Register 2 enumerates no server-side row - so the server half of this requirement has no CG at all (finding F3).",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) T3 — a declared extension appears verbatim under capabilities.extensions",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. This is SEP-2133 extensions negotiation on the SERVER leg. CG2 is scoped to the CLIENT-side wiring, and Register 2 enumerates no server-side row - so the server half of this requirement has no CG at all (finding F3).",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) an invalid identifier is dropped from the declaration, valid ones kept",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. This is SEP-2133 extensions negotiation on the SERVER leg. CG2 is scoped to the CLIENT-side wiring, and Register 2 enumerates no server-side row - so the server half of this requirement has no CG at all (finding F3).",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) the server's declaration is fixed at build time, not per request",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test C-2 — SEP-2106's TextContent fallback is noticed, not injected the content list is never modified — the SDK notices, it does not inject",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named a keyword list, an empty list, an atom and a string are each named",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named the legacy boolean slot 3 still works, in both directions, and warns about nothing",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test F-9 — the struct warning describes what the code did, not the opposite a struct carrying one of the two fields names that one, and only that one",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test F-9 — the struct warning describes what the code did, not the opposite a struct that DOES carry the fields has them read, and the warning says so",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a camelCase key is named, and the call still succeeds",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a non-boolean :is_error is named, and no isError reaches the wire",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a struct in slot 3 is named by its module, and nothing is raised",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value a present nil key emits JSON null — null is not absent",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value an absent key omits the field entirely — absent is not null",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value array survives to the wire",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty array survives to the wire",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty object survives to the wire",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty string survives to the wire",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value false survives to the wire",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value float survives to the wire",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value null survives to the wire",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value object survives to the wire",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value string survives to the wire",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value the extras map also carries isError, and false does not become absent",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value the pre-SEP-2106 return shapes still work unchanged",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value true survives to the wire",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value zero survives to the wire",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list an explicit non-default dialect is carried, not coerced or refused",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list composition keywords survive: allOf, anyOf",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list conditional keywords survive: if, then, else",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list reference keywords survive: $schema, $defs, $anchor, $ref",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list the whole fixture arrives intact — decoded-map equality, not bytes",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list validation keywords survive: enum, const, additionalProperties",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. Asserts the SEP-2106 `$ref` MUST NOT on the SERVER leg. CG4 is the client-series row for the same spec line; the adjacency is recorded, not a correspondence (finding F4).",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test W-4 — no $ref is ever dereferenced: a canary listener is never connected to",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.JsonSchema202012Test/test arguments reach the handler unchanged — nothing is coerced, defaulted or expanded",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.NotificationCollectorTest/test drain returns pushed notifications as wire maps, in emission order (G3)",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) a resources/updated frame matches the pinned notification example",
+      "leg": "server",
+      "leg_reason": "Asserts a value produced by MCP.Protocol.Messages.Subscriptions, every function of which is called only from MCP.Server.Dispatch/Subscription/Connection (measured: no MCP.Client call site).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) an absent notifications object is -32602, not a silently empty stream",
+      "leg": "server",
+      "leg_reason": "Asserts a value produced by MCP.Protocol.Messages.Subscriptions, every function of which is called only from MCP.Server.Dispatch/Subscription/Connection (measured: no MCP.Client call site).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) notifications is required; {} is legal and means subscribe to nothing",
+      "leg": "server",
+      "leg_reason": "Asserts a value produced by MCP.Protocol.Messages.Subscriptions, every function of which is called only from MCP.Server.Dispatch/Subscription/Connection (measured: no MCP.Client call site).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) the acknowledgment matches the pinned SubscriptionsAcknowledgedNotification example",
+      "leg": "server",
+      "leg_reason": "Asserts a value produced by MCP.Protocol.Messages.Subscriptions, every function of which is called only from MCP.Server.Dispatch/Subscription/Connection (measured: no MCP.Client call site).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) the graceful-close response matches the pinned example exactly",
+      "leg": "server",
+      "leg_reason": "Asserts a value produced by MCP.Protocol.Messages.Subscriptions, every function of which is called only from MCP.Server.Dispatch/Subscription/Connection (measured: no MCP.Client call site).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) the id is echoed, never coerced — RequestId is string OR integer",
+      "leg": "server",
+      "leg_reason": "Asserts a value produced by MCP.Protocol.Messages.Subscriptions, every function of which is called only from MCP.Server.Dispatch/Subscription/Connection (measured: no MCP.Client call site).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) the request parses as the pinned SubscriptionsListenRequest example",
+      "leg": "server",
+      "leg_reason": "Asserts a value produced by MCP.Protocol.Messages.Subscriptions, every function of which is called only from MCP.Server.Dispatch/Subscription/Connection (measured: no MCP.Client call site).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.SubscriptionsDispatchTest/test T-2 the acknowledgment reports what was honoured a requested-but-refused type is absent from the ack",
+      "leg": "server",
+      "leg_reason": "Asserts a value produced by MCP.Protocol.Messages.Subscriptions, every function of which is called only from MCP.Server.Dispatch/Subscription/Connection (measured: no MCP.Client call site).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.SubscriptionsDispatchTest/test T-2 the acknowledgment reports what was honoured the ack carries this subscription's id in _meta",
+      "leg": "server",
+      "leg_reason": "Asserts a value produced by MCP.Protocol.Messages.Subscriptions, every function of which is called only from MCP.Server.Dispatch/Subscription/Connection (measured: no MCP.Client call site).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.SubscriptionsDispatchTest/test T-2 the acknowledgment reports what was honoured the ack is built from the same value the stream enforces",
+      "leg": "server",
+      "leg_reason": "Asserts a value produced by MCP.Protocol.Messages.Subscriptions, every function of which is called only from MCP.Server.Dispatch/Subscription/Connection (measured: no MCP.Client call site).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.SubscriptionsDispatchTest/test T-3 MUST NOT send an unrequested notification type the URI filter reads either key style, so nothing is dropped for writing %{uri: ...}",
+      "leg": "server",
+      "leg_reason": "Asserts a value produced by MCP.Protocol.Messages.Subscriptions, every function of which is called only from MCP.Server.Dispatch/Subscription/Connection (measured: no MCP.Client call site).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.SubscriptionsDispatchTest/test T-5 JSON mode refuses the method outright a handler with no handle_listen/3 also gets -32601",
+      "leg": "server",
+      "leg_reason": "Asserts a value produced by MCP.Protocol.Messages.Subscriptions, every function of which is called only from MCP.Server.Dispatch/Subscription/Connection (measured: no MCP.Client call site).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.SubscriptionsDispatchTest/test T-5 JSON mode refuses the method outright a non-streaming driver gets -32601, never a silent black hole",
+      "leg": "server",
+      "leg_reason": "Asserts a value produced by MCP.Protocol.Messages.Subscriptions, every function of which is called only from MCP.Server.Dispatch/Subscription/Connection (measured: no MCP.Client call site).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset a URI this principal may not observe is absent from the ack",
+      "leg": "server",
+      "leg_reason": "Asserts a value produced by MCP.Protocol.Messages.Subscriptions, every function of which is called only from MCP.Server.Dispatch/Subscription/Connection (measured: no MCP.Client call site).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset a handler may refuse the subscription outright",
+      "leg": "server",
+      "leg_reason": "Asserts a value produced by MCP.Protocol.Messages.Subscriptions, every function of which is called only from MCP.Server.Dispatch/Subscription/Connection (measured: no MCP.Client call site).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset the two refusals that never reach the handler stay {:reply, ...}",
+      "leg": "server",
+      "leg_reason": "Asserts a value produced by MCP.Protocol.Messages.Subscriptions, every function of which is called only from MCP.Server.Dispatch/Subscription/Connection (measured: no MCP.Client call site).",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ToolOrderTest/test BOUND — sorting is per RESPONSE; a paginated listing is not made deterministic",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ToolOrderTest/test CONTROL-1 — :tool_order = :handler keeps a curated non-alphabetical order verbatim",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ToolOrderTest/test CONTROL-2 (discriminates nothing) — an already-deterministic handler is unaffected",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ToolOrderTest/test SUBJECT — one instance answers in the same order on every request",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ToolOrderTest/test SUBJECT — the default order is by name, and the tool SET is untouched",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Server.ToolOrderTest/test SUBJECT — two instances holding the same tool set answer in the same order",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Server.Dispatch (or the plug in front of it) and asserts the response our server puts on the wire; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG1",
+      "cg_basis": "SEP-2243 routing headers our CLIENT emits on a POST — CG1's own discharge sites (cg-reconciliation.md §3).",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a NOTIFICATION carries it too — the spec says all requests, not all responses-bearing ones",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG1",
+      "cg_basis": "SEP-2243 routing headers our CLIENT emits on a POST — CG1's own discharge sites (cg-reconciliation.md §3).",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a message with no method carries no routing headers",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG1",
+      "cg_basis": "SEP-2243 routing headers our CLIENT emits on a POST — CG1's own discharge sites (cg-reconciliation.md §3).",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a request carries the body method",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG1",
+      "cg_basis": "SEP-2243 routing headers our CLIENT emits on a POST — CG1's own discharge sites (cg-reconciliation.md §3).",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG1",
+      "cg_basis": "SEP-2243 routing headers our CLIENT emits on a POST — CG1's own discharge sites (cg-reconciliation.md §3).",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a tools/call whose params carry no name emits no Mcp-Name rather than an empty one",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG1",
+      "cg_basis": "SEP-2243 routing headers our CLIENT emits on a POST — CG1's own discharge sites (cg-reconciliation.md §3).",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG1",
+      "cg_basis": "SEP-2243 routing headers our CLIENT emits on a POST — CG1's own discharge sites (cg-reconciliation.md §3).",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a name that would inject a header is neutralised",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG1",
+      "cg_basis": "SEP-2243 routing headers our CLIENT emits on a POST — CG1's own discharge sites (cg-reconciliation.md §3).",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a non-ASCII tool name is encoded, and decodes back to the body value",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG1",
+      "cg_basis": "SEP-2243 routing headers our CLIENT emits on a POST — CG1's own discharge sites (cg-reconciliation.md §3).",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a resource URI with a space is encoded",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client a null argument omits its header",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": "CG7",
+      "cg_basis": "SEP-2243 `x-mcp-header`/`Mcp-Param-*` mirroring on the CLIENT leg — the value-encoding and annotation-validity claims CG7 states.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client with no prior tools/list, nothing is mirrored and the client says so",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG — CG1-CG7 are the CG client series and none of the seven states this requirement. But this member DOES match an unclaimed OC check with no CG (cg-reconciliation.md §4's 15); the counterpart is recorded in `tokens`, because \"cg: none\" alone would lose a C1 row.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.RoutingHeadersTest/test the version header rides the message (D-4), on the wire it matches the body _meta, not the transport's configured default",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror's ENCODE side (headers_for/encode_value), whose only lib/ call sites are client.ex:780 and streamable_http/client.ex:379 (measured) — our client alone runs it.",
+      "tokens": [
+        "oc:client/request-metadata/sep-2575-http-client-sends-version-header/ClientSendsVersionHeader",
+        "oc:client/request-metadata/sep-2575-http-version-header-matches-meta/ClientVersionHeaderMatchesMeta"
+      ]
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test decode_event/1 decodes event with JSON data",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Transport.SSE's DECODE side; SSE.feed/new_parser (feed -> decode_event at sse.ex:216) is called only from streamable_http/client.ex:569 (measured), so only our client runs it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test decode_event/1 decodes event with all fields",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Transport.SSE's DECODE side; SSE.feed/new_parser (feed -> decode_event at sse.ex:216) is called only from streamable_http/client.ex:569 (measured), so only our client runs it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test decode_event/1 decodes event with only data",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Transport.SSE's DECODE side; SSE.feed/new_parser (feed -> decode_event at sse.ex:216) is called only from streamable_http/client.ex:569 (measured), so only our client runs it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test decode_event/1 handles fields without space after colon",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Transport.SSE's DECODE side; SSE.feed/new_parser (feed -> decode_event at sse.ex:216) is called only from streamable_http/client.ex:569 (measured), so only our client runs it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test decode_event/1 ignores comment lines",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Transport.SSE's DECODE side; SSE.feed/new_parser (feed -> decode_event at sse.ex:216) is called only from streamable_http/client.ex:569 (measured), so only our client runs it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test decode_event/1 ignores unknown fields",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Transport.SSE's DECODE side; SSE.feed/new_parser (feed -> decode_event at sse.ex:216) is called only from streamable_http/client.ex:569 (measured), so only our client runs it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test decode_event/1 joins multiple data lines with newlines",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Transport.SSE's DECODE side; SSE.feed/new_parser (feed -> decode_event at sse.ex:216) is called only from streamable_http/client.ex:569 (measured), so only our client runs it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test encode_event/1 encodes event with all fields",
+      "leg": "server",
+      "leg_reason": "Asserts MCP.Transport.SSE's ENCODE side; SSE.encode_event/encode_message are called only from plug.ex (measured), so only our server runs them.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test encode_event/1 encodes event with empty data",
+      "leg": "server",
+      "leg_reason": "Asserts MCP.Transport.SSE's ENCODE side; SSE.encode_event/encode_message are called only from plug.ex (measured), so only our server runs them.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test encode_event/1 encodes event with event type and data",
+      "leg": "server",
+      "leg_reason": "Asserts MCP.Transport.SSE's ENCODE side; SSE.encode_event/encode_message are called only from plug.ex (measured), so only our server runs them.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test encode_event/1 encodes event with only data",
+      "leg": "server",
+      "leg_reason": "Asserts MCP.Transport.SSE's ENCODE side; SSE.encode_event/encode_message are called only from plug.ex (measured), so only our server runs them.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test encode_event/1 encodes multi-line data as multiple data fields",
+      "leg": "server",
+      "leg_reason": "Asserts MCP.Transport.SSE's ENCODE side; SSE.encode_event/encode_message are called only from plug.ex (measured), so only our server runs them.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test encode_message/2 encodes a JSON-RPC message as SSE event",
+      "leg": "server",
+      "leg_reason": "Asserts MCP.Transport.SSE's ENCODE side; SSE.encode_event/encode_message are called only from plug.ex (measured), so only our server runs them.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test encode_message/2 includes event ID when provided",
+      "leg": "server",
+      "leg_reason": "Asserts MCP.Transport.SSE's ENCODE side; SSE.encode_event/encode_message are called only from plug.ex (measured), so only our server runs them.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test encode_message/2 uses custom event type",
+      "leg": "server",
+      "leg_reason": "Asserts MCP.Transport.SSE's ENCODE side; SSE.encode_event/encode_message are called only from plug.ex (measured), so only our server runs them.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test stream parser buffers incomplete events",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Transport.SSE's DECODE side; SSE.feed/new_parser (feed -> decode_event at sse.ex:216) is called only from streamable_http/client.ex:569 (measured), so only our client runs it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test stream parser handles multiple chunks",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Transport.SSE's DECODE side; SSE.feed/new_parser (feed -> decode_event at sse.ex:216) is called only from streamable_http/client.ex:569 (measured), so only our client runs it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test stream parser parses complete events",
+      "leg": "client",
+      "leg_reason": "Asserts MCP.Transport.SSE's DECODE side; SSE.feed/new_parser (feed -> decode_event at sse.ex:216) is called only from streamable_http/client.ex:569 (measured), so only our client runs it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SSETest/test stream parser round-trip encode then decode",
+      "leg": "none_determinable",
+      "leg_reason": "A ROUND-TRIP claim under the ratified rule's SECOND LIMB: the decode/parse is applied to OUR OWN encoder's output, so the single assertion is falsified by a mutation on either side and neither leg is definite. Not two single-leg claims — the two directions are not separable here.",
+      "tokens": []
+    },
+    {
+      "cg": "CG1",
+      "cg_basis": "CG1's T-CG1c sentinel claim asserted END TO END (our client -> our server over real HTTP); the leg is none_determinable but the requirement is CG1's.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SelfCompatibilityTest/test END TO END: our client calls our server's non-header-safe tool over real HTTP",
+      "leg": "none_determinable",
+      "leg_reason": "END-TO-END: drives our client against our server in one test. A mutation on EITHER leg reddens it, so the assertion constrains the pair rather than one side — it can match an OC check on either leg.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. Asserts the SEP-2243 value-encoding sentinel's DECODE side, run by our server's plug; CG7 is the client-side mirroring requirement and does not reach decoding.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: a PLAIN mismatched header is still -32020",
+      "leg": "server",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror.decode_value/1, whose only lib/ call site is plug.ex:906 where our SERVER decodes an inbound Mcp-Name.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. Asserts the SEP-2243 value-encoding sentinel's DECODE side, run by our server's plug; CG7 is the client-side mirroring requirement and does not reach decoding.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: an encoded header naming a DIFFERENT tool is still -32020",
+      "leg": "server",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror.decode_value/1, whose only lib/ call site is plug.ex:906 where our SERVER decodes an inbound Mcp-Name.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. Asserts the SEP-2243 value-encoding sentinel's DECODE side, run by our server's plug; CG7 is the client-side mirroring requirement and does not reach decoding.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SelfCompatibilityTest/test REACHABILITY CONTROL: an encoded Mcp-Name is decoded before comparison, so our own client is not self-rejected",
+      "leg": "none_determinable",
+      "leg_reason": "TWO INDEPENDENT SINGLE-LEG CLAIMS ON OPPOSITE LEGS, so the mechanical rule makes both legs definite and neither one alone owns the member. :100 `assert String.starts_with?(header, \"=?base64?\")` is about `HeaderMirror.encode_value/1` (client-only: streamable_http/client.ex:379) and is MEASURED to break under an encode_value mutation and under no server mutation; :109 `assert conn.status == 200` is about the plug's decode-before-compare (server-only: plug.ex:906) and is MEASURED to break under a decode_value mutation and to SURVIVE the encode_value mutation once :100 is removed. Same class as capabilities_test.exs:181.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. Asserts the SEP-2243 value-encoding sentinel's DECODE side, run by our server's plug; CG7 is the client-side mirroring requirement and does not reach decoding.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SelfCompatibilityTest/test a plain header matching a plain name still passes — decoding leaves it alone",
+      "leg": "server",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror.decode_value/1, whose only lib/ call site is plug.ex:906 where our SERVER decodes an inbound Mcp-Name.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. Asserts the SEP-2243 value-encoding sentinel's DECODE side, run by our server's plug; CG7 is the client-side mirroring requirement and does not reach decoding.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SelfCompatibilityTest/test a sentinel-shaped header that is not valid Base64 is compared as-is, not crashed on",
+      "leg": "server",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror.decode_value/1, whose only lib/ call site is plug.ex:906 where our SERVER decodes an inbound Mcp-Name.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StdioTest/test client mode with echo server handles multiple requests sequentially",
+      "leg": "none_determinable",
+      "leg_reason": "Asserts MCP.Transport.Stdio's framing. Stdio implements the leg-agnostic MCP.Transport behaviour and is driven by MCP.Client and by MCP.Server.Connection alike (connection.ex:3 names stdio as an owner-based transport), so both legs run it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StdioTest/test client mode with echo server handles request without params",
+      "leg": "none_determinable",
+      "leg_reason": "Asserts MCP.Transport.Stdio's framing. Stdio implements the leg-agnostic MCP.Transport behaviour and is driven by MCP.Client and by MCP.Server.Connection alike (connection.ex:3 names stdio as an owner-based transport), so both legs run it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StdioTest/test client mode with echo server notifications get no response",
+      "leg": "none_determinable",
+      "leg_reason": "Asserts MCP.Transport.Stdio's framing. Stdio implements the leg-agnostic MCP.Transport behaviour and is driven by MCP.Client and by MCP.Server.Connection alike (connection.ex:3 names stdio as an owner-based transport), so both legs run it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StdioTest/test client mode with echo server sends a request and receives echo response",
+      "leg": "none_determinable",
+      "leg_reason": "Asserts MCP.Transport.Stdio's framing. Stdio implements the leg-agnostic MCP.Transport behaviour and is driven by MCP.Client and by MCP.Server.Connection alike (connection.ex:3 names stdio as an owner-based transport), so both legs run it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StdioTest/test line buffering handles rapid sequential messages",
+      "leg": "none_determinable",
+      "leg_reason": "Asserts MCP.Transport.Stdio's framing. Stdio implements the leg-agnostic MCP.Transport behaviour and is driven by MCP.Client and by MCP.Server.Connection alike (connection.ex:3 names stdio as an owner-based transport), so both legs run it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTP.ACTest/test AC7 — non-localhost origin is rejected 403 (acceptance parity)",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that raises fails cleanly (-32603); the secret never leaks",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that returns a non-keyword fails cleanly (-32603)",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTPCacheScopeWarningTest/test AC7(c): N requests against a warned configuration produce exactly ONE line",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTPStatelessTest/test AC7 — non-localhost origin is rejected 403; the identity factory never runs",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTPStatelessTest/test GET and DELETE are not allowed (405), and allow names only POST",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTPStatelessTest/test MC-6 — a collector that fails to start fails cleanly (-32603), no handler invoked",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTPStatelessTest/test MC-6 — a factory that raises fails cleanly (-32603) with no handler invoked",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTPStatelessTest/test Mcp-Name mismatch against params.name is rejected (-32020)",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTPStatelessTest/test a malformed body is a parse error → -32700",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTPStatelessTest/test a raising handler leaves no notification residue for the next request (SSE)",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTPStatelessTest/test a request without a protocolVersion _meta fails fast (-32022)",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": {
+        "check": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
+        "note": "Asserts `initialize` -> -32022 (alongside two -32601 claims that do NOT contradict). Same contradiction as dispatch_test decl-line 81, at the HTTP layer."
+      },
+      "key": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTPStatelessTest/test list/read results carry caching hints (ttlMs/cacheScope)",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTPStatelessTest/test matching Mcp-Method routes normally; a mismatch is rejected (-32020)",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTPStatelessTest/test resources/read — Mcp-Name is validated against params.uri (mismatch → -32020)",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTPStatelessTest/test server/discover returns the schema-shaped result with no version gate",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/list then tools/call work directly, no initialize first",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.StreamableHTTPStatelessTest/test two-instance / no-affinity smoke (DoD) interleaving requests round-robin across two stateless instances succeeds identically",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SubscriptionsStreamTest/test MC-6 a stream that cannot start fails cleanly controlled -32603, nothing streamed, and the handler is told",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SubscriptionsStreamTest/test T-10 the documented multi-instance boundary a change on instance B does not reach a stream held by instance A",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SubscriptionsStreamTest/test T-12 the close asymmetry a client depends on lifetime expiry sends the listen response, then closes",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SubscriptionsStreamTest/test T-12 the close asymmetry a client depends on the close-frame decision refuses to write after a peer close",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SubscriptionsStreamTest/test T-8 keep-alive comment lines an idle stream actually emits comment frames, and stays open",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. The assertion's subject matter is not any of CG1-CG7's seven requirements.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SubscriptionsStreamTest/test T-8 keep-alive comment lines our parser ignores a comment line arriving between two events",
+      "leg": "none_determinable",
+      "leg_reason": "A ROUND-TRIP claim under the ratified rule's SECOND LIMB: the decode/parse is applied to OUR OWN encoder's output, so the single assertion is falsified by a mutation on either side and neither leg is definite. Not two single-leg claims — the two directions are not separable here.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SubscriptionsStreamTest/test T-8 keep-alive comment lines the encoder emits a bare comment line",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SubscriptionsStreamTest/test delivery over the wire an opted-in notification arrives, stamped with the subscription id",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SubscriptionsStreamTest/test delivery over the wire an unrequested type never reaches the wire",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SubscriptionsStreamTest/test every exit from a listen runs teardown a REFUSED listen tells the handler and kills the sink (F1)",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SubscriptionsStreamTest/test the collector's lifetime ends strictly before the stream's the collector is gone by the time the stream is live",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SubscriptionsStreamTest/test the exits that raise before a branch is chosen a handler-side exit in teardown does not replace the refusal response (R3)",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SubscriptionsStreamTest/test the exits that raise before a branch is chosen a listen answered ABOVE the handler is owed no teardown callback",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SubscriptionsStreamTest/test the obligation is armed off the decoded message a second client cannot tear down a live subscription it does not own (R4)",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment nothing bearing this subscription's id precedes its acknowledgment",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the first message is notifications/subscriptions/acknowledged",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    },
+    {
+      "cg": null,
+      "cg_basis": "No CG. CG1-CG7 are the CG CLIENT series (docs/sprint_4_issues.md:4785-4791, 'Register 2 - the CG client series'), and this member's assertion is about our SERVER's observable behaviour, so no CG can correspond to it.",
+      "contradicts_oc": null,
+      "key": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the response carries the SSE headers the spec SHOULDs",
+      "leg": "server",
+      "leg_reason": "Drives MCP.Transport.StreamableHTTP.Plug and asserts our server's HTTP-level response; no mutation confined to MCP.Client can redden it.",
+      "tokens": []
+    }
+  ],
+  "schema": "etcc-attribution/1",
+  "totals": {
+    "by_cg": {
+      "CG1": 10,
+      "CG2": 14,
+      "CG3": 0,
+      "CG4": 1,
+      "CG5": 0,
+      "CG6": 0,
+      "CG7": 31,
+      "none": 225
+    },
+    "by_leg": {
+      "client": 107,
+      "none_determinable": 29,
+      "server": 145
+    },
+    "contradicts_oc": 2,
+    "members": 281,
+    "members_with_tokens": 19,
+    "state_1_tokens": 19,
+    "state_3_tokens": 5,
+    "tokens": 24,
+    "with_cg": 56
+  }
+}
