@@ -567,3 +567,857 @@ it.
 worth more than one that does not, and costs a sentence. "These two numbers agree" and
 "these two numbers agree, and here is the class of defect that would leave them agreeing"
 are the same green and different claims.
+
+---
+
+## S7-9 — A public accessor can go stale without any test going red, because nothing calls it. Establishing that is a grep, not a judgement.
+
+**Found on MES-81 (B2a), 2026-08-23, while sweeping `test/mcp/protocol_test.exs`.**
+Raised because the PM asked for a specific distinction: whether it was **established**
+that this is a defect, or only that it **looks** like one.
+
+### The instance
+
+`test/mcp/protocol_test.exs:10` is `assert Protocol.protocol_version() == "2025-11-25"`,
+in a tree whose stateless core is pinned to `2026-07-28`.
+
+### ESTABLISHED, and what was established
+
+* `MCP.Protocol.protocol_version/0` returns `@protocol_version "2025-11-25"`
+  (`lib/mcp/protocol.ex:9,16`) and is documented as *"Returns the MCP protocol version
+  this library targets"* (`:12-16`).
+* `grep -rn "protocol_version()" lib/` returns **three** hits and **all three are a
+  different function**: `protocol.ex:15` is its own `@spec`, while `config.ex:141` and
+  `plug.ex:244` call `Dispatch.protocol_version()`, which is
+  `@stateless_protocol_version "2026-07-28"` (`dispatch.ex:84,102`).
+* `MCP.Protocol.protocol_version/0` has **exactly one caller in the entire
+  repository — the test line above.**
+
+So: **nothing depends on the old constant, and the stale value cannot reach the wire.**
+What is stale is a **public, documented accessor returning a version the library does not
+target** — a consumer calling it gets `2025-11-25`. That is a public-API defect, not a
+wire defect, and the distinction is the whole finding.
+
+### Mechanism
+
+A constant reaches the wire through call sites. Delete the call sites and it stops being
+load-bearing **without stopping being public** — and the one test still pinning it keeps
+the suite green, so nothing anywhere goes red. The test is not wrong; it faithfully
+asserts what the function does.
+
+### Transferable form
+
+**"Is this stale?" and "does anything depend on it?" are two greps, and only the second
+tells you what kind of defect you have.** A stale constant with call sites is a wire
+defect; a stale constant with none is an API-surface defect and belongs in a different
+ticket with a different urgency. Reporting the first without running the second overstates
+it; reporting neither and calling it "looks stale" is the AC7 error of recording an
+unestablished suspicion as a finding.
+
+---
+
+## S7-10 — A public encode/decode surface can be complete, tested, and on no path the SDK itself uses
+
+**Found on MES-81, 2026-08-23. It is the largest single escalation in B2a's register
+(45 of 75 rows) and the reason that escalation is a DISCLOSURE rather than a question.**
+
+### The instance
+
+Measured at `94f4d2a` with `grep -rn "..." lib/ conformance/`, each returning only the
+definition site:
+
+| surface | callers in `lib/` |
+| --- | ---: |
+| `MCP.Protocol.encode/1`, `encode!/1` | **0** |
+| `MCP.Protocol.Messages.Response` (struct, `success/2`, `error/2`, its `defimpl`) | **0** |
+| `MCP.Protocol.Messages.Tools` (`ListParams`, `ListResult`, `CallParams`, `CallResult`) | **0** |
+| `MCP.Protocol.Error`'s derived `Jason.Encoder` | **0** — the only route to it was `Response` |
+| `MCP.Server.StateHandle` (`mint/2`, `fetch/2`, `delete/2`) | **0** |
+
+The SDK's own wire messages are built by hand elsewhere: `dispatch.ex:723-729`
+(`error_response/2`, which conditionally **drops** `data`), `plug.ex` `send_json_error`,
+and `client.ex:868` `Jason.decode!(Jason.encode!(struct))`. `Protocol.decode_message/1` —
+the one MCP.Protocol function that IS on a live path — is used at `client.ex:362`,
+`connection.ex:103` and `plug.ex:324`.
+
+### Why it matters to a membership sweep, and why it was not absorbed
+
+These modules are public API: a consumer calling `MCP.Protocol.encode!/1` puts exactly
+those bytes on the wire, so §2's *"the gate is on what is asserted, not on where the test
+sits"* admits them. But §2.1's counterfactual — *would an SDK that got this wire behaviour
+arbitrarily wrong still pass this test?* — answers **yes** if "this wire behaviour" means
+the message **this SDK actually emits**, because a broken `dispatch.ex` leaves all 45
+green.
+
+The sweep decided gate 2 **passes** and disclosed the fact on every affected row rather
+than silently choosing. One answer moves 45 rows.
+
+### The narrower observation inside it
+
+`MCP.Protocol.Messages.Response` declares **both** `@derive Jason.Encoder`
+(`response.ex:10`) and an explicit `defimpl Jason.Encoder, for: __MODULE__` (`:30-43`).
+Which wins was **not established** — nothing depends on it, because nothing constructs a
+`Response` — and it is recorded as a question, not a finding.
+
+### Transferable form
+
+**"Is this tested?" and "is this on a path the product uses?" are independent, and a
+green suite answers only the first.** Before treating a test as evidence about a
+product's wire behaviour, grep for the callers of the function it exercises. Where the
+answer is zero, say so **in the artefact** rather than in a close-out: the fact is about
+the tree, so it survives the ticket, and the next reader should not have to re-derive it.
+
+---
+
+## S7-11 — Gate 1 scopes on LOCATION, so an instrument test sitting in the product's test tree is in scope and must be excluded on its merits
+
+**Found on MES-81, 2026-08-23. The mirror image of the sweep's HAZARD 4.**
+
+### The instance
+
+HAZARD 4 warns that `test/conformance/` is the Sprint-5 instrument and is out by rule —
+413 units at this tip, excluded at gate 1 and enumerated separately so "excluded by rule"
+cannot be confused with "never looked at".
+
+The reverse case is `test/mcp/conformance_request_state_test.exs`: **12 units that test
+the conformance server FIXTURE's tamper-evident `requestState` token**
+(`conformance/request_state.ex`). Its own moduledoc says so — *"The fixture's helper is a
+fixture, not the product answer — the SDK offers no mint/verify for `requestState`"* — and
+the file sits under `test/mcp/` by a ratified decision (MES-24 RULING 4).
+
+Gate 1 asks *"is the unit under `test/mcp/`?"*. It is. So all 12 are **in the 579** and had
+to be excluded at gate 2 or 3 on their own merits:
+
+* eleven at **gate 2** — the asserted artefacts are fixture-invented atoms (`:bad_tag`,
+  `:malformed`), and `ET-ADJ` is unreachable because §5 requires a call site that is a
+  `file:line` in **`lib/`**, and `grep -rn "RequestState" lib/` returns nothing;
+* one at **gate 3** — `:48` asserts the token is url-safe and unpadded, and
+  `schema.ts:591-592` says *"The client must treat this as an **opaque blob**; it must not
+  interpret it in any way."* **A requirement that a value is opaque is precisely a
+  requirement that its format is ungoverned.**
+
+### Transferable form
+
+**A scoping gate that keys on location classifies files, not intentions.** When a
+deliberate exception puts an instrument test inside the product's tree, the scoping gate
+will not catch it and the substantive gates must — so a sweep that reasons "this file
+tests the instrument, therefore out of scope" has skipped the gates that actually apply,
+and will record the wrong excluding gate even when it reaches the right label.
+
+And the smaller, sharper half: **"the spec says this value is opaque" is a gate-3
+FAILURE, not a gate-3 gap.** It is the one case where the spec's own words establish that
+no anchor can exist, which is stronger evidence than not finding one.
+
+---
+
+## S7-12 — A ratified worked example can carry a sub-figure that no longer reproduces, without its ruling being wrong
+
+**Found on MES-81, 2026-08-23, by running §11's twenty-two pre-decided units as ordinary
+units and comparing only afterwards.**
+
+### What reproduced, and what did not
+
+All **eight** ratified labels reproduced exactly, including both split figures —
+`JsonSchema202012Test` 31/16 over 47 units with 15 excluded at gate 2 and 1 at gate 3, and
+the 13 doctests 6/5/2. The control worked.
+
+Two **sub-figures inside the reasoning** did not:
+
+1. `§11` example 2 states *"11 of those constants **are** consumed on a wire path"*. At
+   `94f4d2a` it is **9 of 12**: `grep -rn "Methods.<name>()" lib/` returns zero for
+   `initialize`, `ping` and `logging_set_level`.
+2. `§11` example 4 states *"two bind the response to `_result` and discard it"*. It is
+   **four** — `json_schema_2020_12_test.exs:307`, `:340`, `:439`, `:451`.
+
+Neither changes a label: §6's any-assertion rule needs **one** consumed constant, and the
+15/1 gate split is stated independently of how the fifteen were spelled.
+
+### Mechanism, and why it is worth a numbered entry
+
+A worked example carries two kinds of number: the **verdict** (a label, a split) and the
+**working** (a count inside the argument for it). Ratification is about the verdict; the
+working is checked as far as it needs to be to carry the verdict and no further. So a
+working figure can drift, or be miscounted at ratification, while the verdict stays right
+— and nothing downstream will notice, because downstream consumes the verdict.
+
+`§B.4(ii)` already records one figure in this thread that does not reproduce (the "nine
+comments" count, which is 14), and `§B.4(iii)` records that example 4's own `31` has a
+narrower ratification than the rest of its correction round. **This is the third and
+fourth instance**, which is what makes it a pattern rather than a slip.
+
+### Transferable form
+
+**When you use a ratified example as a control, compare the VERDICT and re-derive the
+WORKING.** They have different warrants. Reporting a working figure that has drifted is
+cheap and keeps the example usable; silently re-aligning to it — or worse, propagating it
+— turns a control into a copy.
+
+---
+
+## S7-13 — Two ratified rules can decide the same fact differently when one is a worked example and the other is a later tie-break
+
+**Found on MES-81, 2026-08-23. It is why one fact carries two labels in B2a's register,
+and the disagreement is stated on both sides rather than smoothed over.**
+
+### The instance
+
+`etcc-membership.md` §11.1 rules **both** `Extensions.from_meta/1` doctests `ET-CC`,
+describing the `from_meta(nil) -> %{}` one as *"the weaker: `falsifiable: undetermined`"*
+— treating an **absence marker** as a gate-**4** weakness, which never excludes.
+
+The PM's decode-boundary tie-break of 2026-08-23 (MES-81 comment `26026`) rules the
+opposite for structurally identical values: a value with *"no wire counterpart at all —
+there is nothing for them to be verbatim to"* fails gate **2**. `%{}` returned for an
+input of `nil` has no wire counterpart.
+
+Six rows turn on the answer: the doctest itself, `extensions_test.exs:391` and `:411`,
+`meta_test.exs:28`, and `capabilities_test.exs:26` and `:75`.
+
+### What the sweep did, and why
+
+It carried **§11.1's ratified label** for the unit §11.1 names — Part A binds the
+consuming ticket, and a worked example naming an exact unit outranks a §9 tie-break — and
+the **tie-break's answer** for the five units §11.1 does not name. So the register is
+internally inconsistent on one fact **on purpose**, with both rows saying so and three of
+them escalated.
+
+The alternative — picking one rule and applying it to all six — would have produced a
+consistent register and hidden the conflict, and nobody downstream could have found it.
+
+### Mechanism
+
+A worked example is ratified as a **decision about a unit**; a tie-break is ratified as a
+**rule about a class**. Where the unit is in the class and the two disagree, there is no
+ordering between them that is not itself a decision. The criterion's own precedence
+machinery (§6) orders *labels*, not *authorities*.
+
+### Transferable form
+
+**When a ratified example and a ratified rule disagree, record both answers and escalate;
+do not derive a third.** The inconsistency is a fact about the criterion, and making the
+artefact consistent destroys the only evidence of it. State it on **every** affected row,
+not once in prose — a reader querying the artefact must be able to find all of them
+without reading the document.
+
+---
+
+## S7-14 — Three ambiguities in a ratified criterion, each surfaced by a ticket applying it and each needing an amendment rather than a tie-break
+
+**Found on MES-81, 2026-08-23, in the PM's five adjudications (`26033`-`26037`). All
+three are candidates for a Part A amendment ticket with MES-67-style ratification; none
+was fixed in place, because correcting ratified text is editing a ratified document.**
+
+### The three
+
+| # | ratified text | the ambiguity | how it was resolved for now |
+| --- | --- | --- | --- |
+| 1 | **§2**, *"the output of the public encode/decode boundary **that produces one**"* | Does the qualifier restrict the clause, or merely describe it? On the restrictive reading a boundary with no `lib/` caller does not *produce* a wire artefact and gate 2 fails; on the plain reading `MCP.Protocol.encode/1` is literally the public encode boundary and gate 2 passes. **45 rows turn on it.** | PM ruling A (`26034`) took the restrictive reading, resolving inside Part A's own decision procedure (§2.1's counterfactual) rather than overriding it. Governs B2a, B2b and B4 until amended. |
+| 2 | **§6**, the any-assertion rule | It makes membership follow assertions executed in a shared `setup`/helper, so **every test sharing an asserting helper becomes a member**. That is what §6 says; it is not obviously what §6 intended. | PM ruling C (`26035`) applied §6 as written and accepted the consequence, noting it is a reason to amend §6, not to decide against it. Moved 3 rows here, and would move more in any file with a richer helper. |
+| 3 | **§11.1** as a worked example vs a later §9 tie-break | A worked example carries a *reason*, not only a result. Letting the reason govern one row and a later rule govern its structural twins produces one fact under two labels. | PM ruling E (`26036`) generalised §11.1's ratio and **reconciled** the two rather than withdrawing either. See S7-13 for the conflict and S7-15 for how it arose. |
+
+**Added in round 3 (CODE_REVIEWER at `26046`, adopted by the PM at `26047`), because
+"4 of 5 rulings overturned the sweep" will be read later as a verdict on the sweep and
+it is not one: every one of the four was overturned on a RULE the sweeper had flagged,
+not on a FACT the sweeper got wrong.** The reviewer re-ran every underlying measurement
+and the facts held; the single figure that moved (F2) moved in the sweeper's favour. A
+high overturn rate on flagged rules is what a working escalation discipline looks like
+from the outside, and reading it as an error rate would create exactly the pressure not
+to flag.
+
+### Mechanism
+
+All three are the same shape: **the ticket that first applies a criterion at scale is the
+first thing that can find its ambiguities**, because an ambiguity is invisible until two
+readings decide a real row differently. A criterion reviewed in the abstract cannot
+produce that pressure; 579 rows can.
+
+### Transferable form
+
+**An ambiguity in ratified text is not a tie-break's to fix.** A tie-break decides a case;
+an amendment changes a rule. Resolving an ambiguity *by* tie-break leaves the ratified
+text still ambiguous and adds a second authority beside it — which is how the S7-13
+conflict was manufactured in the first place. Record the ambiguity, take the narrow
+ruling for the ticket in hand, and put the amendment on the board as its own ticket.
+
+---
+
+## S7-15 — A tie-break written to fill a gap in a document can contradict that document, because its author is looking at the gap and not at the text around it
+
+**Found on MES-81, 2026-08-23. Named by the PM as their own error, in `26036`.**
+
+### The instance
+
+The PM's decode-boundary tie-break (`26026`) was authored specifically to fill R1, the
+residual §9 declares and leaves without a worked case. It ruled that a value with *"no
+wire counterpart at all"* fails gate 2. **§11.1 — a worked example ratified in the very
+document the tie-break was filling a gap in — had already ruled the opposite** for
+`Extensions.from_meta(nil) -> %{}`, treating the absence marker as a gate-4 weakness
+(`falsifiable: undetermined`) rather than a gate-2 failure.
+
+Neither the author nor the sweeper noticed at the plan hop. It surfaced only when the
+sweep put both rules on structurally identical rows and had to label them (S7-13).
+
+### Mechanism
+
+Filling a declared gap focuses attention on the **gap's own statement** — here §9's R1
+paragraph — and the reviewer's question becomes *"does this decide R1?"*. The worked
+examples that constrain the same class live in a **different section** (§11.1, four
+screens away) and are not what anyone re-reads when authoring a tie-break. The document's
+own structure makes the check unlikely to be performed.
+
+### Transferable form
+
+**Check a tie-break against the WORKED EXAMPLES of the section it lands in, not only
+against the rule it replaces.** A rule and an example are different kinds of authority: a
+rule is checked for consistency with other rules, and nobody thinks to check it against a
+table of decided cases. The examples are where the contradiction will be, precisely
+because they are decisions and not statements.
+
+**Corollary, and it is the reason this cost one round rather than a sprint:** the sweeper
+who found it **shipped the inconsistency** with both answers on the rows rather than
+picking a side. A consistent register would have been indistinguishable from a correct
+one.
+
+---
+
+## S7-16 — A call-site grep on a FULLY-QUALIFIED module name is answered by the alias, and the answer it gives is always the reassuring one
+
+**Found on MES-81, 2026-08-23, in round 2. It corrects a claim in this file's own S7-10
+and in the round-1 register, and the same grep had been independently reproduced at the
+PM seat (`26033`) — so it survived two checks.**
+
+### The instance
+
+The claim, from three places: *"`MCP.Protocol.Messages.Response` is used **nowhere** in
+`lib/`"*, on the strength of `grep -rn "Messages.Response" lib/` returning only
+`response.ex` itself.
+
+The grep is correct and the claim is false. Three files alias the module —
+`protocol.ex:7`, `client.ex:98`, `connection.ex:35`, each
+`alias MCP.Protocol.Messages.{… Response}` — after which every use is spelled
+`%Response{}` or `Response.t()`. Measured at `94f4d2a`, `grep -rn '\bResponse\b' lib/`
+returns the struct **constructed** at `protocol.ex:98` (`decode_response/1`) and
+**pattern-matched** at `connection.ex:112` and at `client.ex:363, 415, 435, 449, 463, 538,
+563, 582, 597, 640, 656, 665`.
+
+**The conclusion those greps were supporting survives, for a narrower reason that had to
+be established separately:** every one of those uses is INBOUND, and no `lib/` path ever
+re-encodes a `%Response{}`. `Response.success/2` and `Response.error/2` have zero `lib/`
+call sites (`grep -rnE 'Response\.(success|error|new)\(' lib/`), and the direct evidence
+is a mutation: breaking the struct's `defimpl Jason.Encoder` arbitrarily reddened exactly
+2 of 979 units, both in `ProtocolTest`.
+
+### Mechanism
+
+Elixir's `alias` makes the fully-qualified name **absent from every call site by
+construction** — that is what `alias` is for. So a grep for the qualified name searches
+the one place the codebase has agreed not to write it, and returns the definition site
+alone. Crucially the failure is **directional**: it can only ever *under*-count callers,
+so it always produces the answer "this is dead", which is the answer a dead-path argument
+wants. Nothing about the output looks wrong.
+
+### Transferable form
+
+**A "nothing calls this" claim needs the last segment, the alias forms, and a mutation —
+not the fully-qualified name.** Concretely: grep `\bLastSegment\b` (not `A.B.LastSegment`),
+grep the `alias` lines that could rebind it, and then **break the thing and run the
+suite**. A mutation cannot be fooled by spelling: if nothing outside the module's own
+tests reddens, nothing outside calls it. The grep is the hypothesis; the mutation is the
+measurement.
+
+---
+
+## S7-17 — A ruling stated over a family has an ANTECEDENT, and per-row establishment is what discovers the rows that do not satisfy it
+
+**Found on MES-81, 2026-08-23. It is why PM ruling A moved 40 rows and not the 45 the
+ruling itself expected.**
+
+### The instance
+
+Ruling A (`26034`): *"An assertion on the output of a public encode/decode boundary that
+**NO `lib/` call site routes to a transport** fails gate 2."* Expected outcome, stated in
+the ruling: **all 45 → `ET-OUT`**. The ruling also said: *"Establish that per row; do not
+apply it as a family sweep."*
+
+Established per row by mutation, the antecedent turned out **not** to hold for 5 of the
+45. All five assert the output of `MCP.Protocol.encode/1` — which does have zero `lib/`
+call sites — but the bytes they assert are produced by the **struct's own
+`Jason.Encoder`**, and those encoders are live:
+
+| mutated | reddened |
+| --- | --- |
+| `%Request{}`'s `defimpl` (`request.ex:25`) | **37 units across 8 modules** — 18 `ClientTest`, 8 `IntegrationTest`, 3 `ProtocolTest`, 3 `RoutingHeadersTest`, 2 `ClientToolSchemasTest`, 1 each `ClientDefectsTest` / `ClientConformanceTest` / `SelfCompatibilityTest` — live path `client.ex:839` → `:868`. **(F8: this line read "3 units in `ProtocolTest` and 21 in `ClientTest`" until round 4. It is 18, not 21, and six further modules redden; measured twice by CODE_REVIEWER at `26045` and reproduced independently. Corrected in `etcc-register.md` in round 3, in **§7 family A**, on the table row beginning `| \`%Request{}\`'s hand-written \`defimpl\``. **At the delivered round-5 tip that row is `:996`.** The bare line number has now been wrong three times — `:739` at round 3, `:915` at round 4, `:929` after this branch's own next commit inserted 14 lines above it — which is why the section and the row's opening text are given here as well: a line address is only valid at the tip it was taken at (S7-23), and those two are content handles that survive a tip that moves. Per `26059` item 6 and `26071` item 3.)** |
+| `%Notification{}`'s `defimpl` (`notification.ex:24`, `:29`) | the unit **and 14 / 13 live-path units** — live paths `connection.ex:203`, `notification_collector.ex:49` |
+| `%Response{}`'s `defimpl` (`response.ex:32-38`) | **2 units, both `ProtocolTest`; 0 live** — antecedent holds, row moves |
+
+Three struct encoders reached through one dead entry point, two of them live and one dead.
+§2.1's counterfactual returns NO for the five and YES for the other 40.
+
+### Mechanism
+
+A ruling is written from the **exemplar** that prompted it — here `Messages.Tools`, where
+the entry point and the encoder are the same dead module. The rule is then stated in terms
+that fit the exemplar (*"a public encode/decode boundary"*) and applied to a family
+assembled by the escalation, which was assembled by **question**, not by antecedent. The
+question *"is this boundary dead?"* was one question; the answer is per row.
+
+### Transferable form
+
+**REWRITTEN in round 3, PM-authorised at `26049`. Clauses (ii) and (iii) are
+CODE_REVIEWER's, authored at `26046`; the reason they exist is that (i) alone — which
+the PM wrote into the round-2 contract almost as boilerplate — was not enough to find
+F1 (S7-18). As first written this entry was half a rule, and the missing half arrived
+one round later, which is the best evidence for the rewrite that could be asked for.**
+
+Where a ruling names a condition, the condition is the deliverable, not the expected
+count. Three clauses, and the third is the one that makes the first two run:
+
+1. **Establish the antecedent PER ROW INSIDE the family — it will not hold for all of
+   them.** This is what caught the five survivors above. Report the rows that fail it
+   even when that disagrees with the number the ruling predicted, and especially then:
+   a family-sweep that reproduces the predicted number is indistinguishable from one
+   that was never checked.
+2. **Then ask which rows OUTSIDE the family the antecedent also reaches.** A ruling
+   stated over a family **silently inherits that family's boundary** — and that
+   boundary was drawn before the ruling existed, usually by something with nothing to
+   do with the antecedent (here: what the sweeper happened to escalate). The scope of a
+   ruling is its antecedent, not the set of rows it was put over.
+3. **Name the test.** For ruling A it is *"mutate the encoder, re-run the suite, count
+   what reddens outside the module's own tests"* — about 20 seconds per module. **A
+   ruling whose antecedent has no named procedure gets applied by reading, and reading
+   is what draws the boundary at the family.** Naming the procedure is also what makes
+   clause 2 affordable: 29 boundaries at 20 seconds is one sitting, and nobody omits a
+   step that cheap for reasons of cost.
+
+The corollary for the entity issuing the ruling is unchanged: **state the expected
+outcome as a sketch and say the number wins**, which is what `26037` did and what
+`26048` did again when the sweep returned 30 against an expectation of 33.
+
+---
+
+## S7-18 — A correction contract scoped to the ESCALATED rows cannot surface a ruling's reach, because "escalated" is a property of what the sweeper found hard and the antecedent is a property of the code
+
+**Found on MES-81, 2026-08-24, by CODE_REVIEWER (F1, comment `26044`). Named by the PM
+as their own defect at `26047`. It is the instance S7-17 clause (ii) was written from,
+and it is recorded separately because the rule and the case that produced it are
+different things to look up.**
+
+### The instance
+
+Round 2's PM correction contract (`26037`) said two things that are individually right
+and jointly blind:
+
+* **item 1** — re-decide the 78 escalated rows under rulings A–E, establishing each
+  ruling's antecedent per row;
+* and, in the same contract, ***"Do not re-sweep the 504 unescalated rows."***
+
+The sweeper executed both exactly. Ruling A's antecedent — *"no `lib/` call site routes
+this encode/decode boundary to a transport"* — was then tested on the 45 rows the ruling
+was put over, and on no others. **Thirty rows outside that set satisfy it identically.
+Not one of them was escalated**, so nothing the contract asked for could have reached
+them, and the register shipped `ET-CC` overstated by 30 (307 where 277 is right).
+
+The rows are not exotic. They are `Types.Tool` (9), `Messages.Resources` (5),
+`Messages.Sampling` (4), `Types.Resource` (4) and four of the five `Types.Content`
+subtypes (8) — the same condition that moved `Messages.Tools`'s 36, one family over.
+
+### Mechanism
+
+**`escalated` and the antecedent are different partitions of the same population, and
+nothing keeps them aligned.** `escalated` records what the *sweeper* could not settle
+from the criterion; the antecedent is a fact about *the code*. A family assembled from
+the first is a sample of the second, drawn by a process — "which rows did the sweeper
+find hard?" — that has nothing to do with the condition being tested.
+
+The instruction not to re-sweep is what makes this invisible rather than merely likely,
+and it was **right for cost**: re-deciding 504 rows by hand is not affordable and would
+have been the wrong use of a round. It was **wrong for reach**, and both halves belong
+in the finding. The cost objection dissolves once the antecedent has a **named
+procedure** (S7-17 clause iii): the total sweep that replaced it partitioned all 307
+members into 31 groups over 29 boundaries and mutated each one — 29 runs, one sitting.
+
+**And the fix is not "apply it to the reviewer's 33" either.** That was the PM's own
+first instinct, rejected at `26047`: it moves the boundary from *"rows the sweeper
+escalated"* to *"rows the reviewer happened to look at"* — the same defect one
+iteration later. The reviewer checked five modules because the antecedent pointed at
+them and said so; **five is not a population**.
+
+### Transferable form
+
+**When a ruling is issued mid-ticket, scope the re-decision by the ruling's ANTECEDENT
+and the population by the ARTEFACT — never by the escalation list.** Concretely: before
+writing *"do not re-sweep X"* into a correction contract, ask whether any ruling in that
+contract has an antecedent that is a property of the code rather than of the sweep. If
+one does, the contract must name a **total** procedure for it, partitioned over the
+whole population, or it has silently capped the ruling's reach at whatever the sweeper
+happened to flag.
+
+**The tell that this has happened is a ruling that "moved exactly the rows it was put
+over".** That reads as confirmation and is the shape of a boundary nobody tested.
+
+---
+
+## S7-19 — A mutation is only as strong as it is WIDE, and a narrow one returns the dead verdict for a live boundary
+
+**Found on MES-81, 2026-08-24, running the total boundary sweep S7-18 called for. It is
+the one row of that sweep that disagrees with the review's expectation, and it qualifies
+S7-16's own remedy.**
+
+### The instance
+
+S7-16's transferable form ends *"break the thing and run the suite … A mutation cannot
+be fooled by spelling."* True, and not sufficient. Both a narrow and a wide mutation of
+`MCP.Protocol.Types.Content` were run over the same 979 units at the same seed:
+
+| mutation | reddened | outside own + dead | verdict |
+| --- | --- | ---: | --- |
+| `TextContent.text`, `ImageContent.mimeType` (CODE_REVIEWER, `26044`) | 3 `ContentTest` + collateral | **0** | DEAD — all 11 rows move |
+| per subtype: the `type:` discriminator VALUE, the payload key, and every key each `defimpl` emits | 13/11/2/2/2/2 across six boundaries | **1** for `TextContent`, 0 for the rest | `TextContent` **LIVE** — 3 rows stay, 8 move |
+
+The single live unit is `json_schema_2020_12_test.exs:468`, which drives a real
+`Dispatch` with a handler returning a `%TextContent{}`. Confirmed by construction rather
+than left as an inference: that handler's return produces the wire bytes
+`{"id":1,"jsonrpc":"2.0","result":{"content":[{"type":"text","text":"hello"}],"resultType":"complete"}}`.
+`TextContent`'s encoder is on the live emit path; the other four subtypes' are not.
+
+### Mechanism
+
+**A mutation tests the boundary only through the parts of it the mutation actually
+touched, and "dead" is the verdict you get from touching nothing that anything
+consumes.** The narrow mutation changed a payload key (`"text"`); the live consumer keys
+on the **discriminator value** (`type: "text"`), which the narrow mutation left intact.
+So the failure is directional in exactly the way S7-16 warns about for greps: **a
+too-narrow mutation can only under-report reachability, so it always returns the
+reassuring "this is dead"**. The measurement had the same bias as the grep it replaced.
+
+Two corollaries, both of which the sweep now runs as procedure:
+
+* **Potency is a precondition of a DEAD verdict.** If a mutation does not redden the
+  boundary's own rows, it has not tested them. Widen until it does. (Two boundaries
+  needed widening this round: `Messages.Sampling` left row `:69` green until the
+  `CreateMessageResult` encoder was mutated too.)
+* **A composite boundary must be split before it is mutated.** `Types.Content` looked
+  like one boundary and is six; mutated whole, one live subtype is invisible behind five
+  dead ones, and the verdict for the composite is the verdict for its *weakest* part.
+
+### The other half — where the redness proxy is blind ALTOGETHER
+
+`reddens nothing outside its own tests` is a **proxy** for the antecedent, and it has a
+second failure mode the width fix does not touch: it detects reachability only *through
+other tests*. Three boundaries reddened nothing outside their own tests and are
+nonetheless live:
+
+| boundary | why the proxy was silent |
+| --- | --- |
+| `MCP.Transport.Stdio` | the boundary **is** the transport. Its own test is the wire test — it reads bytes off a real subprocess pipe — so there is no "other test" for the proxy to find |
+| `MCP.Server.NotificationCollector` | the one live test that could have caught it **refutes** a notification's presence, so renaming the key leaves the refute passing |
+| `MCP.Server.Connection` | reddened **zero** units: nothing in the tree asserts a Connection-emitted notification's `method` at all |
+
+### Transferable form
+
+**A DEAD verdict needs three things a LIVE one does not: a wide mutation, a potency
+check, and a direct look at the code.** Concretely — (i) mutate the discriminator and
+the payload and every key the encoder emits, not one field; (ii) require the mutation to
+redden the rows whose fate it decides, and widen it until it does; (iii) where nothing
+reddens outside the boundary's own tests, **do not conclude dead** — name the `lib/` call
+site and show the bytes, because silence means either *"nothing routes this to a
+transport"* or *"something does and no test asserts it"*, and only reading the code tells
+them apart. **LIVE is cheap and conclusive from any mutation; DEAD is the expensive
+verdict and has to be earned.**
+
+---
+
+## S7-20 — A remedy added to fix a scope defect acquires the SAME scope defect within one round, because the seat adding it is looking at the cases that motivated it
+
+**Found on MES-81 round 4, 2026-08-24, by CODE_REVIEWER (`26055`) and ruled BLOCKING by
+the PM (`26058`). The PM records it as theirs twice over: they ratified the limb and
+wrote out its justification at length without ever asking where its own antecedent
+held — the exact question they had put in CODE_CREATOR's contract one round earlier.**
+
+### The instance
+
+**S7-17 is the defect: a ruling stated over a family has an ANTECEDENT, and applying it
+to the family rather than to the antecedent misses rows.** Round 3's remedy for a
+neighbouring problem was **L2**, a second limb added because L1's redness proxy is blind
+in one direction — its silence means either *"nothing routes this to a transport"* or
+*"something does and no test asserts it"*, and only reading the code tells them apart.
+
+L2's trigger was written as *"where L1 is silent"*. The column that decides silence is
+`reddened_outside_own_and_dead`, and it was **0 for twelve boundaries**. L2 ran on
+**three** — the three the sweeper suspected.
+
+| | |
+| --- | --- |
+| boundaries with `reddened_outside_own_and_dead == 0` | **12** |
+| carrying an L2 record | **3** (+ `TextContent`, live by L1) |
+| recorded DEAD with **no** L2 record | **9 of 9** |
+| of those nine, wrong | **6** — every one came back LIVE with bytes through a real `Dispatch.dispatch/3` |
+
+**The limb added to fix "applied to the family, not the antecedent" was itself applied
+to the family and not the antecedent, one round later, by the seat that had just
+written the rule down.** The six wrong verdicts moved 21 rows out of `ET-CC` that had
+no business leaving; re-decided per row under the granularity ruling, 9 of the 21 came
+back.
+
+### Mechanism
+
+A limb is introduced **in front of the cases that motivated it**. Those cases are vivid,
+the antecedent is abstract, and the two are never separated at the moment of writing —
+so the limb is run on the vivid set and the abstract set is never enumerated. Nothing
+in the artefact distinguishes *"the trigger fired and the answer was DEAD"* from
+*"the trigger never fired"*, because both print the same word.
+
+**A rule about a rule's reach does not exempt itself.** That is the whole of it, and it
+is why this entry is worth more than the count it moved.
+
+### Transferable form
+
+**Give every new limb a MECHANICAL TRIGGER and a GUARD at the moment it is introduced,
+not after.**
+
+* **Mechanical trigger.** State the trigger as a predicate over a column that already
+  exists — *"L2 runs on every boundary whose live count is zero"* — never as a
+  disposition like *"where L1 is silent"*, which reads as an invitation to judge.
+  Then run it by iterating the column, not by recalling which rows looked odd.
+* **Guard.** Make the un-run case **unrepresentable** in the artefact. Here that is one
+  line: *no boundary may be recorded DEAD without an L2 record.* It costs nothing, it
+  fires the moment the trigger is skipped, and it is the difference between a limb that
+  was applied and a limb that was intended. Exercise it in more than the null form — an
+  L2 record that says `ran: false`, or one whose verdict contradicts the boundary's,
+  must fail too, or the guard only catches the tidiest way of getting it wrong.
+* **The cost of not doing it is a whole round**, and the round is expensive because
+  every downstream figure has to be re-derived. The guard would have cost four lines.
+
+---
+
+## S7-21 — A module nothing uses acquires no rows, so it never becomes a boundary, so its tests are never excluded — and its redness then reads as evidence FOR ITS NEIGHBOURS
+
+**Found on MES-81 round 4, 2026-08-24, at CODE_CREATOR's seat while running the
+call-site enumeration L2 requires. It is S7-20's defect one level down, and it is what
+makes the exclusion set — not just the trigger — a thing that has to be derived rather
+than listed.**
+
+### The instance
+
+The boundary sweep's live column is *"units reddened outside this boundary's own tests
+**and outside the own-tests of boundaries recorded dead**"*. The second clause exists
+because a dead module's tests still go red when a neighbour it calls is mutated, and
+counting that as live-path evidence is exactly the mistake.
+
+But **a boundary only enters the table if some `ET-CC` row names it as the producer of
+its bytes.** A module `lib/` never uses produces no member's bytes, so it acquires no
+row, so it never becomes a boundary — **so its own-tests are never in the exclusion
+set.** The dead-neighbour correction has a hole shaped exactly like the modules it most
+needs to cover.
+
+`MCP.Protocol.Messages.Initialize` is such a module. The 2026-07-28 core has no
+`initialize` handshake (SEP-2575/2567), and `grep -rnE '\bInitialize\b' lib/` returns
+one line, doc prose at `server/handler.ex:81`. Its five test units are all `ET-OUT`, so
+it never appeared in the round-3 boundary table at all. And:
+
+    MCP.Protocol.Capabilities.ClientCapabilities (decode)
+      L1 live units: 2   ->  BOTH in test/mcp/protocol/messages/initialize_test.exs
+      lib/ call sites of ClientCapabilities.from_map/1: exactly ONE, initialize.ex:28
+      the server never decodes client capabilities into this struct: meta.ex:105
+        keeps io.modelcontextprotocol/clientCapabilities as a RAW MAP
+
+So the boundary read **live** on the redness of a module `lib/` never runs. Under the
+direction split it is **dead**, and three rows leave `ET-CC`.
+
+### Mechanism
+
+The exclusion set was built by asking *"which boundaries are dead?"* — a question about
+the table. The right question is *"which units in a live count come from a module `lib/`
+never uses?"* — a question about the **tree**. The table cannot answer it, because
+membership in the table is downstream of having members.
+
+It is the same shape as S7-20 and as S7-17 before it: a correction scoped to the set
+that was already visible, rather than to the set its own antecedent picks out.
+
+### Transferable form
+
+**Derive the exclusion set from the live counts, not from the table.** Enumerate every
+test file contributing at least one unit to any live count, and for each one ask whether
+its subject module is reachable in `lib/` at all. On MES-81 that was 21 files and
+`initialize_test.exs` was the single miss — a **checked negative over the whole set**,
+which is the only form in which "we looked" and "there was nothing" are distinguishable.
+
+Two smaller rules fall out of it:
+
+* **Exclude at UNIT level, not file level, where a file is shared.** `tool_test.exs`
+  holds the own-tests of a dead decode direction and a live encode one; excluding the
+  file would silence the live half. The round-4 boundaries file records both sets
+  explicitly — 4 files, 27 units — rather than describing the policy.
+* **Record a dead module as a boundary even when it carries no members.** It costs one
+  measurement and it puts the module inside the guard's reach; leaving it out is what
+  made this invisible. `Messages.Initialize`, `Messages.Tools` and `Messages.Response`
+  are all recorded that way now.
+
+---
+
+## S7-22 — ATTRIBUTION is a separate step from establishment, and it was the last one still done by eye: four rounds closed how a verdict is REACHED and none closed which rows it is APPLIED TO
+
+**Found on MES-81 round 4 by CODE_REVIEWER (`26066`, F9), ruled by the PM at `26070`,
+and closed at round 5. It is the fourth place one shape has lived in this ticket, and
+the map of the four is the finding — not any one of them.**
+
+### The instance
+
+Two `ET-CC` rows, line-for-line identical in construction, were attributed to different
+boundary sets in the same round under the same ruling:
+
+```
+capabilities_test.exs:42   -> ['ServerCapabilities (encode)']            <- encode ONLY
+  caps = ServerCapabilities.from_map(map)
+  decoded = Jason.decode!(Jason.encode!(caps))
+  assert decoded["tools"]["listChanged"] == true
+
+resource_test.exs:44       -> ['Resource (decode)', 'Resource (encode)']  <- BOTH
+  resource = Resource.from_map(@resource_map)
+  decoded = Jason.decode!(Jason.encode!(resource))
+  assert decoded["uri"] == "file:///project/readme.md"
+```
+
+Not two judgements — one judgement recorded two ways. Four rows under-named:
+`capabilities_test.exs:42`, `:83`, `tool_test.exs:73`, `:84`.
+
+### Mechanism — the four places, and why the fourth outlived the other three
+
+The register's central shape is *a rule whose antecedent nobody re-asked*. It lived in
+four places, and each of the first three was closed by the same remedy — **a mechanical
+antecedent plus a guard**:
+
+| # | place | what it decides | closed by |
+| --- | --- | --- | --- |
+| 1 | the rule's **reach** | which boundaries a ruling is put to | F1 → whole-population sweep |
+| 2 | the limb's **trigger** | when L2 runs | F6 → guard 20 (`dead` ⇒ an `l2` record) |
+| 3 | the trigger's **input** | which units feed a live count | S7-21 → unit-level exclusion |
+| 4 | **attribution** | which rows a verdict is applied to | F9 → guard 21 |
+
+The first three are all about how a **boundary's** verdict is established, and they are
+upstream-facing: each was found by asking *"where else does this antecedent hold?"*
+**Attribution runs the other way** — it is about which rows the finished verdict lands
+on — and no guard reached it. The existing guards check that a named boundary exists,
+that a non-member names none, and that not every named one is dead. **Nothing checked
+that the set named is the right set.** That is why F9 survived four rounds and three
+seats while sitting in plain sight in the delivered artefact.
+
+### Transferable form
+
+**A guard that validates the ANSWER does not validate the QUESTION it was asked of.**
+When a verdict is established per subject and then applied per row, the application is a
+separate step and needs its own antecedent and its own guard — otherwise every check in
+the pipeline can pass over a row the verdict never should have reached.
+
+The concrete form here, and the one worth reusing: **make the criterion a
+discrimination test, not a reading of the source.** The rejected alternative was *"a
+fixture-builder call is not asserting a value from that producer"*, which turns on how a
+line reads and is not runnable by a second reader. The ruled one — *"would a wrong
+producer fail this assertion?"* — is answerable by mutation, and all four rows were
+established that way rather than by inspection. One of them (`tool_test.exs:84`, which
+asserts only ABSENCES) returns a two-sided answer worth keeping: a producer that
+**wrongly populates** an absent optional fails it, a producer that merely **drops** a
+read does not. The rule is load-bearing for exactly the fault class the row exists to
+catch — which is the answer, and it is not the same as "yes".
+
+**And state the guard's reach.** Guard 21 reads the member's own test body, so the six
+`ET-CC` **doctest** rows are outside it: a doctest's body is the `@doc` in `lib/`, not
+the test file at that line. A guard that scans the wrong bytes and finds nothing reports
+a false green, so the residual is named rather than left to be discovered.
+
+---
+
+## S7-23 — A line address is only valid at the tip it was taken at, and the commit that invalidates it is usually your own next one
+
+**Found on MES-81 by CODE_REVIEWER (`26067`, F11) — the third iteration of the same
+note's own address (739 → 915 → 929), and the sharpest, because the second was caught by
+CODE_CREATOR and the third was created by CODE_CREATOR's next commit on the same
+branch.**
+
+### The instance
+
+`docs/sprint_7_issues.md:949` cited `etcc-register.md:915` for the *"37 units across 8
+modules"* measurement:
+
+```
+at fe9ad8b  :915 IS the 37-across-8-modules line   <- the fix was CORRECT when made
+   0860ebb  inserts 14 lines EARLIER in that file  <- the next commit, same branch
+at 0860ebb  :915 is a BLANK LINE; the target is now :929
+```
+
+Nothing was rebased, nothing was merged, no other seat touched the file. A commit that
+inserts **above** a cited line silently invalidates every citation below it.
+
+### Mechanism
+
+A line number is a coordinate in a mutable frame. Every other form of address this
+project uses is content-addressed — an md5, a key, a commit hash — and stays valid
+because the thing it names cannot move underneath it. A `file:line` is the one address
+whose referent moves without any edit to the referent.
+
+It is S5-31's shape (*two spellings of one fact drift apart*) moved from documents to
+line numbers, and the drift is silent in both directions: neither the citing note nor
+the cited section knows the other exists.
+
+### Transferable form
+
+**Re-resolve every `file:line` citation at the DELIVERED tip, not at the tip you fixed
+it at** — and treat your own subsequent commits to the cited file as invalidating
+events, because within a branch they are the likeliest one.
+
+**This one is machine-checkable, and cheaply.** The note already names the section as
+well as the line (*"in §7 family A, at `:915`"*), and that redundancy is what makes it a
+checkable pair rather than a bare number: resolve the section heading in the cited file,
+assert the cited line falls inside it, or better, assert the cited line matches a
+recorded fragment of its own text. The general rule: **a line citation should always
+carry a second, content-addressed handle** — a section, a heading, a quoted fragment —
+so that a checker (and a human) can tell a stale address from a moved one.
+
+---
+
+## S7-24 — Prose figures are not rebuilt when the artefact is, so a delivered document accumulates the previous round's numbers in exactly the places a generator cannot reach
+
+**Found on MES-81 round 5 at CODE_CREATOR's seat while executing the correction contract
+for F10 — the same shape the contract was correcting, two sections along, and not looked
+for by anyone until the third instance.**
+
+### The instances
+
+Three integers and one address, in three delivered documents, all of them the previous
+round's value:
+
+| where | said | should say | went stale at |
+| --- | --- | --- | --- |
+| `etcc-boundaries.json`, two `l2.call_site_enumeration` records | 6 and 7 live units | **5 and 6** | round 4's unit-level exclusion (F10, CR `26067`) |
+| `etcc-register.md` §3 | `75 / 33 is the split` | **`75 / 37`** | round 4, while the table 20 lines above it WAS re-derived to 112 (F12) |
+| `etcc-register.md` §3, "the five that left" | `capabilities_test.exs:60, :83, :161` | **`:60, :75, :161`** | never correct — two overlapping sets conflated (F13, CR `26068` found it in the close-out and it is in the document too) |
+
+F13 is the one with teeth: `:83` is **still an `ET-CC` member**, so a reader following
+the citation finds a member where the sentence promises a row that left.
+
+### Mechanism
+
+`etcc-register.json` is generated and cannot carry a stale figure — every number in it
+is recomputed from the decisions file on every build, and 23 guards refuse a build that
+does not hold together. **The prose is the complement of exactly that set**: every
+figure a human typed *about* the artefact, in a file no generator writes.
+
+So the defect concentrates where the checking does not reach, and it survives review for
+a specific reason: a stale figure is locally plausible. `75 / 33` reads fine; only
+comparing it to a table in the same section falsifies it. That is also why it is found
+by **re-deriving the whole column** rather than by reading — the same lesson §10's
+`schema.ts` count taught (220 → 194) and S7-12 before it.
+
+### Transferable form
+
+**Every figure in prose that also exists in a generated artefact should be re-derived
+from the artefact at the delivered tip, as a column, not spot-checked.** Where the
+figure is stated in a sentence rather than a table, say what it is a count *of* — a
+figure with its predicate written down can be re-derived by a second reader; one without
+can only be believed.
+
+The stronger version, which is MES-85's and MES-88's to take: **the prose figures a
+document states about an artefact are a checkable set.** `75 / 37`, `34 distinct
+boundary ids`, `194 anchors`, `27 status assertions` — each is one query against the
+committed JSON. A checker that extracts them is the only thing that makes "this document
+was re-derived" distinguishable from "this document was re-read".

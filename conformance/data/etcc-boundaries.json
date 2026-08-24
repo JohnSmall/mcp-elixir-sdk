@@ -1,0 +1,2107 @@
+{
+  "schema": "etcc-boundaries/2",
+  "note": "The encode/decode boundary partition and the two-limb procedure behind it. Ruling A's antecedent is 'NO lib/ call site routes this boundary to a transport'; this file records the procedure that establishes it and its result FOR EVERY BOUNDARY-DIRECTION, live ones included (epic ruling 4 — negatives enumerated). A table listing only the dead boundaries cannot be checked. SCHEMA 2 (MES-81 round 4, PM correction contract 26058-26060) changes three things from schema 1: (i) every boundary whose lib/ module produces the asserted artefact in BOTH directions is SPLIT into `(encode)` and `(decode)`; (ii) L2 runs at a MECHANICAL trigger — every boundary-direction whose live count is zero, never on a selection — and its result is recorded on every one, DEAD included; (iii) the round-2 dead boundaries are recorded here rather than in a prose side-note, so guard 20 reaches them.",
+  "the_direction_split": {
+    "rule": "A boundary is the PRODUCER of the asserted bytes. A `defimpl Jason.Encoder` and a `from_map/1` are different code running in opposite directions, so one direction's liveness may not carry the other (PM ruling, comment 26058).",
+    "antecedent": "A boundary SPLITS when its lib/ module produces the asserted artefact in both directions — a decode-side producer (`from_map/1`, `decode_*`, `parse_*`) AND an encode-side producer (`defimpl`/`@derive Jason.Encoder`, `to_map/1`, `encode_*`). Applied MECHANICALLY to every boundary in the partition, not to the family the ruling was stated in front of — that would be F6 repeated inside the round that fixes F6.",
+    "reach_stated_as_a_result_not_an_intention": "THE REACH IS 18 / 12 / 2, and those three categories account for all 32 module names in the partition. 18 satisfy the antecedent and are split — 36 direction rows. 12 do not and are carried single-direction, with no direction in the row id: MCP.Client, Messages.Notification and Messages.Request (hand-written encoder, no from_map), MCP.Protocol.Meta and MCP.Protocol.decode_message/1 (decode only), MCP.Protocol.Extensions (predicates and a normaliser, no wire codec), and the six PATHS rather than codecs — Server.Dispatch, Server.Connection, Server.NotificationCollector, Server.Subscription, Transport.Stdio, Transport.StreamableHTTP.Plug. 2 produce the asserted artefact in ONE direction only and are recorded with that direction named: Types.Content (decode), whose from_map/1 dispatches by \"type\" at content.ex:32-36 and which has no encoder of its own, and Messages.Response (encode), which has @derive Jason.Encoder and a defimpl at response.ex:10 and :30 and no from_map. Neither satisfies the antecedent, so neither is split; both are named with a direction anyway because that is the only direction their bytes come from. 2*18 + 12 + 2 = 50, this file's own row count, and 36 + 2 = 38 direction-carrying rows — 19 (encode) and 19 (decode). Every one of the 19 boundary-directions this file records dead is among those 38 (6 encode, 13 decode); no undirected row is dead. F14, CORRECTED IN ROUND 6: rounds 4 and 5 said '17 modules satisfy it and are split (38 directions); 12 do not'. It accounted for 29 of the 32 names (Content and Response were in neither list); it was internally inconsistent before anyone touched the tree (17 split modules is 34 directions, and the same sentence said 38 — the 38 is right); and it was never right rather than stale, since this file has carried 18 both-direction modules since e27ca65. Guard 21 derives its split set from THIS FILE via split_modules/1 (etcc_register.ex:396-405), so the executable code and the prose about the same antecedent disagreed, in the field named 'reach stated as a result'. Found by CODE_REVIEWER at round 5, ruled by the PM at 26080. No verdict, label or count moves — nothing keys on this sentence. THE WIDER REACH CHANGED TWO VERDICTS AND ONLY TWO: ClientCapabilities (decode) and Error (encode) come back DEAD where the unsplit boundary read live. Every other direction beyond the Content family is live on BOTH sides, so for those the single round-3 verdict was sound. That is reported as a measured result — the reach question is settled by running it, not by arguing it."
+  },
+  "procedure": {
+    "L1": "Mutate the boundary-direction, re-run all 979 units at seed 0, count what reddens OUTSIDE its own tests and outside the units of boundary-directions this table records dead. >=1 such unit => LIVE. L1 is a PROXY and its SILENCE IS AMBIGUOUS: it means either 'nothing routes this to a transport' or 'something does and no test asserts it'.",
+    "L2": "Two conjuncts, and DEAD needs both. (a) BYTE PROBE — `mix run conformance/etcc_l2_probe.exs` drives 15 real lib/ entry points and prints the bytes they produce; the boundary's mutation is applied and the output diffed against the unmutated baseline. A scenario that MOVES is a lib/ call site routing the boundary to a transport, so the antecedent is FALSE and the verdict is LIVE. (b) CALL-SITE ENUMERATION — every lib/ reference to the boundary is listed (calls, `&Mod.fun/1` captures and dynamic dispatch included, and alias-aware per S7-16) and each caller followed to a live entry point or to a module lib/ never uses. (a) ALONE CANNOT ESTABLISH DEAD: the probe is server-side and its silence is another proxy. That is why every DEAD verdict below carries (b).",
+    "L2_trigger": "MECHANICAL: L2 runs on EVERY boundary-direction whose live count is zero. Never on a selection. This is F6 (CODE_REVIEWER 26055, PM 26058): at round 3 the trigger was stated as 'where L1 is silent', L1 was silent twelve times and L2 was run on the three the sweeper suspected — S7-17 clause (ii) landing on the limb added to fix S7-17 clause (ii). Guard 20 makes it checkable: no boundary may be recorded DEAD without an L2 record.",
+    "potency": "A DEAD verdict additionally requires the mutation to have reddened at least one of that boundary-direction's own units. A mutation that reddens nothing proves nothing.",
+    "dead": "potent AND L1 == 0 AND L2 negative on BOTH conjuncts.",
+    "the_live_column_exclusion_set": "`reddened_outside_own_and_dead` excludes a unit that lies in the own-tests of a boundary-direction recorded DEAD. The exclusion is FILE-level where every boundary-direction on that file is dead, and UNIT-level where the file is shared with a live one — otherwise excluding tool_test.exs for the dead decode side would also silence the live encode side. Both sets are listed below rather than described. THE UNIT-LEVEL FORM IS NEW AT ROUND 4 AND IT IS WHAT CATCHES THE DEAD NEIGHBOUR: a module lib/ never uses acquires no ET-CC row, so it never became a boundary, so its own-tests were never excluded, so its redness read as live-path evidence for whatever it happened to call. That is how ClientCapabilities (decode) read live at round 3 on two units in initialize_test.exs. Every one of the 21 test files contributing to a live count was checked for this and initialize_test.exs is the only one that was missing — a checked result, not a spot fix. See S7-21.",
+    "counting": "reddened_total counts failures the run reported WITH a file:line, which is how a failure is attributed. unlocated_failures is the remainder of the suite summary's own count — failures reported without a unit location. It never adds to the live count, so it can only make a LIVE verdict look weaker than it is, never make a DEAD one look stronger."
+  },
+  "control": {
+    "seed": 0,
+    "suite_total": 979,
+    "baseline_failures": 0,
+    "note": "Unmutated control run before the sweep: 13 doctests, 979 tests, 0 failures, node v24.13.0 on PATH. Every mutation was applied, measured and REVERTED, and the tree verified clean; no lib/ or test/ file is changed by this ticket."
+  },
+  "live_column_excluded_files": [
+    "test/mcp/protocol/messages/initialize_test.exs",
+    "test/mcp/protocol/messages/resources_test.exs",
+    "test/mcp/protocol/messages/sampling_test.exs",
+    "test/mcp/protocol/messages/tools_test.exs"
+  ],
+  "live_column_excluded_units": [
+    "test/mcp/protocol/capabilities_test.exs:161 (MCP.Protocol.CapabilitiesTest)",
+    "test/mcp/protocol/capabilities_test.exs:60 (MCP.Protocol.CapabilitiesTest)",
+    "test/mcp/protocol/capabilities_test.exs:83 (MCP.Protocol.CapabilitiesTest)",
+    "test/mcp/protocol/error_test.exs:84 (MCP.Protocol.ErrorTest)",
+    "test/mcp/protocol/error_test.exs:94 (MCP.Protocol.ErrorTest)",
+    "test/mcp/protocol/types/content_test.exs:123 (MCP.Protocol.Types.ContentTest)",
+    "test/mcp/protocol/types/content_test.exs:15 (MCP.Protocol.Types.ContentTest)",
+    "test/mcp/protocol/types/content_test.exs:24 (MCP.Protocol.Types.ContentTest)",
+    "test/mcp/protocol/types/content_test.exs:49 (MCP.Protocol.Types.ContentTest)",
+    "test/mcp/protocol/types/content_test.exs:70 (MCP.Protocol.Types.ContentTest)",
+    "test/mcp/protocol/types/content_test.exs:90 (MCP.Protocol.Types.ContentTest)",
+    "test/mcp/protocol/types/resource_test.exs:15 (MCP.Protocol.Types.ResourceTest)",
+    "test/mcp/protocol/types/resource_test.exs:24 (MCP.Protocol.Types.ResourceTest)",
+    "test/mcp/protocol/types/resource_test.exs:36 (MCP.Protocol.Types.ResourceTest)",
+    "test/mcp/protocol/types/resource_test.exs:44 (MCP.Protocol.Types.ResourceTest)",
+    "test/mcp/protocol/types/tool_test.exs:109 (MCP.Protocol.Types.ToolTest)",
+    "test/mcp/protocol/types/tool_test.exs:121 (MCP.Protocol.Types.ToolTest)",
+    "test/mcp/protocol/types/tool_test.exs:131 (MCP.Protocol.Types.ToolTest)",
+    "test/mcp/protocol/types/tool_test.exs:20 (MCP.Protocol.Types.ToolTest)",
+    "test/mcp/protocol/types/tool_test.exs:29 (MCP.Protocol.Types.ToolTest)",
+    "test/mcp/protocol/types/tool_test.exs:43 (MCP.Protocol.Types.ToolTest)",
+    "test/mcp/protocol/types/tool_test.exs:54 (MCP.Protocol.Types.ToolTest)",
+    "test/mcp/protocol/types/tool_test.exs:65 (MCP.Protocol.Types.ToolTest)",
+    "test/mcp/protocol/types/tool_test.exs:73 (MCP.Protocol.Types.ToolTest)",
+    "test/mcp/protocol/types/tool_test.exs:84 (MCP.Protocol.Types.ToolTest)",
+    "test/mcp/protocol_test.exs:37 (MCP.ProtocolTest)",
+    "test/mcp/protocol_test.exs:48 (MCP.ProtocolTest)"
+  ],
+  "boundaries": [
+    {
+      "id": "MCP.Client",
+      "own_tests": [
+        "test/mcp/client_test.exs",
+        "test/mcp/client_tool_schemas_test.exs",
+        "test/mcp/client_defects_test.exs",
+        "test/mcp/client_conformance_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 34 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/client.ex: Jason.decode!(Jason.encode!(struct))  ->  (fn m -> if is_map(m) and Map.has_key?(m, \"method\"), do: m |> Map.delete(\"method\") |> Map.put(\"methodX\", m[\"method\"]), else: m end).(Jason.decode!(Jason.encode!(struct)))"
+      ],
+      "reddened_total": 34,
+      "reddened_by_module": {
+        "MCP.ClientTest": 18,
+        "MCP.IntegrationTest": 8,
+        "MCP.Transport.RoutingHeadersTest": 3,
+        "MCP.ClientToolSchemasTest": 2,
+        "MCP.ClientConformanceTest": 1,
+        "MCP.ClientDefectsTest": 1,
+        "MCP.Transport.SelfCompatibilityTest": 1
+      },
+      "reddened_outside_own": 12,
+      "reddened_outside_own_and_dead": 12,
+      "live_units": [
+        "test/mcp/integration_test.exs:127 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:137 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:157 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:174 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:188 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:198 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:207 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:215 (MCP.IntegrationTest)"
+      ],
+      "verdict": "live",
+      "established_by": "L1",
+      "note": "",
+      "direction": null,
+      "l2": null
+    },
+    {
+      "id": "MCP.Protocol.Capabilities.ClientCapabilities (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/protocol/capabilities_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 5 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/capabilities/client_capabilities.ex: Map.get(\"roots\"  ->  Map.get(\"ZZroots\"",
+        "lib/mcp/protocol/capabilities/client_capabilities.ex: Map.get(\"sampling\"  ->  Map.get(\"ZZsampling\"",
+        "lib/mcp/protocol/capabilities/client_capabilities.ex: Map.get(\"elicitation\"  ->  Map.get(\"ZZelicitation\"",
+        "lib/mcp/protocol/capabilities/client_capabilities.ex: Map.get(map, \"experimental\"  ->  Map.get(map, \"ZZexperimental\"",
+        "lib/mcp/protocol/capabilities/client_capabilities.ex: Map.get(map, \"extensions\"  ->  Map.get(map, \"ZZextensions\""
+      ],
+      "reddened_total": 5,
+      "reddened_by_module": {
+        "MCP.Protocol.Messages.InitializeTest": 2,
+        "MCP.Protocol.CapabilitiesTest": 3
+      },
+      "reddened_outside_own": 2,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`ClientCapabilities.from_map/1` has exactly ONE lib/ call site — `messages/initialize.ex:28` — inside MCP.Protocol.Messages.Initialize, recorded DEAD above. The server does NOT decode client capabilities into this struct: meta.ex:105 keeps `io.modelcontextprotocol/clientCapabilities` as a RAW MAP. No probe scenario moves. *** This is the boundary L1 got wrong, and it is why the exclusion set is unit-aware: both of L1's two 'live' units were in initialize_test.exs, the own-tests of an orphaned module that the round-3 table never recorded as a boundary at all. See S7-21. ***",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Capabilities.ClientCapabilities (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/protocol/capabilities_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 8 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/capabilities/client_capabilities.ex: {key, val}, acc -> Map.put(acc, key, val)  ->  {key, val}, acc -> Map.put(acc, :\"ZZ#{key}\", val)"
+      ],
+      "reddened_total": 8,
+      "reddened_by_module": {
+        "MCP.Protocol.Messages.InitializeTest": 1,
+        "MCP.Protocol.CapabilitiesTest": 2,
+        "MCP.ClientTest": 4,
+        "MCP.ClientConformanceTest": 1
+      },
+      "reddened_outside_own": 6,
+      "reddened_outside_own_and_dead": 5,
+      "live_units": [
+        "test/mcp/client_conformance_test.exs:232 (MCP.ClientConformanceTest)",
+        "test/mcp/client_test.exs:469 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:480 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:506 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:591 (MCP.ClientTest)"
+      ],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "client.ex:825 puts `encode(state.client_capabilities)` into every outbound request's `_meta[\"io.modelcontextprotocol/clientCapabilities\"]`, through client.ex:868's `Jason.decode!(Jason.encode!(struct))` — the struct's own defimpl. The server-side probe cannot reach a client-side emit path, so this verdict rests on L1's 5 live-path units plus that address.",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L1"
+    },
+    {
+      "id": "MCP.Protocol.Capabilities.ServerCapabilities (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/protocol/capabilities_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 11 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/capabilities/server_capabilities.ex: Map.get(\"tools\"  ->  Map.get(\"ZZtools\"",
+        "lib/mcp/protocol/capabilities/server_capabilities.ex: Map.get(\"resources\"  ->  Map.get(\"ZZresources\"",
+        "lib/mcp/protocol/capabilities/server_capabilities.ex: Map.get(\"prompts\"  ->  Map.get(\"ZZprompts\"",
+        "lib/mcp/protocol/capabilities/server_capabilities.ex: Map.get(\"logging\"  ->  Map.get(\"ZZlogging\"",
+        "lib/mcp/protocol/capabilities/server_capabilities.ex: Map.get(\"completions\"  ->  Map.get(\"ZZcompletions\"",
+        "lib/mcp/protocol/capabilities/server_capabilities.ex: Map.get(map, \"experimental\"  ->  Map.get(map, \"ZZexperimental\"",
+        "lib/mcp/protocol/capabilities/server_capabilities.ex: Map.get(map, \"extensions\"  ->  Map.get(map, \"ZZextensions\""
+      ],
+      "reddened_total": 11,
+      "reddened_by_module": {
+        "MCP.Protocol.CapabilitiesTest": 4,
+        "MCP.Protocol.Messages.InitializeTest": 1,
+        "MCP.ClientTest": 4,
+        "MCP.IntegrationTest": 1,
+        "MCP.ClientConformanceTest": 1
+      },
+      "reddened_outside_own": 7,
+      "reddened_outside_own_and_dead": 6,
+      "live_units": [
+        "test/mcp/client_conformance_test.exs:184 (MCP.ClientConformanceTest)",
+        "test/mcp/client_test.exs:415 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:533 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:559 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:98 (MCP.ClientTest)",
+        "test/mcp/integration_test.exs:127 (MCP.IntegrationTest)"
+      ],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`ServerCapabilities.from_map/1` has two lib/ call sites: `messages/discover.ex:79` — on the live client decode path, `Discover.Result.from_map/1` <- client.ex:539 — and `messages/initialize.ex:72` (orphaned). The first is enough: 6 live-path units redden, in client_test, client_conformance_test and integration_test.",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L1"
+    },
+    {
+      "id": "MCP.Protocol.Capabilities.ServerCapabilities (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/protocol/capabilities_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 12 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/capabilities/server_capabilities.ex: {key, val}, acc -> Map.put(acc, key, val)  ->  {key, val}, acc -> Map.put(acc, :\"ZZ#{key}\", val)"
+      ],
+      "reddened_total": 12,
+      "reddened_by_module": {
+        "MCP.Protocol.CapabilitiesTest": 3,
+        "MCP.Server.CapabilityHonestyTest": 1,
+        "MCP.IntegrationTest": 1,
+        "MCP.Server.ExtensionsNegotiationTest": 7
+      },
+      "reddened_outside_own": 9,
+      "reddened_outside_own_and_dead": 9,
+      "live_units": [
+        "test/mcp/integration_test.exs:127 (MCP.IntegrationTest)",
+        "test/mcp/server/capability_honesty_test.exs:55 (MCP.Server.CapabilityHonestyTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:111 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:130 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:139 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:149 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:176 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:200 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:258 (MCP.Server.ExtensionsNegotiationTest)"
+      ],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": [
+            "server/discover"
+          ]
+        },
+        "call_site_enumeration": "dispatch.ex:150 builds %Discover.Result{capabilities: config.capabilities} and discover.ex:95 encodes it with `Jason.decode!(Jason.encode!(result.capabilities))`. The probe's `server/discover` scenario moves under this mutation: `\"capabilities\":{\"prompts\":{},\"resources\":{},\"tools\":{}}`.",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L1"
+    },
+    {
+      "id": "MCP.Protocol.Error (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/protocol/error_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 20 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/error.ex: def from_map(%{\"code\" => code, \"message\" => message} = map) do  ->  def from_map(%{\"ZZcode\" => code, \"ZZmessage\" => message} = map) do",
+        "lib/mcp/protocol/error.ex: data: Map.get(map, \"data\")  ->  data: Map.get(map, \"ZZdata\")"
+      ],
+      "reddened_total": 20,
+      "reddened_by_module": {
+        "MCP.Protocol.ErrorTest": 2,
+        "MCP.ProtocolTest": 2,
+        "MCP.ClientTest": 2,
+        "MCP.IntegrationTest": 3,
+        "MCP.ClientToolSchemasTest": 5,
+        "MCP.ClientDefectsTest": 6
+      },
+      "reddened_outside_own": 18,
+      "reddened_outside_own_and_dead": 18,
+      "live_units": [
+        "test/mcp/client_defects_test.exs:283 (MCP.ClientDefectsTest)",
+        "test/mcp/client_defects_test.exs:320 (MCP.ClientDefectsTest)",
+        "test/mcp/client_defects_test.exs:342 (MCP.ClientDefectsTest)",
+        "test/mcp/client_defects_test.exs:358 (MCP.ClientDefectsTest)",
+        "test/mcp/client_defects_test.exs:390 (MCP.ClientDefectsTest)",
+        "test/mcp/client_defects_test.exs:406 (MCP.ClientDefectsTest)",
+        "test/mcp/client_test.exs:124 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:202 (MCP.ClientTest)",
+        "test/mcp/client_tool_schemas_test.exs:273 (MCP.ClientToolSchemasTest)",
+        "test/mcp/client_tool_schemas_test.exs:320 (MCP.ClientToolSchemasTest)",
+        "test/mcp/client_tool_schemas_test.exs:345 (MCP.ClientToolSchemasTest)",
+        "test/mcp/client_tool_schemas_test.exs:367 (MCP.ClientToolSchemasTest)",
+        "test/mcp/client_tool_schemas_test.exs:442 (MCP.ClientToolSchemasTest)",
+        "test/mcp/integration_test.exs:137 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:157 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:174 (MCP.IntegrationTest)",
+        "test/mcp/protocol_test.exs:106 (MCP.ProtocolTest)",
+        "test/mcp/protocol_test.exs:149 (MCP.ProtocolTest)"
+      ],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 0,
+          "scenarios_moved": [
+            "SSE frame of a notification",
+            "decode_message of a wire error",
+            "decode_message of a wire result",
+            "error response (unknown method)",
+            "prompts/get",
+            "prompts/list",
+            "resources/list",
+            "resources/read",
+            "server/discover",
+            "tools/call audio",
+            "tools/call embedded",
+            "tools/call image",
+            "tools/call link",
+            "tools/call text",
+            "tools/list"
+          ]
+        },
+        "call_site_enumeration": "`Error.from_map/1` is called at protocol.ex:95 inside `decode_message/1`, which is on every inbound path (client.ex:362, connection.ex:103, plug.ex:324). 18 live-path units redden. The probe's two `decode_message` scenarios cannot run under this mutation at all — the head no longer matches a wire error object — which is itself the strongest possible statement that the decoder is on the live path.",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L1"
+    },
+    {
+      "id": "MCP.Protocol.Error (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/protocol/error_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 3 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/error.ex:   @derive Jason.Encoder\n  defstruct [:code, :message, :data]  ->    defstruct [:code, :message, :data]\n\n  defimpl Jason.Encoder, for: MCP.Protocol.Error do\n    def encode(s, opts) do\n      Jason.Encode.map(%{ZZcode: s.code, ZZmessage: s.message, ZZdata: s.data}, opts)\n    end\n  end"
+      ],
+      "reddened_total": 3,
+      "reddened_by_module": {
+        "MCP.Protocol.ErrorTest": 2,
+        "MCP.ProtocolTest": 1
+      },
+      "reddened_outside_own": 1,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "No lib/ path encodes an %Error{} through its `@derive Jason.Encoder`. The three outbound error paths build the error object BY HAND: dispatch.ex:725-729 (`%{\"code\" => e.code, \"message\" => e.message}`), plug.ex:1019-1023 (send_json_error) and connection.ex:186. The only route that could have reached the derived encoder was Messages.Response, itself recorded dead above. No probe scenario moves.",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Extensions",
+      "own_tests": [
+        "test/mcp/protocol/extensions_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 4 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/extensions.ex: \"extensions\"  ->  \"extensionsX\""
+      ],
+      "reddened_total": 4,
+      "reddened_by_module": {
+        "MCP.Protocol.ExtensionsTest": 3,
+        "MCP.Server.ExtensionsNegotiationTest": 1
+      },
+      "reddened_outside_own": 1,
+      "reddened_outside_own_and_dead": 1,
+      "live_units": [
+        "test/mcp/server/extensions_negotiation_test.exs:361 (MCP.Server.ExtensionsNegotiationTest)"
+      ],
+      "verdict": "live",
+      "established_by": "L1",
+      "note": "",
+      "direction": null,
+      "l2": null
+    },
+    {
+      "id": "MCP.Protocol.HeaderMirror (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/protocol/header_mirror_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 6 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/header_mirror.ex:          {:ok, decoded} <- Base.decode64(payload) do\n      decoded\n  ->           {:ok, decoded} <- Base.decode64(payload) do\n      decoded <> \"ZZ\"\n"
+      ],
+      "reddened_total": 6,
+      "reddened_by_module": {
+        "MCP.Protocol.HeaderMirrorTest": 2,
+        "MCP.Transport.SelfCompatibilityTest": 2,
+        "MCP.Transport.RoutingHeadersTest": 2
+      },
+      "reddened_outside_own": 4,
+      "reddened_outside_own_and_dead": 4,
+      "live_units": [
+        "test/mcp/transport/routing_headers_test.exs:199 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:239 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/self_compatibility_test.exs:167 (MCP.Transport.SelfCompatibilityTest)",
+        "test/mcp/transport/self_compatibility_test.exs:96 (MCP.Transport.SelfCompatibilityTest)"
+      ],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "plug.ex:906 `decode_header_name(value)` is `MCP.Protocol.HeaderMirror.decode_value/1`, on the server's inbound header-comparison path. 4 live-path units redden in routing_headers_test and self_compatibility_test.",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L1"
+    },
+    {
+      "id": "MCP.Protocol.HeaderMirror (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/protocol/header_mirror_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 33 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/header_mirror.ex:     if header_safe?(value), do: value, else: sentinel(value)  ->      if header_safe?(value), do: \"ZZ\" <> value, else: \"ZZ\" <> sentinel(value)",
+        "lib/mcp/protocol/header_mirror.ex: defp header_name(name), do: \"mcp-param-\" <> String.downcase(name)  ->  defp header_name(name), do: \"ZZmcp-param-\" <> String.downcase(name)"
+      ],
+      "reddened_total": 33,
+      "reddened_by_module": {
+        "MCP.Protocol.HeaderMirrorTest": 17,
+        "MCP.ClientToolSchemasTest": 7,
+        "MCP.Transport.SelfCompatibilityTest": 2,
+        "MCP.Transport.RoutingHeadersTest": 7
+      },
+      "reddened_outside_own": 16,
+      "reddened_outside_own_and_dead": 16,
+      "live_units": [
+        "test/mcp/client_tool_schemas_test.exs:153 (MCP.ClientToolSchemasTest)",
+        "test/mcp/client_tool_schemas_test.exs:174 (MCP.ClientToolSchemasTest)",
+        "test/mcp/client_tool_schemas_test.exs:230 (MCP.ClientToolSchemasTest)",
+        "test/mcp/client_tool_schemas_test.exs:273 (MCP.ClientToolSchemasTest)",
+        "test/mcp/client_tool_schemas_test.exs:379 (MCP.ClientToolSchemasTest)",
+        "test/mcp/client_tool_schemas_test.exs:415 (MCP.ClientToolSchemasTest)",
+        "test/mcp/client_tool_schemas_test.exs:442 (MCP.ClientToolSchemasTest)",
+        "test/mcp/transport/routing_headers_test.exs:133 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:199 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:222 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:239 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:307 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:342 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:359 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/self_compatibility_test.exs:167 (MCP.Transport.SelfCompatibilityTest)",
+        "test/mcp/transport/self_compatibility_test.exs:96 (MCP.Transport.SelfCompatibilityTest)"
+      ],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "client.ex:780 `HeaderMirror.headers_for(annotations, arguments)` becomes HTTP request headers, and streamable_http/client.ex:379 `HeaderMirror.encode_value(target)` becomes the `mcp-name` header. 16 live-path units redden, read off a REAL server (a Bandit CapturePlug records conn.req_headers).",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L1"
+    },
+    {
+      "id": "MCP.Protocol.Messages.Discover (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/protocol/messages/discover_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 33 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/messages/discover.ex: Map.get(map, \"_meta\"  ->  Map.get(map, \"ZZ_meta\"",
+        "lib/mcp/protocol/messages/discover.ex: Map.get(map, \"supportedVersions\"  ->  Map.get(map, \"ZZsupportedVersions\"",
+        "lib/mcp/protocol/messages/discover.ex: Map.fetch!(\"capabilities\"  ->  Map.fetch!(\"ZZcapabilities\"",
+        "lib/mcp/protocol/messages/discover.ex: Map.get(map, \"instructions\"  ->  Map.get(map, \"ZZinstructions\"",
+        "lib/mcp/protocol/messages/discover.ex: Map.get(map, \"resultType\"  ->  Map.get(map, \"ZZresultType\"",
+        "lib/mcp/protocol/messages/discover.ex: Map.get(map, \"ttlMs\"  ->  Map.get(map, \"ZZttlMs\"",
+        "lib/mcp/protocol/messages/discover.ex: Map.get(map, \"cacheScope\"  ->  Map.get(map, \"ZZcacheScope\""
+      ],
+      "reddened_total": 33,
+      "reddened_by_module": {
+        "MCP.Protocol.Messages.DiscoverTest": 1,
+        "MCP.ClientTest": 20,
+        "MCP.IntegrationTest": 8,
+        "MCP.ClientConformanceTest": 4
+      },
+      "reddened_outside_own": 32,
+      "reddened_outside_own_and_dead": 32,
+      "live_units": [
+        "test/mcp/client_conformance_test.exs:184 (MCP.ClientConformanceTest)",
+        "test/mcp/client_conformance_test.exs:209 (MCP.ClientConformanceTest)",
+        "test/mcp/client_conformance_test.exs:217 (MCP.ClientConformanceTest)",
+        "test/mcp/client_conformance_test.exs:232 (MCP.ClientConformanceTest)",
+        "test/mcp/client_test.exs:141 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:164 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:182 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:202 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:219 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:238 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:261 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:299 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:318 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:330 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:353 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:359 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:373 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:386 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:415 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:425 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:469 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:533 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:559 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:98 (MCP.ClientTest)",
+        "test/mcp/integration_test.exs:127 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:137 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:157 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:174 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:188 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:198 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:207 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:215 (MCP.IntegrationTest)"
+      ],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "client.ex:539 `Discover.Result.from_map(result)` is how the client reads every discover response. 32 live-path units redden.",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L1"
+    },
+    {
+      "id": "MCP.Protocol.Messages.Discover (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/protocol/messages/discover_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 21 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/messages/discover.ex: \"supportedVersions\" => result.supported_versions  ->  \"ZZsupportedVersions\" => result.supported_versions",
+        "lib/mcp/protocol/messages/discover.ex: \"capabilities\" => Jason.decode!  ->  \"ZZcapabilities\" => Jason.decode!",
+        "lib/mcp/protocol/messages/discover.ex: \"resultType\" => result.result_type  ->  \"ZZresultType\" => result.result_type",
+        "lib/mcp/protocol/messages/discover.ex: \"ttlMs\" => result.ttl_ms  ->  \"ZZttlMs\" => result.ttl_ms",
+        "lib/mcp/protocol/messages/discover.ex: \"cacheScope\" => result.cache_scope  ->  \"ZZcacheScope\" => result.cache_scope",
+        "lib/mcp/protocol/messages/discover.ex: Map.put(map, \"instructions\", result.instructions)  ->  Map.put(map, \"ZZinstructions\", result.instructions)",
+        "lib/mcp/protocol/messages/discover.ex: Map.put(map, \"_meta\", meta)  ->  Map.put(map, \"ZZ_meta\", meta)"
+      ],
+      "reddened_total": 21,
+      "reddened_by_module": {
+        "MCP.Protocol.Messages.DiscoverTest": 1,
+        "MCP.Server.DispatchTest": 1,
+        "MCP.IntegrationTest": 8,
+        "MCP.Server.ExtensionsNegotiationTest": 10,
+        "MCP.Transport.StreamableHTTPStatelessTest": 1
+      },
+      "reddened_outside_own": 20,
+      "reddened_outside_own_and_dead": 20,
+      "live_units": [
+        "test/mcp/integration_test.exs:127 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:137 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:157 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:174 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:188 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:198 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:207 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:215 (MCP.IntegrationTest)",
+        "test/mcp/server/dispatch_test.exs:113 (MCP.Server.DispatchTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:111 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:121 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:130 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:139 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:149 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:176 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:200 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:224 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:258 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:320 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/transport/streamable_http_stateless_test.exs:50 (MCP.Transport.StreamableHTTPStatelessTest)"
+      ],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": [
+            "server/discover"
+          ]
+        },
+        "call_site_enumeration": "dispatch.ex:150 `Discover.Result.to_map(...)` IS the server/discover result. The probe's `server/discover` scenario moves under this mutation.",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L1"
+    },
+    {
+      "id": "MCP.Protocol.Messages.Initialize (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/protocol/messages/initialize_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 5 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/messages/initialize.ex: Map.fetch!(map, \"protocolVersion\")  ->  Map.fetch!(map, \"ZZprotocolVersion\")",
+        "lib/mcp/protocol/messages/initialize.ex: map |> Map.fetch!(\"capabilities\")  ->  map |> Map.fetch!(\"ZZcapabilities\")",
+        "lib/mcp/protocol/messages/initialize.ex: map |> Map.fetch!(\"clientInfo\")  ->  map |> Map.fetch!(\"ZZclientInfo\")",
+        "lib/mcp/protocol/messages/initialize.ex: map |> Map.fetch!(\"serverInfo\")  ->  map |> Map.fetch!(\"ZZserverInfo\")",
+        "lib/mcp/protocol/messages/initialize.ex: Map.get(map, \"instructions\")  ->  Map.get(map, \"ZZinstructions\")",
+        "lib/mcp/protocol/messages/initialize.ex: Map.get(map, \"_meta\")  ->  Map.get(map, \"ZZ_meta\")"
+      ],
+      "reddened_total": 5,
+      "reddened_by_module": {
+        "MCP.Protocol.Messages.InitializeTest": 5
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`grep -rnE '\\bInitialize\\b' lib/` returns one line, doc prose at server/handler.ex:81 (\"Initialize handler state\"), and zero code references — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. No probe scenario moves.",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Messages.Initialize (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/protocol/messages/initialize_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 2 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/messages/initialize.ex: \"protocolVersion\" => params.protocol_version  ->  \"ZZprotocolVersion\" => params.protocol_version",
+        "lib/mcp/protocol/messages/initialize.ex: \"capabilities\" => Jason.decode!(Jason.encode!(params.capabilities))  ->  \"ZZcapabilities\" => Jason.decode!(Jason.encode!(params.capabilities))",
+        "lib/mcp/protocol/messages/initialize.ex: \"clientInfo\" => Jason.decode!(Jason.encode!(params.client_info))  ->  \"ZZclientInfo\" => Jason.decode!(Jason.encode!(params.client_info))",
+        "lib/mcp/protocol/messages/initialize.ex: \"protocolVersion\" => result.protocol_version  ->  \"ZZprotocolVersion\" => result.protocol_version",
+        "lib/mcp/protocol/messages/initialize.ex: \"capabilities\" => Jason.decode!(Jason.encode!(result.capabilities))  ->  \"ZZcapabilities\" => Jason.decode!(Jason.encode!(result.capabilities))",
+        "lib/mcp/protocol/messages/initialize.ex: \"serverInfo\" => Jason.decode!(Jason.encode!(result.server_info))  ->  \"ZZserverInfo\" => Jason.decode!(Jason.encode!(result.server_info))"
+      ],
+      "reddened_total": 2,
+      "reddened_by_module": {
+        "MCP.Protocol.Messages.InitializeTest": 2
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`grep -rnE '\\bInitialize\\b' lib/` returns one line, doc prose at server/handler.ex:81 (\"Initialize handler state\"), and zero code references — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. The 2026-07-28 core has no initialize handshake (SEP-2575/2567), so the module is a survival of the removed one. No probe scenario moves.",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Messages.Notification",
+      "own_tests": [
+        "test/mcp/protocol_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 15 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/messages/notification.ex: method: struct.method  ->  methodX: struct.method"
+      ],
+      "reddened_total": 15,
+      "reddened_by_module": {
+        "MCP.Transport.SubscriptionsStreamTest": 9,
+        "MCP.Server.SubscriptionsDispatchTest": 3,
+        "MCP.ClientTest": 1,
+        "MCP.ProtocolTest": 1,
+        "MCP.Server.NotificationCollectorTest": 1
+      },
+      "reddened_outside_own": 14,
+      "reddened_outside_own_and_dead": 14,
+      "live_units": [
+        "test/mcp/server/notification_collector_test.exs:13 (MCP.Server.NotificationCollectorTest)",
+        "test/mcp/server/subscriptions_dispatch_test.exs:96 (MCP.Server.SubscriptionsDispatchTest)",
+        "test/mcp/server/subscriptions_dispatch_test.exs:129 (MCP.Server.SubscriptionsDispatchTest)",
+        "test/mcp/server/subscriptions_dispatch_test.exs:207 (MCP.Server.SubscriptionsDispatchTest)",
+        "test/mcp/client_test.exs:373 (MCP.ClientTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:269 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:299 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:320 (MCP.Transport.SubscriptionsStreamTest)"
+      ],
+      "verdict": "live",
+      "established_by": "L1",
+      "note": "",
+      "direction": null,
+      "l2": null
+    },
+    {
+      "id": "MCP.Protocol.Messages.Request",
+      "own_tests": [
+        "test/mcp/protocol_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 37 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/messages/request.ex: method: struct.method  ->  methodX: struct.method"
+      ],
+      "reddened_total": 37,
+      "reddened_by_module": {
+        "MCP.ClientTest": 18,
+        "MCP.IntegrationTest": 8,
+        "MCP.ProtocolTest": 3,
+        "MCP.Transport.RoutingHeadersTest": 3,
+        "MCP.ClientToolSchemasTest": 2,
+        "MCP.ClientConformanceTest": 1,
+        "MCP.ClientDefectsTest": 1,
+        "MCP.Transport.SelfCompatibilityTest": 1
+      },
+      "reddened_outside_own": 34,
+      "reddened_outside_own_and_dead": 34,
+      "live_units": [
+        "test/mcp/client_test.exs:98 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:141 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:164 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:182 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:202 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:219 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:238 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:261 (MCP.ClientTest)"
+      ],
+      "verdict": "live",
+      "established_by": "L1",
+      "note": "",
+      "direction": null,
+      "l2": null
+    },
+    {
+      "id": "MCP.Protocol.Messages.Resources (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/protocol/messages/resources_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 5 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/messages/resources.ex: Map.get(map, \"cursor\"  ->  Map.get(map, \"ZZcursor\"",
+        "lib/mcp/protocol/messages/resources.ex: Map.get(map, \"_meta\"  ->  Map.get(map, \"ZZ_meta\"",
+        "lib/mcp/protocol/messages/resources.ex: Map.fetch!(\"resources\"  ->  Map.fetch!(\"ZZresources\"",
+        "lib/mcp/protocol/messages/resources.ex: Map.get(map, \"nextCursor\"  ->  Map.get(map, \"ZZnextCursor\"",
+        "lib/mcp/protocol/messages/resources.ex: Map.fetch!(map, \"uri\"  ->  Map.fetch!(map, \"ZZuri\"",
+        "lib/mcp/protocol/messages/resources.ex: Map.fetch!(\"contents\"  ->  Map.fetch!(\"ZZcontents\"",
+        "lib/mcp/protocol/messages/resources.ex: Map.fetch!(\"resourceTemplates\"  ->  Map.fetch!(\"ZZresourceTemplates\""
+      ],
+      "reddened_total": 5,
+      "reddened_by_module": {
+        "MCP.Protocol.Messages.ResourcesTest": 5
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`grep -rnE '\\bResources\\b' lib/` returns nothing outside its own file — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. No probe scenario moves.",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Messages.Resources (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/protocol/messages/resources_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 1 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/messages/resources.ex: resources: struct.  ->  ZZresources: struct.",
+        "lib/mcp/protocol/messages/resources.ex: Map.put(map, :nextCursor  ->  Map.put(map, :ZZnextCursor",
+        "lib/mcp/protocol/messages/resources.ex: Map.put(map, :_meta  ->  Map.put(map, :ZZ_meta",
+        "lib/mcp/protocol/messages/resources.ex: contents: struct.  ->  ZZcontents: struct.",
+        "lib/mcp/protocol/messages/resources.ex: resourceTemplates: struct.  ->  ZZresourceTemplates: struct."
+      ],
+      "reddened_total": 1,
+      "reddened_by_module": {
+        "MCP.Protocol.Messages.ResourcesTest": 1
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`grep -rnE '\\bResources\\b' lib/` returns nothing outside its own file — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. No probe scenario moves.",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Messages.Response (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/protocol_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 2 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/messages/response.ex: map = %{jsonrpc: struct.jsonrpc, id: struct.id}  ->  map = %{ZZjsonrpc: struct.jsonrpc, ZZid: struct.id}",
+        "lib/mcp/protocol/messages/response.ex: Map.put(map, :error, struct.error)  ->  Map.put(map, :ZZerror, struct.error)",
+        "lib/mcp/protocol/messages/response.ex: Map.put(map, :result, struct.result || %{})  ->  Map.put(map, :ZZresult, struct.result || %{})"
+      ],
+      "reddened_total": 2,
+      "reddened_by_module": {
+        "MCP.ProtocolTest": 2
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`%Response{}` IS aliased and pattern-matched throughout lib/ (protocol.ex:7, client.ex:98, connection.ex:35, constructed at protocol.ex:98) but every one of those is INBOUND. The narrower claim this verdict rests on: `grep -rnE 'Response\\.(success|error|new)\\(' lib/` returns 0, so no lib/ path ever RE-ENCODES a %Response{}. The SDK builds its outbound responses by hand at dispatch.ex:723-729. No probe scenario moves. (This is the F3/F7 claim in its surviving form — see S7-16.)",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Messages.Sampling (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/protocol/messages/sampling_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 4 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/messages/sampling.ex: Map.fetch!(\"messages\"  ->  Map.fetch!(\"ZZmessages\"",
+        "lib/mcp/protocol/messages/sampling.ex: Map.get(\"modelPreferences\"  ->  Map.get(\"ZZmodelPreferences\"",
+        "lib/mcp/protocol/messages/sampling.ex: Map.get(map, \"systemPrompt\"  ->  Map.get(map, \"ZZsystemPrompt\"",
+        "lib/mcp/protocol/messages/sampling.ex: Map.get(map, \"includeContext\"  ->  Map.get(map, \"ZZincludeContext\"",
+        "lib/mcp/protocol/messages/sampling.ex: Map.get(map, \"temperature\"  ->  Map.get(map, \"ZZtemperature\"",
+        "lib/mcp/protocol/messages/sampling.ex: Map.fetch!(map, \"maxTokens\"  ->  Map.fetch!(map, \"ZZmaxTokens\"",
+        "lib/mcp/protocol/messages/sampling.ex: Map.get(map, \"stopSequences\"  ->  Map.get(map, \"ZZstopSequences\"",
+        "lib/mcp/protocol/messages/sampling.ex: Map.get(map, \"metadata\"  ->  Map.get(map, \"ZZmetadata\"",
+        "lib/mcp/protocol/messages/sampling.ex: Map.get(map, \"_meta\"  ->  Map.get(map, \"ZZ_meta\"",
+        "lib/mcp/protocol/messages/sampling.ex: Map.fetch!(map, \"role\"  ->  Map.fetch!(map, \"ZZrole\"",
+        "lib/mcp/protocol/messages/sampling.ex: Map.fetch!(\"content\"  ->  Map.fetch!(\"ZZcontent\"",
+        "lib/mcp/protocol/messages/sampling.ex: Map.fetch!(map, \"model\"  ->  Map.fetch!(map, \"ZZmodel\"",
+        "lib/mcp/protocol/messages/sampling.ex: Map.get(map, \"stopReason\"  ->  Map.get(map, \"ZZstopReason\""
+      ],
+      "reddened_total": 4,
+      "reddened_by_module": {
+        "MCP.Protocol.Messages.SamplingTest": 4
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`grep -rnE '\\bSampling\\b' lib/` returns nothing outside its own file — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. No probe scenario moves.",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Messages.Sampling (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/protocol/messages/sampling_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 2 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/messages/sampling.ex: messages: struct.  ->  ZZmessages: struct.",
+        "lib/mcp/protocol/messages/sampling.ex: maxTokens: struct.  ->  ZZmaxTokens: struct.",
+        "lib/mcp/protocol/messages/sampling.ex: Map.put(acc, :modelPreferences  ->  Map.put(acc, :ZZmodelPreferences",
+        "lib/mcp/protocol/messages/sampling.ex: Map.put(acc, :systemPrompt  ->  Map.put(acc, :ZZsystemPrompt",
+        "lib/mcp/protocol/messages/sampling.ex: Map.put(acc, :includeContext  ->  Map.put(acc, :ZZincludeContext",
+        "lib/mcp/protocol/messages/sampling.ex: Map.put(acc, :stopSequences  ->  Map.put(acc, :ZZstopSequences",
+        "lib/mcp/protocol/messages/sampling.ex: Map.put(acc, :_meta  ->  Map.put(acc, :ZZ_meta",
+        "lib/mcp/protocol/messages/sampling.ex: {key, val}, acc -> Map.put(acc, key, val)  ->  {key, val}, acc -> Map.put(acc, :\"ZZ#{key}\", val)",
+        "lib/mcp/protocol/messages/sampling.ex: role: struct.  ->  ZZrole: struct.",
+        "lib/mcp/protocol/messages/sampling.ex: content: struct.  ->  ZZcontent: struct.",
+        "lib/mcp/protocol/messages/sampling.ex: model: struct.  ->  ZZmodel: struct.",
+        "lib/mcp/protocol/messages/sampling.ex: Map.put(map, :stopReason  ->  Map.put(map, :ZZstopReason",
+        "lib/mcp/protocol/messages/sampling.ex: Map.put(map, :_meta  ->  Map.put(map, :ZZ_meta"
+      ],
+      "reddened_total": 2,
+      "reddened_by_module": {
+        "MCP.Protocol.Messages.SamplingTest": 2
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`grep -rnE '\\bSampling\\b' lib/` returns nothing outside its own file — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. No probe scenario moves.",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Messages.Subscriptions (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/server/subscriptions_dispatch_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 42 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/messages/subscriptions.ex: case Map.fetch(params, \"notifications\") do  ->  case Map.fetch(params, \"ZZnotifications\") do",
+        "lib/mcp/protocol/messages/subscriptions.ex: for key <- @flag_keys, Map.get(requested, key) == true, into: %{}, do: {key, true}  ->  for key <- @flag_keys, Map.get(requested, key) == true, into: %{}, do: {key <> \"ZZ\", true}"
+      ],
+      "reddened_total": 42,
+      "reddened_by_module": {
+        "MCP.Server.SubscriptionsDispatchTest": 20,
+        "MCP.Transport.SubscriptionsStreamTest": 22
+      },
+      "reddened_outside_own": 22,
+      "reddened_outside_own_and_dead": 22,
+      "live_units": [
+        "test/mcp/transport/subscriptions_stream_test.exs:269 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:285 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:299 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:320 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:336 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:377 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:404 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:420 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:434 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:475 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:492 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:525 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:575 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:617 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:641 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:679 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:702 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:720 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:758 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:828 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:886 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:942 (MCP.Transport.SubscriptionsStreamTest)"
+      ],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": null,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`parse_filter/1` is called on the inbound subscriptions/listen params in dispatch.ex. 22 live-path units redden, most of them off a real socket in subscriptions_stream_test.",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L1"
+    },
+    {
+      "id": "MCP.Protocol.Messages.Subscriptions (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/server/subscriptions_dispatch_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 12 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/messages/subscriptions.ex: \"notifications\" => honoured  ->  \"ZZnotifications\" => honoured",
+        "lib/mcp/protocol/messages/subscriptions.ex: \"resultType\" => \"complete\",  ->  \"ZZresultType\" => \"complete\",",
+        "lib/mcp/protocol/messages/subscriptions.ex: Map.put(notification, \"params\", Map.put(params, \"_meta\", meta))  ->  Map.put(notification, \"ZZparams\", Map.put(params, \"ZZ_meta\", meta))"
+      ],
+      "reddened_total": 12,
+      "reddened_by_module": {
+        "MCP.Server.SubscriptionsDispatchTest": 6,
+        "MCP.Transport.SubscriptionsStreamTest": 6
+      },
+      "reddened_outside_own": 6,
+      "reddened_outside_own_and_dead": 6,
+      "live_units": [
+        "test/mcp/transport/subscriptions_stream_test.exs:269 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:299 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:320 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:434 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:460 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:942 (MCP.Transport.SubscriptionsStreamTest)"
+      ],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": null,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`acknowledgment/2`, `close_response/1` and `stamp/2` are the listen ack, the graceful-close response and every streamed frame; plug.ex chunks them through SSE.encode_message/1. 6 live-path units redden.",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L1"
+    },
+    {
+      "id": "MCP.Protocol.Messages.Tools (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/protocol/messages/tools_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 20 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/messages/tools.ex: Map.get(map, \"cursor\")  ->  Map.get(map, \"ZZcursor\")",
+        "lib/mcp/protocol/messages/tools.ex: Map.get(map, \"_meta\")  ->  Map.get(map, \"ZZ_meta\")",
+        "lib/mcp/protocol/messages/tools.ex: Map.fetch!(\"tools\")  ->  Map.fetch!(\"ZZtools\")",
+        "lib/mcp/protocol/messages/tools.ex: Map.get(map, \"nextCursor\")  ->  Map.get(map, \"ZZnextCursor\")",
+        "lib/mcp/protocol/messages/tools.ex: Map.fetch!(map, \"name\")  ->  Map.fetch!(map, \"ZZname\")",
+        "lib/mcp/protocol/messages/tools.ex: Map.get(map, \"arguments\")  ->  Map.get(map, \"ZZarguments\")",
+        "lib/mcp/protocol/messages/tools.ex: Map.fetch!(\"content\")  ->  Map.fetch!(\"ZZcontent\")",
+        "lib/mcp/protocol/messages/tools.ex: Map.get(map, \"isError\")  ->  Map.get(map, \"ZZisError\")"
+      ],
+      "reddened_total": 20,
+      "reddened_by_module": {
+        "MCP.Protocol.Messages.ToolsTest": 20
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`grep -rnE '\\bTools\\b' lib/` returns two lines, both doc prose (types/tool.ex:5, client.ex:223), and zero code references — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. No probe scenario moves.",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Messages.Tools (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/protocol/messages/tools_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 27 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/messages/tools.ex: maybe_put(\"cursor\", params.cursor)  ->  maybe_put(\"ZZcursor\", params.cursor)",
+        "lib/mcp/protocol/messages/tools.ex: maybe_put(\"_meta\", params.meta)  ->  maybe_put(\"ZZ_meta\", params.meta)",
+        "lib/mcp/protocol/messages/tools.ex: %{\"name\" => params.name}  ->  %{\"ZZname\" => params.name}",
+        "lib/mcp/protocol/messages/tools.ex: maybe_put(\"arguments\", params.arguments)  ->  maybe_put(\"ZZarguments\", params.arguments)",
+        "lib/mcp/protocol/messages/tools.ex: %{tools: struct.tools}  ->  %{ZZtools: struct.tools}",
+        "lib/mcp/protocol/messages/tools.ex: Map.put(map, :nextCursor, struct.next_cursor)  ->  Map.put(map, :ZZnextCursor, struct.next_cursor)",
+        "lib/mcp/protocol/messages/tools.ex: Map.put(map, :_meta, struct.meta)  ->  Map.put(map, :ZZ_meta, struct.meta)",
+        "lib/mcp/protocol/messages/tools.ex: %{content: struct.content}  ->  %{ZZcontent: struct.content}",
+        "lib/mcp/protocol/messages/tools.ex: do: Map.put(map, :structuredContent, value)  ->  do: Map.put(map, :ZZstructuredContent, value)",
+        "lib/mcp/protocol/messages/tools.ex: defp put_present(map, key, value), do: Map.put(map, key, value)  ->  defp put_present(map, key, value), do: Map.put(map, :\"ZZ#{key}\", value)"
+      ],
+      "reddened_total": 27,
+      "reddened_by_module": {
+        "MCP.Protocol.Messages.ToolsTest": 27
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`grep -rnE '\\bTools\\b' lib/` returns two lines, both doc prose (types/tool.ex:5, client.ex:223), and zero code references — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. No probe scenario moves.",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Meta",
+      "own_tests": [
+        "test/mcp/protocol/meta_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 135 failures",
+      "unlocated_failures": 36,
+      "mutation": [
+        "lib/mcp/protocol/meta.ex: \"_meta\"  ->  \"_metaX\""
+      ],
+      "reddened_total": 99,
+      "reddened_by_module": {
+        "MCP.Server.JsonSchema202012Test": 38,
+        "MCP.Server.SubscriptionsDispatchTest": 22,
+        "MCP.Transport.StreamableHTTP.ACTest": 12,
+        "MCP.Server.DispatchTest": 8,
+        "MCP.Server.ToolOrderTest": 7,
+        "MCP.IntegrationTest": 6,
+        "MCP.Server.ExtensionsNegotiationTest": 5,
+        "MCP.Protocol.MetaTest": 1
+      },
+      "reddened_outside_own": 98,
+      "reddened_outside_own_and_dead": 98,
+      "live_units": [
+        "test/mcp/server/tool_order_test.exs:88 (MCP.Server.ToolOrderTest)",
+        "test/mcp/server/tool_order_test.exs:95 (MCP.Server.ToolOrderTest)",
+        "test/mcp/server/tool_order_test.exs:100 (MCP.Server.ToolOrderTest)",
+        "test/mcp/server/tool_order_test.exs:111 (MCP.Server.ToolOrderTest)",
+        "test/mcp/server/tool_order_test.exs:121 (MCP.Server.ToolOrderTest)",
+        "test/mcp/server/tool_order_test.exs:134 (MCP.Server.ToolOrderTest)",
+        "test/mcp/server/tool_order_test.exs:141 (MCP.Server.ToolOrderTest)",
+        "test/mcp/server/dispatch_test.exs:41 (MCP.Server.DispatchTest)"
+      ],
+      "verdict": "live",
+      "established_by": "L1",
+      "note": "",
+      "direction": null,
+      "l2": null
+    },
+    {
+      "id": "MCP.Protocol.Types.Content (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/protocol/types/content_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 13 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/types/content.ex: def from_map(%{\"type\" =>  ->  def from_map(%{\"ZZtype\" =>"
+      ],
+      "reddened_total": 13,
+      "reddened_by_module": {
+        "MCP.Protocol.Types.ContentTest": 6,
+        "MCP.Protocol.Messages.SamplingTest": 4,
+        "MCP.Protocol.Messages.ToolsTest": 3
+      },
+      "reddened_outside_own": 7,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`Content.from_map/1` has four lib/ call sites — `messages/tools.ex:167`, `messages/sampling.ex:105`, `types/prompt_message.ex:20` and `types/sampling_message.ex:20`. The first two are inside orphaned modules; PromptMessage.from_map/1 is called only from `messages/prompts.ex:111` and SamplingMessage.from_map/1 only from `messages/sampling.ex:41`, both also orphaned (`grep -rnE '\\bPrompts\\b|\\bSampling\\b' lib/` returns nothing outside their own files). Every chain terminates in a module lib/ never uses. No probe scenario moves.",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Types.Content.AudioContent (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/protocol/types/content_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 1 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/types/content/audio_content.ex: Map.fetch!(map, \"data\"  ->  Map.fetch!(map, \"ZZdata\"",
+        "lib/mcp/protocol/types/content/audio_content.ex: Map.fetch!(map, \"mimeType\"  ->  Map.fetch!(map, \"ZZmimeType\"",
+        "lib/mcp/protocol/types/content/audio_content.ex: Map.get(\"annotations\"  ->  Map.get(\"ZZannotations\"",
+        "lib/mcp/protocol/types/content/audio_content.ex: Map.get(map, \"_meta\"  ->  Map.get(map, \"ZZ_meta\""
+      ],
+      "reddened_total": 1,
+      "reddened_by_module": {
+        "MCP.Protocol.Types.ContentTest": 1
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`AudioContent.from_map/1` is reached only through the `Content.from_map/1` dispatcher (content.ex:33-36), recorded DEAD above. No probe scenario moves.",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Types.Content.AudioContent (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/protocol/types/content_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 1 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/types/content/audio_content.ex: Map.put(acc, :mimeType  ->  Map.put(acc, :ZZmimeType",
+        "lib/mcp/protocol/types/content/audio_content.ex: Map.put(acc, :_meta  ->  Map.put(acc, :ZZ_meta",
+        "lib/mcp/protocol/types/content/audio_content.ex: {key, val}, acc -> Map.put(acc, key, val)  ->  {key, val}, acc -> Map.put(acc, :\"ZZ#{key}\", val)"
+      ],
+      "reddened_total": 1,
+      "reddened_by_module": {
+        "MCP.Protocol.Types.ContentTest": 1
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": [
+            "tools/call audio"
+          ]
+        },
+        "call_site_enumeration": "conformance/etcc_l2_probe.exs `tools/call audio`: a handler returning that struct through a real Dispatch.dispatch/3 puts `content:[{\"data\":\"BBB\",\"type\":\"audio\",\"mimeType\":\"audio/wav\"}]` on the wire, and the encode mutation moves those bytes.",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Types.Content.EmbeddedResource (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/protocol/types/content_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 1 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/types/content/embedded_resource.ex: Map.fetch!(\"resource\"  ->  Map.fetch!(\"ZZresource\"",
+        "lib/mcp/protocol/types/content/embedded_resource.ex: Map.get(\"annotations\"  ->  Map.get(\"ZZannotations\"",
+        "lib/mcp/protocol/types/content/embedded_resource.ex: Map.get(map, \"_meta\"  ->  Map.get(map, \"ZZ_meta\""
+      ],
+      "reddened_total": 1,
+      "reddened_by_module": {
+        "MCP.Protocol.Types.ContentTest": 1
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`EmbeddedResource.from_map/1` is reached only through the `Content.from_map/1` dispatcher (content.ex:33-36), recorded DEAD above. No probe scenario moves.",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Types.Content.EmbeddedResource (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/protocol/types/content_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 1 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/types/content/embedded_resource.ex: Map.put(acc, :_meta  ->  Map.put(acc, :ZZ_meta",
+        "lib/mcp/protocol/types/content/embedded_resource.ex: {key, val}, acc -> Map.put(acc, key, val)  ->  {key, val}, acc -> Map.put(acc, :\"ZZ#{key}\", val)"
+      ],
+      "reddened_total": 1,
+      "reddened_by_module": {
+        "MCP.Protocol.Types.ContentTest": 1
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": [
+            "tools/call embedded"
+          ]
+        },
+        "call_site_enumeration": "conformance/etcc_l2_probe.exs `tools/call embedded`: a handler returning that struct through a real Dispatch.dispatch/3 puts `content:[{\"type\":\"resource\",\"resource\":{\"text\":\"z\",\"uri\":\"file:///r\"}}]` on the wire, and the encode mutation moves those bytes.",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Types.Content.ImageContent (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/protocol/types/content_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 2 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/types/content/image_content.ex: Map.fetch!(map, \"data\"  ->  Map.fetch!(map, \"ZZdata\"",
+        "lib/mcp/protocol/types/content/image_content.ex: Map.fetch!(map, \"mimeType\"  ->  Map.fetch!(map, \"ZZmimeType\"",
+        "lib/mcp/protocol/types/content/image_content.ex: Map.get(\"annotations\"  ->  Map.get(\"ZZannotations\"",
+        "lib/mcp/protocol/types/content/image_content.ex: Map.get(map, \"_meta\"  ->  Map.get(map, \"ZZ_meta\""
+      ],
+      "reddened_total": 2,
+      "reddened_by_module": {
+        "MCP.Protocol.Types.ContentTest": 2
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`ImageContent.from_map/1` is reached only through the `Content.from_map/1` dispatcher (content.ex:33-36), recorded DEAD above. No probe scenario moves.",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Types.Content.ImageContent (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/protocol/types/content_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 2 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/types/content/image_content.ex: Map.put(acc, :mimeType  ->  Map.put(acc, :ZZmimeType",
+        "lib/mcp/protocol/types/content/image_content.ex: Map.put(acc, :_meta  ->  Map.put(acc, :ZZ_meta",
+        "lib/mcp/protocol/types/content/image_content.ex: {key, val}, acc -> Map.put(acc, key, val)  ->  {key, val}, acc -> Map.put(acc, :\"ZZ#{key}\", val)"
+      ],
+      "reddened_total": 2,
+      "reddened_by_module": {
+        "MCP.Protocol.Types.ContentTest": 2
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": [
+            "tools/call image"
+          ]
+        },
+        "call_site_enumeration": "conformance/etcc_l2_probe.exs `tools/call image`: a handler returning that struct through a real Dispatch.dispatch/3 puts `content:[{\"data\":\"AAA\",\"type\":\"image\",\"mimeType\":\"image/png\"}]` on the wire, and the encode mutation moves those bytes.",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Types.Content.ResourceLink (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/protocol/types/content_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 1 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/types/content/resource_link.ex: Map.fetch!(map, \"uri\"  ->  Map.fetch!(map, \"ZZuri\"",
+        "lib/mcp/protocol/types/content/resource_link.ex: Map.fetch!(map, \"name\"  ->  Map.fetch!(map, \"ZZname\"",
+        "lib/mcp/protocol/types/content/resource_link.ex: Map.get(map, \"title\"  ->  Map.get(map, \"ZZtitle\"",
+        "lib/mcp/protocol/types/content/resource_link.ex: Map.get(map, \"description\"  ->  Map.get(map, \"ZZdescription\"",
+        "lib/mcp/protocol/types/content/resource_link.ex: Map.get(map, \"mimeType\"  ->  Map.get(map, \"ZZmimeType\"",
+        "lib/mcp/protocol/types/content/resource_link.ex: Map.get(map, \"size\"  ->  Map.get(map, \"ZZsize\"",
+        "lib/mcp/protocol/types/content/resource_link.ex: Map.get(\"annotations\"  ->  Map.get(\"ZZannotations\"",
+        "lib/mcp/protocol/types/content/resource_link.ex: Map.get(\"icons\"  ->  Map.get(\"ZZicons\"",
+        "lib/mcp/protocol/types/content/resource_link.ex: Map.get(map, \"_meta\"  ->  Map.get(map, \"ZZ_meta\""
+      ],
+      "reddened_total": 1,
+      "reddened_by_module": {
+        "MCP.Protocol.Types.ContentTest": 1
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`ResourceLink.from_map/1` is reached only through the `Content.from_map/1` dispatcher (content.ex:33-36), recorded DEAD above. No probe scenario moves.",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Types.Content.ResourceLink (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/protocol/types/content_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 1 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/types/content/resource_link.ex: Map.put(acc, :mimeType  ->  Map.put(acc, :ZZmimeType",
+        "lib/mcp/protocol/types/content/resource_link.ex: Map.put(acc, :_meta  ->  Map.put(acc, :ZZ_meta",
+        "lib/mcp/protocol/types/content/resource_link.ex: {key, val}, acc -> Map.put(acc, key, val)  ->  {key, val}, acc -> Map.put(acc, :\"ZZ#{key}\", val)"
+      ],
+      "reddened_total": 1,
+      "reddened_by_module": {
+        "MCP.Protocol.Types.ContentTest": 1
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": [
+            "tools/call link"
+          ]
+        },
+        "call_site_enumeration": "conformance/etcc_l2_probe.exs `tools/call link`: a handler returning that struct through a real Dispatch.dispatch/3 puts `content:[{\"name\":\"x\",\"type\":\"resource_link\",\"uri\":\"file:///x\"}]` on the wire, and the encode mutation moves those bytes.",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Types.Content.TextContent (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/protocol/types/content_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 10 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/types/content/text_content.ex: Map.fetch!(map, \"text\"  ->  Map.fetch!(map, \"ZZtext\"",
+        "lib/mcp/protocol/types/content/text_content.ex: Map.get(\"annotations\"  ->  Map.get(\"ZZannotations\"",
+        "lib/mcp/protocol/types/content/text_content.ex: Map.get(map, \"_meta\"  ->  Map.get(map, \"ZZ_meta\""
+      ],
+      "reddened_total": 10,
+      "reddened_by_module": {
+        "MCP.Protocol.Messages.SamplingTest": 4,
+        "MCP.Protocol.Types.ContentTest": 3,
+        "MCP.Protocol.Messages.ToolsTest": 3
+      },
+      "reddened_outside_own": 7,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`TextContent.from_map/1` is reached only through the `Content.from_map/1` dispatcher (content.ex:32), recorded DEAD above. No probe scenario moves. *** The two rows content_test.exs:15 and :24 were ET-CC at round 3 on TextContent's ENCODE liveness; under the split they lose that warrant and leave. ***",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Types.Content.TextContent (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/protocol/types/content_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 1 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/types/content/text_content.ex: Map.put(acc, :_meta  ->  Map.put(acc, :ZZ_meta",
+        "lib/mcp/protocol/types/content/text_content.ex: {key, val}, acc -> Map.put(acc, key, val)  ->  {key, val}, acc -> Map.put(acc, :\"ZZ#{key}\", val)"
+      ],
+      "reddened_total": 1,
+      "reddened_by_module": {
+        "MCP.Protocol.Types.ContentTest": 1
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": [
+            "prompts/get",
+            "tools/call text"
+          ]
+        },
+        "call_site_enumeration": "conformance/etcc_l2_probe.exs `tools/call text`: a handler returning [%TextContent{text: \"hello\"}] through a real Dispatch.dispatch/3 puts `{\"id\":1,\"jsonrpc\":\"2.0\",\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"hello\"}],\"resultType\":\"complete\"}}` on the wire, and the encode mutation moves those bytes. NOTE, and this narrows round 3's warrant rather than widening it: L1's single 'live' unit for the unsplit boundary was json_schema_2020_12_test.exs:468, which reddens because dispatch.ex:662 pattern-matches %{type: \"text\", text: text} on the STRUCT's FIELDS, not on encoded bytes. A struct-field match is neither encode nor decode, so that signal is NOT cited here (PM, 26058). The encode direction rests on these bytes alone — which is why it survives the split.",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Types.Resource (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/protocol/types/resource_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 5 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/types/resource.ex: Map.fetch!(map, \"uri\"  ->  Map.fetch!(map, \"ZZuri\"",
+        "lib/mcp/protocol/types/resource.ex: Map.fetch!(map, \"name\"  ->  Map.fetch!(map, \"ZZname\"",
+        "lib/mcp/protocol/types/resource.ex: Map.get(map, \"title\"  ->  Map.get(map, \"ZZtitle\"",
+        "lib/mcp/protocol/types/resource.ex: Map.get(map, \"description\"  ->  Map.get(map, \"ZZdescription\"",
+        "lib/mcp/protocol/types/resource.ex: Map.get(map, \"mimeType\"  ->  Map.get(map, \"ZZmimeType\"",
+        "lib/mcp/protocol/types/resource.ex: Map.get(map, \"size\"  ->  Map.get(map, \"ZZsize\"",
+        "lib/mcp/protocol/types/resource.ex: Map.get(\"annotations\"  ->  Map.get(\"ZZannotations\"",
+        "lib/mcp/protocol/types/resource.ex: Map.get(\"icons\"  ->  Map.get(\"ZZicons\"",
+        "lib/mcp/protocol/types/resource.ex: Map.get(map, \"_meta\"  ->  Map.get(map, \"ZZ_meta\""
+      ],
+      "reddened_total": 5,
+      "reddened_by_module": {
+        "MCP.Protocol.Messages.ResourcesTest": 1,
+        "MCP.Protocol.Types.ResourceTest": 4
+      },
+      "reddened_outside_own": 1,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`Resource.from_map/1` has exactly ONE lib/ call site — `messages/resources.ex:57` — and `grep -rnE '\\bResources\\b' lib/` returns nothing outside its own file — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. No probe scenario moves.",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Types.Resource (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/protocol/types/resource_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 1 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/types/resource.ex: Map.put(acc, :mimeType  ->  Map.put(acc, :ZZmimeType",
+        "lib/mcp/protocol/types/resource.ex: Map.put(acc, :_meta  ->  Map.put(acc, :ZZ_meta",
+        "lib/mcp/protocol/types/resource.ex: {key, val}, acc -> Map.put(acc, key, val)  ->  {key, val}, acc -> Map.put(acc, :\"ZZ#{key}\", val)"
+      ],
+      "reddened_total": 1,
+      "reddened_by_module": {
+        "MCP.Protocol.Types.ResourceTest": 1
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": [
+            "resources/list"
+          ]
+        },
+        "call_site_enumeration": "conformance/etcc_l2_probe.exs `resources/list`: a handler returning %Resource{uri: \"file:///a\", name: \"a\", mime_type: \"text/plain\"} through a real Dispatch.dispatch/3 puts `{\"resources\":[{\"name\":\"a\",\"uri\":\"file:///a\",\"mimeType\":\"text/plain\"}]}` on the wire; the `mimeType` camelisation exists only in resource.ex's own defimpl (:50).",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Types.Tool (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/protocol/types/tool_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 13 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/types/tool.ex: Map.fetch!(map, \"name\"  ->  Map.fetch!(map, \"ZZname\"",
+        "lib/mcp/protocol/types/tool.ex: Map.get(map, \"title\"  ->  Map.get(map, \"ZZtitle\"",
+        "lib/mcp/protocol/types/tool.ex: Map.get(map, \"description\"  ->  Map.get(map, \"ZZdescription\"",
+        "lib/mcp/protocol/types/tool.ex: Map.fetch!(map, \"inputSchema\"  ->  Map.fetch!(map, \"ZZinputSchema\"",
+        "lib/mcp/protocol/types/tool.ex: Map.get(map, \"outputSchema\"  ->  Map.get(map, \"ZZoutputSchema\"",
+        "lib/mcp/protocol/types/tool.ex: Map.get(\"annotations\"  ->  Map.get(\"ZZannotations\"",
+        "lib/mcp/protocol/types/tool.ex: Map.get(\"icons\"  ->  Map.get(\"ZZicons\"",
+        "lib/mcp/protocol/types/tool.ex: Map.get(map, \"_meta\"  ->  Map.get(map, \"ZZ_meta\""
+      ],
+      "reddened_total": 13,
+      "reddened_by_module": {
+        "MCP.Protocol.Types.ToolTest": 11,
+        "MCP.Protocol.Messages.ToolsTest": 2
+      },
+      "reddened_outside_own": 2,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`Tool.from_map/1` has exactly ONE lib/ call site — `messages/tools.ex:57` (`Enum.map(&Tool.from_map/1)`) — and `grep -rnE '\\bTools\\b' lib/` returns two lines, both doc prose (types/tool.ex:5, client.ex:223), and zero code references — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. No probe scenario moves under the decode mutation.",
+        "verdict": "dead"
+      },
+      "verdict": "dead",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.Types.Tool (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/protocol/types/tool_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 5 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol/types/tool.ex: Map.put(acc, :inputSchema  ->  Map.put(acc, :ZZinputSchema",
+        "lib/mcp/protocol/types/tool.ex: Map.put(acc, :outputSchema  ->  Map.put(acc, :ZZoutputSchema",
+        "lib/mcp/protocol/types/tool.ex: Map.put(acc, :_meta  ->  Map.put(acc, :ZZ_meta",
+        "lib/mcp/protocol/types/tool.ex: {key, val}, acc -> Map.put(acc, key, val)  ->  {key, val}, acc -> Map.put(acc, :\"ZZ#{key}\", val)"
+      ],
+      "reddened_total": 5,
+      "reddened_by_module": {
+        "MCP.Protocol.Messages.ToolsTest": 1,
+        "MCP.Protocol.Types.ToolTest": 4
+      },
+      "reddened_outside_own": 1,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": [
+            "tools/list"
+          ]
+        },
+        "call_site_enumeration": "conformance/etcc_l2_probe.exs `tools/list`: a handler returning %Tool{name: \"t\", description: \"d\", input_schema: %{\"type\" => \"object\"}} through a real Dispatch.dispatch/3 puts `{\"tools\":[{\"name\":\"t\",\"description\":\"d\",\"inputSchema\":{\"type\":\"object\"}}]}` on the wire, and the camelisation of `inputSchema` exists ONLY in tool.ex's own defimpl (:104). Mutating that defimpl moves the probe's tools/list bytes. dispatch.ex encodes the handler's tool list straight into the result.",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L2"
+    },
+    {
+      "id": "MCP.Protocol.decode_message/1",
+      "own_tests": [
+        "test/mcp/protocol_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 69 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/protocol.ex: \"method\"  ->  \"methodX\""
+      ],
+      "reddened_total": 69,
+      "reddened_by_module": {
+        "MCP.Transport.SubscriptionsStreamTest": 24,
+        "MCP.Transport.StreamableHTTPStatelessTest": 14,
+        "MCP.Transport.StreamableHTTP.ACTest": 12,
+        "MCP.IntegrationTest": 8,
+        "MCP.ProtocolTest": 5,
+        "MCP.Transport.SelfCompatibilityTest": 3,
+        "MCP.ClientTest": 2,
+        "MCP.Transport.StreamableHTTPCacheScopeWarningTest": 1
+      },
+      "reddened_outside_own": 64,
+      "reddened_outside_own_and_dead": 64,
+      "live_units": [
+        "test/mcp/client_test.exs:318 (MCP.ClientTest)",
+        "test/mcp/client_test.exs:330 (MCP.ClientTest)",
+        "test/mcp/integration_test.exs:127 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:137 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:157 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:174 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:188 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:198 (MCP.IntegrationTest)"
+      ],
+      "verdict": "live",
+      "established_by": "L1",
+      "note": "",
+      "direction": null,
+      "l2": null
+    },
+    {
+      "id": "MCP.Server.Connection",
+      "own_tests": [],
+      "suite_summary": "13 doctests, 979 tests, 0 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/server/connection.ex: Jason.decode!(Jason.encode!(struct))  ->  (fn m -> if is_map(m) and Map.has_key?(m, \"method\"), do: m |> Map.delete(\"method\") |> Map.put(\"methodX\", m[\"method\"]), else: m end).(Jason.decode!(Jason.encode!(struct)))"
+      ],
+      "reddened_total": 0,
+      "reddened_by_module": {},
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "verdict": "live",
+      "established_by": "L2",
+      "note": "connection.ex:203-204 — `reply_sink/1` hands `Notification.new(method, params) |> encode()` straight to `transport_module.send_message/2`. That IS a lib/ call site routing the boundary's output to a transport, so ruling A's antecedent is false by inspection with the address. The mutation is SILENT (0 reddened) because no unit in the tree asserts a Connection-emitted notification's `method` — a coverage fact about the suite, not a reachability fact about lib/. No row turns on this: all six rows carrying MCP.Server.Connection also carry MCP.Client and MCP.Server.Dispatch, both live by L1.",
+      "direction": null,
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero (round 3)",
+        "byte_probe": {
+          "script": "not re-run at round 4 — unchanged boundary",
+          "scenarios_run": null,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "connection.ex:203-204 — `reply_sink/1` hands `Notification.new(method, params) |> encode()` straight to `transport_module.send_message/2`. That IS a lib/ call site routing the boundary's output to a transport, so ruling A's antecedent is false by inspection with the address. The mutation is SILENT (0 reddened) because no unit in the tree asserts a Connection-emitted notification's `method` — a coverage fact about the suite, not a reachability fact about lib/. No row turns on this: all six rows carrying MCP.Server.Connection also carry MCP.Client and MCP.Server.Dispatch, both live by L1.",
+        "verdict": "live"
+      }
+    },
+    {
+      "id": "MCP.Server.Dispatch",
+      "own_tests": [
+        "test/mcp/server/dispatch_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 107 failures",
+      "unlocated_failures": 8,
+      "mutation": [
+        "lib/mcp/server/dispatch.ex: \"resultType\", \"complete\"  ->  \"resultTypeX\", \"complete\"",
+        "lib/mcp/server/dispatch.ex: \"jsonrpc\" => \"2.0\", \"id\" => id, \"result\" => result  ->  \"jsonrpc\" => \"2.0\", \"id\" => id, \"resultX\" => result",
+        "lib/mcp/server/dispatch.ex: \"jsonrpc\" => \"2.0\", \"id\" => id, \"error\" => error  ->  \"jsonrpc\" => \"2.0\", \"id\" => id, \"errorX\" => error"
+      ],
+      "reddened_total": 99,
+      "reddened_by_module": {
+        "MCP.Server.JsonSchema202012Test": 32,
+        "MCP.Server.DispatchTest": 13,
+        "MCP.Server.ExtensionsNegotiationTest": 13,
+        "MCP.Transport.StreamableHTTP.ACTest": 12,
+        "MCP.IntegrationTest": 8,
+        "MCP.Transport.StreamableHTTPStatelessTest": 8,
+        "MCP.Server.ToolOrderTest": 7,
+        "MCP.Server.SubscriptionsDispatchTest": 6
+      },
+      "reddened_outside_own": 86,
+      "reddened_outside_own_and_dead": 86,
+      "live_units": [
+        "test/mcp/server/tool_order_test.exs:88 (MCP.Server.ToolOrderTest)",
+        "test/mcp/server/tool_order_test.exs:95 (MCP.Server.ToolOrderTest)",
+        "test/mcp/server/tool_order_test.exs:100 (MCP.Server.ToolOrderTest)",
+        "test/mcp/server/tool_order_test.exs:111 (MCP.Server.ToolOrderTest)",
+        "test/mcp/server/tool_order_test.exs:121 (MCP.Server.ToolOrderTest)",
+        "test/mcp/server/tool_order_test.exs:134 (MCP.Server.ToolOrderTest)",
+        "test/mcp/server/tool_order_test.exs:141 (MCP.Server.ToolOrderTest)",
+        "test/mcp/server/subscriptions_dispatch_test.exs:167 (MCP.Server.SubscriptionsDispatchTest)"
+      ],
+      "verdict": "live",
+      "established_by": "L1",
+      "note": "",
+      "direction": null,
+      "l2": null
+    },
+    {
+      "id": "MCP.Server.NotificationCollector",
+      "own_tests": [
+        "test/mcp/server/notification_collector_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 1 failure",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/server/notification_collector.ex: Jason.decode!(Jason.encode!(Notification.new(method, params)))  ->  (fn m -> if is_map(m) and Map.has_key?(m, \"method\"), do: m |> Map.delete(\"method\") |> Map.put(\"methodX\", m[\"method\"]), else: m end).(Jason.decode!(Jason.encode!(Notification.new(method, params))))"
+      ],
+      "reddened_total": 1,
+      "reddened_by_module": {
+        "MCP.Server.NotificationCollectorTest": 1
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "verdict": "live",
+      "established_by": "L2",
+      "note": "Established BY CONSTRUCTION rather than inferred: `NotificationCollector.push/3` then `drain/1` returns `[%{\"jsonrpc\" => \"2.0\", \"method\" => \"notifications/message\", \"params\" => %{\"level\" => \"info\"}}]`, and plug.ex:426 drains the collector into `send_response/4` -> `send_sse_response/3` at :1008, whose :1010 is `(notifications ++ [response]) |> Enum.map_join(&SSE.encode_message/1)`. Run at this tip, that emits the bytes `event: message\\ndata: {\"jsonrpc\":\"2.0\",\"method\":\"notifications/message\",\"params\":{\"level\":\"info\"}}\\n\\n` into the HTTP response body. The mutation reddened only its own unit because the one live test that could have caught it, streamable_http_stateless_test.exs:284, is a REFUTE of a notification's presence — renaming the key leaves the refute passing. Same directional failure as S7-16.",
+      "direction": null,
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero (round 3)",
+        "byte_probe": {
+          "script": "not re-run at round 4 — unchanged boundary",
+          "scenarios_run": null,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "Established BY CONSTRUCTION rather than inferred: `NotificationCollector.push/3` then `drain/1` returns `[%{\"jsonrpc\" => \"2.0\", \"method\" => \"notifications/message\", \"params\" => %{\"level\" => \"info\"}}]`, and plug.ex:426 drains the collector into `send_response/4` -> `send_sse_response/3` at :1008, whose :1010 is `(notifications ++ [response]) |> Enum.map_join(&SSE.encode_message/1)`. Run at this tip, that emits the bytes `event: message\\ndata: {\"jsonrpc\":\"2.0\",\"method\":\"notifications/message\",\"params\":{\"level\":\"info\"}}\\n\\n` into the HTTP response body. The mutation reddened only its own unit because the one live test that could have caught it, streamable_http_stateless_test.exs:284, is a REFUTE of a notification's presence — renaming the key leaves the refute passing. Same directional failure as S7-16.",
+        "verdict": "live"
+      }
+    },
+    {
+      "id": "MCP.Server.Subscription",
+      "own_tests": [
+        "test/mcp/server/subscriptions_dispatch_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 6 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/server/subscription.ex: Jason.decode!(Jason.encode!(struct))  ->  (fn m -> if is_map(m) and Map.has_key?(m, \"method\"), do: m |> Map.delete(\"method\") |> Map.put(\"methodX\", m[\"method\"]), else: m end).(Jason.decode!(Jason.encode!(struct)))"
+      ],
+      "reddened_total": 6,
+      "reddened_by_module": {
+        "MCP.Transport.SubscriptionsStreamTest": 5,
+        "MCP.Server.SubscriptionsDispatchTest": 1
+      },
+      "reddened_outside_own": 5,
+      "reddened_outside_own_and_dead": 5,
+      "live_units": [
+        "test/mcp/transport/subscriptions_stream_test.exs:299 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:320 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:336 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:377 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:492 (MCP.Transport.SubscriptionsStreamTest)"
+      ],
+      "verdict": "live",
+      "established_by": "L1",
+      "note": "",
+      "direction": null,
+      "l2": null
+    },
+    {
+      "id": "MCP.Transport.SSE (decode)",
+      "direction": "decode",
+      "own_tests": [
+        "test/mcp/transport/sse_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 31 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/transport/sse.ex: defp apply_field(\"event\", value, acc), do: Map.put(acc, :event, value)  ->  defp apply_field(\"ZZevent\", value, acc), do: Map.put(acc, :event, value)",
+        "lib/mcp/transport/sse.ex: defp apply_field(\"id\", value, acc), do: Map.put(acc, :id, value)  ->  defp apply_field(\"ZZid\", value, acc), do: Map.put(acc, :id, value)",
+        "lib/mcp/transport/sse.ex: defp apply_field(\"retry\", value, acc) do  ->  defp apply_field(\"ZZretry\", value, acc) do",
+        "lib/mcp/transport/sse.ex: defp apply_field(\"data\", value, acc) do  ->  defp apply_field(\"ZZdata\", value, acc) do"
+      ],
+      "reddened_total": 31,
+      "reddened_by_module": {
+        "MCP.Transport.SSETest": 11,
+        "MCP.Transport.SubscriptionsStreamTest": 20
+      },
+      "reddened_outside_own": 20,
+      "reddened_outside_own_and_dead": 20,
+      "live_units": [
+        "test/mcp/transport/subscriptions_stream_test.exs:269 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:285 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:299 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:320 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:336 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:367 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:377 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:404 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:420 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:434 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:475 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:492 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:575 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:617 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:641 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:679 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:702 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:795 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:828 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:942 (MCP.Transport.SubscriptionsStreamTest)"
+      ],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "`decode_event/1` is called from `extract_events/2` (sse.ex:215), which backs `SSE.feed/2`, called at streamable_http/client.ex:569 on real response bodies. 20 live-path units redden.",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L1"
+    },
+    {
+      "id": "MCP.Transport.SSE (encode)",
+      "direction": "encode",
+      "own_tests": [
+        "test/mcp/transport/sse_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 25 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/transport/sse.ex: defp maybe_add_field(lines, field, value), do: lines ++ [\"#{field}: #{value}\"]  ->  defp maybe_add_field(lines, field, value), do: lines ++ [\"ZZ#{field}: #{value}\"]",
+        "lib/mcp/transport/sse.ex: defp add_data_field(lines, nil), do: lines ++ [\"data: \"]  ->  defp add_data_field(lines, nil), do: lines ++ [\"ZZdata: \"]",
+        "lib/mcp/transport/sse.ex: defp add_data_field(lines, \"\"), do: lines ++ [\"data: \"]  ->  defp add_data_field(lines, \"\"), do: lines ++ [\"ZZdata: \"]",
+        "lib/mcp/transport/sse.ex: |> Enum.map(fn line -> \"data: #{line}\" end)  ->  |> Enum.map(fn line -> \"ZZdata: #{line}\" end)"
+      ],
+      "reddened_total": 25,
+      "reddened_by_module": {
+        "MCP.Transport.SSETest": 5,
+        "MCP.Transport.SubscriptionsStreamTest": 20
+      },
+      "reddened_outside_own": 20,
+      "reddened_outside_own_and_dead": 20,
+      "live_units": [
+        "test/mcp/transport/subscriptions_stream_test.exs:269 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:285 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:299 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:320 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:336 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:367 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:377 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:404 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:420 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:434 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:475 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:492 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:575 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:617 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:641 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:679 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:702 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:795 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:828 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:942 (MCP.Transport.SubscriptionsStreamTest)"
+      ],
+      "l2": {
+        "ran": true,
+        "trigger": "recorded on every split boundary-direction",
+        "byte_probe": {
+          "script": "conformance/etcc_l2_probe.exs",
+          "scenarios_run": 15,
+          "scenarios_moved": [
+            "SSE frame of a notification"
+          ]
+        },
+        "call_site_enumeration": "plug.ex:687, :713, :780 and :1011 chunk `SSE.encode_message/1`'s output straight onto the response body. The probe's `SSE frame of a notification` scenario moves under this mutation.",
+        "verdict": "live"
+      },
+      "verdict": "live",
+      "established_by": "L1"
+    },
+    {
+      "id": "MCP.Transport.Stdio",
+      "own_tests": [
+        "test/mcp/transport/stdio_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 5 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/transport/stdio.ex: json = Jason.encode!(message)  ->  json = Jason.encode!((fn m -> if is_map(m) and Map.has_key?(m, \"method\"), do: m |> Map.delete(\"method\") |> Map.put(\"methodX\", m[\"method\"]), else: m end).(message))"
+      ],
+      "reddened_total": 5,
+      "reddened_by_module": {
+        "MCP.Transport.StdioTest": 5
+      },
+      "reddened_outside_own": 0,
+      "reddened_outside_own_and_dead": 0,
+      "live_units": [],
+      "verdict": "live",
+      "established_by": "L2",
+      "note": "The boundary IS the transport: stdio.ex:231 and :239 `Jason.encode!(message)` and write the framed line to the pipe. Ruling A's antecedent — 'no lib/ call site routes it to a transport' — cannot hold of the transport itself. The mutation reddened 5 units and all 5 are in StdioTest, but those units read their asserted bytes off a REAL subprocess pipe, so they are live-path units, not unit tests of an unreachable module. This is where the redness proxy is blind and the antecedent has to be read literally: see S7-19.",
+      "direction": null,
+      "l2": {
+        "ran": true,
+        "trigger": "live count is zero (round 3)",
+        "byte_probe": {
+          "script": "not re-run at round 4 — unchanged boundary",
+          "scenarios_run": null,
+          "scenarios_moved": []
+        },
+        "call_site_enumeration": "The boundary IS the transport: stdio.ex:231 and :239 `Jason.encode!(message)` and write the framed line to the pipe. Ruling A's antecedent — 'no lib/ call site routes it to a transport' — cannot hold of the transport itself. The mutation reddened 5 units and all 5 are in StdioTest, but those units read their asserted bytes off a REAL subprocess pipe, so they are live-path units, not unit tests of an unreachable module. This is where the redness proxy is blind and the antecedent has to be read literally: see S7-19.",
+        "verdict": "live"
+      }
+    },
+    {
+      "id": "MCP.Transport.StreamableHTTP.Plug",
+      "own_tests": [
+        "test/mcp/transport/streamable_http_stateless_test.exs",
+        "test/mcp/transport/streamable_http_ac_test.exs",
+        "test/mcp/transport/streamable_http_cache_scope_warning_test.exs"
+      ],
+      "suite_summary": "13 doctests, 979 tests, 33 failures",
+      "unlocated_failures": 0,
+      "mutation": [
+        "lib/mcp/transport/streamable_http/plug.ex: Plug.Conn.send_resp(200, Jason.encode!(response))  ->  Plug.Conn.send_resp(200, Jason.encode!((fn m -> if is_map(m) and Map.has_key?(m, \"result\"), do: m |> Map.delete(\"result\") |> Map.put(\"resultX\", m[\"result\"]), else: m end).(response)))",
+        "lib/mcp/transport/streamable_http/plug.ex: \"error\" => %{\"code\" => code, \"message\" => message, \"data\" => data}  ->  \"errorX\" => %{\"code\" => code, \"message\" => message, \"data\" => data}"
+      ],
+      "reddened_total": 33,
+      "reddened_by_module": {
+        "MCP.Transport.StreamableHTTP.ACTest": 14,
+        "MCP.Transport.StreamableHTTPStatelessTest": 13,
+        "MCP.Transport.SelfCompatibilityTest": 5,
+        "MCP.Transport.SubscriptionsStreamTest": 1
+      },
+      "reddened_outside_own": 6,
+      "reddened_outside_own_and_dead": 6,
+      "live_units": [
+        "test/mcp/transport/self_compatibility_test.exs:96 (MCP.Transport.SelfCompatibilityTest)",
+        "test/mcp/transport/self_compatibility_test.exs:114 (MCP.Transport.SelfCompatibilityTest)",
+        "test/mcp/transport/self_compatibility_test.exs:128 (MCP.Transport.SelfCompatibilityTest)",
+        "test/mcp/transport/self_compatibility_test.exs:155 (MCP.Transport.SelfCompatibilityTest)",
+        "test/mcp/transport/self_compatibility_test.exs:167 (MCP.Transport.SelfCompatibilityTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:525 (MCP.Transport.SubscriptionsStreamTest)"
+      ],
+      "verdict": "live",
+      "established_by": "L1",
+      "note": "",
+      "direction": null,
+      "l2": null
+    }
+  ]
+}
