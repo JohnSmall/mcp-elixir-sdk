@@ -2498,3 +2498,55 @@ MES-19 at release.
 **PA-9 remains open and is unchanged by this sweep.** The live question is whether the
 OSV cross-check should also run at the sprint boundary — where network dependence costs
 nothing, since no work is in flight and no merge is blocked. Still the PO's call.
+
+---
+
+## S7-47 — A convention with no instrument is a habit, and this one lapsed for fifteen merges without anything noticing
+
+**Found at the Sprint 7 boundary, 2026-08-24, while establishing a precondition for MES-85 —
+not by any check, and fifteen merges late.**
+
+D4's convention is one annotated tag per squash-merge, tagged `Project-Manager`, message
+`2.0.0-dev.N — <merge subject>`. It was followed exactly from `2.0.0-dev.1` to
+`2.0.0-dev.15`. Then it stopped, while the counter in `mix.exs` kept going.
+
+```
+tags present : 2.0.0-dev.1 .. 2.0.0-dev.15      (15)
+mix.exs at   : 2.0.0-dev.30
+untagged     : dev.16 .. dev.30                 (15 merges)
+  of which Sprint 6 : 7
+  of which Sprint 7 : 8   <- all merged by the PM seat, across 8 consecutive merge gates
+```
+
+### The mechanism
+
+**Nothing in the project looks at tags.** Six DoD gates, a merge-gate checklist, four control
+suites, an end-of-sprint sweep — and not one of them would go red with every tag in the
+repository deleted. The convention lived only in the PM's habit of remembering it, and a habit
+degrades silently: there is no moment at which it announces that it has stopped.
+
+Worse, the failure is **invisible from inside the work it protects**. Every merge gate passed.
+Every gate table was complete and honest. The tag's absence changed no measurement, broke no
+test and falsified no published claim — so by this project's own stopping rule it was not
+blocking, and it was never going to surface from ticket work. It surfaced only because
+MES-85's design happened to *depend* on tags existing, and that dependency was two sprints
+downstream of the first missed tag.
+
+### Why the remedy is not "remember harder"
+
+The backfill was mechanical because the mapping is exact: for each `N`, the commit on `main`
+whose own `mix.exs` reads `2.0.0-dev.N`. That the repair is derivable is precisely what shows
+the check is derivable too — **anything a script can reconstruct afterwards, a script could
+have asserted at the time.**
+
+The backfilled tags carry their real tagger date, not the merge date, and say so in the tag
+message. Backdating would have made the repository claim a record was created when it was
+not — the same defect as rewriting a historical citation (S7-42), and for the same reason.
+
+### Transferable form
+
+**Every convention that a later ticket may DEPEND ON needs an instrument, or it is not a
+convention — it is a hope.** The test for whether one has an instrument is blunt: *if every
+trace of it were removed from the repository right now, what would go red?* If the answer is
+"nothing", the convention is undefended regardless of how long it has held. Ownership of the
+instrument: **MES-90**.
