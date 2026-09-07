@@ -2550,3 +2550,140 @@ convention — it is a hope.** The test for whether one has an instrument is blu
 trace of it were removed from the repository right now, what would go red?* If the answer is
 "nothing", the convention is undefended regardless of how long it has held. Ownership of the
 instrument: **MES-90**.
+
+---
+
+# End-of-sprint dependency sweep — Sprint 7, RE-RUN at the closing tip
+
+**Run at the PM seat, 2026-09-07, against `main` at `a986558` / `2.0.0-dev.30`, tree
+clean.** This does **not** replace the 2026-08-24 sweep recorded above. That record
+stands exactly as written, and it was correct when it was written. This is a second,
+later measurement of the same question, and it returns a different answer.
+
+## Why it was re-run rather than accepted
+
+Two things had moved since 2026-08-24, and only one of them was harmless.
+
+**The tip had moved.** The earlier sweep attests to `c807733`. Two commits landed after
+it — `2acdd84` (the closing pass itself) and `a986558` (S7-47) — so the tip that sweep
+names is not the tip being closed. Both are documentation-only, and `mix.lock` is
+byte-identical across the range (md5 `e58a9ba3af2a07beb630e8a3cb4c1167` at both ends).
+On its own this would have been a formality.
+
+**The clock had moved.** Fourteen days. And gate 6's verdict is a function of
+*(lock, wall-clock)* — every other gate's is a function of the tree alone. The lock was
+unchanged; the other input was not. That is the whole reason the re-run was not a
+formality.
+
+## Result — NOT CLEAN
+
+```
+hex version        Hex v2.5.1        AFTER `mix local.hex 2.5.1 --force`
+                                     the container came up at 2.5.0, BELOW the floor
+
+GATE 6a  baseline-lock sentinel at d697093
+         advisory ids present   22 of 22        PASS
+
+GATE 6b  mix hex.audit on this project at a986558
+         mint 1.9.3 - EEF-CVE-2026-82728 (HIGH)
+         mint 1.9.3 - EEF-CVE-2026-82729 (MEDIUM)
+         "Found packages with security advisories"            rc=1
+         reproduced on a second consecutive run               rc=1
+
+RESULT   TWO ADVISORIES.  Raised as MES-91.  Not fixed in place.
+```
+
+Both are fixed in **mint 1.10.0**, released 2026-09-04. `mint` is transitive — `req`
+(optional) to `finch` 0.21.0 to `mint` — and is reached from exactly one module in
+`lib/`: the Streamable HTTP **client** transport, at
+`lib/mcp/transport/streamable_http/client.ex:286`. Both defects are in HTTP **response**
+parsing, so the exposure direction is a hostile or compromised MCP server against our
+client, bounded by `req` being an optional dependency.
+
+## Adjudication — this is RECENCY, not a stale-green
+
+The obvious reading of "clean on 2026-08-24, red on 2026-09-07, identical lock" is that
+the earlier run was a false-green off an incomplete registry cache. **It was not**, and
+the check that settles it is the advisory publication date, not the cache:
+
+```
+EEF-CVE-2026-82728   published 2026-09-04T14:31:30Z
+EEF-CVE-2026-82729   published 2026-09-04T14:31:20Z
+2026-08-24 sweep     ran eleven days BEFORE either existed
+```
+
+There was nothing for the earlier run to find. Its green was the correct answer to the
+question asked on the day it was asked.
+
+This direction is worth naming because the project has recorded the opposite one before
+(gate 6b green then red ~34 minutes apart, same lock). The rule that resolves both is
+the same: **before blaming the local cache for a changed verdict, read the advisory's
+publication time.** A cache fault and a newly published advisory present identically at
+the terminal.
+
+## What 6a's pass buys here
+
+6a returning 22 of 22 is what makes this finding load-bearing rather than suggestive.
+`mint` is one of the **five** packages 6a validates advisory rows for (`bandit`, `hpax`,
+`mint`, `plug`, `req`), so mint's local advisory data is confirmed present rather than
+assumed. This detection does not sit in the 21-package unvalidated residual — had the
+advisory been against `finch` or `thousand_island`, it would have, and 6b's silence
+would have meant nothing.
+
+## PA-9
+
+Unchanged in substance, but this sweep is now evidence for it. The live question is
+whether the OSV cross-check should also run at the sprint boundary. Note that on this
+occasion `hex.audit` alone was sufficient — the local cache had the new rows within
+three days of publication. That is one data point about latency, not a guarantee of it,
+and it does not answer PA-9 either way. Still the PO's call.
+
+---
+
+## S7-48 — A boundary sweep attests to the instant it ran, and the boundary it is named after can be days wide
+
+**Found at the Sprint 7 close, 2026-09-07, by re-running a sweep that had already been
+run and recorded as clean.**
+
+The End-of-Sprint Procedure says the sweep runs "in the gap between sprints — after the
+last ticket is Done, before the next sprint's first dispatch". That phrasing quietly
+assumes the gap is a moment. It is not necessarily a moment. Here it was **fourteen
+days**: the register's closing pass and the sweep were written on 2026-08-24, and the
+sprint was still open on 2026-09-07. An advisory was published into the middle of that
+gap, on 2026-09-04.
+
+### The mechanism
+
+**A sweep is a measurement, and every measurement has a timestamp; a sprint close is a
+process, and processes have durations.** Recording the measurement inside the process
+makes the two look coextensive, so the sweep's result gets read as a property of *the
+close* ("Sprint 7 closed clean") when it is only a property of *an instant during the
+close* ("`main` was clean at 09:03 on 2026-08-24").
+
+This is the same shape as `committing a measurement moves its own tip`, but the drift is
+in the other input. There, the artefact under measurement moved after the measurement.
+Here the artefact was frozen — byte-identical lock, documentation-only commits — and the
+**world** moved instead. Freezing the tree is not sufficient to preserve a verdict whose
+inputs include wall-clock, and gate 6 is the one gate in this project's set with that
+property.
+
+### Why "run it later" is not the remedy on its own
+
+Whenever the sweep runs, it attests to that instant. Moving it later does not close the
+gap; it relocates it to between the sweep and whatever consumes the result — the sprint
+closure in the UI, or a release. The residual is irreducible in the same way limitation
+2 is irreducible: no local run can attest to a future it has not seen.
+
+What can be fixed is the **claim**, not the gap. A sweep record should name its own
+instant and its own tip, and a close-out should not upgrade "clean at T" into "the sprint
+closed clean". The 2026-08-24 record above does name both, which is precisely why the
+disagreement was adjudicable fourteen days later instead of being a contradiction between
+two undated greens.
+
+### Transferable form
+
+**Any gate whose verdict depends on wall-clock expires, and the record must carry the
+timestamp that lets a later reader tell expiry from error.** The operational test at a
+boundary: *if the sprint has been open longer than the sweep is old, the sweep is not
+about this closure.* Re-run it and adjudicate the difference by publication date — never
+by assuming the earlier run was wrong.
