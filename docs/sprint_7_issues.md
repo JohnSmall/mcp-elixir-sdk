@@ -2687,3 +2687,63 @@ timestamp that lets a later reader tell expiry from error.** The operational tes
 boundary: *if the sprint has been open longer than the sweep is old, the sweep is not
 about this closure.* Re-run it and adjudicate the difference by publication date — never
 by assuming the earlier run was wrong.
+
+---
+
+# End-of-sprint dependency sweep — Sprint 7, THIRD run, at the post-MES-91 tip
+
+**Run at the PM seat, 2026-09-09, against `main` at `0050cfe` / `2.0.0-dev.31`,
+tree clean.** This is the re-run that S7-48 predicted would be needed: MES-91's
+squash-merge moved *both* of gate 6's inputs — the tip and `mix.lock` — so the
+2026-09-07 result (which found the two `mint` advisories) no longer attests the tip
+the sprint closes on. This run does.
+
+## Why a third run, stated plainly
+
+- **First run, 2026-08-24 at `c807733`:** CLEAN. Correct when taken; both advisories
+  were published eleven days later.
+- **Second run, 2026-09-07 at `a986558`:** NOT CLEAN — `mint` 1.9.3 carried
+  EEF-CVE-2026-82728 / -82729. Raised as MES-91. Same lock as the first run; only
+  wall-clock had moved.
+- **This run, 2026-09-09 at `0050cfe`:** CLEAN again — but for a *different reason*
+  than the first. The first was clean because the advisories did not yet exist; this
+  one is clean because MES-91 remediated them (`mint` 1.9.3 → 1.10.0). Same verdict
+  word, opposite cause. The register records the cause, not just the word.
+
+## Result — CLEAN
+
+```
+hex version        Hex v2.5.1        re-checked before each half; it had NOT reset this run
+
+GATE 6a  baseline-lock sentinel at d697093      22 of 22        PASS
+GATE 6b  mix hex.audit on main at 0050cfe        rc=0  "No retired or security
+                                                       advisory packages found"
+
+RESULT   CLEAN.  The two mint advisories that the second run found are gone from main.
+```
+
+`mint` now locks at **1.10.0** (lock md5 `cfdd2acf973c20c36a95310a1fa1799b`, changed
+from the `e58a9ba3…` that both earlier runs shared). Gates 1 and 2 (format, compile)
+re-run green at this tip; gates 3–5 were verified green by CODE_REVIEWER at the
+reviewed tip `d7eb34a`, whose tree differs from `0050cfe` only by the D4 `@version`
+string — a value no gate is a function of — so they are not re-run here, and this is
+stated rather than left as a silent two-row gap.
+
+## The residual this sweep does NOT clear — MES-92
+
+A clean `hex.audit` means no *known advisory* against a locked package. It does **not**
+mean the transport is hardened against the DoS *class* the advisories belong to. MES-91
+closed the two named `mint` parse defects; our Streamable HTTP client still sets no
+response body-size or `max_header_list_size` bound, so an unbounded-body DoS remains
+reachable from a hostile server. That is tracked as **MES-92** (backlog, PO to
+prioritise) and is deliberately out of this sweep's reach — the sweep reads advisory
+data, not our own call-site limits.
+
+## A note for whoever closes the sprint
+
+The register commit that carries *this section* moves the tip once more, to a
+docs-only commit above `0050cfe`. That does **not** invalidate the sweep: gate 6's
+verdict is a function of *(lock, wall-clock)*, and a docs-only commit changes neither
+the lock (md5 stays `cfdd2acf…`) nor anything an advisory feed reads. This is the
+S7-48 discipline applied to itself — the sweep names its own tip and lock, so a later
+reader can see the docs commit above it is inert with respect to the result.
