@@ -46,6 +46,10 @@ defmodule ETCCRegisterControls do
     et_out = Enum.find(decisions, &(&1["label"] == "ET-OUT"))
     adjudicated = Enum.find(decisions, &(&1["adjudication"] != nil))
 
+    # Guard 22's subject: a member §6.1 populated. Found by predicate rather than by key,
+    # so it does not go stale if the enumeration in Part C §C.4 ever changes.
+    inherited = Enum.find(decisions, &(&1["inherited_from"] != nil))
+
     # Guard 21's subject: a member that names BOTH directions of a split module, so the
     # mutation that drops its `(decode)` leaves a row whose test body still calls the
     # decode producer. Found by predicate rather than by key, so it does not go stale.
@@ -106,7 +110,21 @@ defmodule ETCCRegisterControls do
            "boundary" =>
              Enum.reject(decode_caller["boundary"], &String.ends_with?(&1, " (decode)"))
          })
-       end}
+       end},
+      # Guard 22 (MES-87, §6.1). Five limbs, each mutated on its own, because a guard
+      # that only ever fires on one of its conditions has three untested ones.
+      {"inherited_from on a row that is NOT a member (guard 22 — §6.1/§8)",
+       fn ds -> replace(ds, et_out, %{"inherited_from" => "test/mcp/client_test.exs:59"}) end},
+      {"inherited_from whose file:line does not RESOLVE at this tip (guard 22)",
+       fn ds ->
+         replace(ds, inherited, %{"inherited_from" => "test/mcp/client_test.exs:999999"})
+       end},
+      {"inherited_from naming the ASSERTION rather than the helper declaration (guard 22)",
+       fn ds -> replace(ds, inherited, %{"inherited_from" => "test/mcp/client_test.exs:62"}) end},
+      {"inherited_from naming a real helper that contains NO assertion (guard 22)",
+       fn ds -> replace(ds, inherited, %{"inherited_from" => "test/mcp/client_test.exs:83"}) end},
+      {"inherited_from that is not a file:line at all (guard 22)",
+       fn ds -> replace(ds, inherited, %{"inherited_from" => "do_connect/2"}) end}
     ]
 
     results =

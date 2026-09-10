@@ -49,6 +49,10 @@ defmodule MCP.Conformance.ETCCRegister do
       made unrepresentable rather than promised: a dead boundary is one no `lib/`
       call site routes to a transport, so a member asserting only its output would
       be the F1 overstatement re-entering the register;
+    * an `inherited_from` on a row that is not `ET-CC`, or one whose `file:line` does not
+      resolve at this tip or does not open a helper containing an assertion — **guard 22**
+      (MES-87, §6.1 ratified at `26737`). Its limit is stated at the guard: it checks that
+      the field names a real asserting helper, never that it names the right one;
     * an `ET-CC` row that calls a SPLIT module's decode-side producer in its own test
       body without naming that module's `(decode)` direction — **guard 21** (PM ruling
       `26070`). This is the only guard about ATTRIBUTION rather than about a label or a
@@ -193,6 +197,7 @@ defmodule MCP.Conformance.ETCCRegister do
     check_label_fields!(d)
     check_row_hygiene!(d)
     check_boundary!(d, boundaries)
+    check_inherited_from!(d)
     :ok
   end
 
@@ -228,6 +233,80 @@ defmodule MCP.Conformance.ETCCRegister do
   end
 
   defp check_boundary!(_d, _boundaries), do: :ok
+
+  # Guard 22 (MES-87, §6.1 ratified at `26737`). `inherited_from` names the helper whose
+  # assertion is a member's ONLY gate-2-and-3-passing one. The rule is NOT restated here —
+  # `docs/conformance/etcc-membership.md` §6.1 owns it and Part C §C.4 owns the enumeration.
+  #
+  # This enforces the three things about the field that ARE mechanical: it is a per-MEMBER
+  # field (§8, like `falsifiable`); the `file:line` it names must RESOLVE at this tip; and
+  # the line it names must open a helper that actually CONTAINS an assertion. Without the
+  # third, the field could name any line and still be well-formed — and a citation that
+  # resolves to a blank line is the drift this project has already been bitten by.
+  #
+  # ITS LIMIT, stated rather than left to be found: it cannot check that the member's OWN
+  # assertions all fail gates 2 and 3, which is what makes the claim "wholly inherited".
+  # That is judgement, and no guard here checks judgement — guard 22 checks that the field
+  # points at a real asserting helper, not that it points at the RIGHT one.
+  defp check_inherited_from!(%{"key" => key, "label" => label, "inherited_from" => from})
+       when is_binary(from) do
+    if label != "ET-CC" do
+      raise "REFUSING to write: #{key} is #{label} and records inherited_from. It is a " <>
+              "per-MEMBER field (§6.1/§8): a non-member has already failed a gate, so there " <>
+              "is no inherited claim to attribute."
+    end
+
+    case String.split(from, ":") do
+      [file, line] ->
+        n = String.to_integer(line)
+        lines = if File.exists?(file), do: file |> File.read!() |> String.split("\n"), else: nil
+        text = lines && Enum.at(lines, n - 1)
+
+        unless is_binary(text) do
+          raise "REFUSING to write: #{key} names inherited_from #{from}, which does not " <>
+                  "resolve at this tip. A helper citation that resolves to nothing attributes " <>
+                  "a member's whole claim to a line that is not there."
+        end
+
+        unless Regex.match?(~r/^\s*(defp?|setup(_all)?)\b/, text) do
+          raise "REFUSING to write: #{key} names inherited_from #{from}, but that line is " <>
+                  "#{inspect(String.trim(text))} — not a `def`/`defp`/`setup` declaration. " <>
+                  "§6.1 records the HELPER, not the assertion inside it."
+        end
+
+        unless helper_asserts?(lines, n, text) do
+          raise "REFUSING to write: #{key} names inherited_from #{from}, whose helper " <>
+                  "contains no assertion. An inherited claim has to come from somewhere."
+        end
+
+        :ok
+
+      _ ->
+        raise "REFUSING to write: #{key} records inherited_from #{inspect(from)}, which is " <>
+                "not a `file:line` (§6.1)"
+    end
+  end
+
+  defp check_inherited_from!(_d), do: :ok
+
+  # The helper's block: its declaration line to the `end` that closes it at the same
+  # column, which `mix format` guarantees. A one-line `defp ..., do: ...` has no such
+  # `end`, so it is read on its own line.
+  defp helper_asserts?(lines, n, decl) do
+    if String.contains?(decl, ", do:") do
+      assertion?(decl)
+    else
+      indent = String.length(decl) - String.length(String.trim_leading(decl))
+      closing = String.duplicate(" ", indent) <> "end"
+
+      lines
+      |> Enum.drop(n)
+      |> Enum.take_while(&(&1 != closing))
+      |> Enum.any?(&assertion?/1)
+    end
+  end
+
+  defp assertion?(line), do: Regex.match?(~r/\b(assert|refute)\w*[\s(]/, line)
 
   defp check_label!(%{"key" => key, "label" => label}) do
     unless label in @labels do
@@ -526,6 +605,7 @@ defmodule MCP.Conformance.ETCCRegister do
       "question" => decision["question"],
       "adjudication" => decision["adjudication"],
       "boundary" => decision["boundary"],
+      "inherited_from" => decision["inherited_from"],
       "evidence" => decision["evidence"]
     })
   end
@@ -543,6 +623,7 @@ defmodule MCP.Conformance.ETCCRegister do
           {v, Enum.count(rows, &(&1["falsifiable"] == v))}
         end),
       "mixed" => Enum.count(rows, & &1["mixed"]),
+      "inherited" => Enum.count(rows, &(&1["inherited_from"] != nil)),
       "escalated" => Enum.count(rows, & &1["escalated"]),
       "adjudicated" => Enum.count(rows, &(&1["adjudication"] != nil)),
       "adjudications_raised_by" =>

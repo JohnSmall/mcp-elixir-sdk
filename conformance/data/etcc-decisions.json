@@ -1,6 +1,6 @@
 {
   "schema": "etcc-decisions/1",
-  "note": "AUTHORED SOURCE for docs/conformance/etcc-register.json. One entry per runtime test under test/mcp/, keyed per docs/conformance/etcc-row-key.md §1. Labels, gates, anchors and evidence are authored by hand on MES-81; every other field in the register is JOINED from docs/conformance/etcc-exunit-rows.json and appears nowhere here. | ROUND 2 (2026-08-23): the 75 escalated rows were re-decided against the PM correction contract at MES-81 comments 26033-26037. Every re-decided row KEEPS escalated: true and its question, and carries an `adjudication` block naming the ruling, its comment id and the date — an answered escalation must stay visible as one.",
+  "note": "AUTHORED SOURCE for docs/conformance/etcc-register.json. One entry per runtime test under test/mcp/, keyed per docs/conformance/etcc-row-key.md §1. Labels, gates, anchors and evidence are authored by hand on MES-81; every other field in the register is JOINED from docs/conformance/etcc-exunit-rows.json and appears nowhere here. | ROUND 2 (2026-08-23): the 75 escalated rows were re-decided against the PM correction contract at MES-81 comments 26033-26037. Every re-decided row KEEPS escalated: true and its question, and carries an `adjudication` block naming the ruling, its comment id and the date — an answered escalation must stay visible as one. | MES-87 (2026-09-09): §6.1 ratified at 26737 adds `inherited_from` — a per-MEMBER field naming the helper whose assertion is a member's ONLY gate-2-and-3-passing one. Populated for the 3 ruling-C rows; the enumeration establishing that these are the only rows in test/mcp/ satisfying the antecedent is in etcc-membership.md Part C §C.4.",
   "decisions": [
     {
       "key": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions a server declaring NO extensions yields nil, not a crash or an invented map",
@@ -386,6 +386,7 @@
       "spec_anchor": "schema/2026-07-28/schema.ts:665-666 (DiscoverRequest.method \"server/discover\")",
       "falsifiable": "yes",
       "mixed": true,
+      "inherited_from": "test/mcp/client_test.exs:59",
       "consumed_at": null,
       "controls": null,
       "escalated": true,
@@ -613,6 +614,7 @@
       "spec_anchor": "schema/2026-07-28/schema.ts:665-666 (DiscoverRequest.method \"server/discover\")",
       "falsifiable": "yes",
       "mixed": true,
+      "inherited_from": "test/mcp/client_test.exs:59",
       "consumed_at": null,
       "controls": null,
       "escalated": true,
@@ -636,6 +638,7 @@
       "spec_anchor": "schema/2026-07-28/schema.ts:665-666 (DiscoverRequest.method \"server/discover\")",
       "falsifiable": "yes",
       "mixed": true,
+      "inherited_from": "test/mcp/client_test.exs:59",
       "consumed_at": null,
       "controls": null,
       "escalated": true,

@@ -194,7 +194,7 @@ perturbation, not a test.** Same idiom as MES-83's
 
 **579 units, in 39 files** — filtered from MES-83's artefact on `file` under
 `test/mcp/`, never re-derived. `566 test + 13 doctest`, matching §7's ratified
-figure. The remaining **413** rows are `test/conformance/` and are enumerated
+figure. The remaining **428** rows are `test/conformance/` and are enumerated
 separately (§9).
 
 **Declared before the run, and it held.** `git diff --name-only 1a0fe5c..94f4d2a`
@@ -211,9 +211,27 @@ Verified against `rows_md5`, not against `run.tip 8a305d3`, which the squash-mer
 left unreferenced (`etcc-row-key.md` §5.2).
 
 **One figure in the brief moved at this tip and is reported rather than carried.**
-`test/conformance/` is **413** units here, not §1's ratified **285**: Sprint 7 has
+`test/conformance/` is **428** units here, not §1's ratified **285**: Sprint 7 has
 been adding to it, which is §B.3's own mechanism showing again. The in-scope 579 is
 unmoved, because gate 1 scopes on `test/mcp/`.
+
+> **MES-87 CORRECTION, 2026-09-09 — S8-1.** This document said **413** in five places
+> (`:197`, `:214`, `:425`, `:1411`, `:1414`) while the delivered `etcc-register.json`
+> said **428**. Traced: it was 413 at `85d50fa` and 428 at `18df3a6` — **MES-84
+> regenerated the artefact, `test/conformance/` had grown by 15 units, and the prose was
+> not restated.** All five are restated to 428 here, on the PM's Q1 ruling (`26736`).
+>
+> **No label moves and the in-scope 579 is untouched** — 579 + 428 = 1007, the artefact's
+> row count. But it is exactly *"regenerated without restating the totals"*, which is the
+> AC4 failure mode this ticket's own acceptance criteria exist to prevent, and it is the
+> third instance of that shape after F10 and F12. The `:425` occurrence is a transcript of
+> `mix run conformance/controls/etcc_register_controls.exs totality`, and it was re-run
+> rather than hand-edited: the script prints 428.
+>
+> **What is NOT corrected here, and why that is a decision.** §1's ratified **285** is left
+> alone — it is a figure inside ratified MES-67 text measured at its own tip, and Part A's
+> rule is that drift is reported, never corrected in place. The sentence above already
+> reports it.
 
 ---
 
@@ -422,7 +440,7 @@ asked" print identically.
     no key appears twice:            true
     sum == in_scope == rows:         true
 
-    OUT-OF-SCOPE is held apart (§1) and is NOT in the sum: 413 units
+    OUT-OF-SCOPE is held apart (§1) and is NOT in the sum: 428 units
 
 **Recomputed from the committed register's own rows**, not from the generator's
 counters — a hand-edited total would be red. And the key sets are checked **both
@@ -1408,10 +1426,10 @@ decisive fact is a property of the tree, not of the labelling: `404` still occur
 
 ---
 
-## §9 Out of scope — the 413, enumerated rather than omitted
+## §9 Out of scope — the 428, enumerated rather than omitted
 
 `test/conformance/` fails **gate 1**, which yields `OUT-OF-SCOPE` — **not one of the
-four labels** (§1). The register carries all **413** in a separate `out_of_scope`
+four labels** (§1). The register carries all **428** in a separate `out_of_scope`
 array, one row each (`key`, `file`, `label`, `gate`), so a later reader can tell
 *"excluded by rule"* from *"never looked at"* — the S6-9 shape — and so the two
 arrays' key sets together equal the artefact's, checkable both ways (§4).
