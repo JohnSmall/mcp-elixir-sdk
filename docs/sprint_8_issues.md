@@ -711,3 +711,66 @@ where it was caught: not by inspecting the parser, but by *running the very muta
 new control existed to perform*. **A control that actually exercises the off-nominal
 branch finds the instrument bugs that live there** — which is the whole argument for
 mutations over readings, one level below where S7-19 made it.
+
+---
+
+# End-of-sprint sweeps — Sprint 8
+
+**Run at the PM seat, 2026-09-18, against `main` at the sprint's final tip `ccac11a`
+/ `2.0.0-dev.33`, tree clean, `origin/main == main`.** Recorded whether clean, skipped
+or not — "checked, and zero" and "never asked" read identically when only the answer is
+printed. Two sweeps run this sprint: the dependency-advisory sweep, and — new this sprint,
+added by MES-88 — the boundary-liveness sweep (CLAUDE.md End-of-Sprint step 4).
+
+## 1. Dependency-advisory sweep — CLEAN
+
+```
+hex version   Hex v2.5.1   (came up at 2.5.1; no force needed this run)   node v24.13.0
+
+GATE 6a  baseline-lock sentinel at d697093       22 of 22        PASS
+GATE 6b  mix hex.audit on main at ccac11a          rc=0  "No retired or security
+                                                          advisory packages found"
+
+RESULT   CLEAN.  Zero advisories, zero retired packages.  No Jira ticket raised.
+```
+
+6a's 22-of-22 is what makes 6b's green worth reading (limitation 1). The 21-package
+unvalidated residual and the staleness residual (limitation 2) stand as recorded in
+CLAUDE.md; the compensating control is MES-19's live OSV cross-check at release.
+
+## 2. Boundary-liveness sweep — SKIPPED, all three conditions established
+
+The boundary table was **built at this same final tip** — its last change is `ccac11a`
+(the MES-88 merge that introduced the sweep), which is HEAD. So the sweep boundary
+coincides with the table's own measurement tip, and the three-condition skip (CLAUDE.md
+step 4) is satisfied by construction:
+
+```
+anchor (etcc-boundaries.json last changed)   ccac11a   ( == HEAD )
+
+(a) git diff --name-only ccac11a...HEAD -- lib/                          -> empty
+(b) git diff --name-only ccac11a...HEAD -- test/ test/support/ conformance/lib/  -> empty
+(c) mix conformance.sweep --host   node=v24.13.0 harness=available (recorded)
+                                   node=v24.13.0 harness=available (this host)   HOST MATCHES, rc=0
+
+RESULT   SKIP.  No lib/ change, no unit-population change, host matches -> no verdict
+         can have moved since the verdicts were measured.
+```
+
+**The full run this skip stands on was performed this sprint.** CODE_REVIEWER ran
+`mix conformance.sweep --check` at this tip during MES-88's merge-gate review (comment
+27298): **50/50 directions, 0 verdict diffs, 0 measurement deltas.** So this is not a
+skip that was never exercised — the reproduction happened, at this tip, days ago, and
+this boundary merely confirms nothing moved since. The next sprint's skip diffs against
+`ccac11a`.
+
+**What the skip gives up (CLAUDE.md step 4, restated).** Between here and the next
+boundary, a merged `lib/` change can rot a verdict and only the next sweep notices —
+bounded to one sprint, a bound not a guarantee. Nothing merged after `ccac11a` this
+sprint, so the bound is not even loaded yet.
+
+## Note on the tip this attests
+
+The commit carrying **this** section is docs-only: it changes neither `mix.lock` (so the
+dependency result holds) nor `lib/`/the population (so the boundary skip holds). Both
+sweeps remain valid for the tip above it — the S7-48 discipline, applied to itself.
