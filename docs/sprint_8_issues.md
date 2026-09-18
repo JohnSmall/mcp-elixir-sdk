@@ -158,3 +158,556 @@ because that is the number the reader cannot derive from the delivered artefact.
 then a measured 0 proves nothing on its own — it is also what a generator that ignores
 its inputs produces. **The no-op control comes first**: regenerate with nothing changed
 and require byte-identical output. Only then does the later zero-diff carry information.
+
+---
+
+## S8-5 — A guard stated on one field cannot enforce a rule stated on another. 10 of 50 rows were outside its reach and nothing said so.
+
+**Found:** MES-88, 2026-09-10, by CODE_CREATOR, at the plan hop. **Fixed here** (guard 23).
+
+**The defect.** §2.3(d) states L2's trigger on the **live count**: *"L2 runs on EVERY
+boundary-direction whose live count is zero, and never on a selection."* Guard 20 in
+`conformance/lib/mcp/conformance/etcc_register.ex` enforces it by comprehending over
+`%{"verdict" => "dead"}`. Measured on the committed table at `7e935c2`: **29** of the 50
+directions have a live count of zero, and **10 of those are recorded `live`** — the L2
+dead→live flips, including `Types.Tool (encode)`, all five Content subtypes `(encode)`,
+`Server.Connection` and `Transport.Stdio`. Strip the `l2` record off any of those ten and
+guard 20 does not look at it.
+
+**The mechanism, and it is the transferable part.** *When a rule's antecedent and its
+guard's selector are different fields, the guard's reach is a coincidence of the data
+rather than a property of the rule.* Here the two fields agree on 19 rows and disagree on
+10, and the 19 are the ones anybody testing the guard would reach for — a DEAD row is the
+obvious subject, and it passes. The gap is only visible if you enumerate the rule's own
+antecedent independently and compare the two populations.
+
+**Why it is worth a register entry rather than a one-line fix.** The rule guard 20
+enforces is *itself* the remedy for F6 — L2 being run on the three directions the sweeper
+suspected instead of all twelve. So this is a guard, written to close a scope defect,
+carrying a **narrower scope than the rule it guards**. That is [S7-17] and
+[ruling-scope-is-the-antecedent-not-the-family] arriving one level up. **Derive the
+guard's population from the rule's antecedent, in the rule's own terms, and if you cannot,
+say which rows you are not reaching.**
+
+**Shown, not asserted.** The 10-row gap was read off guard 20's source, which is exactly
+the instrument S7-16 condemned, so it was then **demonstrated by mutation**:
+`etcc_boundary_sweep_controls.exs guards` case 1 strips the `l2` off a zero-live row
+recorded `live`, and guard 23 refuses while guard 20 accepts.
+
+---
+
+## S8-6 — A recorded measurement whose inputs are PROSE cannot be re-run, only reconstructed — and the reconstruction has a direction
+
+**Found:** MES-88, 2026-09-10, by CODE_CREATOR, while building the re-run. **Fixed here**
+(schema 3's `mutation_spec`).
+
+**The defect.** `etcc-boundaries.json` recorded each boundary's mutation as a prose line,
+`FILE: FROM  ->  TO`, 194 of them. All 194 parse; the problem is what they do **not** say.
+**16 of the 194 have a FROM that occurs 2–6 times in its file**, and nothing in the record
+says whether the sweeper replaced one occurrence or all of them — `"method"` ×6 in
+`lib/mcp/protocol.ex`, `Map.get(map, "_meta"` ×6 in `messages/resources.ex`, and 14 more.
+
+**Why that is not a detail.** S7-19: a mutation is only as strong as it is **wide**, and a
+narrow mutation under-reports reachability, so it always returns the reassuring *"this is
+dead"*. The two readings are not close:
+
+| direction | `replace: "all"` | `replace: "first"` |
+| --- | --- | --- |
+| `MCP.Protocol.Meta` | 135 failures | **0** |
+| `MCP.Protocol.decode_message/1` | 69 failures | **0** |
+| `MCP.Protocol.Extensions` | 4 failures | **0** |
+| `MCP.Protocol.Types.Content (decode)` | 13 failures | 9 |
+
+Three directions go to **zero redness** under the narrow reading. A zero live count fires
+L2's mechanical trigger, and L2 is not guaranteed to rescue every one of them.
+
+**How it was settled, and this is the part to copy.** **By re-measurement, never by
+reading the record.** `mix conformance.sweep --disambiguate` runs BOTH readings on all 11
+affected directions and compares each against the committed `reddened_by_module`. `"all"`
+reproduced on **11 of 11**; `"first"` reproduced on 6 and differed on 5. That is a
+measured answer with a stated discriminator, and it cost 22 test runs. Forming a view from
+the prose would have been free and would have had no evidence behind it either way.
+
+**The general form.** *A record of a measurement must carry its inputs in an APPLICABLE
+form, not a readable one.* The remedy here keeps both: `mutation_spec` is an **addition**
+and the prose is byte-identical, so the byte-comparison a re-run performs is about the
+bytes the original ticket committed rather than a re-serialisation — and **guard 27**
+requires every spec entry to render back to its prose line byte-for-byte, so the two
+cannot drift.
+
+---
+
+## S8-7 — An expiry condition that names one input of a measurement silently claims the others do not matter
+
+**Found:** MES-88, 2026-09-10, by CODE_CREATOR, at the plan hop. **Raised as a blocking
+hand-up**, ratified by the PM at `26995` as an extension to §2.3(e); the PM recorded that
+the unsound form had been used under MES-87 and repeated in this ticket's dispatch.
+
+**The defect.** §2.3(e) as ratified on MES-87 said a liveness verdict *"expires when
+`lib/` moves"*. That is exactly right for the **verdict** — ruling A's antecedent
+quantifies over `lib/` call sites, so nothing else can change what it asserts. It is
+wrong for the recorded **measurements**. L1's own definition in §2.3(d) quantifies over
+the **suite**, so `suite_summary`, `reddened_total`, `reddened_by_module`,
+`reddened_outside_own`, `reddened_outside_own_and_dead` and `live_units` are functions of
+`lib/` **and** of the unit population. **Measured: the population moved 979 → 1021 with
+`lib/` byte-unchanged since `5e1c376`** — five days before MES-81's sweep.
+
+**The consequence that makes it structural rather than cosmetic: a test-only change moves
+a VERDICT, in both directions.** *dead → live* — a new unit outside a dead direction's
+own-tests that reddens under its mutation raises the live count above zero. *live → dead*
+— deleting the last such unit drops it to zero, firing L2's mechanical trigger, which may
+return dead. So *"`lib/` unchanged ⇒ no verdict moved"* is unsound, and it was in live use
+as a skip criterion.
+
+**The mechanism.** *An expiry condition is a claim about the whole input set of the thing
+that expires.* Naming one input reads as thoroughness and asserts, silently, that the
+others are not inputs. The check is mechanical and cheap: **enumerate what the
+measurement is a function of, and require the expiry clause to name every one.** Here the
+measurement's definition named the suite in its own first sentence, one section above.
+
+**What it changed.** AC1 was rescoped — verdict fields byte-exact, measurement fields as a
+stated delta with its cause named. The end-of-sprint cadence skip became **two**
+conditions, `lib/` and the unit population, because one of them was never sufficient.
+
+---
+
+## S8-8 — Fixing the instance and leaving the rule: gate 1's blind spot survived in two more committed files
+
+**Found:** MES-88, 2026-09-10, by CODE_CREATOR. **Fixed here.**
+
+**The defect.** MES-46 established that gate 1 was blind to `conformance/`; MES-51 scoped
+`.formatter.exs`, `elixirc_paths` and `.credo.exs` to `conformance/lib/**` and left the
+rest of `conformance/` outside all three. MES-81 then committed an unformatted
+`etcc_l2_probe.exs` while `mix format --check-formatted` returned **rc=0** — both
+statements true — formatted **that file** in round 5, and deliberately left the rule to
+this ticket.
+
+**What was measured at `7e935c2`.** Running gate 1 file-by-file over all 20 `.ex`/`.exs`
+files under `conformance/` outside `conformance/lib/`: **two are unformatted** —
+`conformance/controls/etcc_attribution_controls.exs` and
+`conformance/controls/exunit_rows_controls.exs` — while the DoD's gate 1 returns rc=0.
+Same shape, different files, still shipping, four tickets later.
+
+**The mechanism.** *Fixing the instance leaves the generator of instances running.* The
+narrow scope had a stated reason — the adapters at the `conformance/` root do not pass
+gate **2** — but that reason was **never a reason about gate 1**, which has no compile
+dependency. One rule's justification had been carried across three rules because they were
+changed in one commit.
+
+**The fix, and what it costs everyone else.** `.formatter.exs` inputs now include
+`conformance/**/*.{ex,exs}`; `elixirc_paths` and `.credo.exs` stay as MES-51 left them
+(PM ruling, `26994`). **This widens gate 1's reach for every ticket, not just this one** —
+a script anywhere under `conformance/` is now gate-1 material — and the reviewer's
+merge-gate checklist must say so. Shown live by mutation, not assumed: injecting bad
+formatting into a `conformance/controls/` file takes gate 1 to rc=1, and reverting returns
+it to rc=0.
+
+---
+
+## S8-9 — A diagnostic that shares its output stream with the toolchain cannot be diffed, and the collision is systematic rather than occasional
+
+**Found:** MES-81 round 5 by CODE_REVIEWER (worked around there), raised as PM scope
+addition 8 at `26076`. **Reproduced and fixed here.**
+
+**The defect.** `conformance/etcc_l2_probe.exs` wrote its scenario lines to **stdout**,
+where `mix run` also writes `Compiling 1 file (.ex)` and `Generated mcp_elixir_sdk app`.
+A `diff` of two raw runs therefore reports a difference that is not a moved scenario — and
+a moved scenario is the entire output of L2's first conjunct.
+
+**Why it is systematic.** The probe is run once for a baseline and once per mutation, and
+**the step before every mutated run has changed `lib/` by construction**. So the chatter
+is present on every mutated run and absent on the baseline: the collision fires on
+**every** comparison the instrument is used for, not occasionally. Measured here: baseline
+15 lines, mutated 17, `0a1,2` — the two chatter lines.
+
+**The fix, and why it is not a filter.** Filtering the chatter by prefix would still be
+reading a stream two writers share, and the next writer is not covered. The probe now
+takes an **output path**: chatter keeps stdout, scenarios go to the file, the diff is over
+the file. The no-argument form is unchanged, so nothing that read the old output breaks.
+Shown discriminating: with a forced recompile between two runs, the file outputs are
+**identical** while the stdout captures still differ by one line.
+
+**The mechanism.** *A stream with two writers is not an output.* Any instrument whose
+result is a diff needs a channel it owns; and the test of whether it owns one is to force
+the other writer to speak and check the comparison is unmoved.
+
+---
+
+## S8-10 — The re-run found three recorded measurements that were never reproducible AT THEIR OWN TIP. A re-run detects recording errors, not only staleness.
+
+**Found:** MES-88, 2026-09-11, by CODE_CREATOR, on the first full re-run. **Corrected
+here** by the regenerated table. **No verdict moves.**
+
+**What was measured.** Three of the 50 directions did not reproduce their committed
+`reddened_total` / `reddened_by_module`, in the direction of *less* redness:
+
+| direction | committed | re-run at `7e935c2` | re-measured at MES-81's OWN tip `85d50fa` |
+| --- | --- | --- | --- |
+| `…Content.ImageContent (decode)` | 2 (`ContentTest` 2) | 1 (`ContentTest` 1) | **1** — `ImageContent from_map/1 parses image content` |
+| `…Content.ImageContent (encode)` | 2 (`ContentTest` 2) | 1 (`ContentTest` 1) | **1** — `ImageContent round-trips through JSON` |
+| `…Content.TextContent (decode)` | 10 (`ContentTest` 3) | 9 (`ContentTest` 2) | **9** (`ContentTest` 2) |
+
+**The third column is the point.** The obvious reading of a measurement that no longer
+reproduces is *drift* — the tree moved under it. That reading was tested and is **wrong**:
+the mutation was re-applied at `85d50fa`, the commit MES-81 recorded these very numbers
+at, and the tip-correct answer is what the re-run produces today, not what the table
+holds. `lib/` is byte-unchanged since `5e1c376`, five days before that sweep. **The
+figures were wrong when they were written.**
+
+**Why they are wrong is INFERRED, not established, and the difference is stated because
+this register is where that distinction is kept.** The arithmetic is consistent across all
+three: `ImageContent` reddens exactly one unit per direction and both halves record **2**,
+their sum; `TextContent` reddens `ContentTest` 2 on decode and 1 on encode, and the decode
+half records **3**, their sum. That is the shape of a **pre-split combined measurement
+carried into both halves by the round-4 direction split instead of being re-taken** — the
+same round-3/4 residue the PM independently found in `live_units` being a sample on
+exactly the six single-direction rows the split did not re-measure (`26076`, addition 7).
+It cannot be confirmed from history: only schema-2 versions of
+`conformance/data/etcc-boundaries.json` were ever committed, so the pre-split values are
+not in the repository. **Consistent with, not proof of.**
+
+**Why it survived six rounds of review.** Every one of the three has a live count of
+**zero** both before and after, so the verdict is unchanged in all three cases and no
+`ET-CC` row moves. A wrong number that no decision rests on is invisible to every check
+that asks whether the decision is right — and the table has four such guards.
+
+**The mechanism, and it is why this ticket was worth doing.** *A recorded measurement is
+falsifiable in two independent ways — it can go stale, and it can have been wrong — and
+only re-running it distinguishes them.* Re-running at HEAD alone cannot: it returns a
+difference and leaves the cause open. **Re-running at the ORIGINAL tip is what separates
+"the tree moved" from "the record was never right",** and it is cheap when the mutation
+spec is applicable rather than prose (S8-6). Do it before concluding drift.
+
+---
+
+## S8-11 — The unit population is a function of the HOST, not only of the tree, so no git-diff skip condition can bound it
+
+**Found:** MES-88, 2026-09-11, by CODE_CREATOR, while accounting for a suite total that
+would not reconcile. **Qualifies a criterion ratified on this ticket — handed up, not
+fixed here.**
+
+**The defect.** The end-of-sprint cadence ratified at `26994` may skip the sweep when both
+`git diff --name-only <tip>...HEAD -- lib/` and
+`git diff --name-only <tip>...HEAD -- test/ test/support/ conformance/lib/` are empty.
+Condition (b) exists because L1 quantifies over the unit population (S8-7). **But the
+population is not a function of the repository alone.** `test/test_helper.exs` excludes
+three conformance tests when `node` or the pinned harness is absent — deliberately, and
+with its reason printed, because MES-56 established that a silent skip reads absence as
+satisfaction. Measured here at **one unchanged tip** (`18df3a6`):
+
+    node on PATH      13 doctests, 994 tests, 0 failures
+    node removed      13 doctests, 991 tests, 0 failures (3 excluded)
+
+**Both git conditions are empty across that pair.** A sweep could therefore be skipped on
+a host whose population differs from the one the verdicts were taken on, and both commands
+would print nothing — the exact failure mode the "print the question, not just the answer"
+rule was written for, one level further out.
+
+**How big is it, honestly.** Three units, and they are conformance tests that are nobody's
+`own_tests` and sit in the live-column exclusion sets. **No verdict in the current table
+turns on them.** This is a *bound that does not hold*, not a wrong answer on the board
+today — which is precisely when it is cheap to say so.
+
+**What was done about it at the time.** The regenerated table recorded `node` in its
+`control` block, so a future re-run could see whether it was comparing like with like
+instead of assuming it. That made the difference **visible**; it did not make the skip
+condition sound. Whether condition (b) should gain a host clause was **handed up**, not
+diverged in the instrument.
+
+### CLOSED on MES-88 at the PM's merge gate (`27205`, 2026-09-12)
+
+The PM ruled the incomplete condition **blocking**: a forward-looking cadence rule may not
+ship a false skip, and this one was *cheaply closable* — which is what separates it from
+`CLAUDE.md`'s gate-6 limitations, which cannot be closed locally. **A closable hole is
+closed, not documented.**
+
+**The fix is a third skip condition, and it is not a git diff.**
+
+    mix conformance.sweep --host
+
+It compares this host's fingerprint — `node=<version> harness=<available|unavailable>` —
+against the one recorded in the committed table's generated `control` block, and exits
+**1** unless they match. It is **fail-closed on three counts**: fingerprints differ, *no
+host recorded*, and *current host unreadable* all refuse the skip. "I could not tell"
+means **run the sweep**, because the alternative is the MES-56 failure — absence read as
+satisfaction — one level further out.
+
+**`harness` is deliberately coarse.** The fingerprint tracks the **population**, and every
+unavailability reason (no `node`, no harness, no requirement set) excludes the same three
+units, so a host that swaps one reason for another has not moved what L1 quantifies over.
+The reason is recorded beside the fingerprint, and not in it.
+
+**The recorded side is generated, not hand-written.** `mix conformance.sweep --record-host`
+re-measures the unmutated baseline and writes `control.host` through the same
+`control_block/3` the full sweep uses — and **refuses** unless that baseline is the one the
+committed block already records (same `suite_total`, same `baseline_failures`, green). A
+fingerprint attached to a population the table was never taken at would be worse than no
+fingerprint. Measured here: `13 doctests, 1021 tests, 0 failures`, matching the committed
+`control` exactly, so `node=v24.13.0 harness=available` is the host the 50 rows were
+measured on and not merely the host that recorded them.
+
+**Shown firing on a real host difference, not a fabricated string.**
+`mix run conformance/controls/etcc_boundary_sweep_controls.exs host` takes `node` off
+`PATH`, re-measures, and **runs the suite** under that PATH — because a fingerprint is only
+worth comparing if the thing it fingerprints moves:
+
+    node on PATH      13 doctests, 1021 tests, 0 failures
+    node off PATH     13 doctests, 1018 tests, 0 failures (3 excluded)
+
+Same tree, same commit, conditions (a) and (b) both empty. The control also carries the
+**negative** control (an identical host must report `match`, or a checker that always fires
+would print the same pass) and both fail-closed cases.
+
+**What it does not do, stated because the rule that was blocked was blocked for exactly
+this.** Condition (c) answers for a **skip**. It does not stop a sweep being **run** on a
+host where the exclusion fires; such a run measures 1018 units and records a table over
+the smaller population. That is now visible rather than silent — `control.host` says
+`harness=unavailable`, every `suite_summary` carries `(3 excluded)`, and the next `--host`
+refuses a skip against it — but whether the sweep should additionally **refuse** an
+incomplete host is a policy question and is **not** settled here.
+
+**The mechanism.** *A skip condition is a claim that you have enumerated everything the
+thing you are skipping depends on.* Enumerating the repository inputs reads as complete
+because the repository is what a diff can see. **Ask what the measurement runs on, not
+only what it reads.**
+
+---
+
+## S8-12 — A regenerator that rebuilds every row and not the document's own summary ships an artefact that contradicts itself
+
+**Found:** MES-88, 2026-09-11, by CODE_CREATOR, comparing the first regenerated table
+against the committed one. **Fixed here** before anything was committed.
+
+**The defect.** `BoundarySweep.sweep/1` returned `%{doc | "boundaries" => ...}`. Every one
+of the 50 rows was re-measured at the 1021-unit population; the document-level `control`
+block — `suite_total: 979`, and a `note` reading *"13 doctests, 979 tests"* — was carried
+through untouched. The artefact would have shipped claiming a baseline it was not taken
+at, with the **rows and the summary of the rows disagreeing by 42 units**.
+
+**Why it would not have been caught.** `--check` compares verdict fields; the measurement
+delta report enumerates *per-row* fields. Neither looks at the document level, and the
+`control` block is the one part of the file a reader trusts *because* it is the summary.
+The PM's instruction was explicit — *"do not ship a knowingly-stale table"* — and the table
+would have been stale in the single place that describes the whole run.
+
+**The mechanism.** *Regeneration granularity must match the artefact's claim granularity.*
+The rows were the unit of work, so the rows were the unit of regeneration; the document
+made a claim of its own and nothing regenerated it. **Enumerate every field the artefact
+asserts, then ask which are produced by the generator — and treat the gap as the defect,
+not as context.** `control` is now generated, carries a `GENERATED — do not hand-edit`
+marker, and records `node` (S8-11).
+
+---
+
+## S8-13 — The measured-field enumeration named six of seven, and the seventh moved
+
+**Found:** MES-88, 2026-09-11, by CODE_CREATOR. **Disclosed to the PM rather than folded
+in quietly**, because the six are named in a ratified acceptance criterion.
+
+**The defect.** §2.3(e)'s extension and the PM's AC1 rescope both enumerate **six**
+measurement fields. The sweep measures **seven**: `unlocated_failures` — the count of
+failures the transcript parser could not resolve to a `file:line (Module)` key — is
+measured, recorded per row, and was in **neither** the compared set nor the reported
+delta set. It moved on the re-run: `MCP.Protocol.Meta` **36 → 0** and
+`MCP.Server.Dispatch` **8 → 0**. Two rows changed a recorded measurement and the
+instrument built to report exactly that said nothing.
+
+**Why the direction is benign and the silence is not.** 36 → 0 is the new mechanical
+parser locating failures the original could not; it is an improvement, and no verdict
+turns on it. But it reached the artefact **unreported**, through an instrument whose
+entire purpose is that measurements do not change in silence.
+
+**The fix, and its scope.** `unlocated_failures` joins `@measurement_fields`, so it is
+**reported** as a stated delta. `--check` still compares **verdict fields only**, so the
+ratified AC1 is honoured exactly — this is strictly more disclosure, never a new way to
+fail. The ratified §2.3(e) sentence says *"its L1 measurements"* and enumerates nothing,
+so **no Part A text needs to change**; what named six is the explanatory prose and the
+acceptance criterion, and the discrepancy is disclosed in the hand-back.
+
+**The mechanism — S8-7's own shape, one level down.** *An enumeration offered as the
+extent of a set silently asserts that nothing else is in it.* S8-7 caught an expiry
+condition naming one input of a measurement. This is the same error committed **while
+fixing it**: the remedy enumerated the measurement fields and missed one. A rule about a
+rule's reach does not exempt itself (S7-17). **Derive the list mechanically — here, from
+what the sweep writes — rather than by enumerating what comes to mind.**
+
+---
+
+## S8-14 — An `after` block is not a crash-safe revert, and the thing that saved the tree was the guard that assumes it isn't
+
+**Found:** MES-88, 2026-09-11, by CODE_CREATOR, on picking the ticket back up after a
+seat death mid-sweep. **No fix needed — the compensating control already existed and is
+demonstrated here.**
+
+**What happened.** A previous sweep run died mid-flight. `lib/mcp/protocol/header_mirror.ex`
+was left **mutated in the working tree** (`decoded` → `decoded <> "ZZ"`), uncommitted, on
+a branch shared by three seats through one clone. The sweep reverts inside an Elixir
+`after` block, which is exactly right for an exception or an abort — and runs **not at
+all** when the OS kills the VM or the session ends under it.
+
+**Why it did not become a wrong measurement.** `BoundarySweep.sweep/1` calls
+`refuse_dirty_lib!/0` before it measures anything: a non-empty
+`git status --porcelain -- lib/` refuses the run outright, on the grounds that a dirty
+`lib/` makes every count *"a claim about a tree nobody can name"*. So the next sweep could
+not silently take its baseline against a mutated tree — it would have stopped. The
+fail-closed guard is what held; the cleanup mechanism is what failed.
+
+**The mechanism.** *A cleanup path that runs in the same process as the work is not a
+guarantee about the tree — it is a guarantee about the happy path and the unhappy paths
+you can catch.* Process death is not one of them, and for an instrument that edits
+tracked source in a **shared clone**, the failure is another seat's problem, not yours.
+**Pair every in-process cleanup with a start-of-run precondition that assumes the cleanup
+did not happen.** The precondition is the load-bearing half; `after` is the courtesy.
+
+---
+
+## S8-15 — A provenance base taken from the adjacent merge answers a different question, quietly
+
+**Found:** MES-88, 2026-09-11, by CODE_CREATOR, auditing this ticket's own plan comment.
+
+**The defect.** This ticket's plan established the unit-population change with
+`git diff --name-only 18df3a6...HEAD -- test/` and reported **one file changed**. `18df3a6`
+is **`[MES-84]`** — the merge *after* the one that took the measurement. MES-81's sweep,
+which recorded the 979, is **`85d50fa`**. Against the right base the same command returns
+**32 changed test files**, including `test/mcp/protocol/types/content_test.exs`.
+
+**What it cost, and what it nearly cost.** The wrong base made a real discrepancy look
+impossible — *"`content_test.exs` is byte-unchanged, so a redness drop cannot be a test
+change"* — and sent the investigation toward host state and generated tests before the
+base itself was checked. It did not corrupt a delivered number, because the re-run
+measures rather than reasons. Had the conclusion been *reasoned* from that diff, S8-10
+would have been recorded as drift instead of as a recording error.
+
+**The mechanism.** *The base of a provenance diff must be the tip the claim was measured
+at, and a neighbouring merge is not it.* Both are plausible short hashes in the same log,
+both produce a clean non-empty answer, and **neither the command nor the output says which
+question it answered**. Resolve the base from the artefact or the ticket that recorded the
+measurement — never from what is adjacent in `git log` — and state the base beside the
+number, as the table's `control` block now does.
+
+---
+
+## S8-16 — A measurement whose COUNTS are stable and whose MEMBERSHIP is not. Five runs, one outlier, and the verdict never moved.
+
+**Found:** MES-88, 2026-09-11, by CODE_CREATOR, while proving a credo-driven refactor of
+the transcript parser was behaviour-preserving. **Not fixed — characterised, and the
+table ships the reproducible value.**
+
+**What was measured.** `MCP.Protocol.Meta`'s mutation, five times at `7e935c2`:
+
+| run | context | `suite_summary` | located | live | `JsonSchema202012Test` | `StreamableHTTPStatelessTest` |
+| --- | --- | --- | --- | --- | --- | --- |
+| full sweep 1 | direction 14 of 50 | 135 failures | 99 | 98 | 38 | — |
+| full sweep 2 | direction 14 of 50 | 135 failures | 99 | 98 | 38 | — |
+| spot sweep | direction 1 of 3 | 135 failures | 99 | 98 | **30** | **8** |
+| isolated 1 | alone | 135 failures | 99 | 98 | 38 | — |
+| isolated 2 | alone | 135 failures | 99 | 98 | 38 | — |
+
+**Every count is identical in all five runs. The membership is not:** in the outlier,
+**8** `live_units` are different — eight `JsonSchema202012Test` units are replaced by
+eight `StreamableHTTPStatelessTest` units, the two modules trading exactly the same
+number. Both are `async: false`; there is no `max_failures` cap configured. The shape is a
+**cascade whose attribution depends on execution order** — one module's failure absorbing
+units the other would otherwise have reported. **The cause is NOT established**, and
+saying which module "really" fails would be a story rather than a measurement.
+
+**Why it does not destabilise anything that decides something.** `verdict`,
+`established_by`, `direction` and both `l2` fields were **identical in all five runs** —
+and those are exactly the fields `--check` compares. The rescope of AC1 to verdict fields
+was argued from the population moving (S8-7); this is a **second, independent and
+unplanned reason** for it. Had `--check` compared `live_units`, the sweep would fail
+roughly one run in five, on a difference that moves no verdict and no `ET-CC` row — and a
+gate that cries wolf at that rate gets skipped, which is how a real drift would then get
+through.
+
+**What ships.** The value reproduced by four runs out of five, including both runs made in
+isolation. **Stated, not silently majority-voted:** the outlier is recorded here, the
+`control` block now marks the table as a fact about one run, and the completed `live_units`
+(PM addition 7) is an exhaustive enumeration **of that run**, not a constant of the
+boundary.
+
+**The mechanism.** *Reproducibility is a property of each field, not of a measurement.*
+Counts aggregate over a cascade and come out stable; membership does not, and the two sit
+in adjacent columns of the same row looking equally solid. **Re-run before trusting a
+field you are about to compare on — and re-run in more than one CONTEXT,** because the
+outlier here was invisible to two identical full sweeps and appeared only when the same
+direction was measured in a different position.
+
+---
+
+## S8-17 — L1 can report LIVE on the strength of a TEST calling the boundary, which is not what ruling A asks. The first proxy bias that points the other way.
+
+**Found:** MES-88, 2026-09-11, by CODE_CREATOR, in the intermediate state of the AC4
+tree-drift demonstration. **Recorded, not acted on — it moves no current verdict.**
+
+**The defect.** Ruling A's antecedent is *"no `lib/` call site routes this boundary to a
+transport."* **L1 does not measure that.** L1 mutates the boundary and counts units that
+redden outside its own tests — and a unit reddens just as readily when **the test calls
+the boundary directly** as when a `lib/` path carries it there.
+
+**Measured, in the drift worktree.** `MCP.Protocol.HeaderMirror (decode)` has one `lib/`
+consumer, `streamable_http/plug.ex`. With that consumer inlined behaviour-preservingly —
+**no `lib/` call site routing the boundary at all** — L1 still reported **LIVE**, live
+count 2, on:
+
+    test/mcp/transport/routing_headers_test.exs:223   assert HeaderMirror.decode_value(header) == name
+    test/mcp/transport/routing_headers_test.exs:261   assert HeaderMirror.decode_value(headers["mcp-name"]) == hostile
+
+Inlining those two call sites took the live count to **0**, at which point L2 fired and
+established the boundary live on the bytes instead.
+
+**Why it is worth recording despite moving nothing.** Every instrument in this register's
+chain — qualified-name grep, narrow mutation, wide mutation — failed toward **DEAD**, and
+each was replaced because its *silence was read as death* (S7-16, S7-19). The whole
+correction history runs in one direction. **This bias runs the other way**: L1 can say
+LIVE where ruling A's antecedent is false. It is safe in the sense that it over-reports
+membership, and `ET-CC` over-inclusion is the conservative error — but *"the instrument is
+biased, and we know which way"* had been true in only one direction until now, and a
+chain audited for one bias will not notice the other.
+
+**No current verdict is affected**, and this was checked rather than assumed: in the
+delivered tree the plug **does** route this boundary, so `live` is correct on its own
+terms, and `--check` is green on all 50 directions.
+
+**The mechanism.** *A proxy's population and its rule's antecedent can differ at BOTH
+ends.* S8-5 found a guard whose population was narrower than its rule. This is the same
+mismatch widened instead: the proxy admits evidence the rule does not accept. **When you
+check a proxy against its rule, check both containments** — what the rule covers that the
+proxy misses, and what the proxy counts that the rule never asked for.
+
+---
+
+## S8-18 — The one transcript shape the host axis produces was the one shape the transcript parser could not read, and it failed to a silent `nil`
+
+**Found:** MES-88, 2026-09-12, by CODE_CREATOR, while building S8-11's closure — by
+running the mutation the closure needed rather than by reading the parser. **Fixed here.**
+
+**The defect.** `BoundarySweep.summary_line/1` matched ExUnit's summary with an anchored
+`\A\d+ doctests?, \d+ tests?, \d+ failures?\z`. ExUnit appends `(N excluded)` when
+`test_helper.exs` excludes the three `:requires_live_harness` tests — which is **exactly
+what happens on a host without `node`**. That line does not match, so `summary` came back
+`nil`, `suite_total/1` returned `nil` from it, and a sweep on such a host would have
+written a table whose every `suite_summary` was `null` and whose `control.suite_total` was
+`null` — **the population field, empty, on the one axis whose whole point is that the
+population moved.** No error, no warning; the sweep would have completed.
+
+**How it surfaced.** The control for S8-11's new condition (c) takes `node` off `PATH` and
+re-runs the suite, because a fingerprint is only worth comparing if the thing it
+fingerprints moves. The suite ran and printed
+`13 doctests, 1018 tests, 0 failures (3 excluded)`; the control printed
+`suite without node:` followed by nothing.
+
+**Bounded.** Nothing committed is affected: every table this repository holds was measured
+on a complete host, where the shape is unchanged and parses exactly as before — asserted
+both ways in the control, with a non-summary line as the negative control. The fix widens
+the pattern by two optional clauses and leaves the prefix alone.
+
+**The mechanism.** *A parser written against the transcripts you have seen encodes which
+host you were on.* The anchored `\z` was not careless — it was a deliberate guard against
+matching stray lines, written by someone whose every run said `0 failures` at the end of
+the line. **The failure mode of an over-anchored parser is a silent `nil`, not a raise**,
+so it is invisible until something downstream reads the empty field as a fact. And note
+where it was caught: not by inspecting the parser, but by *running the very mutation the
+new control existed to perform*. **A control that actually exercises the off-nominal
+branch finds the instrument bugs that live there** — which is the whole argument for
+mutations over readings, one level below where S7-19 made it.

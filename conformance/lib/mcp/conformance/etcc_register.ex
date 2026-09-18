@@ -53,6 +53,18 @@ defmodule MCP.Conformance.ETCCRegister do
       resolve at this tip or does not open a helper containing an assertion — **guard 22**
       (MES-87, §6.1 ratified at `26737`). Its limit is stated at the guard: it checks that
       the field names a real asserting helper, never that it names the right one;
+    * anything **guards 23-27** refuse (MES-88, `MCP.Conformance.BoundarySweep`): a
+      direction whose live count is zero with no L2 record **whatever its verdict** (23 —
+      guard 20 above comprehends over `verdict: "dead"` only, and **10** of the 50
+      directions are zero-live and recorded `live`, so guard 20 cannot see them); an
+      impotent mutation behind a DEAD verdict (24); a DEAD verdict missing one of L2's
+      two conjuncts (25); a `mutation_spec` that does not render back to its committed
+      `mutation` prose (27). **Guard 26 — that the spec still resolves against `lib/` —
+      is deliberately NOT run here.** It is the only one of the five that is a function
+      of the **tree** rather than of the table, and the ratified cadence puts `lib/`-drift
+      detection at the **sprint boundary** (`CLAUDE.md`, End-of-Sprint Procedure step 4).
+      Running it here would make an unrelated ticket's `lib/` change refuse this
+      register's build, when what it owes is a sweep finding;
     * an `ET-CC` row that calls a SPLIT module's decode-side producer in its own test
       body without naming that module's `(decode)` direction — **guard 21** (PM ruling
       `26070`). This is the only guard about ATTRIBUTION rather than about a label or a
@@ -60,6 +72,8 @@ defmodule MCP.Conformance.ETCCRegister do
       takes as given. Its reach is stated in `check_attribution!/2` — doctest rows are
       outside it, and that residual is named rather than left to be found.
   """
+
+  alias MCP.Conformance.BoundarySweep
 
   @artefact "docs/conformance/etcc-exunit-rows.json"
   @decisions "conformance/data/etcc-decisions.json"
@@ -94,6 +108,7 @@ defmodule MCP.Conformance.ETCCRegister do
       Keyword.get(opts, :boundaries, @boundaries) |> read_json() |> Map.fetch!("boundaries")
 
     check_boundaries!(boundary_rows)
+    BoundarySweep.check_table!(boundary_rows, check_tree: false)
     boundaries = Map.new(boundary_rows, &{&1["id"], &1["verdict"]})
 
     rows = Map.fetch!(artefact, "rows")

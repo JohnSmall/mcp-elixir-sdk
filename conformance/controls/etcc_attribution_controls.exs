@@ -238,7 +238,9 @@ defmodule ETCCAttributionControls do
       |> Enum.flat_map(& &1["tokens"])
       |> Enum.filter(&String.contains?(&1, "ClientCustomHeaderNoMirrorNumber"))
 
-    IO.puts("\n  false-positive control — members claiming ClientCustomHeaderNoMirrorNumber: #{length(claimed)}")
+    IO.puts(
+      "\n  false-positive control — members claiming ClientCustomHeaderNoMirrorNumber: #{length(claimed)}"
+    )
 
     if claimed == [] do
       IO.puts("    ok — A4 examined and rejected that pairing, and this method agrees.")
@@ -278,7 +280,11 @@ defmodule ETCCAttributionControls do
     by_cg = Map.fetch!(totals, "by_cg")
 
     state_1 = Enum.count(all_tokens(rows), &(not String.starts_with?(&1, "oc:none/")))
-    carriers_1 = Enum.count(rows, fn r -> Enum.any?(r["tokens"], &(not String.starts_with?(&1, "oc:none/"))) end)
+
+    carriers_1 =
+      Enum.count(rows, fn r ->
+        Enum.any?(r["tokens"], &(not String.starts_with?(&1, "oc:none/")))
+      end)
 
     checks = [
       {"members", Map.fetch!(totals, "members")},
@@ -301,7 +307,11 @@ defmodule ETCCAttributionControls do
       for {label, n} <- checks, reduce: [] do
         acc ->
           found? = prose =~ ~r/(?<![0-9])#{n}(?![0-9])/
-          IO.puts("  #{String.pad_trailing(label, 22)} #{String.pad_leading(to_string(n), 4)}  #{if found?, do: "present in prose", else: "ABSENT FROM PROSE"}")
+
+          IO.puts(
+            "  #{String.pad_trailing(label, 22)} #{String.pad_leading(to_string(n), 4)}  #{if found?, do: "present in prose", else: "ABSENT FROM PROSE"}"
+          )
+
           if found?, do: acc, else: [label | acc]
       end
 
@@ -429,19 +439,25 @@ defmodule ETCCAttributionControls do
         {boundary, row["leg"]}
       end
 
-    for {name, reading} <- [{"STRICT — every entry leg-specific AND agreeing", :strict},
-                            {"LOOSE  — any leg-specific entry decides", :loose}] do
+    for {name, reading} <- [
+          {"STRICT — every entry leg-specific AND agreeing", :strict},
+          {"LOOSE  — any leg-specific entry decides", :loose}
+        ] do
       table =
         Enum.frequencies_by(rows, fn {boundary, leg} -> {proxy_leg(boundary, reading), leg} end)
 
-      agree = table |> Enum.filter(fn {{p, l}, _} -> p == l end) |> Enum.map(&elem(&1, 1)) |> Enum.sum()
+      agree =
+        table |> Enum.filter(fn {{p, l}, _} -> p == l end) |> Enum.map(&elem(&1, 1)) |> Enum.sum()
+
       total = length(rows)
 
       pct = Float.round(agree * 100 / total, 1)
       IO.puts("\n  #{name}\n  agreement: #{agree} of #{total} = #{pct}%")
 
       for {{p, l}, n} <- Enum.sort(table) do
-        IO.puts("    proxy=#{pad(p)} file=#{pad(l)} #{n} #{if p == l, do: "agrees", else: "DISAGREES"}")
+        IO.puts(
+          "    proxy=#{pad(p)} file=#{pad(l)} #{n} #{if p == l, do: "agrees", else: "DISAGREES"}"
+        )
       end
 
       crossing =

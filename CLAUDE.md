@@ -275,6 +275,96 @@ moment an advisory can be acted on without disrupting anything.
    scoped, prioritised and scheduled like any other work, instead of being absorbed
    silently into whatever ticket happened to notice it.
 
+4. **Boundary-liveness sweep** (added by MES-88 under PM ruling `26994`). Re-run the
+   ET-CC boundary-liveness measurement against `main` at the sprint's final tip and
+   diff it against the committed table:
+
+   ```bash
+   mix conformance.sweep --check
+   ```
+
+   - **Why it is here and not on a ticket.** The ET-CC register's `boundary` field and
+     its liveness verdict are the register's only **measurements**; every other field
+     is a judgement. A judgement goes stale when the *criterion* changes, and the
+     criterion is under change control. A measurement goes stale when the *code*
+     changes, which happens constantly and under none. `etcc_register.ex`'s guard 19
+     validates the register against the **recorded table**, never the table against
+     the **tree**, so it stays green while the verdicts under it rot. Nothing else
+     re-runs the sweep.
+   - **Cost, measured not assumed:** ~22 s per mutation cycle × 50 directions, plus a
+     byte-probe run per zero-live direction — **25–30 minutes**, all of it on the
+     critical path of whoever runs it. That is why it is a cadence check and not a
+     per-ticket gate, the same reasoning gate 6's applicability rule uses.
+   - **A verdict that has drifted fails loudly**, naming the direction, the old and
+     new verdict, and the ET-CC register rows it would move. Like an advisory, it
+     becomes a **Jira ticket** — it is not fixed in place.
+
+   **The three-condition skip, and all three conditions are required.** The sweep may be
+   skipped only when **all three** of these come back clean at the sprint's final tip:
+
+   ```bash
+   # (a) no lib/ change since the last sweep tip -- THREE dots, per the gate-6 rule
+   git diff --name-only <last-sweep-tip>...HEAD -- lib/
+
+   # (b) no change to the UNIT POPULATION since the last sweep tip
+   git diff --name-only <last-sweep-tip>...HEAD -- test/ test/support/ conformance/lib/
+
+   # (c) this HOST is the host the committed table was measured on. Exits 0 on a match
+   #     and 1 otherwise; prints both fingerprints either way. Seconds, no sweep.
+   mix conformance.sweep --host
+   ```
+
+   **Either diff non-empty, or `--host` nonzero ⇒ run the sweep.** Condition (b) is not
+   belt-and-braces. L1 — the liveness proxy — quantifies over the **suite**, not over
+   `lib/`, so a **test-only** change moves a verdict in either direction: a new unit
+   outside a dead direction's own-tests that reddens under its mutation raises the live
+   count above zero (dead → live), and deleting the last such unit drops it to zero,
+   firing L2's mechanical trigger (live → dead). *"`lib/` unchanged ⇒ no verdict moved"*
+   is **unsound**, and it was in use here until MES-88 measured the population moving
+   **979 → 1021 with `lib/` byte-unchanged**. This is ratified criterion, not local
+   practice: `docs/conformance/etcc-membership.md` §2.3(e) as extended,
+   `[authored 26988 | ratified 26995]`.
+
+   **Condition (c) exists because (a) and (b) are `git diff`s and the population is not a
+   function of the repository.** `test/test_helper.exs` excludes the three
+   `:requires_live_harness` conformance tests where `node` or the pinned harness is
+   absent — deliberately, per MES-56, because a silent skip reads absence as
+   satisfaction. Measured on MES-88 at **one unchanged tip, with (a) and (b) both
+   empty**: `13 doctests, 1021 tests, 0 failures` with `node` on PATH and
+   `13 doctests, 1018 tests, 0 failures (3 excluded)` without. Two conditions alone would
+   therefore permit a skip on a host whose population is not the one the verdicts were
+   taken on, and **both commands would print nothing while it happened**. `--host`
+   compares this host's fingerprint against the one the committed table's generated
+   `control` block records, and is **fail-closed**: it refuses the skip when the
+   fingerprints differ, when no host is recorded, and when the current one cannot be read.
+   "I could not tell" means *run the sweep*. Shown firing — on a real host difference,
+   not a fabricated string — by
+   `mix run conformance/controls/etcc_boundary_sweep_controls.exs host`.
+
+   **Record the result in `docs/sprint_{N}_issues.md`, including a skip** — with all
+   three commands and all three outputs, **the host fingerprint among them**, not just
+   the conclusion. "Checked, and zero" and "never asked" read identically when only the
+   answer is printed; and "checked, and zero" without the host does not say *where* it
+   was zero.
+
+   **What this cadence gives up, stated because a rule that states only its benefit is
+   not honest.** Between sprint boundaries a merged `lib/` change can rot a verdict and
+   nothing notices — guard 19 goes on passing over the rotted table, which is the exact
+   failure MES-88 was raised for, merely **bounded to one sprint instead of forever**.
+   That is a bound, not a guarantee. The trade is taken because a 25–30 minute gate on a
+   ticket that touches no `lib/` file yields no information about the work under review,
+   and because a verdict that rotted mid-sprint is not the reviewing seat's to fix.
+
+   **And what condition (c) does not do.** It makes a *skip* answer for the host. It does
+   **not** stop a sweep being **run** on a host where the exclusion fires: that run
+   measures 1018 units instead of 1021 and records a table taken over the smaller
+   population. That is now **visible rather than silent** — `control.host` records
+   `harness=unavailable` and every `suite_summary` carries `(3 excluded)` — and the next
+   `--host` refuses a skip against it, so it cannot propagate. Whether the sweep should
+   additionally **refuse** an incomplete host, the way `CLAUDE.md` already says a run
+   reporting "3 excluded" is not a complete gate 5, is a policy question and is not
+   settled here.
+
 **Relationship to release.** A release only ever follows a completed sprint — never
 mid-sprint. So this sweep is always upstream of any release, and no release can ship
 on advisory data older than the last sprint boundary. It does **not** replace MES-19's

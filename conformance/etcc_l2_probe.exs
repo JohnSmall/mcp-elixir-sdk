@@ -137,6 +137,35 @@ defmodule MCP.Conformance.L2Probe do
   end
 end
 
-MCP.Conformance.L2Probe.scenarios()
-|> Enum.sort()
-|> Enum.each(fn {k, v} -> IO.puts(k <> "\t" <> inspect(v)) end)
+# MES-88, PM scope addition 8 (MES-81 `26071`). The scenario lines used to go to
+# stdout — where the compiler's "Compiling 1 file (.ex)" and "Generated ... app" lines
+# land as well. In a mutation sweep the step before EVERY probe run changes `lib/`, so
+# those two lines are present on every mutated run and absent on the baseline, and a
+# naive `diff` of two raw runs reports a difference that is NOT a moved scenario. That
+# trap sits directly on AC1's path.
+#
+# Filtering the chatter out by prefix would be a workaround — it would still be reading
+# a stream two writers share. Taking an output PATH removes it: chatter keeps stdout,
+# scenarios go to the file, and the diff is over the file.
+#
+#     mix run conformance/etcc_l2_probe.exs            # scenarios to stdout, as before
+#     mix run conformance/etcc_l2_probe.exs OUT_PATH   # scenarios to OUT_PATH
+#
+# The no-argument form is byte-identical to the pre-MES-88 behaviour, so anything that
+# reads the old stdout form still works.
+rendered =
+  MCP.Conformance.L2Probe.scenarios()
+  |> Enum.sort()
+  |> Enum.map_join(fn {k, v} -> k <> "\t" <> inspect(v) <> "\n" end)
+
+case System.argv() do
+  [path | _] ->
+    File.write!(path, rendered)
+
+    IO.puts(
+      "[etcc-l2-probe] wrote #{path} (#{map_size(MCP.Conformance.L2Probe.scenarios())} scenarios)"
+    )
+
+  [] ->
+    IO.write(rendered)
+end

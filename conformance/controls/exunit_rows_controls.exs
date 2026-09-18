@@ -108,7 +108,9 @@ defmodule ExUnitRowsControls do
     if misses == [] do
       IO.puts("\nall five expected keys carry their expected status: OK")
     else
-      for {key, want, got} <- misses, do: IO.puts("MISS  #{key}: wanted #{want}, got #{inspect(got)}")
+      for {key, want, got} <- misses,
+          do: IO.puts("MISS  #{key}: wanted #{want}, got #{inspect(got)}")
+
       halt("expected states not produced")
     end
 
@@ -134,8 +136,13 @@ defmodule ExUnitRowsControls do
     row_a = find_row(a, key)
     row_b = find_row(b, key)
 
-    IO.puts("with    --exclude #{@exclude_tag}:  status=#{row_a["status"]}  reason=#{inspect(row_a["reason"])}")
-    IO.puts("without --exclude #{@exclude_tag}:  status=#{row_b["status"]}  reason=#{inspect(row_b["reason"])}")
+    IO.puts(
+      "with    --exclude #{@exclude_tag}:  status=#{row_a["status"]}  reason=#{inspect(row_a["reason"])}"
+    )
+
+    IO.puts(
+      "without --exclude #{@exclude_tag}:  status=#{row_b["status"]}  reason=#{inspect(row_b["reason"])}"
+    )
 
     cond do
       row_a["status"] != "excluded" ->
@@ -194,7 +201,8 @@ defmodule ExUnitRowsControls do
         {seed, ExUnitRows.rows_md5(artefact["rows"]), artefact["run"]}
       end
 
-    for {seed, md5, _run} <- results, do: IO.puts("seed #{pad(to_string(seed), 6)} rows md5 #{md5}")
+    for {seed, md5, _run} <- results,
+        do: IO.puts("seed #{pad(to_string(seed), 6)} rows md5 #{md5}")
 
     md5s = results |> Enum.map(fn {_, md5, _} -> md5 end) |> Enum.uniq()
 
@@ -222,7 +230,9 @@ defmodule ExUnitRowsControls do
   # --- running, and the S7-4 fire check -------------------------------------
 
   defp capture(paths, args) do
-    out_path = Path.join(System.tmp_dir!(), "mes83_control_#{System.unique_integer([:positive])}.json")
+    out_path =
+      Path.join(System.tmp_dir!(), "mes83_control_#{System.unique_integer([:positive])}.json")
+
     File.rm_rf!(out_path)
     started = System.os_time(:second)
 
@@ -268,9 +278,14 @@ defmodule ExUnitRowsControls do
     now = tree_state()
 
     cond do
-      now == before and now == "" -> IO.puts("\ntree clean before and after: OK (nothing was mutated)")
-      now == before -> IO.puts("\ntree unchanged by this run (it was already dirty): OK")
-      true -> IO.puts("\nTREE CHANGED BY THIS RUN:\n#{now}")
+      now == before and now == "" ->
+        IO.puts("\ntree clean before and after: OK (nothing was mutated)")
+
+      now == before ->
+        IO.puts("\ntree unchanged by this run (it was already dirty): OK")
+
+      true ->
+        IO.puts("\nTREE CHANGED BY THIS RUN:\n#{now}")
     end
   end
 
@@ -289,7 +304,9 @@ defmodule ExUnitRowsControls do
       if row["reason"], do: IO.puts(pad("", 20) <> "reason: " <> row["reason"])
 
       for f <- row["failure"] || [] do
-        IO.puts(pad("", 20) <> "failure: #{f["exception"]} at #{f["at"]} — #{one_line(f["message"])}")
+        IO.puts(
+          pad("", 20) <> "failure: #{f["exception"]} at #{f["at"]} — #{one_line(f["message"])}"
+        )
       end
     end
   end
@@ -302,7 +319,10 @@ defmodule ExUnitRowsControls do
     IO.puts("  by_test_type     #{inspect(t["by_test_type"])}")
 
     derived = ExUnitRows.derive_totals(artefact["rows"])
-    IO.puts("  re-derived here: #{if derived == t, do: "identical", else: "DIFFERS — #{inspect(derived)}"}")
+
+    IO.puts(
+      "  re-derived here: #{if derived == t, do: "identical", else: "DIFFERS — #{inspect(derived)}"}"
+    )
   end
 
   # The second witness. Its MEMBERSHIP is established here rather than

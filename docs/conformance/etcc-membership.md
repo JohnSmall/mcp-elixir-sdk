@@ -27,6 +27,20 @@ MES-87 added remain separable by reading.
 ratification `26736`–`26737`, ticket in Sprint 8. Elements authored at `26684` and `26685`,
 all ratified at `26737`.
 
+**EXTENDED on MES-88, Sprint 8, 2026-09-10 — §2.3(e) only.** Operationalising §2.3(d) as a
+re-runnable sweep surfaced that (e)'s expiry condition is right for the **verdict** and
+wrong for the **measurements** the verdict is recorded beside: L1 quantifies over the
+suite, and the suite moved 979 → 1021 with `lib/` byte-unchanged. **One sentence is added
+to §2.3(e); no other element of Part A is touched, and (e)'s originally ratified text is
+left standing above the extension rather than edited.** The extension moves **0 register
+rows by construction** — it changes when a verdict *expires*, never which units are
+members — and that zero is measured in **§D.1** behind its own no-op control, not asserted.
+
+**The third ratification record is
+[MES-88](https://vidhya-trading.atlassian.net/browse/MES-88)** — plan `26988`–`26992`,
+ratification `26994`–`26995`, ticket in Sprint 8. The element is authored at `26988` and
+ratified at `26995`.
+
 ---
 
 ## How to read this file
@@ -54,6 +68,11 @@ conversation.
 priced rejections, the cross-check matrix and the quantification behind the amendments
 above. It is a third part rather than an append to Part B because Part B's opening
 sentence says Part B is MES-80's working, and appending to it would falsify that sentence.
+
+**Part D is MES-88's own output and is NOT criterion either**, and it is a fourth part for
+exactly the reason Part C is a third: Part C's opening sentence says Part C is *MES-87's
+own output*, so appending MES-88's working to it would falsify that sentence. The pattern
+is now a rule — **each ticket's working gets its own fenced part**.
 
 **Amendments carry `26xxx` ids; MES-67's elements carry `25xxx` ids.** The two-id scheme is
 what makes an amendment auditable rather than a silent edit: an element with a `26737`
@@ -175,6 +194,36 @@ grep.**
 **(e) Scope.** **This rule reaches every unit satisfying its antecedent, never the
 family it is stated over.** A liveness verdict is a claim about the tree **at a named
 tip** and **expires when `lib/` moves**.
+
+**(e) EXTENDED on MES-88, Sprint 8, 2026-09-10.** `[authored 26988 | ratified 26995]`
+**A verdict expires when `lib/` moves, and its L1 measurements additionally expire when
+the unit population moves.**
+
+*Why the extension was needed, stated because (e) as first ratified is left standing
+above rather than edited.* (e) is exactly right about the **verdict**: ruling A's
+antecedent quantifies over `lib/` call sites, so nothing but a `lib/` change can alter
+what the antecedent asserts. It is **not** right about the recorded **measurements**.
+L1's own definition in (d) quantifies over the **suite** — *"re-run the suite at a fixed
+seed, and count what reddens"* — so `suite_summary`, `reddened_total`,
+`reddened_by_module`, `reddened_outside_own`, `reddened_outside_own_and_dead` and
+`live_units` are functions of `lib/` **and** of the unit population. **Measured on
+MES-88: the population moved 979 → 1021 with `lib/` byte-unchanged since `5e1c376`.**
+
+*A correction to this enumeration, not to the ratified sentence above.* The sentence says
+*"its L1 measurements"* and enumerates nothing; this paragraph named **six** fields, and
+the sweep measures a **seventh** — `unlocated_failures`, which moved on the MES-88 re-run
+while being reported nowhere. It is now reported as part of the stated delta. `--check`
+still compares **verdict fields only**, so nothing about what can FAIL has changed.
+Working at `S8-13`; disclosed to the PM rather than folded in, because the six are named
+in a ratified acceptance criterion.
+
+**The consequence that bites, and it is the reason this is criterion rather than a
+footnote: a test-only change can move a VERDICT, in both directions.** *dead → live* — a
+new unit outside a dead direction's own-tests that reddens under its mutation raises the
+live count above zero, and (d)'s L1 then reads LIVE. *live → dead* — deleting the last
+such unit drops the live count to zero, at which point L2's mechanical trigger fires and
+may return dead. So *"`lib/` unchanged ⇒ no verdict moved"* is **unsound as a general
+claim**, and any cadence rule resting on it must test the unit population too.
 
 ### §2.4 The reconciling line — is there a wire state this value is the decode of?
 
@@ -1236,3 +1285,207 @@ occurrence was **re-run** through the totality control rather than hand-edited.
 7. **Did not edit the Working Procedure page's Confluence citation register** — PM Q2
    ruling: *"that is not this ticket's."* The two in-repo provenance artefacts **were**
    updated: §0's ratification-record header, and §B.4(ii)'s enumeration (14 → 17 ids).
+
+---
+
+# PART D — MES-88's OWN OUTPUT
+
+**Nothing in Part D is criterion.** No sentence below binds a sweeper. The criterion
+MES-88 added is one sentence, in **Part A §2.3(e)**, carrying its own two ids
+`[authored 26988 | ratified 26995]`. Part D is the working behind it: how the extension
+was found, what it was measured to move, and what MES-88 deliberately did not do.
+
+**It is a fourth part rather than an append to Part C**, because Part C's opening
+sentence says Part C is *MES-87's own output*, and appending MES-88's working to it would
+falsify that sentence — the same reasoning by which Part C is not an append to Part B.
+Each ticket's working gets its own fenced part.
+
+Written by CODE_CREATOR on MES-88, 2026-09-10. Plan `26988`–`26992`; PM ratification
+`26994` (the four question rulings and the fences) and `26995` (the ratification of
+record). Every measurement was run in a dedicated worktree with `deps` **copied**, never
+symlinked.
+
+## §D.0 How the extension was found, and why that matters more than the sentence
+
+The extension was **not** found by re-reading §2.3(e). It was found by trying to
+*execute* §2.3(d) — building the re-runnable sweep MES-88 owes — and discovering that the
+re-run **cannot** reproduce the committed table on every field, and that the criterion as
+written says it should.
+
+That is the general shape worth keeping: **a rule's defects surface when something has to
+obey it mechanically, not when someone reads it carefully.** §2.3(e) had been read by at
+least three seats and ratified once. It survived all of that and did not survive its first
+implementation.
+
+## §D.1 The extension quantified, with its no-op control first
+
+The PM's stop-rule was that any **nonzero** register-row move on this amendment is a
+blocking hand-up rather than something to absorb. The prediction was **0** — the extension
+changes when a verdict *expires*, never which units are members — and a prediction of zero
+is worth nothing unless a zero could have failed.
+
+**Step 0 — the no-op control, run before a byte was changed.** Regenerate the register
+with nothing edited:
+
+    md5  dde16982330c5d3f04b5b137969b0a67   (committed at 7e935c2)
+    mix run conformance/build_etcc_register.exs
+    md5  dde16982330c5d3f04b5b137969b0a67   (regenerated)   git status: clean
+
+**Byte-identical.** So the zero below means *the amendment moved nothing*, not *the
+generator does not respond to its inputs*. This is S8-4's corollary applied to its own
+ticket.
+
+**Step 1 — the measurement, after the amendment.** Regenerate again with §2.3(e)
+extended, the §0 record added, and guards 23–27 wired into the build:
+
+| measured | result |
+| --- | --- |
+| register md5 | `dde16982330c5d3f04b5b137969b0a67` → **unchanged** |
+| rows | 579 → 579 |
+| **LABEL moves** | **0** |
+| `totals.by_label` | `ET-CC` 281 · `ET-ADJ` 88 · `ET-OUT` 206 · `ET-CTRL` 4 — every one unchanged |
+| `out_of_scope` | 428 → 428 |
+| new guards firing on the committed table | **0 violations**, over populations of 29 / 19 / 19 / 194 |
+
+**Predicted 0 and measured 0, and the two are reported as different things.** The
+stop-rule did not arise. It could have: the same regeneration is what four new guards now
+run inside, and a table violating any of them would have refused to build.
+
+**Why the extension moves nothing by construction, stated so the zero is not mistaken for
+luck.** Membership is decided by the four gates; §2.3(e) governs when a *liveness verdict*
+stops being a claim about the current tree. Changing an expiry condition changes what a
+later ticket must **re-measure**, never what this register **records**. A nonzero here
+would have meant the two were entangled in a way nobody had noticed — which is exactly why
+it was worth measuring rather than arguing.
+
+## §D.2 The re-run itself — what reproduced, what did not, and what turned out to be wrong
+
+The sweep is `mix conformance.sweep` (`conformance/lib/mcp/conformance/boundary_sweep.ex`
+and its Mix task, both under `conformance/lib/` so gates 1–4 reach them). It was run to
+completion twice at `7e935c2`, over all **50** boundary-directions, at a baseline of
+**13 doctests, 1021 tests, 0 failures**, seed 0, `node v24.13.0`.
+
+| asked | measured |
+| --- | --- |
+| **VERDICT fields** (`verdict`, `established_by`, `direction`, `l2.ran`, `l2.verdict`) | **0 differences over 50 directions.** AC1, as rescoped at `26994`. |
+| verdict tally | `live` 31 · `dead` 19 — unchanged |
+| **determinism control** | two independent full sweeps, **0 rows differing** between them — with one later outlier, `S8-16` |
+| measurement fields | 50 directions differ, cause named: the population moved 979 → 1021 |
+| `live_units` completed | the six sampled rows now list **98 / 86 / 64 / 34 / 14 / 12** instead of 8 each; `live_units` length equals the recorded live count on **all 50** rows |
+| register rows moved | **0** — `docs/conformance/etcc-register.json` md5 `dde16982330c5d3f04b5b137969b0a67` before and after, re-verified at the delivered tree |
+| guards 23–27 on the regenerated table | 0 violations over populations **29 / 19 / 19 / 194 / 194** |
+
+**The determinism control is there because a re-run that agrees with itself is the weakest
+thing a re-run can do, and it is still worth showing.** Two full sweeps producing
+byte-identical rows rules out the ordinary way this instrument could have been useless —
+a measurement that varies run to run would make every comparison below unreadable.
+
+**It is not a clean sweep, and the exception is recorded rather than dropped.** A later
+spot-run of three directions found `MCP.Protocol.Meta`'s `live_units` differing by **8 of
+98** — eight units trading between two `async: false` modules — while **every count**
+(`135` failures, `99` located, `98` live) and **every verdict field** were identical.
+Five runs total, one outlier, and two runs in isolation agree with the shipped value.
+`--check` compares verdict fields only, so this moves nothing; it is a second and
+unplanned reason why it should. Full working: `S8-16`.
+
+### Three committed measurements were WRONG, not stale — and that is the re-run's real find
+
+Three directions did not reproduce their recorded redness. The obvious reading is drift;
+it was tested against MES-81's **own tip** `85d50fa` and is **wrong**:
+
+| direction | committed | re-run at `7e935c2` | re-measured at `85d50fa` |
+| --- | --- | --- | --- |
+| `…ImageContent (decode)` | 2 | 1 | **1** |
+| `…ImageContent (encode)` | 2 | 1 | **1** |
+| `…TextContent (decode)` | 10 | 9 | **9** |
+
+`lib/` is byte-unchanged since `5e1c376`, five days before that sweep. The figures were
+never reproducible. The arithmetic is consistent with a pre-split combined measurement
+carried into both halves by the round-4 direction split rather than re-taken — the same
+residue the PM found independently in `live_units` being a sample on exactly the six rows
+the split did not re-measure — but only schema-2 versions of the table were ever
+committed, so that cause is **inferred, not established**. Full working: `S8-10` in
+`docs/sprint_8_issues.md`.
+
+**No verdict moves on any of the three**: all three have a live count of zero before and
+after, which is why four guards and six review rounds passed over them. A wrong number
+that no decision rests on is invisible to every check that asks whether the decision is
+right.
+
+### Two things the re-run found about the instrument, and one about the criterion
+
+1. **The document-level `control` block was not regenerated** — 50 rows at 1021 under a
+   summary still claiming 979. Fixed before anything was committed; `control` is now
+   generated, marked `GENERATED — do not hand-edit`, and records `node` (`S8-12`).
+2. **The measured-field enumeration named six of seven.** `unlocated_failures` is measured
+   and moved (`Meta` 36 → 0, `Dispatch` 8 → 0) while being in neither the compared nor the
+   reported set. It is now **reported**; `--check` still compares verdict fields only, so
+   the ratified AC1 is untouched (`S8-13`).
+3. **The unit population is a function of the HOST, not only the tree.** Measured at one
+   unchanged tip: **994** units with `node` on PATH, **991** without, because
+   `test_helper.exs` excludes three conformance tests when `node` or the pinned harness is
+   absent. **Both conditions of the ratified end-of-sprint skip are empty across that
+   pair.** Handed up rather than diverged in the instrument, and then **ruled blocking and
+   closed on this ticket** (PM, `27205`): the skip gained a third condition,
+   `mix conformance.sweep --host`, which compares this host's fingerprint against the one
+   the generated `control` block now records and is fail-closed on *differs*, *not
+   recorded* and *unreadable* alike. Re-measured at the delivered tip: **1021** units with
+   `node` and **1018** without. This changes the CADENCE's skip condition, not §2.3(e):
+   the expiry clause already says L1's measurements expire when the unit population moves,
+   and the host is one of the things that moves it (`S8-11`).
+
+## §D.3 AC4 — a drifted verdict is shown to fail, twice, for two different reasons
+
+AC4 asks for a deliberately drifted verdict shown to fail the check, with the unmutated
+tree as the control. It is demonstrated **twice**, because a table can drift from the tree
+and a tree can drift from the table, and only the second shows the instrument measures
+anything at all.
+
+**(i) The TABLE drifts.** `conformance/controls/etcc_boundary_sweep_controls.exs drift`
+flips one verdict in a copy of the committed table. **Control first:** the committed table
+against itself reports 0 verdict diffs and 0 measurement deltas — without that, the
+detection below is also what a checker that always fires would print. The flipped copy is
+then caught, naming the direction, `verdict: "live" -> "dead"`, and the **4** `ET-CC` rows
+it would move.
+
+**(ii) The TREE drifts — and this is the one that proves the instrument reads the tree.**
+Run in a throwaway worktree at `d96beda`, never merged, so the deliverable carries **no
+`lib/` change** (epic ruling 3).
+
+The drift is deliberately the *realistic* one: a **behaviour-preserving inline** of
+`MCP.Protocol.HeaderMirror.decode_value/1` at its single `lib/` consumer,
+`streamable_http/plug.ex`. Same bytes out — **the suite stays green at 1021 tests, 0
+failures** — and the only thing that changes is that the consumer no longer *routes
+through* the boundary. That is exactly how a liveness verdict rots with no test file
+changing, which is the failure this ticket exists to catch.
+
+| step | measured |
+| --- | --- |
+| undrifted tree (**CONTROL**) | `--check` exit **0**, 0 verdict diffs, 0 measurement deltas |
+| inline the `lib/` consumer | live count **4 → 2**, verdict still `live` |
+| also inline the two direct **test** call sites | live count **2 → 0**, L2 fires at its mechanical trigger, `established_by` **`L1` → `L2`** |
+| `--check` on the drifted tree | exit **1**, names the direction, the field, and the **12** `ET-CC` rows it would move |
+
+Exit codes were captured **unpiped**; a piped exit status is `tail`'s.
+
+**The verdict stayed `live`, and that is §2.3(d) working rather than a weak result.** L2's
+byte probe still found the boundary putting bytes on the wire, and **L2 can only turn DEAD
+into LIVE, never LIVE into DEAD**. What drifted was the register's own *provenance* —
+which limb established the verdict — and because `established_by` is a verdict field,
+`--check` failed loudly on it.
+
+### What the intermediate step exposed, and it is not about this ticket's code
+
+Between the two inlines the boundary sat in a state worth naming: **no `lib/` call site
+routed it, and L1 still reported LIVE** — on the strength of two tests
+(`routing_headers_test.exs:223` and `:261`) calling `HeaderMirror.decode_value/1`
+**directly**.
+
+Ruling A's antecedent quantifies over **`lib/` call sites**. L1 quantifies over **units
+that redden**, and a unit that reddens because the test calls the boundary itself is not
+evidence about `lib/` at all. So L1 can return LIVE for a boundary that no `lib/` path
+reaches — the **opposite** bias to the one the instrument chain was built to correct,
+where every proxy failed toward DEAD. It is not a defect in any current verdict: in the
+undelivered-drift tree the plug **does** route this boundary, so `live` is right today and
+`--check` is green. It is a limit of the proxy, surfaced by perturbing it, and it is
+recorded rather than acted on. Full working: `S8-17` in `docs/sprint_8_issues.md`.
