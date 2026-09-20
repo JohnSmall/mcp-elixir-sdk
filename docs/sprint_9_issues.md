@@ -830,3 +830,55 @@ by a typo, silently, in the direction that admits.
 requires **both** halves — that git said `fatal:`, and that the guard allowed anyway — so
 the hole is pinned rather than described. If MES-106's amendment closes it, `X1` goes red
 and names what changed.
+
+---
+
+## Sprint 9 close-out — the end-of-sprint sweeps (PM-owned)
+
+Run at `main` = `8700c9c` / `2.0.0-dev.40`, 2026-09-20, after all seven tickets
+(MES-93 / 94 / 95 / 97 / 98 / 99 / 100) reached Done. The point of printing these is
+that "checked, and clean" and "never asked" read identically when only the answer is
+recorded — so each sweep prints its question.
+
+### Dependency-advisory sweep (two-step gate 6) — NOT clean, one advisory raised
+
+- **6a (baseline sentinel):** PASS — all 22 known advisory ids present in the
+  `d697093` baseline audit, so the local advisory data is intact and 6b's result
+  means something.
+- **6b (`mix hex.audit` on this tree):** **`mint 1.10.0` carries `EEF-CVE-2026-82672`
+  (MEDIUM)** — "unvalidated chunk-size line tail in the Mint HTTP/1 client enables
+  response smuggling against strict intermediaries on pooled connections" (aka
+  `CVE-2026-82672`, `GHSA-rj5m-69wp-cxq9`).
+- **Raised as `MES-107`, not fixed in place** (step 3 of the procedure). This is a
+  **new** advisory against `mint 1.10.0` — the version MES-91 chose in Sprint 7 to
+  close two *other* Mint advisories — so no Sprint 9 ticket touched `mint`, and a
+  per-ticket gate 6 would never have looked at it. The cadence sweep is exactly the
+  mechanism for an advisory published against a dependency nobody touched.
+
+### Boundary-liveness sweep (`mix conformance.sweep --check`) — ran, and clean
+
+- **Not skippable this sprint.** Condition (b) is tripped: the unit population moved
+  **1041 → 1202** (MES-97 / 98 / 99 added `test/` and `conformance/lib/` files with
+  `lib/` byte-unchanged — the exact case §2.3(e) says a `lib/`-only skip test would
+  miss). Condition (c): this host `node v24.13.0 / harness=available` matches the
+  committed table. So the sweep ran; no skip claimed.
+- **Result: VERDICT DIFF none — every verdict field reproduces byte-exactly** across
+  all 50 directions at the new 1202-unit population. The register's boundary and
+  liveness verdicts still hold; nothing drifted, so no ticket. Recorded clean, with
+  the question printed rather than only the answer.
+
+### Publication sweep (`mix origin.sync`) — IN SYNC
+
+- C1–C5 green at `8700c9c`: `main` and the `2.0.0-dev.40` tag are both on origin as
+  the same objects. Every Sprint 9 merge was published as held.
+
+### From MES-100's CR review — recorded and routed, not lost
+
+CR surfaced five items on the D7 guard / control surface (F1–F5). All are backlog or
+notes, none blocking; all are recorded on **MES-106** (comment `27921`), and **F4** —
+a factual error in MES-106's *own* body (it said the guard "falls through green, exit
+0" on an unresolvable ref; it allows but exits **1**, S9-22's shape) — is corrected
+there. The guard's own two defects are **S9-22** and **S9-23** above.
+
+**Sprint 9 closed clean but for one dependency advisory (`MES-107`).** No boundary
+verdict on `main` regressed, and every merge is published.
