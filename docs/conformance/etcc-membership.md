@@ -41,6 +41,22 @@ members — and that zero is measured in **§D.1** behind its own no-op control,
 ratification `26994`–`26995`, ticket in Sprint 8. The element is authored at `26988` and
 ratified at `26995`.
 
+**PROMOTED on MES-93 (A group), Sprint 9, 2026-09-20 — §2.5 only.** The decode-boundary
+tie-break of 2026-08-23 (MES-81 `26026`) decided the largest single family in the register
+from `etcc-register.md` §6 — criterion living outside the criterion file, which is the
+MES-80 shape this epic exists to close. §C.5 disclosed it and named MES-93 its owner;
+MES-93 promotes it through the same authored → ratified cycle. **One new element, §2.5;
+no existing element of Part A is edited.** §2.4 — MES-87's reconciling line, which cites
+the tie-break as something external — is left standing verbatim, and §2.5 states the
+relationship from its own side. The promotion moves **0 register rows**: the family is
+already decided this way and the decisions file is not touched. That zero is measured in
+**§E.1** behind its own no-op control, not asserted.
+
+**The fourth ratification record is
+[MES-93](https://vidhya-trading.atlassian.net/browse/MES-93)** — plan `27583`–`27588`,
+ratification `27820`–`27821`, ticket in Sprint 9. The element is authored at `27584` and
+ratified at `27820`.
+
 ---
 
 ## How to read this file
@@ -73,6 +89,11 @@ sentence says Part B is MES-80's working, and appending to it would falsify that
 exactly the reason Part C is a third: Part C's opening sentence says Part C is *MES-87's
 own output*, so appending MES-88's working to it would falsify that sentence. The pattern
 is now a rule — **each ticket's working gets its own fenced part**.
+
+**Part E is MES-93's own output and is NOT criterion either** — a fifth part by the rule
+the paragraph above states, not by a fresh decision. It carries the promotion of §2.5: what
+was promoted and what deliberately was not, the quantification behind the *0 rows moved*
+claim with its no-op control, the S7-15 matrix, and three findings.
 
 **Amendments carry `26xxx` ids; MES-67's elements carry `25xxx` ids.** The two-id scheme is
 what makes an amendment auditable rather than a silent edit: an element with a `26737`
@@ -254,6 +275,83 @@ treating an absence marker as a **gate-4** weakness) with the decode-boundary ti
 of 2026-08-23, which had failed structurally identical values at **gate 2**. Neither is
 withdrawn; the distinction between them is stated, which is §9.1 clause (4) applied to
 the case that produced it.
+
+### §2.5 The decode-boundary rule — the asserted VALUE, not the container
+
+`[authored 27584 | ratified 27820]` **PROMOTED on MES-93, Sprint 9, 2026-09-20, from the
+PM tie-break of 2026-08-23 (MES-81 comment `26026`), which held this family from
+`etcc-register.md` §6 — criterion outside the criterion file, which is the MES-80 shape.
+The rule below is that tie-break's text; what is new is its RANK.** Under §9.1(2) a
+ratified Part A element outranks a §9 tie-break, so from this ratification `26026` decides
+nothing Part A does not now decide, and the incompleteness §C.5 disclosed is closed.
+
+**An assertion on a decoded value handed back through the public API passes gate 2 when
+the ASSERTED VALUE is the wire value verbatim.** The container may change — JSON object
+to struct, string key to atom, a GenServer hop, a return tuple. **The VALUE may not.** If
+the SDK computes, defaults, renames or reshapes the value itself between the wire and the
+assertion, that is a §2.2 step and gate 2 fails.
+
+**It turns on the value, never on the number of hops.** A hop transports a value; it does
+not transform it. A gate that counted hops would exclude every integration test in the
+tree and admit every unit test that happened to sit close to a socket, which is the
+opposite of what gate 2 is for.
+
+**(a) The negative limb is the same question asked of an invented value, not a second
+rule.** A value the SDK invents — `:ready`, `{:error, :timeout}`, an idempotent `:ok`,
+`{:transport_send_failed, _}` — has **no wire value to be verbatim to**, so gate 2 fails
+and §9's R1 default applies: `ET-OUT`, or `ET-ADJ` where §5's call-site test is met. **R1
+was ratified with no worked case on either side** — `§B.5` names it as the boundary a
+sweeper meets most often — and the table below is that case, drawn between neighbours in
+one file rather than across the tree.
+
+**(b) The line is *"is there a wire value for this to be verbatim to?"*, never *"is this
+public-API convenience?"*** The second describes intent; the first is a test. **§2.4 asks
+the same question of a wire STATE rather than a wire VALUE and is the authority where the
+state is an ABSENCE**: the absence of an *optional* field is a wire condition and a marker
+returned for it is that condition's verbatim decode, while a marker the SDK synthesises
+where the wire admits no absence at all — a field the schema types without `?` — has
+nothing to be the decode of and fails. §2.4 and §2.5 are one question in two positions.
+
+**(c) This rule decides GATE 2, PER ASSERTION, and nothing else.** Three conjuncts survive
+it untouched, and each has taken rows out of `ET-CC` in this tree:
+
+- **§2.3 is independent of it.** A value that is the wire value verbatim still fails gate
+  2 when every boundary-direction producing it is one **no `lib/` call site routes to a
+  transport**. Verbatim-ness is a property of the value; §2.3 asks whether those bytes
+  reach a wire at all.
+- **Gate 3 is faced alone.** Passing this rule makes an assertion a gate-2 survivor, never
+  a member.
+- **§6 and §6.1 act AFTERWARDS.** The label is the highest any of the unit's assertions
+  earns, inherited assertions included — so a unit every one of whose OWN assertions this
+  rule fails may still be `ET-CC`, `mixed: true`, with `inherited_from` recorded.
+
+#### The six worked cases — three each side
+
+All six are units of `MCP.ClientTest` (`test/mcp/client_test.exs`), **keyed by
+`{module, test name}` per §0 and never by line**: the tie-break's own table cited lines
+that MES-84 then shifted, and one of them now lands on a different real test (`S8-2`).
+
+| unit — test name in `MCP.ClientTest` | asserted artefact | gate 2 under this rule | label |
+| --- | --- | --- | --- |
+| `per-request _meta` / `every request carries protocolVersion + client identity/capabilities` | `req["params"]["_meta"]["io.modelcontextprotocol/protocolVersion"]` off the encoded map | **passes** — already a wire artefact: `client.ex:868` encodes every send (`:839`, `:864`) | `ET-CC` |
+| `requests` / `call_tool sends name and arguments` | `req["method"]`, `req["params"]["name"]`, `["arguments"]` | **passes** — same | `ET-CC` |
+| `connect/1 (server/discover)` / `returns error on discover failure` | `{:error, error}` **and** `error.code == -32_603` | **split** — the `%Error{}` build only re-containers `"code" => -32603` as `:code => -32603`, so `-32603` passes; the `{:error, _}` tuple is our convention with no wire counterpart and fails | `ET-CC`, `mixed: true` (§6) |
+| `start_link/1` / `starts ready by default (no handshake gate)` | `Client.status(client) == :ready` | **fails** — `:ready` is SDK-invented: no wire counterpart, present or absent | `ET-OUT` |
+| `lifecycle` / `close is idempotent` | a second `close/1` returning `:ok` | **fails** — same | `ET-OUT` |
+| `lifecycle` / `times out a pending request` | `{:error, :timeout}` | **fails** — same | **`ET-CC`, `mixed: true`** — by §6.1, NOT by this rule |
+
+**The last row is carried deliberately, and the divergence between its last two columns is
+the reason it is carried.** The tie-break's own table recorded it `ET-OUT`; PM ruling C
+(`26035`) overturned that the same day, because `do_connect/2` asserts
+`discover["method"] == "server/discover"` and a test is indivisible — and §6.1 is Part A
+as of MES-87. Read as a worked example under §9.1(1), the old cell would carry a ratio
+contradicting §6.1.
+
+**So what is promoted is the GATE-2 column, which this rule decides. The label column is
+the delivered register's, re-derived at this tip rather than transcribed.** A worked
+example whose result a later ratification superseded is promoted **at the gate it
+decides, never at the label it happened to produce** — otherwise promotion imports the
+superseded result with the rule and §9.1(1) gives it the rank of a rule.
 
 ## §3 Gate 3 — REFERENT
 
@@ -815,6 +913,29 @@ before dispatch), which makes a third instance worth naming.
 > `26xxx` is MES-87 — which is the property that makes the enumeration worth keeping
 > rather than a tally. `match-relation.md:8` is still not corrected here, for MES-80's
 > stated reason: it is A3's artefact.
+
+> **MES-93 ADDENDUM to (ii), 2026-09-20** — written by CODE_CREATOR on MES-93.
+>
+> **The count is now 21, and two of the four ids added here are a CORRECTION rather than
+> this ticket's own.** MES-88 extended §2.3(e) with a ratified element carrying
+> `[authored 26988 | ratified 26995]` and did not add either id to this enumeration, so
+> "17" has been an undercount since 2026-09-10 — an omission of ratified elements, not a
+> miscount. MES-93 adds its own two and MES-88's two. Full set, by ticket:
+>
+> | ticket | ids |
+> | --- | --- |
+> | MES-67 | `25596`, `25597`, `25598`, `25600`, `25601`, `25603`, `25604`, `25605`, `25610`, `25612`, `25613`, `25614`, `25615`, `25616` |
+> | MES-87 | `26684`, `26685`, `26737` |
+> | MES-88 | `26988`, `26995` |
+> | MES-93 | `27584`, `27820` |
+>
+> **Grouped by ticket because the prefix no longer separates them.** MES-87's addendum
+> relied on `25xxx` vs `26xxx`; `26xxx` now spans three tickets, so the property it
+> relied on is gone and the grouping replaces it.
+>
+> **The enumeration went stale silently because keeping it current is a manual
+> obligation with no instrument** — recorded as `S9-2`. `match-relation.md:8` is still
+> not corrected here, for MES-80's stated reason: it is A3's artefact.
 
 **(iii) Example 4's corrected figure has a narrower ratification than the rest of the
 correction round.** `25616` confirms the correction round, verifies the **16th** unit at
@@ -1489,3 +1610,349 @@ where every proxy failed toward DEAD. It is not a defect in any current verdict:
 undelivered-drift tree the plug **does** route this boundary, so `live` is right today and
 `--check` is green. It is a limit of the proxy, surfaced by perturbing it, and it is
 recorded rather than acted on. Full working: `S8-17` in `docs/sprint_8_issues.md`.
+
+---
+---
+
+# PART E — MES-93's OWN OUTPUT
+
+**Nothing in Part E is criterion.** No sentence below binds a sweeper. The criterion MES-93
+added is **Part A §2.5**, carrying its own two ids `[authored 27584 | ratified 27820]`.
+Part E is the working behind it: what was promoted and what deliberately was not, the
+quantification behind the *0 rows moved* claim, the S7-15 matrix, and three findings.
+
+**It is a fifth part rather than an append to Part D**, for the reason Part D is not an
+append to Part C: Part D's opening sentence says Part D is *MES-88's own output*, and
+appending to it would falsify that sentence. *Each ticket's working gets its own fenced
+part* is a stated rule in **How to read this file**, and this is the second time it has
+been applied rather than decided.
+
+## §E.0 What was promoted, and what deliberately was not
+
+**Promoted: the RULE, at the GATE it decides.** §2.5 is the text of the PM's
+decode-boundary tie-break of 2026-08-23 (MES-81 `26026`), which governed the largest
+single family in the register from `etcc-register.md` §6 — *criterion outside the
+criterion file*, the MES-80 shape this epic exists to close. `etcc-register.md` §6's own
+text named the condition on promotion (*"its own MES-67-style ratification … not done by
+the back door of a tie-break"*); this is that ratification, through the same authored →
+ratified cycle §0 requires.
+
+**What changed is RANK, not content.** Under §9.1(2) a ratified Part A element outranks a
+§9 tie-break, so from `27820` the tie-break decides nothing Part A does not decide, and
+the incompleteness §C.5 disclosed is closed. §C.5 stays as written: it was a true
+statement about the state it described, and marking it false now would erase the
+disclosure that produced this ticket.
+
+**NOT promoted: the label column of one worked case.** `etcc-register.md` §6's table
+records `:353` `times out a pending request` as `ET-OUT`. **PM ruling C (`26035`)
+overturned that cell the same day** — `do_connect/2` asserts
+`discover["method"] == "server/discover"` and a test is indivisible — and §6.1 made that
+Part A on MES-87. At the delivered tip the unit is `ET-CC`, `mixed: true`,
+`inherited_from test/mcp/client_test.exs:59`.
+
+So **§2.5 promotes the gate-2 column, which the rule decides, and takes the label column
+from the delivered register, re-derived at this tip.** The row is carried rather than
+dropped, with the divergence stated on it. The alternatives were both worse: dropping it
+discards a decided case and leaves the stale cell as the only record of it, and promoting
+`ET-OUT` would put a superseded result into ratified text where §9.1(1) gives a worked
+example the rank of a rule — the S7-15 shape MES-87 was raised for, committed by the
+ticket closing it. Raised as **F1** (below), ruled by the PM at `27820` (Q2), decided
+under §9.1(4): reconciliation over withdrawal.
+
+**NOT promoted: any count.** `etcc-register.md` §6 and §C.5 both say the family is
+*"roughly 90"* rows. It is not, at this tip (**F2**), and a criterion that states a
+measurement goes stale exactly the way that figure did. §2.5 carries no number.
+
+**NOT edited: anything already ratified.** §2.5 is one new element. §2.4 — MES-87's
+reconciling line, which cites the tie-break as something external — is left standing
+verbatim, and §2.5(b) states the relationship from its own side. `etcc-register.md` §6 is
+**marked, not rewritten**: it remains MES-81's record of where the rule came from, with a
+superseding note at its head. That is S8-1's precedent, and the reason for it is that a
+silently edited record can no longer be checked against what it recorded.
+
+## §E.1 AC3 — the quantification, with its no-op control first
+
+**The expectation was 0 rows moved**, because the family is already decided this way and
+`conformance/data/etcc-decisions.json` is not touched. A zero that is guaranteed by
+construction is not a measurement, so the zero is established in three steps, of which
+only the third can fail.
+
+**Step 0 — the no-op control.** Regenerate with **nothing** changed:
+
+    md5  dde16982330c5d3f04b5b137969b0a67   (committed)
+    mix run conformance/build_etcc_register.exs
+    md5  dde16982330c5d3f04b5b137969b0a67   (regenerated)   git status: clean
+      in scope 579 | ET-CC 281 · ET-ADJ 88 · ET-OUT 206 · ET-CTRL 4 | out 428 | escalated 112
+
+**Byte-identical.** So a later zero means *the amendment moved nothing*, not *the
+generator does not respond to its inputs*.
+
+**Step 1 — regenerate after the doc edits, and diff field by field.**
+
+| measured | result |
+| --- | --- |
+| rows | 579 → 579, key sets equal both ways |
+| rows differing on **any** field | **0** |
+| **LABEL moves** | **0** |
+| **`excluding_gate` moves** | **0** |
+| `out_of_scope` | 428 → 428, **arrays identical** |
+| `totals` | identical in every key; `by_label` `ET-CC` 281 · `ET-ADJ` 88 · `ET-OUT` 206 · `ET-CTRL` 4 |
+| `provenance.decisions_md5` | `4548ad291a551f4aea75c6539cd5efdf` → unchanged |
+| whole file | **byte-identical**, and `etcc-register.json` does not appear in `git status` |
+
+**Step 1 alone would be theatre, and is reported as such.** It is guaranteed the moment
+the decisions file is not edited: the generator does **not** apply the criterion — it
+joins 579 hand-authored rows to MES-83's artefact and fires its guards. Step 1 proves the
+arithmetic, never that the promoted text re-decides the family the same way.
+
+**Step 2 — the re-decision scan. Each row of the family asked §2.5's question afresh,
+both answers printed.** This is the step that could have failed and the one the PM's
+stop-rule was written for.
+
+**Population, stated because the ratified figure is not the whole of it.** The plan and the
+ratification both name **52** rows — those whose `evidence` cites `26026`. Six further rows
+cite it in their **`question`** field. They are reported here rather than dropped: the
+predicate *"cites `26026`"* is true of **58** rows, and a scan restricted to the field the
+plan happened to name would have looked complete while missing six.
+
+- **52 rows — `evidence` cites `26026`.** The family proper: the tie-break is the deciding
+  authority on the row. Scanned below.
+- **6 rows — `question` cites `26026`, `evidence` does not.** These are **Family E**, where
+  `26026` is named as one side of a conflict, not as the authority. Five were resolved by PM
+  ruling E (`26036`) and one by ruling A; **§2.5 does not reach any of them and does not
+  claim to** — clause (b) routes an *absence* to §2.4, which is where their label comes
+  from. Re-decided anyway: `ET-CC` ×3, `ET-OUT` gate 3 ×2, `ET-OUT` gate 2 ×1 — **0 moves**.
+
+**Result over the 52: 0 label moves.** §2.5's verdict on each unit's own assertions —
+**passes 16 · split 1 · fails 35** — reproduces the register's recorded gate-2 outcome on
+**41** rows directly, and on the other **11** through a conjunct §2.5(c) names as surviving
+it untouched: **8** where the value *is* verbatim but every producing boundary-direction is
+recorded dead (§2.3), and **3** where the unit's own assertions all fail and an inherited
+one lifts it (§6.1). **Those 11 are the reason clause (c) is in the ratified text**: without
+it, a reader applying §2.5 alone would move 11 rows.
+
+**The scan's own control, because a check that cannot fail reports 0 vacuously.** The
+adjudicator was re-run with one row's §2.5 verdict flipped to the opposite of what its
+evidence supports (`start_link/1` / `starts ready by default`, `:ready` asserted to be a
+verbatim wire value). It reported **LABEL MOVES 1**, naming that row. So the 0 above is a
+result and not an artefact of an adjudicator that never fires.
+
+**The 52, each verdict printed. A no-move is a checked result, never silence.**
+
+| # | unit — `{module, test name}` | §2.5 asked of its OWN assertions | route to the delivered label |
+| ---: | --- | --- | --- |
+| 1 | `MCP.ClientDefectsTest` / D-2 — a failed transport send fails the call (CAUGHT REGRESSION) a failed send on the MRTR retry path fails the original caller | **fails** — `{:transport_send_failed, _}` — SDK-invented, no wire counterpart | direct → `ET-OUT` |
+| 2 | `MCP.ClientDefectsTest` / D-2 — a failed transport send fails the call (CAUGHT REGRESSION) a failed send registers no pending request | **fails** — `{:transport_send_failed, _}` + process liveness — SDK-invented | direct → `ET-OUT` |
+| 3 | `MCP.ClientDefectsTest` / D-2 — a failed transport send fails the call (CAUGHT REGRESSION) the caller gets the transport's reason, not a timeout | **fails** — `{:transport_send_failed, _}` and a Req/Bandit reason — SDK-invented | direct → `ET-OUT` |
+| 4 | `MCP.ClientTest` / concurrent requests handles multiple concurrent requests | **fails** — own assertions are `{:ok, _}` shape only; `ET-CC` via `do_connect/2` (ruling C) | **§6.1** → `ET-CC`, `mixed` |
+| 5 | `MCP.ClientTest` / connect/1 (server/discover) returns error on discover failure | **split** — `-32603` verbatim passes; the `{:error, _}` tuple fails — §6 takes the highest | direct → `ET-CC`, `mixed` |
+| 6 | `MCP.ClientTest` / lifecycle close is idempotent | **fails** — an idempotent :ok — SDK-invented, no wire counterpart | direct → `ET-OUT` |
+| 7 | `MCP.ClientTest` / lifecycle notifies pending requests when the transport closes | **fails** — own `{:transport_closed, :normal}` / `:closed` fail; `ET-CC` via `do_connect/2` (ruling C) | **§6.1** → `ET-CC`, `mixed` |
+| 8 | `MCP.ClientTest` / lifecycle times out a pending request | **fails** — own `{:error, :timeout}` fails; `ET-CC` via `do_connect/2` (ruling C) | **§6.1** → `ET-CC`, `mixed` |
+| 9 | `MCP.ClientTest` / notifications dispatches to a pid handler | **passes** — the injected method string verbatim; only the message tuple is ours | direct → `ET-CC` |
+| 10 | `MCP.ClientTest` / requests call_tool sends name and arguments | **passes** — req["method"]/["name"]/["arguments"] off the encoded map — already a wire artefact | direct → `ET-CC` |
+| 11 | `MCP.ClientTest` / start_link/1 starts ready by default (no handshake gate) | **fails** — `:ready` — SDK-invented, no wire counterpart present or absent | direct → `ET-OUT` |
+| 12 | `MCP.ClientToolSchemasTest` / W6 — SEP-2243 tool exclusion a tools/list carrying no tools key is handled rather than crashed on | **fails** — the `[]` is SYNTHESISED for an absent field — nothing to be verbatim to | direct → `ET-OUT` |
+| 13 | `MCP.Protocol.CapabilitiesTest` / ServerCapabilities from_map/1 parses full capabilities | **passes** — four booleans verbatim from the wire literal; only key spelling changes | direct → `ET-CC`, `mixed` |
+| 14 | `MCP.Protocol.ErrorTest` / from_map/1 parses error from wire format | **passes** — `-32601` / message / data read back from a verbatim wire error object | direct → `ET-CC`, `mixed` |
+| 15 | `MCP.Protocol.Messages.DiscoverTest` / from_map/1 round-trips the schema shape | **passes** — ["2026-07-28"], "public", "s" read back; container-only change | direct → `ET-CC` |
+| 16 | `MCP.Protocol.Messages.ResourcesTest` / ListResult from_map/1 parses resource list | **passes** — uri verbatim — but the decode direction is recorded DEAD (ruling A) | **§2.3** → `ET-OUT` |
+| 17 | `MCP.Protocol.Messages.SamplingTest` / CreateMessageParams from_map/1 parses sampling request | **passes** — six values verbatim — but the decode direction is recorded DEAD (ruling A) | **§2.3** → `ET-OUT` |
+| 18 | `MCP.Protocol.Messages.ToolsTest` / ListParams from_map/1 handles empty map | **fails** — `cursor == nil`, an absence marker; `ET-ADJ` unreachable, no lib/ call site | direct → `ET-OUT` |
+| 19 | `MCP.Protocol.MetaTest` / from_params/1 extracts the io.modelcontextprotocol/* keys | **passes** — all four `_meta` values read back verbatim from a wire fragment | direct → `ET-CC` |
+| 20 | `MCP.Protocol.Types.ContentTest` / AudioContent from_map/1 parses audio content | **passes** — data/mime_type verbatim — decode direction recorded DEAD (ruling A) | **§2.3** → `ET-OUT` |
+| 21 | `MCP.Protocol.Types.ContentTest` / EmbeddedResource from_map/1 parses embedded resource | **passes** — nested uri/text verbatim — decode direction recorded DEAD (ruling A) | **§2.3** → `ET-OUT` |
+| 22 | `MCP.Protocol.Types.ContentTest` / ImageContent from_map/1 parses image content | **passes** — data/mime_type verbatim — decode direction recorded DEAD (ruling A) | **§2.3** → `ET-OUT` |
+| 23 | `MCP.Protocol.Types.ContentTest` / ResourceLink from_map/1 parses resource link | **passes** — uri/name/mime_type verbatim — decode direction recorded DEAD (ruling A) | **§2.3** → `ET-OUT` |
+| 24 | `MCP.Protocol.Types.ContentTest` / TextContent from_map/1 parses text content | **passes** — the "text" discriminator verbatim — decode direction DEAD (round 4 split) | **§2.3** → `ET-OUT` |
+| 25 | `MCP.Protocol.Types.ContentTest` / TextContent from_map/1 parses text content with annotations | **passes** — audience/priority verbatim — decode direction recorded DEAD (round 4 split) | **§2.3** → `ET-OUT` |
+| 26 | `MCP.ProtocolTest` / decode/1 decodes a request | **passes** — id/method/params read back off a literal JSON-RPC request STRING | direct → `ET-CC` |
+| 27 | `MCP.Server.SubscriptionsDispatchTest` / T-1 wire shapes (pinned to schema/2026-07-28 examples) an empty filter opens a real stream that carries nothing | **fails** — `%Subscription{}` field / :drop atom — SDK-invented | direct → `ET-ADJ` |
+| 28 | `MCP.Server.SubscriptionsDispatchTest` / T-1 wire shapes (pinned to schema/2026-07-28 examples) the request parses as the pinned SubscriptionsListenRequest example | **passes** — `parse_filter/1` returns the schema example's notifications object back verbatim | direct → `ET-CC` |
+| 29 | `MCP.Server.SubscriptionsDispatchTest` / T-3 MUST NOT send an unrequested notification type a resource URI outside the honoured list is dropped | **fails** — `%Subscription{}` field / :drop atom — SDK-invented | direct → `ET-ADJ` |
+| 30 | `MCP.Server.SubscriptionsDispatchTest` / T-3 MUST NOT send an unrequested notification type only the opted-in types are framed | **fails** — `%Subscription{}` field / :drop atom — SDK-invented | direct → `ET-ADJ` |
+| 31 | `MCP.Server.SubscriptionsDispatchTest` / T-4 MUST NOT send request-scoped notifications on the listen stream no filter key maps to a request-scoped method | **fails** — `Subscriptions.method_for/1` output — SDK-invented | direct → `ET-ADJ` |
+| 32 | `MCP.Server.SubscriptionsDispatchTest` / T-4 MUST NOT send request-scoped notifications on the listen stream progress and message are refused by the same rule, on any filter | **fails** — :drop atom — SDK-invented | direct → `ET-ADJ` |
+| 33 | `MCP.Server.SubscriptionsDispatchTest` / T-5 the ack never claims more than server/discover advertised a type the server does not advertise is not honoured, even if the handler returns it | **fails** — `sub.honoured` struct field — SDK-invented | direct → `ET-ADJ` |
+| 34 | `MCP.Server.SubscriptionsDispatchTest` / T-5 the ack never claims more than server/discover advertised every honoured key is advertised, for the full filter | **fails** — `sub.honoured` struct field — SDK-invented | direct → `ET-ADJ` |
+| 35 | `MCP.Server.SubscriptionsDispatchTest` / T-5 the ack never claims more than server/discover advertised resourceSubscriptions is refused unless resources.subscribe is advertised | **fails** — `sub.honoured` struct field — SDK-invented | direct → `ET-ADJ` |
+| 36 | `MCP.Server.SubscriptionsDispatchTest` / open-time authorization via the honoured subset the same request from a permitted principal is honoured | **fails** — `sub.honoured` struct field — SDK-invented | direct → `ET-ADJ` |
+| 37 | `MCP.Transport.RoutingHeadersTest` / W13 — the rotating-bearer header provider a HANGING provider fails on a bounded timeout — the case `try` cannot catch | **fails** — `{:header_provider_failed, _}` + wall-clock elapsed — SDK-invented | direct → `ET-OUT` |
+| 38 | `MCP.Transport.RoutingHeadersTest` / W13 — the rotating-bearer header provider a provider failure surfaces through MCP.Client as a failed call, not a dead client | **fails** — `{:transport_send_failed, `{:header_provider_failed, _}`}` — SDK-invented | direct → `ET-OUT` |
+| 39 | `MCP.Transport.RoutingHeadersTest` / W13 — the rotating-bearer header provider a provider process killed outright still only fails the request | **fails** — `{:exit, :killed}` + process liveness — SDK-invented | direct → `ET-OUT` |
+| 40 | `MCP.Transport.RoutingHeadersTest` / W13 — the rotating-bearer header provider a raising provider fails THAT request and leaves the transport alive | **fails** — `{:header_provider_failed, {:error, %RuntimeError{}}}` — SDK-invented | direct → `ET-OUT` |
+| 41 | `MCP.Transport.RoutingHeadersTest` / W13 — the rotating-bearer header provider a throwing or exiting provider is caught the same way | **fails** — `{:header_provider_failed, _}` — SDK-invented | direct → `ET-OUT` |
+| 42 | `MCP.Transport.SSETest` / decode_event/1 returns error for empty event | **fails** — `:empty_event` — SDK-invented; consumed at `sse.ex:216`, so `ET-ADJ` | direct → `ET-ADJ` |
+| 43 | `MCP.Transport.StreamableHTTP.ClientTest` / A6-8: the guard covers the SSE path too (gzip text/event-stream) | **fails** — `{:unexpected_content_encoding, _}` — SDK-invented | direct → `ET-OUT` |
+| 44 | `MCP.Transport.StreamableHTTP.ClientTest` / CR-11.2/11.3: a gzip-coded JSON response fails cleanly and names the coding | **fails** — `{:unexpected_content_encoding, "gzip"}` — SDK-invented | direct → `ET-OUT` |
+| 45 | `MCP.Transport.StreamableHTTP.ClientTest` / CR-12: duplicate lines gzip-then-identity fail cleanly | **fails** — `{:unexpected_content_encoding, _}` — SDK-invented | direct → `ET-OUT` |
+| 46 | `MCP.Transport.StreamableHTTP.ClientTest` / CR-12: duplicate lines identity-then-gzip fail cleanly, not json_decode | **fails** — `{:unexpected_content_encoding, _}` — SDK-invented | direct → `ET-OUT` |
+| 47 | `MCP.Transport.SubscriptionsStreamTest` / T-12 the close asymmetry a client depends on an abrupt client drop still tears the subscription down | **fails** — a test handler's own message + `{:error, `:closed`}` — no wire counterpart | direct → `ET-OUT` |
+| 48 | `MCP.Transport.SubscriptionsStreamTest` / T-9 closing the stream is cancellation the client closing tears the subscription down within a bounded window | **fails** — `{:listen_closed, ...}` to itself + `{:error, `:closed`}` — no wire counterpart | direct → `ET-OUT` |
+| 49 | `MCP.Transport.SubscriptionsStreamTest` / T-9 closing the stream is cancellation the handler's teardown callback runs exactly once | **fails** — teardown-callback observation only — no wire counterpart | direct → `ET-OUT` |
+| 50 | `MCP.Transport.SubscriptionsStreamTest` / every exit from a listen runs teardown a RAISE inside the stream loop tells the handler and kills the sink (F2) | **fails** — teardown-callback observation only — no wire counterpart | direct → `ET-OUT` |
+| 51 | `MCP.Transport.SubscriptionsStreamTest` / every exit from a listen runs teardown teardown still runs exactly once when an exit tears down and then unwinds | **fails** — teardown-callback observation only — no wire counterpart | direct → `ET-OUT` |
+| 52 | `MCP.Transport.SubscriptionsStreamTest` / the teardown context has no channels a handler emitting from handle_listen_closed/3 is dropped, not exited | **fails** — `{:error, :no_stream}` + a nil reply sink — SDK-invented | direct → `ET-OUT` |
+
+## §E.2 The S7-15 cross-check — §2.5 against the worked examples of every section it lands in
+
+**The obligation (§9.1(3)):** an amendment is checked against the worked examples of every
+section it lands in, not only against the rule it fills. §C.3 is what happens when it is
+not — a tie-break authored to fill §9's R1 contradicted §11.1's worked example three
+sections away. **Every label below was re-derived from the delivered register at this tip,
+not carried from `etcc-register.md` §5** — F1 is what transcription costs.
+
+### Part A
+
+| section | worked examples checked | verdict |
+| --- | --- | --- |
+| §2.2 | both addresses — `plug.ex:1005` (not a step), `server_capabilities.ex:47-49` (a step) | **no move.** §2.5 cites §2.2 by name for its negative limb (*"that is a §2.2 step and gate 2 fails"*), so the two are one rule in two positions. A hand-written encoder that drops nils reshapes the value, which §2.5's own words fail. |
+| §2.3 | the worked pair (`client_test.exs:144` survives / `Messages.Tools`, 36 rows, fails) and clauses (a)–(e) | **no move**, and this is the pairing that matters most: 8 of the 52 pass §2.5 and still fail gate 2 on §2.3. Clause (c)'s first bullet is written for exactly them. `Messages.Tools` stays `ET-OUT`. |
+| §2.4 | both rows — `%{}` from `Extensions.from_meta(nil)` **passes**; `:ready` from `Client.status/1` **fails** | **no move.** Both reproduce at this tip: the `from_meta/1 (9)` doctest is `ET-CC`, `start_link/1 starts ready by default` is `ET-OUT`. §2.5(b) states the division explicitly — §2.4 owns the *absence* case, §2.5 the *value* case — so `:ready` fails under both, for the same reason, which is the consistency being checked. |
+| §5.2 | both rows — `valid_identifier?/1` (2 doctests) `ET-ADJ`; `reserved_prefix?/1` (2 doctests) `ET-OUT` | **no move.** Both reproduce. Neither asserts a decoded wire value: a boolean predicate output is SDK-computed, so §2.5 fails them and §5's call-site test — untouched by §2.5 — is what separates them. |
+| §5.3 | example 3's canary, `ET-CTRL` | **no move.** Reproduces `ET-CTRL`. It touches no SDK code, so there is no decoded value for §2.5 to be asked about. |
+| §6 / §6.1 | the three `inherited_from` rows | **no move**, and this is the check F1 came out of. All three are `ET-CC`, `mixed: true`, `inherited_from test/mcp/client_test.exs:59`: `concurrent requests …`, `lifecycle notifies pending requests …`, `lifecycle times out a pending request`. §2.5 **fails** every one of their own assertions and clause (c)'s third bullet says so in the ratified text. |
+| §9 R1 | the residual §2.5 fills — *"ruled out of `ET-CC` by default; `ET-OUT`, or `ET-ADJ` where §5's call-site test is met"* | **no move.** The 35 rows §2.5 fails land **25 `ET-OUT` + 10 `ET-ADJ`**, which is R1's default with R1's exception, measured. §2.5(a) is R1 given the worked case it was ratified without. |
+| §9 R2 | *"transitive and deliberately unbounded"* | **no move.** §2.5's *"never on the number of hops"* and R2's *"any number of steps"* are the same proposition at two gates — R2 about call sites, §2.5 about the asserted value. |
+| §9 R3 | gate 3 fail-closed | **no move.** §2.5 decides gate 2 only; clause (c)'s second bullet says the survivor still faces gate 3 alone. The 2 gate-3 `ET-OUT`s among the six `question` rows are that working. |
+| §9.1 (1) | a worked example carries its ratio | **applied, not merely checked.** It is the reason the sixth case could not be promoted at its old label: a superseded `ET-OUT` cell would have carried a ratio contradicting §6.1. |
+| §9.1 (2) | Part A outranks a tie-break, both directions | **applied.** This promotion is what makes clause (2) bite on `26026` — before it, clause (2) did not reach the family (§C.5). |
+| §9.1 (3) | check against every section's worked examples | **this table is the discharge.** |
+| §9.1 (4) | reconciliation over withdrawal | **applied** to the sixth case, on the PM's Q2 ruling: the row is kept with its divergence stated, not dropped. |
+| §9.1 (5) | weakness is gate 4, never gate 2 | **no move.** §2.5 asks *"is there a wire value to be verbatim to?"* — a yes/no about existence, never about how strong the assertion is. The `falsifiable: undetermined` rows stay members. |
+| §10 | all nine negative categories | **no move.** Detail below. |
+| §11 | all nine worked examples | **no move.** Detail below. |
+| §11.1 | all five doctest groups | **no move.** `HeaderMirror.encode_value/1` (4) `ET-CC`; `Extensions.from_meta/1` (2) `ET-CC`; `normalise/2` (3) `ET-ADJ`; `valid_identifier?/1` (2) `ET-ADJ`; `reserved_prefix?/1` (2) `ET-OUT` — **6 / 5 / 2**, reproducing. §2.5 reaches only `from_meta/1`, and §2.4 already decides it the same way. |
+
+### §10's nine negative categories, re-decided under §2.5
+
+| # | category | verdict |
+| --- | --- | --- |
+| 1 | instrument tests (gate 1) | **no move.** §2.5 is a gate-2 rule; gate 1 is answered first and yields `OUT-OF-SCOPE`. |
+| 2 | instrument-responsiveness controls → `ET-CTRL` | **no move.** No decoded wire value is asserted. §5.3's example 3 reproduces `ET-CTRL`. |
+| 3 | bare-constant tests | **no move.** A constant compared to a literal was never *decoded* — nothing came off a wire — so §2.5's antecedent is not met. `MethodsTest` / `request methods` reproduces `ET-ADJ`, `mixed`. |
+| 4 | internal-representation tests — *"the largest and least obvious"* | **no move, and this is the category §2.5 is most easily misread against.** A struct field is a **container**, which §2.5 permits to change; what §2.5 requires is that the *value* be the wire value. Where a later step renames or drops (`tool_capabilities.ex:20-31`), the value moves and gate 2 fails. §11 example 9 reproduces `ET-ADJ`. |
+| 5 | predicates nothing acts on → `ET-OUT` | **no move.** A predicate's boolean is SDK-computed. `reserved_prefix?/1` reproduces `ET-OUT`. |
+| 6 | behaviour outside the spec's domain → gate 3 | **no move.** §2.5 cannot reach it: it decides gate 2, and these pass gate 2. Family B's 23 identity rows reproduce — 22 `ET-OUT` at gate 3, 1 `ET-CC`, `mixed`. |
+| 7 | dependency-behaviour tests | **no move.** The asserted value is Bandit's or Req's, not decoded from a wire artefact of ours. |
+| 8 | operator-facing output, lifted by §6 where the unit also asserts an encoded message | **no move.** `JsonSchema202012Test` reproduces **31 / 16** over 47 units, 15 at gate 2 and 1 at gate 3. §2.5 does not touch the lifting rule, which is §6's. |
+| 9 | public-API convenience shape — **this is R1, and the one §2.5 is about** | **no move, and the category is now decided rather than defaulted.** §10's category 9 says *"`ET-OUT` by default"*; §2.5 replaces the default with a test — *is there a wire value for this to be verbatim to?* — and the 52-row scan is what shows the two give the same answer on every row where both apply. |
+
+### §11's nine worked examples, re-derived at this tip
+
+| §11 | unit | ratified | at this tip | verdict |
+| --- | --- | --- | --- | --- |
+| 1 | `DispatchTest` / `initialize … -32022` | `ET-CC` | `ET-CC`, anchored `schema.ts:450` | reproduces |
+| 2 | `MethodsTest` / `request methods` | `ET-ADJ`, `mixed` | `ET-ADJ`, `mixed` | reproduces |
+| 3 | `ClientConformanceTest` / control-on-the-control | `ET-CTRL` | `ET-CTRL` | reproduces |
+| 4 | `JsonSchema202012Test`, 47 units | **31 / 16** | **31 / 16** | reproduces |
+| 5 | the 13 doctests | **6 / 5 / 2** | **6 / 5 / 2** | reproduces |
+| 6 | `ToolTest` / the 2 generated booleans | `ET-OUT`, gate 3 | `ET-OUT`, gate 3 | reproduces |
+| 7 | `RoutingHeadersTest` / `a request carries the body method` | `ET-CC`, one unit | `ET-CC`, one unit | reproduces |
+| 8 | `MCP.Conformance.CensusTest` / `… builds a census, once every non-pass is classified` | `OUT-OF-SCOPE` | in `out_of_scope` with `gate: 1` (`test/conformance/census_test.exs`), absent from `rows` — **not** one of the four labels, as §1 requires | reproduces |
+| 9 | `CapabilityHonestyTest` | `ET-ADJ` | `ET-ADJ` | reproduces |
+
+**All eight in-scope labels reproduce, both split figures included.** Example 6 is the one
+to look at twice under §2.5 — it does `Jason.encode!|>decode!` and asserts the decoded map,
+so §2.5 **passes** it — and it is `ET-OUT` at **gate 3**, which §2.5 does not touch. That
+is clause (c)'s second bullet, observed rather than argued.
+
+### `etcc-register.md`'s own controls
+
+| control | verdict |
+| --- | --- |
+| §5's ratified-worked-example table (8 in-scope labels, re-checked at rounds 2, 4 and 5) | **no move.** All eight re-derived above from the delivered register, not from §5's text. |
+| §7 Family A — the dead path, ruling A (`26034`/`26048`/`26058`) | **no move.** 80 rows carry `adjudication.ruling == "A"`. §2.5(c)'s first bullet is Family A's reasoning promoted alongside the rule, so the two cannot diverge. |
+| §7 Family B — identity, ruling B (`26035`) | **no move.** 23 rows: 22 `ET-OUT` at gate **3**, 1 `ET-CC`, `mixed`. §2.5 is a gate-2 rule and Family B dies at gate 3; asked afresh, gate 2 still passes and the labels stand. |
+| §7 Family C — inherited assertions, ruling C (`26035`) | **no move.** 3 rows, all `ET-CC`, `mixed`, all `inherited_from client_test.exs:59`. **This is the family F1 sits in**, and it is why §2.5's sixth worked case carries a label its gate-2 column does not produce. |
+| §7 Family D — `meta_test.exs:47`, ruling D (`26035`) | **no move.** 1 row, `ET-CC`, `mixed`. |
+| §7 Family E — the absence markers, ruling E (`26036`) | **no move.** 5 rows under ruling E at the delivered tip: 3 `ET-CC`, 2 `ET-OUT` at gate 3. These are the `question`-citing rows of §E.1's step 2, and §2.5(b) hands them to §2.4 explicitly. |
+
+## §E.3 The three findings
+
+### F1 — a worked case's label had been superseded for a month, and nothing was red
+
+`etcc-register.md` §6 lists `:353` `times out a pending request` among its three clean
+`ET-OUT` cases. **PM ruling C (`26035`) overturned that cell on the same day the tie-break
+was issued** (2026-08-23), and §6.1 made ruling C's reasoning Part A on MES-87. At the
+delivered tip the unit is `ET-CC`, `mixed: true`, `inherited_from
+test/mcp/client_test.exs:59`.
+
+**Had the table been promoted verbatim, §9.1(1) would have given a superseded result the
+rank of a rule**, contradicting §6.1 three sections away — the exact S7-15 shape MES-87
+exists to close, committed by the ticket closing it. What prevented it was re-deriving
+every label from the delivered register instead of transcribing §5's and §6's text
+(§C.6's method).
+
+**The general shape, which is the part worth keeping: a prose worked-example table and
+the register it describes can diverge for a month with nothing going red.** No guard
+resolves a prose table's keys against `etcc-register.json`. Guards 21, 22 and 27 are the
+shape that would. The PM ruled that instrument **out of MES-93 and into MES-102** (`27821`,
+Q5) — it is an instrument, not the promotion. Recorded as **S9-1**, pointing at MES-102.
+
+### F2 — *"roughly 90 client-side rows"* does not reproduce; it is 57
+
+The figure is in this ticket's body, in §C.5 and in `etcc-register.md` §6, and §6 states
+explicitly that rounds 2–4 took rows out of other families and *"not out of this family"*.
+Four predicates, run over the delivered register at this tip — each stated so it can be
+re-run, since *"the client-side family"* has no single definition:
+
+| predicate | measured |
+| --- | --- |
+| `ET-CC` rows whose recorded `boundary` includes `MCP.Client` | **57** |
+| `ET-CC` rows in the five client-side test modules (`ClientTest`, `ClientToolSchemasTest`, `ClientDefectsTest`, `ClientConformanceTest`, `IntegrationTest`) | **59** |
+| rows whose `evidence` cites `26026` | **52** — `ET-OUT` 30 · `ET-CC` 12 · `ET-ADJ` 10 |
+| rows whose `evidence` cites `client.ex:868` | **37** — `ET-CC` 35 · `ET-OUT` 2 |
+
+**It is a round-1 figure.** `ET-CC` stood at 340 then and is 281 now. On the closest
+reading of what §6 means by the family — the rows the register itself attributes to the
+`MCP.Client` boundary — the answer is **57**, not ~90.
+
+**So Part A carries no count**, on the PM's Q3 ruling (`27820`). The correction lands
+here, in `etcc-register.md` §6's superseding note, and as **S9-3**. **§C.5 and the ticket
+body are NOT edited**: §C.5 is MES-87's ratified output and the body is PM-only, and
+overwriting ratified text to fix a figure would destroy the record of what was believed
+when the disclosure was written. One measured number, in the place MES-93 owns, pointing
+back at the estimate.
+
+### F3 — §B.4(ii)'s enumeration has been an undercount since 2026-09-10
+
+It read **17** and ended at MES-87's `26737`. MES-88 then added a ratified Part A element —
+§2.3(e)'s extension, `[authored 26988 | ratified 26995]` — and did not touch the
+enumeration. **Two ratified ids were missing: an omission of elements, not a miscount.**
+
+Corrected to **21** on the PM's Q6 ruling (`27821`), and **regrouped by ticket**: MES-87's
+addendum justified keeping the enumeration by the `25xxx` / `26xxx` prefix separating the
+two threads, and `26xxx` now spans three tickets, so that property is gone. MES-88's pair
+is marked as a correction rather than as MES-93's own.
+
+**It went stale silently because keeping it current is a manual obligation with no
+instrument** — the same shape as F1 and as S7-47. Recorded as **S9-2**.
+`match-relation.md:8` is still not corrected, for MES-80's stated reason: it is A3's
+artefact.
+
+## §E.4 What MES-93 did NOT do, stated so each absence reads as a decision
+
+1. **Did not edit any existing element of Part A.** §2.5 is one new element with its own
+   two ids. §2.4 is left standing verbatim even though it cites the tie-break as something
+   external — §2.5 states the relationship from its own side instead, which is MES-87's
+   pattern and keeps what each ticket added separable by reading.
+2. **Did not edit §C.5 or the ticket body** to correct *"roughly 90"* — PM Q3 ruling. F2
+   above is where the measured number lives.
+3. **Did not re-cite the 52 rows' `evidence`** from *"PM tie-break `26026`"* to §2.5 — PM
+   Q4 ruling. The citation is historically accurate about where the decision came from, and
+   a mechanical re-cite would move 52 rows' text through the decisions file in the very
+   commit whose headline claim is that **0** rows moved. A separate ticket if the PO wants
+   the register pointing forward.
+4. **Did not build the prose-table guard (guard 28)** — PM Q5 ruling; it is **MES-102**,
+   under MES-96, full-cycle. F1 is the gap it closes and **S9-1** is the pointer.
+5. **Did not rewrite or delete `etcc-register.md` §6.** It is marked with a superseding
+   note at its head and one inline pointer at the `~90` sentence. §6 remains MES-81's
+   record of where the rule came from; S8-1 is the precedent for marking rather than
+   silently editing.
+6. **Did not touch `lib/`, `mix.exs`, `mix.lock`, `conformance/data/etcc-decisions.json`
+   or `docs/conformance/etcc-register.json`.** The register is regenerated and
+   byte-identical; it does not appear in the diff.
+7. **Did not correct `match-relation.md:8`** — A3's artefact, per MES-80.
+8. **Did not re-run the boundary-liveness sweep.** `lib/` is byte-unchanged on this
+   branch, and the sweep is the end-of-sprint cadence check, not this ticket's evidence.

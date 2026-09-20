@@ -577,6 +577,40 @@ in `etcc-membership.md`**: promoting it into the criterion would be re-opening a
 ratified document, which needs its own MES-67-style ratification and is not done by
 the back door of a tie-break.
 
+> **MES-93 SUPERSEDING NOTE, 2026-09-20 — this section is no longer criterion, and it is
+> marked rather than deleted.** The paragraph above names the condition on promotion;
+> **MES-93 met it.** The rule below is now **`etcc-membership.md` Part A §2.5**,
+> `[authored 27584 | ratified 27820]` — the front-door MES-67-style ratification §6 asked
+> for, not the back door it forbids. Four things a reader of this section needs, and none
+> of them is a change to what MES-81 recorded:
+>
+> 1. **Part A §2.5 holds the rule, and the promotion is TOTAL.** Under
+>    `etcc-membership.md` §9.1(2) a ratified Part A element outranks a §9 tie-break, so
+>    `26026` now decides nothing Part A does not decide. §6 remains **MES-81's record of
+>    where the rule came from and how it was applied** — read it as provenance, never as
+>    the authority. The incompleteness disclosed at `etcc-membership.md` §C.5 is closed.
+> 2. **The six cases' LINE citations below do not carry across, and §2.5 is keyed on
+>    `{module, test name}` instead.** MES-84 shifted them: `:141`, `:182`, `:124`, `:89`,
+>    `:347`, `:353` are at 144, 187, 126, 89, 359 and 366 at this tip, and `:359` now
+>    reads a **different real test**. That is `S8-2`, already raised; promoting the table
+>    by line would have imported the drift into ratified text, where it could not be
+>    corrected afterwards. The lines below are left as MES-81 wrote them.
+> 3. **The `ET-OUT` cell for `:353` `times out a pending request` was overturned the same
+>    day, by PM ruling C (`26035`).** `do_connect/2` asserts
+>    `discover["method"] == "server/discover"` and a test is indivisible, so at the
+>    delivered tip that unit is **`ET-CC`, `mixed: true`**, `inherited_from
+>    test/mcp/client_test.exs:59`. §2.5 therefore promotes the **gate-2 verdict** the rule
+>    decides — which is unchanged, the value *is* SDK-invented — and takes the **label**
+>    column from the delivered register. §6.1 (Part A as of MES-87) is what moved it, not
+>    this rule.
+> 4. **"Roughly 90 client-side units" does not reproduce; it is 57 at the delivered
+>    tip.** That is a round-1 figure, taken when `ET-CC` stood at 340 rather than today's
+>    281. Measured here: **57** `ET-CC` rows carry `boundary: "MCP.Client"`, **59**
+>    `ET-CC` rows sit in the five client-side test modules, **52** rows cite `26026` in
+>    their evidence, and **37** cite `client.ex:868`. **Part A §2.5 carries no count at
+>    all** — a criterion that states a measurement goes stale exactly as this figure did.
+>    Working in `etcc-membership.md` §E.3, recorded as `S9-3`.
+
 **What it answers.** §9's residual class **R1** — the gate-2 boundary between
 spec-mandated wire shape and our own public-API shape — is *decided* (ruled out of
 `ET-CC` by default) but carries **no worked case on either side** in the ratified
@@ -624,7 +658,9 @@ The same principle from the other end explains the encode side:
 `client.ex:868` is `defp encode(struct), do: Jason.decode!(Jason.encode!(struct))`
 and it wraps **every** send (`:839` requests, `:864` notifications), so what
 `MockTransport` records is an already-encoded string-keyed map with any hand-written
-`Jason.Encoder` already applied. Roughly 90 client-side units assert that map. Both
+`Jason.Encoder` already applied. Roughly 90 client-side units assert that map. **[MES-93:
+57 at the delivered tip — see the superseding note at the head of §6, item 4. MES-81's
+sentence is left standing.]** Both
 families pass gate 2 on the value; each still faces gate 3 alone. This is the single
 largest reason `ET-CC` came out at round 1's 340 rather than in the declared 200–260
 band, and it still is at round 4's **281** (§3) — ruling A takes 66 rows back out
