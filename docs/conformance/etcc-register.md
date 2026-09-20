@@ -58,6 +58,75 @@ routinely contain slashes, and
 `MCP.ClientTest/test connect/1 (server/discover) returns error on discover failure`
 is a real key in this register with three of them.
 
+### §0.1 How this document cites a unit, a line of `lib/`, and a section of itself
+
+**Every in-tree citation below is a STABLE KEY. None is a line number, and that is a
+rule rather than a style.** MES-84 inserted `@tag :etcc` lines into the test files this
+document cites and every line citation in it moved; most then resolved to nothing, and
+one resolved to a **different real test** (`S8-2`). A line is not an address of anything —
+it is an address of whatever the file happens to put there today.
+
+| what is being cited | the form used here |
+| --- | --- |
+| a **test unit** | its row key verbatim, `inspect(module) <> "/" <> name` — [`etcc-row-key.md`](etcc-row-key.md) §1. The same key `etcc-register.json` is keyed on, so prose and data join by construction |
+| an **assertion inside a unit** | the enclosing unit's row key, **plus the asserted expression quoted verbatim**. A line inside a body has no key of its own, and the expression is what the prose is actually pointing at |
+| a line of **`lib/`** | `Module.fun/arity`. Where the line is not inside a named function (an `alias`, an `@derive`, a `defimpl` head) the construct is quoted verbatim |
+| a **section of this file** | its `§` number. Never this file's own line numbers — see the note at the end of §2 |
+| the **pinned spec** (`schema.ts`, `*.mdx`) | left as `file:line` at the pin. **Bounded exception, ruled by the PM on MES-94.** Those files are not in this tree: no commit of ours moves them, so the failure mode above cannot arise, and no guard here could verify them without vendoring the spec |
+
+**Guard 29 enforces it**, `MCP.Conformance.Citations`, in two limbs:
+
+* **A — membership.** Every row key written in a code span below must be a key
+  `etcc-register.json` carries. A unit that is **renamed or deleted** fails loudly; a
+  unit that merely **moves** cannot break it, which is the whole point. **75 distinct
+  keys, 158 occurrences** at the delivered tip.
+* **B — the ratchet, keyed on the OCCURRENCE.** A line-shaped citation is permitted
+  only where `permitted_line_citations/0` grandfathers **that occurrence** — the pair
+  *(§ section, citation text)*, carrying how many times it may stand there and the
+  reason it survives. Converting a document and leaving nothing to stop the form
+  returning would let the conversion erode. **Keying the permission on the text alone
+  was not enough, and this is not hypothetical:** the first cut did, and CODE_REVIEWER
+  falsified it before it merged — a **live** bare citation written anywhere in the
+  document passed, because the same digits are grandfathered somewhere else. So the
+  same string in a **different** section is red as unlisted, and an **extra**
+  occurrence in the section that does permit it is red as over-count, naming how many
+  were written and how many are permitted. The section is this file's own stable
+  self-address, the very form the table above requires, so **no line number enters the
+  allow-list**. It remains monotone under deletion: removing a permitted citation
+  stays green, and the permission left behind is reported as stale and asserted absent
+  against this document by the units.
+
+Decision-logic units are `test/conformance/etcc_citations_test.exs`, so **gate 5 runs
+guard 29 on every ticket at three seats**. The two controls a 0-or-1 scan needs are
+committed:
+
+    mix run conformance/controls/etcc_citation_controls.exs positive   # the extractor reaches the population
+    mix run conformance/controls/etcc_citation_controls.exs mutation   # one perturbed character is refused (limb A)
+    mix run conformance/controls/etcc_citation_controls.exs limb-b     # a DUPLICATE permitted token is refused (limb B)
+
+**Guard 29 does not check that a citation is APT** — that the unit named is the unit the
+sentence is about. No guard here checks judgement. And limb A validates the prose against
+`etcc-register.json`, not against the live suite: the chain is *prose → register → suite*,
+and the second hop is **MES-84's** drift guard, not this one.
+
+### The line-shaped strings that remain — 38, in two classes, both marked in place
+
+Counted at the delivered tip by the positive control, and every one of them is in
+`permitted_line_citations/0` **against the section it stands in**, with its reason and
+the number of times it may stand there:
+
+| class | n | where, and why |
+| --- | ---: | --- |
+| `:frozen` | 18 | all in **§6** — its six worked cases and MES-93's superseding note above them. MES-93 froze §6 as the provenance record of where the decode-boundary rule came from; a provenance record altered is no longer one. Includes two verbatim quotations of `etcc-register.json` **field values** inside that note. PM-ruled on MES-94 |
+| `:quoted` | 20 | a historical address quoted **as the defect under discussion**, inside a correction note that exists to say it was wrong — **8 in §2** (MES-87's S8-1 note), **8 in §6a** (F15 and F16), **4 in §8** (the dropped round-2 arrows). Rewriting those would delete the evidence the note is made of |
+
+Because the allow-list is keyed on the pair, those four sections are the **only** places
+a line-shaped citation can stand at all: written into any other section, every one of
+these strings is refused.
+
+Spec anchors are counted in neither: `schema.ts:NN` and `changelog.mdx:NN` are not in this
+tree and are ruled out of scope above.
+
 ---
 
 ## §1 How the register was produced
@@ -101,8 +170,8 @@ PM's squash-merge, so a recorded tip is not a handle anyone can resolve afterwar
     All three are UNCHANGED from round 5, and that is a result rather than an
     oversight: round 6 corrected two prose figures and added one clause, and touched
     no generator input. `etcc-decisions.json` is byte-identical, and the only edit to
-    `etcc-boundaries.json` is inside `the_direction_split`, a prose field the
-    generator never reads — it consumes `.boundaries` alone (`etcc_register.ex:90`).
+    `etcc-boundaries.json` is inside `the_direction_split`, a prose field the generator
+    never reads — it consumes `.boundaries` alone (ETCCRegister.build/1).
     A round that moved a label and left these hashes standing would be the defect;
     a round that moved neither is why they are printed.
 
@@ -216,15 +285,17 @@ been adding to it, which is §B.3's own mechanism showing again. The in-scope 57
 unmoved, because gate 1 scopes on `test/mcp/`.
 
 > **MES-87 CORRECTION, 2026-09-09 — S8-1.** This document said **413** in five places
-> (`:197`, `:214`, `:425`, `:1411`, `:1414`) while the delivered `etcc-register.json`
-> said **428**. Traced: it was 413 at `85d50fa` and 428 at `18df3a6` — **MES-84
-> regenerated the artefact, `test/conformance/` had grown by 15 units, and the prose was
-> not restated.** All five are restated to 428 here, on the PM's Q1 ruling (`26736`).
+> (the population sentence at the head of this section and the *"one figure in the brief"*
+> paragraph below it, §4's totality transcript, and §9's heading and its first paragraph)
+> while the delivered `etcc-register.json` said **428**. Traced: it was 413 at `85d50fa`
+> and 428 at `18df3a6` — **MES-84 regenerated the artefact, `test/conformance/` had grown
+> by 15 units, and the prose was not restated.** All five are restated to 428 here, on the
+> PM's Q1 ruling (`26736`).
 >
 > **No label moves and the in-scope 579 is untouched** — 579 + 428 = 1007, the artefact's
 > row count. But it is exactly *"regenerated without restating the totals"*, which is the
 > AC4 failure mode this ticket's own acceptance criteria exist to prevent, and it is the
-> third instance of that shape after F10 and F12. The `:425` occurrence is a transcript of
+> third instance of that shape after F10 and F12. §4's occurrence is a transcript of
 > `mix run conformance/controls/etcc_register_controls.exs totality`, and it was re-run
 > rather than hand-edited: the script prints 428.
 >
@@ -232,6 +303,16 @@ unmoved, because gate 1 scopes on `test/mcp/`.
 > alone — it is a figure inside ratified MES-67 text measured at its own tip, and Part A's
 > rule is that drift is reported, never corrected in place. The sentence above already
 > reports it.
+>
+> **MES-94, 2026-09-20 — the five addresses this note originally gave were `:197`, `:214`,
+> `:425`, `:1411`, `:1414`, and THREE of them were already wrong at the commit that wrote
+> them.** Not stale later: wrong on arrival. `git show 7e935c2:docs/conformance/etcc-register.md`
+> puts a blank line at `:425` and unrelated prose at `:1411` and `:1414`; they are the
+> line numbers of the tree **before** the edit (`616dd2b`), and MES-87's own 23-line
+> insertion above §2 had already moved everything below it. **A self-citation by line
+> into the document being edited cannot survive its own commit** — which is S8-2's rule
+> with the delay removed, and it is why the five are now named by section. Recorded as
+> `S9-5`.
 
 ---
 
@@ -290,7 +371,7 @@ moved under it.
 | **A** — dead-path boundary (`26034`) | 45 | **40** | −40 |
 | **B** — identity (`26035`) | 23 | 0, upheld as ruled | 0 |
 | **C** — inherited assertions (`26035`) | 3 | 3 | +3 |
-| **D** — `meta_test.exs:47` (`26035`) | 1 | 1 | +1 |
+| **D** — `MCP.Protocol.MetaTest/test validate_protocol_version/2 mismatched (e.g. legacy 2025-11-25) → {:error, {:unsupported, got}}` (`26035`) | 1 | 1 | +1 |
 | **E** — absence markers (`26036`) | 6 | 4 | +3 |
 | | **78** | **48** | **−33** |
 
@@ -329,8 +410,8 @@ its work.
 
 | unit | why |
 | --- | --- |
-| `capabilities_test.exs:64`, `:75`, `:161` — `ClientCapabilities` `from_map/1` ×2 and the T9 decode half | `ClientCapabilities.from_map/1` has exactly **one** `lib/` call site, `initialize.ex:28`, inside `MCP.Protocol.Messages.Initialize` — a module `lib/` never uses. The server keeps `io.modelcontextprotocol/clientCapabilities` as a **raw map** (`meta.ex:105`) and never decodes it into this struct |
-| `content_test.exs:15`, `:24` — `TextContent` `from_map/1` ×2 | the PM named these in advance (`26058`): they were `ET-CC` on `TextContent`'s **encode** liveness, and under the split they must be re-established on the **decode** side's own verdict. They are not; `TextContent.from_map/1` is reached only through the `Content.from_map/1` dispatcher, dead |
+| `MCP.Protocol.CapabilitiesTest/test ClientCapabilities from_map/1 parses full capabilities`, `MCP.Protocol.CapabilitiesTest/test ClientCapabilities from_map/1 handles empty map`, `MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T9 — ClientCapabilities decode keeps the two apart` — `ClientCapabilities` `from_map/1` ×2 and the T9 decode half | `ClientCapabilities.from_map/1` has exactly **one** `lib/` call site, `MCP.Protocol.Messages.Initialize.from_map/1` — a module `lib/` never uses. The server keeps `io.modelcontextprotocol/clientCapabilities` as a **raw map** (`MCP.Protocol.Meta.from_meta/1`) and never decodes it into this struct |
+| `MCP.Protocol.Types.ContentTest/test TextContent from_map/1 parses text content`, `MCP.Protocol.Types.ContentTest/test TextContent from_map/1 parses text content with annotations` — `TextContent` `from_map/1` ×2 | the PM named these in advance (`26058`): they were `ET-CC` on `TextContent`'s **encode** liveness, and under the split they must be re-established on the **decode** side's own verdict. They are not; `TextContent.from_map/1` is reached only through the `Content.from_map/1` dispatcher, dead |
 
 **All five go to `ET-OUT` with excluding gate 2** and carry
 `adjudication.raised_by: "PM"`, so the register says a human decided them rather than
@@ -375,7 +456,7 @@ five it does not move are established per row in §7 below, which is what the ru
 itself asked for — *"establish that per row; do not apply it as a family sweep."*
 
 Ruling E is 6 rows put and 4 moved because the ratified `from_meta/1 (9)` doctest
-keeps its label (the ruling upholds it) and `extensions_test.exs:414` keeps its
+keeps its label (the ruling upholds it) and `MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) returns %{} when the shape is wrong rather than raising` keeps its
 label while its **excluding gate** moves 2 → 3.
 
 ### Against the prior declared before the sweep
@@ -477,11 +558,17 @@ yourself against has stopped being a control.
 
 **Re-checked at round 2 (PM item 7: *"§11 stays a control: report any ratified label
 that stops reproducing"*): all eight still reproduce, and none of the 48 rows the
-adjudications moved is a §11 unit.** `dispatch_test.exs:82` `ET-CC`;
-`methods_test.exs:6` `ET-ADJ`; `client_conformance_test.exs:134` `ET-CTRL`;
-`JsonSchema202012Test` **31/16** with **15** at gate 2 and **1** at gate 3;
-the 13 doctests **6/5/2**; `tool_test.exs`'s two generated units `ET-OUT` at gate 3;
-`routing_headers_test.exs:90` `ET-CC`; `capability_honesty_test.exs:25` `ET-ADJ`.
+adjudications moved is a §11 unit.**
+
+* `MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)` — `ET-CC`
+* `MCP.Protocol.MethodsTest/test request methods` — `ET-ADJ`
+* `MCP.ClientConformanceTest/test CG4 / T-CG4 — the client MUST NOT dereference a network $ref CONTROL ON THE CONTROL: the canary really does count a fetch` — `ET-CTRL`
+* `JsonSchema202012Test` **31/16** with **15** at gate 2 and **1** at gate 3; the 13
+  doctests **6/5/2**
+* `MCP.Protocol.Types.ToolTest/test outputSchema is carried verbatim, and false is not an absence a boolean outputSchema of false round-trips as a value, not an absence` and `MCP.Protocol.Types.ToolTest/test outputSchema is carried verbatim, and false is not an absence a boolean outputSchema of true round-trips as a value, not an absence` — `ET-OUT` at gate 3
+* `MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a request carries the body method` — `ET-CC`
+* `MCP.Server.CapabilityHonestyTest/test a listChanged claim needs a channel to honour it on a handler with list callbacks but no handle_listen/3 advertises no listChanged` — `ET-ADJ`
+
 Stated as a checked result, not as an absence of news.
 
 **Re-checked at round 4** (PM `26059` item 8 — §11 stays the control). **All eight
@@ -489,11 +576,16 @@ still reproduce, and none of the 14 rows round 4 moved is a §11 unit**: the 14 
 `capabilities_test.exs`, `types/content_test.exs`, `types/resource_test.exs` and
 `types/tool_test.exs`, none is a doctest, and none is one of `ToolTest`'s two
 generated booleans. Re-derived from the delivered register rather than carried:
-`dispatch_test.exs:82` `ET-CC`; `methods_test.exs:6` `ET-ADJ`;
-`client_conformance_test.exs:134` `ET-CTRL`; `JsonSchema202012Test` **47 units,
-31/16, 15 at gate 2 and 1 at gate 3**; the 13 doctests **6 `ET-CC` / 5 `ET-ADJ` /
-2 `ET-OUT`**; `tool_test.exs`'s two generated units `ET-OUT` at gate 3;
-`routing_headers_test.exs:90` `ET-CC`; `capability_honesty_test.exs:25` `ET-ADJ`.
+
+* `MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)` — `ET-CC`
+* `MCP.Protocol.MethodsTest/test request methods` — `ET-ADJ`
+* `MCP.ClientConformanceTest/test CG4 / T-CG4 — the client MUST NOT dereference a network $ref CONTROL ON THE CONTROL: the canary really does count a fetch` — `ET-CTRL`
+* `JsonSchema202012Test` **47 units, 31/16, 15 at gate 2 and 1 at gate 3**; the 13
+  doctests **6 `ET-CC` / 5 `ET-ADJ` / 2 `ET-OUT`**
+* `MCP.Protocol.Types.ToolTest/test outputSchema is carried verbatim, and false is not an absence a boolean outputSchema of false round-trips as a value, not an absence` and `MCP.Protocol.Types.ToolTest/test outputSchema is carried verbatim, and false is not an absence a boolean outputSchema of true round-trips as a value, not an absence` — `ET-OUT` at gate 3
+* `MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a request carries the body method` — `ET-CC`
+* `MCP.Server.CapabilityHonestyTest/test a listChanged claim needs a channel to honour it on a handler with list callbacks but no handle_listen/3 advertises no listChanged` — `ET-ADJ`
+
 `tool_test.exs` is the one to look at twice, since four rows returned to `ET-CC` in
 that very file — but §11 example 6 names the two `boolean outputSchema` units, which
 are `ET-OUT` by **gate 3** and were never ruling A's to move.
@@ -502,14 +594,20 @@ are `ET-OUT` by **gate 3** and were never ruling A's to move.
 5 moved no label at all**: the round-5 diff against the round-4 register is exactly
 four rows' `boundary` and `evidence` fields and nothing else, so no §11 unit could
 have moved — but the eight were re-derived rather than argued from that.
-`dispatch_test.exs:82` `ET-CC`; `methods_test.exs:6` `ET-ADJ`, `mixed`;
-`client_conformance_test.exs:134` `ET-CTRL`; `MCP.Server.JsonSchema202012Test`
-**47 units, 31/16, 15 at gate 2 and 1 at gate 3**; the 13 doctests **6 `ET-CC` /
-5 `ET-ADJ` / 2 `ET-OUT`**; `tool_test.exs:111`'s two generated units `ET-OUT` at gate
-3; `routing_headers_test.exs:90` `ET-CC`; `capability_honesty_test.exs:25` `ET-ADJ`.
+
+* `MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)` — `ET-CC`
+* `MCP.Protocol.MethodsTest/test request methods` — `ET-ADJ`, `mixed`
+* `MCP.ClientConformanceTest/test CG4 / T-CG4 — the client MUST NOT dereference a network $ref CONTROL ON THE CONTROL: the canary really does count a fetch` — `ET-CTRL`
+* `MCP.Server.JsonSchema202012Test` **47 units, 31/16, 15 at gate 2 and 1 at gate 3**;
+  the 13 doctests **6 `ET-CC` / 5 `ET-ADJ` / 2 `ET-OUT`**
+* `MCP.Protocol.Types.ToolTest/test outputSchema is carried verbatim, and false is not an absence a boolean outputSchema of false round-trips as a value, not an absence` and `MCP.Protocol.Types.ToolTest/test outputSchema is carried verbatim, and false is not an absence a boolean outputSchema of true round-trips as a value, not an absence` — `ET-OUT` at gate 3
+* `MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a request carries the body method` — `ET-CC`
+* `MCP.Server.CapabilityHonestyTest/test a listChanged claim needs a channel to honour it on a handler with list callbacks but no handle_listen/3 advertises no listChanged` — `ET-ADJ`
+
 `tool_test.exs` is again the file to look at twice — two of the four rows round 5
-touched are in it (`:73`, `:84`) — and again example 6's units are the two at `:109`,
-which round 5 did not touch and whose labels did not move.
+touched are in it, `MCP.Protocol.Types.ToolTest/test JSON encoding round-trips through JSON with camelCase keys` and `MCP.Protocol.Types.ToolTest/test JSON encoding omits nil fields` — and again example 6's units are
+the two `boolean outputSchema` rows listed above, which round 5 did not touch and whose
+labels did not move.
 
 ### Two sub-figures inside §11 do NOT reproduce at `94f4d2a`
 
@@ -518,11 +616,18 @@ figure in this thread not reproducing, and a fourth is worth naming.
 
 1. **§11 example 2 says "11 of those constants **are** consumed on a wire path".
    It is 9 of 12.** `grep -rn "Methods.<name>()" lib/` returns zero for
-   `initialize`, `ping` and `logging_set_level`; the other nine have call sites
-   (`client.ex:314,324,330,333,336,339,342,346`, `dispatch.ex:126`). The
+   `initialize`, `ping` and `logging_set_level`. The other nine are consumed in two
+   places: **eight** in `MCP.Client.handle_call/3` — `Methods.tools_list/0`,
+   `tools_call/0`, `resources_list/0`, `resources_read/0`, `resources_templates_list/0`,
+   `prompts_list/0`, `prompts_get/0`, `completion_complete/0` — and **one**,
+   `Methods.subscriptions_listen/0`, in `MCP.Server.Dispatch.seal_stream_sink/2`. The
    `ET-ADJ, mixed` label is unaffected — one consumed constant is enough for §6.
 2. **§11 example 4 says "two bind the response to `_result` and discard it". It is
-   four** — `json_schema_2020_12_test.exs:321`, `:340`, `:439`, `:451`. The 15/1
+   four** —
+   `MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a string key is named`,
+   `MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a correct extras map, and an empty one, warn about nothing`,
+   `MCP.Server.JsonSchema202012Test/test F-11 — the unrecognised-key list is capped, and says how many it elided more than ten keys are truncated, and the line says how many are missing`,
+   `MCP.Server.JsonSchema202012Test/test F-11 — the unrecognised-key list is capped, and says how many it elided ten or fewer are listed in full, with no elision claimed`. The 15/1
    gate split and the 31/16 total both reproduce exactly.
 
 ### S7-13 — where this register carried one fact under two labels, and how it was answered
@@ -636,6 +741,17 @@ which is the opposite of what gate 2 is for.
 
 All in `test/mcp/client_test.exs`.
 
+> **THE SIX `:NN` ADDRESSES IN THE TABLE BELOW ARE MES-81'S AND ARE LEFT UNCHANGED.**
+> Four of them now land on a blank line and one, `:359`, lands on a **different real
+> test**. **Read the superseding note at the head of §6, item 2** — it gives the
+> current lines and the reason. They are **not** re-keyed, because MES-93 froze this
+> table as the provenance record of where the rule came from, and a provenance record
+> altered is no longer one; the rule itself now lives, keyed on `{module, test name}`,
+> at [`etcc-membership.md`](etcc-membership.md) Part A §2.5. This is the one **stated,
+> bounded exception** to §0.1 inside this tree, PM-ruled on MES-94, and it is here
+> rather than only 45 lines above so that a reader who deep-links to the table is not
+> misled by it. Recorded as `S9-9`.
+
 | unit | asserted artefact | label | why |
 | --- | --- | --- | --- |
 | `:141` per-request `_meta` | `req["params"]["_meta"]["io.modelcontextprotocol/protocolVersion"]` on the encoded map | **`ET-CC`** | already a wire artefact — `client.ex:868` encodes every send |
@@ -655,8 +771,9 @@ rather than a sweeper's judgement call.
 ### Applied uniformly, and what it cost
 
 The same principle from the other end explains the encode side:
-`client.ex:868` is `defp encode(struct), do: Jason.decode!(Jason.encode!(struct))`
-and it wraps **every** send (`:839` requests, `:864` notifications), so what
+`MCP.Client.encode/1` is `defp encode(struct), do: Jason.decode!(Jason.encode!(struct))`
+and it wraps **every** send (`MCP.Client.send_request/5` for requests,
+`MCP.Client.send_notification/3` for notifications), so what
 `MockTransport` records is an already-encoded string-keyed map with any hand-written
 `Jason.Encoder` already applied. Roughly 90 client-side units assert that map. **[MES-93:
 57 at the delivered tip — see the superseding note at the head of §6, item 4. MES-81's
@@ -666,7 +783,7 @@ largest reason `ET-CC` came out at round 1's 340 rather than in the declared 200
 band, and it still is at round 4's **281** (§3) — ruling A takes 66 rows back out
 across rounds 2 to 4, but it takes them out of `Messages.Tools`, `Protocol.encode/1`,
 `%Response{}` and the message/type modules of §6a, not out of this family: the ~90
-`MockTransport` units assert what `client.ex:868` produces on the **live** send path,
+`MockTransport` units assert what `MCP.Client.encode/1` produces on the **live** send path,
 and §6a measures `MCP.Client` at 12 live-path units reddened.
 
 ### The rule's OTHER edge, added by PM ruling A (`26034`, 2026-08-23)
@@ -688,7 +805,7 @@ grep and confirmed by one mutation.**
 
 | unit | path to the wire | gate 2 |
 | --- | --- | --- |
-| `client_test.exs:144` — asserts `req["params"]["_meta"][…]` | `client.ex:868` encodes it, `:839` sends it | **SURVIVES** |
+| `MCP.ClientTest/test per-request _meta every request carries protocolVersion + client identity/capabilities` — asserts `req["params"]["_meta"][…]` | `MCP.Client.encode/1` encodes it, `MCP.Client.send_request/5` sends it | **SURVIVES** |
 | `tools_test.exs` on `Messages.Tools` (36 rows) | **NONE.** `grep -rn "\bTools\b" lib/` returns `messages/tools.ex` itself plus two lines of doc prose. Mutating the module's `from_map`/encoder keys reddened **18 units, all in `ToolsTest`; 0 of the other 961** | **FAILS** |
 
 It is the same separation §5.2 already draws between `valid_identifier?/1` and
@@ -766,9 +883,10 @@ names in the partition.**
   `Transport.StreamableHTTP.Plug`.
 * **2 produce the asserted artefact in ONE direction only and are recorded with that
   direction named** — `Types.Content (decode)`, whose `from_map/1` dispatches by
-  `"type"` (`content.ex:32-36`) and which has no encoder of its own, and
-  `Messages.Response (encode)`, which has `@derive Jason.Encoder` and a `defimpl`
-  (`response.ex:10`, `:30`) and no `from_map`. Neither satisfies the antecedent, so
+  `"type"` (`MCP.Protocol.Types.Content.from_map/1`) and which has no encoder of its
+  own, and `Messages.Response (encode)`, which has `@derive Jason.Encoder` and a
+  `defimpl Jason.Encoder, for: __MODULE__` on `MCP.Protocol.Messages.Response` and no
+  `from_map`. Neither satisfies the antecedent, so
   neither is split; both are named with a direction anyway because that is the only
   direction their bytes come from.
 
@@ -785,8 +903,9 @@ reach. It was **internally inconsistent before anyone touched the tree**: 17 spl
 modules is 34 directions, and the same sentence said 38; the 38 is right. And it was
 **never right rather than stale** — the boundaries file has carried 18 both-direction
 modules since `e27ca65`, so the sentence was wrong on the commit that wrote it.
-**Guard 21 derives its split set from that same file** — `split_modules/1`
-(`etcc_register.ex:396-405`) takes the ids carrying both directions, and it is the 18
+**Guard 21 derives its split set from that same file** —
+`MCP.Conformance.ETCCRegister.split_modules/1` takes the ids carrying both directions,
+and it is the 18
 that reached exactly the four rows round 5 corrected. So the executable code and the
 prose about the same antecedent disagreed, in the field named *"reach stated as a
 result"*. Found by CODE_REVIEWER at round 5; the third category is CODE_REVIEWER's
@@ -818,56 +937,78 @@ applied to attribution rather than to a boundary:
 
 | row | mutation of the DECODE producer | reddened |
 | --- | --- | ---: |
-| `capabilities_test.exs:46` | `server_capabilities.ex:30` `Map.get("tools")` → `Map.get("toolsX")` | this unit + `:7` |
-| `capabilities_test.exs:88` | `client_capabilities.ex:26` `Map.get("roots")` → `Map.get("rootsX")` | this unit + `:60` |
-| `tool_test.exs:74` | `tool.ex:84` `Map.fetch!(map, "inputSchema")` → `Map.get(map, "inputSchemaX", %{})` | this unit + `:20`, `:131` |
-| `tool_test.exs:86` | `tool.ex:88` `Map.get(map, "_meta")` → `Map.get(map, "_meta") \|\| %{}` | **this unit alone**, 1 of the file's 11 |
+| `MCP.Protocol.CapabilitiesTest/test ServerCapabilities round-trips through JSON` | `MCP.Protocol.Capabilities.ServerCapabilities.from_map/1`, `Map.get("tools")` → `Map.get("toolsX")` | this unit + `MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 parses full capabilities` |
+| `MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON` | `MCP.Protocol.Capabilities.ClientCapabilities.from_map/1`, `Map.get("roots")` → `Map.get("rootsX")` | this unit + `MCP.Protocol.CapabilitiesTest/test ClientCapabilities from_map/1 parses full capabilities` |
+| `MCP.Protocol.Types.ToolTest/test JSON encoding round-trips through JSON with camelCase keys` | `MCP.Protocol.Types.Tool.from_map/1`, `Map.fetch!(map, "inputSchema")` → `Map.get(map, "inputSchemaX", %{})` | this unit + `MCP.Protocol.Types.ToolTest/test from_map/1 parses a tool with required fields` and `` MCP.Protocol.Types.ToolTest/test inputSchema keywords beyond `type` are carried verbatim, including `not` and `$anchor` `` |
+| `MCP.Protocol.Types.ToolTest/test JSON encoding omits nil fields` | `MCP.Protocol.Types.Tool.from_map/1`, `Map.get(map, "_meta")` → `Map.get(map, "_meta") \|\| %{}` | **this unit alone**, 1 of the file's 11 |
 
-**(F15, corrected in round 6.** The first cell read *"this unit + `:29`"*. **There is
-no unit at `capabilities_test.exs:31`** — the file's `test` declarations are `:7`,
-`:26`, `:36`, `:42`, `:60`, `:75`, `:83`, `:115`, `:133`, `:143`, `:161`, `:171`,
-`:181`, and the register has no row at `:29` either, so the address resolved to
-nothing at all. `:29` is `assert caps.tools == nil`, an assertion **inside** the unit
-declared at `:7`, which is the co-reddened unit. CODE_REVIEWER re-ran that exact
-mutation over the whole suite at seed 0 and located it (`26078`); the other three
-cells reproduced exactly. **No verdict moves and no label moves.** The row's own
-`evidence` field says only — and correctly — that dropping the `tools` read *reddens
-this unit*, which is the whole of what makes the decode direction load-bearing; only
-the table cell was wrong.
+**(F15, corrected in round 6.** The first cell read *"this unit + `:29`"* — a bare line
+address, quoted here as the historical string it was and not as a citation. **It named
+no unit.** `MCP.Protocol.CapabilitiesTest` has **13** `test` declarations and the
+register carries **13** rows for the file; that address was none of them, because it is
+an **assertion** line, `assert caps.tools == nil`. CODE_REVIEWER re-ran that exact
+mutation over the whole suite at seed 0 and located the co-reddened unit — `MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 parses full capabilities` —
+at `26078`; the other three cells reproduced exactly. **No verdict moves and no label
+moves.** The row's own `evidence` field says only — and correctly — that dropping the
+`tools` read *reddens this unit*, which is the whole of what makes the decode direction
+load-bearing; only the table cell was wrong.
 
-**The column, not the cell (S7-24), and what the column actually reaches.** Every
-**fully-qualified** `*_test.exs:NN` address in this document was re-resolved at the
-delivered tip against the `test`/`describe`/`doctest` declarations in the file it
-names — **99 occurrences**, machine-checked. **22 of them, 12 distinct, land on a
-line that is not a declaration**, and every one of those was then read by hand: eleven
-cite an **assertion** on purpose and each carries the bytes claimed for it —
-`client_test.exs:62`, `self_compatibility_test.exs:126`,
-`streamable_http_stateless_test.exs:84`, `:85`, `:278`, `dispatch_test.exs:84`,
-`subscriptions_stream_test.exs:869`, `:857`, `:1011`, `client_conformance_test.exs:131`
-(assertions) and `tool_order_test.exs:8` (the `server/tools.mdx` md5 the file records
-for itself). The twelfth is `capabilities_test.exs:31`, and it appears now only in
-this note, which cites it *as* the line that is not a unit.
+**(F16, found on MES-94 while re-keying F15's own sentence, and it is why re-keying is
+not cosmetic.)** Round 6 wrote that the erroneous address was *"an assertion inside the
+unit declared at `:7`, which is the co-reddened unit"*. **Two different units, merged
+into one clause.** `assert caps.tools == nil` sits inside `MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 handles missing capabilities` — the *next*
+declaration down, at both numberings — while the co-reddened unit is `MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 parses full capabilities`. The
+corrected cell above names the right one, so **no verdict, label or count moves**; what
+was wrong was the sentence explaining it. Under line addresses the two units are `:7`
+and `:26`, one character apart in a list of thirteen; under keys they are visibly
+*parses full capabilities* and *handles missing capabilities*, and the merge could not
+have been written. Recorded as `S9-6`.**)**
 
-**The bare `:NN` continuations are NOT machine-checkable here, and that is why F15
-survived five rounds.** There are **127** of them, and a bare `:NN` takes its file
-from whatever the prose last named — which is a `lib/` file as often as a test file
-(`client.ex:839` → `:864`; `server_capabilities.ex:30`, then `:29` meaning
-`capabilities_test.exs:31`). **The antecedent is carried by the sentence, not by the
-notation**, so no resolver reads them without a rule the document does not state.
-The four cells of the table above were therefore resolved by hand against each row's
-own test file, which is what surfaced this one. **The general form is MES-85's and
-MES-88's**, per `26080`'s stopping rule: extractable prose figures and re-runnable
-addresses, with the antecedent rule written down rather than inferred.**)**
+**The column, not the cell (S7-24), and what the column actually reached — a round-6
+measurement, now SUPERSEDED.** Round 6 re-resolved every **fully-qualified**
+`*_test.exs:NN` address in this document against the `test`/`describe`/`doctest`
+declarations of the file it named — **99 occurrences**, machine-checked — and found
+**22, 12 distinct, landing on a line that is not a declaration**, eleven of them
+assertions cited on purpose. That column has been **retired rather than re-resolved**:
+MES-94 re-keyed the whole document to `{module, test name}` (§0.1), so there are no
+fully-qualified test addresses left for it to quantify over, and each of the eleven is
+written where it is used as its enclosing unit's row key plus the asserted expression.
 
-**`tool_test.exs:86` was put to the test separately, because it asserts only ABSENCES
+**The bare `:NN` continuation is why F15 survived five rounds — and MES-84 is why it
+survived MES-84.** Round 6 counted **127** of them and said they were not
+machine-checkable, because a bare `:NN` takes its file from whatever the prose last
+named, which is a `lib/` file as often as a test file. MES-94 re-counted **141** and
+established the mechanism: **MES-84's re-address of 738 citations across ten files
+moved the EXPLICIT `file:NN` citations and left the bare `:NN` continuations at MES-81's
+numbering.** So this document has been carrying **two numberings at once**, sometimes in
+one sentence — the F15 note above did exactly that, giving `capabilities_test.exs:31`
+post-MES-84 beside a bare `:29` that was pre-. Measured: of 110 in-tree bare
+continuations, **55** resolve to a declaration only at `85d50fa` and to a blank line,
+an `@tag :etcc` or a stray `end` at the commit that last touched their prose line.
+**A mechanical re-addresser that cannot see the antecedent cannot fix the form; only
+removing the form fixes it**, which is what §0.1 and guard 29 do. Recorded as `S9-4`.
+**The general form is MES-85's and MES-88's**, per `26080`'s stopping rule: extractable
+prose figures and re-runnable addresses, with the antecedent rule written down rather
+than inferred.**)**
+
+**`MCP.Protocol.Types.ToolTest/test JSON encoding omits nil fields` was put to the test separately, because it asserts only ABSENCES
 — the S7-19 shape — and the answer has a boundary worth stating.** A `from_map/1` that
 **wrongly populates** an absent optional fails it, and that is the whole fault class
 the row exists to catch: *an unset optional must be ABSENT on the wire, not null*. A
-`from_map/1` that merely **drops** a read does not — `tool.ex:86`
-`Map.get("annotations")` → `Map.get("annotationsX")` leaves this unit green and
-reddens `:29` instead. So the decode direction is load-bearing for exactly what this
-row asserts, which is why it names it, and the negative half is reported rather than
-rounded off.
+`from_map/1` that merely **drops** a read does not — in
+`MCP.Protocol.Types.Tool.from_map/1`, `Map.get("annotations")` → `Map.get("annotationsX")`
+leaves this unit green and reddens `MCP.Protocol.Types.ToolTest/test from_map/1 parses a tool with annotations` instead. So the decode direction is
+load-bearing for exactly what this row asserts, which is why it names it, and the
+negative half is reported rather than rounded off.
+
+> **MES-94 note on that last address.** It was written `:29`, a bare continuation, and
+> the nearest file named on its own line is `tool.ex` — a **`lib/` file**, where `:29`
+> is a line of `from_map/1` and not a unit at all. The sentence, not the notation,
+> carries the antecedent: it is `test/mcp/protocol/types/tool_test.exs`. A first
+> mechanical pass at re-keying this document bound it to `capabilities_test.exs`,
+> because that is what the *preceding* paragraph last named, and was caught by reading.
+> This is `S9-4`'s defect on a live case, and it is the argument for the form in §0.1:
+> a key is self-contained and cannot be mis-bound by its neighbours.
 
 **What that moves.** Three DEAD directions appear in `totals.et_cc_by_boundary` —
 `Types.Tool (decode)` on 4 surviving members, `Types.Resource (decode)` on 1 and
@@ -1023,8 +1164,8 @@ Six of the seven are CODE_REVIEWER's F6 findings (`26055`) **re-established at t
 seat rather than taken** — every byte string above was produced by this ticket's own
 probe run and matches CR's character for character. The seventh, `TextContent`, was
 already live at round 3, and round 4 **narrows its warrant rather than widening it**:
-L1's single live unit there was `json_schema_2020_12_test.exs:488`, which reddens
-because `dispatch.ex:662` pattern-matches `type: "text", text: text` on the
+L1's single live unit there was `MCP.Server.JsonSchema202012Test/test R-8 — the fallback check recognises every spelling of a text block a %TextContent{} struct carrying the serialized JSON is silent`, which reddens because
+`MCP.Server.Dispatch.serialized_json_of?/2` pattern-matches `type: "text", text: text` on the
 **struct's fields**, not on encoded bytes. A struct-field match is neither encode nor
 decode, so that signal is **not** cited (PM, `26058`). The encode direction now rests
 on the bytes alone — which is why it survives the split at all.
@@ -1073,7 +1214,7 @@ decide it.
 carries 112.** Every row
 added after round 1 carries `adjudication.raised_by: "PM"`, so the two readings of
 `escalated` stay distinguishable (§3). Ruling E named six rows and three
-of them (`meta_test.exs:29`, `capabilities_test.exs:28`, `:75`) had been decided
+of them (`MCP.Protocol.MetaTest/test from_params/1 absent _meta yields an empty struct (no crash)`, `MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 handles missing capabilities`, `MCP.Protocol.CapabilitiesTest/test ClientCapabilities from_map/1 handles empty map`) had been decided
 without escalation in round 1, so they are now escalated and adjudicated alongside
 the three that were.
 
@@ -1082,7 +1223,7 @@ the three that were.
 | A | the dead-path question | 45 | `ET-CC` | **A** (`26034`) | **overturned**, per row | 40 |
 | B | the identity family | 23 | `ET-OUT` | **B** (`26035`) | **upheld as ruled** | 0 |
 | C | inherited assertions | 3 | `ET-OUT` | **C** (`26035`) | **overturned** | 3 |
-| D | `meta_test.exs:47` | 1 | `ET-ADJ` | **D** (`26035`) | gate 2 passes; gate 3 applied | 1 |
+| D | `MCP.Protocol.MetaTest/test validate_protocol_version/2 mismatched (e.g. legacy 2025-11-25) → {:error, {:unsupported, got}}` | 1 | `ET-ADJ` | **D** (`26035`) | gate 2 passes; gate 3 applied | 1 |
 | E | the absence markers | 6 | mixed | **E** (`26036`) | **reconciled with §11.1** | 4 |
 
 ---
@@ -1114,18 +1255,19 @@ consumes the artefact, so `ET-ADJ` is unreachable).
 | rows | asserted boundary | mutation, and what reddened |
 | ---: | --- | --- |
 | 36 | `Messages.Tools` (`ListParams`, `CallParams`, `CallResult`, `ListResult`) | broke the `cursor` / `content` / `isError` keys and the `structuredContent` encoder key → **18 units, all `ToolsTest`; 0 of the other 961** |
-| 2 | `%MCP.Protocol.Error{}`'s derived `Jason.Encoder` (`error_test.exs:84`, `:94`) | replaced it with one emitting `codeX/messageX/dataX` → **3 units, all on dead paths; 0 live**. The outbound error object is built **by hand** at `dispatch.ex:724-728` and `plug.ex:1019-1023` |
-| 2 | `%Response{}`'s `defimpl Jason.Encoder` (`protocol_test.exs:39`, `:48`) | `idX/errorX/resultX` → **exactly 2 units, both `ProtocolTest`; 0 of the other 977** |
+| 2 | `%MCP.Protocol.Error{}`'s derived `Jason.Encoder` (`MCP.Protocol.ErrorTest/test JSON encoding encodes to JSON with all fields`, `MCP.Protocol.ErrorTest/test JSON encoding encodes nil data as null`) | replaced it with one emitting `codeX/messageX/dataX` → **3 units, all on dead paths; 0 live**. The outbound error object is built **by hand** in `MCP.Server.Dispatch.error_response/2` and `MCP.Transport.StreamableHTTP.Plug.send_json_error/5` |
+| 2 | `%Response{}`'s `defimpl Jason.Encoder` (`MCP.ProtocolTest/test encode/1 encodes a success response`, `MCP.ProtocolTest/test encode/1 encodes an error response`) | `idX/errorX/resultX` → **exactly 2 units, both `ProtocolTest`; 0 of the other 977** |
 
 **The 5 that did NOT move, and this is reported rather than absorbed.** `ET-CC`
-stands on `protocol_test.exs:16`, `:26`, `:171` (`%Request{}`) and `:61`, `:72`
-(`%Notification{}`), because **ruling A's antecedent is not satisfied for them**: a
+stands on `MCP.ProtocolTest/test encode/1 encodes a request`, `MCP.ProtocolTest/test encode/1 encodes a request without params` and `MCP.ProtocolTest/test encode!/1 returns JSON string` (`%Request{}`), and on
+`MCP.ProtocolTest/test encode/1 encodes a notification` and `MCP.ProtocolTest/test encode/1 encodes a notification with params` (`%Notification{}`), because **ruling A's antecedent is
+not satisfied for them**: a
 `lib/` call site *does* route those encoders' output to a transport.
 
 | mutation | reddened |
 | --- | --- |
-| `%Request{}`'s hand-written `defimpl` (`request.ex:25`, `method:` → `methodX:`) | **37 units across 8 modules** — 18 `ClientTest`, 8 `IntegrationTest`, 3 `ProtocolTest`, 3 `RoutingHeadersTest`, 2 `ClientToolSchemasTest`, 1 each `ClientDefectsTest` / `ClientConformanceTest` / `SelfCompatibilityTest`; every one of the 18 `ClientTest` units on `assert discover["method"] == "server/discover"`. The live emit path is `client.ex:839` → `:868` `Jason.encode!(Request.new(…))`, through this same `defimpl`. **(F2, corrected in round 3.** Round 2 said *"3 in `ProtocolTest` AND 21 in `ClientTest`"* and presented that as the whole reddened set. It is 18, not 21, and six further modules redden. Measured twice at seed 0 by CODE_REVIEWER (`26045`) and reproduced independently here: **37 both times**. The error ran **toward more live-path evidence**, so no label moves — the survivors' case is stronger than round 2 claimed. Corrected in the three rows that state it as well as here.**)** |
-| `%Notification{}`'s `defimpl` (`notification.ex:24`, then `:29`) | the unit **and 14 (resp. 13) live-path units** across `NotificationCollectorTest`, `SubscriptionsDispatchTest`, `SubscriptionsStreamTest` and `ClientTest`. Live emit paths: `connection.ex:203`, `notification_collector.ex:49` |
+| `%Request{}`'s hand-written `defimpl`, in `MCP.Protocol.Messages.Request.encode/2` (`method:` → `methodX:`) | **37 units across 8 modules** — 18 `ClientTest`, 8 `IntegrationTest`, 3 `ProtocolTest`, 3 `RoutingHeadersTest`, 2 `ClientToolSchemasTest`, 1 each `ClientDefectsTest` / `ClientConformanceTest` / `SelfCompatibilityTest`; every one of the 18 `ClientTest` units on `assert discover["method"] == "server/discover"`. The live emit path is `MCP.Client.send_request/5` → `MCP.Client.encode/1` `Jason.encode!(Request.new(…))`, through this same `defimpl`. **(F2, corrected in round 3.** Round 2 said *"3 in `ProtocolTest` AND 21 in `ClientTest`"* and presented that as the whole reddened set. It is 18, not 21, and six further modules redden. Measured twice at seed 0 by CODE_REVIEWER (`26045`) and reproduced independently here: **37 both times**. The error ran **toward more live-path evidence**, so no label moves — the survivors' case is stronger than round 2 claimed. Corrected in the three rows that state it as well as here.**)** |
+| `%Notification{}`'s `defimpl`, in `MCP.Protocol.Messages.Notification.encode/2` (`method:` → `methodX:`, then the `params -> Map.put(map, :params, params)` clause) | the unit **and 14 (resp. 13) live-path units** across `NotificationCollectorTest`, `SubscriptionsDispatchTest`, `SubscriptionsStreamTest` and `ClientTest`. Live emit paths: `MCP.Server.Connection.reply_sink/1`, `MCP.Server.NotificationCollector.push/3` |
 
 So §2.1's counterfactual returns **NO** for these five: an SDK that got this wire
 behaviour arbitrarily wrong does not still pass them, and it breaks the emitting
@@ -1139,11 +1281,13 @@ hop if the PM reads ruling A as keyed on the **entry point** (`Protocol.encode/1
 Round 1 stated that `MCP.Protocol.Messages.Response` is *"used NOWHERE in `lib/`"*,
 on `grep -rn "Messages.Response" lib/` returning only its own file; the PM
 reproduced that grep and recorded `Messages.Response -> 1 (its own defmodule file)`.
-**The grep is on the fully-qualified name and misses the alias.** `lib/mcp/protocol.ex:7`,
-`lib/mcp/client.ex:98` and `lib/mcp/server/connection.ex:35` all `alias
-MCP.Protocol.Messages.{… Response}`, and `%Response{}` **is** constructed at
-`protocol.ex:98` and pattern-matched at `client.ex:363,415,435,449,463,538,563,582,597,640,656,665`
-and `connection.ex:112`.
+**The grep is on the fully-qualified name and misses the alias.** `MCP.Protocol`,
+`MCP.Client` and `MCP.Server.Connection` each carry a module-level
+`alias MCP.Protocol.Messages.{… Response}`, and `%Response{}` **is** constructed in
+`MCP.Protocol.decode_response/1` and pattern-matched in `MCP.Client.handle_info/2`,
+`MCP.Client.handle_response/2`, `MCP.Client.route_response/3`,
+`MCP.Client.finish_response/4` (**12 clauses in `MCP.Client` in all**) and
+`MCP.Server.Connection.handle_info/2`.
 
 **The ruling is unaffected, and the narrower claim that survives is the one that
 matters:** every one of those uses is **INBOUND** — `decode_response/1` builds the
@@ -1177,13 +1321,17 @@ is on all 23 rows.
 ### Family C — inherited assertions. Ruling C (`26035`). 3 rows, **all 3 moved to `ET-CC`, `mixed`.**
 
 **§6 governs and it is ratified Part A: a test is indivisible.**
-`assert discover["method"] == "server/discover"` (`client_test.exs:62`, inside
-`do_connect/2`) executes as part of `:353`, `:359` and `:425`; misspell the method
-and all three go red — **measured**, in the `%Request{}` mutation above, where every
-one of the 21 reddened `ClientTest` units failed on exactly that assertion.
+`assert discover["method"] == "server/discover"`, inside `MCP.ClientTest`'s
+`do_connect/2` setup helper, executes as part of `MCP.ClientTest/test lifecycle times out a pending request`,
+`MCP.ClientTest/test lifecycle notifies pending requests when the transport closes` and `MCP.ClientTest/test concurrent requests handles multiple concurrent requests`; misspell the method and all three go red —
+**measured**, in the `%Request{}` mutation above, where every one of the 21 reddened
+`ClientTest` units failed on exactly that assertion. **[MES-94: the reddened count is
+**18**, not 21 — F2 in family A corrected it in round 3 and this sentence was not
+restated. Pointer only; MES-81's sentence is left standing, as MES-93 did at §6.
+Recorded as `S9-12`.]**
 
-Round 1 cited the PM tie-break's naming of `:353` against §6. The PM corrected that
-reading of their own ruling: `:353` was named to decide its **own**
+Round 1 cited the PM tie-break's naming of `MCP.ClientTest/test lifecycle times out a pending request` against §6. The PM
+corrected that reading of their own ruling: it was named to decide its **own**
 `{:error, :timeout}` assertion, and inherited assertions were never put to them.
 **Ratified Part A outranks a §9 tie-break** — the same precedence round 1 itself
 applied to §11.1 in family E, *"and a precedence rule that only runs in the
@@ -1194,14 +1342,36 @@ Anchor: `schema.ts:665-666` (`DiscoverRequest.method: "server/discover"`).
 SDK-invented value that earns `ET-OUT`, and §6 takes the highest.
 
 **"Exactly three and nothing else" — established by enumeration, per epic ruling 4.**
-`do_connect/2` has **17** call sites in `client_test.exs`: lines 143, 166, 184, 204,
-221, 240, 265, 301, 320, 334, 355, 361, 375, 388, 417, 427, 473. Their enclosing
-declarations and labels:
+`do_connect/2` is called **17** times in `MCP.ClientTest`, and those 17 calls sit in
+**17 distinct units** — the enumeration below is of the units, not of the call sites.
+**MES-94 retired the call-site line list** (17 numbers, all pre-MES-84): the claim is
+*"17 call sites, one per listed unit"*, and a line inside a test body has no stable key,
+so the list carried no weight the unit list does not. Recorded as `S9-8`.
 
-| enclosing test | label before ruling C |
-| --- | --- |
-| `:141`, `:164`, `:182`, `:202`, `:219`, `:238`, `:261`, `:299`, `:318`, `:330`, `:373`, `:386`, `:415`, `:469` (**14**) | already `ET-CC` **on their own assertions** — §6 lifts nothing that was not already lifted |
-| `:353`, `:359`, `:425` (**3**) | `ET-OUT` — the only three with no wire assertion of their own |
+**14 were already `ET-CC` on their own assertions** — §6 lifts nothing that was not
+already lifted:
+
+* `MCP.ClientTest/test per-request _meta every request carries protocolVersion + client identity/capabilities`
+* `MCP.ClientTest/test requests list_tools returns tools`
+* `MCP.ClientTest/test requests call_tool sends name and arguments`
+* `MCP.ClientTest/test requests call_tool surfaces an error response`
+* `MCP.ClientTest/test requests read_resource sends the uri`
+* `MCP.ClientTest/test requests get_prompt sends name and arguments`
+* `MCP.ClientTest/test MRTR client retry an input_required result is transparently completed via :on_input_required`
+* `MCP.ClientTest/test MRTR client retry without a resolver the input_required result is returned as-is`
+* `MCP.ClientTest/test notifications dispatches to a pid handler`
+* `MCP.ClientTest/test notifications dispatches to a function handler`
+* `MCP.ClientTest/test cancel/3 sends a cancellation notification`
+* `MCP.ClientTest/test pagination list_all_tools paginates through pages`
+* `MCP.ClientTest/test server_capabilities/1 and server_info/1 returns discovered capabilities and info`
+* `MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — a declared extension is stamped into every request's _meta`
+
+**3 were `ET-OUT`** — the only three with no wire assertion of their own, and so the
+only three ruling C moves:
+
+* `MCP.ClientTest/test lifecycle times out a pending request`
+* `MCP.ClientTest/test lifecycle notifies pending requests when the transport closes`
+* `MCP.ClientTest/test concurrent requests handles multiple concurrent requests`
 
 So the ruling moves exactly these three. The consequence the PM accepted — *every*
 test sharing an asserting setup helper becomes a member — is a reason to **amend**
@@ -1209,19 +1379,20 @@ test sharing an asserting setup helper becomes a member — is a reason to **ame
 
 ---
 
-### Family D — `meta_test.exs:47`. Ruling D (`26035`). 1 row, moved to `ET-CC`, `mixed`.
+### Family D — `MCP.Protocol.MetaTest/test validate_protocol_version/2 mismatched (e.g. legacy 2025-11-25) → {:error, {:unsupported, got}}`. Ruling D (`26035`). 1 row, moved to `ET-CC`, `mixed`.
 
 The asserted value `{:error, {:unsupported, "2025-11-25"}}` carries the
 wire-supplied version string **verbatim** inside an SDK-invented container. Round 1
-separated it from the ratified `:124` case on the ground that `:124` has a
-*separate* assertion isolating the wire value; the PM declined to add that
+separated it from the ratified `MCP.ClientTest/test connect/1 (server/discover) returns error on discover failure` case on the ground that that unit
+has a *separate* assertion isolating the wire value; the PM declined to add that
 criterion, because it would make membership depend on how an author happened to
 split an `assert` — a property of typing, not of what is claimed. The container is
 precisely what §6's `mixed` records.
 
 **Gate 3 was applied here and its outcome is reported, not assumed.** It **passes**:
 `schema.ts:69-75` makes it a MUST that a server not supporting the requested version
-returns an `UnsupportedProtocolVersionError` (`:450`, `-32022`; `:483-488`), and this
+returns an `UnsupportedProtocolVersionError` (`schema.ts:450`, `-32022`;
+`schema.ts:483-488`), and this
 unit asserts the classification that MUST is conditioned on. `falsifiable: yes` — an
 SDK that treated `2025-11-25` as supported returns `:ok` and reddens the equality.
 
@@ -1230,14 +1401,15 @@ SDK that treated `2025-11-25` as supported returns `:ok` and reddens the equalit
 ### Family E — the absence markers. Ruling E (`26036`). 6 rows put, **4 moved.**
 
 **Family E is the round-2 record and is left as it stood — and unlike Family A, one
-of its `result` cells no longer matches the delivered label.** `capabilities_test.exs:79`
+of its `result` cells no longer matches the delivered label.** `MCP.Protocol.CapabilitiesTest/test ClientCapabilities from_map/1 handles empty map`
 reads `ET-OUT` → **`ET-CC`** below; **at the delivered tip that row is `ET-OUT`**.
-Round 4's ruling A took it back out (`26058`) — it is one of the F13 trio `:60`,
-`:75`, `:161` — so its `adjudication` in the register now names ruling **A**, and
-`etcc-register.json` carries **5** rows under ruling E against this heading's **6**.
-Of the four rows ruling E moved, **three still stand**: `extensions_test.exs:393` and
-`capabilities_test.exs:28` are `ET-CC`, `meta_test.exs:29` is `ET-OUT`; the fourth,
-`:75`, was moved back. The table below records **what ruling E decided in round 2**,
+Round 4's ruling A took it back out (`26058`) — it is one of the F13 trio,
+`MCP.Protocol.CapabilitiesTest/test ClientCapabilities from_map/1 parses full capabilities`, `MCP.Protocol.CapabilitiesTest/test ClientCapabilities from_map/1 handles empty map` and `MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T9 — ClientCapabilities decode keeps the two apart` — so its `adjudication` in the
+register now names ruling **A**, and `etcc-register.json` carries **5** rows under
+ruling E against this heading's **6**. Of the four rows ruling E moved, **three still
+stand**: `MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) returns %{} for nil, an absent key, or an absent extensions field` and `MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 handles missing capabilities` are `ET-CC`, `MCP.Protocol.MetaTest/test from_params/1 absent _meta yields an empty struct (no crash)` is
+`ET-OUT`; the fourth, `MCP.Protocol.CapabilitiesTest/test ClientCapabilities from_map/1 handles empty map`, was moved back. The table below records **what
+ruling E decided in round 2**,
 not what the delivered labels are — §3 and the register are the current statement.
 (Raised by CODE_REVIEWER at round 5 as F13's shape one section along, ruled in by the
 PM at `26080`.)
@@ -1247,18 +1419,20 @@ gate 3 was applied per row and the outcome reported.**
 
 | row | gate 3 | anchor, or why none | result |
 | --- | --- | --- | --- |
-| `extensions_test.exs:35` — `from_meta/1 (9)` doctest | **passes** | `schema.ts:98`, `:785` | `ET-CC` **unchanged**, now for a reason that generalises |
-| `extensions_test.exs:393` — `%{}` for nil / absent key / absent field | **passes** | `schema.ts:98`, `:95-96` (*"an empty object means the client supports no optional capabilities"*), `:785` (`extensions?:`) | `ET-OUT` → **`ET-CC`**, `falsifiable: undetermined` |
-| `capabilities_test.exs:28` — `ServerCapabilities.from_map(%{})` all nil | **passes** | `schema.ts:799`+`:808` (*"Present if the server supports sending log messages"*), `:810`+`:815`, `:825`, `:846`, `:865` — absence **means** unsupported | `ET-OUT` → **`ET-CC`**, `falsifiable: undetermined` |
-| `capabilities_test.exs:79` — `ClientCapabilities.from_map(%{})` all nil | **passes** | `schema.ts:95-96` states it in words | `ET-OUT` → **`ET-CC`**, `falsifiable: undetermined` |
-| `extensions_test.exs:414` — `%{}` when the shape is **wrong** | **FAILS** | the four shapes asserted are states `schema.ts:785` **forbids**, and no 2026-07-28 line requires a particular recovery from a peer that violates it | `ET-OUT` **unchanged**, excluding gate **2 → 3** (§5 way (ii)) |
-| `meta_test.exs:29` — absent `_meta` yields an empty struct | **FAILS** | `schema.ts:179-181` types `RequestParams._meta` as `_meta: RequestMetaObject;` with **no `?`** — an absent `_meta` is forbidden, not an optional field's admissible absence | `ET-ADJ` → **`ET-OUT`**, gate 3 |
+| `MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (9)` | **passes** | `schema.ts:98`, `schema.ts:785` | `ET-CC` **unchanged**, now for a reason that generalises |
+| `MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) returns %{} for nil, an absent key, or an absent extensions field` — `%{}` for nil / absent key / absent field | **passes** | `schema.ts:98`, `schema.ts:95-96` (*"an empty object means the client supports no optional capabilities"*), `schema.ts:785` (`extensions?:`) | `ET-OUT` → **`ET-CC`**, `falsifiable: undetermined` |
+| `MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 handles missing capabilities` — `ServerCapabilities.from_map(%{})` all nil | **passes** | `schema.ts:799`+`schema.ts:808` (*"Present if the server supports sending log messages"*), `schema.ts:810`+`schema.ts:815`, `schema.ts:825`, `schema.ts:846`, `schema.ts:865` — absence **means** unsupported | `ET-OUT` → **`ET-CC`**, `falsifiable: undetermined` |
+| `MCP.Protocol.CapabilitiesTest/test ClientCapabilities from_map/1 handles empty map` — `ClientCapabilities.from_map(%{})` all nil | **passes** | `schema.ts:95-96` states it in words | `ET-OUT` → **`ET-CC`**, `falsifiable: undetermined` |
+| `MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) returns %{} when the shape is wrong rather than raising` — `%{}` when the shape is **wrong** | **FAILS** | the four shapes asserted are states `schema.ts:785` **forbids**, and no 2026-07-28 line requires a particular recovery from a peer that violates it | `ET-OUT` **unchanged**, excluding gate **2 → 3** (§5 way (ii)) |
+| `MCP.Protocol.MetaTest/test from_params/1 absent _meta yields an empty struct (no crash)` — absent `_meta` yields an empty struct | **FAILS** | `schema.ts:179-181` types `RequestParams._meta` as `_meta: RequestMetaObject;` with **no `?`** — an absent `_meta` is forbidden, not an optional field's admissible absence | `ET-ADJ` → **`ET-OUT`**, gate 3 |
 
-**`meta_test.exs:29` changes label as well as gate, and the reason is structural:**
-§5's `ET-ADJ` positive test requires **failing gate 2**. Once ruling E makes gate 2
-pass, `ET-ADJ` is unreachable whatever the call site, and §5 way (ii) gives
-`ET-OUT`. Its call site `dispatch.ex:163` (→ `:165` → the `-32022` reply at `:167`)
-is still recorded in the row's evidence for B2b, but it no longer earns the label.
+**`MCP.Protocol.MetaTest/test from_params/1 absent _meta yields an empty struct (no crash)` changes label as well as gate, and the reason is
+structural:** §5's `ET-ADJ` positive test requires **failing gate 2**. Once ruling E
+makes gate 2 pass, `ET-ADJ` is unreachable whatever the call site, and §5 way (ii)
+gives `ET-OUT`. Its call site — `MCP.Server.Dispatch.handle_request/5`, where
+`Meta.from_params(params)` feeds `Meta.validate_protocol_version/2` and its `{:error, _}`
+clause replies `Error.unsupported_protocol_version/1` — is still recorded in the row's
+evidence for B2b, but it no longer earns the label.
 
 **The two gate-3 failures are the ruling's own guard working.** The PM wrote *"gate
 2 passing does not make them members — each still faces gate 3 alone, and gate 3 is
@@ -1289,9 +1463,14 @@ above is what was actually run, and it is the form stated here so a reader can r
 the sentence. The result is the same: zero.)*
 
 And the HTTP status assertions in the tree are enumerable — `grep -rn "\.status ==" test/mcp/`
-returns **27**, of which only **four** assert a 400: `self_compatibility_test.exs:126`,
-`:136` and `:163` (all `Mcp-Name` mismatch, each also asserting `-32020`), plus
-`streamable_http_stateless_test.exs:292` (a parse error, `-32700`, not one of the 13).
+returns **27**, of which only **four** assert a 400, each on `assert conn.status == 400`
+or `assert bad.status == 400`:
+
+* `MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: an encoded header naming a DIFFERENT tool is still -32020`
+* `MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: a PLAIN mismatched header is still -32020`
+* `MCP.Transport.SelfCompatibilityTest/test a sentinel-shaped header that is not valid Base64 is compared as-is, not crashed on` — the three above are all `Mcp-Name` mismatch, each also asserting `-32020`
+* `MCP.Transport.StreamableHTTPStatelessTest/test a malformed body is a parse error → -32700` — a parse error, `-32700`, not one of the 13
+
 **No 400 is asserted for a missing `_meta`, an unsupported version, or a missing
 capability.**
 
@@ -1299,8 +1478,9 @@ capability.**
 than left implicit.** Found by CODE_REVIEWER (`26045`) in answer to a request to
 sweep for checks that can only fail toward their own conclusion; folded into round 3
 per `26048` item 7. Requiring the dot misses a status bound to a bare variable, and
-there is one: `subscriptions_stream_test.exs:873` asserts `status == 200`, bound at
-`:853` by `{status, response_body} = post_until_closed(port, body)`. So the true
+there is one: `MCP.Transport.SubscriptionsStreamTest/test the exits that raise before a branch is chosen a handler-side exit in teardown does not replace the refusal response (R3)` asserts
+`status == 200` on a bare variable, bound in the same unit by
+`{status, response_body} = post_until_closed(port, body)`. So the true
 count is **at least 28**, and the miss is **directional** — under-counting always
 returns the reassuring *"no ET coverage here"*. Reproduced at this tip: the dotted
 grep returns 27, and `grep -rn "status ==" test/mcp/ | grep -v "\.status =="` returns
@@ -1323,17 +1503,17 @@ this section is not ratified, so it is simply corrected rather than left as erra
 
 | # | OC check | axes | ET coverage | lands in |
 | --- | --- | --- | --- | --- |
-| 1-3 | `meta-invalid-400` ×3 (missing-meta / -protocol-version / -client-capabilities) | status 400 | **none** — `-32022` is asserted (`streamable_http_stateless_test.exs:84`) but no status | **bucket 2** |
+| 1-3 | `meta-invalid-400` ×3 (missing-meta / -protocol-version / -client-capabilities) | status 400 | **none** — `-32022` is asserted by `MCP.Transport.StreamableHTTPStatelessTest/test a request without a protocolVersion _meta fails fast (-32022)` on `assert error(conn)["code"] == -32_022`, but no status | **bucket 2** |
 | 4 | `unsupported-version-400` | status 400 | **none** | **bucket 2** |
-| 5 | `missing-capability-http-400` | status 400 | **none** — `-32021` appears only as a bare constant (`error_test.exs:15`, `ET-ADJ`) | **bucket 2** |
-| 6 | `header-mismatch-400` | status 400 **+** code `-32020` | **BOTH** (`self_compatibility_test.exs:116`, `:128`, `:155`) | **FULL, not partial** — see the caveat below |
-| 7 | `mnf-404-initialize` | status 404 + code `-32601` | status silent; code **CONTRADICTS** (we answer `-32022`, `dispatch_test.exs:84`) | partial-with-contradiction |
-| 8 | `mnf-404-ping` | status 404 + code `-32601` | status silent; code **agrees** (`streamable_http_stateless_test.exs:90`) | **partial** |
-| 9 | `mnf-404-logging-setlevel` | status 404 + code `-32601` | status silent; code **agrees** (`:86`) | **partial** |
-| 10 | `mnf-404-resources-subscribe` | status 404 + code `-32601` | **neither** — the only ET claims are absence-of-constants (`methods_test.exs:21`, `resources_test.exs:85`), both `ET-OUT` | **bucket 2** |
+| 5 | `missing-capability-http-400` | status 400 | **none** — `-32021` appears only as a bare constant, in `MCP.Protocol.ErrorTest/test error codes MCP spec-reserved error codes (2026-07-28)`, `ET-ADJ` | **bucket 2** |
+| 6 | `header-mismatch-400` | status 400 **+** code `-32020` | **BOTH** — `MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: an encoded header naming a DIFFERENT tool is still -32020`, `MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: a PLAIN mismatched header is still -32020`, `MCP.Transport.SelfCompatibilityTest/test a sentinel-shaped header that is not valid Base64 is compared as-is, not crashed on` | **FULL, not partial** — see the caveat below |
+| 7 | `mnf-404-initialize` | status 404 + code `-32601` | status silent; code **CONTRADICTS** — we answer `-32022`, in `MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)` on `assert resp["error"]["code"] == -32_022` | partial-with-contradiction |
+| 8 | `mnf-404-ping` | status 404 + code `-32601` | status silent; code **agrees** — `MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601` on `assert error(post(opts(), rpc("ping", %{})))["code"] == -32_601` | **partial** |
+| 9 | `mnf-404-logging-setlevel` | status 404 + code `-32601` | status silent; code **agrees** — the same unit, on `assert error(post(opts(), rpc("logging/setLevel", …)))["code"] == -32_601` | **partial** |
+| 10 | `mnf-404-resources-subscribe` | status 404 + code `-32601` | **neither** — the only ET claims are absence-of-constants, `MCP.Protocol.MethodsTest/test resources/subscribe and resources/unsubscribe are gone, not renamed` and `MCP.Protocol.Messages.ResourcesTest/test the retired subscribe surface SubscribeParams and UnsubscribeParams no longer exist`, both `ET-OUT` | **bucket 2** |
 | 11 | `mnf-404-resources-unsubscribe` | as above | **neither** | **bucket 2** |
-| 12 | `mnf-404` (generic) | status 404 + code `-32601` | code **agrees** (`subscriptions_stream_test.exs:1029`); status **CONTRADICTS** (we answer 200, `:1010`) | partial-with-contradiction |
-| 13 | `sep-2106-no-network-ref-deref` (client leg, AC3's example) | canary counter stays 0 | **covered** — `client_conformance_test.exs:131` asserts `Agent.get(hits, & &1) == 0` | **FULL** |
+| 12 | `mnf-404` (generic) | status 404 + code `-32601` | code **agrees** and status **CONTRADICTS**, both in `MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream`: `assert response.body["error"]["code"] == -32_601`, and `assert response.status == 200` | partial-with-contradiction |
+| 13 | `sep-2106-no-network-ref-deref` (client leg, AC3's example) | canary counter stays 0 | **covered** — `MCP.ClientConformanceTest/test CG4 / T-CG4 — the client MUST NOT dereference a network $ref listing and calling a tool whose inputSchema $refs a network URI never fetches it` asserts `Agent.get(hits, & &1) == 0` | **FULL** |
 
 **Caveat on #6, stated rather than resolved.** The axes file's `requires` gloss
 says *"HTTP 400 on a header/`_meta` **VERSION** mismatch"*, while the check's own
@@ -1390,22 +1570,29 @@ And the returning rows cannot supply an axis, checked literally rather than argu
 
 The two decisive greps also reproduce at the round-4 tip: `grep -rn "404" test/mcp/`
 returns **0**, `grep -rn "\.status ==" test/mcp/` returns **27**, and the one
-bare-variable status assertion F4 named is still
-`subscriptions_stream_test.exs:873`. **All 13 cells stand.**
+bare-variable status assertion F4 named is still in `MCP.Transport.SubscriptionsStreamTest/test the exits that raise before a branch is chosen a handler-side exit in teardown does not replace the refusal response (R3)`.
+**All 13 cells stand.**
 
 ### Re-run against the ROUND-5 register — **no cell moved, and no cell could have**
 
 Round 5 moved **no label**: the diff against the round-4 register is exactly four
 rows' `boundary` and `evidence` and nothing else (`et_cc_by_boundary` follows from the
 first). Every unit §8 cites therefore keeps the label it was cited with, and that was
-re-derived from the delivered register rather than inferred — `dispatch_test.exs:82`
-`ET-CC`, `streamable_http_stateless_test.exs:82`/`:83` `ET-CC`,
-`self_compatibility_test.exs:116`/`:128`/`:155` `ET-CC`, `error_test.exs:15` `ET-ADJ`,
-`methods_test.exs:21` and `messages/resources_test.exs:85` `ET-OUT`.
+re-derived from the delivered register rather than inferred:
+
+* `MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)` — `ET-CC`
+* `MCP.Transport.StreamableHTTPStatelessTest/test a request without a protocolVersion _meta fails fast (-32022)` — `ET-CC`
+* `MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601` — `ET-CC`
+* `MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: an encoded header naming a DIFFERENT tool is still -32020` — `ET-CC`
+* `MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: a PLAIN mismatched header is still -32020` — `ET-CC`
+* `MCP.Transport.SelfCompatibilityTest/test a sentinel-shaped header that is not valid Base64 is compared as-is, not crashed on` — `ET-CC`
+* `MCP.Protocol.ErrorTest/test error codes MCP spec-reserved error codes (2026-07-28)` — `ET-ADJ`
+* `MCP.Protocol.MethodsTest/test resources/subscribe and resources/unsubscribe are gone, not renamed` — `ET-OUT`
+* `MCP.Protocol.Messages.ResourcesTest/test the retired subscribe surface SubscribeParams and UnsubscribeParams no longer exist` — `ET-OUT`
 
 The three decisive greps reproduce at this tip: `grep -rn "404" test/mcp/` returns
 **0**, `grep -rn "\.status ==" test/mcp/` returns **27**, and F4's one bare-variable
-status assertion is still `subscriptions_stream_test.exs:873`. **All 13 cells stand.**
+status assertion is still in `MCP.Transport.SubscriptionsStreamTest/test the exits that raise before a branch is chosen a handler-side exit in teardown does not replace the refusal response (R3)`. **All 13 cells stand.**
 
 ### Re-run against the ROUND-3 register — **no cell moved, and it was re-run not assumed**
 
@@ -1418,17 +1605,22 @@ cited unit re-checked at the round-3 tip:
 
 | cited as | unit | round-3 label |
 | --- | --- | --- |
-| coverage | `streamable_http_stateless_test.exs:82`, `:83` | `ET-CC` |
-| coverage | `self_compatibility_test.exs:116`, `:128`, `:155` | `ET-CC` |
-| coverage | `dispatch_test.exs:82` | `ET-CC` |
-| coverage | `subscriptions_stream_test.exs:1008` | `ET-CC` |
-| coverage | `client_conformance_test.exs:116` | `ET-CC` |
-| **non**-coverage | `error_test.exs:15` | `ET-ADJ` |
-| **non**-coverage | `methods_test.exs:21`, `resources_test.exs:85` | `ET-OUT` |
+| coverage | `MCP.Transport.StreamableHTTPStatelessTest/test a request without a protocolVersion _meta fails fast (-32022)` | `ET-CC` |
+| coverage | `MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601` | `ET-CC` |
+| coverage | `MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: an encoded header naming a DIFFERENT tool is still -32020` | `ET-CC` |
+| coverage | `MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: a PLAIN mismatched header is still -32020` | `ET-CC` |
+| coverage | `MCP.Transport.SelfCompatibilityTest/test a sentinel-shaped header that is not valid Base64 is compared as-is, not crashed on` | `ET-CC` |
+| coverage | `MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)` | `ET-CC` |
+| coverage | `MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream` | `ET-CC` |
+| coverage | `MCP.ClientConformanceTest/test CG4 / T-CG4 — the client MUST NOT dereference a network $ref listing and calling a tool whose inputSchema $refs a network URI never fetches it` | `ET-CC` |
+| **non**-coverage | `MCP.Protocol.ErrorTest/test error codes MCP spec-reserved error codes (2026-07-28)` | `ET-ADJ` |
+| **non**-coverage | `MCP.Protocol.MethodsTest/test resources/subscribe and resources/unsubscribe are gone, not renamed` | `ET-OUT` |
+| **non**-coverage | `MCP.Protocol.Messages.ResourcesTest/test the retired subscribe surface SubscribeParams and UnsubscribeParams no longer exist` | `ET-OUT` |
 
-`resources_test.exs:85` is the one to look at twice, since ruling A moved five rows
-out of that very file — but the five are `:7`, `:21`, `:33`, `:51` and `:67`, and
-`:85` was already `ET-OUT` before this round and still is. **All 13 cells stand.**
+`MCP.Protocol.Messages.ResourcesTest/test the retired subscribe surface SubscribeParams and UnsubscribeParams no longer exist` is the one to look at twice, since ruling A moved five rows out of
+that very file — but the five are `MCP.Protocol.Messages.ResourcesTest/test ListResult from_map/1 parses resource list`, `MCP.Protocol.Messages.ResourcesTest/test ReadResult from_map/1 parses read result with text content`,
+`MCP.Protocol.Messages.ResourcesTest/test ReadResult from_map/1 parses read result with blob content`, `MCP.Protocol.Messages.ResourcesTest/test ListTemplatesResult from_map/1 parses template list` and `MCP.Protocol.Messages.ResourcesTest/test ListTemplatesResult round-trips through JSON with camelCase`, and the cited
+unit was already `ET-OUT` before this round and still is. **All 13 cells stand.**
 
 ### Re-run against the ROUND-2 register — **no cell moved**
 
@@ -1436,15 +1628,19 @@ AC6 is scoped to `ET-CC` members, so 48 rows changing label could in principle m
 a cell. It was re-run rather than assumed (PM item 6: *"an expectation is not a
 result"*). **Every one of the 13 cells is unchanged.** Checked both directions:
 
-**Nothing left.** Every unit this table cites as coverage is still `ET-CC` at round
-2 — `streamable_http_stateless_test.exs:82`(→`:80`), `self_compatibility_test.exs:116`,
-`:128`, `:155`, `dispatch_test.exs:82`(→`:83`), `streamable_http_stateless_test.exs:88`
-(→`:85`,`:86`), `subscriptions_stream_test.exs:1008`(→`:1010`,`:1011`),
-`client_conformance_test.exs:116`(→`:130`) — and the two units cited as evidence of
-**non**-coverage are still non-members: `error_test.exs:15` `ET-ADJ`,
-`methods_test.exs:21` and `resources_test.exs:85` `ET-OUT`. None of the three files
-ruling A moved (`tools_test.exs`, `protocol_test.exs`, `error_test.exs:84`/`:94`) is
-cited by any cell.
+**Nothing left.** Every unit this table cites as coverage is still `ET-CC` at round 2 —
+`MCP.Transport.StreamableHTTPStatelessTest/test a request without a protocolVersion _meta fails fast (-32022)`, `MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601`, `MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: an encoded header naming a DIFFERENT tool is still -32020`, `MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: a PLAIN mismatched header is still -32020`,
+`MCP.Transport.SelfCompatibilityTest/test a sentinel-shaped header that is not valid Base64 is compared as-is, not crashed on`, `MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)`, `MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream` and `MCP.ClientConformanceTest/test CG4 / T-CG4 — the client MUST NOT dereference a network $ref listing and calling a tool whose inputSchema $refs a network URI never fetches it` — and
+the two units cited as evidence of **non**-coverage are still non-members:
+`MCP.Protocol.ErrorTest/test error codes MCP spec-reserved error codes (2026-07-28)` `ET-ADJ`, `MCP.Protocol.MethodsTest/test resources/subscribe and resources/unsubscribe are gone, not renamed` and `MCP.Protocol.Messages.ResourcesTest/test the retired subscribe surface SubscribeParams and UnsubscribeParams no longer exist` `ET-OUT`.
+None of the three files ruling A moved — `tools_test.exs`, `protocol_test.exs` and the
+two `MCP.Protocol.ErrorTest` `JSON encoding` rows — is cited by any cell.
+
+> **MES-94: this paragraph used to carry a second address per unit**, in the form
+> `streamable_http_stateless_test.exs:82`(→`:80`) — *"cited at `:82`; at the round-2
+> tree the same unit was at `:80`"*. Eight such arrows are **dropped, not re-resolved**.
+> A row key does not move between rounds, so there is nothing for a second address to
+> say; the arrows existed only because the first address did.
 
 **Nothing arrived.** The **7** rows that became `ET-CC` in round 2 assert no HTTP
 status and no `-32601`: the three `client_test.exs` rows assert the `server/discover`
@@ -1454,7 +1650,7 @@ decoded `_meta` and capability values. *(**F5, corrected in round 3.** Round 2 s
 what §3's own table says and what the register returns when queried; **10** is how
 many rows C, D and E were **put over**. Found by CODE_REVIEWER at `26045`; the
 enumeration that follows the number was already the right 7, so no verdict moves.)* The nearest miss is worth naming —
-`meta_test.exs:47` is now an `ET-CC` member **about an unsupported protocol
+`MCP.Protocol.MetaTest/test validate_protocol_version/2 mismatched (e.g. legacy 2025-11-25) → {:error, {:unsupported, got}}` is now an `ET-CC` member **about an unsupported protocol
 version**, which is check #4's subject — but check #4's single axis is
 `http_status: 400` and that row asserts no status, so #4 stays **bucket 2**. And the
 decisive fact is a property of the tree, not of the labelling: `404` still occurs
@@ -1476,7 +1672,8 @@ conformance server FIXTURE's `requestState` token** (`conformance/request_state.
 Gate 1 scopes on **location**, so they are in the 579 and are excluded at gate 2 or
 3 instead. All 12 are `ET-OUT`, and `ET-ADJ` is unreachable by construction: §5
 requires a call site that is a `file:line` in **`lib/`**, and `grep -rn
-"RequestState" lib/` returns nothing. One of them (`:48`, token url-safety) reaches
+"RequestState" lib/` returns nothing. One of them — `MCP.ConformanceRequestStateTest/test mint/2 and verify/2 — the accept path tokens are url-safe and unpadded, so they survive a header or query hop`, token
+url-safety — reaches
 gate **3** and dies there on the schema's own words — `schema.ts:591-592`, *"The
 client must treat this as an **opaque blob**; it must not interpret it in any
 way"*. A requirement that a value is opaque is precisely a requirement that its
@@ -1520,9 +1717,11 @@ from the delivered register's own rows:
 
     mix run conformance/controls/etcc_register_controls.exs spec <dir>   # re-md5 and diff
 
-**Three of the eight corroborate independently.** `schema.ts` matches the pin
-recorded at `docs/sprint_4_issues.md:1288-1289`; `server/tools.mdx` matches the md5
-`test/mcp/server/tool_order_test.exs:8` records for itself; and
+**Three of the eight corroborate independently.** `schema.ts` matches the pin recorded
+in `docs/sprint_4_issues.md` under the heading *"MES-16 — Extensions negotiation surface
+(SEP-2133), negotiation only, zero extensions (2026-08-19)"*, in its scope-contract
+paragraph; `server/tools.mdx` matches the md5 `MCP.Server.ToolOrderTest`'s `@moduledoc`
+records for itself, beside the `tools.mdx` quotation; and
 `streamable-http.mdx` matches the value `etcc-membership.md` §B.2 states while
 recording that it **has no md5 anywhere in this repository**. **That stated limit is
 now closed** — a bound another ticket declared and could not close, closed by the
@@ -1535,7 +1734,7 @@ ticket that needed it.
 * **It does not judge whether an assertion is CORRECT.** Gates 1–3 ask about scope,
   subject and referent; none asks whether a claim is right. A test that asserts wire
   behaviour and **contradicts the official suite is still a member** —
-  `dispatch_test.exs:82` (`initialize` → `-32022`, against
+  `MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)` (against
   `sep-2575-http-server-method-not-found-404-initialize`) is `ET-CC` here, and
   excluding it would empty bucket 4a by construction. No correctness test was added
   by this sweep.
