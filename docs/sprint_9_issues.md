@@ -420,3 +420,212 @@ section, so **deleting** a grandfathered occurrence and writing a live citation 
 same text into the same section keeps the count and passes. Narrowing that would mean
 anchoring an exception to a line, which is the disease this document was re-keyed to
 cure.
+
+## S9-14 — "6 of 13 check ids do not occur in the harness at all" is wrong twice, and the true 6 belongs to a different predicate
+
+**Found on MES-97 (C1a), measured against the build at `a10085d0…`.**
+
+The sentence *"states the 6-of-13 check ids that do not occur in the harness build at
+all"* appears in **MES-97's ticket body**, in **MES-96**, in **MES-65**, and the PM's
+own dispatch restated it. It fuses three different measurements into one figure and is
+wrong on two of them:
+
+| predicate | over A3's 13 rows | over the 173 |
+| --- | --- | --- |
+| the check_id **occurs at all** | **5** rows do not (5 distinct ids) | 8 rows do not |
+| a bare grep **reaches the emitting site** | **6** rows do not | 30 rows do not |
+| **distinct** check ids | 11, not 13 | 110 |
+
+So the 6 is real and it is *reach-the-site*, not *occur-at-all*; its denominator is
+**rows**, not **ids**; and the id count of those 13 rows is 11. Its source says exactly
+this and was not misquoted so much as compressed: `oc-axes-2026-07-28.json`
+`provenance.reverse_lookup_procedure.direction` reads *"a grep on the check_id reaches
+the emitting site for only 7 of the 13 rows"*.
+
+**Independently re-derived rather than re-read.** `mix conformance.locator` implements
+the traversal mechanically and its ladder puts 7 of A3's 13 rows on a rung a bare grep
+reaches — the same 7, arrived at from the build rather than from the sentence.
+
+**The mechanism.** *A brief restates a figure and loses its predicate.* The restatement
+is shorter and reads better, and there is nothing in a number to say which question it
+answered. The remedy is not to correct the sentence in four places — the PM ruled
+against editing the epic bodies — but to make the artefact print **each number next to
+its own predicate**: `oc-emitting-sites-2026-07-28.json` `predicates` has one block per
+question, each carrying its own denominator, and it supersedes all four prose sites.
+
+---
+
+## S9-15 — An AC that quantifies over both sides and checks the arithmetic is satisfied perfectly by an empty relation
+
+**Found on MES-97 (C1a), at the plan hop, before the generator was written.**
+
+MES-97's AC3 read: *"every one of the 173 in-scope OC checks appears exactly once as a
+match target; every ET-CC member appears; the unmatched-on-each-side sets are
+enumerated"*. A crosswalk with **zero edges** satisfies it in every particular: all 173
+fall into bucket 2, all 281 into bucket 1, both sets enumerate exactly, and the
+arithmetic reconciles to the row. An AC a wrong artefact satisfies is not an AC
+(ruling 8).
+
+**The strengthening** (PM-approved as D3): the artefact declares its `population`; A3
+§6's state-4 guard runs **over that population**; and bucket 1 and bucket 2 — which are
+complements, and a complement is meaningless without a universe — are **refused**
+outside it. Emptiness is then what the guard fires on.
+
+**And it did not work the first time, which is the part worth recording.** The
+refusal was written into `Crosswalk.project/2` — and the generator computed both
+buckets inline and never called it. The `vacuum` control built an empty crosswalk and
+it came out **green**, reporting `0 members, 0 checks, bucket 2: CHECKED, AND ZERO`.
+The fix was to route both projections through `project/2` and add an explicit
+emptiness refusal on the path the generator actually takes.
+
+**The mechanism, and it is not about vacuity.** *A guard on a path the caller does not
+take protects nothing.* The function existed, was correct, was unit-tested, and was
+dead. Only a control that drove the **whole generator** rather than the function could
+show it — which is why the vacuum case is in
+`conformance/controls/crosswalk_controls.exs` and not only in
+`test/conformance/crosswalk_test.exs`.
+
+---
+
+## S9-16 — The emitting site of a check is not always where its verdict is decided, and MES-76's traversal stops at the emitting site
+
+**Found on MES-97 (C1a).**
+
+`reverse_lookup_procedure` travels `check_id -> emitting site -> predicate -> axes`, and
+its second hop assumes the predicate is *at* the site. For
+`sep-2575-client-retry-supported-version` it is not. The emitting call writes a
+constant:
+
+    this.addOrUpdateCheck({id:`sep-2575-client-retry-supported-version`,…,status:`WARNING`,…})
+
+and the verdict is decided **221 bytes later**, at a site that carries no id literal in
+an emitting position at all:
+
+    let p=this.checks.find(e=>e.id===`sep-2575-client-retry-supported-version`);
+    if(p&&(o===`2026-07-28`&&a===`2026-07-28`?p.status=`SUCCESS`:p.status=`WARNING`,…
+
+A consumer who follows the locator to the emitting site and stops reads
+`` status:`WARNING` `` and finds **no predicate**, from which the available wrong
+conclusions are "this check has no axes" and "this check's axis is the literal
+WARNING". Both are worse than an admitted gap.
+
+**Recorded, not fixed.** The locator finds emitters, which is what it says it finds;
+`oc-axes-c1.json` carries the mutation site as an addressed `context_excerpt` for this
+check and states in `emitting_site_is_not_the_predicate` why. How many of the other 172
+rows are `addOrUpdateCheck`-plus-mutation is **not measured here** — it is C1b's and
+C1c's to find, and is stated as locator residual **L1** rather than left for them to
+trip over.
+
+---
+
+## S9-17 — A test named for the behaviour it does not assert: "the retry re-stamps the version" asserts the version on the request BEFORE the retry
+
+**Found on MES-97 (C1a), while decomposing the ET side of the crosswalk.**
+
+`test/mcp/client_defects_test.exs` "D-3 … **the retry re-stamps the version chosen from
+`supported`**" asserts the protocol version on `first` — the request sent *before* the
+server's rejection — and then asserts only that the call completes. The retry's own
+`_meta` version is never asserted.
+
+It cannot fail for the reason its name gives. And the fixture hides it: the client is
+started with `protocol_version: "2026-07-28"` and the server offers `["2026-07-28"]`, so
+the first request and the retry carry the same version, and asserting the first *looks*
+like asserting the re-stamp.
+
+**Its sibling covers the behaviour.** "a -32022 naming a version we support is retried
+exactly once" does assert `retry["params"]["_meta"][…protocolVersion]`, so the SDK's
+behaviour is tested; what is missing is that *this* test tests it. That is why it is a
+finding and not a defect: a **vacuity**, which is D5a/D5b's subject, reached from the
+crosswalk rather than from a vacuity sweep.
+
+**Not fixed here** (epic ruling 3: a discrepancy the crosswalk surfaces is recorded and
+routed, never fixed). It is visible in the artefact rather than only here: the edge's
+`evidence` in `conformance/data/crosswalk-edges.json` says which line the only version
+assertion is on, and the edge escalates as `no_axis_contact` rather than being counted
+as coverage.
+
+---
+
+## S9-18 — A prefix search that drops segments until it hits will always hit, and the hit it settles for can be 70 KB away
+
+**Found on MES-97 (C1a), building the locator's template rung.**
+
+MES-76's TEMPLATE case says: where the check id does not occur, *"grep instead for the
+LONGEST LITERAL PREFIX of the id (drop trailing segments until the grep hits)"*. Run
+mechanically over the whole denominator, that rule resolves **ten** rows onto the
+prefix **`sep`** — three hits inside the harness CLI's own scaffolding
+(`` check:`sep-${e}-todo` ``, a `sep-${n}.yaml` path, an error format string), none of
+them a check-emitting site, all of them ~70 KB from the code in question.
+
+The rule is sound as MES-76 used it, because A3 applied it by hand to five rows whose
+prefix stopped at a real loop. Automated, its termination condition is *"the grep
+returned something"* — and a short enough prefix always returns something. **A search
+whose stopping rule is "a hit" cannot fail**; it can only return progressively worse
+answers.
+
+**The fix** is a structural test rather than a length floor: a prefix hit counts only
+when it sits at an **emitting position** — the first argument of a call, or an `id:`
+property followed by `,name:`. With it, the eight genuinely template-built rows resolve
+on `sep-2575-request-meta-invalid` and `sep-2575-http-server-method-not-found-404`, and
+the ten `x-mcp-header` rows fall through to the lookup-table rung, which is where they
+belong. A length floor would have been the wrong fix: it tunes a number against today's
+ids instead of asking what a resolution *is*.
+
+**The same shape, one rung up.** An id literal followed by `` ,` `` looks like a call
+argument, and in `Ha=[`a`,`b`,`c`]` it is an **array element** — five check ids that
+read as five emitting sites. Both are guarded by asking `enclosing/2` what the nearest
+unclosed delimiter actually is. Both mutations are committed in
+`conformance/controls/crosswalk_controls.exs` (`locator`) and as units in
+`test/conformance/locator_test.exs`.
+
+---
+
+## S9-19 — A pin recorded per RUNG when the level is per ROW: the artefact claimed a row-specific address for six rows whose own metadata refuted it
+
+**Found by CODE_REVIEWER on MES-97 (C1a)** — comment 27864 — and corrected under the PM
+correction contract at comment 27866. Recorded here rather than only in Jira because the
+shape generalises well past this artefact.
+
+The locator's ladder records, per row, which rung resolved it and **what that rung pins**
+— the row, the check, or the loop. `rung_pins` was computed as a function of the **rung
+alone**. For four of the five rungs that is right. For `id_table_value` it is not: the
+rung's site is a loop over the whole table (`for(let[e,t]of Object.entries(Ua))`, emitting
+`` `ClientRejectsInvalidTool_${e}` ``), so the site is the same 1162 bytes for every row
+the table carries and names none of them. What pins a row is a **second and different
+address** — the table entry `` key:`check-id` `` — and only when that entry's key is the
+row's own name suffix.
+
+**Six of the ten rows resolved through a sibling's key** and were nonetheless recorded as
+row-level pins, resolving to the broad `getChecks()` span `[714697, 715859]` whose
+committed bytes do not contain the row's own case suffix. The artefact asserted an
+address it did not have, which is ruling 7 read backwards.
+
+**The field that would have caught it was already there.** `row_key_matches` was computed
+on every one of those rows, sat in the artefact saying `false`, and **nothing acted on
+it** — and the unit at `locator_test.exs:82-89` explicitly asserted the false case was
+fine. This is S9-15's lesson arriving from the other side: there, a correct guard sat on a
+path the caller never took; here, a correct *measurement* sat in a field no guard ever
+read. A computed value that nothing refuses on is a comment with a JSON key.
+
+**The correction.** `Locator.pin_level/2` takes the rung **and its metadata**; the six
+read `loop` and the four read `row`. A row-level table pin now carries
+`rung_detail.table_entry` — the entry's span **and its bytes** — because the site's bytes
+cannot support the claim and an address without its bytes is not evidence. The generator
+**refuses** any row claiming `row` while `row_key_matches` is false, and the control
+(`crosswalk_controls.exs pins`) proves the refusal by recompiling `pin_level/2` in the VM
+to make that exact claim and driving the whole generator, with the unmutated run as the
+positive control. Nothing on disk is mutated, so a death mid-run cannot leave the shared
+clone dirty (S8-14).
+
+**A second figure fell out of it.** Residual L3 said *"21 rows"* resolve to their check's
+or loop's address rather than their own. It was hard-coded, counted two of the four
+non-row rungs, and missed `id_bound_variable`'s 12 as well as these six. The true figure
+is **39 of 173**, and it is computed from the rows now rather than written down.
+
+**Routed, not fixed** (epic ruling 3). All ten `id_table_value` rows *do* have an entry
+keyed by their own name suffix in `Ua` — measured, not assumed. The resolver takes the
+**first** occurrence of the id literal, which for an id shared by several rows is a
+sibling's entry; selecting the row-keyed entry instead would pin all ten at row level.
+That is a better locator and it is not this ticket's to build: the PM ratified
+reclassification, and the coarser level is a true statement about what was resolved. It is
+recorded as locator residual L5 so C1b/C1c can take it.
