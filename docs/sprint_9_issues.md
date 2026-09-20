@@ -746,3 +746,87 @@ committed cells by member and reporting every member whose edges span more than 
 so the residual cannot go stale against the data it describes — if a future population adds
 a second witness, the text names it without anyone editing the text. A hand-written "one
 member does this" would have been the S9-11 shape: a figure nothing re-derives.
+
+---
+
+## S9-22 — A fail-closed guard whose exit status does not correspond to its verdict: the GREEN case exits 1
+
+**Found:** MES-100, 2026-09-20, by CODE_CREATOR, while measuring the D7 PM-alone lane
+guard on a throwaway fixture before writing it into `CLAUDE.md`. **Not fixed here** — the
+guard is D7's canonical text on 250052681, and a repo copy that silently diverged from it
+is the exact defect MES-100 exists to prevent. Remedy owned by **MES-106** (PM-raised),
+which carries the D7 §3 amendment to the PO.
+
+**The measurement.** The guard is a pipeline joined to its refusal by `&&`:
+
+```bash
+git diff --name-only main...{TICKET_KEY} \
+  | grep -Eq '^(lib/|test/|conformance/lib/|conformance/controls/|docs/conformance/)' \
+  && { echo "REFUSE PM-alone: ..."; exit 1; }
+```
+
+Same fixture, same clean docs-only branch, two runs:
+
+| the guard is… | exit | stdout |
+|---|---|---|
+| the last command of the script | `1` | *(empty)* |
+| followed by one more command | `0` | that command's |
+| refusing a `lib/` branch | `1` | the REFUSE line |
+
+So **the clean case and the refusal exit alike**, and the only thing that separates them is
+the message.
+
+**The mechanism.** When `grep -q` matches nothing it exits 1; the `&&` is not taken, so the
+list's status *is* grep's, and the script's status is its last command's. A trailing command
+resets it, which is why the behaviour disappears the moment anyone tests the snippet
+interactively with something after it.
+
+**Why it matters more than it looks.** `guard.sh && git merge …` reads a clean PM Task as
+refused, and a `set -e` merge script aborts on a lane that is fine — a **fail-closed guard
+failing closed on the good case**, which trains people to bypass it. This is the
+*piped gate exit code is tail's* register entry in another costume: **a status that is
+produced by plumbing rather than by a decision is not a verdict.**
+
+**What MES-100 did instead of touching the string.** Every control in
+`conformance/controls/pm_alone_lane_guard_controls.exs` adjudicates on the REFUSE message,
+never on the status; the status is printed as an observation. `E1`/`E2` are the measurement
+above, run. The `CLAUDE.md` merge-gate item says so in the checklist line itself, so a
+reviewer cannot reach for the status by accident.
+
+---
+
+## S9-23 — The same guard is fail-OPEN on an unresolvable ref: a check that cannot determine its input answers "fine"
+
+**Found:** MES-100, 2026-09-20, by CODE_CREATOR, same fixture session. **Not fixed here**,
+same reason as S9-22; remedy owned by **MES-106**.
+
+**The measurement.** On a fixture whose branch really does touch `lib/` — the honest verdict
+is REFUSE — the guard run with a key that does not resolve:
+
+```
+$ git diff --name-only main...MES-NOSUCH
+fatal: ambiguous argument 'main...MES-NOSUCH': unknown revision or path not in the working tree.
+```
+
+`fatal:` goes to **stderr**; **stdout is empty**; `grep` matches nothing; the `&&` is not
+taken; the guard falls through **green**. A mistyped key, a branch someone already deleted,
+or a run from the wrong directory all read as *touched nothing reviewable*. D7 §3 heads this
+section *Guarded fail-closed*; on this input it is not.
+
+**The mechanism, which is the transferable part.** The guard's negative — "nothing matched"
+— is carried by an **empty stdout**, and an empty stdout is also what every failure of the
+producing command looks like. Wherever a check's PASS is *the absence of output*, the
+check's failure mode and its success look identical, and the check must establish that its
+input was determined before reading the absence. Exactly the shape of
+*ls-remote exits 0 on a missing ref*: what could not be established came back as *fine*.
+
+**Cost, stated plainly.** The two limbs compound. A PM Task mistyped as `MES-1O0` gets a
+green guard (S9-23) and, by S9-22, a green guard is indistinguishable by status from a red
+one — so the instrument that is supposed to keep unreviewed code off `main` can be defeated
+by a typo, silently, in the direction that admits.
+
+**Controlled as observed, not asserted fixed.** `X1` in
+`conformance/controls/pm_alone_lane_guard_controls.exs` drives exactly this input and
+requires **both** halves — that git said `fatal:`, and that the guard allowed anyway — so
+the hole is pinned rather than described. If MES-106's amendment closes it, `X1` goes red
+and names what changed.
