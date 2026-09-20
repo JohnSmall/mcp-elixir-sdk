@@ -529,10 +529,28 @@ defmodule CrosswalkControls do
       end
     end)
 
+    # POSITIVE CONTROL, AFTER — added by MES-99 (C3). This mode ran its positive
+    # control only BEFORE its thirteen mutations, so "restored green" was never
+    # established for it: every mutation here is a temp copy and none should
+    # touch the tree, but that is the claim, and an unrun check and a null result
+    # are the same artefact.
+    back = tmp("guard-restored")
+    run_crosswalk(back, edges: @edges)
+    restored = File.read!(back) == File.read!(@crosswalk_out)
+    File.rm(back)
+
+    verdict(
+      "RESTORED — the unmutated edges rebuild the committed artefact byte-for-byte",
+      restored
+    )
+
+    halt_unless(restored)
+
     IO.puts("""
 
-      Thirteen guards, thirteen refusals, one positive control. Each mutation is the
-      cheapest way the artefact could be wrong in that particular way.
+      Thirteen guards, thirteen refusals, and a positive control on BOTH sides of them.
+      Each mutation is the cheapest way the artefact could be wrong in that particular
+      way.
     """)
   end
 

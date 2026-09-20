@@ -250,6 +250,167 @@ defmodule MCP.Conformance.CrosswalkTest do
 
   # The committed artefact, held to what it asserts about itself. No harness
   # needed: every cell carries its key, its axes and its shape.
+  describe "duplicate_edge_keys/1 — G14, the join's own key" do
+    defp e(member, claim, tag),
+      do: %{"member" => %{"register_key" => member}, "claim" => claim, "tag" => tag}
+
+    test "a verbatim repeat is named, not counted" do
+      edges = [e("m", "c", "t"), e("m2", "c2", "t2"), e("m", "c", "t")]
+      assert Crosswalk.duplicate_edge_keys(edges) == [{"m", "c", "t"}]
+    end
+
+    test "all three fields are part of the key — differing in any one is not a duplicate" do
+      for edge <- [e("m!", "c", "t"), e("m", "c!", "t"), e("m", "c", "t!")] do
+        assert Crosswalk.duplicate_edge_keys([e("m", "c", "t"), edge]) == []
+      end
+    end
+
+    test "a member legitimately bundling several claims is not a duplicate" do
+      # A3 §1: a member bundling claims contributes several edges and they are
+      # never collapsed. The guard must not fire on the thing the rule requires.
+      assert Crosswalk.duplicate_edge_keys([e("m", "c1", "t"), e("m", "c2", "t")]) == []
+    end
+
+    test "it is empty on no edges, which is the only thing emptiness may mean here" do
+      assert Crosswalk.duplicate_edge_keys([]) == []
+    end
+  end
+
+  describe "select/2 — G15's external anchor, and it is fail-closed" do
+    @selector %{
+      "rows_at" => "rows",
+      "key_field" => "key",
+      "any_of" => [
+        %{"field" => "tokens", "test" => "non_empty_list"},
+        %{"field" => "contradicts_oc", "test" => "not_null"}
+      ]
+    }
+
+    @source %{
+      "rows" => [
+        %{"key" => "a", "tokens" => ["oc:x"], "contradicts_oc" => nil},
+        %{"key" => "b", "tokens" => [], "contradicts_oc" => %{"check" => "y"}},
+        %{"key" => "c", "tokens" => [], "contradicts_oc" => nil},
+        %{"key" => "d", "contradicts_oc" => nil}
+      ]
+    }
+
+    test "any_of is a union, and the unselected rows are left out" do
+      assert Crosswalk.select(@selector, @source) == {:ok, ["a", "b"]}
+    end
+
+    test "the result is sorted, so a source reordering is not a population change" do
+      shuffled = %{"rows" => Enum.reverse(@source["rows"])}
+      assert Crosswalk.select(@selector, shuffled) == {:ok, ["a", "b"]}
+    end
+
+    test "an unknown test REFUSES — a selector language that guesses is a selector that lies" do
+      s = put_in(@selector, ["any_of"], [%{"field" => "tokens", "test" => "looks_right"}])
+      assert {:error, {:unknown_selector_test, _}} = Crosswalk.select(s, @source)
+    end
+
+    test "an unknown test refuses even when another clause would have selected the row" do
+      # Fail-closed means the bad clause decides, not the good one.
+      s =
+        put_in(@selector, ["any_of"], [
+          %{"field" => "tokens", "test" => "non_empty_list"},
+          %{"field" => "contradicts_oc", "test" => "vibes"}
+        ])
+
+      assert {:error, {:unknown_selector_test, _}} = Crosswalk.select(s, @source)
+    end
+
+    test "a rows path the source does not carry REFUSES rather than selecting nothing" do
+      assert {:error, {:selector_names_no_such_rows, "nope"}} =
+               Crosswalk.select(Map.put(@selector, "rows_at", "nope"), @source)
+    end
+
+    test "a key field a selected row does not carry REFUSES" do
+      assert {:error, {:selector_key_field_is_not_a_string, "id"}} =
+               Crosswalk.select(Map.put(@selector, "key_field", "id"), @source)
+    end
+
+    test "duplicate keys in the ANCHOR refuse — a silent merge hides the drop" do
+      dupes = %{"rows" => @source["rows"] ++ [%{"key" => "a", "tokens" => ["oc:x"]}]}
+
+      assert {:error, {:selector_source_has_duplicate_keys, ["a"]}} =
+               Crosswalk.select(@selector, dupes)
+    end
+
+    test "a malformed selector refuses — including an empty any_of, which selects nothing" do
+      for bad <- [%{}, %{"rows_at" => "rows"}, Map.put(@selector, "any_of", []), nil] do
+        assert {:error, {:malformed_selector, ^bad}} = Crosswalk.select(bad, @source)
+      end
+    end
+  end
+
+  describe "declaration_mismatches/2 — G15b, the file's own numbers" do
+    @declared %{
+      "members" => 21,
+      "members_with_edges" => 16,
+      "members_declared_unmatched" => 5,
+      "checks_addressed" => 14
+    }
+
+    test "agreement is the empty list" do
+      assert Crosswalk.declaration_mismatches(@declared, @declared) == []
+    end
+
+    test "each of the four fields is checked, and named when it disagrees" do
+      for field <- ~w(members members_with_edges members_declared_unmatched checks_addressed) do
+        derived = Map.update!(@declared, field, &(&1 + 1))
+
+        assert [%{"field" => ^field, "declared" => d, "derived" => a}] =
+                 Crosswalk.declaration_mismatches(@declared, derived)
+
+        assert a == d + 1
+      end
+    end
+
+    test "an ABSENT declared field is a mismatch, not a pass" do
+      # The weakness this replaces: C1a read the block for its `rule` string and
+      # checked none of its numbers. A missing number must not read as agreement.
+      assert [%{"field" => "members", "declared" => nil}] =
+               Crosswalk.declaration_mismatches(Map.delete(@declared, "members"), @declared)
+    end
+  end
+
+  describe "status_agreement/2 — G16, two sources compared by SET then per key" do
+    @left %{["a"] => "SUCCESS", ["b"] => "FAILURE"}
+
+    test "identical maps agree" do
+      a = Crosswalk.status_agreement(@left, @left)
+      assert a["agrees"]
+      assert a["compared"] == 2
+      assert a["disagreements"] == []
+      assert a["key_sets"]["equal"]
+    end
+
+    test "a drifted status is named with BOTH values, so neither source is privileged" do
+      a = Crosswalk.status_agreement(@left, %{@left | ["b"] => "SUCCESS"})
+
+      refute a["agrees"]
+      assert [%{"key" => ["b"], "left" => "FAILURE", "right" => "SUCCESS"}] = a["disagreements"]
+    end
+
+    test "different key sets fail even when both sides have the same COUNT" do
+      a = Crosswalk.status_agreement(@left, %{["a"] => "SUCCESS", ["z"] => "FAILURE"})
+
+      refute a["agrees"]
+      refute a["key_sets"]["equal"]
+      assert a["key_sets"]["missing"] == [["b"]]
+      assert a["key_sets"]["extra"] == [["z"]]
+      # and the shared key still agrees — the two limbs are independent
+      assert a["disagreements"] == []
+    end
+
+    test "it names itself a CONSISTENCY pin (ruling 9)" do
+      a = Crosswalk.status_agreement(@left, @left)
+      assert a["what_this_is"] =~ "CONSISTENCY pin, not a correctness one"
+      assert a["what_this_is"] =~ "same accepted harness run"
+    end
+  end
+
   describe "the committed crosswalk artefact" do
     setup do
       %{a: "docs/conformance/crosswalk-2026-07-28.json" |> File.read!() |> Jason.decode!()}
@@ -403,9 +564,72 @@ defmodule MCP.Conformance.CrosswalkTest do
       end
     end
 
-    test "the artefact declares itself UNFALSIFIED until C3", %{a: a} do
-      assert a["trust_status"] =~ "UNFALSIFIED"
-      assert a["trust_status"] =~ "MES-99"
+    test "the artefact records that C3 falsification-tested it, and the BOUND on that", %{a: a} do
+      # It said UNFALSIFIED until MES-99. Leaving that after C3 landed would be the
+      # artefact understating its own trust; replacing it with a bare "falsified"
+      # would overstate it. Both halves are asserted.
+      assert a["trust_status"] =~ "FALSIFICATION-TESTED by C3 (MES-99) and STANDING"
+      # "standing" and "proven" are different claims and the artefact must make the
+      # weaker one. `UNFALSIFIED` here meant "not yet attempted", so the antonym had
+      # to be spelled out rather than left to read as "found to be false".
+      assert a["trust_status"] =~ "not proven"
+      assert a["trust_status"] =~ "declared 21-member / 14-check slice and no further"
+      assert a["trust_status"] =~ "CONSISTENCY pin, not a correctness claim"
+      # The stale claim is the OPENING word, not the string anywhere: the new text
+      # explains what `UNFALSIFIED` used to mean here, so a bare `refute =~` would
+      # fire on the correction itself. This asserts what the field LEADS with.
+      refute String.starts_with?(a["trust_status"], "UNFALSIFIED")
+
+      x2 = Enum.find(a["residuals"], &(&1["id"] == "X2"))
+      assert x2["text"] =~ "FALSIFICATION-TESTED by C3 (MES-99) and STANDING"
+      assert x2["text"] =~ "not the same as proven"
+      assert x2["text"] =~ "C1b (MES-104) and C1c (MES-105) own the rest"
+
+      # X1 is what no refusal can reach, and C3 must not be read as having reached it.
+      assert x2["text"] =~ "X1 is untouched"
+    end
+
+    test "the population records the selector it was checked against (G15)", %{a: a} do
+      sel = a["population"]["selector"]
+
+      # The anchor is EXTERNAL — that is the whole content of G15. A selector
+      # naming the edges file would be circular by another route.
+      assert sel["source"] == "docs/conformance/etcc-attribution.json"
+      refute sel["source"] =~ "crosswalk-edges"
+      assert sel["rows_at"] == "rows"
+      assert sel["key_field"] == "key"
+      assert sel["evaluated"] =~ "#{a["population"]["member_count"]} members denoted"
+      assert sel["evaluated"] =~ "both"
+    end
+
+    test "the cross-source agreement is recorded, and named CONSISTENCY (G16)", %{a: a} do
+      g = a["cross_source_agreement"]
+
+      assert g["agrees"]
+      assert g["compared"] == 175
+      assert g["disagreements"] == []
+      assert g["key_sets"]["equal"]
+      assert g["what_this_is"] =~ "CONSISTENCY pin, not a correctness one"
+
+      x6 = Enum.find(a["residuals"], &(&1["id"] == "X6"))
+      assert x6["text"] =~ "CONSISTENCY pin"
+      assert x6["text"] =~ "SAME accepted harness run"
+    end
+
+    test "no two cells share the join's key — G14's predicate, on the output", %{a: a} do
+      # The generator refuses this on ITS path now (G14). This unit checks the
+      # committed artefact, which is a different question: the refusal is about
+      # what can be built, this is about what WAS built.
+      triples =
+        Enum.map(a["cells"], &{&1["member"]["register_key"], &1["claim"], &1["tag"]})
+
+      assert Crosswalk.duplicate_edge_keys(
+               Enum.map(a["cells"], fn c ->
+                 %{"member" => c["member"], "claim" => c["claim"], "tag" => c["tag"]}
+               end)
+             ) == []
+
+      assert length(Enum.uniq(triples)) == length(triples)
     end
   end
 end

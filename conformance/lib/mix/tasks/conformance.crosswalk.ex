@@ -36,6 +36,24 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     but not by SET.
   * **Committed axis spans whose bytes have moved** — when `--harness` is
     given, the axis exprs are re-checked verbatim against the live build.
+  * **Two edges sharing a `(member, claim, tag)` triple** — G14, the join's own
+    key, counted twice.
+  * **A population that is not the set its own `selector` denotes**, or that
+    disagrees with its own declared counts — G15. The selector is evaluated
+    against an artefact *outside* the file being validated, which is the whole
+    point of it: C1a derived the population from the edges file itself, so a
+    dropped row shrank the universe rather than violating it.
+  * **A manifest whose verdicts have drifted from A5's bucket-0 artefact** —
+    G16, compared as sets of keys and then per key.
+
+  ## The second source path
+
+  `--verdicts-from manifest|bucket-0` reads the row set and the per-check
+  verdicts from either A1's manifest (the default, and the committed artefact's
+  provenance) or A5's bucket-0 artefact. The two runs must produce a
+  byte-identical file. That is a **consistency** pin and not a correctness one
+  (ruling 9): both artefacts descend from the same accepted harness run, so it
+  witnesses that nobody edited one without regenerating the other.
 
   ## The keying control runs, and it runs BOTH directions
 
@@ -49,11 +67,13 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
   ## What a clean run does NOT establish
 
   That any axis verdict is right. Whether our claim really agrees with a
-  conjunct is A3 §7's semantic-sameness residual and escalates per case. And
-  the output is **unfalsified** until C3 (MES-99) plants wrong verdicts,
-  wrong edges and duplicate keys and shows the generator refuses them —
-  ruling 5: six bucket reports derived from an unfalsified crosswalk are
-  assertions.
+  conjunct is A3 §7's semantic-sameness residual and escalates per case — and
+  no refusal can ever reach it, which is why C3 needs a pinned per-row bucket
+  assignment (`crosswalk_falsification_controls.exs drift`) as well as these
+  refusals.
+
+  That anything **outside** the declared population is adjudicated. C1b
+  (MES-104) and C1c (MES-105) own the rest.
 
   ## Exit status
 
@@ -73,13 +93,15 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     a3_axes: :string,
     c1_axes: :string,
     harness: :string,
+    verdicts_from: :string,
     out: :string
   ]
   @aliases [o: :out]
 
   @usage """
   mix conformance.crosswalk --edges FILE --manifest FILE --denominator FILE --register FILE \
-  --attribution FILE --a3-axes FILE --c1-axes FILE [--harness FILE] -o FILE\
+  --attribution FILE --a3-axes FILE --c1-axes FILE [--harness FILE] \
+  [--verdicts-from manifest|bucket-0] -o FILE\
   """
 
   @revision "2026-07-28"
@@ -101,11 +123,17 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     a3_axes = opts |> require!(:a3_axes) |> read_json!()
     c1_axes = opts |> require!(:c1_axes) |> read_json!()
     out = require!(opts, :out)
+    source = verdict_source!(opts)
 
     refuse_unless(manifest["arithmetic"]["total"] == 175, "the manifest is not the frozen 175")
 
-    rows = MatchKey.rows_from_manifest(manifest)
-    statuses = statuses(manifest)
+    # G16 runs BEFORE the join, and before --verdicts-from picks one of the two
+    # artefacts, because it is what makes either of them usable: a second source
+    # that has silently drifted from the first would otherwise be read as
+    # corroboration.
+    agreement = cross_source!(manifest, denominator)
+
+    {rows, statuses} = verdicts!(source, manifest, denominator)
 
     in_denominator =
       denominator["checks"] |> Enum.filter(& &1["matchable"]) |> Enum.map(& &1["key"])
@@ -118,8 +146,9 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     axes = axis_index!([a3_axes, c1_axes])
     axis_bytes = verify_axis_bytes!(c1_axes, Keyword.get(opts, :harness))
 
+    keys!(edges_doc)
     cells = cells!(edges_doc["edges"], rows, statuses, axes)
-    population = population!(edges_doc, register, attribution, rows)
+    population = population!(edges_doc, register, attribution, rows, require!(opts, :attribution))
     keying = keying!(in_denominator)
 
     artefact = %{
@@ -130,10 +159,8 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       "what_this_is" =>
         "The single matrix the ten buckets are PROJECTIONS of. C2 renders it, C3 falsifies it, " <>
           "D adjudicates its cells. It decides what no bucket MEANS.",
-      "trust_status" =>
-        "UNFALSIFIED. Ruling 5: six bucket reports derived from an unfalsified crosswalk are " <>
-          "assertions. C3 (MES-99) is the mutation control on this generator and lands this sprint; " <>
-          "until it does, nothing downstream should treat these cells as established.",
+      "trust_status" => trust_status(),
+      "cross_source_agreement" => agreement,
       "population" => population,
       "keying_control" => keying,
       "axis_provenance" => axis_bytes,
@@ -152,8 +179,85 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     report(artefact, out)
   end
 
-  defp statuses(manifest) do
+  defp manifest_statuses(manifest) do
     for s <- manifest["scenarios"], c <- s["checks"], into: %{}, do: {c["key"], c["status"]}
+  end
+
+  defp bucket_zero_statuses(denominator) do
+    Map.new(denominator["checks"], &{&1["key"], &1["status"]})
+  end
+
+  # --verdicts-from selects WHICH artefact the row set and the per-check verdicts
+  # are read from. Both carry A1's six-field key and a `status`, they are written
+  # by different generators at different tickets, and G16 above has just required
+  # them to agree — so the two runs must produce a BYTE-IDENTICAL artefact. That
+  # equality is C3's consistency pin (AC3), and it is the reason this flag does
+  # not appear anywhere in the output: a field naming the source would make the
+  # two files differ by construction and the pin would compare nothing.
+  defp verdict_source!(opts) do
+    case Keyword.get(opts, :verdicts_from, "manifest") do
+      v when v in ["manifest", "bucket-0"] ->
+        v
+
+      other ->
+        Mix.raise("--verdicts-from must be `manifest` or `bucket-0`, not #{inspect(other)}")
+    end
+  end
+
+  defp verdicts!("manifest", manifest, _denominator),
+    do: {MatchKey.rows_from_manifest(manifest), manifest_statuses(manifest)}
+
+  defp verdicts!("bucket-0", _manifest, denominator),
+    do: {Enum.map(denominator["checks"], & &1["key"]), bucket_zero_statuses(denominator)}
+
+  # G16 — the two artefacts' verdicts, compared as SETS of keys and then per key.
+  # A CONSISTENCY pin (ruling 9): both descend from the same accepted harness run,
+  # so agreement witnesses that nobody edited one without regenerating the other,
+  # and never that either is right.
+  defp cross_source!(manifest, denominator) do
+    a = Crosswalk.status_agreement(manifest_statuses(manifest), bucket_zero_statuses(denominator))
+
+    refuse_unless(a["key_sets"]["equal"], """
+    G16 — A1's manifest and A5's bucket-0 artefact do not carry the same check keys.
+      in the manifest, absent from bucket-0: #{length(a["key_sets"]["missing"])}
+      in bucket-0, absent from the manifest: #{length(a["key_sets"]["extra"])}
+    Compared by SET, both directions. Two artefacts that each total 175 can still be
+    about different 175s.
+    """)
+
+    refuse_unless(a["disagreements"] == [], """
+    G16 — #{length(a["disagreements"])} checks carry a DIFFERENT status in A1's manifest than
+    in A5's bucket-0 artefact, over an identical key set:
+    #{Enum.map_join(Enum.take(a["disagreements"], 10), "\n", fn d -> "  #{Enum.join(Enum.take(d["key"], 4), " / ")}\n    manifest #{d["left"]}  vs  bucket-0 #{d["right"]}" end)}
+    One of them has been edited without the other being regenerated. Which one is right
+    is not decidable here — that is why this refuses rather than picking.
+    """)
+
+    a
+  end
+
+  # G14 — the join's own key, refused on the GENERATOR's path.
+  #
+  # C1a checks this on the committed output, which is a check on the artefact and
+  # not a refusal by the generator (S9-15). Measured on MES-99: an edge duplicated
+  # verbatim built cleanly, 23 edges -> 24, bucket 5 15 -> 16.
+  defp keys!(edges_doc) do
+    dupes = Crosswalk.duplicate_edge_keys(edges_doc["edges"])
+
+    refuse_unless(dupes == [], """
+    G14 — repeated (member, claim, tag) triples (#{length(dupes)}). That triple is what the
+    crosswalk is keyed on, so a repeat counts one adjudication twice — in the bucket
+    frequencies, in the edge total and in every projection taken from them:
+    #{Enum.map_join(dupes, "\n", fn {m, c, t} -> "  #{m}\n    claim: #{c}\n    tag:   #{t}" end)}
+    """)
+
+    unmatched_keys = Enum.map(edges_doc["declared_unmatched"], & &1["member"]["register_key"])
+    unmatched_dupes = (unmatched_keys -- Enum.uniq(unmatched_keys)) |> Enum.uniq()
+
+    refuse_unless(unmatched_dupes == [], """
+    G14 — members declared unmatched more than once (#{length(unmatched_dupes)}):
+    #{Enum.map_join(unmatched_dupes, "\n", &("  " <> &1))}
+    """)
   end
 
   defp axis_index!(artefacts) do
@@ -288,7 +392,9 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     Enum.reverse(cells)
   end
 
-  defp population!(edges_doc, register, attribution, rows) do
+  defp population!(edges_doc, register, attribution, rows, attribution_path) do
+    declared = edges_doc["the_population_this_file_declares"]
+
     members =
       (Enum.map(edges_doc["edges"], & &1["member"]["register_key"]) ++
          Enum.map(edges_doc["declared_unmatched"], & &1["member"]["register_key"]))
@@ -318,6 +424,30 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       strays == [],
       "the population names members that are not ET-CC in the register:\n#{Enum.join(strays, "\n")}"
     )
+
+    # G15a — THE EXTERNAL ANCHOR. `members` above is derived by unioning the keys
+    # this very file carries, so a dropped row does not violate the universe, it
+    # SHRINKS it: measured on MES-99, dropping one edge and dropping one
+    # declared-unmatched member each built cleanly at 20 members, with the edge
+    # equation, the member equation and both set_compare directions still exact.
+    # An artefact internally perfect while being about less than it claims.
+    #
+    # The fix is only a fix if the population is denoted from OUTSIDE the file
+    # under validation. That is what the `selector` is: B2b's own register, the
+    # rows carrying a token of either kind, evaluated here rather than described.
+    selected = selected!(declared["selector"], attribution, attribution_path)
+
+    against_selector = Crosswalk.set_compare(selected, members)
+
+    refuse_unless(against_selector.equal, """
+    G15 — the population this file derives is not the set its own selector denotes.
+    Compared by SET in BOTH directions, never by count: a dropped row and an added one
+    reconcile perfectly on a count.
+      denoted by the selector, absent from this file (#{length(against_selector.missing)}):
+    #{Enum.map_join(against_selector.missing, "\n", &("      " <> &1))}
+      in this file, not denoted by the selector (#{length(against_selector.extra)}):
+    #{Enum.map_join(against_selector.extra, "\n", &("      " <> &1))}
+    """)
 
     tagged =
       attribution["rows"]
@@ -350,13 +480,41 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
 
     checks = edges_doc["edges"] |> Enum.map(& &1["tag"]) |> Enum.uniq() |> Enum.sort()
 
+    with_edges =
+      edges_doc["edges"] |> Enum.map(& &1["member"]["register_key"]) |> Enum.uniq() |> length()
+
+    # G15b — the four numbers the file declares about itself, against the four
+    # the generator derives. C1a read this block for its `rule` STRING and never
+    # checked one of its numbers. Weaker than G15a and kept beside it: counts
+    # agreeing is not sets agreeing, and `members_with_edges` is not a set G15a
+    # compares at all.
+    mismatches =
+      Crosswalk.declaration_mismatches(declared, %{
+        "members" => length(members),
+        "members_with_edges" => with_edges,
+        "members_declared_unmatched" => length(edges_doc["declared_unmatched"]),
+        "checks_addressed" => length(checks)
+      })
+
+    refuse_unless(mismatches == [], """
+    G15 — `the_population_this_file_declares` disagrees with what the generator derives:
+    #{Enum.map_join(mismatches, "\n", fn m -> "  #{m["field"]}: declared #{inspect(m["declared"])}, derived #{inspect(m["derived"])}" end)}
+    The block is the file's statement about itself. Left unchecked it is a comment.
+    """)
+
     %{
       "declared" => true,
-      "rule" => edges_doc["the_population_this_file_declares"]["rule"],
+      "rule" => declared["rule"],
+      "selector" =>
+        Map.put(
+          declared["selector"],
+          "evaluated",
+          "#{length(selected)} members denoted; set-equal to the derived population in both " <>
+            "directions (G15a). The counts block was checked field by field (G15b)."
+        ),
       "members" => members,
       "member_count" => length(members),
-      "members_with_edges" =>
-        edges_doc["edges"] |> Enum.map(& &1["member"]["register_key"]) |> Enum.uniq() |> length(),
+      "members_with_edges" => with_edges,
       "members_declared_unmatched" => length(edges_doc["declared_unmatched"]),
       "checks" => checks,
       "check_count" => length(checks),
@@ -373,6 +531,34 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
           "C1b = MES-104 (client leg), C1c = MES-105 (server leg + the 29 none_determinable)"
       }
     }
+  end
+
+  defp selected!(selector, attribution, attribution_path) do
+    refuse_unless(is_map(selector), """
+    G15 — `the_population_this_file_declares` carries no `selector`, so its `rule` is prose
+    and the population is derived from the file being validated. That is circular: a dropped
+    row shrinks the universe instead of violating it, and nothing goes red.
+    """)
+
+    refuse_unless(selector["source"] == attribution_path, """
+    G15 — the selector names #{inspect(selector["source"])} as its source, but this run was
+    given #{inspect(attribution_path)}. An anchor is only external if it is the anchor the
+    file names; silently accepting a substituted one would make the selector circular again
+    by another route.
+    """)
+
+    case Crosswalk.select(selector, attribution) do
+      {:ok, keys} ->
+        keys
+
+      {:error, reason} ->
+        Mix.raise("""
+        G15 — the selector did not evaluate: #{inspect(reason)}
+        A selector that cannot be run is prose with a JSON key. It is fail-closed on an
+        unknown test, an absent rows path, a key field a row does not carry, and a source
+        whose keys are not unique.
+        """)
+    end
   end
 
   defp keying!(in_denominator) do
@@ -577,7 +763,33 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
         "text" =>
           "Axis verdicts are JUDGEMENTS. Whether a claim really agrees with a conjunct is A3 §7's semantic-sameness residual and escalates per case; nothing here decides it."
       },
-      %{"id" => "X2", "text" => "The output is UNFALSIFIED until C3 (MES-99). Ruling 5."},
+      %{
+        "id" => "X2",
+        "text" =>
+          "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — the attempts were made and none " <>
+            "succeeded, which is not the same as proven. The bound is narrow. The generator now refuses a " <>
+            "duplicated join key (G14), a population that is not the set its external selector " <>
+            "denotes or that disagrees with its own declared counts (G15), and a manifest whose " <>
+            "verdicts have drifted from A5's bucket-0 artefact (G16). Every falsification class is " <>
+            "shown firing on a mutated input with the unmutated build as the negative control in " <>
+            "the same run, at the OS exit status and not only in-VM, and restored green after; " <>
+            "C1a's own thirteen are re-run with the after-restoration they lacked. A per-row " <>
+            "bucket-assignment drift is caught naming the row and the buckets it crosses " <>
+            "(conformance/controls/crosswalk_falsification_controls.exs). What that does NOT " <>
+            "establish: that any axis verdict is right (X1 is untouched — an axis verdict is a " <>
+            "judgement and no refusal can reach it), and that anything outside the declared 21 " <>
+            "members / 14 checks was falsified at all. C1b (MES-104) and C1c (MES-105) own the rest."
+      },
+      %{
+        "id" => "X6",
+        "text" =>
+          "The second-source re-derivation (`--verdicts-from bucket-0`) is a CONSISTENCY pin, " <>
+            "not a correctness one (ruling 9). A1's manifest and A5's bucket-0 artefact are " <>
+            "different files, different schemas, different generators — but both descend from the " <>
+            "SAME accepted harness run. Byte-identical output witnesses that nobody edited one " <>
+            "without regenerating the other. A wrong run would be wrong in both, and this pin " <>
+            "would agree just as firmly."
+      },
       %{
         "id" => "X3",
         "text" =>
@@ -594,6 +806,19 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
           "The population is 21 members and 14 checks. Two of the 14 enter through A3 §1's cardinality rule and §4's published worked edge, not through B2b's tokens — inherited, not newly adjudicated, and said so in the edges file."
       }
     ]
+  end
+
+  defp trust_status do
+    "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — over the declared 21-member / " <>
+      "14-check slice and no further. (Standing, not proven: the attempts were made and none " <>
+      "succeeded. `UNFALSIFIED` here previously meant `not yet attempted`.) " <>
+      "Ruling 5 asked for the control this artefact was unfalsified against: the generator " <>
+      "refuses on each falsification class with the mutation committed and shown firing, a " <>
+      "drifted per-row bucket assignment is caught naming the row and the buckets it crosses, " <>
+      "and the artefact re-derives byte-identically from a second source path. That last is a " <>
+      "CONSISTENCY pin, not a correctness claim (ruling 9, residual X6). Nothing here " <>
+      "establishes that an axis verdict is RIGHT (X1), and nothing outside the declared " <>
+      "population has been falsified at all — C1b (MES-104) and C1c (MES-105) own that."
   end
 
   defp reconcile!(a) do
@@ -650,7 +875,10 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
 
       axis provenance   harness checked: #{a["axis_provenance"]["harness_checked"]}#{if a["axis_provenance"]["harness_checked"], do: " (#{a["axis_provenance"]["axes_checked"]} axes verbatim at their spans)", else: ""}
 
-      trust             UNFALSIFIED until MES-99 (C3). Ruling 5.
+      cross-source      #{a["cross_source_agreement"]["compared"]} checks compared against A5's bucket-0 artefact, #{length(a["cross_source_agreement"]["disagreements"])} disagreements (G16)
+
+      trust             FALSIFICATION-TESTED by MES-99 (C3) and standing, over this declared slice only.
+                        Ruling 5.
     """)
   end
 

@@ -918,6 +918,17 @@
       }
     }
   ],
+  "cross_source_agreement": {
+    "agrees": true,
+    "compared": 175,
+    "disagreements": [],
+    "key_sets": {
+      "equal": true,
+      "extra": [],
+      "missing": []
+    },
+    "what_this_is": "A CONSISTENCY pin, not a correctness one (ruling 9). Both artefacts descend from the same accepted harness run: agreement witnesses that nobody edited one without regenerating the other, and a wrong run would be wrong in both."
+  },
   "declared_unmatched": [
     {
       "cg": "CG2",
@@ -1067,6 +1078,27 @@
       "why_it_is_a_third_state": "Distinct from bucket 1 ('we looked and there is no counterpart') and from A3 §6 state 4 ('nobody has adjudicated this member, and the guard FAILS it'). Reporting these as bucket 1 would assert of 260 members something false of every one."
     },
     "rule": "The ET-CC members that B2b (MES-82, docs/conformance/etcc-attribution.json) had already adjudicated — the 19 carrying a token plus the 2 carrying a contradicts_oc record. NOTHING outside it is adjudicated here.",
+    "selector": {
+      "any_of": [
+        {
+          "field": "tokens",
+          "test": "non_empty_list"
+        },
+        {
+          "field": "contradicts_oc",
+          "test": "not_null"
+        }
+      ],
+      "c1b_and_c1c_declare_their_own": "The selector is per-population and is read from this file, never hard-coded in the generator. C1b (MES-104) and C1c (MES-105) state the rule denoting THEIR leg rather than inheriting a literal 21.",
+      "denotes": "The 19 ET-CC members carrying an `oc:` or `oc:none` token plus the 2 carrying a contradicts_oc record — 21, and the same 21 `rule` states in prose.",
+      "evaluated": "21 members denoted; set-equal to the derived population in both directions (G15a). The counts block was checked field by field (G15b).",
+      "key_field": "key",
+      "rows_at": "rows",
+      "source": "docs/conformance/etcc-attribution.json",
+      "source_owner": "B2b (MES-82) — the ET-CC attribution register",
+      "what_this_is": "The EXECUTABLE half of `rule`. The generator evaluates it against the source named below and requires the result to be SET-EQUAL, in both directions, to the population this file derives. Prose only becomes a guard when something can run it.",
+      "why_it_must_name_a_file_other_than_this_one": "C1a derived the declared population by unioning the register_keys this file itself carries. So a dropped edge or a dropped declared_unmatched row did not violate the universe, it SHRANK it — measured on MES-99, both built cleanly at 20 members with the edge equation, the member equation and both set-comparison directions still exact. An artefact internally perfect while being about less than it claims. A selector that read this file's own rows would be circular by another route and would catch neither."
+    },
     "state_4_guard": "ran over these 21 members; 0 fired"
   },
   "residuals": [
@@ -1076,7 +1108,11 @@
     },
     {
       "id": "X2",
-      "text": "The output is UNFALSIFIED until C3 (MES-99). Ruling 5."
+      "text": "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — the attempts were made and none succeeded, which is not the same as proven. The bound is narrow. The generator now refuses a duplicated join key (G14), a population that is not the set its external selector denotes or that disagrees with its own declared counts (G15), and a manifest whose verdicts have drifted from A5's bucket-0 artefact (G16). Every falsification class is shown firing on a mutated input with the unmutated build as the negative control in the same run, at the OS exit status and not only in-VM, and restored green after; C1a's own thirteen are re-run with the after-restoration they lacked. A per-row bucket-assignment drift is caught naming the row and the buckets it crosses (conformance/controls/crosswalk_falsification_controls.exs). What that does NOT establish: that any axis verdict is right (X1 is untouched — an axis verdict is a judgement and no refusal can reach it), and that anything outside the declared 21 members / 14 checks was falsified at all. C1b (MES-104) and C1c (MES-105) own the rest."
+    },
+    {
+      "id": "X6",
+      "text": "The second-source re-derivation (`--verdicts-from bucket-0`) is a CONSISTENCY pin, not a correctness one (ruling 9). A1's manifest and A5's bucket-0 artefact are different files, different schemas, different generators — but both descend from the SAME accepted harness run. Byte-identical output witnesses that nobody edited one without regenerating the other. A wrong run would be wrong in both, and this pin would agree just as firmly."
     },
     {
       "id": "X3",
@@ -1107,7 +1143,7 @@
     "measure": "SET COMPARISON, not arithmetic — two counts agreeing is not two sets agreeing.",
     "negatives_are_enumerated_not_counted": "Bucket 1's members and bucket 2's checks are listed by name in `buckets`, and the not_yet_adjudicated remainder is counted with its owner named (A2d / ruling 4)."
   },
-  "trust_status": "UNFALSIFIED. Ruling 5: six bucket reports derived from an unfalsified crosswalk are assertions. C3 (MES-99) is the mutation control on this generator and lands this sprint; until it does, nothing downstream should treat these cells as established.",
+  "trust_status": "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — over the declared 21-member / 14-check slice and no further. (Standing, not proven: the attempts were made and none succeeded. `UNFALSIFIED` here previously meant `not yet attempted`.) Ruling 5 asked for the control this artefact was unfalsified against: the generator refuses on each falsification class with the mutation committed and shown firing, a drifted per-row bucket assignment is caught naming the row and the buckets it crosses, and the artefact re-derives byte-identically from a second source path. That last is a CONSISTENCY pin, not a correctness claim (ruling 9, residual X6). Nothing here establishes that an axis verdict is RIGHT (X1), and nothing outside the declared population has been falsified at all — C1b (MES-104) and C1c (MES-105) own that.",
   "verdict_mapping": {
     "observed_statuses": {
       "FAILURE": 4,

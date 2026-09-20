@@ -10,6 +10,26 @@
     "members_declared_unmatched": 5,
     "checks_addressed": 14,
     "rule": "The ET-CC members that B2b (MES-82, docs/conformance/etcc-attribution.json) had already adjudicated — the 19 carrying a token plus the 2 carrying a contradicts_oc record. NOTHING outside it is adjudicated here.",
+    "selector": {
+      "what_this_is": "The EXECUTABLE half of `rule`. The generator evaluates it against the source named below and requires the result to be SET-EQUAL, in both directions, to the population this file derives. Prose only becomes a guard when something can run it.",
+      "why_it_must_name_a_file_other_than_this_one": "C1a derived the declared population by unioning the register_keys this file itself carries. So a dropped edge or a dropped declared_unmatched row did not violate the universe, it SHRANK it — measured on MES-99, both built cleanly at 20 members with the edge equation, the member equation and both set-comparison directions still exact. An artefact internally perfect while being about less than it claims. A selector that read this file's own rows would be circular by another route and would catch neither.",
+      "source": "docs/conformance/etcc-attribution.json",
+      "source_owner": "B2b (MES-82) — the ET-CC attribution register",
+      "rows_at": "rows",
+      "key_field": "key",
+      "any_of": [
+        {
+          "field": "tokens",
+          "test": "non_empty_list"
+        },
+        {
+          "field": "contradicts_oc",
+          "test": "not_null"
+        }
+      ],
+      "denotes": "The 19 ET-CC members carrying an `oc:` or `oc:none` token plus the 2 carrying a contradicts_oc record — 21, and the same 21 `rule` states in prose.",
+      "c1b_and_c1c_declare_their_own": "The selector is per-population and is read from this file, never hard-coded in the generator. C1b (MES-104) and C1c (MES-105) state the rule denoting THEIR leg rather than inheriting a literal 21."
+    },
     "everything_else_is": "not_yet_adjudicated — a THIRD state, distinct from bucket 1 ('we looked, there is no counterpart') and from A3 §6 state 4 ('nobody has adjudicated this member'). 260 ET-CC members and 159 in-denominator checks are in it. C1b (MES-104, client leg) and C1c (MES-105, server leg) own them.",
     "why_14_checks_and_not_12": "B2b's tokens and contradicts_oc records address TWELVE distinct checks. Two more — HttpServerMethodNotFound404ping and HttpServerMethodNotFound404loggingsetLevel — enter through ONE member, MCP.Transport.StreamableHTTPStatelessTest's `initialize is gone → -32022; ping/logging.setLevel → -32601`. This is NOT new adjudication: match-relation.md §1's cardinality table names that member by file and line and rules it yields THREE edges, and §4's worked edge record then publishes the ping edge complete with its two axes and its `:partial` shape. A3 assigns the per-claim decomposition to C1 and C1a records the result. Dropping the two would leave a member the ratified rule says has three claims contributing one, which is the collapse §1 forbids."
   },

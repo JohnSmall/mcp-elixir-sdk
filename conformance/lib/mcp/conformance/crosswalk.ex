@@ -357,4 +357,157 @@ defmodule MCP.Conformance.Crosswalk do
       "by_a1s_six_field_key" => lost.(& &1)
     }
   end
+
+  @doc """
+  **G14** — the rows of an edge file that share a `(register_key, claim, tag)`
+  triple, which is the join's own key.
+
+  C1a tests this on the committed **output** (`crosswalk_controls.exs keying`).
+  A check on the artefact is not a refusal on the generator's path, and the
+  distinction is exactly S9-15's: measured on MES-99, an edge duplicated
+  verbatim built **cleanly**, taking the edge count 23 → 24 and bucket 5 from
+  15 → 16. Every downstream reconciliation still held, because a duplicate
+  shrinks nothing and contradicts nothing — it just counts a match twice.
+
+  Returns the offending triples, so the caller names them rather than reporting
+  a count.
+  """
+  @spec duplicate_edge_keys([map()]) :: [{String.t(), String.t(), String.t()}]
+  def duplicate_edge_keys(edges) do
+    triples = Enum.map(edges, &{&1["member"]["register_key"], &1["claim"], &1["tag"]})
+
+    (triples -- Enum.uniq(triples)) |> Enum.uniq() |> Enum.sort()
+  end
+
+  @doc """
+  **G15a** — evaluate a population `selector` against the artefact it names.
+
+  The selector is the executable half of the edges file's prose `rule`. It must
+  denote its population from a source **outside the file under validation**:
+  C1a derived the population by unioning the edges' and declared-unmatched
+  members' keys, so a dropped row did not violate the universe, it *shrank*
+  it, and the artefact stayed internally perfect while being about less than it
+  claimed. Measured on MES-99: dropping one edge and dropping one
+  declared-unmatched member each built cleanly, 21 members → 20.
+
+  Fail-closed in every direction a selector can be wrong: an unknown `test`, an
+  absent `rows_at`, a `key_field` a row does not carry, and a source whose keys
+  are not unique (a duplicate would silently merge two rows into one member and
+  hide the drop it was brought in to catch).
+
+  Supported tests are `non_empty_list` and `not_null` — deliberately two, and
+  deliberately named rather than a general expression language: a selector rich
+  enough to compute is a selector rich enough to lie.
+  """
+  @spec select(map(), map()) :: {:ok, [String.t()]} | {:error, term()}
+  def select(%{"rows_at" => rows_at, "key_field" => key_field, "any_of" => [_ | _] = tests}, src) do
+    with {:ok, preds} <- predicates(tests),
+         {:ok, rows} <- rows_at(src, rows_at),
+         {:ok, keys} <- keys_of(rows, key_field, preds) do
+      case (keys -- Enum.uniq(keys)) |> Enum.uniq() do
+        [] -> {:ok, Enum.sort(keys)}
+        dupes -> {:error, {:selector_source_has_duplicate_keys, dupes}}
+      end
+    end
+  end
+
+  def select(other, _src), do: {:error, {:malformed_selector, other}}
+
+  defp rows_at(src, rows_at) do
+    case Map.get(src, rows_at) do
+      rows when is_list(rows) -> {:ok, rows}
+      _ -> {:error, {:selector_names_no_such_rows, rows_at}}
+    end
+  end
+
+  defp keys_of(rows, key_field, preds) do
+    keys =
+      rows
+      |> Enum.filter(fn row -> Enum.any?(preds, & &1.(row)) end)
+      |> Enum.map(&Map.get(&1, key_field))
+
+    if Enum.any?(keys, &(not is_binary(&1))),
+      do: {:error, {:selector_key_field_is_not_a_string, key_field}},
+      else: {:ok, keys}
+  end
+
+  defp predicates(tests) do
+    Enum.reduce_while(tests, {:ok, []}, fn t, {:ok, acc} ->
+      case predicate(t) do
+        {:ok, f} -> {:cont, {:ok, [f | acc]}}
+        {:error, r} -> {:halt, {:error, r}}
+      end
+    end)
+  end
+
+  defp predicate(%{"field" => f, "test" => "non_empty_list"}),
+    do: {:ok, fn row -> is_list(Map.get(row, f)) and Map.get(row, f) != [] end}
+
+  defp predicate(%{"field" => f, "test" => "not_null"}),
+    do: {:ok, fn row -> Map.get(row, f) != nil end}
+
+  defp predicate(other), do: {:error, {:unknown_selector_test, other}}
+
+  @doc """
+  **G15b** — the four counts the edges file declares about itself, against the
+  four the generator derives.
+
+  C1a read `the_population_this_file_declares` for its `rule` string alone and
+  never checked a single one of its numbers against the derivation. Returns one
+  row per disagreeing field; `[]` is agreement.
+
+  This is a **weaker** check than G15a's set comparison and is kept beside it
+  rather than instead of it: counts agreeing is not sets agreeing (a dropped
+  row and an added one cancel), and sets agreeing is not the file's own
+  arithmetic being honest (`members_with_edges` is not a set this module
+  otherwise derives). Neither subsumes the other.
+  """
+  @spec declaration_mismatches(map(), map()) :: [map()]
+  def declaration_mismatches(declared, derived) do
+    ~w(members members_with_edges members_declared_unmatched checks_addressed)
+    |> Enum.flat_map(fn field ->
+      d = Map.get(declared, field)
+      a = Map.get(derived, field)
+
+      if d == a, do: [], else: [%{"field" => field, "declared" => d, "derived" => a}]
+    end)
+  end
+
+  @doc """
+  **G16** — two independently generated artefacts' per-check verdicts, compared
+  as sets of keys **and** per key.
+
+  A1's manifest and A5's bucket-0 artefact carry the same 175 six-field keys
+  and each carries its own `status`, written by different generators at
+  different tickets. Agreement between them is a **consistency** pin in exactly
+  ruling 9's sense: it witnesses that nobody edited one without regenerating
+  the other. It does **not** witness that either is right — both descend from
+  the same accepted harness run, so a wrong run is wrong in both.
+
+  Stated because the name would otherwise imply the stronger claim.
+  """
+  @spec status_agreement(map(), map()) :: map()
+  def status_agreement(left, right) do
+    keys = set_compare(Map.keys(left), Map.keys(right))
+
+    shared = left |> Map.keys() |> Enum.filter(&Map.has_key?(right, &1)) |> Enum.sort()
+
+    disagreements =
+      shared
+      |> Enum.filter(&(Map.fetch!(left, &1) != Map.fetch!(right, &1)))
+      |> Enum.map(
+        &%{"key" => &1, "left" => Map.fetch!(left, &1), "right" => Map.fetch!(right, &1)}
+      )
+
+    %{
+      "compared" => length(shared),
+      "key_sets" => %{"equal" => keys.equal, "missing" => keys.missing, "extra" => keys.extra},
+      "disagreements" => disagreements,
+      "agrees" => keys.equal and disagreements == [],
+      "what_this_is" =>
+        "A CONSISTENCY pin, not a correctness one (ruling 9). Both artefacts descend from the " <>
+          "same accepted harness run: agreement witnesses that nobody edited one without " <>
+          "regenerating the other, and a wrong run would be wrong in both."
+    }
+  end
 end

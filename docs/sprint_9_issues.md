@@ -629,3 +629,81 @@ sibling's entry; selecting the row-keyed entry instead would pin all ten at row 
 That is a better locator and it is not this ticket's to build: the PM ratified
 reclassification, and the coarser level is a true statement about what was resolved. It is
 recorded as locator residual L5 so C1b/C1c can take it.
+
+---
+
+## S9-20 — A population derived from the file being validated cannot be falsified by dropping a row: three of the brief's four falsification classes built cleanly
+
+**Found:** MES-99 (C3), 2026-09-20, by CODE_CREATOR, **before** planning — by running the
+brief's falsification classes against the real generator rather than reasoning about them.
+**Fixed here**, in the ticket ruling 5 designed to do exactly this.
+
+**This is not a defect that slipped C1a's merge gate,** and framing it as one would be
+wrong: C1a's (MES-97) acceptance criteria never required the generator to refuse a
+falsified input. Ruling 5 assigns that to C3, which is precisely why the crosswalk carried
+`trust_status: UNFALSIFIED` and why nothing downstream was allowed to build on it. The
+transferable finding is the *mechanism*, not a missed gate.
+
+**The mechanism.** Four probes through `mix conformance.crosswalk` at `559eda8`, with only
+the edges file swapped (temp copies; nothing written into the repo):
+
+```
+A  unmutated (positive control)      built — 21 members, 23 edges, {4a:2, 4b:2, 5:15}
+B  an edge duplicated verbatim       BUILT CLEANLY — edges 23->24, bucket 5: 15->16
+C  an edge dropped                   BUILT CLEANLY — members 21->20, edges 22, bucket 5: 15->14
+D  a declared_unmatched member       BUILT CLEANLY — members 21->20, unmatched 5->4
+   dropped
+```
+
+One cause behind C and D: `population!/4` derived the declared population by unioning the
+`register_key`s of `edges` and `declared_unmatched` — **the very file under validation**.
+So a dropped row did not violate the universe, it **shrank** it, and every downstream
+reconciliation still held: the edge equation, the member equation, and *both* directions of
+`set_compare`. The artefact stayed internally perfect while being about less than it
+claimed.
+
+**The general shape, and it has bitten this project before.** *If the universe a totality
+check quantifies over is read out of the artefact being checked, the check is vacuous* —
+totality holds by construction, and drop and duplicate both pass. It is the same failure as
+S9-15 (an AC an empty relation satisfies) with the quantifier moved one level out, and the
+remedy is the same: the population must be denoted from an **external anchor**, compared by
+**set** in both directions, never by count.
+
+**The one genuine S9-15-shaped observation against C1a.** C1a *did* test the duplicate-key
+condition — in `crosswalk_controls.exs keying`, against the committed **output**. A check on
+the artefact is not a refusal on the generator's path: it says what *was* built, and is
+silent about what *can* be built. That is the seam C3 closes (now G14, on the generator's
+path), and the distinction between the two is the part worth carrying forward.
+
+**The correction.** Three new generator refusals, each with its mutation committed:
+
+- **G14** — no two edges may share the `(register_key, claim, tag)` triple the join is keyed
+  on, and no member may be declared unmatched twice.
+- **G15** — the population must equal the set a machine-readable `selector` denotes, by set
+  comparison in **both** directions, *and* must match the four counts the edges file
+  declares about itself (which C1a read for their `rule` string and never checked). The
+  selector names `docs/conformance/etcc-attribution.json` — B2b's register, **a different
+  file** — and the generator refuses a selector that is absent, that names a source this run
+  was not given, that uses a test the evaluator does not implement, or whose source carries
+  duplicate keys. Counts and sets are kept as *separate* limbs: neither subsumes the other.
+- **G16** — A1's manifest and A5's bucket-0 artefact must carry the same 175 keys and the
+  same per-check status.
+
+**Two things the fix does not claim.** G15's `extra` direction and C1a's A3 §6 state-4 guard
+coincide on *this* data, because the selector's 21 and the attribution register's tagged 21
+are the same set; they are different predicates that happen to agree here, and on C1b's and
+C1c's populations they need not. And G16 is a **consistency** pin, not a correctness one
+(ruling 9): both artefacts descend from the same accepted harness run, so a wrong run is
+wrong in both and the pin agrees just as firmly.
+
+**Instrument:** `conformance/controls/crosswalk_falsification_controls.exs`, modes
+`refusals | drift | second_source | exit_status | all`. Fifteen refusals, each shown firing
+on a mutated input with the unmutated build as the negative control **in the same run**, and
+the unmutated build re-run **after** them. Each refusal asserts *which* guard the
+generator's message names — without that, fifteen green `refused` lines would pass on a
+generator that refused everything for one unrelated reason (S9-18's shape), and the
+`wrong_reason` mode is that matcher's own control, driven as a subprocess and required to
+exit 1 on a real refusal asserted against the wrong guard — C1a's `guards` mode ran its positive control
+only *before* its thirteen, so "restored green" was never established for it; that mode now
+re-runs the committed build at the end, and `refusals` drives it as a subprocess so the
+whole set of twenty-eight carries an after-restoration.
