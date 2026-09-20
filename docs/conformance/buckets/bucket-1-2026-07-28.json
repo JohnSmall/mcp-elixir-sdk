@@ -1,0 +1,78 @@
+{
+  "bucket": "1",
+  "count": 5,
+  "derivation": "projection",
+  "emptiness_reason": null,
+  "generated_by": "mix conformance.buckets",
+  "owner": "MES-98 (C2)",
+  "population_banner": "POPULATION: the declared 21-member / 14-check slice adjudicated by\nMES-97 (C1a). This is NOT the whole conformance picture. The full\ncomparison is 281 ET-CC members and 173 in-denominator OC checks; the\nremaining 260 members and 159 checks are not_yet_adjudicated -- a third\nstate, distinct from bucket 1 -- and are owned by C1b (MES-104, client\nleg) and C1c (MES-105, server leg + the 29 none_determinable).\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. When C1b and C1c land, this projection re-runs\nand fills.",
+  "predicate": "Declared-population ET-CC members carrying NO edge in `cells`: the complement of `members_with_edges` over the declared population, taken through `Crosswalk.project(:bucket_1, ...)`. Universe: the 21 declared members, never all 281.",
+  "projected_from": {
+    "bucket_zero": {
+      "bytes": 176409,
+      "file": "docs/conformance/bucket-0-2026-07-28.json",
+      "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
+    },
+    "crosswalk": {
+      "bytes": 60423,
+      "file": "docs/conformance/crosswalk-2026-07-28.json",
+      "sha256": "3a46a6cd4e7157570f40d5863e1c72c08712c9bb768f4ff64f2463f96b3e3844"
+    }
+  },
+  "revision": "2026-07-28",
+  "rows": [
+    {
+      "cg": "CG2",
+      "member": {
+        "module": "MCP.ClientConformanceTest",
+        "register_key": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
+        "test": "test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-outbound-meta"
+    },
+    {
+      "cg": "CG2",
+      "member": {
+        "module": "MCP.ClientConformanceTest",
+        "register_key": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
+        "test": "test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-inbound-parse"
+    },
+    {
+      "cg": "CG2",
+      "member": {
+        "module": "MCP.Protocol.CapabilitiesTest",
+        "register_key": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart",
+        "test": "test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-absent-yields-nil"
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) a NESTED object property IS reachable — every step is a `properties` key",
+        "test": "test annotation validity — the three constraints NO harness check covers (spec-only) a NESTED object property IS reachable — every step is a `properties` key"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG7-static-reachability"
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) an integer outside the IEEE 754 safe range is not mirrored, and says so",
+        "test": "test annotation validity — the three constraints NO harness check covers (spec-only) an integer outside the IEEE 754 safe range is not mirrored, and says so"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG7-integer-safe-range"
+    }
+  ],
+  "schema": "bucket-view/1",
+  "title": "ET-CC member with no OC counterpart",
+  "universe": {
+    "count": 21,
+    "name": "declared_members",
+    "of": "the declared ET-CC members, never all 281"
+  },
+  "what_this_is": "A PURE PROJECTION of the crosswalk named in `projected_from`, on the `predicate` above and on fields the crosswalk already stores. Nothing here re-computes a verdict, an edge shape or a bucket assignment. The rows are the crosswalk's own records verbatim, so a reader can check this view against the matrix byte for byte."
+}

@@ -1,0 +1,75 @@
+{
+  "bucket": "0",
+  "count": 2,
+  "derivation": "citation",
+  "emptiness_reason": null,
+  "generated_by": "mix conformance.buckets",
+  "owner": "MES-98 (C2)",
+  "population_banner": "POPULATION: the declared 21-member / 14-check slice adjudicated by\nMES-97 (C1a). This is NOT the whole conformance picture. The full\ncomparison is 281 ET-CC members and 173 in-denominator OC checks; the\nremaining 260 members and 159 checks are not_yet_adjudicated -- a third\nstate, distinct from bucket 1 -- and are owned by C1b (MES-104, client\nleg) and C1c (MES-105, server leg + the 29 none_determinable).\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. When C1b and C1c land, this projection re-runs\nand fills.",
+  "predicate": "CITATION, not a projection. The in-scope OC checks A5 (MES-70) classified `matchable: false` in `docs/conformance/bucket-0-2026-07-28.json`. Universe: the 175 checks of A1's manifest. They were removed from the denominator BEFORE the join — the crosswalk is built against 173 — so they appear in no cell and cannot be filtered out of one.",
+  "projected_from": {
+    "bucket_zero": {
+      "bytes": 176409,
+      "file": "docs/conformance/bucket-0-2026-07-28.json",
+      "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
+    },
+    "crosswalk": {
+      "bytes": 60423,
+      "file": "docs/conformance/crosswalk-2026-07-28.json",
+      "sha256": "3a46a6cd4e7157570f40d5863e1c72c08712c9bb768f4ff64f2463f96b3e3844"
+    }
+  },
+  "revision": "2026-07-28",
+  "rows": [
+    {
+      "bucket": 0,
+      "key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_initialize",
+        "Client sends correct Mcp-Method header on initialize request",
+        ""
+      ],
+      "leg": "client",
+      "matchable": false,
+      "name": "ClientMcpMethodHeader_initialize",
+      "reason": "Making this check evaluate would require the client to send a initialize request, which 2026-07-28 removed (SEP-2575). Driving it would mean being LESS conformant, which is the bucket-0 definition. Out of denominator.",
+      "reason_code": "removed_by_spec",
+      "scenario": "http-standard-headers",
+      "skip_gate": "client sent no initialize request",
+      "skip_site": "2181:1993",
+      "status": "SKIPPED",
+      "token": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_initialize"
+    },
+    {
+      "bucket": 0,
+      "key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_notifications_initialized",
+        "Client sends correct Mcp-Method header on notifications/initialized request",
+        ""
+      ],
+      "leg": "client",
+      "matchable": false,
+      "name": "ClientMcpMethodHeader_notifications_initialized",
+      "reason": "Making this check evaluate would require the client to send a notifications/initialized request, which 2026-07-28 removed (SEP-2575). Driving it would mean being LESS conformant, which is the bucket-0 definition. Out of denominator.",
+      "reason_code": "removed_by_spec",
+      "scenario": "http-standard-headers",
+      "skip_gate": "client sent no notifications/initialized request",
+      "skip_site": "2181:1993",
+      "status": "SKIPPED",
+      "token": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_notifications_initialized"
+    }
+  ],
+  "schema": "bucket-view/1",
+  "title": "out of denominator — unmatchable by construction",
+  "universe": {
+    "count": 175,
+    "name": "oc_checks_175",
+    "of": "A1's frozen manifest, before the 2 bucket-0 removals leave 173"
+  },
+  "what_this_is": "A CITATION, not a projection. These checks were removed from the denominator before the join, so they are in no crosswalk cell and cannot be filtered out of one. The rows are A5's records verbatim."
+}

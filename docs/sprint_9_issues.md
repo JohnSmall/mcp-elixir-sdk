@@ -707,3 +707,42 @@ exit 1 on a real refusal asserted against the wrong guard — C1a's `guards` mod
 only *before* its thirteen, so "restored green" was never established for it; that mode now
 re-runs the committed build at the end, and `refusals` drives it as a subprocess so the
 whole set of twenty-eight carries an after-restoration.
+
+---
+
+## S9-21 — A partition claim that does not name what it partitions: "every ET-CC member in exactly one bucket" is falsified by a member with three edges
+
+**Found:** MES-98 (C2), 2026-09-20, by CODE_CREATOR, while rendering C1a's crosswalk into
+the ten bucket views. **Not fixed here** — the wording is on the subject master page
+(276594833) and belongs to the E group (epic ruling 3). Recorded, routed to **E2**, and
+carried on the roll-up as residual `C2-R2`.
+
+**The claim.** The master page states E2's target as *"every ET-CC member appears in
+exactly one of buckets {1, 3, 4a, 4b, 5a, 5b, 6}"*.
+
+**It is already false on the declared slice.** `MCP.Transport.StreamableHTTPStatelessTest`
+(*"initialize is gone → -32022; ping/logging.setLevel → -32601"*) carries **three** edges,
+and they land in **4a, 4b and 4b**. One member, two buckets. Four other members carry 2–3
+edges each; those happen to land in one bucket apiece, so this is the only witness on this
+slice — and "the only witness today" is exactly the state in which a wording gets ratified
+and then falsified by the next population.
+
+**The mechanism, which is the transferable part.** The ET-CC × OC relation is
+**many-to-many**: one ET-CC member may make several claims, each against a different OC
+check, each with its own verdict pair and edge shape. The bucket function is
+`f(verdict pair, edge shape)` — a function of an **edge**, not of a member. So the
+partition is exact **per edge** and is merely *usually* exact per member. A partition claim
+must name the universe it partitions, and "member" and "edge" are different universes here
+even though the rows read alike.
+
+This is the same shape as MES-98's seam 1 (the ten buckets partition **three** universes —
+edges, declared members, declared checks — so "the sum of the ten equals the crosswalk row
+count" adds three kinds of thing and totals a number that counts nothing) and as
+S9-14's *rows vs ids*. The register of it: **whenever a document says "exactly one", read
+the next noun and ask whether the code quantifies over that noun.**
+
+**Instrument.** The roll-up's `C2-R2` residual **derives** its witness by grouping the
+committed cells by member and reporting every member whose edges span more than one bucket,
+so the residual cannot go stale against the data it describes — if a future population adds
+a second witness, the text names it without anyone editing the text. A hand-written "one
+member does this" would have been the S9-11 shape: a figure nothing re-derives.

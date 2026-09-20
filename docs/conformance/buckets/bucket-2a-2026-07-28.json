@@ -1,0 +1,38 @@
+{
+  "bucket": "2a",
+  "count": 0,
+  "derivation": "projection",
+  "emptiness_reason": {
+    "code": "by_adjudication",
+    "measured": "declared checks carrying no edge: 0 of 14.",
+    "result": "CHECKED, AND ZERO — within the declared slice. Not 'never asked'.",
+    "ticket_that_would_fill_it": "A future adjudication inside the declared slice, or C1b/C1c widening it.",
+    "what_would_fill_it": "a declared server-leg OC check that no ET-CC member covers. Over the declared 14, explicitly NOT over the 173: the 159 in-denominator checks outside the population are not bucket 2, they are not_yet_adjudicated (C1b/C1c)."
+  },
+  "generated_by": "mix conformance.buckets",
+  "owner": "MES-98 (C2)",
+  "population_banner": "POPULATION: the declared 21-member / 14-check slice adjudicated by\nMES-97 (C1a). This is NOT the whole conformance picture. The full\ncomparison is 281 ET-CC members and 173 in-denominator OC checks; the\nremaining 260 members and 159 checks are not_yet_adjudicated -- a third\nstate, distinct from bucket 1 -- and are owned by C1b (MES-104, client\nleg) and C1c (MES-105, server leg + the 29 none_determinable).\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. When C1b and C1c land, this projection re-runs\nand fills.",
+  "predicate": "Declared-population OC checks carrying NO edge in `cells`, whose token's leg segment is `server`. Complement taken through `Crosswalk.project(:bucket_2, ...)`, then filtered on the leg the token already carries. Universe: the server-leg checks of the declared 14, never all 173.",
+  "projected_from": {
+    "bucket_zero": {
+      "bytes": 176409,
+      "file": "docs/conformance/bucket-0-2026-07-28.json",
+      "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
+    },
+    "crosswalk": {
+      "bytes": 60423,
+      "file": "docs/conformance/crosswalk-2026-07-28.json",
+      "sha256": "3a46a6cd4e7157570f40d5863e1c72c08712c9bb768f4ff64f2463f96b3e3844"
+    }
+  },
+  "revision": "2026-07-28",
+  "rows": [],
+  "schema": "bucket-view/1",
+  "title": "OC check with no ET-CC match — server",
+  "universe": {
+    "count": 14,
+    "name": "declared_checks",
+    "of": "the declared in-population OC checks, never all 173"
+  },
+  "what_this_is": "A PURE PROJECTION of the crosswalk named in `projected_from`, on the `predicate` above and on fields the crosswalk already stores. Nothing here re-computes a verdict, an edge shape or a bucket assignment. The rows are the crosswalk's own records verbatim, so a reader can check this view against the matrix byte for byte."
+}

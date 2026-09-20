@@ -1,0 +1,111 @@
+{
+  "bucket": "4b",
+  "count": 2,
+  "derivation": "projection",
+  "emptiness_reason": null,
+  "generated_by": "mix conformance.buckets",
+  "owner": "MES-98 (C2)",
+  "population_banner": "POPULATION: the declared 21-member / 14-check slice adjudicated by\nMES-97 (C1a). This is NOT the whole conformance picture. The full\ncomparison is 281 ET-CC members and 173 in-denominator OC checks; the\nremaining 260 members and 159 checks are not_yet_adjudicated -- a third\nstate, distinct from bucket 1 -- and are owned by C1b (MES-104, client\nleg) and C1c (MES-105, server leg + the 29 none_determinable).\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. When C1b and C1c land, this projection re-runs\nand fills.",
+  "predicate": "`cells` where the stored `bucket` == \"4b\". Universe: the crosswalk's edges.",
+  "projected_from": {
+    "bucket_zero": {
+      "bytes": 176409,
+      "file": "docs/conformance/bucket-0-2026-07-28.json",
+      "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
+    },
+    "crosswalk": {
+      "bytes": 60423,
+      "file": "docs/conformance/crosswalk-2026-07-28.json",
+      "sha256": "3a46a6cd4e7157570f40d5863e1c72c08712c9bb768f4ff64f2463f96b3e3844"
+    }
+  },
+  "revision": "2026-07-28",
+  "rows": [
+    {
+      "axes": [
+        {
+          "axis": "jsonrpc_error_code",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "http_status",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "4b",
+      "bucket_attributes": [],
+      "claim": "a removed `ping` over HTTP yields JSON-RPC error -32601",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:90 — `assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601`, which is the code the check requires. The HTTP status is not asserted.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
+        "test": "test initialize is gone → -32022; ping/logging.setLevel → -32601"
+      },
+      "note": "INHERITED, NOT NEWLY ADJUDICATED: this is match-relation.md §4's worked edge record, published by A3 with these axes and this shape. A3 §1 assigns the per-claim decomposition of this member to C1; §4 then performs it. C1a records it rather than re-deciding it.",
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404-ping",
+        "HttpServerMethodNotFound404ping",
+        "If the server does not implement the removed RPC method 'ping', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping",
+      "verdicts": {
+        "et": "green",
+        "oc": "red",
+        "oc_status_at_accepted_run": "FAILURE",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "jsonrpc_error_code",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "http_status",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "4b",
+      "bucket_attributes": [],
+      "claim": "a removed `logging/setLevel` over HTTP yields JSON-RPC error -32601",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:91 — `assert error(post(opts(), rpc(\"logging/setLevel\", %{\"level\" => \"info\"})))[\"code\"] == -32_601`. Same shape as the ping claim, a different removed method.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
+        "test": "test initialize is gone → -32022; ping/logging.setLevel → -32601"
+      },
+      "note": "The third of A3 §1's three edges for this member.",
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404-logging-setlevel",
+        "HttpServerMethodNotFound404loggingsetLevel",
+        "If the server does not implement the removed RPC method 'logging/setLevel', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel",
+      "verdicts": {
+        "et": "green",
+        "oc": "red",
+        "oc_status_at_accepted_run": "FAILURE",
+        "oc_warning": false
+      }
+    }
+  ],
+  "schema": "bucket-view/1",
+  "title": "OC red, ET-CC green — incompleteness",
+  "universe": {
+    "count": 23,
+    "name": "edges",
+    "of": "the crosswalk's `cells`"
+  },
+  "what_this_is": "A PURE PROJECTION of the crosswalk named in `projected_from`, on the `predicate` above and on fields the crosswalk already stores. Nothing here re-computes a verdict, an edge shape or a bucket assignment. The rows are the crosswalk's own records verbatim, so a reader can check this view against the matrix byte for byte."
+}

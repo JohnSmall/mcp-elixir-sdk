@@ -1,0 +1,660 @@
+{
+  "counts": [
+    {
+      "bucket": "0",
+      "count": 2,
+      "derivation": "citation",
+      "emptiness_code": null,
+      "empty": false,
+      "title": "out of denominator — unmatchable by construction",
+      "universe": "oc_checks_175"
+    },
+    {
+      "bucket": "1",
+      "count": 5,
+      "derivation": "projection",
+      "emptiness_code": null,
+      "empty": false,
+      "title": "ET-CC member with no OC counterpart",
+      "universe": "declared_members"
+    },
+    {
+      "bucket": "2a",
+      "count": 0,
+      "derivation": "projection",
+      "emptiness_code": "by_adjudication",
+      "empty": true,
+      "title": "OC check with no ET-CC match — server",
+      "universe": "declared_checks"
+    },
+    {
+      "bucket": "2b",
+      "count": 0,
+      "derivation": "projection",
+      "emptiness_code": "by_adjudication",
+      "empty": true,
+      "title": "OC check with no ET-CC match — client",
+      "universe": "declared_checks"
+    },
+    {
+      "bucket": "3",
+      "count": 0,
+      "derivation": "projection",
+      "emptiness_code": "by_construction",
+      "empty": true,
+      "title": "OC green, ET-CC red",
+      "universe": "edges"
+    },
+    {
+      "bucket": "4a",
+      "count": 2,
+      "derivation": "projection",
+      "emptiness_code": null,
+      "empty": false,
+      "title": "OC red, ET-CC green — contradiction",
+      "universe": "edges"
+    },
+    {
+      "bucket": "4b",
+      "count": 2,
+      "derivation": "projection",
+      "emptiness_code": null,
+      "empty": false,
+      "title": "OC red, ET-CC green — incompleteness",
+      "universe": "edges"
+    },
+    {
+      "bucket": "5a",
+      "count": 0,
+      "derivation": "projection",
+      "emptiness_code": "by_slice",
+      "empty": true,
+      "title": "green in both — server",
+      "universe": "edges"
+    },
+    {
+      "bucket": "5b",
+      "count": 15,
+      "derivation": "projection",
+      "emptiness_code": null,
+      "empty": false,
+      "title": "green in both — client",
+      "universe": "edges"
+    },
+    {
+      "bucket": "6",
+      "count": 0,
+      "derivation": "projection",
+      "emptiness_code": "by_construction",
+      "empty": true,
+      "title": "red in both",
+      "universe": "edges"
+    },
+    {
+      "bucket": "escalated",
+      "count": 4,
+      "derivation": "projection",
+      "emptiness_code": null,
+      "empty": false,
+      "title": "escalated — in NO bucket, outside the ten",
+      "universe": "edges"
+    }
+  ],
+  "equations": [
+    {
+      "holds": true,
+      "measure": "The arithmetic is the VISIBLE half. The evidence is the set comparison in `partition`, both directions with the negatives enumerated — two counts agreeing is not two sets agreeing.",
+      "of": "the crosswalk's `cells`",
+      "sum": 23,
+      "terms": [
+        {
+          "count": 0,
+          "term": "3"
+        },
+        {
+          "count": 2,
+          "term": "4a"
+        },
+        {
+          "count": 2,
+          "term": "4b"
+        },
+        {
+          "count": 0,
+          "term": "5a"
+        },
+        {
+          "count": 15,
+          "term": "5b"
+        },
+        {
+          "count": 0,
+          "term": "6"
+        },
+        {
+          "count": 4,
+          "term": "escalated"
+        }
+      ],
+      "total": 23,
+      "universe": "edges"
+    },
+    {
+      "holds": true,
+      "measure": "The arithmetic is the VISIBLE half. The evidence is the set comparison in `partition`, both directions with the negatives enumerated — two counts agreeing is not two sets agreeing.",
+      "of": "the declared ET-CC members, never all 281",
+      "sum": 21,
+      "terms": [
+        {
+          "count": 5,
+          "term": "1"
+        },
+        {
+          "count": 16,
+          "term": "members_with_edges"
+        }
+      ],
+      "total": 21,
+      "universe": "declared_members"
+    },
+    {
+      "holds": true,
+      "measure": "The arithmetic is the VISIBLE half. The evidence is the set comparison in `partition`, both directions with the negatives enumerated — two counts agreeing is not two sets agreeing.",
+      "of": "the declared in-population OC checks, never all 173",
+      "sum": 14,
+      "terms": [
+        {
+          "count": 0,
+          "term": "2a"
+        },
+        {
+          "count": 0,
+          "term": "2b"
+        },
+        {
+          "count": 14,
+          "term": "checks_with_edges"
+        }
+      ],
+      "total": 14,
+      "universe": "declared_checks"
+    },
+    {
+      "holds": true,
+      "measure": "ARITHMETIC ONLY, and cited. Bucket 0's members are in no cell, so there is no set comparison to make against the crosswalk. A5 owns the classification.",
+      "of": "A1's frozen manifest — CITED from A5, not derived here",
+      "sum": 175,
+      "terms": [
+        {
+          "count": 173,
+          "term": "in_denominator"
+        },
+        {
+          "count": 2,
+          "term": "0"
+        }
+      ],
+      "total": 175,
+      "universe": "oc_checks_175"
+    }
+  ],
+  "generated_by": "mix conformance.buckets",
+  "owner": "MES-98 (C2)",
+  "partition": {
+    "bucket_1_is_the_declared_unmatched_set": {
+      "claim": "bucket 1, projected as a complement, equals the set the crosswalk declares unmatched",
+      "equal": true,
+      "extra": [],
+      "missing": []
+    },
+    "declared_checks": {
+      "claim": "every declared check is in 2a, in 2b, or carries an edge",
+      "equal": true,
+      "extra": [],
+      "missing": []
+    },
+    "declared_members": {
+      "claim": "every declared member is in bucket 1 or carries an edge",
+      "equal": true,
+      "extra": [],
+      "missing": []
+    },
+    "edges": {
+      "claim": "every cell reaches exactly one of the six edge views or the escalated view",
+      "equal": true,
+      "extra": [],
+      "missing": []
+    },
+    "measure": "SET COMPARISON in both directions, negatives ENUMERATED and not counted (ruling 4). Each of the three universes is compared separately, because the ten buckets partition three different sets.",
+    "pairwise_disjoint": {
+      "cross_universe_pairs": 33,
+      "overlapping": [],
+      "pairs": [
+        {
+          "a": "0",
+          "b": "1",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "0",
+          "b": "2a",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "0",
+          "b": "2b",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "0",
+          "b": "3",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "0",
+          "b": "4a",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "0",
+          "b": "4b",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "0",
+          "b": "5a",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "0",
+          "b": "5b",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "0",
+          "b": "6",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "0",
+          "b": "escalated",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "1",
+          "b": "2a",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "1",
+          "b": "2b",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "1",
+          "b": "3",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "1",
+          "b": "4a",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "1",
+          "b": "4b",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "1",
+          "b": "5a",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "1",
+          "b": "5b",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "1",
+          "b": "6",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "1",
+          "b": "escalated",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "2a",
+          "b": "2b",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "2a",
+          "b": "3",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "2a",
+          "b": "4a",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "2a",
+          "b": "4b",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "2a",
+          "b": "5a",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "2a",
+          "b": "5b",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "2a",
+          "b": "6",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "2a",
+          "b": "escalated",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "2b",
+          "b": "3",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "2b",
+          "b": "4a",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "2b",
+          "b": "4b",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "2b",
+          "b": "5a",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "2b",
+          "b": "5b",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "2b",
+          "b": "6",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "2b",
+          "b": "escalated",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": false
+        },
+        {
+          "a": "3",
+          "b": "4a",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "3",
+          "b": "4b",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "3",
+          "b": "5a",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "3",
+          "b": "5b",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "3",
+          "b": "6",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "3",
+          "b": "escalated",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "4a",
+          "b": "4b",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "4a",
+          "b": "5a",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "4a",
+          "b": "5b",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "4a",
+          "b": "6",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "4a",
+          "b": "escalated",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "4b",
+          "b": "5a",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "4b",
+          "b": "5b",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "4b",
+          "b": "6",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "4b",
+          "b": "escalated",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "5a",
+          "b": "5b",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "5a",
+          "b": "6",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "5a",
+          "b": "escalated",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "5b",
+          "b": "6",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "5b",
+          "b": "escalated",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        },
+        {
+          "a": "6",
+          "b": "escalated",
+          "shared": 0,
+          "shared_keys": [],
+          "within_universe": true
+        }
+      ],
+      "pairs_compared": 55,
+      "what_the_cross_universe_pairs_establish": "NOTHING, and they are reported as such. A bucket-1 key is a register key and a bucket-3 key is an (member, claim, tag) triple: they cannot collide, so their empty intersection is a fact about the key types and not about this data. Only the 22 within-universe pairs carry weight.",
+      "within_universe_pairs": 22
+    },
+    "who_proves_it": "E2 (the epic's exit) PROVES the partition. This ticket establishes it MECHANICALLY and reports the comparison; the distinction is deliberate and E2's result is not claimed here."
+  },
+  "population_banner": "POPULATION: the declared 21-member / 14-check slice adjudicated by\nMES-97 (C1a). This is NOT the whole conformance picture. The full\ncomparison is 281 ET-CC members and 173 in-denominator OC checks; the\nremaining 260 members and 159 checks are not_yet_adjudicated -- a third\nstate, distinct from bucket 1 -- and are owned by C1b (MES-104, client\nleg) and C1c (MES-105, server leg + the 29 none_determinable).\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. When C1b and C1c land, this projection re-runs\nand fills.",
+  "projected_from": {
+    "bucket_zero": {
+      "bytes": 176409,
+      "file": "docs/conformance/bucket-0-2026-07-28.json",
+      "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
+    },
+    "crosswalk": {
+      "bytes": 60423,
+      "file": "docs/conformance/crosswalk-2026-07-28.json",
+      "sha256": "3a46a6cd4e7157570f40d5863e1c72c08712c9bb768f4ff64f2463f96b3e3844"
+    }
+  },
+  "residuals": [
+    {
+      "id": "C2-R1",
+      "text": "POPULATION: the declared 21-member / 14-check slice adjudicated by MES-97 (C1a). This is NOT the whole conformance picture. The full comparison is 281 ET-CC members and 173 in-denominator OC checks; the remaining 260 members and 159 checks are not_yet_adjudicated -- a third state, distinct from bucket 1 -- and are owned by C1b (MES-104, client leg) and C1c (MES-105, server leg + the 29 none_determinable).  A count of zero in this view means zero WITHIN THAT SLICE. It does not mean zero in the suite. When C1b and C1c land, this projection re-runs and fills."
+    },
+    {
+      "id": "C2-R2",
+      "text": "THE MASTER PAGE'S MEMBER-LEVEL PARTITION WORDING IS ALREADY FALSIFIED ON THIS SLICE, and it is E2's to restate, not C2's. Page 276594833 states E2's target as \"every ET-CC member appears in exactly one of buckets {1, 3, 4a, 4b, 5a, 5b, 6}\". On this slice 1 member(s) carry edges in more than one bucket: MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601 -> [\"4a\", \"4b\", \"4b\"]. The partition is exact PER EDGE and is not a function per member. Recorded here and as S9-21; owner E2."
+    },
+    {
+      "id": "C2-R3",
+      "text": "BUCKET 0 IS A CITATION. Its two rows are A5's records verbatim and were removed from the denominator before the join, so nine of the ten views are projections and the tenth says on its face why it is not."
+    },
+    {
+      "id": "C2-R4",
+      "text": "That the views faithfully PROJECT the crosswalk. NOT that the crosswalk is internally consistent. A cell whose stored `bucket` disagrees with `f(verdicts, shape)` is rendered on its stored `bucket` and does not move — detecting that would mean computing the bucket function a SECOND time here, which is the two-records-that-can-disagree drift the single matrix exists to remove. Matrix consistency is C1's `reconcile!` and C3's falsification controls (PM ruling on MES-98, M3), and `bucket_projection_controls.exs movement` M3 shows the row not moving."
+    }
+  ],
+  "revision": "2026-07-28",
+  "schema": "bucket-roll-up/1",
+  "what_a_green_run_here_establishes": "That the views faithfully PROJECT the crosswalk. NOT that the crosswalk is internally consistent. A cell whose stored `bucket` disagrees with `f(verdicts, shape)` is rendered on its stored `bucket` and does not move — detecting that would mean computing the bucket function a SECOND time here, which is the two-records-that-can-disagree drift the single matrix exists to remove. Matrix consistency is C1's `reconcile!` and C3's falsification controls (PM ruling on MES-98, M3), and `bucket_projection_controls.exs movement` M3 shows the row not moving.",
+  "what_this_is": "The count roll-up, itself a projection: every figure below is derived from the same filters that wrote the views, in the same run. It makes the partition arithmetic VISIBLE. It does not prove the partition — E2 owns that proof as the epic's exit."
+}

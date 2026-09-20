@@ -1,0 +1,586 @@
+{
+  "bucket": "5b",
+  "count": 15,
+  "derivation": "projection",
+  "emptiness_reason": null,
+  "generated_by": "mix conformance.buckets",
+  "owner": "MES-98 (C2)",
+  "population_banner": "POPULATION: the declared 21-member / 14-check slice adjudicated by\nMES-97 (C1a). This is NOT the whole conformance picture. The full\ncomparison is 281 ET-CC members and 173 in-denominator OC checks; the\nremaining 260 members and 159 checks are not_yet_adjudicated -- a third\nstate, distinct from bucket 1 -- and are owned by C1b (MES-104, client\nleg) and C1c (MES-105, server leg + the 29 none_determinable).\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. When C1b and C1c land, this projection re-runs\nand fills.",
+  "predicate": "`cells` where the stored `bucket` == \"5\" AND the stored `oc_key[0]` == \"client\". Universe: the crosswalk's edges.",
+  "projected_from": {
+    "bucket_zero": {
+      "bytes": 176409,
+      "file": "docs/conformance/bucket-0-2026-07-28.json",
+      "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
+    },
+    "crosswalk": {
+      "bytes": 60423,
+      "file": "docs/conformance/crosswalk-2026-07-28.json",
+      "sha256": "3a46a6cd4e7157570f40d5863e1c72c08712c9bb768f4ff64f2463f96b3e3844"
+    }
+  },
+  "revision": "2026-07-28",
+  "rows": [
+    {
+      "axes": [
+        {
+          "axis": "retry_carries_the_request_state",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "echoed_request_state_is_verbatim",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the retry carries the server's requestState, byte-for-byte as sent",
+      "escalation": null,
+      "evidence": "client_defects_test.exs:161 — `assert retry[\"params\"][\"requestState\"] == \"opaque-server-token\"` against a server that sent exactly that string. One assertion discharges both axes: equality with the sent value entails the key's presence.",
+      "member": {
+        "module": "MCP.ClientDefectsTest",
+        "register_key": "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) a server requestState is echoed verbatim on the retry (control)",
+        "test": "test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) a server requestState is echoed verbatim on the retry (control)"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "sep-2322-client-request-state",
+        "sep-2322-client-request-state-echoed",
+        "MRTRClientRequestStateEchoed",
+        "Client MUST echo back the exact value of requestState when retrying",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/sep-2322-client-request-state/sep-2322-client-request-state-echoed/MRTRClientRequestStateEchoed",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "retry_omits_request_state_when_none_was_sent",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "when the server sent no requestState, the retry carries no requestState KEY",
+      "escalation": null,
+      "evidence": "client_defects_test.exs:90 — `refute Map.has_key?(retry[\"params\"], \"requestState\")` after an InputRequiredResult with the field absent. Key absence, not a nil value, which is the distinction the check's `!==undefined` test turns on.",
+      "member": {
+        "module": "MCP.ClientDefectsTest",
+        "register_key": "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an absent server requestState produces a retry with NO requestState key",
+        "test": "test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an absent server requestState produces a retry with NO requestState key"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "sep-2322-client-request-state",
+        "sep-2322-client-no-state-omitted",
+        "MRTRClientNoStateOmitted",
+        "If InputRequiredResult does not contain requestState, client MUST NOT include one in the retry",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/sep-2322-client-request-state/sep-2322-client-no-state-omitted/MRTRClientNoStateOmitted",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "retry_omits_request_state_when_none_was_sent",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "an explicit JSON null requestState is the same wire fact as an absent one, and also yields no key",
+      "escalation": null,
+      "evidence": "client_defects_test.exs:110ff — the discriminating sibling of the row above. Same axis, a different input; A3 §1 keeps them as two edges because they are two claims.",
+      "member": {
+        "module": "MCP.ClientDefectsTest",
+        "register_key": "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an explicit null server requestState also produces NO requestState key",
+        "test": "test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an explicit null server requestState also produces NO requestState key"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "sep-2322-client-request-state",
+        "sep-2322-client-no-state-omitted",
+        "MRTRClientNoStateOmitted",
+        "If InputRequiredResult does not contain requestState, client MUST NOT include one in the retry",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/sep-2322-client-request-state/sep-2322-client-no-state-omitted/MRTRClientNoStateOmitted",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "retry_meta_version_is_supported",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "retry_header_version_is_supported",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "the retry's `_meta` protocolVersion is the version the server offered",
+      "escalation": null,
+      "evidence": "client_defects_test.exs:308 — `assert retry[\"params\"][\"_meta\"][\"io.modelcontextprotocol/protocolVersion\"] == \"2026-07-28\"`. Driven through MockTransport, which has no HTTP layer, so the header axis is not merely unasserted — it is unreachable from this member.",
+      "member": {
+        "module": "MCP.ClientDefectsTest",
+        "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 naming a version we support is retried exactly once",
+        "test": "test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 naming a version we support is retried exactly once"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "request-metadata",
+        "sep-2575-client-retry-supported-version",
+        "ClientRetrySupportedVersion",
+        "Client retries with a supported version when first choice is rejected",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_protocol_version_header_present",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a POST whose message carries no `_meta` version still leaves with an mcp-protocol-version header",
+      "escalation": null,
+      "evidence": "client_defects_test.exs:276 — `assert {\"mcp-protocol-version\", \"2026-07-28\"} in headers` from `HTTPClient.build_headers/2`. The check's axis is presence; this asserts presence with a value.",
+      "member": {
+        "module": "MCP.ClientDefectsTest",
+        "register_key": "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) it falls back to its configured default when the message carries no _meta version",
+        "test": "test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) it falls back to its configured default when the message carries no _meta version"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "request-metadata",
+        "sep-2575-http-client-sends-version-header",
+        "ClientSendsVersionHeader",
+        "Client sends MCP-Protocol-Version header on every POST",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/request-metadata/sep-2575-http-client-sends-version-header/ClientSendsVersionHeader",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_protocol_version_header_present",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the POST leaves with an mcp-protocol-version header",
+      "escalation": null,
+      "evidence": "client_defects_test.exs:263 — `assert {\"mcp-protocol-version\", \"1999-01-01\"} in headers`. Presence, asserted as part of the equality.",
+      "member": {
+        "module": "MCP.ClientDefectsTest",
+        "register_key": "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) the transport derives mcp-protocol-version from the message's own _meta",
+        "test": "test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) the transport derives mcp-protocol-version from the message's own _meta"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "request-metadata",
+        "sep-2575-http-client-sends-version-header",
+        "ClientSendsVersionHeader",
+        "Client sends MCP-Protocol-Version header on every POST",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/request-metadata/sep-2575-http-client-sends-version-header/ClientSendsVersionHeader",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "version_header_equals_meta_version",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the mcp-protocol-version header equals the message's own `_meta` protocolVersion, not the transport's configured default",
+      "escalation": null,
+      "evidence": "client_defects_test.exs:251-263 — the transport is configured `2026-07-28`, the message's `_meta` says `1999-01-01`, and the header comes back `1999-01-01`. The configured default is the discriminator: an implementation that ignored `_meta` would pass a weaker test and fail this one.",
+      "member": {
+        "module": "MCP.ClientDefectsTest",
+        "register_key": "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) the transport derives mcp-protocol-version from the message's own _meta",
+        "test": "test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) the transport derives mcp-protocol-version from the message's own _meta"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "request-metadata",
+        "sep-2575-http-version-header-matches-meta",
+        "ClientVersionHeaderMatchesMeta",
+        "MCP-Protocol-Version header matches _meta.protocolVersion",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/request-metadata/sep-2575-http-version-header-matches-meta/ClientVersionHeaderMatchesMeta",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "retry_carries_the_request_state",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "echoed_request_state_is_verbatim",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the MRTR retry echoes the server's requestState verbatim",
+      "escalation": null,
+      "evidence": "client_test.exs:292 — `assert retry[\"params\"][\"requestState\"] == \"rs-1\"` against a server that sent `rs-1`.",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test MRTR client retry an input_required result is transparently completed via :on_input_required",
+        "test": "test MRTR client retry an input_required result is transparently completed via :on_input_required"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "sep-2322-client-request-state",
+        "sep-2322-client-request-state-echoed",
+        "MRTRClientRequestStateEchoed",
+        "Client MUST echo back the exact value of requestState when retrying",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/sep-2322-client-request-state/sep-2322-client-request-state-echoed/MRTRClientRequestStateEchoed",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "meta_carries_protocol_version",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "meta_carries_client_capabilities",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "every request's `_meta` carries both protocolVersion and clientCapabilities",
+      "escalation": null,
+      "evidence": "client_test.exs:152 and :154 — `meta[\"io.modelcontextprotocol/protocolVersion\"] == \"2026-07-28\"` and `is_map(meta[\"io.modelcontextprotocol/clientCapabilities\"])`. Two assertions, one per conjunct of the check's `l=a&&c`.",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test per-request _meta every request carries protocolVersion + client identity/capabilities",
+        "test": "test per-request _meta every request carries protocolVersion + client identity/capabilities"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "request-metadata",
+        "sep-2575-client-populates-meta",
+        "ClientPopulatesMeta",
+        "Client populates _meta on every request with the required fields (protocolVersion, clientCapabilities)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "meta_carries_client_info",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "every request's `_meta` carries clientInfo",
+      "escalation": null,
+      "evidence": "client_test.exs:153 — `meta[\"io.modelcontextprotocol/clientInfo\"][\"name\"] == \"test-client\"`. Indexing into it entails its presence.",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test per-request _meta every request carries protocolVersion + client identity/capabilities",
+        "test": "test per-request _meta every request carries protocolVersion + client identity/capabilities"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "request-metadata",
+        "sep-2575-client-sends-client-info",
+        "ClientSendsClientInfo",
+        "Client SHOULD include io.modelcontextprotocol/clientInfo in every request's _meta (spec PR #3002)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/request-metadata/sep-2575-client-sends-client-info/ClientSendsClientInfo",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "tools_call_was_made",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "argument_a_is_a_number",
+          "verdict": "silent"
+        },
+        {
+          "axis": "argument_b_is_a_number",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a tools/call to `add` with two numeric arguments is issued and returns their sum",
+      "escalation": null,
+      "evidence": "integration_test.exs:149-150 — `Client.call_tool(client, \"add\", %{\"a\" => 3, \"b\" => 4})` returns `\"7\"`. The call being made is asserted directly. The two type axes are NOT: the assertion is on the tool's RESULT, and a client sending `\"3\"`/`\"4\"` as JSON strings would be caught here only if this SDK's own `add` tool refused them — a property of the fixture server, not of this assertion. Silent, on the CG5 rule: a test whose subject is downstream of the requirement does not discharge it.",
+      "member": {
+        "module": "MCP.IntegrationTest",
+        "register_key": "MCP.IntegrationTest/test tools: list, echo, add, isError, unknown",
+        "test": "test tools: list, echo, add, isError, unknown"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "tools_call",
+        "tool-add-numbers",
+        "ToolAddNumbers",
+        "Validates that the add_numbers tool works correctly",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/tools_call/tool-add-numbers/ToolAddNumbers",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "capability_value_is_a_plain_object",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the encoded `roots` capability is a JSON object",
+      "escalation": null,
+      "evidence": "capabilities_test.exs:97 — `assert decoded[\"roots\"][\"listChanged\"] == true`. Indexing a key out of the decoded value entails it is a non-null, non-array object, which is the whole of the check's axis.",
+      "member": {
+        "module": "MCP.Protocol.CapabilitiesTest",
+        "register_key": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON",
+        "test": "test ClientCapabilities round-trips through JSON"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "request-metadata",
+        "sep-2575-client-declares-roots-capability",
+        "ClientDeclaresRootsCapability",
+        "Client declares valid roots capability if present",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/request-metadata/sep-2575-client-declares-roots-capability/ClientDeclaresRootsCapability",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "capability_value_is_a_plain_object",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the encoded `sampling` capability is a JSON object",
+      "escalation": null,
+      "evidence": "capabilities_test.exs:98 — `assert decoded[\"sampling\"] == %{}`. An empty map is a non-null, non-array object; equality with `%{}` establishes the type as well as the contents.",
+      "member": {
+        "module": "MCP.Protocol.CapabilitiesTest",
+        "register_key": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON",
+        "test": "test ClientCapabilities round-trips through JSON"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "request-metadata",
+        "sep-2575-client-declares-sampling-capability",
+        "ClientDeclaresSamplingCapability",
+        "Client declares valid sampling capability if present",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/request-metadata/sep-2575-client-declares-sampling-capability/ClientDeclaresSamplingCapability",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_protocol_version_header_present",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the POST leaves on the wire with an mcp-protocol-version header",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:285 — `headers_of(agent, 0)[\"mcp-protocol-version\"] == \"2030-01-01\"` read off a request the server actually received. Unlike the D-4 pair this is the wire, not `build_headers/2`.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test the version header rides the message (D-4), on the wire it matches the body _meta, not the transport's configured default",
+        "test": "test the version header rides the message (D-4), on the wire it matches the body _meta, not the transport's configured default"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "request-metadata",
+        "sep-2575-http-client-sends-version-header",
+        "ClientSendsVersionHeader",
+        "Client sends MCP-Protocol-Version header on every POST",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/request-metadata/sep-2575-http-client-sends-version-header/ClientSendsVersionHeader",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "version_header_equals_meta_version",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "on the wire, the mcp-protocol-version header equals the message's own `_meta` protocolVersion",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:273-285 — transport configured `2026-07-28`, message `_meta` `2030-01-01`, header received `2030-01-01`.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test the version header rides the message (D-4), on the wire it matches the body _meta, not the transport's configured default",
+        "test": "test the version header rides the message (D-4), on the wire it matches the body _meta, not the transport's configured default"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "request-metadata",
+        "sep-2575-http-version-header-matches-meta",
+        "ClientVersionHeaderMatchesMeta",
+        "MCP-Protocol-Version header matches _meta.protocolVersion",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/request-metadata/sep-2575-http-version-header-matches-meta/ClientVersionHeaderMatchesMeta",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    }
+  ],
+  "schema": "bucket-view/1",
+  "title": "green in both — client",
+  "universe": {
+    "count": 23,
+    "name": "edges",
+    "of": "the crosswalk's `cells`"
+  },
+  "what_this_is": "A PURE PROJECTION of the crosswalk named in `projected_from`, on the `predicate` above and on fields the crosswalk already stores. Nothing here re-computes a verdict, an edge shape or a bucket assignment. The rows are the crosswalk's own records verbatim, so a reader can check this view against the matrix byte for byte."
+}

@@ -1,0 +1,111 @@
+{
+  "bucket": "4a",
+  "count": 2,
+  "derivation": "projection",
+  "emptiness_reason": null,
+  "generated_by": "mix conformance.buckets",
+  "owner": "MES-98 (C2)",
+  "population_banner": "POPULATION: the declared 21-member / 14-check slice adjudicated by\nMES-97 (C1a). This is NOT the whole conformance picture. The full\ncomparison is 281 ET-CC members and 173 in-denominator OC checks; the\nremaining 260 members and 159 checks are not_yet_adjudicated -- a third\nstate, distinct from bucket 1 -- and are owned by C1b (MES-104, client\nleg) and C1c (MES-105, server leg + the 29 none_determinable).\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. When C1b and C1c land, this projection re-runs\nand fills.",
+  "predicate": "`cells` where the stored `bucket` == \"4a\". Universe: the crosswalk's edges.",
+  "projected_from": {
+    "bucket_zero": {
+      "bytes": 176409,
+      "file": "docs/conformance/bucket-0-2026-07-28.json",
+      "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
+    },
+    "crosswalk": {
+      "bytes": 60423,
+      "file": "docs/conformance/crosswalk-2026-07-28.json",
+      "sha256": "3a46a6cd4e7157570f40d5863e1c72c08712c9bb768f4ff64f2463f96b3e3844"
+    }
+  },
+  "revision": "2026-07-28",
+  "rows": [
+    {
+      "axes": [
+        {
+          "axis": "jsonrpc_error_code",
+          "verdict": "contradicts"
+        },
+        {
+          "axis": "http_status",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "4a",
+      "bucket_attributes": [],
+      "claim": "a removed `initialize` yields JSON-RPC error -32022",
+      "escalation": null,
+      "evidence": "dispatch_test.exs:84 — `assert resp[\"error\"][\"code\"] == -32_022` where the check REQUIRES -32601. Driven at `Dispatch.dispatch/3`, below the transport, so there is no HTTP status for the second axis to be about.",
+      "member": {
+        "module": "MCP.Server.DispatchTest",
+        "register_key": "MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)",
+        "test": "test initialize is removed → UnsupportedProtocolVersion (-32022)"
+      },
+      "note": "The epic's own worked 4a contradiction, at the dispatch layer.",
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404-initialize",
+        "HttpServerMethodNotFound404initialize",
+        "If the server does not implement the removed RPC method 'initialize', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "shape": "contradicting",
+      "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
+      "verdicts": {
+        "et": "green",
+        "oc": "red",
+        "oc_status_at_accepted_run": "FAILURE",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "jsonrpc_error_code",
+          "verdict": "contradicts"
+        },
+        {
+          "axis": "http_status",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "4a",
+      "bucket_attributes": [],
+      "claim": "a removed `initialize` over HTTP yields JSON-RPC error -32022",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:89 — `assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022` where the check requires -32601. Driven through the real plug, so an HTTP status EXISTS on the response; the test does not assert it, which is what makes the status axis silent rather than agreeing.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
+        "test": "test initialize is gone → -32022; ping/logging.setLevel → -32601"
+      },
+      "note": "The same contradiction as the dispatch row, one layer up. A3 §1's cardinality table names this member as yielding THREE edges; this is the first.",
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404-initialize",
+        "HttpServerMethodNotFound404initialize",
+        "If the server does not implement the removed RPC method 'initialize', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "shape": "contradicting",
+      "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
+      "verdicts": {
+        "et": "green",
+        "oc": "red",
+        "oc_status_at_accepted_run": "FAILURE",
+        "oc_warning": false
+      }
+    }
+  ],
+  "schema": "bucket-view/1",
+  "title": "OC red, ET-CC green — contradiction",
+  "universe": {
+    "count": 23,
+    "name": "edges",
+    "of": "the crosswalk's `cells`"
+  },
+  "what_this_is": "A PURE PROJECTION of the crosswalk named in `projected_from`, on the `predicate` above and on fields the crosswalk already stores. Nothing here re-computes a verdict, an edge shape or a bucket assignment. The rows are the crosswalk's own records verbatim, so a reader can check this view against the matrix byte for byte."
+}
