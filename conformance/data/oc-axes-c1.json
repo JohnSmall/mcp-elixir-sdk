@@ -18,11 +18,13 @@
   "polarity_rule": "`pass_when_true` — the expression being TRUE is the passing arm. `fail_when_true` — the expression being TRUE is the failing arm. Read off the branch the excerpt actually writes, never off the requirement's wording.",
   "preconditions_rule": "A list of `{guard, kind, on_failure, reads}`. A precondition is NOT an axis: its failure does not make the check fail, it makes the check not evaluate (SKIPPED). An ET claim cannot agree or contradict a precondition, so `shape_from_axes/1` never sees one.",
   "scope": {
-    "checks_decomposed": 49,
-    "population": "The OC checks C1a's, C1b-i's and C1b-ii's declared populations land an edge on, minus the ones A3 already decomposed. C1a contributed 11 (request-metadata, MRTR and tools_call); C1b-i contributes the 29 CG7 checks — `http-custom-headers` 18 + `http-invalid-tool-headers` 11 — ALL of them, including the 9 that carry no ET-CC edge, because a bucket-2 check must be decomposed before it can be shown to have no counterpart; C1b-ii contributes CG1's 9 — the in-denominator half of `http-standard-headers` — and NOT CG4's one, which A3 already holds.",
+    "checks_decomposed": 53,
+    "population": "The OC checks C1a's, C1b-i's, C1b-ii's and C1b-iii's declared populations land an edge on OR declare, minus the ones A3 already decomposed. C1a contributed 11 (request-metadata, MRTR and tools_call); C1b-i contributes the 29 CG7 checks — `http-custom-headers` 18 + `http-invalid-tool-headers` 11 — ALL of them, including the 9 that carry no ET-CC edge, because a bucket-2 check must be decomposed before it can be shown to have no counterpart; C1b-ii contributes CG1's 9 — the in-denominator half of `http-standard-headers` — and NOT CG4's one, which A3 already holds; C1b-iii contributes 4, and only 4, because its 15 declared checks were 11 already decomposed plus these.",
     "the_one_A3_already_has": "sep-2575-http-server-method-not-found-404-initialize / HttpServerMethodNotFound404initialize — C1a's 12th check. Read from A3's file, NOT re-extracted here. One fact, one home.",
     "the_one_A3_already_has_for_C1b_ii": "sep-2106-no-network-ref-deref / NoNetworkRefDereference — CG4's only check, and C1b-ii's DECLARED check population contains it. A3 decomposed it (one axis, `canary_not_fetched`, with `this.toolsListed?` recorded as a precondition on evaluability), so G19 is satisfied FROM A3'S FILE and it is deliberately absent here. Copying it in would be a second home for one fact (D4), and the two copies could then disagree with nothing noticing.",
-    "not_decomposed": "The remaining 123 of the 173. They are C1b-iii's (MES-104's sibling) and C1c's (MES-105)."
+    "the_four_C1b_iii_adds": "C1b-iii declares the three remaining CLIENT scenarios — `request-metadata` (8), `sep-2322-client-request-state` (5) and `tools_call` (2) — so G19 forces every one of the 15 to be decomposed before any of them can be reported in bucket 2. Eleven already were: all 8 of request-metadata and MRTRClientNoStateOmitted / MRTRClientRequestStateEchoed / ToolAddNumbers, decomposed by C1a. The FOUR added here are the residue, and they are residual for a reason that is visible in each row: MRTRClientJsonRpcIdDifferent and MRTRClientParallelIsolation decide on an accumulator filled several hundred bytes before the push; DefaultResultTypeComplete writes both its statuses as LITERALS and decides at an `if` the locator does not name as the row's; and WireSchemaValid's verdict is a FILTER on the violation `origin`, which is what scopes it to messages the implementation SENT. How many axes each yields was read at the build, not assumed: 1, 2, 1 and 1.",
+    "not_decomposed": "107 of the 173, ALL on the server leg, and they are C1c's (MES-105). The client leg is decomposed in full: 54 of the 66 in-denominator checks this file and A3's between them cover are client, which is the whole client leg, and the other 12 are A3's server rows. The server leg has 119 in-denominator checks, 12 of them already A3's, leaving 107.",
+    "the_figure_this_field_used_to_carry_was_WRONG_AT_ITS_OWN_COMMIT": "It said `The remaining 123 of the 173` and the answer at that commit was 111, not 123 — measured by regenerating the set from d5cac00's own copy of this file. The author's predicate is recoverable from the arithmetic: 173 - 49 - 1 = 123, i.e. this file's 49 rows plus the ONE A3 row the block above names by hand, forgetting A3's other TWELVE. So it was not drift and re-measuring at a later tip would not have found it; it was a subtraction over the wrong minuend from the day it was written. Recorded rather than quietly corrected, because an inherited figure that was never right is a different finding from one that went stale, and the next reader of this field should know which kind it was."
   },
   "checks": [
     {
@@ -1842,8 +1844,111 @@
         }
       ],
       "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "sep-2322-client-request-state", "sep-2322-client-jsonrpc-id-different", "MRTRClientJsonRpcIdDifferent", "The JSON-RPC id MUST be different between the initial request and the retry", ""],
+      "emitting_byte_span": [346440, 346787],
+      "emitting_span_provenance": "locator_row",
+      "context_excerpts": [
+        {"label": "retry_id_comparison", "byte_span": [346352, 346439], "why": "binds `u` and holds the single guarded push that decides the status; the emitting site reads `u.length===0` and nothing else"}
+      ],
+      "axes": [
+        {
+          "axis": "retry_id_differs_from_original",
+          "expr": "e===s",
+          "expr_found_in": "context:retry_id_comparison",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`let u=[];e===s&&u.push(...)` then `status:u.length===0?`SUCCESS`:`FAILURE`` — the retry REUSING the original id is the failing arm",
+          "requires": "the JSON-RPC id on the MRTR retry is not the id of the request that returned InputRequiredResult"
+        }
+      ],
+      "preconditions": [],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "sep-2322-client-request-state", "sep-2322-client-parallel-isolation", "MRTRClientParallelIsolation", "inputRequests and requestState MUST NOT be used for any other request the client may be sending", ""],
+      "emitting_byte_span": [348010, 348399],
+      "emitting_span_provenance": "locator_row",
+      "context_excerpts": [
+        {"label": "unrelated_call_accumulator", "byte_span": [347811, 348009], "why": "binds `a` and holds BOTH guarded pushes; the emitting site reads `a.length===0` and nothing else"}
+      ],
+      "axes": [
+        {
+          "axis": "unrelated_call_carries_no_input_responses",
+          "expr": "e!==void 0",
+          "expr_found_in": "context:unrelated_call_accumulator",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`e!==void 0&&a.push(`Unrelated tool call included inputResponses from another tool's MRTR flow`)` — the field being PRESENT on an unrelated call is the failing arm",
+          "requires": "a tools/call unrelated to the MRTR flow carries no `inputResponses`"
+        },
+        {
+          "axis": "unrelated_call_carries_no_request_state",
+          "expr": "t!==void 0",
+          "expr_found_in": "context:unrelated_call_accumulator",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the second guarded push into the same accumulator — `t!==void 0&&a.push(`Unrelated tool call included requestState from another tool's MRTR flow`)`",
+          "requires": "that same unrelated tools/call carries no `requestState`"
+        }
+      ],
+      "conjunction_note": "TWO axes, and they are not one behaviour spelled twice: `inputResponses` and `requestState` are separate fields written by separate code paths, and a client that leaked one without the other fails exactly one of the two pushes. Grouping them would hide a real partial.",
+      "preconditions": [],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "sep-2322-client-request-state", "sep-2322-default-result-type-complete", "DefaultResultTypeComplete", "Client MUST assume resultType \"complete\" when not specified", ""],
+      "emitting_byte_span": [348629, 348940],
+      "emitting_span_provenance": "locator_row",
+      "emitting_span_provenance_why": "ACCEPTED, with the residual stated on the row rather than left to be found. The locator pins this row at level CHECK, not ROW — the id reaches the site through the binding `i` — and it names FOUR sites for it. Two are this check's own pushes (the FAILURE arm at [348629, 348940] and the SUCCESS arm at [349056, 349247]); the other two are unrelated code that merely binds some `i` (`Object.prototype.hasOwnProperty.call(i,`requestState`)` at [535065, 535119] and `f.join(i,`.git`)` at [770581, 770597]). G18 would have accepted either of those two against this row, so the acceptance is weaker than it looks and is said so. The span taken is the FAILURE arm because it is the arm the predicate decides; the SUCCESS arm is addressed as a context excerpt so the polarity is read off both branches; and the id LITERAL is at NEITHER push, which is why `check_id_found_in` names the guard excerpt instead.",
+      "check_id_found_in": "context:result_type_guard",
+      "context_excerpts": [
+        {"label": "result_type_guard", "byte_span": [348504, 348628], "why": "THE PREDICATE AND THE ID LITERAL ARE BOTH HERE — `let i=`sep-2322-default-result-type-complete`;if(t){`. Both pushes write their `status` as a constant, so a reader who follows the locator to a push and stops finds no predicate at all: the S9-16 shape, second instance"},
+        {"label": "success_arm", "byte_span": [349056, 349247], "why": "the other arm of the same `if`, addressed so the polarity is read off both branches and not off one"}
+      ],
+      "axes": [
+        {
+          "axis": "no_retry_when_the_result_states_no_result_type",
+          "expr": "if(t){",
+          "expr_found_in": "context:result_type_guard",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`if(t){ ... status:`FAILURE`, errorMessage:`Client retried with inputResponses even though the result had no resultType (should default to complete)` ... return}` followed by the unguarded `status:`SUCCESS`` push — `t` TRUE is the failing arm",
+          "requires": "a result carrying no `resultType` is read as `complete`, so the client returns it to the caller and does NOT retry with `inputResponses`"
+        }
+      ],
+      "emitting_site_is_not_the_predicate": "Both pushes write their `status` as a LITERAL. The verdict is the `if(t)` 125 bytes earlier, and the FAILURE arm additionally splices any already-recorded row for this id out of `checks` before pushing — so the result is decided, and any earlier result for it erased, at a site the locator does not name as this row's.",
+      "preconditions": [],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "tools_call", "wire-schema-valid", "WireSchemaValid", "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version", ""],
+      "emitting_byte_span": [325368, 325721],
+      "emitting_span_provenance": "locator_row",
+      "context_excerpts": [
+        {"label": "implementation_violation_filter", "byte_span": [325325, 325367], "why": "THE PREDICATE IS THE FILTER. `o` — the accumulator the emitting site reads as `o.length===0` — is `t.filter(e=>e.origin===`implementation`)`, so what the check scores is not `were there violations` but `were there violations ATTRIBUTED TO THE IMPLEMENTATION`"},
+        {"label": "evaluability_gate", "byte_span": [325081, 325162], "why": "holds the early `return[]` that decides whether this check is emitted at all"},
+        {"label": "harness_origin_sibling", "byte_span": [325721, 326015], "why": "the `origin===`harness`` sibling, addressed so the SCOPE of this check is evidence and not inference: violations in messages the HARNESS sent are scored by `WireSchemaHarnessError`, never here"}
+      ],
+      "axes": [
+        {
+          "axis": "no_schema_violation_in_a_message_the_implementation_sent",
+          "expr": "e.origin===`implementation`",
+          "expr_found_in": "context:implementation_violation_filter",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`o=t.filter(e=>e.origin===`implementation`)` then `status:o.length===0?`SUCCESS`:`FAILURE`` — a violation whose origin is the implementation is what fails it",
+          "requires": "every JSON-RPC message OUR side put on the wire validates against the published spec schema for the negotiated version"
+        }
+      ],
+      "scope_note": "ONE DIRECTION ONLY, and that is why this row carries the `harness_origin_sibling` excerpt. The filter scopes the check to messages the IMPLEMENTATION SENT. Nothing here scores what the implementation does with a message it RECEIVED — those violations carry `origin===`harness``, go to `WireSchemaHarnessError`, and that check is a bug report about the harness rather than a score of our parsing. An ET claim about DECODING an inbound message is therefore silent on this axis by the SHAPE of the check, not by a reading of it — and C1b-iii's bucket-1 records for the inbound decoders rest on this excerpt.",
+      "preconditions": [
+        {
+          "guard": "if(n===0&&t.length===0)return[]",
+          "kind": "observation",
+          "on_failure": "check_not_emitted",
+          "reads": "whether any message was observed at all; a run that validated nothing emits no check rather than a vacuous SUCCESS"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
     }
   ],
-  "emitting_span_provenance_rule": "Every row states where its `emitting_byte_span` came from, and the generator CHECKS the statement against MES-97's locator output (G18). `locator_row` — the span is one the locator names for this row's key, and the generator requires that. `locator_row_rejected` — the locator's own `rung_pin_level` for that row is NOT `row`, so it does not claim to pin the row; the span it names belongs to a sibling and is refused. The generator then requires the reverse: the pin level must not be `row`, the span used must NOT be one of the locator's, and a reason must be given. Four of C1b-i's 29 rows are rejections; C1a's 11 are all `locator_row`, and were so before this field existed. C1b-ii's 9 are all `locator_row` TOO, and each carries an `emitting_span_provenance_why` anyway — not because G18 demands one on an acceptance (it does not), but because the locator pins these rows at level CHECK and names three sites for every one of them, so G18 would accept the Name push against a Method row and vice versa. The acceptance is honest and the residual it leaves is stated on the row rather than in this rule.",
-  "check_id_location_rule": "C1a's 11 rows all carry their check id as a backtick literal at the emitting site, and the generator required exactly that. Fourteen of C1b-i's rows emit with `id:c` — a value COMPUTED from the argument's value and declared type — and ten more with `id:t`, a loop variable. So a row may name `check_id_found_in`: the pool entry whose bytes must carry the id literal. It defaults to `evaluator_excerpt`, which is C1a's behaviour unchanged, and the named entry must exist. This WEAKENS the guard from `the id is at the emitting site` to `the id is verbatim at an ADDRESSED span this row names`, and that is said plainly rather than left to be noticed: what it still refuses is a row whose id occurs nowhere it points at."
+  "emitting_span_provenance_rule": "Every row states where its `emitting_byte_span` came from, and the generator CHECKS the statement against MES-97's locator output (G18). `locator_row` — the span is one the locator names for this row's key, and the generator requires that. `locator_row_rejected` — the locator's own `rung_pin_level` for that row is NOT `row`, so it does not claim to pin the row; the span it names belongs to a sibling and is refused. The generator then requires the reverse: the pin level must not be `row`, the span used must NOT be one of the locator's, and a reason must be given. Four of C1b-i's 29 rows are rejections; C1a's 11 are all `locator_row`, and were so before this field existed. C1b-ii's 9 are all `locator_row` TOO, and each carries an `emitting_span_provenance_why` anyway — not because G18 demands one on an acceptance (it does not), but because the locator pins these rows at level CHECK and names three sites for every one of them, so G18 would accept the Name push against a Method row and vice versa. The acceptance is honest and the residual it leaves is stated on the row rather than in this rule. C1b-iii's 4 are all `locator_row`, and ONE of them — DefaultResultTypeComplete — is the same shape again and carries its own `emitting_span_provenance_why`: the locator pins it at level CHECK and names FOUR sites, two of which are not this check's pushes at all but unrelated code binding some `i`. Saying so on the row is the whole remedy available here; G18 cannot distinguish them, and pretending otherwise would be the AC7 error.",
+  "check_id_location_rule": "C1a's 11 rows all carry their check id as a backtick literal at the emitting site, and the generator required exactly that. Fourteen of C1b-i's rows emit with `id:c` — a value COMPUTED from the argument's value and declared type — and ten more with `id:t`, a loop variable. So a row may name `check_id_found_in`: the pool entry whose bytes must carry the id literal. It defaults to `evaluator_excerpt`, which is C1a's behaviour unchanged, and the named entry must exist. This WEAKENS the guard from `the id is at the emitting site` to `the id is verbatim at an ADDRESSED span this row names`, and that is said plainly rather than left to be noticed: what it still refuses is a row whose id occurs nowhere it points at. C1b-iii adds one more user of the field — DefaultResultTypeComplete, which emits with `id:i` where `i` is bound to the literal one statement earlier, so the literal is in the guard excerpt and nowhere near either push."
 }

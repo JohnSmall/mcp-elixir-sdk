@@ -410,9 +410,9 @@ defmodule MCP.Conformance.Crosswalk do
 
   ## The selector language — named, non-computing, and fail-closed
 
-  Leaf **tests**: `non_empty_list`, `not_null`, `equals` (which takes a
-  `value`). **Combinators**: `any_of`, `all_of`, `none_of`, each taking a
-  non-empty list of nodes, and each node is itself a leaf or a combinator, so
+  Leaf **tests**: `non_empty_list`, `not_null`, `is_null`, `equals` (which
+  takes a `value`). **Combinators**: `any_of`, `all_of`, `none_of`, each taking
+  a non-empty list of nodes, and each node is itself a leaf or a combinator, so
   they nest.
 
   Deliberately named rather than a general expression language: a selector rich
@@ -423,10 +423,24 @@ defmodule MCP.Conformance.Crosswalk do
   `rows_at`, on a `key_field` a row does not carry, and on a source whose keys
   are not unique.
 
-  `is_null` is **not** implemented, and that is worth saying rather than
-  leaving as an absence: C1b-i has no use for it, and a selector test nothing
-  calls is a guard on a dead path (S9-15). C1b-iii adds it when its own
-  population needs it.
+  `is_null` was **not** implemented until C1b-iii, on the stated ground that a
+  selector test nothing calls is a guard on a dead path (S9-15). C1b-iii's own
+  population — *the client members carrying no CG* — is the caller, so it
+  arrives with the population that needs it and not before.
+
+  It is `has_key?(row, f) and get(row, f) == nil`, **not** `get(row, f) == nil`,
+  and the difference is the whole of its fail-closed behaviour. Under the
+  weaker reading an **absent** field and a **null** one are the same thing, so
+  a B2b schema change that dropped `cg` entirely would make the leaf denote
+  **every row** and silently re-declare the population as all 281 — the
+  artefact would still reconcile, over a universe nobody chose. Under the
+  reading implemented here an absent field denotes **nothing**, the denotation
+  collapses to the empty set, and G15a goes red naming every member of the file
+  as `extra`. Measured at this tip: all 281 attribution rows carry the `cg`
+  key, so the two readings are **indistinguishable on live data** and only a
+  unit separates them. Both limbs are unit-tested, and the absent-field case is
+  the one that would have been left out. It is the same refusal the `equals`
+  leaf's own comment already makes, made positively.
   """
   @spec select(map(), map()) :: {:ok, [String.t()]} | {:error, term()}
   def select(%{"rows_at" => rows_at, "key_field" => key_field} = selector, src) do
@@ -514,6 +528,14 @@ defmodule MCP.Conformance.Crosswalk do
 
   defp leaf(%{"field" => f, "test" => "not_null"}),
     do: {:ok, fn row -> Map.get(row, f) != nil end}
+
+  # `has_key?` AND `== nil`, never `== nil` alone. An ABSENT field denotes
+  # NOTHING here, and that is the fail-closed direction: a source that stopped
+  # carrying the field would otherwise denote every row and re-declare the
+  # population silently, whereas denoting nothing collapses the selector's
+  # result to the empty set and G15a reds naming every member as `extra`.
+  defp leaf(%{"field" => f, "test" => "is_null"}),
+    do: {:ok, fn row -> Map.has_key?(row, f) and Map.get(row, f) == nil end}
 
   # `equals` compares to a STRING and refuses anything else. A test that could
   # compare to a list or a map would be comparing structures the anchor's
@@ -712,6 +734,82 @@ defmodule MCP.Conformance.Crosswalk do
         not MapSet.member?(held, figure),
         do: {path, figure, phrase}
   end
+
+  @doc """
+  **G23** — what an `absence_searches` registry entry must hold to stand behind
+  a bucket-1 row, returned as the list of ways this one does not.
+
+  `tag` is the row's own `oc:none/<reason>/<native-id>` token; the entry's
+  `kind` must equal that reason slug. A4 defines two — `no-oc-scenario` (the
+  suite has no such check anywhere) and `no-oc-fixture-case` (the scenario
+  exists and is matched, but its fixture holds no case exercising the
+  constraint) — and citing a fixture-case search from a scenario-slug row is
+  the one way the two quietly merge. Keeping them apart is the whole reason
+  there are two.
+
+  The rest is what makes a recorded zero a MEASUREMENT rather than a silence:
+  `hits: 0` (an entry is by definition a search that found none), a population
+  to have looked in, a runnable `pattern`, the `subject` searched for, at least
+  one positive control so the sweep can be shown to have reached the
+  population, and the near miss — because a zero with the near miss named is a
+  search and a bare zero is a grep a later reader will re-run, find the word,
+  and mistrust.
+
+  Here rather than in the task so gate 5 covers it, the same reason G21's three
+  functions are.
+  """
+  @spec absence_entry_problems(String.t() | nil, String.t(), map()) :: [tuple()]
+  def absence_entry_problems(tag, id, entry), do: absence_entry_problems(tag, id, entry, %{})
+
+  @doc """
+  As `absence_entry_problems/3`, plus the ONE-FACT-ONE-HOME check between the
+  entry and the `row` that names it.
+
+  A bucket-1 row carries the search's subject and its near miss in prose,
+  because that prose is what a reviewer reads and sending them to a registry
+  id to find it would be worse. But a copy is a second home (D4), and two
+  copies can disagree with nothing noticing — MES-109 edited three near misses
+  after measuring them and had to edit each in two places. So where the row
+  carries a copy it is required to be the entry's, character for character.
+  A row carrying neither field is unaffected; this is not a demand that every
+  row copy them.
+  """
+  @spec absence_entry_problems(String.t() | nil, String.t(), map(), map()) :: [tuple()]
+  def absence_entry_problems(tag, id, entry, row) do
+    copies =
+      for {row_field, entry_field} <- [
+            {"the_search_that_found_none", "subject"},
+            {"the_near_miss_that_is_not_a_counterpart", "near_miss"}
+          ],
+          copy = Map.get(row, row_field),
+          is_binary(copy),
+          copy != Map.get(entry, entry_field),
+          do: {:row_copy_has_drifted_from_the_entry, id, row_field}
+
+    base_entry_problems(tag, id, entry) ++ copies
+  end
+
+  defp base_entry_problems(tag, id, entry) do
+    slug =
+      case String.split(tag || "", "/") do
+        ["oc:none", reason | _] -> reason
+        _ -> nil
+      end
+
+    [
+      {entry["hits"] == 0, {:entry_does_not_record_zero, id, entry["hits"]}},
+      {is_map(entry["population"]), {:entry_names_no_population, id}},
+      {non_empty?(entry["pattern"]), {:entry_has_no_pattern, id}},
+      {non_empty?(entry["subject"]), {:entry_has_no_subject, id}},
+      {non_empty?(entry["near_miss"]), {:entry_names_no_near_miss, id}},
+      {entry["positive_controls"] not in [nil, []], {:entry_has_no_positive_control, id}},
+      {entry["kind"] == slug, {:entry_kind_is_not_the_rows_reason_slug, id, entry["kind"], slug}}
+    ]
+    |> Enum.reject(&elem(&1, 0))
+    |> Enum.map(&elem(&1, 1))
+  end
+
+  defp non_empty?(v), do: is_binary(v) and v != ""
 
   @doc """
   Every `{path, phrase}` in `required` whose phrase is absent from the statement

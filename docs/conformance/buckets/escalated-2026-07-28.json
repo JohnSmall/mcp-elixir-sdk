@@ -1,11 +1,11 @@
 {
   "bucket": null,
-  "count": 8,
+  "count": 10,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 68 declared ET-CC members and 39\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 213 members and\n120 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 14 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "population_banner": "POPULATION: this projection covers 110 declared ET-CC members and 54\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 171 members and\n116 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 3 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
   "predicate": "`cells` where the stored `bucket` is null and an `escalation` is recorded.",
   "projected_from": {
     "bucket_zero": {
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 281457,
+      "bytes": 399832,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "b150085b2c5a31e6ecfe8a4815528dd05b385ccac4296d5cbaebfa541ae46bbf"
+      "sha256": "e36e1469ddf92bbd9bc38d36301c46fe2f57b6b00823562b4820d553981c1b85"
     }
   },
   "revision": "2026-07-28",
@@ -324,14 +324,88 @@
         "oc_status_at_accepted_run": "SUCCESS",
         "oc_warning": false
       }
+    },
+    {
+      "axes": [
+        {
+          "axis": "no_schema_violation_in_a_message_the_implementation_sent",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": null,
+      "bucket_attributes": [],
+      "claim": "`encode!/1` returns the JSON string bare rather than wrapped in an `{:ok, _}` tuple",
+      "escalation": "no_axis_contact — every axis of this check is silent. A3 §2 rules that covering zero of one axis is no match, not a partial one; generalised to 1 axes that is this edge. §3's table has no row for it, so it escalates rather than being bucketed.",
+      "evidence": "protocol_test.exs:182-185 — `json = Protocol.encode!(request)`, then `assert is_binary(json)` and `assert Jason.decode!(json)[\"method\"] == \"ping\"`. The subject is the BANG VARIANT'S RETURN TYPE: that encode!/1 hands back the binary its non-bang sibling wraps in a tuple. The second assert reads one field to show the binary is the right message, which is a sanity check on the test rather than a claim about wire validity — and how_a_silent_axis_was_decided is conservative by rule, so an incidental assertion is not coverage.",
+      "member": {
+        "module": "MCP.ProtocolTest",
+        "register_key": "MCP.ProtocolTest/test encode!/1 returns JSON string",
+        "test": "test encode!/1 returns JSON string"
+      },
+      "note": "ALL AXES SILENT, so this escalates as `no_axis_contact` and is not bucketed. Dropping the edge instead would make the member look edge-less and therefore bucket 1, which asserts `we looked and there is no counterpart` — false here: the counterpart is WireSchemaValid, the same check its two siblings above match, and what is true is that this claim does not touch its predicate. That is the distinction `the_all_silent_case` was written for, and this is its fifth instance.",
+      "oc_key": [
+        "client",
+        "tools_call",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/tools_call/wire-schema-valid/WireSchemaValid",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "retry_meta_version_is_supported",
+          "verdict": "silent"
+        },
+        {
+          "axis": "retry_header_version_is_supported",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": null,
+      "bucket_attributes": [],
+      "claim": "an error whose code is not -32022 produces no retry at all",
+      "escalation": "no_axis_contact — every axis of this check is silent. A3 §2 rules that covering zero of one axis is no match, not a partial one; generalised to 2 axes that is this edge. §3's table has no row for it, so it escalates rather than being bucketed.",
+      "evidence": "client_defects_test.exs:412-413 — `assert {:error, %MCP.Protocol.Error{code: -32_601}} = Task.await(task)` and `assert length(MockTransport.sent_messages(transport)) == 1`. There is no retry, so neither axis — both of which are predicates ON a retry, decided where the excerpt writes `p.status=` after one has happened — is touched.",
+      "member": {
+        "module": "MCP.ClientDefectsTest",
+        "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a non-32022 error is never retried",
+        "test": "test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a non-32022 error is never retried"
+      },
+      "note": "ALL AXES SILENT, escalated as `no_axis_contact`. This is the FOURTH member of the D-3 block and it lands exactly where its three siblings did: C1b-i recorded `a -32022 offering only versions we do not support is surfaced, never retried` and two others as all-silent edges against this same check, on this same reasoning. It carried no CG, so it fell to C1b-iii while its siblings went with C1a's tokens — a split by the accident of tagging, not by anything about the claims, and the adjudication is the same one.",
+      "oc_key": [
+        "client",
+        "request-metadata",
+        "sep-2575-client-retry-supported-version",
+        "ClientRetrySupportedVersion",
+        "Client retries with a supported version when first choice is rejected",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
     }
   ],
   "schema": "escalated-view/1",
   "title": "escalated — routed to the PM, in NO bucket",
   "universe": {
-    "count": 71,
+    "count": 76,
     "name": "edges",
     "of": "the crosswalk's `cells`"
   },
-  "what_this_is": "THE ELEVENTH VIEW, OUTSIDE THE TEN. The crosswalk's own rule is that \"an escalation is NOT a bucket and is never counted as one\" (match-relation.md §7). These rows are therefore visibly excluded by rule, each with its reason, rather than invisibly dropped — and rendering one into a bucket would launder a PM escalation into an adjudication, which is the one thing this ticket must not do. AC2's partition holds over the 63 BUCKETED edges; these 8 are enumerated here and are counted in the edge equation as their own term."
+  "what_this_is": "THE ELEVENTH VIEW, OUTSIDE THE TEN. The crosswalk's own rule is that \"an escalation is NOT a bucket and is never counted as one\" (match-relation.md §7). These rows are therefore visibly excluded by rule, each with its reason, rather than invisibly dropped — and rendering one into a bucket would launder a PM escalation into an adjudication, which is the one thing this ticket must not do. AC2's partition holds over the 66 BUCKETED edges; these 10 are enumerated here and are counted in the edge equation as their own term."
 }

@@ -9,6 +9,7 @@
 #     mix run conformance/controls/crosswalk_controls.exs selectors
 #     mix run conformance/controls/crosswalk_controls.exs composition
 #     mix run conformance/controls/crosswalk_controls.exs absence
+#     mix run conformance/controls/crosswalk_controls.exs totality
 #     mix run conformance/controls/crosswalk_controls.exs citations
 #     mix run conformance/controls/crosswalk_controls.exs statements
 #     mix run conformance/controls/crosswalk_controls.exs all
@@ -54,6 +55,7 @@ defmodule CrosswalkControls do
   def run(["selectors"]), do: selectors()
   def run(["composition"]), do: composition()
   def run(["absence"]), do: absence()
+  def run(["totality"]), do: totality()
   def run(["citations"]), do: citations()
   def run(["statements"]), do: statements()
 
@@ -67,13 +69,14 @@ defmodule CrosswalkControls do
     selectors()
     composition()
     absence()
+    totality()
     citations()
     statements()
   end
 
   def run(_) do
     IO.puts(
-      "usage: noop | keying | locator | pins | guards | vacuum | selectors | composition | absence | citations | all"
+      "usage: noop | keying | locator | pins | guards | vacuum | selectors | composition | absence | totality | citations | statements | all"
     )
 
     System.halt(2)
@@ -510,14 +513,38 @@ defmodule CrosswalkControls do
     # member is G15a's `extra` limb: the member is in the file and not in the
     # set its selector denotes. The mutation is unchanged and still caught; the
     # label now names the guard that catches it.
+    # MES-109 re-cut the PROBE, not the guard. It used to name a specific
+    # client member, and C1b-iii homed that member — so the mutation started
+    # tripping G14 (declared unmatched twice) and the control reported the
+    # wrong guard. That is the failure mode `refuses/3` exists for, and it is
+    # worth recording that it worked: a probe naming a row the file did not
+    # have when it was written is a probe with an expiry date. The probe is now
+    # DERIVED — the first ET-CC member the register holds that no edges file
+    # carries — so homing any particular member cannot stale it again.
     refuses("8  a member in the population that its own selector does not denote", "G15a", fn ->
+      carried =
+        MapSet.new(
+          Enum.map(edges["edges"] ++ edges["declared_unmatched"], & &1["member"]["register_key"]) ++
+            Enum.map(
+              read(@edges)["edges"] ++ read(@edges)["declared_unmatched"],
+              & &1["member"]["register_key"]
+            )
+        )
+
+      key =
+        read(@register)["rows"]
+        |> Enum.filter(&(&1["label"] == "ET-CC"))
+        |> Enum.map(& &1["key"])
+        |> Enum.reject(&MapSet.member?(carried, &1))
+        |> Enum.sort()
+        |> hd()
+
+      [module, test] = String.split(key, "/", parts: 2)
+
       untagged = %{
-        "member" => %{
-          "module" => "MCP.ClientTest",
-          "test" => "test requests list_tools returns tools",
-          "register_key" => "MCP.ClientTest/test requests list_tools returns tools"
-        },
-        "tag" => "oc:none/fabricated/MES97-state-4-probe"
+        "member" => %{"module" => module, "test" => test, "register_key" => key},
+        "tag" => "oc:none/fabricated/MES97-state-4-probe",
+        "the_search_that_found_none" => "none — a probe, not an adjudication"
       }
 
       build_edges(update_in(edges, ["declared_unmatched"], &[untagged | &1]))
@@ -717,11 +744,19 @@ defmodule CrosswalkControls do
     # the same rows. A selector checked against itself proves nothing.
     tagged? = fn r -> (r["tokens"] || []) != [] or r["contradicts_oc"] != nil end
 
+    # `no_cg?` is written the way the LEAF is written, not the way the data
+    # happens to be: `has_key? and == nil`, so that this independently computed
+    # expectation would ALSO be empty on a source that dropped the field. An
+    # expectation written as `&1["cg"] == nil` would agree with the weaker leaf
+    # and the pair below could not separate them.
+    no_cg? = fn r -> Map.has_key?(r, "cg") and Map.get(r, "cg") == nil end
+
     expectations = [
       {"the client file's members", client["the_population_this_file_declares"]["selector"], src,
        rows
        |> Enum.filter(
-         &(&1["leg"] == "client" and (&1["cg"] in ~w(CG7 CG1 CG2 CG4) or tagged?.(&1)))
+         &(&1["leg"] == "client" and
+             (&1["cg"] in ~w(CG7 CG1 CG2 CG4) or no_cg?.(&1) or tagged?.(&1)))
        )
        |> Enum.map(& &1["key"])},
       {"the residual file's members", resid["the_population_this_file_declares"]["selector"], src,
@@ -736,7 +771,10 @@ defmodule CrosswalkControls do
              "http-custom-headers",
              "http-invalid-tool-headers",
              "http-standard-headers",
-             "json-schema-ref-no-deref"
+             "json-schema-ref-no-deref",
+             "request-metadata",
+             "sep-2322-client-request-state",
+             "tools_call"
            ])
        )
        |> Enum.map(& &1["token"])}
@@ -883,6 +921,102 @@ defmodule CrosswalkControls do
 
     halt_unless(length(all_checks) - length(fewer_checks) == 9)
 
+    # --- MES-109 (C1b-iii): the `is_null` leaf, and the ONE decision in it ----
+    #
+    # The leaf is `has_key?(row, f) and get(row, f) == nil`. The weaker reading
+    # `get(row, f) == nil` is indistinguishable from it on the anchor this
+    # project ships — all 281 rows carry `cg` — so live data cannot separate
+    # them and only this pair can. The second half is what makes the first half
+    # a measurement rather than a coincidence.
+    is_null_leaf = %{
+      "source" => @attribution,
+      "rows_at" => "rows",
+      "key_field" => "key",
+      "all_of" => [
+        %{"field" => "leg", "test" => "equals", "value" => "client"},
+        %{"field" => "cg", "test" => "is_null"}
+      ]
+    }
+
+    {:ok, nulls} = Crosswalk.select(is_null_leaf, src)
+
+    expected_nulls =
+      rows |> Enum.filter(&(&1["leg"] == "client" and no_cg?.(&1))) |> Enum.map(& &1["key"])
+
+    cn = Crosswalk.set_compare(expected_nulls, nulls)
+
+    IO.puts(
+      "\n  IS_NULL  `leg = client AND cg is_null` on the real anchor: #{length(nulls)} denoted"
+    )
+
+    verdict(
+      "POSITIVE — set-equal to an independently computed set, both directions",
+      cn.equal
+    )
+
+    halt_unless(cn.equal)
+
+    # THE LOAD-BEARING HALF. Strip the `cg` KEY from every row — not set it to
+    # null, REMOVE it — and re-run the same selector against the same machinery.
+    # Under the implemented leaf the denotation collapses to nothing and G15a
+    # would red naming every member of the file as `extra`. Under
+    # `get(row,f) == nil` it would denote ALL of them and the population would
+    # be silently re-declared, reconciling perfectly over a universe nobody
+    # chose. The two readings differ by 107 rows on this anchor and by 0 on the
+    # live data, which is the whole reason this control exists.
+    keyless = %{"rows" => Enum.map(rows, &Map.delete(&1, "cg"))}
+    {:ok, on_keyless} = Crosswalk.select(is_null_leaf, keyless)
+
+    weaker = fn r -> Map.get(r, "cg") == nil end
+
+    would_be =
+      keyless["rows"] |> Enum.filter(&(&1["leg"] == "client" and weaker.(&1))) |> length()
+
+    IO.puts(
+      "  MUTATION  the `cg` KEY removed from all #{length(rows)} rows: " <>
+        "#{length(nulls)} -> #{length(on_keyless)}   (the weaker `get == nil` reading would give #{would_be})"
+    )
+
+    verdict(
+      "an ABSENT field denotes NOTHING — fail-closed, so a dropped field reds at G15a " <>
+        "instead of re-declaring the population",
+      on_keyless == []
+    )
+
+    halt_unless(on_keyless == [])
+
+    verdict(
+      "and the two readings really are separable — the weaker one denotes #{would_be} here, " <>
+        "not 0, so this is a measured difference and not a restatement",
+      would_be > 0
+    )
+
+    halt_unless(would_be > 0)
+
+    # And the leaf dropped from the file's OWN selector, which measures C1b-iii's
+    # "42 new homes, not 55" from the other side — the same route the CG drops
+    # above took for C1b-ii's 20.
+    without_null =
+      update_in(member_sel, ["all_of"], fn [leg, %{"any_of" => leaves}] ->
+        [leg, %{"any_of" => Enum.reject(leaves, &(&1["test"] == "is_null"))}]
+      end)
+
+    {:ok, no_null} = Crosswalk.select(without_null, src)
+
+    IO.puts(
+      "  MUTATION  the `cg is_null` leaf dropped from the member `any_of`: " <>
+        "#{length(conj)} -> #{length(no_null)}  (-#{length(conj) - length(no_null)})"
+    )
+
+    verdict(
+      "dropping it removes 42 members and not 55 — the 13 no-CG rows carrying C1a tokens " <>
+        "are still held by the `tokens` limb, which is C1b-iii's new-homes figure derived " <>
+        "without counting homes",
+      length(conj) - length(no_null) == 42
+    )
+
+    halt_unless(length(conj) - length(no_null) == 42)
+
     IO.puts("""
 
       The generator catches every one of them — a population that is not the set its
@@ -898,6 +1032,18 @@ defmodule CrosswalkControls do
       the tokens limb), CG4 -1. 9 + 10 + 1 = 20, the number of new homes, arrived at
       without counting homes. A figure that two independent routes agree on is a figure;
       one route's arithmetic is a claim.
+
+      C1b-iii's figure comes out the same way and the arithmetic closes over the whole
+      leg. Dropping `cg is_null` removes 42, not the 55 B2b attributes: the other 13
+      carry C1a tokens and the `tokens` limb still holds them. CG7 -27, CG1 -9, CG2 -10,
+      CG4 -1, is_null -42 is 89, and the remaining 18 are the C1a rows the `tokens` and
+      `contradicts_oc` limbs hold. Read that last step carefully rather than as an
+      addition: every one of those 18 ALSO falls in some CG slice (13 no-CG, 3 CG2, 2
+      CG7), which is precisely why each contributes nothing to that slice's marginal
+      drop and why the marginals sum to 89 and not to 107. The 18 are the overlap the
+      generator derives independently at G22a, arrived at here from the other side.
+      Every one of these drop figures is measured on the shipped anchor by the same
+      machinery that evaluates the committed selector.
     """)
   end
 
@@ -1314,7 +1460,7 @@ defmodule CrosswalkControls do
           "--register",
           @register,
           "--attribution",
-          @attribution,
+          Keyword.get(overrides, :attribution, @attribution),
           "--a3-axes",
           @a3_axes,
           "--c1-axes",
@@ -1400,74 +1546,174 @@ defmodule CrosswalkControls do
   # predicate path, so it cannot distinguish "this term is absent" from "this
   # matcher cannot fire".
 
-  @searched_fields ~w(scenario id name description)
+  # THE SEARCHED TEXT IS A1's SIX-FIELD KEY, joined with " | " — leg, scenario,
+  # check_id, name, description, discriminator. Not a four-field subset: the
+  # registry's `population.fields` says six, and MES-109 measured the two apart
+  # the hard way. `(?i)capabilit` returns 12 over the six and 11 over the four,
+  # so a pattern calibrated on one field set and re-run over the other silently
+  # changes its own population — which is why the control compares the RECORDED
+  # control figures against the measured ones rather than only checking they are
+  # non-zero. That comparison is what caught it.
+  #
+  # The separator is load-bearing too: several registry patterns use
+  # `[^|]{0,40}` to mean "within this row's own field", and that only means
+  # anything if the fields are actually delimited.
+  @searched_fields ~w(leg scenario check_id name description discriminator)
 
   defp absence do
-    header("ABSENCE — the two searches C1b-ii records as returning zero, both halves")
+    header("ABSENCE — every registered search re-run over its own named population")
 
+    # MES-109 (C1b-iii) rewrote this from a HAND-LISTED PAIR to a sweep over the
+    # registry itself. The old form named two patterns in the control and drove
+    # them; a third record added to an edges file would have been outside it
+    # without anyone noticing, which is the self-declaring-population defect.
+    # The universe is now the `absence_searches` block of every edges file
+    # given, and the id resolution in both directions is the generator's (G23c),
+    # so an entry the control does not reach is an entry no row names.
     rows = manifest_rows()
-    IO.puts("  population: #{@manifest} — #{length(rows)} check rows\n")
-
     halt_unless(length(rows) == 175)
 
-    cases = [
-      {"CG2 / SEP-2133 extensions negotiation", ~r/extension/i,
-       "13 CG2 members are `no-oc-scenario` on this zero"},
-      {"CG1 / a message carrying no method", ~r/\bno method\b|methodless|without a method/i,
-       "`CG1-methodless-carries-no-routing-headers` rests on this zero"}
-    ]
+    entries =
+      Enum.flat_map([@client_edges, @edges], fn path ->
+        Enum.map(read(path)["absence_searches"] || [], &{path, &1})
+      end)
 
-    for {label, pattern, rests_on} <- cases do
-      hits = sweep(rows, pattern)
+    IO.puts(
+      "  #{length(entries)} registered searches across #{length([@client_edges, @edges])} edges files"
+    )
 
-      IO.puts("  #{label}")
+    IO.puts("  manifest population: #{@manifest} — #{length(rows)} check rows\n")
 
-      IO.puts(
-        "    #{inspect(pattern)} over #{Enum.join(@searched_fields, " + ")} -> #{length(hits)}"
+    halt_unless(entries != [])
+
+    for {path, e} <- entries do
+      {population_label, hits, total} = run_search(e, rows)
+
+      IO.puts("  #{e["id"]}  #{e["kind"]}  — #{population_label}")
+      IO.puts("    #{e["pattern"]} -> #{hits}")
+
+      verdict("#{e["id"]}: THE ZERO, re-measured here and not read off the file", hits == 0)
+      halt_unless(hits == 0)
+
+      verdict(
+        "#{e["id"]}: and the file RECORDS that zero — a registry entry is a search that found none",
+        e["hits"] == 0
       )
 
-      verdict("THE ZERO: #{rests_on}", hits == [])
-      halt_unless(hits == [])
+      halt_unless(e["hits"] == 0)
 
-      # POSITIVE CONTROL — the sweep reached the population.
-      controls = for t <- ~w(header schema response), do: {t, length(sweep(rows, ~r/#{t}/i))}
+      # POSITIVE CONTROL — the entry's OWN controls, re-run here. The entry
+      # names them, so a search whose controls were chosen to be vacuous is
+      # visible in the file rather than hidden in this script.
+      pcs =
+        for c <- e["positive_controls"], do: {c["term"], elem(run_pattern(e, c["term"], rows), 0)}
 
       IO.puts(
-        "    positive control, same rows same machinery: " <>
-          Enum.map_join(controls, ", ", fn {t, n} -> "/#{t}/i -> #{n}" end)
+        "    positive control, same population same machinery: " <>
+          Enum.map_join(pcs, ", ", fn {t, n} -> "#{t} -> #{n}" end)
       )
 
       verdict(
-        "the sweep REACHED the population — a zero here is the content's, not the sweep's",
-        Enum.all?(controls, fn {_t, n} -> n > 0 end)
+        "#{e["id"]}: the sweep REACHED the population — the zero is the content's, not the sweep's",
+        pcs != [] and Enum.all?(pcs, fn {_t, n} -> n > 0 end)
       )
 
-      halt_unless(Enum.all?(controls, fn {_t, n} -> n > 0 end))
+      halt_unless(pcs != [] and Enum.all?(pcs, fn {_t, n} -> n > 0 end))
 
-      # MUTATION — a predicate that cannot fail to match. If THIS returns zero,
-      # the row set is empty or the fields are not being read, and the zero above
-      # means nothing.
-      total = length(sweep(rows, ~r/./s))
-
-      IO.puts("    mutation, a predicate that must match every row: /./s -> #{total}")
+      # AND the file's recorded control figures must be the ones measured here.
+      # A positive control whose number was typed rather than measured is the
+      # same defect one level down.
+      recorded = Enum.map(e["positive_controls"], &{&1["term"], &1["hits"]})
 
       verdict(
-        "the matcher CAN fire, over every one of the #{length(rows)} rows",
-        total == length(rows)
+        "#{e["id"]}: the recorded control figures ARE the measured ones",
+        recorded == pcs
       )
 
-      halt_unless(total == length(rows))
-      IO.puts("")
+      halt_unless(recorded == pcs)
+
+      # MUTATION — a predicate that cannot fail to match.
+      {_l, all, _t} = run_search(%{e | "pattern" => "(?s)."}, rows)
+
+      IO.puts("    mutation, a predicate that must match everything: (?s). -> #{all}")
+
+      verdict(
+        "#{e["id"]}: the matcher CAN fire, over the whole population (#{total})",
+        all == total
+      )
+
+      halt_unless(all == total)
+
+      verdict("#{e["id"]}: names a near miss", is_binary(e["near_miss"]) and e["near_miss"] != "")
+      halt_unless(is_binary(e["near_miss"]) and e["near_miss"] != "")
+      IO.puts("    (#{path})\n")
     end
 
-    # The near miss C1b-ii records against the CG2 zero, MEASURED rather than
-    # quoted — and it is the figure cg-reconciliation.md §2 states as "seven".
-    #
-    # ONE FACT, READ ONCE. The two censuses' `expected` blocks are the SAME
-    # frozen set and that is asserted here rather than assumed: reading the
-    # figure out of both and printing two agreeing lines would look like two
-    # measurements corroborating each other, when it is one datum shown twice.
-    # The agreement is worth pinning, but as an identity, not as corroboration.
+    fixture = Enum.count(entries, fn {_p, e} -> e["kind"] == "no-oc-fixture-case" end)
+
+    verdict(
+      "BOTH `oc:none` slugs are exercised — #{fixture} fixture-case searches and " <>
+        "#{length(entries) - fixture} scenario searches, so the two are kept apart by use " <>
+        "and not only by convention",
+      fixture > 0 and fixture < length(entries)
+    )
+
+    halt_unless(fixture > 0 and fixture < length(entries))
+
+    near_miss_census()
+  end
+
+  # A registry entry names its own population, and there are two kinds. A
+  # `no-oc-scenario` search runs over A1's 175 manifest rows; a
+  # `no-oc-fixture-case` search runs over a BYTE SPAN of the pinned harness
+  # build, because the question is what a fixture contains and the fixture is
+  # code. Both go through one function so a kind the control does not handle is
+  # a crash rather than a silent skip.
+  defp run_search(e, rows), do: run_pattern_labelled(e, e["pattern"], rows)
+
+  defp run_pattern(e, pattern, rows) do
+    {_l, n, t} = run_pattern_labelled(e, pattern, rows)
+    {n, t}
+  end
+
+  defp run_pattern_labelled(e, pattern, rows) do
+    re = Regex.compile!(pattern)
+
+    case e["population"] do
+      %{"kind" => "manifest_rows"} ->
+        {"#{length(rows)} manifest rows", length(sweep(rows, re)), length(rows)}
+
+      %{"kind" => "harness_bytes", "byte_span" => [from, to]} ->
+        text = harness_bytes(from, to)
+        # `byte_size`, not `String.length`. `Regex.compile!/1` without the `u`
+        # modifier matches in BYTE mode, so the `(?s).` mutation returns one hit
+        # per BYTE and a grapheme count would be 6 short over this span's
+        # non-ASCII (measured: 5104 graphemes, 5110 bytes). Comparing the
+        # mutation against the wrong unit would have made the one limb that
+        # proves the matcher can fire fail on a correct search.
+        {"harness bytes [#{from},#{to}]", length(Regex.scan(re, text)), byte_size(text)}
+
+      other ->
+        IO.puts("  UNKNOWN POPULATION KIND in #{e["id"]}: #{inspect(other)}")
+        System.halt(1)
+    end
+  end
+
+  defp harness_bytes(from, to) do
+    require_harness!()
+    {:ok, h} = Locator.load(@harness)
+    Locator.bytes(h, {from, to})
+  end
+
+  # The near miss C1b-ii records against the CG2 zero, MEASURED rather than
+  # quoted — and it is the figure cg-reconciliation.md §2 states as "seven".
+  #
+  # ONE FACT, READ ONCE. The two censuses' `expected` blocks are the SAME
+  # frozen set and that is asserted here rather than assumed: reading the
+  # figure out of both and printing two agreeing lines would look like two
+  # measurements corroborating each other, when it is one datum shown twice.
+  # The agreement is worth pinning, but as an identity, not as corroboration.
+  defp near_miss_census do
     client_expected = read("docs/conformance/client-2026-07-28.json")["expected"]
     server_expected = read("docs/conformance/server-2026-07-28.json")["expected"]
 
@@ -1506,29 +1752,437 @@ defmodule CrosswalkControls do
 
     IO.puts("""
 
-      Both zeros stand, and both are now zeros with a reach shown. The near-miss figure
-      does NOT stand as written elsewhere: cg-reconciliation.md §2 says `"reason":
-      "extension"` sits on "seven" not_scored scenarios, and it sits on SIXTEEN — 6 on
-      the client leg (`auth/*`) and 10 on the server leg (`tasks-*`). Seven is the client
-      leg's not_scored ENTRY count, of which only 6 carry that reason; the seventh is
-      `added-after-release`. The censuses have not moved since MES-57 (3e487f8), so this
-      is not drift and re-measuring will not fix it. The ZERO the CG2 records rest on is
-      untouched — what was wrong is the near miss named beside it, which is why this
-      control measures the near miss too. Reported as a finding against a
-      change-controlled document, not edited from MES-108.
+      Every zero stands, and every one is now a zero with a reach shown and a matcher
+      shown able to fire. The near-miss figure does NOT stand as written elsewhere:
+      cg-reconciliation.md §2 says `"reason": "extension"` sits on "seven" not_scored
+      scenarios, and it sits on SIXTEEN — 6 on the client leg (`auth/*`) and 10 on the
+      server leg (`tasks-*`). Seven is the client leg's not_scored ENTRY count, of which
+      only 6 carry that reason; the seventh is `added-after-release`. The censuses have
+      not moved since MES-57 (3e487f8), so this is not drift and re-measuring will not
+      fix it. The ZEROS the CG2 records rest on are untouched — what was wrong is the
+      near miss named beside them, which is why this control measures the near miss too.
+      Reported as a finding against a change-controlled document, not edited from here.
+
+      WHAT THIS CONTROL DOES NOT ESTABLISH. That a search was well-chosen. It re-runs
+      the pattern each entry names over the population that entry names, and requires
+      a zero, a reached population and a matcher that can fire. Whether the population
+      was the right place to look, and whether a given member's claim is really what
+      the search looked for, are judgements — the second is written out per row in
+      `why_this_search_is_this_claims_search` so a reader can disagree with it, and no
+      control here can reach either.
     """)
   end
 
   defp manifest_rows do
     for s <- read(@manifest)["scenarios"], c <- s["checks"] || [] do
-      Map.put(c, "scenario", s["scenario"] || s["name"])
+      [leg, scenario, check_id, name, description, discriminator] = c["key"]
+
+      Map.merge(c, %{
+        "leg" => leg,
+        "scenario" => scenario,
+        "check_id" => check_id,
+        "name" => name,
+        "description" => description,
+        "discriminator" => discriminator || ""
+      })
     end
   end
 
   defp sweep(rows, pattern) do
-    Enum.filter(rows, fn r ->
-      @searched_fields |> Enum.map_join(" ", &(r[&1] || "")) |> then(&Regex.match?(pattern, &1))
+    Enum.filter(rows, &Regex.match?(pattern, row_text(&1)))
+  end
+
+  defp row_text(r), do: @searched_fields |> Enum.map_join(" | ", &(r[&1] || ""))
+
+  # --- totality: the client leg is CLOSED, and the closure can go red -------
+  #
+  # MES-109 (C1b-iii). Two guards land here and neither is worth anything
+  # without the other's failure mode being visible, so this mode is built round
+  # ONE measurement: the CG9 separation. It is what says G22b is not entailed by
+  # G15a — the X7 shape — and it is run on the same mutated input, in the same
+  # run, as the unmutated build.
+  #
+  # WHAT THIS MODE CANNOT SHOW, and it is stated here rather than discovered:
+  # G22b does NOT fire on a dropped row. G15a gets there first, because a
+  # dropped row shrinks the file's members below its own selector's denotation.
+  # That is not a weakness — it is the division of labour — but "G22b refuses a
+  # missing member" would be a false description of it, so the control drives
+  # the dropped-row case too and ASSERTS WHICH GUARD FIRES. G22b's unique reach
+  # is exactly one shape: a B2b row on the declared leg that the file's
+  # union-shaped selector does not denote. That is what CG9 is.
+  defp totality do
+    header("TOTALITY — the client leg closed by refusal, and each refusal shown firing")
+
+    require_harness!()
+    client = read(@client_edges)
+    src = read(@attribution)
+
+    out = tmp("totality-positive")
+    {os_out, status} = os_crosswalk(out, [])
+    a = read(out)
+    File.rm(out)
+
+    lt = Enum.find(a["population"]["files"], & &1["leg_totality"]["declared"])["leg_totality"]
+
+    IO.puts("  POSITIVE  the unmutated build succeeds at the OS exit status: #{status}")
+
+    IO.puts(
+      "            #{lt["leg"]} leg total at #{lt["members"]} members, " <>
+        "#{length(lt["slices"])} slices, #{lt["cover_not_partition"]["in_more_than_one_slice"]} in two"
+    )
+
+    verdict("the unmutated build exits 0", status == 0)
+    halt_unless(status == 0)
+    halt_unless(String.contains?(os_out, "CROSSWALK"))
+
+    verdict(
+      "and it asserts a leg at all — a run asserting none would pass every case below vacuously",
+      lt["declared"] == true and lt["members"] > 0
+    )
+
+    halt_unless(lt["declared"] == true and lt["members"] > 0)
+
+    # --- THE CG9 SEPARATION -------------------------------------------------
+    #
+    # A new B2b row on the client leg carrying a `cg` no limb of the file's
+    # union-shaped selector names. G15a asks "is the population what MY
+    # selector denotes?" and the answer is still yes. G22b asks "is my selector
+    # the leg?" and the answer is now no. One input, two questions, two
+    # verdicts — which is the whole argument for not simplifying the top-level
+    # selector to a bare `leg equals client`.
+    cg9 = %{
+      "key" => "MCP.CG9ProbeTest/test a client member B2b knows about and no limb denotes",
+      "leg" => "client",
+      "leg_reason" => "a CG9 probe planted by crosswalk_controls.exs totality",
+      "cg" => "CG9",
+      "cg_basis" => "planted",
+      "tokens" => [],
+      "contradicts_oc" => nil
+    }
+
+    mutated = update_in(src, ["rows"], &(&1 ++ [cg9]))
+
+    member_sel = client["the_population_this_file_declares"]["selector"]
+    {:ok, still} = Crosswalk.select(member_sel, mutated)
+    file_members = lt["members"]
+
+    IO.puts("\n  CG9  a client row carrying a `cg` no limb of the union names:")
+
+    IO.puts(
+      "       G15a — the file's OWN selector over the mutated anchor: " <>
+        "#{length(still)} denoted vs #{file_members} rows in the file"
+    )
+
+    verdict(
+      "G15a is GREEN on the mutation — #{file_members} against #{file_members}, set-equal both ways",
+      length(still) == file_members
+    )
+
+    halt_unless(length(still) == file_members)
+
+    {:ok, leg_only} =
+      Crosswalk.select(
+        %{
+          "source" => @attribution,
+          "rows_at" => "rows",
+          "key_field" => "key",
+          "all_of" => [%{"field" => "leg", "test" => "equals", "value" => "client"}]
+        },
+        mutated
+      )
+
+    IO.puts(
+      "       G22b — `leg equals client` over the same mutated anchor: " <>
+        "#{length(leg_only)} denoted vs #{file_members} rows in the file"
+    )
+
+    verdict(
+      "G22b's question has a DIFFERENT answer on the same input — #{length(leg_only)} against #{file_members}",
+      length(leg_only) == file_members + 1
+    )
+
+    halt_unless(length(leg_only) == file_members + 1)
+
+    # And the generator itself, at the OS exit status, on that same input.
+    #
+    # THE ANCHOR IS SUBSTITUTED BY RETARGETING, NOT BY EDITING THE REPO.
+    # `selected!/4` refuses a run whose `--attribution` is not the path the
+    # selector NAMES — that is G15's own anti-substitution limb and it fires
+    # before anything here could — so the mutated anchor is written to a temp
+    # file and every `source` in a temp COPY of the edges file is retargeted at
+    # it. Nothing under the repo is written, which is deliberate: a seat that
+    # died mid-run would otherwise leave a mutated register behind (S8-14).
+    # The only semantic difference between this pair and the committed one is
+    # the single planted row.
+    attr_path = write_tmp("attribution-cg9", mutated)
+    edges_path = write_tmp("edges-cg9", retarget(client, attr_path))
+
+    try do
+      os_refuses(
+        "G22b  a client member B2b has and no edges file carries",
+        ["G22b", "is NOT total over it", cg9["key"]],
+        fn out ->
+          os_crosswalk(out, attribution: attr_path, edges: [edges_path, @edges])
+        end
+      )
+    after
+      File.rm(attr_path)
+      File.rm(edges_path)
+    end
+
+    verdict(
+      "SO G22b IS NOT ENTAILED BY G15a — one input, G15a green and G22b red, measured in this run",
+      length(still) == file_members and length(leg_only) != file_members
+    )
+
+    halt_unless(length(still) == file_members and length(leg_only) != file_members)
+
+    # --- the cover ----------------------------------------------------------
+    refuses(
+      "G22a  a slice dropped from the cover, leaving members no declared rule reaches",
+      "G22a — the UNION of",
+      fn ->
+        build_edges(
+          update_in(client, ["the_sub_populations_this_file_records", "entries"], fn es ->
+            Enum.reject(es, &String.contains?(&1["ticket"], "C1b-iii"))
+          end)
+        )
+      end
+    )
+
+    refuses(
+      "G22  the leg declared with the sub-populations removed — half a claim is refused",
+      "half-declares a leg totality",
+      fn -> build_edges(Map.delete(client, "the_sub_populations_this_file_records")) end
+    )
+
+    # --- and the case G22b does NOT catch, named rather than implied --------
+    dropped = update_in(client, ["declared_unmatched"], &Enum.drop(&1, -1))
+
+    refuses(
+      "G15a  a member ROW dropped — and it is G15a that fires, NOT G22b",
+      "G15a — the population",
+      fn -> build_edges(recount(dropped)) end
+    )
+
+    IO.puts(
+      "           G22b never sees it: a dropped row shrinks the file below its own selector's\n" <>
+        "           denotation, so the earlier guard answers first. G22b's unique reach is the\n" <>
+        "           CG9 shape above — a row on the leg that the union does not denote."
+    )
+
+    # --- G23, the absence-search guard --------------------------------------
+    with_search =
+      Enum.find_index(client["declared_unmatched"], & &1["the_search_that_found_none"])
+
+    refuses(
+      "G23a  a bucket-1 row with its search removed — leg-wide, no exception list",
+      "G23a —",
+      fn ->
+        build_edges(
+          update_in(client, ["declared_unmatched"], fn rows ->
+            List.update_at(rows, with_search, &Map.delete(&1, "the_search_that_found_none"))
+          end)
+        )
+      end
+    )
+
+    registered = Enum.find_index(client["declared_unmatched"], & &1["search_id"])
+
+    refuses(
+      "G23b  a `search_id` that resolves to no registry entry",
+      "search_id_resolves_to_nothing",
+      fn ->
+        build_edges(
+          update_in(client, ["declared_unmatched"], fn rows ->
+            List.update_at(rows, registered, &Map.put(&1, "search_id", "S99"))
+          end)
+        )
+      end
+    )
+
+    refuses(
+      "G23b  a registry entry recording a NON-zero — an entry IS a search that found none",
+      "entry_does_not_record_zero",
+      fn ->
+        build_edges(
+          update_in(client, ["absence_searches"], fn [e | rest] -> [%{e | "hits" => 1} | rest] end)
+        )
+      end
+    )
+
+    refuses(
+      "G23b  a registry entry with its near miss removed — a bare zero is a grep",
+      "entry_names_no_near_miss",
+      fn ->
+        build_edges(
+          update_in(client, ["absence_searches"], fn [e | rest] ->
+            [Map.delete(e, "near_miss") | rest]
+          end)
+        )
+      end
+    )
+
+    refuses(
+      "G23b  a registry entry with no positive control — a zero whose sweep was never shown to run",
+      "entry_has_no_positive_control",
+      fn ->
+        build_edges(
+          update_in(client, ["absence_searches"], fn [e | rest] ->
+            [%{e | "positive_controls" => []} | rest]
+          end)
+        )
+      end
+    )
+
+    refuses(
+      "G23d  an entry whose KIND is not the reason slug its row's own tag carries",
+      "entry_kind_is_not_the_rows_reason_slug",
+      fn ->
+        build_edges(
+          update_in(client, ["absence_searches"], fn [e | rest] ->
+            [%{e | "kind" => "no-oc-fixture-case"} | rest]
+          end)
+        )
+      end
+    )
+
+    refuses(
+      "G23b  a row whose prose COPY of the near miss has drifted from its entry (D4)",
+      "row_copy_has_drifted_from_the_entry",
+      fn ->
+        build_edges(
+          update_in(client, ["declared_unmatched"], fn rows ->
+            List.update_at(
+              rows,
+              registered,
+              &Map.put(&1, "the_near_miss_that_is_not_a_counterpart", "a different near miss")
+            )
+          end)
+        )
+      end
+    )
+
+    refuses(
+      "G23c  a registry entry no row names — a measurement in search of a claim",
+      "G23c —",
+      fn ->
+        orphan = client["absence_searches"] |> hd() |> Map.put("id", "S00")
+
+        build_edges(update_in(client, ["absence_searches"], &(&1 ++ [orphan])))
+      end
+    )
+
+    # --- and the tree is as it was ------------------------------------------
+    after_out = tmp("totality-after")
+    {_o, after_status} = os_crosswalk(after_out, [])
+    same = File.read!(after_out) == File.read!(@crosswalk_out)
+    File.rm(after_out)
+
+    verdict("after every mutation the unmutated build still exits 0", after_status == 0)
+    halt_unless(after_status == 0)
+
+    verdict(
+      "and reproduces the COMMITTED artefact byte for byte — nothing on disk was mutated",
+      same
+    )
+
+    halt_unless(same)
+
+    IO.puts("""
+
+      The client leg is closed by a refusal rather than by a sentence. Every ET-CC
+      member B2b puts on it carries a row, and a member that does not REFUSES THE
+      BUILD — checked against B2b afresh, by set, in both directions.
+
+      THE CG9 CASE IS THE LOAD-BEARING ONE. Had the top-level selector been
+      simplified to a bare `leg equals client` once the four slices happened to
+      cover the leg, G22b would ask G15a's question in G15a's words and could never
+      fire on anything: the X7 shape, a guard as empty as one nobody calls. The
+      measurement above is what rules that out, and it is a measurement rather than
+      an argument — one anchor, two selectors, two answers, in this run.
+
+      WHAT A GREEN HERE IS NOT. Evidence that any adjudication is right. A leg every
+      member of which was adjudicated wrongly passes G22b exactly as firmly, and the
+      A3 §6 state-4 guard over this population stays entailed by G15a and unable to
+      fire (X7). What is new is that the population it cannot fire over is provably
+      the whole leg and not a slice somebody chose.
+    """)
+  end
+
+  # Point every selector in `doc` that names the committed attribution register
+  # at `path` instead. Recursive over the whole document rather than over the
+  # two blocks that happen to carry one today: the sub-population cover holds
+  # one selector per entry, and a new entry whose source this missed would be
+  # refused by G15's anti-substitution limb rather than silently retargeted —
+  # but the failure would read as a defect in the guard under test.
+  defp retarget(%{} = m, path) do
+    m
+    |> Enum.map(fn
+      {"source", @attribution} -> {"source", path}
+      {k, v} -> {k, retarget(v, path)}
     end)
+    |> Map.new()
+  end
+
+  defp retarget(l, path) when is_list(l), do: Enum.map(l, &retarget(&1, path))
+  defp retarget(other, _path), do: other
+
+  defp os_crosswalk(out, overrides) do
+    edges =
+      Enum.flat_map(Keyword.get(overrides, :edges, [@client_edges, @edges]), &["--edges", &1])
+
+    System.cmd(
+      "mix",
+      ["conformance.crosswalk"] ++
+        edges ++
+        [
+          "--manifest",
+          @manifest,
+          "--denominator",
+          @denominator,
+          "--register",
+          @register,
+          "--attribution",
+          Keyword.get(overrides, :attribution, @attribution),
+          "--a3-axes",
+          @a3_axes,
+          "--c1-axes",
+          @c1_axes,
+          "--emitting-sites",
+          @sites,
+          "--harness",
+          @harness,
+          "-o",
+          out
+        ],
+      stderr_to_stdout: true
+    )
+  end
+
+  # The OS-level twin of `refuses/3`. An in-VM rescue shows the message; only a
+  # child process shows that the GENERATOR ITSELF exits non-zero, which is what
+  # a caller in a shell would see. Both limbs are required: a non-zero status
+  # with the wrong message is a mutation that tripped some other guard.
+  defp os_refuses(label, expected, fun) do
+    out = tmp("os-refuse")
+    {text, status} = fun.(out)
+    File.rm(out)
+
+    if status == 0 do
+      IO.puts("  DID NOT REFUSE  #{label} — exited 0")
+      System.halt(1)
+    end
+
+    case Enum.reject(expected, &String.contains?(text, &1)) do
+      [] ->
+        IO.puts("  refused  #{label}  (OS exit #{status})")
+
+      missing ->
+        IO.puts("  WRONG GUARD  #{label}")
+        IO.puts("           expected the message to carry: #{inspect(missing)}")
+        System.halt(1)
+    end
   end
 
   # --- citations: every evidence quote, lifted live and compared ------------
@@ -1578,10 +2232,11 @@ defmodule CrosswalkControls do
     records =
       client["edges"] ++ client["declared_unmatched"] ++ client["claims_without_an_edge"]
 
-    mine = Enum.filter(records, &mes_108_row?/1)
+    mine = Enum.filter(records, &authored_here?/1)
 
     IO.puts(
-      "  #{length(records)} records in #{Path.basename(@client_edges)}, #{length(mine)} authored by MES-108\n"
+      "  #{length(records)} records in #{Path.basename(@client_edges)}, " <>
+        "#{length(mine)} authored by C1b-ii or C1b-iii\n"
     )
 
     halt_unless(mine != [])
@@ -1592,7 +2247,7 @@ defmodule CrosswalkControls do
     IO.puts("  OC side  #{oc} quotes verbatim inside the axis row's own addressed harness spans")
 
     verdict(
-      "all #{et + oc} quotes MES-108 authored are verbatim at an address the evidence names",
+      "all #{et + oc} quotes C1b-ii and C1b-iii authored are verbatim at an address the evidence names",
       problems == []
     )
 
@@ -1685,7 +2340,14 @@ defmodule CrosswalkControls do
       WHAT THIS IS AND IS NOT. It is the mechanical half of ruling 7, run at this seat
       over the rows THIS TICKET authored — MES-108 ran it before committing, and it
       caught two defects in its own drafts (a harness quote checked against a test file,
-      and two bare `:N` continuations) which were fixed rather than argued.
+      and two bare `:N` continuations) which were fixed rather than argued. MES-109 ran
+      it and it caught two more, both in its own five new edges: a COMPOSED quote —
+      `Protocol.encode(Request.new(1, "tools/list", %{"cursor" => "abc"}))`, which reads
+      exactly like source and appears nowhere in the file, because the call and the
+      argument are on two different lines — and a nested-backtick span that made the
+      quote regex report a fragment neither the author nor the file ever wrote. Both are
+      ruling 7 defects that a careful read would have passed: the first is a plausible
+      paraphrase of two real lines, and that is the kind a human eye is worst at.
 
       It is NOT MES-112. MES-112 is the guard INSIDE the generator, over every row of
       every edges file, where a bad citation cannot be committed at all. Run over the
@@ -1700,13 +2362,29 @@ defmodule CrosswalkControls do
     """)
   end
 
+  # WHO WROTE THIS ROW, and MES-109 had to change how the question is asked.
+  #
+  # C1b-ii answered it by GUESSING from the tag, and the guess held only
+  # because its rows happened to carry tags no earlier ticket used. C1b-iii's
+  # do not: its `a non-32022 error is never retried` edge carries the SAME
+  # `ClientRetrySupportedVersion` tag as four inherited C1a rows, so no tag
+  # predicate can separate the row this ticket wrote from the rows it did not —
+  # and a predicate that pulled the inherited ones in would red the audit over
+  # work it is not adjudicating, while one that left them out would silently
+  # drop the new row. So C1b-iii's records carry `authored_by`, written by the
+  # author, and the tag heuristic stays only for C1b-ii's rows, which predate
+  # the field.
+  defp authored_here?(r), do: mes_108_row?(r) or mes_109_row?(r)
+
+  defp mes_109_row?(r), do: String.contains?(r["authored_by"] || "", "MES-109")
+
   defp mes_108_row?(r) do
     tag = r["tag"] || ""
 
-    String.contains?(tag, "http-standard-headers") or
-      String.contains?(tag, "json-schema-ref-no-deref") or
-      String.contains?(tag, "/CG2-") or String.contains?(tag, "/CG1-") or
-      String.contains?(r["owner"] || "", "C1b-ii")
+    (String.contains?(tag, "http-standard-headers") or
+       String.contains?(tag, "json-schema-ref-no-deref") or
+       String.contains?(tag, "/CG2-") or String.contains?(tag, "/CG1-") or
+       String.contains?(r["owner"] || "", "C1b-ii")) and not mes_109_row?(r)
   end
 
   defp audit(records, axes, build) do

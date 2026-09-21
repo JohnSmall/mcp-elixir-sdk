@@ -202,6 +202,7 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       })
 
     keying = keying!(in_denominator)
+    absence = absence_searches!(edges_docs)
 
     buckets = buckets!(cells, population)
     claim_level = claim_level!(edges_docs, cells)
@@ -215,6 +216,7 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
         cells,
         buckets,
         claim_level,
+        absence,
         length(in_denominator),
         manifest["arithmetic"]["total"]
       )
@@ -223,13 +225,14 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       "schema" => "crosswalk/1",
       "revision" => @revision,
       "generated_by" => "mix conformance.crosswalk",
-      "owner" => "MES-97 (C1a), MES-104 (C1b-i) and MES-108 (C1b-ii)",
+      "owner" => "MES-97 (C1a), MES-104 (C1b-i), MES-108 (C1b-ii) and MES-109 (C1b-iii)",
       "what_this_is" =>
         "The single matrix the ten buckets are PROJECTIONS of. C2 renders it, C3 falsifies it, " <>
           "D adjudicates its cells. It decides what no bucket MEANS.",
       "trust_status" => trust_status(figures),
       "cross_source_agreement" => agreement,
       "population" => population,
+      "absence_search_guard" => absence,
       "keying_control" => keying,
       "axis_provenance" => axis_bytes,
       "axis_span_provenance" => span_provenance,
@@ -721,12 +724,14 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
             "state 4 ('nobody has adjudicated this member, and the guard FAILS it'). Reporting " <>
             "these as bucket 1 would assert of each something false of every one.",
         "owners" =>
-          "C1b-iii = MES-109 (the client-leg members no CG covers); C1c = MES-105 (server leg " <>
-            "+ the 29 none_determinable). NOT C1b-ii, which rendered this artefact: a field " <>
-            "naming its own producer as still owing the remainder is CR-1's defect (MES-104) " <>
-            "and it recurred here as CR-5 (MES-108). The sub-population figures the previous " <>
-            "wording carried are the register's to state, not this artefact's — this artefact " <>
-            "holds no figure it did not derive (G21)."
+          "C1c = MES-105 — the server leg, and the none_determinable rows with it. It is the " <>
+            "only ticket left: the CLIENT leg is closed, and closed by refusal rather than by " <>
+            "assertion (G22b). NOT C1b-iii, which rendered this artefact — a field naming its " <>
+            "own producer as still owing the remainder is CR-1's defect (MES-104), it recurred " <>
+            "as CR-5 (MES-108), and this is the first render at which the previous wording " <>
+            "would have been not merely self-naming but FALSE. The sub-population figures an " <>
+            "earlier wording carried are the register's to state, not this artefact's — this " <>
+            "artefact holds no figure it did not derive (G21)."
       }
     }
   end
@@ -775,6 +780,123 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     leaves the member edge-bearing, counted and reconciling, while no longer saying what the
     register says it says.
     """)
+  end
+
+  # --- G23 — every bucket-1 record names the SEARCH that found none ----------
+  #
+  # A bucket-1 row asserts *we looked and there is no counterpart*. That is a
+  # positive claim, and without the search behind it it is a silence wearing a
+  # token (A2d). The guard has one LEG-WIDE limb and one that reaches as far as
+  # the evidence does, and the difference between them is stated rather than
+  # smoothed over.
+  #
+  # G23a is leg-wide with NO exception list: every declared_unmatched row in
+  # every edges file carries a non-empty `the_search_that_found_none`. It fired
+  # on two rows when this ticket started — C1b-i's `CG7-static-reachability`
+  # and `CG7-integer-safe-range` — and the remedy was to RUN those two searches,
+  # not to except them. A guard whose exception list is precisely the rows that
+  # would fail it is the defect rather than the remedy.
+  #
+  # G23b/c/d are the REGISTRY limbs and reach the rows that carry a
+  # `search_id`. C1b-i's and C1b-ii's 26 prose searches were run and recorded
+  # but never registered in a re-runnable form; registering them now would mean
+  # either re-running 26 searches this ticket did not run, or writing a
+  # `hits: 0` nobody re-measured — the invented-field defect C1b-i refused. So
+  # the reach is stated on the file and here, and is not pretended away.
+  defp absence_searches!(edges_docs) do
+    rows =
+      Enum.flat_map(edges_docs, fn {path, d} ->
+        Enum.map(d["declared_unmatched"], &{path, &1})
+      end)
+
+    searchless =
+      Enum.reject(rows, fn {_p, r} ->
+        is_binary(r["the_search_that_found_none"]) and r["the_search_that_found_none"] != ""
+      end)
+
+    refuse_unless(searchless == [], """
+    G23a — #{length(searchless)} declared-unmatched rows record NO search:
+    #{Enum.map_join(searchless, "\n", fn {p, r} -> "  #{p}\n    #{r["tag"]}" end)}
+    A bucket-1 row asserts `we looked and there is no counterpart`. With no search behind it
+    that is a silence wearing a token (A2d), and it reads identically to a search that found
+    none. This limb is LEG-WIDE and carries no exception list, deliberately: a guard excepting
+    exactly the rows that would fail it is the defect, not the remedy.
+    """)
+
+    registries =
+      Map.new(edges_docs, fn {path, d} ->
+        {path, Map.new(d["absence_searches"] || [], &{&1["id"], &1})}
+      end)
+
+    problems = Enum.flat_map(rows, &registry_problems(&1, registries))
+
+    refuse_unless(problems == [], """
+    G23b — #{length(problems)} declared-unmatched rows name a registry entry that does not hold up:
+    #{Enum.map_join(problems, "\n", &("  " <> inspect(&1)))}
+    An entry must record `hits: 0` (an entry IS a search that found none), a population, a
+    runnable pattern, a near miss, and at least one positive control showing the sweep reached
+    the population. A zero whose sweep is not shown to have run is not a measurement.
+    """)
+
+    named =
+      rows
+      |> Enum.flat_map(fn {p, r} -> if r["search_id"], do: [{p, r["search_id"]}], else: [] end)
+      |> MapSet.new()
+
+    orphans =
+      for {path, reg} <- registries,
+          {id, _e} <- reg,
+          not MapSet.member?(named, {path, id}),
+          do: {path, id}
+
+    refuse_unless(orphans == [], """
+    G23c — #{length(orphans)} registry entries are named by no row:
+    #{Enum.map_join(orphans, "\n", fn {p, i} -> "  #{p}: #{i}" end)}
+    A search nobody's record rests on is a measurement in search of a claim. Either a row was
+    dropped and its zero went with it, or the entry was written for a claim that never landed.
+    """)
+
+    %{
+      "entries" => Enum.sum(Enum.map(registries, fn {_p, r} -> map_size(r) end)),
+      "rows_checked" => length(rows),
+      "rows_naming_a_registered_search" =>
+        Enum.count(rows, fn {_p, r} -> r["search_id"] != nil end),
+      "distinct_searches_those_rows_name" => MapSet.size(named),
+      "leg_wide_limb" =>
+        "G23a ran over ALL #{length(rows)} declared-unmatched rows in this run, with no " <>
+          "exception list, and requires a non-empty `the_search_that_found_none` on each.",
+      "registry_limb_reach" =>
+        "G23b/c/d reach the rows carrying a `search_id`. The rows without one carry a PROSE " <>
+          "search that was run and recorded but not registered in a re-runnable form; " <>
+          "back-filling a registry entry for a search this run did not re-measure would be " <>
+          "inventing the measurement, which is the defect the field exists to prevent. Stated " <>
+          "as a bound, not papered over.",
+      "what_a_green_here_is_not" =>
+        "Evidence that any search was well-chosen. G23 checks that a search is NAMED, RUNNABLE " <>
+          "and REACHED its population. Whether the population was the right one to look in, and " <>
+          "whether the member's claim is really what the search looked for, are judgements — " <>
+          "they are carried on the row in `why_this_search_is_this_claims_search` so a reader " <>
+          "can disagree with them, and no refusal can reach them."
+    }
+  end
+
+  defp registry_problems({path, row}, registries) do
+    case row["search_id"] do
+      nil ->
+        []
+
+      id ->
+        case get_in(registries, [path, id]) do
+          nil ->
+            [{:search_id_resolves_to_nothing, path, row["tag"], id}]
+
+          entry ->
+            Enum.map(
+              Crosswalk.absence_entry_problems(row["tag"], id, entry, row),
+              &Tuple.insert_at(&1, 1, path)
+            )
+        end
+    end
   end
 
   defp file_population!({path, doc}, etcc, attribution, sites, rows, axes, paths) do
@@ -882,7 +1004,152 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       "members_declared_unmatched" => length(doc["declared_unmatched"]),
       "checks_addressed" => addressed,
       "declared_checks" => declared_checks,
-      "check_population" => check_block
+      "check_population" => check_block,
+      "leg_totality" => leg_totality!(path, doc, members, attribution, paths.attribution)
+    }
+  end
+
+  # --- G22 — the LEG-TOTALITY assertion, and why it is two guards ------------
+  #
+  # A file may declare that its population is a whole LEG. C1b-iii is the last
+  # of the three tickets that adjudicated the client leg, so the claim "these
+  # are ALL the client members" lands there — and it lands as a REFUSAL, not as
+  # prose. Two comparisons, and neither subsumes the other.
+  #
+  # G22a — THE COVER. The file records one sub-population per contributing
+  # ticket, each with its own runnable selector against the same external
+  # anchor. Their UNION is set-compared with the members the file derives. It
+  # catches a member adjudicated but in no declared slice (who added it, and
+  # under what rule?) and a slice member with no row.
+  #
+  # G22b — THE LEG. `all_of[{leg equals <leg>}]` is evaluated FRESH against
+  # B2b and set-compared with the file's members. A client ET-CC member in
+  # neither an edge nor a declared_unmatched record refuses the build.
+  #
+  # WHY G22b IS NOT ENTAILED BY G15a, which is the whole reason it can fire.
+  # The file's top-level selector is a UNION OF TICKET SLICES, and it stays
+  # that way deliberately. Simplifying it to a bare `leg equals client` would
+  # make G22b ask G15a's question in G15a's words — the X7 shape, a guard as
+  # empty as one nobody calls. Under the union shape one mutation separates
+  # them: a B2b row with `leg=client, cg="CG9"` is not denoted by any limb of
+  # the union, so G15a compares 107 denoted against 107 rows and passes, while
+  # G22b compares 108 against 107 and refuses. That mutation is committed and
+  # runs beside the unmutated build (`crosswalk_controls.exs totality`).
+  #
+  # THE BLOCK IS OPTIONAL, and its absence is a stated result rather than a
+  # default — the same shape `declared_checks!/6` uses. `crosswalk-edges.json`
+  # holds three server members that are NOT the server leg (C1c owns that), so
+  # asserting leg-totality over them would be a false claim, not a missing one.
+  # Half-declaring it — a `leg` with no sub-populations, or the reverse — is
+  # refused, because that is how a claim gets made with nothing checking it.
+  defp leg_totality!(path, doc, members, attribution, attribution_path) do
+    case {doc["leg"], doc["the_sub_populations_this_file_records"]} do
+      {nil, nil} ->
+        not_asserted()
+
+      {leg, %{"entries" => entries}} when is_binary(leg) and is_list(entries) and entries != [] ->
+        assert_leg_totality!(path, leg, entries, members, attribution, attribution_path)
+
+      {leg, block} ->
+        Mix.raise("""
+        G22 — #{path} half-declares a leg totality: `leg` is #{inspect(leg)} and
+        `the_sub_populations_this_file_records` is #{inspect(block)}.
+        Both or neither. A `leg` with no sub-populations is a claim with nothing checking it,
+        and sub-populations with no `leg` is a cover over a universe nobody named.
+        """)
+    end
+  end
+
+  defp not_asserted do
+    %{
+      "declared" => false,
+      "result" =>
+        "NOT ASSERTED — this file declares no `leg`, so it makes no claim to hold a whole one " <>
+          "and none is checked. Reported rather than passed: a file whose members are a slice " <>
+          "of a leg would be claiming something false if this said `total`."
+    }
+  end
+
+  defp assert_leg_totality!(path, leg, entries, members, attribution, attribution_path) do
+    slices =
+      Enum.map(entries, fn e ->
+        {e["ticket"], selected!(e["selector"], attribution, attribution_path, path)}
+      end)
+
+    union = slices |> Enum.flat_map(fn {_t, keys} -> keys end) |> Enum.uniq() |> Enum.sort()
+    cover = Crosswalk.set_compare(union, members)
+
+    refuse_unless(cover.equal, """
+    G22a — the UNION of #{path}'s declared sub-populations is not the population it derives.
+    Compared by SET in both directions:
+      denoted by some slice, absent from this file (#{length(cover.missing)}):
+    #{Enum.map_join(cover.missing, "\n", &("      " <> &1))}
+      in this file, denoted by NO slice (#{length(cover.extra)}):
+    #{Enum.map_join(cover.extra, "\n", &("      " <> &1))}
+    A member in no slice was adjudicated under no declared rule; a slice member with no row is
+    an adjudication the file claims and does not carry.
+    """)
+
+    fresh = %{
+      "source" => attribution_path,
+      "rows_at" => "rows",
+      "key_field" => "key",
+      "all_of" => [%{"field" => "leg", "test" => "equals", "value" => leg}]
+    }
+
+    whole_leg = selected!(fresh, attribution, attribution_path, path)
+    against_leg = Crosswalk.set_compare(whole_leg, members)
+
+    refuse_unless(against_leg.equal, """
+    G22b — #{path} declares `leg: #{inspect(leg)}` and is NOT total over it.
+    `all_of[{leg equals #{leg}}]` was evaluated FRESH against #{attribution_path} and compared
+    by SET in both directions:
+      on the #{leg} leg in B2b, in NEITHER an edge nor a declared_unmatched record here
+      (#{length(against_leg.missing)}):
+    #{Enum.map_join(against_leg.missing, "\n", &("      " <> &1))}
+      in this file, NOT on the #{leg} leg in B2b (#{length(against_leg.extra)}):
+    #{Enum.map_join(against_leg.extra, "\n", &("      " <> &1))}
+    This is the claim the file makes by naming a leg, and it is the one guard here that is not
+    entailed by G15a — G15a asks whether the population is what the file's own UNION-shaped
+    selector denotes, and this asks whether that union is the leg.
+    """)
+
+    overlap =
+      slices
+      |> Enum.flat_map(fn {_t, keys} -> keys end)
+      |> Enum.frequencies()
+      |> Enum.filter(fn {_k, n} -> n > 1 end)
+      |> Enum.map(&elem(&1, 0))
+      |> Enum.sort()
+
+    %{
+      "declared" => true,
+      "leg" => leg,
+      "members" => length(members),
+      "slices" =>
+        Enum.map(slices, fn {ticket, keys} -> %{"ticket" => ticket, "denotes" => length(keys)} end),
+      "cover_not_partition" => %{
+        "sum_of_the_slices" => Enum.sum(Enum.map(slices, fn {_t, k} -> length(k) end)),
+        "distinct" => length(union),
+        "in_more_than_one_slice" => length(overlap),
+        "members" => overlap,
+        "why" =>
+          "The slices OVERLAP, so this is a cover and not a partition and the sum above is not " <>
+            "the leg. The overlap is DERIVED here rather than taken from the file's word for it: " <>
+            "a member that carried a C1a token and also falls in a later ticket's CG slice keeps " <>
+            "ONE home and appears in two slices, which is the one-home rule working, not failing."
+      },
+      "what_this_establishes" =>
+        "That every ET-CC member B2b puts on the #{leg} leg has a row in this file — an edge or " <>
+          "a declared_unmatched record — and that every member this file carries is on that leg. " <>
+          "Both directions, by SET, against an anchor outside the file.",
+      "and_what_it_does_not" =>
+        "That any adjudication is RIGHT. It is a totality guard, not a correctness one: a leg " <>
+          "every member of which was adjudicated wrongly passes it exactly as firmly. The " <>
+          "state-4 guard over this population is still ENTAILED by G15a and still cannot fire " <>
+          "(residual X7) — what G22b adds is that the population it cannot fire over is now " <>
+          "provably the WHOLE leg rather than a slice somebody chose, and that scope claim is " <>
+          "not entailed by anything."
     }
   end
 
@@ -1306,9 +1573,10 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
   # 68/39, and the sentence never moved — while the twelve bucket views
   # projected from this file interpolated the right pair, because CR-1 fixed the
   # PROJECTOR and nothing reached the generator.
-  defp figures(population, cells, buckets, claim_level, in_denominator, manifest_total) do
+  defp figures(population, cells, buckets, claim_level, absence, in_denominator, manifest_total) do
     outside = population["outside_the_population"]
     addressed = cells |> Enum.map(& &1["tag"]) |> Enum.uniq()
+    legs = Enum.filter(population["files"], &get_in(&1, ["leg_totality", "declared"]))
 
     %{
       declared_members: population["member_count"],
@@ -1327,8 +1595,33 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       edges: length(cells),
       escalated: Enum.count(cells, &(not is_nil(&1["escalation"]))),
       claim_level_unmatched: claim_level["count"],
+      absence_entries: absence["entries"],
+      absence_rows: absence["rows_checked"],
+      absence_rows_registered: absence["rows_naming_a_registered_search"],
       per_file_members:
-        Enum.map(population["files"], &{Path.basename(&1["path"]), &1["member_count"]})
+        Enum.map(population["files"], &{Path.basename(&1["path"]), &1["member_count"]}),
+      # A leg this run asserts TOTALITY over, and the shape of the cover that
+      # reaches it. Derived from the files' own `leg_totality` blocks, so a run
+      # over files that assert no leg holds no such figure and any prose stating
+      # one goes red at G21 — which is the behaviour wanted: the sentence about
+      # a closed leg must not survive a run that closed none.
+      legs_asserted_total: length(legs),
+      leg_members:
+        Enum.map(
+          legs,
+          &{get_in(&1, ["leg_totality", "leg"]), get_in(&1, ["leg_totality", "members"])}
+        ),
+      leg_slices:
+        Enum.map(
+          legs,
+          &{get_in(&1, ["leg_totality", "leg"]), length(get_in(&1, ["leg_totality", "slices"]))}
+        ),
+      leg_overlap:
+        Enum.map(
+          legs,
+          &{get_in(&1, ["leg_totality", "leg"]),
+           get_in(&1, ["leg_totality", "cover_not_partition", "in_more_than_one_slice"])}
+        )
     }
   end
 
@@ -1374,7 +1667,26 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       {at.("X9"), "#{f.claim_level_unmatched} of them"},
       {"buckets.bucket_1.universe", "the #{f.declared_members} declared members"},
       {"population.state_4_guard", "these #{f.declared_members} members"}
-    ] ++ bucket_2_phrase(at, f)
+    ] ++ bucket_2_phrase(at, f) ++ leg_phrase(at, f)
+  end
+
+  # Pinned only where a leg was ASSERTED, for the same reason bucket 2's pin is
+  # conditional: a run over files that close no leg must not be made to state a
+  # figure it does not hold. X10 is not in `residuals` at all on such a run, so
+  # `at.("X10")` would resolve to a path that is not there — and an absent
+  # statement IS a missing phrase, which would fire the pin over a run that was
+  # right. The condition is what keeps the pin honest, not what weakens it.
+  defp leg_phrase(_at, %{legs_asserted_total: 0}), do: []
+
+  defp leg_phrase(at, f) do
+    overlaps = Map.new(f.leg_overlap)
+
+    Enum.flat_map(f.leg_members, fn {leg, n} ->
+      [
+        {at.("X10"), "all #{n} of them"},
+        {at.("X10"), "#{Map.fetch!(overlaps, leg)} members sit in two"}
+      ]
+    end)
   end
 
   # Pinned only where bucket 2 was ASKED. A pin over a run that declares no
@@ -1449,103 +1761,152 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
   end
 
   defp residuals(f) do
-    [
+    leg_residual(f) ++
+      [
+        %{
+          "id" => "X1",
+          "text" =>
+            "Axis verdicts are JUDGEMENTS. Whether a claim really agrees with a conjunct is A3 §7's semantic-sameness residual and escalates per case; nothing here decides it."
+        },
+        %{
+          "id" => "X2",
+          "text" =>
+            "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — the attempts were made and none " <>
+              "succeeded, which is not the same as proven. The bound is narrow. The generator now refuses a " <>
+              "duplicated join key (G14), a population that is not the set its external selector " <>
+              "denotes or that disagrees with its own declared counts (G15), and a manifest whose " <>
+              "verdicts have drifted from A5's bucket-0 artefact (G16). Every falsification class is " <>
+              "shown firing on a mutated input with the unmutated build as the negative control in " <>
+              "the same run, at the OS exit status and not only in-VM, and restored green after; " <>
+              "C1a's own thirteen are re-run with the after-restoration they lacked. A per-row " <>
+              "bucket-assignment drift is caught naming the row and the buckets it crosses " <>
+              "(conformance/controls/crosswalk_falsification_controls.exs). What that does NOT " <>
+              "establish: that any axis verdict is right (X1 is untouched — an axis verdict is a " <>
+              "judgement and no refusal can reach it), and that anything outside the declared " <>
+              "population was falsified at all. MES-104 added four refusals to the set C3 covers — " <>
+              "G17 (two files declaring the same member), G18 (an axis row citing a provenance for " <>
+              "its emitting span the locator does not support), G19 (a DECLARED check with no axis " <>
+              "decomposition) and G20 (an inherited B2b token no row carries) — each shown firing on " <>
+              "a mutated input with the unmutated build as the negative control in the same run. " <>
+              "MES-108 added G21, which refuses a population figure in this generator's own prose " <>
+              "that the run did not derive. What lies OUTSIDE the declared population is " <>
+              "unfalsified, and the tickets that own it are the ones " <>
+              "`population.outside_the_population.owners` names — this residual does not name " <>
+              "them, because it named C1b-ii while C1b-ii was rendering it, and a statement that " <>
+              "names its own producer as still owing the remainder is CR-1 (MES-104) recurring as " <>
+              "CR-5 (MES-108)."
+        },
+        %{
+          "id" => "X6",
+          "text" =>
+            "The second-source re-derivation (`--verdicts-from bucket-0`) is a CONSISTENCY pin, " <>
+              "not a correctness one (ruling 9). A1's manifest and A5's bucket-0 artefact are " <>
+              "different files, different schemas, different generators — but both descend from the " <>
+              "SAME accepted harness run. Byte-identical output witnesses that nobody edited one " <>
+              "without regenerating the other. A wrong run would be wrong in both, and this pin " <>
+              "would agree just as firmly."
+        },
+        %{
+          "id" => "X3",
+          "text" =>
+            "Axis spans address ONE build. A harness bump invalidates them, and --harness is what detects it — a run without it records `harness_checked: false` rather than a pass."
+        },
+        %{
+          "id" => "X4",
+          "text" =>
+            "`no_axis_contact` is a THIRD escalation, added here by generalising A3 §2's 'covering zero of one axis is no match, not a partial one' to N axes. A3 §3's table has no row for it. Escalation rather than a new bucket is deliberate: it routes to the PM and costs nothing if the ruling goes the other way."
+        },
+        %{
+          "id" => "X5",
+          "text" =>
+            "The member population is #{f.declared_members} across #{length(f.per_file_members)} " <>
+              "edges files — " <>
+              Enum.map_join(f.per_file_members, " and ", fn {file, n} ->
+                "#{n} members from #{file}"
+              end) <>
+              ". Two of the checks C1a addresses enter through A3 §1's cardinality rule and §4's " <>
+              "published worked edge, not through B2b's tokens — inherited, not newly adjudicated, " <>
+              "and said so in the edges file. Every figure in this sentence is interpolated: all " <>
+              "three were literals until MES-108, and two of the three were already wrong when " <>
+              "CR-5 found them."
+        },
+        %{
+          "id" => "X7",
+          "text" =>
+            "A3 §6's STATE-4 GUARD IS ENTAILED BY G15a and cannot fire. The population is set-equal to its selector's denotation in both directions and is derived from the file's own rows, so every member has a row and every row has a tag. This was already true in C1a, where the selector and the tagging predicate were literally the same predicate — so D3's claim that the state-4 guard 'is the limb that makes an EMPTY crosswalk fail' is not what happens: `check_population([], tagged)` returns `:ok`, and the vacuum guard is what fires. Recorded rather than removed, because the guard is A3 §6's ratified one and dropping it would be a silent change to a ratified rule. The completeness question that is NOT entailed is G20."
+        },
+        %{
+          "id" => "X8",
+          "text" =>
+            "BUCKET 2 WAS EMPTY BY CONSTRUCTION UNTIL MES-104. C1a derived its check universe " <>
+              "from the tags its own edges carried, so the complement within it was necessarily " <>
+              "empty and its `CHECKED, AND ZERO` could not have said anything else. A file may now " <>
+              "declare its check population from an external anchor. " <>
+              bucket_2_answer(f) <>
+              " A file that declares none contributes none to the universe and the " <>
+              "artefact reports that bucket 2 was not asked, rather than reporting a zero. The " <>
+              "answer is interpolated — this sentence froze C1b-i's at nine and went on stating it " <>
+              "after MES-108 moved the check population (CR-5)."
+        },
+        %{
+          "id" => "X9",
+          "text" =>
+            "A CLAIM-LEVEL STATE 3 HAS NO BUCKET. A3 §6's state 3 is a property of a MEMBER, and the bucket-1 reconciliation requires a member to be edge-bearing or declared unmatched, never both — so a member matching on some claims and not on others has nowhere to record the unmatched ones. C1b-i found five; MES-108 resolved " <>
+              "two of them into real edges and found one more. This run carries " <>
+              "#{f.claim_level_unmatched} of them in `claim_level_unmatched`, each with the search " <>
+              "that found none, and ESCALATED — the figure interpolated, because it was written as " <>
+              "a word and so would not have moved (CR-5). Whether A3 §6 should gain a claim-level " <>
+              "state is the PM's."
+        },
+        %{
+          "id" => "X11",
+          "text" =>
+            "THE ABSENCE-SEARCH REGISTRY DOES NOT REACH EVERY BUCKET-1 ROW, and the shortfall is " <>
+              "stated rather than hidden behind a green. G23's prose limb is LEG-WIDE with no " <>
+              "exception list — every declared-unmatched row in this run records the search that " <>
+              "found none, and the two rows that did not when MES-109 opened were fixed by RUNNING " <>
+              "their searches, not by excepting them. Its registry limb — id resolves, entry " <>
+              "records a zero over a named population with a runnable pattern, positive controls " <>
+              "and a near miss, no orphans, and the entry's kind equal to the row's own reason " <>
+              "slug — reaches only the rows that carry a `search_id`. The rest carry a search that " <>
+              "was run and recorded in prose but never registered, and registering it now would " <>
+              "mean writing a zero this run did not re-measure: the invented-field defect C1b-i " <>
+              "refused when it declined to backfill. C1c faces the same choice on the server leg " <>
+              "and should settle it there rather than inherit it silently."
+        }
+      ]
+  end
+
+  # X10 exists only on a run that ASSERTS a leg, and that is the point: a
+  # sentence about a closed leg must not survive a run that closed none. On such
+  # a run the id is absent from `residuals`, `required_phrases/2` adds no pin for
+  # it, and neither half can go stale in the other's direction.
+  defp leg_residual(%{legs_asserted_total: 0}), do: []
+
+  defp leg_residual(f) do
+    overlaps = Map.new(f.leg_overlap)
+    slices = Map.new(f.leg_slices)
+
+    Enum.map(f.leg_members, fn {leg, n} ->
       %{
-        "id" => "X1",
+        "id" => "X10",
         "text" =>
-          "Axis verdicts are JUDGEMENTS. Whether a claim really agrees with a conjunct is A3 §7's semantic-sameness residual and escalates per case; nothing here decides it."
-      },
-      %{
-        "id" => "X2",
-        "text" =>
-          "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — the attempts were made and none " <>
-            "succeeded, which is not the same as proven. The bound is narrow. The generator now refuses a " <>
-            "duplicated join key (G14), a population that is not the set its external selector " <>
-            "denotes or that disagrees with its own declared counts (G15), and a manifest whose " <>
-            "verdicts have drifted from A5's bucket-0 artefact (G16). Every falsification class is " <>
-            "shown firing on a mutated input with the unmutated build as the negative control in " <>
-            "the same run, at the OS exit status and not only in-VM, and restored green after; " <>
-            "C1a's own thirteen are re-run with the after-restoration they lacked. A per-row " <>
-            "bucket-assignment drift is caught naming the row and the buckets it crosses " <>
-            "(conformance/controls/crosswalk_falsification_controls.exs). What that does NOT " <>
-            "establish: that any axis verdict is right (X1 is untouched — an axis verdict is a " <>
-            "judgement and no refusal can reach it), and that anything outside the declared " <>
-            "population was falsified at all. MES-104 added four refusals to the set C3 covers — " <>
-            "G17 (two files declaring the same member), G18 (an axis row citing a provenance for " <>
-            "its emitting span the locator does not support), G19 (a DECLARED check with no axis " <>
-            "decomposition) and G20 (an inherited B2b token no row carries) — each shown firing on " <>
-            "a mutated input with the unmutated build as the negative control in the same run. " <>
-            "MES-108 added G21, which refuses a population figure in this generator's own prose " <>
-            "that the run did not derive. What lies OUTSIDE the declared population is " <>
-            "unfalsified, and the tickets that own it are the ones " <>
-            "`population.outside_the_population.owners` names — this residual does not name " <>
-            "them, because it named C1b-ii while C1b-ii was rendering it, and a statement that " <>
-            "names its own producer as still owing the remainder is CR-1 (MES-104) recurring as " <>
-            "CR-5 (MES-108)."
-      },
-      %{
-        "id" => "X6",
-        "text" =>
-          "The second-source re-derivation (`--verdicts-from bucket-0`) is a CONSISTENCY pin, " <>
-            "not a correctness one (ruling 9). A1's manifest and A5's bucket-0 artefact are " <>
-            "different files, different schemas, different generators — but both descend from the " <>
-            "SAME accepted harness run. Byte-identical output witnesses that nobody edited one " <>
-            "without regenerating the other. A wrong run would be wrong in both, and this pin " <>
-            "would agree just as firmly."
-      },
-      %{
-        "id" => "X3",
-        "text" =>
-          "Axis spans address ONE build. A harness bump invalidates them, and --harness is what detects it — a run without it records `harness_checked: false` rather than a pass."
-      },
-      %{
-        "id" => "X4",
-        "text" =>
-          "`no_axis_contact` is a THIRD escalation, added here by generalising A3 §2's 'covering zero of one axis is no match, not a partial one' to N axes. A3 §3's table has no row for it. Escalation rather than a new bucket is deliberate: it routes to the PM and costs nothing if the ruling goes the other way."
-      },
-      %{
-        "id" => "X5",
-        "text" =>
-          "The member population is #{f.declared_members} across #{length(f.per_file_members)} " <>
-            "edges files — " <>
-            Enum.map_join(f.per_file_members, " and ", fn {file, n} ->
-              "#{n} members from #{file}"
-            end) <>
-            ". Two of the checks C1a addresses enter through A3 §1's cardinality rule and §4's " <>
-            "published worked edge, not through B2b's tokens — inherited, not newly adjudicated, " <>
-            "and said so in the edges file. Every figure in this sentence is interpolated: all " <>
-            "three were literals until MES-108, and two of the three were already wrong when " <>
-            "CR-5 found them."
-      },
-      %{
-        "id" => "X7",
-        "text" =>
-          "A3 §6's STATE-4 GUARD IS ENTAILED BY G15a and cannot fire. The population is set-equal to its selector's denotation in both directions and is derived from the file's own rows, so every member has a row and every row has a tag. This was already true in C1a, where the selector and the tagging predicate were literally the same predicate — so D3's claim that the state-4 guard 'is the limb that makes an EMPTY crosswalk fail' is not what happens: `check_population([], tagged)` returns `:ok`, and the vacuum guard is what fires. Recorded rather than removed, because the guard is A3 §6's ratified one and dropping it would be a silent change to a ratified rule. The completeness question that is NOT entailed is G20."
-      },
-      %{
-        "id" => "X8",
-        "text" =>
-          "BUCKET 2 WAS EMPTY BY CONSTRUCTION UNTIL MES-104. C1a derived its check universe " <>
-            "from the tags its own edges carried, so the complement within it was necessarily " <>
-            "empty and its `CHECKED, AND ZERO` could not have said anything else. A file may now " <>
-            "declare its check population from an external anchor. " <>
-            bucket_2_answer(f) <>
-            " A file that declares none contributes none to the universe and the " <>
-            "artefact reports that bucket 2 was not asked, rather than reporting a zero. The " <>
-            "answer is interpolated — this sentence froze C1b-i's at nine and went on stating it " <>
-            "after MES-108 moved the check population (CR-5)."
-      },
-      %{
-        "id" => "X9",
-        "text" =>
-          "A CLAIM-LEVEL STATE 3 HAS NO BUCKET. A3 §6's state 3 is a property of a MEMBER, and the bucket-1 reconciliation requires a member to be edge-bearing or declared unmatched, never both — so a member matching on some claims and not on others has nowhere to record the unmatched ones. C1b-i found five; MES-108 resolved " <>
-            "two of them into real edges and found one more. This run carries " <>
-            "#{f.claim_level_unmatched} of them in `claim_level_unmatched`, each with the search " <>
-            "that found none, and ESCALATED — the figure interpolated, because it was written as " <>
-            "a word and so would not have moved (CR-5). Whether A3 §6 should gain a claim-level " <>
-            "state is the PM's."
+          "THE #{String.upcase(leg)} LEG IS CLOSED, BY REFUSAL AND NOT BY ASSERTION. Every " <>
+            "ET-CC member B2b puts on the #{leg} leg carries a row here — all #{n} of them — " <>
+            "and a member in neither an edge nor a declared_unmatched record REFUSES THE BUILD " <>
+            "(G22b), evaluated fresh against B2b and compared by set in both directions. The " <>
+            "leg was reached by #{Map.fetch!(slices, leg)} ticket slices declared as a COVER " <>
+            "and not a partition: #{Map.fetch!(overlaps, leg)} members sit in two slices at " <>
+            "once, because a member a later ticket's CG brings in may already have carried an " <>
+            "earlier ticket's token, and it keeps ONE home. The overlap is derived here, not " <>
+            "taken from the file's word for it, so the slices cannot be summed into a leg that " <>
+            "is not one. WHAT THIS IS NOT: a claim that any adjudication is right. A leg every " <>
+            "member of which was adjudicated wrongly passes G22b exactly as firmly, and the " <>
+            "state-4 guard over this population remains ENTAILED by G15a and unable to fire " <>
+            "(X7) — what is new is that the population it cannot fire over is provably the " <>
+            "whole leg rather than a slice somebody chose."
       }
-    ]
+    end)
   end
 
   # `nil` is not zero here: a run whose files declare no check population has no
@@ -1650,11 +2011,32 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
 
       claim-level       #{a["claim_level_unmatched"]["count"]} claims inside edge-bearing members with no counterpart — escalated, not bucketed
 
+      leg totality      #{leg_line(p)}
+
+      absence searches  #{a["absence_search_guard"]["rows_checked"]} bucket-1 rows, all naming a search (G23a, leg-wide, no exceptions);
+                        #{a["absence_search_guard"]["rows_naming_a_registered_search"]} of them name one of #{a["absence_search_guard"]["entries"]} registry entries re-run by the controls (G23b/c/d)
+
       cross-source      #{a["cross_source_agreement"]["compared"]} checks compared against A5's bucket-0 artefact, #{length(a["cross_source_agreement"]["disagreements"])} disagreements (G16)
 
       trust             FALSIFICATION-TESTED by MES-99 (C3) and standing, over this declared slice only.
                         Ruling 5.
     """)
+  end
+
+  defp leg_line(p) do
+    case Enum.filter(p["files"], &get_in(&1, ["leg_totality", "declared"])) do
+      [] ->
+        "none asserted — no edges file declares a `leg`"
+
+      files ->
+        Enum.map_join(files, "; ", fn f ->
+          t = f["leg_totality"]
+          c = t["cover_not_partition"]
+
+          "#{t["leg"]} leg TOTAL at #{t["members"]} members (G22b, fresh against B2b, both directions) " <>
+            "— reached by #{length(t["slices"])} slices as a COVER, #{c["in_more_than_one_slice"]} in two"
+        end)
+    end
   end
 
   defp read_json!(path), do: path |> File.read!() |> Jason.decode!()

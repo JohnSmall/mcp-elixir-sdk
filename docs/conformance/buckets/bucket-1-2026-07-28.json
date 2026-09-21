@@ -1,12 +1,12 @@
 {
   "bucket": "1",
-  "count": 28,
+  "count": 65,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 68 declared ET-CC members and 39\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 213 members and\n120 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 14 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
-  "predicate": "Declared-population ET-CC members carrying NO edge in `cells`: the complement of `members_with_edges` over the declared population, taken through `Crosswalk.project(:bucket_1, ...)`. Universe: the 68 declared members, never all 281 members.",
+  "population_banner": "POPULATION: this projection covers 110 declared ET-CC members and 54\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 171 members and\n116 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 3 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "predicate": "Declared-population ET-CC members carrying NO edge in `cells`: the complement of `members_with_edges` over the declared population, taken through `Crosswalk.project(:bucket_1, ...)`. Universe: the 110 declared members, never all 281 members.",
   "projected_from": {
     "bucket_zero": {
       "bytes": 176409,
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 281457,
+      "bytes": 399832,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "b150085b2c5a31e6ecfe8a4815528dd05b385ccac4296d5cbaebfa541ae46bbf"
+      "sha256": "e36e1469ddf92bbd9bc38d36301c46fe2f57b6b00823562b4820d553981c1b85"
     }
   },
   "revision": "2026-07-28",
@@ -46,6 +46,86 @@
       "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
       "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
       "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "with no `:on_input_required` resolver configured, an `input_required` result is returned to the caller unchanged instead of being retried",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test MRTR client retry without a resolver the input_required result is returned as-is",
+        "test": "test MRTR client retry without a resolver the input_required result is returned as-is"
+      },
+      "search_id": "S15",
+      "tag": "oc:none/no-oc-fixture-case/mrtr-no-resolver-returns-result-as-is",
+      "the_near_miss_that_is_not_a_counterpart": "`sep-2322-default-result-type-complete` / DefaultResultTypeComplete, decomposed by this ticket. It is the ONE case in this fixture where the client MUST NOT retry — so it looks like the counterpart, and the resemblance survives a careless read. Its antecedent is different: the failing arm is `if(t)` where `t` is `Client retried with inputResponses even though the result had no resultType`. The trigger is an ABSENT `resultType`, which the spec says defaults to `complete`; this claim's trigger is a resultType that explicitly SAYS `input_required` while the client has nothing configured to resolve it. And the fixture rules the declining client out from the other side: the scenario's `getChecks` seeds every unfired MRTR check `status:`FAILURE`` with `Tool was not called by client or MRTR flow not completed`, so a client that declines is scored as having failed the flow, never as having correctly declined. Both of the fixture's two `input_required` emissions ([345526] and [346965], measured) lead into a retry the checks then score.",
+      "the_search_that_found_none": "a client that receives an explicit `resultType: \"input_required\"` and has NO resolver configured, returning the result to its caller unchanged instead of retrying",
+      "why_no_counterpart": "`no-oc-fixture-case` — and this is the ONLY one of C1b-iii's 37 that is. The scenario EXISTS, is CLIENT-leg, is in this file's declared check population and is matched by five checks; what it has no case for is a client that declines to resolve. So the search is over the scenario's fixture bytes rather than over the 175.",
+      "why_this_search_is_this_claims_search": "The claim is the declining client. S15's subject is that client, and the search is over the fixture that would have to contain such a case — the mock server the scenario's `start` builds. Its near miss, DefaultResultTypeComplete, is the one fixture case where the client must not retry, and its antecedent is different."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "`cancel/3` sends `notifications/cancelled` carrying `requestId`, and with no `id` of its own",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test cancel/3 sends a cancellation notification",
+        "test": "test cancel/3 sends a cancellation notification"
+      },
+      "search_id": "S09",
+      "tag": "oc:none/no-oc-scenario/client-sends-cancelled-notification",
+      "the_near_miss_that_is_not_a_counterpart": "there is no near miss on the word: `cancel` returns ZERO over all 175 rows, in every field. The nearest ARTEFACT is the three `notifications/` rows, all of which are `ClientMcpMethodHeader_notifications_initialized` and its siblings scoring a routing header — so a reader looking for `notifications/cancelled` finds the suite does carry notification rows and might stop there. Cancellation itself is absent from the frozen 175 on both legs. Recorded as a bare-word zero WITH the adjacent-artefact miss named, because the alternative — a zero and nothing else — is the grep this field exists to prevent.",
+      "the_search_that_found_none": "a client sending `notifications/cancelled` for a request it has abandoned — the method, the `requestId` param, and no `id` (it is a notification, not a request)",
+      "why_no_counterpart": "`no-oc-scenario` — `cancel` returns ZERO over all 175 rows in every field. Cancellation is absent from the frozen set on both legs.",
+      "why_this_search_is_this_claims_search": "The claim is the cancellation notification itself. S09's subject is that notification, spelled with its method, its param and the absence of an `id`; the search's own result is a bare zero on the word, which is why its near miss is stated as an adjacent artefact rather than a same-word one."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "two requests in flight at once each get their own response back to their own caller",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test concurrent requests handles multiple concurrent requests",
+        "test": "test concurrent requests handles multiple concurrent requests"
+      },
+      "search_id": "S11",
+      "tag": "oc:none/no-oc-scenario/client-correlates-concurrent-responses",
+      "the_near_miss_that_is_not_a_counterpart": "`MRTRClientParallelIsolation` — CLIENT-leg, in this file's declared check population, decomposed BY THIS TICKET, and its description is `inputRequests and requestState MUST NOT be used for any other request the client may be sending`. That is a check about a client with more than one request in flight, and the temptation to call it the counterpart is real. It is not one: its two axes are `unrelated_call_carries_no_input_responses` and `unrelated_call_carries_no_request_state`, both read off `e!==void 0` / `t!==void 0` at [347811,348009], and both are about MRTR state LEAKING between calls. This claim is about response CORRELATION and involves no MRTR flow at all, so it is not merely silent on the two axes — its subject is a different property of the same situation. That is why this is a bucket-1 record and not an all-silent edge: an all-silent edge says `there is a counterpart and our claim does not touch its predicate`, and here there is no counterpart to be silent about.",
+      "the_search_that_found_none": "a client keeping several requests in flight at once and matching each response to the caller that asked for it",
+      "why_no_counterpart": "`no-oc-scenario` — the one row matching `parallel` is `MRTRClientParallelIsolation`, whose subject is MRTR state leaking between calls, not response correlation. Nothing on either leg scores correlation.",
+      "why_this_search_is_this_claims_search": "The claim is response correlation under concurrency. S11's subject is that, and its near miss is the row a search on the obvious word returns — which is in this file's own declared check population and decomposed by this ticket, so the reason it is not a counterpart is stated against its axes rather than against its name."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "`connect/1` sends `server/discover` and returns the server info, capabilities and negotiated version from the result",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test connect/1 (server/discover) probes capabilities and returns server info",
+        "test": "test connect/1 (server/discover) probes capabilities and returns server info"
+      },
+      "search_id": "S06",
+      "tag": "oc:none/no-oc-scenario/client-discover-probe-returns-info",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerImplementsDiscover`, `ServerDeclaresPromptsInDiscover` and `DiscoverCapabilitiesMatchHandlers`, plus `ServerIdentifiesInResultMeta` for `serverInfo`. Four rows, all SERVER-leg, all in `server-stateless`. `server/discover` is scored thoroughly — from the server's end. The client's end of the same call is scored nowhere: there is no client-leg scenario for it, and the client leg's seven scenarios (`http-custom-headers`, `http-invalid-tool-headers`, `http-standard-headers`, `json-schema-ref-no-deref`, `request-metadata`, `sep-2322-client-request-state`, `tools_call`) are the whole of the client leg's 54 in-denominator checks, which this file now declares in full.",
+      "the_search_that_found_none": "the CLIENT side of `server/discover` — issuing the probe, and what it makes of the DiscoverResult it gets back (capabilities, `serverInfo`, `supportedVersions`, an error in place of a result, and the accessors that surface them afterwards)",
+      "why_no_counterpart": "`no-oc-scenario` — `server/discover` is scored four times, all SERVER-leg, all in `server-stateless`. The client leg's seven scenarios are the whole of its 54 in-denominator checks and none of them is a discover scenario, so the search is over all 175 rather than over a fixture.",
+      "why_this_search_is_this_claims_search": "The claim is about the CLIENT end of `server/discover` — issuing it, or reading what came back. S06's subject is that end of the call, stated as the probe plus the DiscoverResult; the four server-leg discover rows are its near miss and are the other end."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "a JSON-RPC error in place of a DiscoverResult is returned to the caller as an error",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test connect/1 (server/discover) returns error on discover failure",
+        "test": "test connect/1 (server/discover) returns error on discover failure"
+      },
+      "search_id": "S06",
+      "tag": "oc:none/no-oc-scenario/client-discover-probe-error-path",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerImplementsDiscover`, `ServerDeclaresPromptsInDiscover` and `DiscoverCapabilitiesMatchHandlers`, plus `ServerIdentifiesInResultMeta` for `serverInfo`. Four rows, all SERVER-leg, all in `server-stateless`. `server/discover` is scored thoroughly — from the server's end. The client's end of the same call is scored nowhere: there is no client-leg scenario for it, and the client leg's seven scenarios (`http-custom-headers`, `http-invalid-tool-headers`, `http-standard-headers`, `json-schema-ref-no-deref`, `request-metadata`, `sep-2322-client-request-state`, `tools_call`) are the whole of the client leg's 54 in-denominator checks, which this file now declares in full.",
+      "the_search_that_found_none": "the CLIENT side of `server/discover` — issuing the probe, and what it makes of the DiscoverResult it gets back (capabilities, `serverInfo`, `supportedVersions`, an error in place of a result, and the accessors that surface them afterwards)",
+      "why_no_counterpart": "`no-oc-scenario` — `server/discover` is scored four times, all SERVER-leg, all in `server-stateless`. The client leg's seven scenarios are the whole of its 54 in-denominator checks and none of them is a discover scenario, so the search is over all 175 rather than over a fixture.",
+      "why_this_search_is_this_claims_search": "The claim is about the CLIENT end of `server/discover` — issuing it, or reading what came back. S06's subject is that end of the call, stated as the probe plus the DiscoverResult; the four server-leg discover rows are its near miss and are the other end."
     },
     {
       "cg": "CG2",
@@ -165,6 +245,166 @@
       "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
     },
     {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "every caller waiting on a request is told when the transport closes, and the client's status goes to closed",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test lifecycle notifies pending requests when the transport closes",
+        "test": "test lifecycle notifies pending requests when the transport closes"
+      },
+      "search_id": "S07",
+      "tag": "oc:none/no-oc-scenario/client-transport-close-notifies-pending",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientRetrySupportedVersion` and the six other rows matching `retry` are the nearest thing the suite has to a client that does something OTHER than wait: they score a re-send after a specific error. None scores what happens when nothing comes back at all. `request` returns 63 of the 175 rows, so the sweep is plainly reading the right field; the suite's model of a request is one that gets answered.",
+      "the_search_that_found_none": "the lifetime of an in-flight client request that never gets a response — a per-request timeout firing, and every pending caller being told when the transport closes underneath them",
+      "why_no_counterpart": "`no-oc-scenario` — 63 of the 175 rows are about a request and every one of them is about a request that is answered. Nothing on either leg scores a timeout or a transport closing.",
+      "why_this_search_is_this_claims_search": "The claim is about a request that gets NO response — a timeout, or a transport that closes under it. S07's subject is exactly that, and its near miss is the retry family: the suite's only model of a request that does not simply succeed."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "a request that is never answered returns `{:error, :timeout}` to its caller",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test lifecycle times out a pending request",
+        "test": "test lifecycle times out a pending request"
+      },
+      "search_id": "S07",
+      "tag": "oc:none/no-oc-scenario/client-request-timeout",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientRetrySupportedVersion` and the six other rows matching `retry` are the nearest thing the suite has to a client that does something OTHER than wait: they score a re-send after a specific error. None scores what happens when nothing comes back at all. `request` returns 63 of the 175 rows, so the sweep is plainly reading the right field; the suite's model of a request is one that gets answered.",
+      "the_search_that_found_none": "the lifetime of an in-flight client request that never gets a response — a per-request timeout firing, and every pending caller being told when the transport closes underneath them",
+      "why_no_counterpart": "`no-oc-scenario` — 63 of the 175 rows are about a request and every one of them is about a request that is answered. Nothing on either leg scores a timeout or a transport closing.",
+      "why_this_search_is_this_claims_search": "The claim is about a request that gets NO response — a timeout, or a transport that closes under it. S07's subject is exactly that, and its near miss is the retry family: the suite's only model of a request that does not simply succeed."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "an inbound notification is delivered to a function handler with its method and params",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test notifications dispatches to a function handler",
+        "test": "test notifications dispatches to a function handler"
+      },
+      "search_id": "S08",
+      "tag": "oc:none/no-oc-scenario/client-notification-to-fun-handler",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientMcpMethodHeader_notifications_initialized` — the only row in the suite with the word `notification` in it on the CLIENT leg. It scores the `Mcp-Method` routing header on a notification the client SENDS, where this claim is about a notification the client RECEIVES and hands to a handler: same word, opposite direction. AND IT IS NOT EVEN IN THE DENOMINATOR — measured, not assumed: it is one of exactly TWO rows A5's bucket-0 artefact removes from the 175, the other being `ClientMcpMethodHeader_initialize`, so it is neither declared by this file nor adjudicated by anything. That makes the near miss sharper rather than weaker. A reader grepping `notification` over the manifest finds one client row, and it is a row nobody scores, pointing the other way.",
+      "the_search_that_found_none": "a client DISPATCHING an inbound notification to the handler it was configured with — a pid handler and a function handler, method and params delivered",
+      "why_no_counterpart": "`no-oc-scenario` — six rows mention a notification; the only client-leg one scores the `Mcp-Method` header on a notification the client sends. Nothing scores what a client does with one it receives.",
+      "why_this_search_is_this_claims_search": "The claim is about an INBOUND notification reaching a configured handler. S08's subject is that dispatch, and its near miss is the one client-leg row carrying the word, which scores a header on an OUTBOUND one."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "an inbound notification is delivered to a pid handler as `{:mcp_notification, method, params}`",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test notifications dispatches to a pid handler",
+        "test": "test notifications dispatches to a pid handler"
+      },
+      "search_id": "S08",
+      "tag": "oc:none/no-oc-scenario/client-notification-to-pid-handler",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientMcpMethodHeader_notifications_initialized` — the only row in the suite with the word `notification` in it on the CLIENT leg. It scores the `Mcp-Method` routing header on a notification the client SENDS, where this claim is about a notification the client RECEIVES and hands to a handler: same word, opposite direction. AND IT IS NOT EVEN IN THE DENOMINATOR — measured, not assumed: it is one of exactly TWO rows A5's bucket-0 artefact removes from the 175, the other being `ClientMcpMethodHeader_initialize`, so it is neither declared by this file nor adjudicated by anything. That makes the near miss sharper rather than weaker. A reader grepping `notification` over the manifest finds one client row, and it is a row nobody scores, pointing the other way.",
+      "the_search_that_found_none": "a client DISPATCHING an inbound notification to the handler it was configured with — a pid handler and a function handler, method and params delivered",
+      "why_no_counterpart": "`no-oc-scenario` — six rows mention a notification; the only client-leg one scores the `Mcp-Method` header on a notification the client sends. Nothing scores what a client does with one it receives.",
+      "why_this_search_is_this_claims_search": "The claim is about an INBOUND notification reaching a configured handler. S08's subject is that dispatch, and its near miss is the one client-leg row carrying the word, which scores a header on an OUTBOUND one."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "`list_all_tools/1` omits `cursor` on the first page, sends the server's `nextCursor` on the second, and concatenates the results",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test pagination list_all_tools paginates through pages",
+        "test": "test pagination list_all_tools paginates through pages"
+      },
+      "search_id": "S10",
+      "tag": "oc:none/no-oc-scenario/client-follows-next-cursor",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList` (server leg) — `Server lists available tools with valid structure`. The suite lists tools, prompts, resources and resource templates, 19 rows match `list`, and NONE of them pages: every list check reads one response. `nextCursor` is in the spec and in our client; it is in no check's id, name or description.",
+      "the_search_that_found_none": "a client following `nextCursor` — issuing the first page with no `cursor`, the second with the cursor the server returned, and concatenating the pages",
+      "why_no_counterpart": "`no-oc-scenario` — 19 rows are about a list and none of them pages. `paginat`, `cursor` and `nextCursor` all return zero.",
+      "why_this_search_is_this_claims_search": "The claim is cursor-following across pages. S10's subject is that, and its positive control is the list family — so the zero is over rows that WOULD have carried a paging check had one existed."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "a JSON-RPC error answering a `tools/call` comes back to the caller as `{:error, %Error{}}` carrying the code",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test requests call_tool surfaces an error response",
+        "test": "test requests call_tool surfaces an error response"
+      },
+      "search_id": "S14",
+      "tag": "oc:none/no-oc-scenario/client-surfaces-error-to-caller",
+      "the_near_miss_that_is_not_a_counterpart": "the server-leg `tools-call-error` scenario and the nine `-32xxx` rows. The suite has a rich account of which errors a SERVER must return and when; 18 rows mention an error. Not one asks what the CLIENT does with one. The near miss is `tools-call-error` specifically, because its name reads like a client-side tool-call error path and it is a server-leg check on what the server sends.",
+      "the_search_that_found_none": "a client turning a JSON-RPC ERROR response to its own request into an error return for the caller, rather than a crash or a success",
+      "why_no_counterpart": "`no-oc-scenario` — 18 rows mention an error and every one is about what a SERVER returns. Nothing asks what a client does with one.",
+      "why_this_search_is_this_claims_search": "The claim is the client's disposal of an inbound error. S14's subject is that, and its near miss is `tools-call-error` — a scenario whose NAME reads like this claim and whose checks are server-leg."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "`get_prompt/3` issues `prompts/get` with the `arguments` map it was given",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test requests get_prompt sends name and arguments",
+        "test": "test requests get_prompt sends name and arguments"
+      },
+      "search_id": "S12",
+      "tag": "oc:none/no-oc-scenario/client-get-prompt-arguments-param",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientMcpMethodHeader_resources_read`, `ClientMcpNameHeader_resources_read`, `ClientMcpMethodHeader_prompts_get` and `ClientMcpNameHeader_prompts_get` — four CLIENT-leg rows, all in CG1, all in this file's declared check population. Two of them are matched (the two `Name` rows, by C1b-ii) and two are in BUCKET 2 (the two `Method` rows carry no edge at all), and the distinction does not matter to this search: what matters is that all four score the `Mcp-Method` / `Mcp-Name` ROUTING HEADER on the request and none of them looks in the body. SEP-2243's whole point is that a gateway can route without inspecting the body, so the absence is structural rather than accidental. The server-leg `resources-read-text` and `prompts-get-*` scenarios score the server's RESPONSE. Nothing anywhere scores a client's request params.",
+      "the_search_that_found_none": "the PARAMS a client puts on an outbound `resources/read` and `prompts/get` — the `uri` it was given, and the `arguments` map it was given",
+      "why_no_counterpart": "`no-oc-scenario` — the suite names `resources/read` and `prompts/get` on the client leg six times and scores the `Mcp-Method` / `Mcp-Name` header every time. SEP-2243 exists so a gateway need not read the body, so nothing on the client leg ever does.",
+      "why_this_search_is_this_claims_search": "The claim is about what the client puts in the request BODY. S12's subject is those params, and its near miss is the four CG1 rows that name the same two methods and score only the routing HEADER."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "`list_tools/1` returns the server's tools to its caller",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test requests list_tools returns tools",
+        "test": "test requests list_tools returns tools"
+      },
+      "search_id": "S13",
+      "tag": "oc:none/no-oc-scenario/client-surfaces-tools-list-result",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList` and `ToolsNameFormat` in the server-leg `tools-list` scenario, and the client-leg `ClientMcpMethodHeader_tools_list`. 23 rows mention tools. The two client-leg ones score the routing header on the REQUEST; the server-leg ones score the server's RESPONSE STRUCTURE. What no row scores is the client end of that response — whether the caller that asked for the list gets it.",
+      "the_search_that_found_none": "a client surfacing a `tools/list` result to its caller — the tools the server returned reaching the calling code",
+      "why_no_counterpart": "`no-oc-scenario` — 23 rows mention tools; the client-leg ones score a routing header on the request and the server-leg ones score the server's response structure. The client's end of the response is scored nowhere.",
+      "why_this_search_is_this_claims_search": "The claim is the caller receiving the result. S13's subject is that surfacing, and its near miss is the tools family in both directions — request header on our leg, response structure on the other — with the client's receipt falling between them."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "`read_resource/2` issues `resources/read` with the `uri` it was given",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test requests read_resource sends the uri",
+        "test": "test requests read_resource sends the uri"
+      },
+      "search_id": "S12",
+      "tag": "oc:none/no-oc-scenario/client-read-resource-uri-param",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientMcpMethodHeader_resources_read`, `ClientMcpNameHeader_resources_read`, `ClientMcpMethodHeader_prompts_get` and `ClientMcpNameHeader_prompts_get` — four CLIENT-leg rows, all in CG1, all in this file's declared check population. Two of them are matched (the two `Name` rows, by C1b-ii) and two are in BUCKET 2 (the two `Method` rows carry no edge at all), and the distinction does not matter to this search: what matters is that all four score the `Mcp-Method` / `Mcp-Name` ROUTING HEADER on the request and none of them looks in the body. SEP-2243's whole point is that a gateway can route without inspecting the body, so the absence is structural rather than accidental. The server-leg `resources-read-text` and `prompts-get-*` scenarios score the server's RESPONSE. Nothing anywhere scores a client's request params.",
+      "the_search_that_found_none": "the PARAMS a client puts on an outbound `resources/read` and `prompts/get` — the `uri` it was given, and the `arguments` map it was given",
+      "why_no_counterpart": "`no-oc-scenario` — the suite names `resources/read` and `prompts/get` on the client leg six times and scores the `Mcp-Method` / `Mcp-Name` header every time. SEP-2243 exists so a gateway need not read the body, so nothing on the client leg ever does.",
+      "why_this_search_is_this_claims_search": "The claim is about what the client puts in the request BODY. S12's subject is those params, and its near miss is the four CG1 rows that name the same two methods and score only the routing HEADER."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "what `connect/1` discovered stays queryable afterwards through `server_capabilities/1` and `server_info/1`",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test server_capabilities/1 and server_info/1 returns discovered capabilities and info",
+        "test": "test server_capabilities/1 and server_info/1 returns discovered capabilities and info"
+      },
+      "search_id": "S06",
+      "tag": "oc:none/no-oc-scenario/client-exposes-discovered-info",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerImplementsDiscover`, `ServerDeclaresPromptsInDiscover` and `DiscoverCapabilitiesMatchHandlers`, plus `ServerIdentifiesInResultMeta` for `serverInfo`. Four rows, all SERVER-leg, all in `server-stateless`. `server/discover` is scored thoroughly — from the server's end. The client's end of the same call is scored nowhere: there is no client-leg scenario for it, and the client leg's seven scenarios (`http-custom-headers`, `http-invalid-tool-headers`, `http-standard-headers`, `json-schema-ref-no-deref`, `request-metadata`, `sep-2322-client-request-state`, `tools_call`) are the whole of the client leg's 54 in-denominator checks, which this file now declares in full.",
+      "the_search_that_found_none": "the CLIENT side of `server/discover` — issuing the probe, and what it makes of the DiscoverResult it gets back (capabilities, `serverInfo`, `supportedVersions`, an error in place of a result, and the accessors that surface them afterwards)",
+      "why_no_counterpart": "`no-oc-scenario` — `server/discover` is scored four times, all SERVER-leg, all in `server-stateless`. The client leg's seven scenarios are the whole of its 54 in-denominator checks and none of them is a discover scenario, so the search is over all 175 rather than over a fixture.",
+      "why_this_search_is_this_claims_search": "The claim is about the CLIENT end of `server/discover` — issuing it, or reading what came back. S06's subject is that end of the call, stated as the probe plus the DiscoverResult; the four server-leg discover rows are its near miss and are the other end."
+    },
+    {
       "cg": "CG7",
       "member": {
         "module": "MCP.ClientToolSchemasTest",
@@ -176,6 +416,22 @@
       "why_no_counterpart": "A warn-once-per-cache-generation policy is a diagnostic property of OUR client. Nothing on the wire distinguishes a client that warned from one that did not, so the absence is `no-oc-scenario` — the suite has no such check anywhere — rather than a fixture gap."
     },
     {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "a -32020 answering something other than a `tools/call` is surfaced without any refresh or retry",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a -32020 on a NON-tools/call request is not retried",
+        "test": "test C-2 — the cache-miss and staleness policy a -32020 on a NON-tools/call request is not retried"
+      },
+      "search_id": "S16",
+      "tag": "oc:none/no-oc-scenario/client-32020-only-on-tools-call",
+      "the_near_miss_that_is_not_a_counterpart": "the server-leg `caching` scenario — eight rows, six of them matching `cach`, including `ToolsListCachingHints`, `TtlNonNegative` and `CacheScopeValid`. The suite has a whole scenario named caching, and a reader searching for a cache policy will land on it. It is SEP-2549 CACHE HINTS: whether a SERVER puts `ttlMs` and `cacheScope` on its list responses and whether those values are well-formed. It says nothing about what a CLIENT does when its cached tool schema turns out to be stale — and `-32020`, the error code this whole policy hangs on, does not occur in any of the 175 rows.",
+      "the_search_that_found_none": "a client's TOOL-SCHEMA CACHE staleness policy on a -32020 — one refresh and one retry and no loop, a failed refresh surfacing the ORIGINAL error rather than the refresh's, and no retry at all for a -32020 on a request that is not a `tools/call`",
+      "why_no_counterpart": "`no-oc-scenario` — `-32020` occurs in none of the 175 rows, and the scenario actually named `caching` is SEP-2549 cache HINTS on a server's list responses. There is no client cache-policy check to have a fixture case in.",
+      "why_this_search_is_this_claims_search": "The claim is one limb of the -32020 staleness policy. S16's subject is the policy stated at limb granularity — one refresh and one retry, a failed refresh surfacing the original, and no retry off the tools/call path — so each of the three members' claims is one of the constraints the search looked for."
+    },
+    {
       "cg": "CG7",
       "member": {
         "module": "MCP.ClientToolSchemasTest",
@@ -185,6 +441,54 @@
       "tag": "oc:none/no-oc-fixture-case/CG7-header-mismatch-recovery",
       "the_search_that_found_none": "The `http-custom-headers` scenario's `handleToolsCall` was read in full at the pinned build: every arm ends in `this.sendJson(t,{…result:{resultType:`complete`…}})`. It never returns an error, and `-32020` does not occur anywhere in the scenario. The 29 CG7 check names were then read for one about a retry or a refresh: none is.",
       "why_no_counterpart": "The scenario exists and is matched, but its fixture never rejects a call, so no case exercises the client's recovery from a header mismatch."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "when the refresh itself fails, the caller gets the ORIGINAL -32020 and not the refresh's error",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a FAILED refresh surfaces the ORIGINAL -32020, not the refresh's error",
+        "test": "test C-2 — the cache-miss and staleness policy a FAILED refresh surfaces the ORIGINAL -32020, not the refresh's error"
+      },
+      "search_id": "S16",
+      "tag": "oc:none/no-oc-scenario/client-32020-failed-refresh-surfaces-original",
+      "the_near_miss_that_is_not_a_counterpart": "the server-leg `caching` scenario — eight rows, six of them matching `cach`, including `ToolsListCachingHints`, `TtlNonNegative` and `CacheScopeValid`. The suite has a whole scenario named caching, and a reader searching for a cache policy will land on it. It is SEP-2549 CACHE HINTS: whether a SERVER puts `ttlMs` and `cacheScope` on its list responses and whether those values are well-formed. It says nothing about what a CLIENT does when its cached tool schema turns out to be stale — and `-32020`, the error code this whole policy hangs on, does not occur in any of the 175 rows.",
+      "the_search_that_found_none": "a client's TOOL-SCHEMA CACHE staleness policy on a -32020 — one refresh and one retry and no loop, a failed refresh surfacing the ORIGINAL error rather than the refresh's, and no retry at all for a -32020 on a request that is not a `tools/call`",
+      "why_no_counterpart": "`no-oc-scenario` — `-32020` occurs in none of the 175 rows, and the scenario actually named `caching` is SEP-2549 cache HINTS on a server's list responses. There is no client cache-policy check to have a fixture case in.",
+      "why_this_search_is_this_claims_search": "The claim is one limb of the -32020 staleness policy. S16's subject is the policy stated at limb granularity — one refresh and one retry, a failed refresh surfacing the original, and no retry off the tools/call path — so each of the three members' claims is one of the constraints the search looked for."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "the -32020 recovery is one-shot: a second -32020 is surfaced rather than triggering another refresh",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a SECOND -32020 is surfaced — the recovery is one-shot, not a loop",
+        "test": "test C-2 — the cache-miss and staleness policy a SECOND -32020 is surfaced — the recovery is one-shot, not a loop"
+      },
+      "search_id": "S16",
+      "tag": "oc:none/no-oc-scenario/client-32020-recovery-is-one-shot",
+      "the_near_miss_that_is_not_a_counterpart": "the server-leg `caching` scenario — eight rows, six of them matching `cach`, including `ToolsListCachingHints`, `TtlNonNegative` and `CacheScopeValid`. The suite has a whole scenario named caching, and a reader searching for a cache policy will land on it. It is SEP-2549 CACHE HINTS: whether a SERVER puts `ttlMs` and `cacheScope` on its list responses and whether those values are well-formed. It says nothing about what a CLIENT does when its cached tool schema turns out to be stale — and `-32020`, the error code this whole policy hangs on, does not occur in any of the 175 rows.",
+      "the_search_that_found_none": "a client's TOOL-SCHEMA CACHE staleness policy on a -32020 — one refresh and one retry and no loop, a failed refresh surfacing the ORIGINAL error rather than the refresh's, and no retry at all for a -32020 on a request that is not a `tools/call`",
+      "why_no_counterpart": "`no-oc-scenario` — `-32020` occurs in none of the 175 rows, and the scenario actually named `caching` is SEP-2549 cache HINTS on a server's list responses. There is no client cache-policy check to have a fixture case in.",
+      "why_this_search_is_this_claims_search": "The claim is one limb of the -32020 staleness policy. S16's subject is the policy stated at limb granularity — one refresh and one retry, a failed refresh surfacing the original, and no retry off the tools/call path — so each of the three members' claims is one of the constraints the search looked for."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "a `tools/list` answered with a non-object `result` fails that one request and leaves the client process and its other requests alive",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test M-1 — a malformed tools/list result fails the REQUEST, not the client a null result is reported to the caller and the client survives",
+        "test": "test M-1 — a malformed tools/list result fails the REQUEST, not the client a null result is reported to the caller and the client survives"
+      },
+      "search_id": "S17",
+      "tag": "oc:none/no-oc-scenario/client-survives-malformed-tools-list",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — `Server lists available tools with VALID STRUCTURE` — and `wire-schema-valid`. 44 rows carry `valid`. Every one of them asks whether a message IS well-formed; none asks what the peer does when it is not. The suite validates structure and stops there, which is reasonable for a conformance suite and is exactly why a robustness claim of this shape has no counterpart in it.",
+      "the_search_that_found_none": "a client surviving a MALFORMED `tools/list` result — a `result` that is `null` or a string reaching the caller as an error, with the client process and its other pending requests still alive",
+      "why_no_counterpart": "`no-oc-scenario` — 44 rows ask whether a message is valid and none asks what the peer does when it is not.",
+      "why_this_search_is_this_claims_search": "The claim is survival of a malformed peer message. S17's subject is that robustness property, and its near miss is the validity family — the suite checks structure and stops, which is why a robustness claim has nothing to correspond with."
     },
     {
       "cg": "CG7",
@@ -231,6 +535,54 @@
       "why_no_counterpart": "The merge/reset rule is what decides whether an earlier page's annotations survive a later one. Both scenarios serve a single page, so the rule is never exercised — a fixture gap, not an absent scenario."
     },
     {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "an `experimental` key is preserved rather than dropped",
+      "member": {
+        "module": "MCP.Protocol.CapabilitiesTest",
+        "register_key": "MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 handles experimental capabilities",
+        "test": "test ServerCapabilities from_map/1 handles experimental capabilities"
+      },
+      "search_id": "S05",
+      "tag": "oc:none/no-oc-scenario/server-capabilities-experimental",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientDeclaresRootsCapability` / `ClientDeclaresSamplingCapability` / `ClientDeclaresElicitationCapability`, which are in this file's declared check population and already carry edges from `MCP.Protocol.CapabilitiesTest`'s ClientCapabilities row. They point the OTHER WAY: their single axis is `capability_value_is_a_plain_object` over the capability the CLIENT declares in its own `_meta`. `ServerDeclaresPromptsInDiscover` is the server-side mirror and is SERVER-leg. So `capabilit` returns 12 rows and not one of them is about what a client makes of a server's map — the same word, the opposite direction.",
+      "the_search_that_found_none": "a client decoding the SERVER's advertised capabilities map into a struct — a full map, a map with capabilities missing, and an `experimental` key preserved",
+      "why_no_counterpart": "`no-oc-scenario` — 12 rows mention a capability and not one is about a client PARSING the server's map: the client-leg three score the shape of the capability the CLIENT declares, and `ServerDeclaresPromptsInDiscover` is server-leg.",
+      "why_this_search_is_this_claims_search": "The claim is about reading the SERVER's capabilities map. S05's subject is that read, and its near miss is the three client-capability checks this file already matches — same word, opposite direction, which is precisely why the member needs the search rather than the word."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "a capabilities map with keys absent decodes with those capabilities nil rather than failing",
+      "member": {
+        "module": "MCP.Protocol.CapabilitiesTest",
+        "register_key": "MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 handles missing capabilities",
+        "test": "test ServerCapabilities from_map/1 handles missing capabilities"
+      },
+      "search_id": "S05",
+      "tag": "oc:none/no-oc-scenario/server-capabilities-missing-keys",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientDeclaresRootsCapability` / `ClientDeclaresSamplingCapability` / `ClientDeclaresElicitationCapability`, which are in this file's declared check population and already carry edges from `MCP.Protocol.CapabilitiesTest`'s ClientCapabilities row. They point the OTHER WAY: their single axis is `capability_value_is_a_plain_object` over the capability the CLIENT declares in its own `_meta`. `ServerDeclaresPromptsInDiscover` is the server-side mirror and is SERVER-leg. So `capabilit` returns 12 rows and not one of them is about what a client makes of a server's map — the same word, the opposite direction.",
+      "the_search_that_found_none": "a client decoding the SERVER's advertised capabilities map into a struct — a full map, a map with capabilities missing, and an `experimental` key preserved",
+      "why_no_counterpart": "`no-oc-scenario` — 12 rows mention a capability and not one is about a client PARSING the server's map: the client-leg three score the shape of the capability the CLIENT declares, and `ServerDeclaresPromptsInDiscover` is server-leg.",
+      "why_this_search_is_this_claims_search": "The claim is about reading the SERVER's capabilities map. S05's subject is that read, and its near miss is the three client-capability checks this file already matches — same word, opposite direction, which is precisely why the member needs the search rather than the word."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "`ServerCapabilities.from_map/1` reads a fully populated capabilities map",
+      "member": {
+        "module": "MCP.Protocol.CapabilitiesTest",
+        "register_key": "MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 parses full capabilities",
+        "test": "test ServerCapabilities from_map/1 parses full capabilities"
+      },
+      "search_id": "S05",
+      "tag": "oc:none/no-oc-scenario/server-capabilities-full-map",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientDeclaresRootsCapability` / `ClientDeclaresSamplingCapability` / `ClientDeclaresElicitationCapability`, which are in this file's declared check population and already carry edges from `MCP.Protocol.CapabilitiesTest`'s ClientCapabilities row. They point the OTHER WAY: their single axis is `capability_value_is_a_plain_object` over the capability the CLIENT declares in its own `_meta`. `ServerDeclaresPromptsInDiscover` is the server-side mirror and is SERVER-leg. So `capabilit` returns 12 rows and not one of them is about what a client makes of a server's map — the same word, the opposite direction.",
+      "the_search_that_found_none": "a client decoding the SERVER's advertised capabilities map into a struct — a full map, a map with capabilities missing, and an `experimental` key preserved",
+      "why_no_counterpart": "`no-oc-scenario` — 12 rows mention a capability and not one is about a client PARSING the server's map: the client-leg three score the shape of the capability the CLIENT declares, and `ServerDeclaresPromptsInDiscover` is server-leg.",
+      "why_this_search_is_this_claims_search": "The claim is about reading the SERVER's capabilities map. S05's subject is that read, and its near miss is the three client-capability checks this file already matches — same word, opposite direction, which is precisely why the member needs the search rather than the word."
+    },
+    {
       "cg": "CG2",
       "field_added_by": "MES-108 (C1b-ii), 2026-09-21. These three records came from C1a and predate the `the_search_that_found_none` field. C1b-i rightly REFUSED to backfill a search nobody had run — a field invented after the fact is worse than an absent one. C1b-ii ran it, over the same population and at this tip, so the field is now ADDED rather than invented. The ADJUDICATION is untouched: these three were `declared_unmatched` before and are `declared_unmatched` now, with the same tags and the same members. What changed is that the record says what was read. Three rows sitting silent in a block where ten speak is a difference a reader would have to explain, and the explanation would have been 'nobody looked', which is no longer true.",
       "member": {
@@ -257,6 +609,38 @@
       "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
     },
     {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "`Error.from_map/1` reads `code`, `message` and `data` off the wire form",
+      "member": {
+        "module": "MCP.Protocol.ErrorTest",
+        "register_key": "MCP.Protocol.ErrorTest/test from_map/1 parses error from wire format",
+        "test": "test from_map/1 parses error from wire format"
+      },
+      "search_id": "S04",
+      "tag": "oc:none/no-oc-scenario/jsonrpc-error-object-from-wire",
+      "the_near_miss_that_is_not_a_counterpart": "the nine rows carrying a literal `-32xxx` code — `ResourcesNotFoundErrorCode` (-32602), `RequestMetaInvalid` (-32602), `ServerRejectsUndeclaredCapability` (-32021) and the six `HttpServerMethodNotFound404*` (-32601). The suite is full of JSON-RPC error codes and the positive control finds all nine. Every one is SERVER-leg and every one scores that a server RETURNS a particular code; not one scores a client's decoding of the object it receives. The near miss is the code, not the parse.",
+      "the_search_that_found_none": "a client decoding a JSON-RPC ERROR OBJECT off the wire into a struct — `code`, `message`, and `data` present or absent",
+      "why_no_counterpart": "`no-oc-scenario` — 18 of the 175 rows mention an error and nine name a literal code; every one scores a code a SERVER must return, none scores a client's decode of the object.",
+      "why_this_search_is_this_claims_search": "The claim is about turning the wire form of an ERROR OBJECT into a struct. S04's subject is that decode, and its positive control is the nine rows that DO carry error codes — so the search proves the suite's errors were read and are all about what a server returns."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "an error with no `data` key decodes with `data` nil rather than failing",
+      "member": {
+        "module": "MCP.Protocol.ErrorTest",
+        "register_key": "MCP.Protocol.ErrorTest/test from_map/1 parses error without data",
+        "test": "test from_map/1 parses error without data"
+      },
+      "search_id": "S04",
+      "tag": "oc:none/no-oc-scenario/jsonrpc-error-object-without-data",
+      "the_near_miss_that_is_not_a_counterpart": "the nine rows carrying a literal `-32xxx` code — `ResourcesNotFoundErrorCode` (-32602), `RequestMetaInvalid` (-32602), `ServerRejectsUndeclaredCapability` (-32021) and the six `HttpServerMethodNotFound404*` (-32601). The suite is full of JSON-RPC error codes and the positive control finds all nine. Every one is SERVER-leg and every one scores that a server RETURNS a particular code; not one scores a client's decoding of the object it receives. The near miss is the code, not the parse.",
+      "the_search_that_found_none": "a client decoding a JSON-RPC ERROR OBJECT off the wire into a struct — `code`, `message`, and `data` present or absent",
+      "why_no_counterpart": "`no-oc-scenario` — as above; the optionality of `data` is in the schema and in no check.",
+      "why_this_search_is_this_claims_search": "The claim is about turning the wire form of an ERROR OBJECT into a struct. S04's subject is that decode, and its positive control is the nine rows that DO carry error codes — so the search proves the suite's errors were read and are all about what a server returns."
+    },
+    {
       "cg": "CG7",
       "member": {
         "module": "MCP.Protocol.HeaderMirrorTest",
@@ -269,21 +653,35 @@
     },
     {
       "cg": "CG7",
+      "claim_the_slot_names": "an `x-mcp-header` on a NESTED property — every step of the chain a `properties` key — is statically reachable and IS mirrored",
+      "field_added_by": "MES-109 (C1b-iii), 2026-09-21, and it is scope BEYOND this ticket's 55 — PM-authorised at the plan hop. These two came from C1b-i and predate `the_search_that_found_none`. C1b-i rightly refused to backfill a search nobody had run, and C1b-ii ran the three CG2 ones and left these two, whose search is a FIXTURE read it had not done. C1b-iii runs them because G23 is LEG-WIDE: a guard whose exception list is exactly the rows that would fail it is the defect, not the remedy. The ADJUDICATION is untouched — same members, same tags, still `declared_unmatched`; what changed is that the record now says what was read.",
       "member": {
         "module": "MCP.Protocol.HeaderMirrorTest",
         "register_key": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) a NESTED object property IS reachable — every step is a `properties` key",
         "test": "test annotation validity — the three constraints NO harness check covers (spec-only) a NESTED object property IS reachable — every step is a `properties` key"
       },
-      "tag": "oc:none/no-oc-fixture-case/CG7-static-reachability"
+      "search_id": "S18",
+      "tag": "oc:none/no-oc-fixture-case/CG7-static-reachability",
+      "the_near_miss_that_is_not_a_counterpart": "`sep-2243-x-mcp-header-primitive-only` / `ClientRejectsInvalidTool_invalid_object_header` — `Client MUST NOT call tool 'invalid_object_header' with invalid x-mcp-header`. The word `object` is right there in a CG7 check, and it is not this case. Its fixture is `data:{type:`object`,\"x-mcp-header\":`Data`}`: an annotation whose OWN property is object-typed, which is invalid because only primitives may be mirrored. The claim here is the opposite and legitimate case — an annotation on a STRING property that sits inside another object's `properties` — and the reachability question (is every step of the chain a `properties` key?) is never put: the measurement above finds zero `properties:` nested inside a `properties:` anywhere in the two CG7 scenarios' 14027 bytes, while 14 `properties:{` and 55 `x-mcp-header` occurrences show the sweep reading the right bytes. Every annotation in the CG7 fixture sits one step down.",
+      "the_search_that_found_none": "an `x-mcp-header` annotation on a NESTED object property — a chain of `properties` keys more than one step deep — being statically reachable and mirrored",
+      "why_no_counterpart": "`no-oc-fixture-case` — CG7's two scenarios exist, are matched, and are this file's own declared checks. What they have no case for is an annotation more than one `properties` step deep.",
+      "why_this_search_is_this_claims_search": "The claim names a constraint the CG7 fixture would have to contain a case for. S18's subject IS that constraint, and the search is over the fixture's own bytes at the pinned build."
     },
     {
       "cg": "CG7",
+      "claim_the_slot_names": "an integer argument outside the IEEE 754 safe range is not mirrored, and the omission is logged rather than silent",
+      "field_added_by": "MES-109 (C1b-iii), 2026-09-21, and it is scope BEYOND this ticket's 55 — PM-authorised at the plan hop. These two came from C1b-i and predate `the_search_that_found_none`. C1b-i rightly refused to backfill a search nobody had run, and C1b-ii ran the three CG2 ones and left these two, whose search is a FIXTURE read it had not done. C1b-iii runs them because G23 is LEG-WIDE: a guard whose exception list is exactly the rows that would fail it is the defect, not the remedy. The ADJUDICATION is untouched — same members, same tags, still `declared_unmatched`; what changed is that the record now says what was read.",
       "member": {
         "module": "MCP.Protocol.HeaderMirrorTest",
         "register_key": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) an integer outside the IEEE 754 safe range is not mirrored, and says so",
         "test": "test annotation validity — the three constraints NO harness check covers (spec-only) an integer outside the IEEE 754 safe range is not mirrored, and says so"
       },
-      "tag": "oc:none/no-oc-fixture-case/CG7-integer-safe-range"
+      "search_id": "S19",
+      "tag": "oc:none/no-oc-fixture-case/CG7-integer-safe-range",
+      "the_near_miss_that_is_not_a_counterpart": "`sep-2243-client-encode-values` / `ClientCustomHeader_Priority` — `Client sends correct Mcp-Param-Priority header (INTEGER value)`. The suite does score an integer header value, on the client leg, in CG7, and this file already carries an edge to it. The value it scores is `42`. The safe-range boundary is 9007199254740991, sixteen digits; the search finds zero integer literals of sixteen digits or more in the two CG7 scenarios, and the largest integer anywhere in them is the 42 the positive control returns. So the constraint exists in the spec and in our implementation, the suite has a check in the right place, and its fixture never reaches the boundary.",
+      "the_search_that_found_none": "an integer argument OUTSIDE the IEEE 754 safe range being refused mirroring rather than silently truncated, with the omission logged",
+      "why_no_counterpart": "`no-oc-fixture-case` — CG7 scores an integer header value (`ClientCustomHeader_Priority`), so the scenario and the case-shape both exist; the value the fixture uses is 42 and the boundary is never approached.",
+      "why_this_search_is_this_claims_search": "The claim names a constraint the CG7 fixture would have to contain a case for. S19's subject IS that constraint, and the search is over the fixture's own bytes at the pinned build."
     },
     {
       "cg": "CG7",
@@ -317,6 +715,54 @@
       "tag": "oc:none/no-oc-fixture-case/CG7-no-raw-crlf-across-all-headers",
       "the_search_that_found_none": "All 29 CG7 checks were read. Each `ClientCustomHeader_*` check's predicate quantifies over ONE named header — `checkParamHeader` is called once per annotated parameter and `a=e.headers[i]` reads that parameter's header alone. No check's predicate quantifies over the header SET, and neither `ClientSupportsCustomHeaders` (`some(...)`, an existential over names, not values) nor the two NoMirror checks (`===void 0` on one named header) is universal either.",
       "why_no_counterpart": "The member asserts a UNIVERSAL property — no produced header value carries a raw CR or LF, and every produced header NAME is lower-case — over the whole 16-value vector. It is the injection-closure property, and it is stronger than the conjunction of the per-parameter checks: it would still fail if a SEVENTEENTH header appeared carrying a newline. Filing it on `ClientCustomHeader_CrLf` would report agreement on a check whose subject is one header's value."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "the DiscoverResult struct round-trips the result shape the schema defines",
+      "member": {
+        "module": "MCP.Protocol.Messages.DiscoverTest",
+        "register_key": "MCP.Protocol.Messages.DiscoverTest/test from_map/1 round-trips the schema shape",
+        "test": "test from_map/1 round-trips the schema shape"
+      },
+      "search_id": "S06",
+      "tag": "oc:none/no-oc-scenario/discover-result-struct-round-trip",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerImplementsDiscover`, `ServerDeclaresPromptsInDiscover` and `DiscoverCapabilitiesMatchHandlers`, plus `ServerIdentifiesInResultMeta` for `serverInfo`. Four rows, all SERVER-leg, all in `server-stateless`. `server/discover` is scored thoroughly — from the server's end. The client's end of the same call is scored nowhere: there is no client-leg scenario for it, and the client leg's seven scenarios (`http-custom-headers`, `http-invalid-tool-headers`, `http-standard-headers`, `json-schema-ref-no-deref`, `request-metadata`, `sep-2322-client-request-state`, `tools_call`) are the whole of the client leg's 54 in-denominator checks, which this file now declares in full.",
+      "the_search_that_found_none": "the CLIENT side of `server/discover` — issuing the probe, and what it makes of the DiscoverResult it gets back (capabilities, `serverInfo`, `supportedVersions`, an error in place of a result, and the accessors that surface them afterwards)",
+      "why_no_counterpart": "`no-oc-scenario` — `server/discover` is scored four times, all SERVER-leg, all in `server-stateless`. The client leg's seven scenarios are the whole of its 54 in-denominator checks and none of them is a discover scenario, so the search is over all 175 rather than over a fixture.",
+      "why_this_search_is_this_claims_search": "The claim is about the CLIENT end of `server/discover` — issuing it, or reading what came back. S06's subject is that end of the call, stated as the probe plus the DiscoverResult; the four server-leg discover rows are its near miss and are the other end."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "a `result`-bearing message decodes to a Response with the result and no error",
+      "member": {
+        "module": "MCP.ProtocolTest",
+        "register_key": "MCP.ProtocolTest/test decode/1 decodes a success response",
+        "test": "test decode/1 decodes a success response"
+      },
+      "search_id": "S03",
+      "tag": "oc:none/no-oc-scenario/jsonrpc-decode-success-response",
+      "the_near_miss_that_is_not_a_counterpart": "`wire-schema-valid` / WireSchemaValid, and it is the sharpest near miss in this file because it is IN this file's declared check population and THREE members of this very ticket carry an edge to it — two agreeing (`MCP.ProtocolTest`'s two `encode/1` claims) and one all-silent and escalated. It validates JSON-RPC messages against the spec schema — but `o=t.filter(e=>e.origin===` implementation, at [325325,325367], scopes it to the messages the implementation SENT, and its sibling `wire-schema-harness-error` takes the harness-origin half and reports it as a BUG IN THE HARNESS rather than as a score of our parsing. So the suite validates messages in BOTH directions and scores our handling of neither inbound one. The scope is read off the addressed bytes — oc-axes-c1.json's `harness_origin_sibling` excerpt — and not off the check's description.",
+      "the_search_that_found_none": "a client DECODING an INBOUND JSON-RPC response — classifying a `result` message and an `error` message and building the struct the caller receives",
+      "why_no_counterpart": "`no-oc-scenario` — no check on either leg scores a client's handling of a message it RECEIVED; `wire-schema-valid` scores only messages the implementation SENT, and its `origin===`harness`` sibling is a harness bug report. The search is therefore over all 175.",
+      "why_this_search_is_this_claims_search": "The claim is about DECODING an inbound response. S03's subject is that decode, and its near miss is the one check that validates JSON-RPC messages — resolved against the addressed bytes that scope it to the OUTBOUND direction. The member's claim and the search's subject are the same act."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "an `error`-bearing message decodes to a Response with the error and no result",
+      "member": {
+        "module": "MCP.ProtocolTest",
+        "register_key": "MCP.ProtocolTest/test decode/1 decodes an error response",
+        "test": "test decode/1 decodes an error response"
+      },
+      "search_id": "S03",
+      "tag": "oc:none/no-oc-scenario/jsonrpc-decode-error-response",
+      "the_near_miss_that_is_not_a_counterpart": "`wire-schema-valid` / WireSchemaValid, and it is the sharpest near miss in this file because it is IN this file's declared check population and THREE members of this very ticket carry an edge to it — two agreeing (`MCP.ProtocolTest`'s two `encode/1` claims) and one all-silent and escalated. It validates JSON-RPC messages against the spec schema — but `o=t.filter(e=>e.origin===` implementation, at [325325,325367], scopes it to the messages the implementation SENT, and its sibling `wire-schema-harness-error` takes the harness-origin half and reports it as a BUG IN THE HARNESS rather than as a score of our parsing. So the suite validates messages in BOTH directions and scores our handling of neither inbound one. The scope is read off the addressed bytes — oc-axes-c1.json's `harness_origin_sibling` excerpt — and not off the check's description.",
+      "the_search_that_found_none": "a client DECODING an INBOUND JSON-RPC response — classifying a `result` message and an `error` message and building the struct the caller receives",
+      "why_no_counterpart": "`no-oc-scenario` — as above; the direction is read off `o=t.filter(e=>e.origin===`implementation`)` at [325325,325367], not off the check's description.",
+      "why_this_search_is_this_claims_search": "The claim is about DECODING an inbound response. S03's subject is that decode, and its near miss is the one check that validates JSON-RPC messages — resolved against the addressed bytes that scope it to the OUTBOUND direction. The member's claim and the search's subject are the same act."
     },
     {
       "cg": "CG1",
@@ -360,14 +806,174 @@
       "tag": "oc:none/no-oc-fixture-case/CG7-cache-miss-no-mirroring",
       "the_search_that_found_none": "The scenario's client driver always issues tools/list before tools/call — indeed `http-invalid-tool-headers` emits a FAILING gate check when it does not (`sep-2243-invalid-tool-tools-list-gate`, which A5 leaves in the denominator). So no fixture case reaches a tools/call with no prior listing. All 29 CG7 check names were read for one whose subject is mirroring in the ABSENCE of a schema: none is.",
       "why_no_counterpart": "The member's remaining claim — that the `mcp-name` routing header still rides the call — does have a counterpart, `ClientMcpNameHeader_tools_call`, but it is CG1's and outside this file's declared check population. So this member has no counterpart HERE, which is what `declared_unmatched` means in a file that declares its own check population; the CG1 claim is recorded under `claims_without_an_edge` and routed to C1b-ii."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "a `data:` payload that is itself JSON is carried through as the raw string, not pre-decoded",
+      "member": {
+        "module": "MCP.Transport.SSETest",
+        "register_key": "MCP.Transport.SSETest/test decode_event/1 decodes event with JSON data",
+        "test": "test decode_event/1 decodes event with JSON data"
+      },
+      "search_id": "S01",
+      "tag": "oc:none/no-oc-scenario/sse-decode-json-data",
+      "the_near_miss_that_is_not_a_counterpart": "`server-sse-multiple-streams` / ServerAcceptsMultiplePostStreams and ServerSSEStreamsFunctional. The suite DOES carry the letters SSE — the positive control returns exactly those two rows, so the sweep reached them. They are not counterparts on two independent grounds, either of which is sufficient: they are SERVER-leg, scoring what a server does with concurrent POST streams; and what they score is that the streams are FUNCTIONAL end to end, never how one event's text is split into fields. A reader who greps `sse`, finds two rows and stops would take these for the counterpart.",
+      "the_search_that_found_none": "a client PARSING one Server-Sent-Events event's text into its fields — `event:` / `id:` / `data:` / `retry:`, `data:` lines joined with newlines, `:`-leading comment lines ignored, unrecognised field names ignored, and the space after the colon optional",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no check about SSE event parsing ANYWHERE, on either leg, so the search is over all 175 manifest rows and not over a fixture.",
+      "why_this_search_is_this_claims_search": "The claim is about `decode_event/1` turning one event's TEXT into fields. S01's subject is that parse, spelled at field granularity — `event:`/`id:`/`data:`/`retry:`, joined data lines, comments, unknown fields, the optional space — so this member's claim is one of the constraints S01 searched for, not a neighbour of it."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "`decode_event/1` populates `event`, `id`, `data` and `retry` from a four-field event text",
+      "member": {
+        "module": "MCP.Transport.SSETest",
+        "register_key": "MCP.Transport.SSETest/test decode_event/1 decodes event with all fields",
+        "test": "test decode_event/1 decodes event with all fields"
+      },
+      "search_id": "S01",
+      "tag": "oc:none/no-oc-scenario/sse-decode-all-fields",
+      "the_near_miss_that_is_not_a_counterpart": "`server-sse-multiple-streams` / ServerAcceptsMultiplePostStreams and ServerSSEStreamsFunctional. The suite DOES carry the letters SSE — the positive control returns exactly those two rows, so the sweep reached them. They are not counterparts on two independent grounds, either of which is sufficient: they are SERVER-leg, scoring what a server does with concurrent POST streams; and what they score is that the streams are FUNCTIONAL end to end, never how one event's text is split into fields. A reader who greps `sse`, finds two rows and stops would take these for the counterpart.",
+      "the_search_that_found_none": "a client PARSING one Server-Sent-Events event's text into its fields — `event:` / `id:` / `data:` / `retry:`, `data:` lines joined with newlines, `:`-leading comment lines ignored, unrecognised field names ignored, and the space after the colon optional",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no check about SSE event parsing ANYWHERE, on either leg, so the search is over all 175 manifest rows and not over a fixture.",
+      "why_this_search_is_this_claims_search": "The claim is about `decode_event/1` turning one event's TEXT into fields. S01's subject is that parse, spelled at field granularity — `event:`/`id:`/`data:`/`retry:`, joined data lines, comments, unknown fields, the optional space — so this member's claim is one of the constraints S01 searched for, not a neighbour of it."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "a `data:`-only event decodes with NO `event` and NO `id` key, rather than nil-valued ones",
+      "member": {
+        "module": "MCP.Transport.SSETest",
+        "register_key": "MCP.Transport.SSETest/test decode_event/1 decodes event with only data",
+        "test": "test decode_event/1 decodes event with only data"
+      },
+      "search_id": "S01",
+      "tag": "oc:none/no-oc-scenario/sse-decode-data-only",
+      "the_near_miss_that_is_not_a_counterpart": "`server-sse-multiple-streams` / ServerAcceptsMultiplePostStreams and ServerSSEStreamsFunctional. The suite DOES carry the letters SSE — the positive control returns exactly those two rows, so the sweep reached them. They are not counterparts on two independent grounds, either of which is sufficient: they are SERVER-leg, scoring what a server does with concurrent POST streams; and what they score is that the streams are FUNCTIONAL end to end, never how one event's text is split into fields. A reader who greps `sse`, finds two rows and stops would take these for the counterpart.",
+      "the_search_that_found_none": "a client PARSING one Server-Sent-Events event's text into its fields — `event:` / `id:` / `data:` / `retry:`, `data:` lines joined with newlines, `:`-leading comment lines ignored, unrecognised field names ignored, and the space after the colon optional",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no check about SSE event parsing ANYWHERE, on either leg, so the search is over all 175 manifest rows and not over a fixture.",
+      "why_this_search_is_this_claims_search": "The claim is about `decode_event/1` turning one event's TEXT into fields. S01's subject is that parse, spelled at field granularity — `event:`/`id:`/`data:`/`retry:`, joined data lines, comments, unknown fields, the optional space — so this member's claim is one of the constraints S01 searched for, not a neighbour of it."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "the single space after the colon is optional, so `data:hello` decodes as `hello`",
+      "member": {
+        "module": "MCP.Transport.SSETest",
+        "register_key": "MCP.Transport.SSETest/test decode_event/1 handles fields without space after colon",
+        "test": "test decode_event/1 handles fields without space after colon"
+      },
+      "search_id": "S01",
+      "tag": "oc:none/no-oc-scenario/sse-decode-optional-space",
+      "the_near_miss_that_is_not_a_counterpart": "`server-sse-multiple-streams` / ServerAcceptsMultiplePostStreams and ServerSSEStreamsFunctional. The suite DOES carry the letters SSE — the positive control returns exactly those two rows, so the sweep reached them. They are not counterparts on two independent grounds, either of which is sufficient: they are SERVER-leg, scoring what a server does with concurrent POST streams; and what they score is that the streams are FUNCTIONAL end to end, never how one event's text is split into fields. A reader who greps `sse`, finds two rows and stops would take these for the counterpart.",
+      "the_search_that_found_none": "a client PARSING one Server-Sent-Events event's text into its fields — `event:` / `id:` / `data:` / `retry:`, `data:` lines joined with newlines, `:`-leading comment lines ignored, unrecognised field names ignored, and the space after the colon optional",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no check about SSE event parsing ANYWHERE, on either leg, so the search is over all 175 manifest rows and not over a fixture.",
+      "why_this_search_is_this_claims_search": "The claim is about `decode_event/1` turning one event's TEXT into fields. S01's subject is that parse, spelled at field granularity — `event:`/`id:`/`data:`/`retry:`, joined data lines, comments, unknown fields, the optional space — so this member's claim is one of the constraints S01 searched for, not a neighbour of it."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "a `:`-leading comment line is skipped rather than parsed as a field",
+      "member": {
+        "module": "MCP.Transport.SSETest",
+        "register_key": "MCP.Transport.SSETest/test decode_event/1 ignores comment lines",
+        "test": "test decode_event/1 ignores comment lines"
+      },
+      "search_id": "S01",
+      "tag": "oc:none/no-oc-scenario/sse-decode-ignores-comments",
+      "the_near_miss_that_is_not_a_counterpart": "`server-sse-multiple-streams` / ServerAcceptsMultiplePostStreams and ServerSSEStreamsFunctional. The suite DOES carry the letters SSE — the positive control returns exactly those two rows, so the sweep reached them. They are not counterparts on two independent grounds, either of which is sufficient: they are SERVER-leg, scoring what a server does with concurrent POST streams; and what they score is that the streams are FUNCTIONAL end to end, never how one event's text is split into fields. A reader who greps `sse`, finds two rows and stops would take these for the counterpart.",
+      "the_search_that_found_none": "a client PARSING one Server-Sent-Events event's text into its fields — `event:` / `id:` / `data:` / `retry:`, `data:` lines joined with newlines, `:`-leading comment lines ignored, unrecognised field names ignored, and the space after the colon optional",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no check about SSE event parsing ANYWHERE, on either leg, so the search is over all 175 manifest rows and not over a fixture.",
+      "why_this_search_is_this_claims_search": "The claim is about `decode_event/1` turning one event's TEXT into fields. S01's subject is that parse, spelled at field granularity — `event:`/`id:`/`data:`/`retry:`, joined data lines, comments, unknown fields, the optional space — so this member's claim is one of the constraints S01 searched for, not a neighbour of it."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "an unrecognised field name is skipped rather than erroring the event",
+      "member": {
+        "module": "MCP.Transport.SSETest",
+        "register_key": "MCP.Transport.SSETest/test decode_event/1 ignores unknown fields",
+        "test": "test decode_event/1 ignores unknown fields"
+      },
+      "search_id": "S01",
+      "tag": "oc:none/no-oc-scenario/sse-decode-ignores-unknown-fields",
+      "the_near_miss_that_is_not_a_counterpart": "`server-sse-multiple-streams` / ServerAcceptsMultiplePostStreams and ServerSSEStreamsFunctional. The suite DOES carry the letters SSE — the positive control returns exactly those two rows, so the sweep reached them. They are not counterparts on two independent grounds, either of which is sufficient: they are SERVER-leg, scoring what a server does with concurrent POST streams; and what they score is that the streams are FUNCTIONAL end to end, never how one event's text is split into fields. A reader who greps `sse`, finds two rows and stops would take these for the counterpart.",
+      "the_search_that_found_none": "a client PARSING one Server-Sent-Events event's text into its fields — `event:` / `id:` / `data:` / `retry:`, `data:` lines joined with newlines, `:`-leading comment lines ignored, unrecognised field names ignored, and the space after the colon optional",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no check about SSE event parsing ANYWHERE, on either leg, so the search is over all 175 manifest rows and not over a fixture.",
+      "why_this_search_is_this_claims_search": "The claim is about `decode_event/1` turning one event's TEXT into fields. S01's subject is that parse, spelled at field granularity — `event:`/`id:`/`data:`/`retry:`, joined data lines, comments, unknown fields, the optional space — so this member's claim is one of the constraints S01 searched for, not a neighbour of it."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "several `data:` lines in one event join with newlines, per the SSE grammar",
+      "member": {
+        "module": "MCP.Transport.SSETest",
+        "register_key": "MCP.Transport.SSETest/test decode_event/1 joins multiple data lines with newlines",
+        "test": "test decode_event/1 joins multiple data lines with newlines"
+      },
+      "search_id": "S01",
+      "tag": "oc:none/no-oc-scenario/sse-decode-joins-data-lines",
+      "the_near_miss_that_is_not_a_counterpart": "`server-sse-multiple-streams` / ServerAcceptsMultiplePostStreams and ServerSSEStreamsFunctional. The suite DOES carry the letters SSE — the positive control returns exactly those two rows, so the sweep reached them. They are not counterparts on two independent grounds, either of which is sufficient: they are SERVER-leg, scoring what a server does with concurrent POST streams; and what they score is that the streams are FUNCTIONAL end to end, never how one event's text is split into fields. A reader who greps `sse`, finds two rows and stops would take these for the counterpart.",
+      "the_search_that_found_none": "a client PARSING one Server-Sent-Events event's text into its fields — `event:` / `id:` / `data:` / `retry:`, `data:` lines joined with newlines, `:`-leading comment lines ignored, unrecognised field names ignored, and the space after the colon optional",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no check about SSE event parsing ANYWHERE, on either leg, so the search is over all 175 manifest rows and not over a fixture.",
+      "why_this_search_is_this_claims_search": "The claim is about `decode_event/1` turning one event's TEXT into fields. S01's subject is that parse, spelled at field granularity — `event:`/`id:`/`data:`/`retry:`, joined data lines, comments, unknown fields, the optional space — so this member's claim is one of the constraints S01 searched for, not a neighbour of it."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "a chunk ending mid-event yields nothing and the parser holds the bytes until the event completes",
+      "member": {
+        "module": "MCP.Transport.SSETest",
+        "register_key": "MCP.Transport.SSETest/test stream parser buffers incomplete events",
+        "test": "test stream parser buffers incomplete events"
+      },
+      "search_id": "S02",
+      "tag": "oc:none/no-oc-scenario/sse-stream-buffers-partial",
+      "the_near_miss_that_is_not_a_counterpart": "the same two `server-sse-multiple-streams` rows, and they are a DIFFERENT near miss for this search than for S01 — which is why this search is separate rather than folded into it. `ServerAcceptsMultiplePostStreams` is about multiple streams existing at once; this claim is about one stream's bytes arriving in pieces. `multiple` returns 6 rows and none of them is about chunking: the word the suite uses `multiple` for is concurrency, never framing.",
+      "the_search_that_found_none": "a client's INCREMENTAL SSE stream parser — event boundaries found on a blank line across arbitrary chunk splits, a partial event held in a buffer until the bytes completing it arrive, and several events yielded from one chunk",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no check about SSE event parsing ANYWHERE, on either leg, so the search is over all 175 manifest rows and not over a fixture.",
+      "why_this_search_is_this_claims_search": "The claim is about the INCREMENTAL parser — where an event ends and what happens to bytes that arrive mid-event. S02 searched for that property specifically (chunking, buffering, partial events, delimiters) and is deliberately separate from S01: the nearest artefact is the same two SSE rows, but the reason they are not counterparts is a different reason, and sharing S01's search would have hidden that."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "event boundaries are found correctly however the byte stream is split across chunks",
+      "member": {
+        "module": "MCP.Transport.SSETest",
+        "register_key": "MCP.Transport.SSETest/test stream parser handles multiple chunks",
+        "test": "test stream parser handles multiple chunks"
+      },
+      "search_id": "S02",
+      "tag": "oc:none/no-oc-scenario/sse-stream-across-chunk-boundaries",
+      "the_near_miss_that_is_not_a_counterpart": "the same two `server-sse-multiple-streams` rows, and they are a DIFFERENT near miss for this search than for S01 — which is why this search is separate rather than folded into it. `ServerAcceptsMultiplePostStreams` is about multiple streams existing at once; this claim is about one stream's bytes arriving in pieces. `multiple` returns 6 rows and none of them is about chunking: the word the suite uses `multiple` for is concurrency, never framing.",
+      "the_search_that_found_none": "a client's INCREMENTAL SSE stream parser — event boundaries found on a blank line across arbitrary chunk splits, a partial event held in a buffer until the bytes completing it arrive, and several events yielded from one chunk",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no check about SSE event parsing ANYWHERE, on either leg, so the search is over all 175 manifest rows and not over a fixture.",
+      "why_this_search_is_this_claims_search": "The claim is about the INCREMENTAL parser — where an event ends and what happens to bytes that arrive mid-event. S02 searched for that property specifically (chunking, buffering, partial events, delimiters) and is deliberately separate from S01: the nearest artefact is the same two SSE rows, but the reason they are not counterparts is a different reason, and sharing S01's search would have hidden that."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "`feed/2` yields every complete event in a chunk, in order",
+      "member": {
+        "module": "MCP.Transport.SSETest",
+        "register_key": "MCP.Transport.SSETest/test stream parser parses complete events",
+        "test": "test stream parser parses complete events"
+      },
+      "search_id": "S02",
+      "tag": "oc:none/no-oc-scenario/sse-stream-parses-complete-events",
+      "the_near_miss_that_is_not_a_counterpart": "the same two `server-sse-multiple-streams` rows, and they are a DIFFERENT near miss for this search than for S01 — which is why this search is separate rather than folded into it. `ServerAcceptsMultiplePostStreams` is about multiple streams existing at once; this claim is about one stream's bytes arriving in pieces. `multiple` returns 6 rows and none of them is about chunking: the word the suite uses `multiple` for is concurrency, never framing.",
+      "the_search_that_found_none": "a client's INCREMENTAL SSE stream parser — event boundaries found on a blank line across arbitrary chunk splits, a partial event held in a buffer until the bytes completing it arrive, and several events yielded from one chunk",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no check about SSE event parsing ANYWHERE, on either leg, so the search is over all 175 manifest rows and not over a fixture.",
+      "why_this_search_is_this_claims_search": "The claim is about the INCREMENTAL parser — where an event ends and what happens to bytes that arrive mid-event. S02 searched for that property specifically (chunking, buffering, partial events, delimiters) and is deliberately separate from S01: the nearest artefact is the same two SSE rows, but the reason they are not counterparts is a different reason, and sharing S01's search would have hidden that."
     }
   ],
   "schema": "bucket-view/1",
   "title": "ET-CC member with no OC counterpart",
   "universe": {
-    "count": 68,
+    "count": 110,
     "name": "declared_members",
-    "of": "the 68 declared ET-CC members, never all 281 members"
+    "of": "the 110 declared ET-CC members, never all 281 members"
   },
   "what_this_is": "A PURE PROJECTION of the crosswalk named in `projected_from`, on the `predicate` above and on fields the crosswalk already stores. Nothing here re-computes a verdict, an edge shape or a bucket assignment. The rows are the crosswalk's own records verbatim, so a reader can check this view against the matrix byte for byte."
 }

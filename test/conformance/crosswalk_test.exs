@@ -721,6 +721,31 @@ defmodule MCP.Conformance.CrosswalkTest do
       held =
         Enum.reduce(a["population"]["files"], held, &MapSet.put(&2, &1["member_count"]))
 
+      # MES-109: the leg-totality figures. Taken from the files' own
+      # `leg_totality` blocks and NOT hard-coded, so this reconstruction moves
+      # with the artefact rather than pinning today's leg — a hand-written 107
+      # here would make the unit pass by coincidence once the server leg lands.
+      held =
+        a["population"]["files"]
+        |> Enum.filter(&get_in(&1, ["leg_totality", "declared"]))
+        |> Enum.reduce(held, fn f, acc ->
+          acc
+          |> MapSet.put(get_in(f, ["leg_totality", "members"]))
+          |> MapSet.put(
+            get_in(f, ["leg_totality", "cover_not_partition", "in_more_than_one_slice"])
+          )
+        end)
+
+      held =
+        MapSet.union(
+          held,
+          MapSet.new([
+            a["absence_search_guard"]["entries"],
+            a["absence_search_guard"]["rows_checked"],
+            a["absence_search_guard"]["rows_naming_a_registered_search"]
+          ])
+        )
+
       inputs =
         Crosswalk.string_set(
           Enum.map(
@@ -745,6 +770,196 @@ defmodule MCP.Conformance.CrosswalkTest do
       assert length(statements) > 5
 
       assert Crosswalk.unheld_figures(statements, held) == []
+    end
+  end
+
+  describe "select/2 — the `is_null` test MES-109 added, and the one decision in it" do
+    # Deliberately NOT @rows above: the whole point of this leaf is what it does
+    # with a row that does NOT CARRY the field, and every row up there carries
+    # `cg`. A fixture that cannot express the case cannot test it.
+    @null_rows [
+      %{"key" => "a", "leg" => "client", "cg" => "CG7"},
+      %{"key" => "b", "leg" => "client", "cg" => nil},
+      %{"key" => "c", "leg" => "client"},
+      %{"key" => "d", "leg" => "server", "cg" => nil}
+    ]
+    @null_src %{"rows" => @null_rows}
+
+    defp nsel(node) do
+      Map.merge(%{"rows_at" => "rows", "key_field" => "key"}, node)
+    end
+
+    test "POSITIVE — a field PRESENT and null is denoted" do
+      assert {:ok, ~w(b d)} =
+               Crosswalk.select(
+                 nsel(%{"any_of" => [%{"field" => "cg", "test" => "is_null"}]}),
+                 @null_src
+               )
+    end
+
+    test "an ABSENT field is NOT denoted — this is the limb that is easy to leave out" do
+      # Row "c" carries no `cg` key at all. Under `Map.get(row, f) == nil` it
+      # would be denoted and the population would silently grow; under
+      # `has_key? and == nil` it is not. Both readings agree on every other row
+      # in this fixture, which is exactly why this case needs its own unit.
+      {:ok, got} =
+        Crosswalk.select(
+          nsel(%{"any_of" => [%{"field" => "cg", "test" => "is_null"}]}),
+          @null_src
+        )
+
+      refute "c" in got
+    end
+
+    test "a field NO row carries denotes NOTHING, not everything — fail-closed" do
+      # The B2b-schema-change case, at fixture scale: if the anchor stopped
+      # carrying the field the leaf names, the weaker reading would denote all
+      # four rows and re-declare the population. This denotes none, so the
+      # caller's set comparison goes red instead.
+      assert {:ok, []} =
+               Crosswalk.select(
+                 nsel(%{"any_of" => [%{"field" => "no_such_field", "test" => "is_null"}]}),
+                 @null_src
+               )
+
+      # And the weaker reading really would differ here — stated as an
+      # assertion about the fixture so the unit above is a measurement rather
+      # than a restatement of itself.
+      assert Enum.count(@null_rows, &(Map.get(&1, "no_such_field") == nil)) == 4
+    end
+
+    test "it composes — `leg equals client AND cg is_null` is C1b-iii's own population" do
+      assert {:ok, ~w(b)} =
+               Crosswalk.select(
+                 nsel(%{
+                   "all_of" => [
+                     %{"field" => "leg", "test" => "equals", "value" => "client"},
+                     %{"field" => "cg", "test" => "is_null"}
+                   ]
+                 }),
+                 @null_src
+               )
+    end
+
+    test "`not_null` and `is_null` are not complements over rows that lack the field" do
+      # Worth pinning because the names suggest they are. Over this fixture
+      # `not_null` takes {a} plus row c (absent reads as... nothing, so it is
+      # rejected) and `is_null` takes {b, d} — c is in NEITHER, which is the
+      # behaviour a reader would not predict from the names alone.
+      {:ok, nulls} =
+        Crosswalk.select(
+          nsel(%{"any_of" => [%{"field" => "cg", "test" => "is_null"}]}),
+          @null_src
+        )
+
+      {:ok, not_nulls} =
+        Crosswalk.select(
+          nsel(%{"any_of" => [%{"field" => "cg", "test" => "not_null"}]}),
+          @null_src
+        )
+
+      refute "c" in nulls
+      refute "c" in not_nulls
+      assert length(nulls) + length(not_nulls) == length(@null_rows) - 1
+    end
+  end
+
+  describe "absence_entry_problems/3 — G23's decision logic" do
+    @good %{
+      "id" => "S01",
+      "kind" => "no-oc-scenario",
+      "subject" => "a client parsing one SSE event's text into fields",
+      "pattern" => "(?i)server-sent",
+      "hits" => 0,
+      "population" => %{"kind" => "manifest_rows", "rows" => 175},
+      "positive_controls" => [%{"term" => "(?i)\\bsse\\b", "hits" => 2}],
+      "near_miss" => "server-sse-multiple-streams, and it is server-leg"
+    }
+    @tag_ok "oc:none/no-oc-scenario/sse-decode-all-fields"
+
+    test "POSITIVE — a complete entry against a row whose slug it matches has no problems" do
+      assert Crosswalk.absence_entry_problems(@tag_ok, "S01", @good) == []
+    end
+
+    test "each required field, removed one at a time, is reported BY NAME" do
+      # One mutation per limb, and the assertion is on WHICH problem comes back.
+      # "it returned something" would pass for a guard that reports the wrong
+      # defect, which is the failure mode a bare `!= []` cannot see.
+      for {mutate, expected} <- [
+            {&Map.put(&1, "hits", 1), :entry_does_not_record_zero},
+            {&Map.delete(&1, "population"), :entry_names_no_population},
+            {&Map.put(&1, "pattern", ""), :entry_has_no_pattern},
+            {&Map.delete(&1, "subject"), :entry_has_no_subject},
+            {&Map.put(&1, "near_miss", ""), :entry_names_no_near_miss},
+            {&Map.put(&1, "positive_controls", []), :entry_has_no_positive_control}
+          ] do
+        problems = Crosswalk.absence_entry_problems(@tag_ok, "S01", mutate.(@good))
+
+        assert Enum.map(problems, &elem(&1, 0)) == [expected]
+      end
+    end
+
+    test "the two `oc:none` slugs are kept apart — a fixture-case entry under a scenario row" do
+      # A4 defines two slugs and the difference is the whole content of a
+      # bucket-1 record: `no-oc-scenario` says the suite has no such check
+      # anywhere, `no-oc-fixture-case` says the scenario exists and its fixture
+      # holds no exercising case. An entry of one kind cited from a row of the
+      # other merges them silently.
+      fixture = %{@good | "kind" => "no-oc-fixture-case"}
+
+      assert [
+               {:entry_kind_is_not_the_rows_reason_slug, "S01", "no-oc-fixture-case",
+                "no-oc-scenario"}
+             ] =
+               Crosswalk.absence_entry_problems(@tag_ok, "S01", fixture)
+
+      # And the other direction, so the check is not one-sided.
+      assert Crosswalk.absence_entry_problems(
+               "oc:none/no-oc-fixture-case/mrtr-no-resolver",
+               "S15",
+               fixture
+             ) == []
+    end
+
+    test "a tag that is not an `oc:none` token at all yields no slug, and that is a problem" do
+      for tag <- [nil, "", "oc:client/tools_call/wire-schema-valid/WireSchemaValid", "nonsense"] do
+        assert [{:entry_kind_is_not_the_rows_reason_slug, _, _, _}] =
+                 Crosswalk.absence_entry_problems(tag, "S01", @good)
+      end
+    end
+
+    test "a row's COPY of the subject or the near miss must be the entry's (D4)" do
+      # The row carries prose copies because that prose is what a reviewer
+      # reads, but a copy is a second home and two copies can disagree with
+      # nothing noticing. MES-109 edited three near misses after measuring
+      # them and had to edit each in two places, which is how this arrived.
+      row = %{
+        "the_search_that_found_none" => @good["subject"],
+        "the_near_miss_that_is_not_a_counterpart" => @good["near_miss"]
+      }
+
+      assert Crosswalk.absence_entry_problems(@tag_ok, "S01", @good, row) == []
+
+      for field <- ~w(the_search_that_found_none the_near_miss_that_is_not_a_counterpart) do
+        drifted = Map.put(row, field, "something else entirely")
+
+        assert [{:row_copy_has_drifted_from_the_entry, "S01", ^field}] =
+                 Crosswalk.absence_entry_problems(@tag_ok, "S01", @good, drifted)
+      end
+    end
+
+    test "a row carrying NO copy is unaffected — this is not a demand that every row copies" do
+      assert Crosswalk.absence_entry_problems(@tag_ok, "S01", @good, %{}) == []
+    end
+
+    test "several defects at once are ALL reported, not just the first" do
+      broken = @good |> Map.put("hits", 3) |> Map.put("near_miss", "") |> Map.delete("population")
+
+      assert Enum.map(Crosswalk.absence_entry_problems(@tag_ok, "S01", broken), &elem(&1, 0)) == [
+               :entry_does_not_record_zero,
+               :entry_names_no_population,
+               :entry_names_no_near_miss
+             ]
     end
   end
 
@@ -905,14 +1120,124 @@ defmodule MCP.Conformance.CrosswalkTest do
       assert p["outside_the_population"]["owners"] =~ "MES-105"
 
       # And it does not name the ticket that RENDERED it as still owing the
-      # remainder. That is CR-1's defect (MES-104) and it recurred here as CR-5:
-      # MES-108 adjudicated CG1/CG2/CG4, so a field still routing them to C1b-ii
-      # is describing work this very artefact contains.
-      # Owners are written `<name> = <KEY> (...)`, so this asks the structural
-      # question rather than exempting a phrase: no owner entry is C1b-ii.
-      refute p["outside_the_population"]["owners"] =~ ~r/C1b-ii\s*=/
-      assert p["outside_the_population"]["owners"] =~ "MES-109"
-      assert p["outside_the_population"]["owners"] =~ "NOT C1b-ii"
+      # remainder. That is CR-1's defect (MES-104) and it recurred as CR-5 on
+      # MES-108. Owners are written `<name> = <KEY> (...)`, so this asks the
+      # structural question rather than exempting a phrase: NO owner entry may
+      # be any C1b sub-ticket, because all three have landed and the client
+      # leg they share is closed. Written as a pattern over the family rather
+      # than as a list of the two that were wrong before, so the next render
+      # cannot re-introduce the third.
+      refute p["outside_the_population"]["owners"] =~ ~r/C1b-i+\s*=/
+      refute p["outside_the_population"]["owners"] =~ ~r/MES-(104|108|109)\s*\(/
+
+      # The prohibition has to be shown capable of firing, or it is a regex
+      # nobody has seen match: the SAME pattern over the wording MES-108
+      # shipped does match, so a green above is the artefact's and not the
+      # pattern's.
+      assert "C1b-iii = MES-109 (the client-leg members no CG covers); C1c = MES-105" =~
+               ~r/C1b-i+\s*=/
+
+      # Positive: the one ticket that IS still owed is named, with its key.
+      assert p["outside_the_population"]["owners"] =~ ~r/C1c\s*=\s*MES-105/
+    end
+
+    test "the client leg is declared TOTAL, and the cover's arithmetic closes", %{a: a} do
+      [f] = Enum.filter(a["population"]["files"], &get_in(&1, ["leg_totality", "declared"]))
+      t = f["leg_totality"]
+      c = t["cover_not_partition"]
+
+      assert t["leg"] == "client"
+      assert t["members"] == f["member_count"]
+
+      # A COVER, and the arithmetic that proves it is one rather than a
+      # partition: the slices sum to more than the leg, and the excess IS the
+      # overlap, because every overlapping member here sits in exactly two
+      # slices. If one ever sat in three the identity would break, and that is
+      # the point of asserting it rather than asserting `sum > distinct`.
+      assert c["distinct"] == t["members"]
+      assert c["sum_of_the_slices"] > c["distinct"]
+      assert c["sum_of_the_slices"] - c["distinct"] == c["in_more_than_one_slice"]
+      assert length(c["members"]) == c["in_more_than_one_slice"]
+
+      # Every slice is named by a ticket and denotes something. A slice
+      # denoting nothing would contribute nothing to the union and the cover
+      # would hold without it — the sub-population equivalent of a guard
+      # nobody calls.
+      assert length(t["slices"]) > 1
+      assert Enum.all?(t["slices"], &(&1["denotes"] > 0))
+      assert Enum.all?(t["slices"], &(is_binary(&1["ticket"]) and &1["ticket"] != ""))
+
+      # The leg really is the whole leg, checked against B2b here rather than
+      # taken from the artefact's own word: the generator's G22b is a refusal
+      # and this is the same comparison re-taken from outside it.
+      client =
+        "docs/conformance/etcc-attribution.json"
+        |> File.read!()
+        |> Jason.decode!()
+        |> Map.fetch!("rows")
+        |> Enum.filter(&(&1["leg"] == "client"))
+        |> Enum.map(& &1["key"])
+
+      assert Crosswalk.set_compare(client, f["members"]).equal
+    end
+
+    test "a file that declares no leg says so, rather than reporting a pass", %{a: a} do
+      # The optionality has to be exercised on real data or it is untested
+      # branch. `crosswalk-edges.json` holds three server members that are NOT
+      # the server leg, so claiming totality there would be false rather than
+      # missing.
+      others = Enum.reject(a["population"]["files"], &get_in(&1, ["leg_totality", "declared"]))
+
+      assert others != []
+      assert Enum.all?(others, &(&1["leg_totality"]["result"] =~ "NOT ASSERTED"))
+    end
+
+    test "every bucket-1 row names a search, and the registry's reach is stated", %{a: a} do
+      g = a["absence_search_guard"]
+
+      assert g["rows_checked"] == a["buckets"]["bucket_1"]["count"]
+
+      assert Enum.all?(
+               a["declared_unmatched"],
+               &(&1["the_search_that_found_none"] not in [nil, ""])
+             )
+
+      # The registry limb reaches fewer rows than the prose limb, and the
+      # artefact says by how much rather than letting the green imply parity.
+      assert g["rows_naming_a_registered_search"] <= g["rows_checked"]
+      assert g["registry_limb_reach"] =~ "rows carrying a `search_id`"
+
+      # Every id a row names resolves, and every entry is named — checked on
+      # the OUTPUT, which is a different question from the generator refusing
+      # to build one that does not.
+      named =
+        a["declared_unmatched"]
+        |> Enum.map(& &1["search_id"])
+        |> Enum.reject(&is_nil/1)
+        |> MapSet.new()
+
+      entries =
+        ~w(conformance/data/crosswalk-edges-client.json conformance/data/crosswalk-edges.json)
+        |> Enum.flat_map(&((&1 |> File.read!() |> Jason.decode!())["absence_searches"] || []))
+
+      assert MapSet.new(entries, & &1["id"]) == named
+      assert Enum.all?(entries, &(&1["hits"] == 0))
+
+      assert Enum.all?(
+               entries,
+               &(Crosswalk.absence_entry_problems(nil, &1["id"], &1)
+                 |> Enum.map(fn p -> elem(p, 0) end) == [:entry_kind_is_not_the_rows_reason_slug])
+             )
+    end
+
+    test "both `oc:none` slugs are in live use, so the distinction is exercised", %{a: a} do
+      slugs =
+        a["declared_unmatched"]
+        |> Enum.map(&(&1["tag"] |> String.split("/") |> Enum.at(1)))
+        |> Enum.frequencies()
+
+      assert Map.keys(slugs) |> Enum.sort() == ["no-oc-fixture-case", "no-oc-scenario"]
+      assert Enum.all?(Map.values(slugs), &(&1 > 0))
     end
 
     test "the keying control ran BOTH directions and recorded a positive result", %{a: a} do

@@ -1,11 +1,11 @@
 {
   "bucket": "5b",
-  "count": 59,
+  "count": 62,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 68 declared ET-CC members and 39\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 213 members and\n120 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 14 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "population_banner": "POPULATION: this projection covers 110 declared ET-CC members and 54\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 171 members and\n116 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 3 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
   "predicate": "`cells` where the stored `bucket` == \"5\" AND the stored `oc_key[0]` == \"client\". Universe: the crosswalk's edges.",
   "projected_from": {
     "bucket_zero": {
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 281457,
+      "bytes": 399832,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "b150085b2c5a31e6ecfe8a4815528dd05b385ccac4296d5cbaebfa541ae46bbf"
+      "sha256": "e36e1469ddf92bbd9bc38d36301c46fe2f57b6b00823562b4820d553981c1b85"
     }
   },
   "revision": "2026-07-28",
@@ -2236,6 +2236,121 @@
       "bucket_attributes": [
         "partial"
       ],
+      "claim": "`call_tool/3` issues a `tools/call` request carrying the tool name and the argument map it was given",
+      "escalation": null,
+      "evidence": "client_test.exs:191-195 — `Client.call_tool(client, \"echo\", %{\"message\" => \"hi\"})`, then `assert req[\"method\"] == \"tools/call\"`, `assert req[\"params\"][\"name\"] == \"echo\"` and `assert req[\"params\"][\"arguments\"] == %{\"message\" => \"hi\"}`, read off the message the transport actually received. The check's first axis, tools_call_was_made, is `e!==void 0` over the captured tools/call — the client issued a tools/call at all — and that is the same behaviour, asserted here on our own transport. The other two axes, argument_a_is_a_number and argument_b_is_a_number, test the JSON TYPE of the two numeric arguments (`typeof t?.a==` and its sibling; the exprs live in oc-axes-c1.json and the generator checks them verbatim at their spans). This test's arguments are a single string, so it asserts the map is carried unchanged and asserts nothing whatever about a JSON numeric type. Silent, per how_a_silent_axis_was_decided — a claim covers an axis only when an assertion's subject is the behaviour that axis names.",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test requests call_tool sends name and arguments",
+        "test": "test requests call_tool sends name and arguments"
+      },
+      "note": "First edge to ToolAddNumbers. C1a decomposed the check and left it unmatched; it was the only decomposed-but-unmatched check in the client leg's bucket-2 candidates, and this ticket's declaration of `tools_call` is what made answering it compulsory (G19).",
+      "oc_key": [
+        "client",
+        "tools_call",
+        "tool-add-numbers",
+        "ToolAddNumbers",
+        "Validates that the add_numbers tool works correctly",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/tools_call/tool-add-numbers/ToolAddNumbers",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "no_schema_violation_in_a_message_the_implementation_sent",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "`Protocol.encode/1` of a Request yields a JSON object carrying `jsonrpc` `2.0`, the id, the method and the params",
+      "escalation": null,
+      "evidence": "protocol_test.exs:17-24 — `Request.new(1, \"tools/list\", %{\"cursor\" => \"abc\"})` encoded by `Protocol.encode(request)`, re-decoded, and then `assert decoded[\"jsonrpc\"] == \"2.0\"`, `assert decoded[\"id\"] == 1`, `assert decoded[\"method\"] == \"tools/list\"` and `assert decoded[\"params\"] == %{\"cursor\" => \"abc\"}`. The check's one axis is the filter `t.filter(e=>e.origin===` implementation — a spec-schema violation in a message OUR side sent is what fails it, since the emitting site reads `o.length===0` over exactly those violations — and the four asserts are the envelope the JSONRPCRequest schema requires of an outbound request. The DIRECTION is read off the bytes and not off the check's description: that filter, addressed at [325325,325367] in oc-axes-c1.json, is what scopes the check to messages the implementation sent.",
+      "member": {
+        "module": "MCP.ProtocolTest",
+        "register_key": "MCP.ProtocolTest/test encode/1 encodes a request",
+        "test": "test encode/1 encodes a request"
+      },
+      "note": "The axis is `agrees` and not `partial`: WireSchemaValid has ONE axis, so there is no second conjunct to be silent on. What the edge does NOT claim is that this test VALIDATES against the schema — it asserts the fields the schema requires. That is a semantic-sameness judgement (A3 §7 / residual X1) and it is recorded here rather than buried, so D can regrade it without re-reading the site.",
+      "oc_key": [
+        "client",
+        "tools_call",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/tools_call/wire-schema-valid/WireSchemaValid",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "no_schema_violation_in_a_message_the_implementation_sent",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a Request carrying no params encodes with the `params` key ABSENT, not present-and-null",
+      "escalation": null,
+      "evidence": "protocol_test.exs:29-36 — `Request.new(1, \"ping\")` encoded, re-decoded, and then `assert decoded[\"method\"] == \"ping\"` and, the load-bearing one, `refute Map.has_key?(decoded, \"params\")`. A null `params` is a schema violation where an ABSENT key is not, so this is the sharper of the two encode claims against the same axis: it asserts the one thing about an outbound request a naive encoder gets wrong, and it is the case the `o.length===0` verdict would catch.",
+      "member": {
+        "module": "MCP.ProtocolTest",
+        "register_key": "MCP.ProtocolTest/test encode/1 encodes a request without params",
+        "test": "test encode/1 encodes a request without params"
+      },
+      "note": "A second edge to WireSchemaValid from the same module. Two members discharging one check is not a duplicate — G14 keys on (member, claim, tag) and these differ in both member and claim — and the two claims are different constraints the same axis covers.",
+      "oc_key": [
+        "client",
+        "tools_call",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/tools_call/wire-schema-valid/WireSchemaValid",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "tools_call_was_made",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "argument_a_is_a_number",
+          "verdict": "silent"
+        },
+        {
+          "axis": "argument_b_is_a_number",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
       "claim": "a tools/call to `add` with two numeric arguments is issued and returns their sum",
       "escalation": null,
       "evidence": "integration_test.exs:149-150 — `Client.call_tool(client, \"add\", %{\"a\" => 3, \"b\" => 4})` returns `\"7\"`. The call being made is asserted directly. The two type axes are NOT: the assertion is on the tool's RESULT, and a client sending `\"3\"`/`\"4\"` as JSON strings would be caught here only if this SDK's own `add` tool refused them — a property of the fixture server, not of this assertion. Silent, on the CG5 rule: a test whose subject is downstream of the requirement does not discharge it.",
@@ -2266,7 +2381,7 @@
   "schema": "bucket-view/1",
   "title": "green in both — client",
   "universe": {
-    "count": 71,
+    "count": 76,
     "name": "edges",
     "of": "the crosswalk's `cells`"
   },
