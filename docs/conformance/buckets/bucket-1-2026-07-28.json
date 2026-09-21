@@ -1,12 +1,12 @@
 {
   "bucket": "1",
-  "count": 16,
+  "count": 28,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 48 declared ET-CC members and 29\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 233 members and\n130 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 14 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
-  "predicate": "Declared-population ET-CC members carrying NO edge in `cells`: the complement of `members_with_edges` over the declared population, taken through `Crosswalk.project(:bucket_1, ...)`. Universe: the 48 declared members, never all 281 members.",
+  "population_banner": "POPULATION: this projection covers 68 declared ET-CC members and 39\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 213 members and\n120 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 14 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "predicate": "Declared-population ET-CC members carrying NO edge in `cells`: the complement of `members_with_edges` over the declared population, taken through `Crosswalk.project(:bucket_1, ...)`. Universe: the 68 declared members, never all 281 members.",
   "projected_from": {
     "bucket_zero": {
       "bytes": 176409,
@@ -14,30 +14,155 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 186840,
+      "bytes": 281457,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "d068abff28bcb179199e530fa3c7dbeec21a5f5a4abe0a39750e23493542f358"
+      "sha256": "b150085b2c5a31e6ecfe8a4815528dd05b385ccac4296d5cbaebfa541ae46bbf"
     }
   },
   "revision": "2026-07-28",
   "rows": [
     {
       "cg": "CG2",
+      "field_added_by": "MES-108 (C1b-ii), 2026-09-21. These three records came from C1a and predate the `the_search_that_found_none` field. C1b-i rightly REFUSED to backfill a search nobody had run — a field invented after the fact is worse than an absent one. C1b-ii ran it, over the same population and at this tip, so the field is now ADDED rather than invented. The ADJUDICATION is untouched: these three were `declared_unmatched` before and are `declared_unmatched` now, with the same tags and the same members. What changed is that the record says what was read. Three rows sitting silent in a block where ten speak is a difference a reader would have to explain, and the explanation would have been 'nobody looked', which is no longer true.",
       "member": {
         "module": "MCP.ClientConformanceTest",
         "register_key": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
         "test": "test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta"
       },
-      "tag": "oc:none/no-oc-scenario/CG2-outbound-meta"
+      "tag": "oc:none/no-oc-scenario/CG2-outbound-meta",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
     },
     {
       "cg": "CG2",
+      "field_added_by": "MES-108 (C1b-ii), 2026-09-21. These three records came from C1a and predate the `the_search_that_found_none` field. C1b-i rightly REFUSED to backfill a search nobody had run — a field invented after the fact is worse than an absent one. C1b-ii ran it, over the same population and at this tip, so the field is now ADDED rather than invented. The ADJUDICATION is untouched: these three were `declared_unmatched` before and are `declared_unmatched` now, with the same tags and the same members. What changed is that the record says what was read. Three rows sitting silent in a block where ten speak is a difference a reader would have to explain, and the explanation would have been 'nobody looked', which is no longer true.",
       "member": {
         "module": "MCP.ClientConformanceTest",
         "register_key": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
         "test": "test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact"
       },
-      "tag": "oc:none/no-oc-scenario/CG2-inbound-parse"
+      "tag": "oc:none/no-oc-scenario/CG2-inbound-parse",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "a non-struct `:client_capabilities` is discarded rather than passed through",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — a non-struct :client_capabilities is discarded, not passed through",
+        "test": "test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — a non-struct :client_capabilities is discarded, not passed through"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-non-struct-caps-discarded",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "a bad `:client_capabilities` does not kill the client on its first request",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — and the first request no longer kills the client",
+        "test": "test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — and the first request no longer kills the client"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-bad-caps-does-not-kill-client",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "a server's advertised extensions are surfaced to the caller, not discarded",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T15 — a server's advertised extensions are surfaced, not discarded",
+        "test": "test extensions negotiation (SEP-2133) — T4, T5, T15 T15 — a server's advertised extensions are surfaced, not discarded"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-server-extensions-surfaced",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "a declared extension is stamped into every request's `_meta`",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — a declared extension is stamped into every request's _meta",
+        "test": "test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — a declared extension is stamped into every request's _meta"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-declared-extension-stamped",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "the same stamping reaches the `server/discover` probe itself",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — and into the server/discover probe itself",
+        "test": "test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — and into the server/discover probe itself"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-stamped-into-discover-probe",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "the `_meta` extensions key is omitted entirely when nothing is declared",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T5 — the key is omitted entirely when nothing is declared",
+        "test": "test extensions negotiation (SEP-2133) — T4, T5, T15 T5 — the key is omitted entirely when nothing is declared"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-key-omitted-when-nothing-declared",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "a server's malformed advertisement is reported verbatim, not rewritten",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 a server's malformed advertisement is reported verbatim, not rewritten",
+        "test": "test extensions negotiation (SEP-2133) — T4, T5, T15 a server's malformed advertisement is reported verbatim, not rewritten"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-malformed-advertisement-verbatim",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "an invalid extension identifier is dropped outbound, and an all-invalid declaration vanishes",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an invalid identifier is dropped on the way out; an all-invalid declaration vanishes",
+        "test": "test extensions negotiation (SEP-2133) — T4, T5, T15 an invalid identifier is dropped on the way out; an all-invalid declaration vanishes"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-invalid-identifier-dropped",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "an unencodable settings value never reaches the wire",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an unencodable settings value never reaches the wire (dropped at start_link)",
+        "test": "test extensions negotiation (SEP-2133) — T4, T5, T15 an unencodable settings value never reaches the wire (dropped at start_link)"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-unencodable-settings-dropped",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
     },
     {
       "cg": "CG7",
@@ -107,12 +232,29 @@
     },
     {
       "cg": "CG2",
+      "field_added_by": "MES-108 (C1b-ii), 2026-09-21. These three records came from C1a and predate the `the_search_that_found_none` field. C1b-i rightly REFUSED to backfill a search nobody had run — a field invented after the fact is worse than an absent one. C1b-ii ran it, over the same population and at this tip, so the field is now ADDED rather than invented. The ADJUDICATION is untouched: these three were `declared_unmatched` before and are `declared_unmatched` now, with the same tags and the same members. What changed is that the record says what was read. Three rows sitting silent in a block where ten speak is a difference a reader would have to explain, and the explanation would have been 'nobody looked', which is no longer true.",
       "member": {
         "module": "MCP.Protocol.CapabilitiesTest",
         "register_key": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart",
         "test": "test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart"
       },
-      "tag": "oc:none/no-oc-scenario/CG2-absent-yields-nil"
+      "tag": "oc:none/no-oc-scenario/CG2-absent-yields-nil",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "`ClientCapabilities` encoding keeps `extensions` and `experimental` apart",
+      "member": {
+        "module": "MCP.Protocol.CapabilitiesTest",
+        "register_key": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T8 — ClientCapabilities encode keeps the two apart",
+        "test": "test extensions vs experimental — the 2x2 (T6-T9) T8 — ClientCapabilities encode keeps the two apart"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-encode-keeps-the-two-apart",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
     },
     {
       "cg": "CG7",
@@ -177,6 +319,30 @@
       "why_no_counterpart": "The member asserts a UNIVERSAL property — no produced header value carries a raw CR or LF, and every produced header NAME is lower-case — over the whole 16-value vector. It is the injection-closure property, and it is stronger than the conjunction of the per-parameter checks: it would still fail if a SEVENTEENTH header appeared carrying a newline. Filing it on `ClientCustomHeader_CrLf` would report agreement on a check whose subject is one header's value."
     },
     {
+      "cg": "CG1",
+      "claim_the_slot_names": "a notification — a message with no id — carries `Mcp-Method` like any other POST",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a NOTIFICATION carries it too — the spec says all requests, not all responses-bearing ones",
+        "test": "test T-CG1a — Mcp-Method on every POST a NOTIFICATION carries it too — the spec says all requests, not all responses-bearing ones"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG1-notification-carries-mcp-method",
+      "the_search_that_found_none": "RUN AT THIS TIP. The check-emitting code IS general over methods: `checkMcpMethodHeader` computes `ClientMcpMethodHeader_${n.replace(/\\//g,`_`)}` from the body method, so a `notifications/cancelled` POST would emit `ClientMcpMethodHeader_notifications_cancelled`. No such key is in A1's 175 — no case in the scenario drives a notification, which is what `no-oc-fixture-case` names. The near miss is named rather than left for a reader to trip over: `/notification/i` over the whole row of all 175 returns 6, and exactly ONE is a routing-header check — `ClientMcpMethodHeader_notifications_initialized`. That one is OUT OF DENOMINATOR: A5's bucket-0 artefact records it `removed_by_spec` (`reason_code`), because 2026-07-28 removed the initialize handshake under SEP-2575, and it is one of the only 2 of 175 A5 excludes. So the nearest existing check is unavailable as a counterpart BY RULE, not by absence. The sweep is shown to have reached the population: `/response/i` over the same 175 rows returns 17.",
+      "why_no_counterpart": "`no-oc-fixture-case` — the scenario exists and is matched, and its check-emitting predicate would score this behaviour; what is missing is a case that sends a notification. The distinction from `no-oc-scenario` is load-bearing here: this is a gap in the suite's DRIVING, and a harness bump that adds a notification case would create the counterpart without any change to the predicate."
+    },
+    {
+      "cg": "CG1",
+      "claim_the_slot_names": "a message with no `method` — a response — carries neither routing header",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a message with no method carries no routing headers",
+        "test": "test T-CG1a — Mcp-Method on every POST a message with no method carries no routing headers"
+      },
+      "tag": "oc:none/no-oc-scenario/CG1-methodless-carries-no-routing-headers",
+      "the_search_that_found_none": "RUN AT THIS TIP. All 175 manifest rows were swept for one whose SUBJECT is a message carrying no method (`/\\bno method\\b|methodless|without a method/i` over scenario + id + name + description): 0. The sweep reached the population — `/response/i` over the same rows returns 17, `/header/i` 45. And the reason it is 0 is structural rather than incidental: the harness's handling of a methodless message is the EARLY RETURN `if(!n||this.methodHeaderChecks.has(n))return;`, which this ticket records as a PRECONDITION on the Method rows, not as an axis. `oc-axes-c1.json`'s `preconditions_rule` states that an ET claim can neither agree with nor contradict a precondition, so there is no axis for this claim to land on even though the code path exists and is addressed.",
+      "why_no_counterpart": "`no-oc-scenario` — no check ANYWHERE in the 175 has this as its subject, so the search is over all 175 rather than over a fixture. A new fixture case could not create one either: the behaviour is the suite's own non-evaluation condition, so scoring it would require a new check, not a new case. That is the difference from the notification row above, and it is why the two carry different reason slugs."
+    },
+    {
       "cg": "CG7",
       "claims_whose_counterpart_is_outside_this_files_check_population": [
         {
@@ -199,9 +365,9 @@
   "schema": "bucket-view/1",
   "title": "ET-CC member with no OC counterpart",
   "universe": {
-    "count": 48,
+    "count": 68,
     "name": "declared_members",
-    "of": "the 48 declared ET-CC members, never all 281 members"
+    "of": "the 68 declared ET-CC members, never all 281 members"
   },
   "what_this_is": "A PURE PROJECTION of the crosswalk named in `projected_from`, on the `predicate` above and on fields the crosswalk already stores. Nothing here re-computes a verdict, an edge shape or a bucket assignment. The rows are the crosswalk's own records verbatim, so a reader can check this view against the matrix byte for byte."
 }

@@ -1,12 +1,12 @@
 {
   "schema": "oc-axes-c1/1",
   "revision": "2026-07-28",
-  "owner": "MES-97 (C1a) and MES-104 (C1b-i)",
+  "owner": "MES-97 (C1a), MES-104 (C1b-i) and MES-108 (C1b-ii)",
   "authored_by_hand": true,
-  "what_this_is": "The per-check AXIS DECOMPOSITION for the OC checks C1a's crosswalk lands an edge on and A3 did NOT decompose. A3 committed 13 of the 175; its scope block hands the other 162 to C1. This file holds C1a's share of them and nothing else.",
+  "what_this_is": "The per-check AXIS DECOMPOSITION for the OC checks C1a's crosswalk lands an edge on and A3 did NOT decompose. A3 committed 13 of the 175; its scope block hands the other 162 to C1. This file holds C1a's, C1b-i's and C1b-ii's share of them and nothing else.",
   "why_a_second_file_and_not_an_edit_of_A3s": "Editing docs/conformance/oc-axes-2026-07-28.json would give one artefact two owners — the MES-24 two-censuses defect, where the two disagree and nothing detects it. A3 owns its 13; C1 owns what C1 extracts. Disjointness is ASSERTED BY THE BUILDER (mix conformance.crosswalk refuses on any overlap), not left to a convention. PM-ratified as D4, MES-97 comment 27858.",
   "axis_source_rule": "AXES COME FROM THE PREDICATE, NEVER FROM THE DESCRIPTION — docs/conformance/match-relation.md §2, cited not restated.",
-  "difference_from_A3s_13": "A3's 13 are all `a(...)`-form checks whose predicate is an inline arrow function, so every axis expression is a substring of the emitting excerpt itself. NONE of the checks here is like that: every one computes its predicate into a minified binding BEFORE the emitting call, and three of them are decided at a site that is not the emitting site at all. So each row carries `context_excerpts` — further addressed spans the predicate depends on — and an axis `expr` is a verbatim substring of the evaluator excerpt OR of one of them. The row says which, in `expr_found_in`.",
+  "difference_from_A3s_13": "A3's 13 are all `a(...)`-form checks whose predicate is an inline arrow function, so every axis expression is a substring of the emitting excerpt itself. NONE of the checks here is like that: every one computes its predicate into a minified binding BEFORE the emitting call, and three of them are decided at a site that is not the emitting site at all. C1b-ii's 9 are the sharpest case — their verdict is `i.length===0` / `o.length===0` over an error accumulator filled by a ternary several hundred bytes earlier, so EVERY axis expr lives in a `context_excerpt` and none in the evaluator excerpt. So each row carries `context_excerpts` — further addressed spans the predicate depends on — and an axis `expr` is a verbatim substring of the evaluator excerpt OR of one of them. The row says which, in `expr_found_in`.",
   "provenance": {
     "harness_dist_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
     "harness_version_reported": "0.2.0-alpha.11",
@@ -18,10 +18,11 @@
   "polarity_rule": "`pass_when_true` — the expression being TRUE is the passing arm. `fail_when_true` — the expression being TRUE is the failing arm. Read off the branch the excerpt actually writes, never off the requirement's wording.",
   "preconditions_rule": "A list of `{guard, kind, on_failure, reads}`. A precondition is NOT an axis: its failure does not make the check fail, it makes the check not evaluate (SKIPPED). An ET claim cannot agree or contradict a precondition, so `shape_from_axes/1` never sees one.",
   "scope": {
-    "checks_decomposed": 40,
-    "population": "The OC checks C1a's and C1b-i's declared populations land an edge on, minus the one A3 already decomposed. C1a contributed 11 (request-metadata, MRTR and tools_call); C1b-i contributes the 29 CG7 checks — `http-custom-headers` 18 + `http-invalid-tool-headers` 11 — ALL of them, including the 9 that carry no ET-CC edge, because a bucket-2 check must be decomposed before it can be shown to have no counterpart.",
+    "checks_decomposed": 49,
+    "population": "The OC checks C1a's, C1b-i's and C1b-ii's declared populations land an edge on, minus the ones A3 already decomposed. C1a contributed 11 (request-metadata, MRTR and tools_call); C1b-i contributes the 29 CG7 checks — `http-custom-headers` 18 + `http-invalid-tool-headers` 11 — ALL of them, including the 9 that carry no ET-CC edge, because a bucket-2 check must be decomposed before it can be shown to have no counterpart; C1b-ii contributes CG1's 9 — the in-denominator half of `http-standard-headers` — and NOT CG4's one, which A3 already holds.",
     "the_one_A3_already_has": "sep-2575-http-server-method-not-found-404-initialize / HttpServerMethodNotFound404initialize — C1a's 12th check. Read from A3's file, NOT re-extracted here. One fact, one home.",
-    "not_decomposed": "The remaining 132 of the 173. They are C1b-ii's, C1b-iii's (MES-104's siblings) and C1c's (MES-105)."
+    "the_one_A3_already_has_for_C1b_ii": "sep-2106-no-network-ref-deref / NoNetworkRefDereference — CG4's only check, and C1b-ii's DECLARED check population contains it. A3 decomposed it (one axis, `canary_not_fetched`, with `this.toolsListed?` recorded as a precondition on evaluability), so G19 is satisfied FROM A3'S FILE and it is deliberately absent here. Copying it in would be a second home for one fact (D4), and the two copies could then disagree with nothing noticing.",
+    "not_decomposed": "The remaining 123 of the 173. They are C1b-iii's (MES-104's sibling) and C1c's (MES-105)."
   },
   "checks": [
     {
@@ -1502,8 +1503,347 @@
         }
       ],
       "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-standard-headers", "sep-2243-client-includes-standard-headers", "ClientMcpMethodHeader_tools_list", "Client sends correct Mcp-Method header on tools/list request", ""],
+      "emitting_byte_span": [700072, 700441],
+      "emitting_span_provenance": "locator_row",
+      "emitting_span_provenance_why": "The locator names THREE sites for this row's key and its own `rung_pin_level` is `check`, not `row` — the name is computed at the site (`ClientMcpMethodHeader_${n.replace(/\\//g,`_`)}`), so the six Method rows share one site and the three Name rows another. The span taken here is one the locator names, which is what `locator_row` asserts and all G18 checks; WHICH of the three it is, is this row's reading and not the locator's authority. Stated because a check-level pin cannot distinguish the Method push from the Name push, and G18 would accept either against either row.",
+      "context_excerpts": [
+        {"label": "method_header_predicate", "byte_span": [699670, 700072], "why": "the predicate the push reports: binds `r`, the `mcp-method` header, and `i`, the error accumulator whose emptiness is the verdict"},
+        {"label": "method_evaluability_guard", "byte_span": [699711, 699756], "why": "the early return — a message with no method, or a method already checked, emits nothing at all"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_method_header_present",
+          "expr": "i.push(`Missing Mcp-Method header on ${n} request. Clients MUST include the Mcp-Method header on all POST requests.`)",
+          "expr_found_in": "context:method_header_predicate",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the ELSE arm of `r?r!==n&&i.push(...):i.push(...)` — reached when `r`, the `mcp-method` header, is falsy, and it pushes an error; the push's `status:i.length===0?`SUCCESS`:`FAILURE`` then makes a non-empty accumulator the failure",
+          "requires": "every POST carries an `Mcp-Method` header — SEP-2243's MUST, as the pushed message itself states"
+        },
+        {
+          "axis": "mcp_method_header_matches_body_method",
+          "expr": "r!==n",
+          "expr_found_in": "context:method_header_predicate",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`r?r!==n&&i.push(...)` — inside the header-present arm, inequality with the body method `n` pushes an error. `!==` is case-sensitive, which the pushed message says in as many words",
+          "requires": "the header's value is the body's `method`, byte-for-byte and case-sensitively"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "if(!n||this.methodHeaderChecks.has(n))return;",
+          "kind": "first_request_of_this_method",
+          "on_failure": "nothing is emitted at this call; if no request of this method ever arrives, `getChecks` emits a SKIPPED row instead",
+          "reads": "whether the message carries a method at all, and whether one of this method has already been checked — only the FIRST is scored"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-standard-headers", "sep-2243-client-includes-standard-headers", "ClientMcpMethodHeader_tools_call", "Client sends correct Mcp-Method header on tools/call request", ""],
+      "emitting_byte_span": [700072, 700441],
+      "emitting_span_provenance": "locator_row",
+      "emitting_span_provenance_why": "The locator names THREE sites for this row's key and its own `rung_pin_level` is `check`, not `row` — the name is computed at the site (`ClientMcpMethodHeader_${n.replace(/\\//g,`_`)}`), so the six Method rows share one site and the three Name rows another. The span taken here is one the locator names, which is what `locator_row` asserts and all G18 checks; WHICH of the three it is, is this row's reading and not the locator's authority. Stated because a check-level pin cannot distinguish the Method push from the Name push, and G18 would accept either against either row.",
+      "context_excerpts": [
+        {"label": "method_header_predicate", "byte_span": [699670, 700072], "why": "the predicate the push reports: binds `r`, the `mcp-method` header, and `i`, the error accumulator whose emptiness is the verdict"},
+        {"label": "method_evaluability_guard", "byte_span": [699711, 699756], "why": "the early return — a message with no method, or a method already checked, emits nothing at all"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_method_header_present",
+          "expr": "i.push(`Missing Mcp-Method header on ${n} request. Clients MUST include the Mcp-Method header on all POST requests.`)",
+          "expr_found_in": "context:method_header_predicate",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the ELSE arm of `r?r!==n&&i.push(...):i.push(...)` — reached when `r`, the `mcp-method` header, is falsy, and it pushes an error; the push's `status:i.length===0?`SUCCESS`:`FAILURE`` then makes a non-empty accumulator the failure",
+          "requires": "every POST carries an `Mcp-Method` header — SEP-2243's MUST, as the pushed message itself states"
+        },
+        {
+          "axis": "mcp_method_header_matches_body_method",
+          "expr": "r!==n",
+          "expr_found_in": "context:method_header_predicate",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`r?r!==n&&i.push(...)` — inside the header-present arm, inequality with the body method `n` pushes an error. `!==` is case-sensitive, which the pushed message says in as many words",
+          "requires": "the header's value is the body's `method`, byte-for-byte and case-sensitively"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "if(!n||this.methodHeaderChecks.has(n))return;",
+          "kind": "first_request_of_this_method",
+          "on_failure": "nothing is emitted at this call; if no request of this method ever arrives, `getChecks` emits a SKIPPED row instead",
+          "reads": "whether the message carries a method at all, and whether one of this method has already been checked — only the FIRST is scored"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-standard-headers", "sep-2243-client-includes-standard-headers", "ClientMcpMethodHeader_resources_list", "Client sends correct Mcp-Method header on resources/list request", ""],
+      "emitting_byte_span": [700072, 700441],
+      "emitting_span_provenance": "locator_row",
+      "emitting_span_provenance_why": "The locator names THREE sites for this row's key and its own `rung_pin_level` is `check`, not `row` — the name is computed at the site (`ClientMcpMethodHeader_${n.replace(/\\//g,`_`)}`), so the six Method rows share one site and the three Name rows another. The span taken here is one the locator names, which is what `locator_row` asserts and all G18 checks; WHICH of the three it is, is this row's reading and not the locator's authority. Stated because a check-level pin cannot distinguish the Method push from the Name push, and G18 would accept either against either row.",
+      "context_excerpts": [
+        {"label": "method_header_predicate", "byte_span": [699670, 700072], "why": "the predicate the push reports: binds `r`, the `mcp-method` header, and `i`, the error accumulator whose emptiness is the verdict"},
+        {"label": "method_evaluability_guard", "byte_span": [699711, 699756], "why": "the early return — a message with no method, or a method already checked, emits nothing at all"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_method_header_present",
+          "expr": "i.push(`Missing Mcp-Method header on ${n} request. Clients MUST include the Mcp-Method header on all POST requests.`)",
+          "expr_found_in": "context:method_header_predicate",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the ELSE arm of `r?r!==n&&i.push(...):i.push(...)` — reached when `r`, the `mcp-method` header, is falsy, and it pushes an error; the push's `status:i.length===0?`SUCCESS`:`FAILURE`` then makes a non-empty accumulator the failure",
+          "requires": "every POST carries an `Mcp-Method` header — SEP-2243's MUST, as the pushed message itself states"
+        },
+        {
+          "axis": "mcp_method_header_matches_body_method",
+          "expr": "r!==n",
+          "expr_found_in": "context:method_header_predicate",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`r?r!==n&&i.push(...)` — inside the header-present arm, inequality with the body method `n` pushes an error. `!==` is case-sensitive, which the pushed message says in as many words",
+          "requires": "the header's value is the body's `method`, byte-for-byte and case-sensitively"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "if(!n||this.methodHeaderChecks.has(n))return;",
+          "kind": "first_request_of_this_method",
+          "on_failure": "nothing is emitted at this call; if no request of this method ever arrives, `getChecks` emits a SKIPPED row instead",
+          "reads": "whether the message carries a method at all, and whether one of this method has already been checked — only the FIRST is scored"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-standard-headers", "sep-2243-client-includes-standard-headers", "ClientMcpMethodHeader_resources_read", "Client sends correct Mcp-Method header on resources/read request", ""],
+      "emitting_byte_span": [700072, 700441],
+      "emitting_span_provenance": "locator_row",
+      "emitting_span_provenance_why": "The locator names THREE sites for this row's key and its own `rung_pin_level` is `check`, not `row` — the name is computed at the site (`ClientMcpMethodHeader_${n.replace(/\\//g,`_`)}`), so the six Method rows share one site and the three Name rows another. The span taken here is one the locator names, which is what `locator_row` asserts and all G18 checks; WHICH of the three it is, is this row's reading and not the locator's authority. Stated because a check-level pin cannot distinguish the Method push from the Name push, and G18 would accept either against either row.",
+      "context_excerpts": [
+        {"label": "method_header_predicate", "byte_span": [699670, 700072], "why": "the predicate the push reports: binds `r`, the `mcp-method` header, and `i`, the error accumulator whose emptiness is the verdict"},
+        {"label": "method_evaluability_guard", "byte_span": [699711, 699756], "why": "the early return — a message with no method, or a method already checked, emits nothing at all"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_method_header_present",
+          "expr": "i.push(`Missing Mcp-Method header on ${n} request. Clients MUST include the Mcp-Method header on all POST requests.`)",
+          "expr_found_in": "context:method_header_predicate",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the ELSE arm of `r?r!==n&&i.push(...):i.push(...)` — reached when `r`, the `mcp-method` header, is falsy, and it pushes an error; the push's `status:i.length===0?`SUCCESS`:`FAILURE`` then makes a non-empty accumulator the failure",
+          "requires": "every POST carries an `Mcp-Method` header — SEP-2243's MUST, as the pushed message itself states"
+        },
+        {
+          "axis": "mcp_method_header_matches_body_method",
+          "expr": "r!==n",
+          "expr_found_in": "context:method_header_predicate",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`r?r!==n&&i.push(...)` — inside the header-present arm, inequality with the body method `n` pushes an error. `!==` is case-sensitive, which the pushed message says in as many words",
+          "requires": "the header's value is the body's `method`, byte-for-byte and case-sensitively"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "if(!n||this.methodHeaderChecks.has(n))return;",
+          "kind": "first_request_of_this_method",
+          "on_failure": "nothing is emitted at this call; if no request of this method ever arrives, `getChecks` emits a SKIPPED row instead",
+          "reads": "whether the message carries a method at all, and whether one of this method has already been checked — only the FIRST is scored"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-standard-headers", "sep-2243-client-includes-standard-headers", "ClientMcpMethodHeader_prompts_list", "Client sends correct Mcp-Method header on prompts/list request", ""],
+      "emitting_byte_span": [700072, 700441],
+      "emitting_span_provenance": "locator_row",
+      "emitting_span_provenance_why": "The locator names THREE sites for this row's key and its own `rung_pin_level` is `check`, not `row` — the name is computed at the site (`ClientMcpMethodHeader_${n.replace(/\\//g,`_`)}`), so the six Method rows share one site and the three Name rows another. The span taken here is one the locator names, which is what `locator_row` asserts and all G18 checks; WHICH of the three it is, is this row's reading and not the locator's authority. Stated because a check-level pin cannot distinguish the Method push from the Name push, and G18 would accept either against either row.",
+      "context_excerpts": [
+        {"label": "method_header_predicate", "byte_span": [699670, 700072], "why": "the predicate the push reports: binds `r`, the `mcp-method` header, and `i`, the error accumulator whose emptiness is the verdict"},
+        {"label": "method_evaluability_guard", "byte_span": [699711, 699756], "why": "the early return — a message with no method, or a method already checked, emits nothing at all"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_method_header_present",
+          "expr": "i.push(`Missing Mcp-Method header on ${n} request. Clients MUST include the Mcp-Method header on all POST requests.`)",
+          "expr_found_in": "context:method_header_predicate",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the ELSE arm of `r?r!==n&&i.push(...):i.push(...)` — reached when `r`, the `mcp-method` header, is falsy, and it pushes an error; the push's `status:i.length===0?`SUCCESS`:`FAILURE`` then makes a non-empty accumulator the failure",
+          "requires": "every POST carries an `Mcp-Method` header — SEP-2243's MUST, as the pushed message itself states"
+        },
+        {
+          "axis": "mcp_method_header_matches_body_method",
+          "expr": "r!==n",
+          "expr_found_in": "context:method_header_predicate",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`r?r!==n&&i.push(...)` — inside the header-present arm, inequality with the body method `n` pushes an error. `!==` is case-sensitive, which the pushed message says in as many words",
+          "requires": "the header's value is the body's `method`, byte-for-byte and case-sensitively"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "if(!n||this.methodHeaderChecks.has(n))return;",
+          "kind": "first_request_of_this_method",
+          "on_failure": "nothing is emitted at this call; if no request of this method ever arrives, `getChecks` emits a SKIPPED row instead",
+          "reads": "whether the message carries a method at all, and whether one of this method has already been checked — only the FIRST is scored"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-standard-headers", "sep-2243-client-includes-standard-headers", "ClientMcpMethodHeader_prompts_get", "Client sends correct Mcp-Method header on prompts/get request", ""],
+      "emitting_byte_span": [700072, 700441],
+      "emitting_span_provenance": "locator_row",
+      "emitting_span_provenance_why": "The locator names THREE sites for this row's key and its own `rung_pin_level` is `check`, not `row` — the name is computed at the site (`ClientMcpMethodHeader_${n.replace(/\\//g,`_`)}`), so the six Method rows share one site and the three Name rows another. The span taken here is one the locator names, which is what `locator_row` asserts and all G18 checks; WHICH of the three it is, is this row's reading and not the locator's authority. Stated because a check-level pin cannot distinguish the Method push from the Name push, and G18 would accept either against either row.",
+      "context_excerpts": [
+        {"label": "method_header_predicate", "byte_span": [699670, 700072], "why": "the predicate the push reports: binds `r`, the `mcp-method` header, and `i`, the error accumulator whose emptiness is the verdict"},
+        {"label": "method_evaluability_guard", "byte_span": [699711, 699756], "why": "the early return — a message with no method, or a method already checked, emits nothing at all"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_method_header_present",
+          "expr": "i.push(`Missing Mcp-Method header on ${n} request. Clients MUST include the Mcp-Method header on all POST requests.`)",
+          "expr_found_in": "context:method_header_predicate",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the ELSE arm of `r?r!==n&&i.push(...):i.push(...)` — reached when `r`, the `mcp-method` header, is falsy, and it pushes an error; the push's `status:i.length===0?`SUCCESS`:`FAILURE`` then makes a non-empty accumulator the failure",
+          "requires": "every POST carries an `Mcp-Method` header — SEP-2243's MUST, as the pushed message itself states"
+        },
+        {
+          "axis": "mcp_method_header_matches_body_method",
+          "expr": "r!==n",
+          "expr_found_in": "context:method_header_predicate",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`r?r!==n&&i.push(...)` — inside the header-present arm, inequality with the body method `n` pushes an error. `!==` is case-sensitive, which the pushed message says in as many words",
+          "requires": "the header's value is the body's `method`, byte-for-byte and case-sensitively"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "if(!n||this.methodHeaderChecks.has(n))return;",
+          "kind": "first_request_of_this_method",
+          "on_failure": "nothing is emitted at this call; if no request of this method ever arrives, `getChecks` emits a SKIPPED row instead",
+          "reads": "whether the message carries a method at all, and whether one of this method has already been checked — only the FIRST is scored"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-standard-headers", "sep-2243-client-includes-standard-headers", "ClientMcpNameHeader_tools_call", "Client sends correct Mcp-Name header on tools/call request", ""],
+      "emitting_byte_span": [700837, 701224],
+      "emitting_span_provenance": "locator_row",
+      "emitting_span_provenance_why": "The locator names THREE sites for this row's key and its own `rung_pin_level` is `check`, not `row` — the name is computed at the site (`ClientMcpMethodHeader_${n.replace(/\\//g,`_`)}`), so the six Method rows share one site and the three Name rows another. The span taken here is one the locator names, which is what `locator_row` asserts and all G18 checks; WHICH of the three it is, is this row's reading and not the locator's authority. Stated because a check-level pin cannot distinguish the Method push from the Name push, and G18 would accept either against either row.",
+      "context_excerpts": [
+        {"label": "dispatch_site", "byte_span": [699044, 699600], "why": "`handlePost` — it calls `this.checkMcpNameHeader(e,n,`params.name`)` on EVERY tools/call and prompts/get, and `(e,n,`params.uri`)` on every resources/read, with no guard on whether that field is present. Addressed because the UNCONDITIONALITY is what an ET claim about a nameless request contradicts, and it is not visible in the predicate or the push"},
+        {"label": "name_header_predicate", "byte_span": [700442, 700837], "why": "the predicate the push reports: binds `a`, the `mcp-name` header, `i`, the body value it is compared against, and `o`, the error accumulator"},
+        {"label": "name_source_field_binding", "byte_span": [700526, 700573], "why": "binds `i` — `resources/read` is compared against `params.uri`, `tools/call` and `prompts/get` against `params.name`. This SELECTS what is compared; it is not a behaviour the check requires, so it is an excerpt and NOT a third axis (C1a's `preconditions_rule` / error-accumulator shape)"},
+        {"label": "name_evaluability_guard", "byte_span": [700483, 700522], "why": "the early return — a method already checked emits nothing"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_name_header_present",
+          "expr": "o.push(`Missing Mcp-Name header on ${r} request. Clients MUST include the Mcp-Name header for ${r} requests.`)",
+          "expr_found_in": "context:name_header_predicate",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the ELSE arm of `a?a!==i&&o.push(...):o.push(...)` — reached when `a`, the `mcp-name` header, is falsy, and it pushes an error; `status:o.length===0?`SUCCESS`:`FAILURE`` makes a non-empty accumulator the failure",
+          "requires": "a name-bearing method's POST carries an `Mcp-Name` header"
+        },
+        {
+          "axis": "mcp_name_header_matches_source_field",
+          "expr": "a!==i",
+          "expr_found_in": "context:name_header_predicate",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`a?a!==i&&o.push(...)` — inside the header-present arm, inequality with `i` (the body value selected by `name_source_field_binding`) pushes an error",
+          "requires": "the header's value is the body's `params.name`"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "if(this.nameHeaderChecks.has(r))return;",
+          "kind": "first_request_of_this_method",
+          "on_failure": "nothing is emitted at this call; if no request of this method ever arrives, `getChecks` emits a SKIPPED row instead",
+          "reads": "whether a request of this method has already been checked — only the FIRST is scored"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-standard-headers", "sep-2243-client-includes-standard-headers", "ClientMcpNameHeader_resources_read", "Client sends correct Mcp-Name header on resources/read request", ""],
+      "emitting_byte_span": [700837, 701224],
+      "emitting_span_provenance": "locator_row",
+      "emitting_span_provenance_why": "The locator names THREE sites for this row's key and its own `rung_pin_level` is `check`, not `row` — the name is computed at the site (`ClientMcpMethodHeader_${n.replace(/\\//g,`_`)}`), so the six Method rows share one site and the three Name rows another. The span taken here is one the locator names, which is what `locator_row` asserts and all G18 checks; WHICH of the three it is, is this row's reading and not the locator's authority. Stated because a check-level pin cannot distinguish the Method push from the Name push, and G18 would accept either against either row.",
+      "context_excerpts": [
+        {"label": "dispatch_site", "byte_span": [699044, 699600], "why": "`handlePost` — it calls `this.checkMcpNameHeader(e,n,`params.name`)` on EVERY tools/call and prompts/get, and `(e,n,`params.uri`)` on every resources/read, with no guard on whether that field is present. Addressed because the UNCONDITIONALITY is what an ET claim about a nameless request contradicts, and it is not visible in the predicate or the push"},
+        {"label": "name_header_predicate", "byte_span": [700442, 700837], "why": "the predicate the push reports: binds `a`, the `mcp-name` header, `i`, the body value it is compared against, and `o`, the error accumulator"},
+        {"label": "name_source_field_binding", "byte_span": [700526, 700573], "why": "binds `i` — `resources/read` is compared against `params.uri`, `tools/call` and `prompts/get` against `params.name`. This SELECTS what is compared; it is not a behaviour the check requires, so it is an excerpt and NOT a third axis (C1a's `preconditions_rule` / error-accumulator shape)"},
+        {"label": "name_evaluability_guard", "byte_span": [700483, 700522], "why": "the early return — a method already checked emits nothing"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_name_header_present",
+          "expr": "o.push(`Missing Mcp-Name header on ${r} request. Clients MUST include the Mcp-Name header for ${r} requests.`)",
+          "expr_found_in": "context:name_header_predicate",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the ELSE arm of `a?a!==i&&o.push(...):o.push(...)` — reached when `a`, the `mcp-name` header, is falsy, and it pushes an error; `status:o.length===0?`SUCCESS`:`FAILURE`` makes a non-empty accumulator the failure",
+          "requires": "a name-bearing method's POST carries an `Mcp-Name` header"
+        },
+        {
+          "axis": "mcp_name_header_matches_source_field",
+          "expr": "a!==i",
+          "expr_found_in": "context:name_header_predicate",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`a?a!==i&&o.push(...)` — inside the header-present arm, inequality with `i` (the body value selected by `name_source_field_binding`) pushes an error",
+          "requires": "the header's value is the body's `params.uri`"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "if(this.nameHeaderChecks.has(r))return;",
+          "kind": "first_request_of_this_method",
+          "on_failure": "nothing is emitted at this call; if no request of this method ever arrives, `getChecks` emits a SKIPPED row instead",
+          "reads": "whether a request of this method has already been checked — only the FIRST is scored"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-standard-headers", "sep-2243-client-includes-standard-headers", "ClientMcpNameHeader_prompts_get", "Client sends correct Mcp-Name header on prompts/get request", ""],
+      "emitting_byte_span": [700837, 701224],
+      "emitting_span_provenance": "locator_row",
+      "emitting_span_provenance_why": "The locator names THREE sites for this row's key and its own `rung_pin_level` is `check`, not `row` — the name is computed at the site (`ClientMcpMethodHeader_${n.replace(/\\//g,`_`)}`), so the six Method rows share one site and the three Name rows another. The span taken here is one the locator names, which is what `locator_row` asserts and all G18 checks; WHICH of the three it is, is this row's reading and not the locator's authority. Stated because a check-level pin cannot distinguish the Method push from the Name push, and G18 would accept either against either row.",
+      "context_excerpts": [
+        {"label": "dispatch_site", "byte_span": [699044, 699600], "why": "`handlePost` — it calls `this.checkMcpNameHeader(e,n,`params.name`)` on EVERY tools/call and prompts/get, and `(e,n,`params.uri`)` on every resources/read, with no guard on whether that field is present. Addressed because the UNCONDITIONALITY is what an ET claim about a nameless request contradicts, and it is not visible in the predicate or the push"},
+        {"label": "name_header_predicate", "byte_span": [700442, 700837], "why": "the predicate the push reports: binds `a`, the `mcp-name` header, `i`, the body value it is compared against, and `o`, the error accumulator"},
+        {"label": "name_source_field_binding", "byte_span": [700526, 700573], "why": "binds `i` — `resources/read` is compared against `params.uri`, `tools/call` and `prompts/get` against `params.name`. This SELECTS what is compared; it is not a behaviour the check requires, so it is an excerpt and NOT a third axis (C1a's `preconditions_rule` / error-accumulator shape)"},
+        {"label": "name_evaluability_guard", "byte_span": [700483, 700522], "why": "the early return — a method already checked emits nothing"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_name_header_present",
+          "expr": "o.push(`Missing Mcp-Name header on ${r} request. Clients MUST include the Mcp-Name header for ${r} requests.`)",
+          "expr_found_in": "context:name_header_predicate",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the ELSE arm of `a?a!==i&&o.push(...):o.push(...)` — reached when `a`, the `mcp-name` header, is falsy, and it pushes an error; `status:o.length===0?`SUCCESS`:`FAILURE`` makes a non-empty accumulator the failure",
+          "requires": "a name-bearing method's POST carries an `Mcp-Name` header"
+        },
+        {
+          "axis": "mcp_name_header_matches_source_field",
+          "expr": "a!==i",
+          "expr_found_in": "context:name_header_predicate",
+          "polarity": "fail_when_true",
+          "polarity_reading": "`a?a!==i&&o.push(...)` — inside the header-present arm, inequality with `i` (the body value selected by `name_source_field_binding`) pushes an error",
+          "requires": "the header's value is the body's `params.name`"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "if(this.nameHeaderChecks.has(r))return;",
+          "kind": "first_request_of_this_method",
+          "on_failure": "nothing is emitted at this call; if no request of this method ever arrives, `getChecks` emits a SKIPPED row instead",
+          "reads": "whether a request of this method has already been checked — only the FIRST is scored"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
     }
   ],
-  "emitting_span_provenance_rule": "Every row states where its `emitting_byte_span` came from, and the generator CHECKS the statement against MES-97's locator output (G18). `locator_row` — the span is one the locator names for this row's key, and the generator requires that. `locator_row_rejected` — the locator's own `rung_pin_level` for that row is NOT `row`, so it does not claim to pin the row; the span it names belongs to a sibling and is refused. The generator then requires the reverse: the pin level must not be `row`, the span used must NOT be one of the locator's, and a reason must be given. Four of C1b-i's 29 rows are rejections; C1a's 11 are all `locator_row`, and were so before this field existed.",
+  "emitting_span_provenance_rule": "Every row states where its `emitting_byte_span` came from, and the generator CHECKS the statement against MES-97's locator output (G18). `locator_row` — the span is one the locator names for this row's key, and the generator requires that. `locator_row_rejected` — the locator's own `rung_pin_level` for that row is NOT `row`, so it does not claim to pin the row; the span it names belongs to a sibling and is refused. The generator then requires the reverse: the pin level must not be `row`, the span used must NOT be one of the locator's, and a reason must be given. Four of C1b-i's 29 rows are rejections; C1a's 11 are all `locator_row`, and were so before this field existed. C1b-ii's 9 are all `locator_row` TOO, and each carries an `emitting_span_provenance_why` anyway — not because G18 demands one on an acceptance (it does not), but because the locator pins these rows at level CHECK and names three sites for every one of them, so G18 would accept the Name push against a Method row and vice versa. The acceptance is honest and the residual it leaves is stated on the row rather than in this rule.",
   "check_id_location_rule": "C1a's 11 rows all carry their check id as a backtick literal at the emitting site, and the generator required exactly that. Fourteen of C1b-i's rows emit with `id:c` — a value COMPUTED from the argument's value and declared type — and ten more with `id:t`, a loop variable. So a row may name `check_id_found_in`: the pool entry whose bytes must carry the id literal. It defaults to `evaluator_excerpt`, which is C1a's behaviour unchanged, and the named entry must exist. This WEAKENS the guard from `the id is at the emitting site` to `the id is verbatim at an ADDRESSED span this row names`, and that is said plainly rather than left to be noticed: what it still refuses is a row whose id occurs nowhere it points at."
 }

@@ -4,14 +4,14 @@
   "derivation": "projection",
   "emptiness_reason": {
     "code": "by_slice",
-    "measured": "bucket-5 cells with `oc_key[0] == \"server\"`: 0 of 48. The other 48 are client-leg.",
+    "measured": "bucket-5 cells with `oc_key[0] == \"server\"`: 0 of 59. The other 59 are client-leg.",
     "result": "CHECKED, AND ZERO — within the declared slice. Not 'never asked'.",
     "ticket_that_would_fill_it": "C1b (MES-104, client leg) and C1c (MES-105, server leg) widen the population.",
     "what_would_fill_it": "a server-leg agreement inside the declared slice. THIS IS NOT A STRUCTURAL FACT. Every green-in-both edge adjudicated so far is client-leg; the declared slice simply contains no server-leg agreement yet. An unqualified empty \"green in both — server\" view would read as \"this SDK agrees with the official suite nowhere on the server leg\", which is FALSE. C1c (MES-105) is the ticket that fills it."
   },
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 48 declared ET-CC members and 29\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 233 members and\n130 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 14 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "population_banner": "POPULATION: this projection covers 68 declared ET-CC members and 39\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 213 members and\n120 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 14 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
   "predicate": "`cells` where the stored `bucket` == \"5\" AND the stored `oc_key[0]` == \"server\". Universe: the crosswalk's edges.",
   "projected_from": {
     "bucket_zero": {
@@ -20,9 +20,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 186840,
+      "bytes": 281457,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "d068abff28bcb179199e530fa3c7dbeec21a5f5a4abe0a39750e23493542f358"
+      "sha256": "b150085b2c5a31e6ecfe8a4815528dd05b385ccac4296d5cbaebfa541ae46bbf"
     }
   },
   "revision": "2026-07-28",
@@ -30,7 +30,7 @@
   "schema": "bucket-view/1",
   "title": "green in both — server",
   "universe": {
-    "count": 57,
+    "count": 71,
     "name": "edges",
     "of": "the crosswalk's `cells`"
   },

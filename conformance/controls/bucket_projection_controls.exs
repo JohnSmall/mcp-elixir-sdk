@@ -430,7 +430,13 @@ defmodule BucketProjectionControls do
        [
          "[population_statement]",
          "POPULATION STATEMENT",
-         "population.member_count: states 21, the list holds 48"
+         # DERIVED, not written. This was the literal pair (21, 48) until MES-108
+         # moved the population to 68 — and a stale literal here does not make the
+         # guard wrong, it makes the CONTROL stop attesting the guard, which is
+         # worse because it stays green-shaped while proving nothing. `21` is kept
+         # as the planted wrong value (any value the list contradicts will do);
+         # what must track the tree is the figure the message reports back.
+         "population.member_count: states 21, the list holds #{length(doc["population"]["members"])}"
        ], put_in(doc, ["population", "member_count"], 21)},
       {"(reused)        an EMPTY declared population — C1's own refusal-without-a-universe",
        [":empty_population"], put_in(doc, ["population", "members"], [])}

@@ -64,6 +64,15 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
   * **A claim-level unmatched record against a member that carries no edge** —
     that member is state 3 whole and belongs in `declared_unmatched`, where
     bucket 1 counts it.
+  * **A population figure in this generator's own prose that the run did not
+    derive** — G21. CR-1 (MES-104) interpolated every figure in the PROJECTOR
+    and guarded it; this generator's statements were left as literals, and one
+    ticket later `trust_status` declared a `48-member / 29-declared-check`
+    slice over a 68/39 population while the twelve views projected from it
+    interpolated the right pair (CR-5, MES-108). The scan's universe is the
+    EMITTED artefact and a string is this generator's own iff it occurs in no
+    input document, so a statement added later is inside the guard without
+    anyone adding it to a list.
 
   ## `--edges` is repeatable, and bucket 2 can now be non-empty
 
@@ -102,8 +111,11 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
   assignment (`crosswalk_falsification_controls.exs drift`) as well as these
   refusals.
 
-  That anything **outside** the declared population is adjudicated. C1b-ii and
-  C1b-iii (MES-104's siblings) and C1c (MES-105) own the rest.
+  That anything **outside** the declared population is adjudicated. The tickets
+  that own the rest are the ones `population.outside_the_population.owners`
+  names. Neither that field nor this sentence may name the ticket that is
+  RENDERING the artefact: a document naming its own producer as still owing the
+  remainder is CR-1's defect (MES-104), and it recurred here as CR-5 (MES-108).
 
   ## Exit status
 
@@ -191,31 +203,64 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
 
     keying = keying!(in_denominator)
 
+    buckets = buckets!(cells, population)
+    claim_level = claim_level!(edges_docs, cells)
+
+    # Bound BEFORE the artefact, because `trust_status` and three residuals are
+    # interpolated from them. Every figure any statement below states comes from
+    # here, and G21 refuses one that does not (CR-5 on MES-108).
+    figures =
+      figures(
+        population,
+        cells,
+        buckets,
+        claim_level,
+        length(in_denominator),
+        manifest["arithmetic"]["total"]
+      )
+
     artefact = %{
       "schema" => "crosswalk/1",
       "revision" => @revision,
       "generated_by" => "mix conformance.crosswalk",
-      "owner" => "MES-97 (C1a) and MES-104 (C1b-i)",
+      "owner" => "MES-97 (C1a), MES-104 (C1b-i) and MES-108 (C1b-ii)",
       "what_this_is" =>
         "The single matrix the ten buckets are PROJECTIONS of. C2 renders it, C3 falsifies it, " <>
           "D adjudicates its cells. It decides what no bucket MEANS.",
-      "trust_status" => trust_status(),
+      "trust_status" => trust_status(figures),
       "cross_source_agreement" => agreement,
       "population" => population,
       "keying_control" => keying,
       "axis_provenance" => axis_bytes,
       "axis_span_provenance" => span_provenance,
       "verdict_mapping" => verdict_mapping(cells),
-      "buckets" => buckets!(cells, population),
+      "buckets" => buckets,
       "escalations" => escalations(cells),
       "totality" => totality(cells, population, edges_docs),
       "arithmetic" => arithmetic(cells, population),
-      "residuals" => residuals(),
+      "residuals" => residuals(figures),
       "cells" => cells,
       "declared_unmatched" =>
         Enum.flat_map(edges_docs, fn {_p, d} -> d["declared_unmatched"] end),
-      "claim_level_unmatched" => claim_level!(edges_docs, cells)
+      "claim_level_unmatched" => claim_level
     }
+
+    # G21 reads the artefact as BUILT, then its own report is put in. The report
+    # is required to carry no population claim of its own, so what it attests is
+    # not changed by its being there.
+    artefact =
+      Map.put(
+        artefact,
+        "population_statement_guard",
+        population_statement!(
+          artefact,
+          figures,
+          Crosswalk.string_set(
+            Enum.map(edges_docs, fn {_p, d} -> d end) ++
+              [manifest, denominator, register, attribution, a3_axes, c1_axes, sites]
+          )
+        )
+      )
 
     reconcile!(artefact)
     File.write!(out, Jason.encode!(artefact, pretty: true) <> "\n")
@@ -676,8 +721,12 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
             "state 4 ('nobody has adjudicated this member, and the guard FAILS it'). Reporting " <>
             "these as bucket 1 would assert of each something false of every one.",
         "owners" =>
-          "C1b-ii and C1b-iii (MES-104's siblings — CG1/CG2/CG4 and the 55 no-CG client members); " <>
-            "C1c = MES-105 (server leg + the 29 none_determinable)"
+          "C1b-iii = MES-109 (the client-leg members no CG covers); C1c = MES-105 (server leg " <>
+            "+ the 29 none_determinable). NOT C1b-ii, which rendered this artefact: a field " <>
+            "naming its own producer as still owing the remainder is CR-1's defect (MES-104) " <>
+            "and it recurred here as CR-5 (MES-108). The sub-population figures the previous " <>
+            "wording carried are the register's to state, not this artefact's — this artefact " <>
+            "holds no figure it did not derive (G21)."
       }
     }
   end
@@ -1132,9 +1181,8 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
           "`Crosswalk.project/2` refuses a complement without one and that refusal is what this is.",
       "why_a_zero_here_would_be_a_lie" =>
         "C1a derived its check universe from the tags its OWN edges carried, so the complement " <>
-          "was empty BY CONSTRUCTION and `CHECKED, AND ZERO — all 14 checks carry at least one " <>
-          "edge` could not have said anything else. A file that wants a bucket-2 answer declares " <>
-          "its checks from outside itself."
+          "was empty BY CONSTRUCTION and its `CHECKED, AND ZERO` could not have said anything " <>
+          "else. A file that wants a bucket-2 answer declares its checks from outside itself."
     }
   end
 
@@ -1249,7 +1297,158 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     }
   end
 
-  defp residuals do
+  # --- the population figures, and G21 over every statement that states one ---
+  #
+  # Every figure the prose below states is bound HERE, from the run's own
+  # derivation, and G21 refuses a figure that is not. What made that necessary
+  # is CR-5 on MES-108: `trust_status` was a literal `48-member /
+  # 29-declared-check`, MES-104 moved the population to 48/29 and MES-108 to
+  # 68/39, and the sentence never moved — while the twelve bucket views
+  # projected from this file interpolated the right pair, because CR-1 fixed the
+  # PROJECTOR and nothing reached the generator.
+  defp figures(population, cells, buckets, claim_level, in_denominator, manifest_total) do
+    outside = population["outside_the_population"]
+    addressed = cells |> Enum.map(& &1["tag"]) |> Enum.uniq()
+
+    %{
+      declared_members: population["member_count"],
+      declared_checks: population["declared_check_count"],
+      members_with_edges: population["members_with_edges"],
+      members_declared_unmatched: population["members_declared_unmatched"],
+      outside_members: outside["et_cc_members"],
+      outside_checks: outside["in_denominator_checks"],
+      total_members: population["member_count"] + outside["et_cc_members"],
+      addressed_checks: length(addressed),
+      addressed_not_declared: length(addressed -- population["declared_checks"]),
+      in_denominator_checks: in_denominator,
+      manifest_checks: manifest_total,
+      bucket_1: buckets["bucket_1"]["count"],
+      bucket_2: get_in(buckets, ["bucket_2", "count"]),
+      edges: length(cells),
+      escalated: Enum.count(cells, &(not is_nil(&1["escalation"]))),
+      claim_level_unmatched: claim_level["count"],
+      per_file_members:
+        Enum.map(population["files"], &{Path.basename(&1["path"]), &1["member_count"]})
+    }
+  end
+
+  # The figures the crosswalk HOLDS, as a set, for G21's against-the-tree limb.
+  #
+  # ZERO IS NOT EXCLUDED, and that was measured rather than reasoned. Excluding
+  # it looked right — admitting a zero licenses every "0 checks" sentence in that
+  # run, and a false zero is the strongest wrong claim these artefacts can make.
+  # But a run over files that declare NO check population derives zero honestly,
+  # and the `composition` control drives exactly that: the guard refused a
+  # perfectly good crosswalk for stating a figure it had itself derived. A
+  # derived zero is true; the set is for figures the run did NOT derive, and
+  # where no figure is zero, zero is refused like any other.
+  defp held_figures(f) do
+    f
+    |> Map.values()
+    |> Enum.flat_map(fn
+      n when is_integer(n) -> [n]
+      l when is_list(l) -> Enum.map(l, fn {_name, n} -> n end)
+      _ -> []
+    end)
+    |> MapSet.new()
+  end
+
+  # The phrases the load-bearing statements must contain, built from `figures`
+  # and NOT from the templates that rendered them. Two independently authored
+  # statements of one figure, pinned against each other — a consistency pin
+  # (ruling 9). It catches an interpolation of the WRONG held figure, which the
+  # against-the-tree limb cannot see.
+  #
+  # A residual's path is resolved through its `id`, so re-ordering the list
+  # cannot silently drop a pin: an id that is not there yields a path that is
+  # not there, and an absent statement is a missing phrase.
+  defp required_phrases(artefact, f) do
+    at = fn id ->
+      "residuals.[#{Enum.find_index(artefact["residuals"], &(&1["id"] == id))}].text"
+    end
+
+    [
+      {"trust_status",
+       "#{f.declared_members}-member / #{f.declared_checks}-declared-check slice"},
+      {at.("X5"), "member population is #{f.declared_members} across"},
+      {at.("X9"), "#{f.claim_level_unmatched} of them"},
+      {"buckets.bucket_1.universe", "the #{f.declared_members} declared members"},
+      {"population.state_4_guard", "these #{f.declared_members} members"}
+    ] ++ bucket_2_phrase(at, f)
+  end
+
+  # Pinned only where bucket 2 was ASKED. A pin over a run that declares no
+  # check population would require the artefact to state an answer it does not
+  # have, which is the failure the pin exists to prevent, inverted.
+  defp bucket_2_phrase(_at, %{bucket_2: nil}), do: []
+
+  defp bucket_2_phrase(at, f),
+    do: [{at.("X8"), "#{f.bucket_2} of the #{f.declared_checks} declared checks"}]
+
+  # G21. Three limbs, in the order of what they can determine: nothing scanned,
+  # a figure the run did not derive, a held figure in the wrong place.
+  defp population_statement!(artefact, f, input_strings) do
+    statements = Crosswalk.authored_statements(artefact, input_strings)
+    held = held_figures(f)
+
+    # L1 — fail-closed on the vacuum. A scan that reached nothing reports
+    # exactly the green of a scan that found nothing wrong (S9-15's shape), and
+    # the authorship anchor is a set difference, so a change to how the inputs
+    # are read could empty it silently.
+    refuse_unless(statements != [], """
+    G21 — the population-statement scan found NOTHING to read. Every string this generator
+    emits was matched to an input document, or none carries a population figure at all.
+    Either way the guard below would pass over an artefact it never examined, and a green
+    from an unrun scan is indistinguishable from a green from a clean one.
+    """)
+
+    unheld = Crosswalk.unheld_figures(statements, held)
+
+    refuse_unless(unheld == [], """
+    G21 — #{length(unheld)} population figure(s) in this generator's OWN prose are not figures
+    this run derived. That is CR-5 on MES-108: `trust_status` said `48-member /
+    29-declared-check` while the artefact's own arithmetic said 68 and 39, because the figures
+    were literals and the population moved twice underneath them. Interpolate each from
+    `figures/1`, or drop the claim — a fresh literal is the same defect one ticket later:
+    #{Enum.map_join(unheld, "\n", fn {path, n, phrase} -> "      #{path}: #{n} — in #{inspect(phrase)}" end)}
+      the figures this run holds: #{held |> MapSet.to_list() |> Enum.sort() |> Enum.join(", ")}
+    """)
+
+    missing = Crosswalk.missing_phrases(artefact, required_phrases(artefact, f))
+
+    refuse_unless(missing == [], """
+    G21 — #{length(missing)} statement(s) do not state the figure this run holds. The phrase is
+    built from the run's figures independently of the text that rendered it, so this fires on an
+    interpolation of the WRONG held figure — which the against-the-tree limb cannot see, because
+    a wrong HELD figure is still a held figure:
+    #{Enum.map_join(missing, "\n", fn {path, phrase} -> "      #{path}: expected to contain #{inspect(phrase)}" end)}
+    """)
+
+    report =
+      "G21 — every population figure this generator's own prose states is one this run " <>
+        "derived. Scanned #{length(statements)} authored statements against the " <>
+        "#{MapSet.size(held)} distinct figures the run holds, and pinned " <>
+        "#{length(required_phrases(artefact, f))} load-bearing phrases built from those figures " <>
+        "independently of the text. THE UNIVERSE IS THE EMITTED ARTEFACT, not a list this " <>
+        "module declares: a string is this generator's own iff it occurs in no input document, " <>
+        "so a statement added later is inside the guard without anyone remembering to add it. " <>
+        "This block is written AFTER the scan and is required to carry no population claim of " <>
+        "its own, so it is not part of what it attests. BOUNDS: a figure spelled as a word, or " <>
+        "stated without the noun it counts, is invisible to the scan — both occur here and are " <>
+        "handled by interpolating them, not by the scan; a literal that coincides with some " <>
+        "other held figure survives until the population next moves, which is when CR-5's " <>
+        "recurrence would land anyway; and prose this generator does not EMIT (the moduledoc, a " <>
+        "branch not taken) is outside the universe by construction."
+
+    refuse_unless(
+      Crosswalk.population_claims(report) == [],
+      "G21's own report states a population figure, so the block would be part of what it attests"
+    )
+
+    report
+  end
+
+  defp residuals(f) do
     [
       %{
         "id" => "X1",
@@ -1276,7 +1475,13 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
             "its emitting span the locator does not support), G19 (a DECLARED check with no axis " <>
             "decomposition) and G20 (an inherited B2b token no row carries) — each shown firing on " <>
             "a mutated input with the unmutated build as the negative control in the same run. " <>
-            "C1b-ii, C1b-iii and C1c (MES-105) own the rest."
+            "MES-108 added G21, which refuses a population figure in this generator's own prose " <>
+            "that the run did not derive. What lies OUTSIDE the declared population is " <>
+            "unfalsified, and the tickets that own it are the ones " <>
+            "`population.outside_the_population.owners` names — this residual does not name " <>
+            "them, because it named C1b-ii while C1b-ii was rendering it, and a statement that " <>
+            "names its own producer as still owing the remainder is CR-1 (MES-104) recurring as " <>
+            "CR-5 (MES-108)."
       },
       %{
         "id" => "X6",
@@ -1301,7 +1506,16 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       %{
         "id" => "X5",
         "text" =>
-          "The member population is 48 across two edges files — C1b-i's 45 client members and the 3 non-client rows C1a's file was re-declared to. Two of the checks C1a addresses enter through A3 §1's cardinality rule and §4's published worked edge, not through B2b's tokens — inherited, not newly adjudicated, and said so in the edges file."
+          "The member population is #{f.declared_members} across #{length(f.per_file_members)} " <>
+            "edges files — " <>
+            Enum.map_join(f.per_file_members, " and ", fn {file, n} ->
+              "#{n} members from #{file}"
+            end) <>
+            ". Two of the checks C1a addresses enter through A3 §1's cardinality rule and §4's " <>
+            "published worked edge, not through B2b's tokens — inherited, not newly adjudicated, " <>
+            "and said so in the edges file. Every figure in this sentence is interpolated: all " <>
+            "three were literals until MES-108, and two of the three were already wrong when " <>
+            "CR-5 found them."
       },
       %{
         "id" => "X7",
@@ -1311,28 +1525,62 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       %{
         "id" => "X8",
         "text" =>
-          "BUCKET 2 WAS EMPTY BY CONSTRUCTION UNTIL THIS TICKET. C1a derived its check universe from the tags its own edges carried, so the complement within it was necessarily empty and `CHECKED, AND ZERO — all 14 checks in the declared population carry at least one edge` could not have said anything else. A file may now declare its check population from an external anchor, and C1b-i's first non-vacuous answer is NINE: nine of CG7's 29 OC checks carry no edge from any ET-CC member. A file that declares none contributes none to the universe and the artefact reports that bucket 2 was not asked, rather than reporting a zero."
+          "BUCKET 2 WAS EMPTY BY CONSTRUCTION UNTIL MES-104. C1a derived its check universe " <>
+            "from the tags its own edges carried, so the complement within it was necessarily " <>
+            "empty and its `CHECKED, AND ZERO` could not have said anything else. A file may now " <>
+            "declare its check population from an external anchor. " <>
+            bucket_2_answer(f) <>
+            " A file that declares none contributes none to the universe and the " <>
+            "artefact reports that bucket 2 was not asked, rather than reporting a zero. The " <>
+            "answer is interpolated — this sentence froze C1b-i's at nine and went on stating it " <>
+            "after MES-108 moved the check population (CR-5)."
       },
       %{
         "id" => "X9",
         "text" =>
-          "A CLAIM-LEVEL STATE 3 HAS NO BUCKET. A3 §6's state 3 is a property of a MEMBER, and the bucket-1 reconciliation requires a member to be edge-bearing or declared unmatched, never both — so a member matching on some claims and not on others has nowhere to record the unmatched ones. C1b-i found five. They are carried in `claim_level_unmatched` with the search that found none, and ESCALATED. Whether A3 §6 should gain a claim-level state is the PM's."
+          "A CLAIM-LEVEL STATE 3 HAS NO BUCKET. A3 §6's state 3 is a property of a MEMBER, and the bucket-1 reconciliation requires a member to be edge-bearing or declared unmatched, never both — so a member matching on some claims and not on others has nowhere to record the unmatched ones. C1b-i found five; MES-108 resolved " <>
+            "two of them into real edges and found one more. This run carries " <>
+            "#{f.claim_level_unmatched} of them in `claim_level_unmatched`, each with the search " <>
+            "that found none, and ESCALATED — the figure interpolated, because it was written as " <>
+            "a word and so would not have moved (CR-5). Whether A3 §6 should gain a claim-level " <>
+            "state is the PM's."
       }
     ]
   end
 
-  defp trust_status do
-    "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — over the declared 48-member / " <>
-      "29-declared-check slice (C1a's 21 as re-split by MES-104, plus CG7's 27 new) and no " <>
-      "further. (Standing, not proven: the attempts were made and none " <>
-      "succeeded. `UNFALSIFIED` here previously meant `not yet attempted`.) " <>
+  # `nil` is not zero here: a run whose files declare no check population has no
+  # bucket-2 question to answer, and rendering that as `0 of the 0` would report
+  # an answer where there was none.
+  defp bucket_2_answer(%{bucket_2: nil}),
+    do: "No file in this run declares one, so bucket 2 is not asked."
+
+  defp bucket_2_answer(f),
+    do:
+      "This run's answer is #{f.bucket_2} of the #{f.declared_checks} declared checks carrying " <>
+        "no edge from any ET-CC member."
+
+  defp trust_status(f) do
+    "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — over the declared " <>
+      "#{f.declared_members}-member / #{f.declared_checks}-declared-check slice and no " <>
+      "further. Both figures are INTERPOLATED from the population this run derives, and the " <>
+      "slice is NOT decomposed by ticket here. The pair was a literal that had to be re-typed " <>
+      "by hand at every move of the population: it was re-typed at MES-104, the population " <>
+      "moved again at MES-108, and it was not. That is an argument against the SHAPE and not " <>
+      "against an author — it is CR-1 (MES-104) recurring in " <>
+      "the one generator CR-1's remedy did not reach (CR-5, MES-108). The parenthetical was " <>
+      "the worse half — it enumerated the slice in a way that positively excluded the members " <>
+      "the very run rendering it had just added — so it is dropped rather than re-typed: a " <>
+      "fresh decomposition would be a third literal, and `population.files` carries the same " <>
+      "fact derived. G21 refuses a figure here that the run did not derive. (Standing, not proven: the attempts were made " <>
+      "and none succeeded. `UNFALSIFIED` here previously meant `not yet attempted`.) " <>
       "Ruling 5 asked for the control this artefact was unfalsified against: the generator " <>
       "refuses on each falsification class with the mutation committed and shown firing, a " <>
       "drifted per-row bucket assignment is caught naming the row and the buckets it crosses, " <>
       "and the artefact re-derives byte-identically from a second source path. That last is a " <>
       "CONSISTENCY pin, not a correctness claim (ruling 9, residual X6). Nothing here " <>
       "establishes that an axis verdict is RIGHT (X1), and nothing outside the declared " <>
-      "population has been falsified at all — C1b (MES-104) and C1c (MES-105) own that."
+      "population has been falsified at all — the tickets " <>
+      "`population.outside_the_population.owners` names own that."
   end
 
   defp reconcile!(a) do

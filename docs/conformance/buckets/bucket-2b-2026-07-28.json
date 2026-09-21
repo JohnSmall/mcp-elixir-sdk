@@ -1,12 +1,12 @@
 {
   "bucket": "2b",
-  "count": 9,
+  "count": 11,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 48 declared ET-CC members and 29\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 233 members and\n130 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 14 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
-  "predicate": "Declared-population OC checks carrying NO edge in `cells`, whose token's leg segment is `client`. Complement taken through `Crosswalk.project(:bucket_2, ...)`, then filtered on the leg the token already carries. Universe: the client-leg half of the 29 declared checks, never all 173 in-denominator checks.",
+  "population_banner": "POPULATION: this projection covers 68 declared ET-CC members and 39\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 213 members and\n120 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 14 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "predicate": "Declared-population OC checks carrying NO edge in `cells`, whose token's leg segment is `client`. Complement taken through `Crosswalk.project(:bucket_2, ...)`, then filtered on the leg the token already carries. Universe: the client-leg half of the 39 declared checks, never all 173 in-denominator checks.",
   "projected_from": {
     "bucket_zero": {
       "bytes": 176409,
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 186840,
+      "bytes": 281457,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "d068abff28bcb179199e530fa3c7dbeec21a5f5a4abe0a39750e23493542f358"
+      "sha256": "b150085b2c5a31e6ecfe8a4815528dd05b385ccac4296d5cbaebfa541ae46bbf"
     }
   },
   "revision": "2026-07-28",
@@ -56,15 +56,23 @@
     {
       "leg": "client",
       "tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_same_case"
+    },
+    {
+      "leg": "client",
+      "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_get"
+    },
+    {
+      "leg": "client",
+      "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_read"
     }
   ],
   "schema": "bucket-view/1",
   "title": "OC check with no ET-CC match — client",
   "universe": {
     "addressed_but_not_declared": 14,
-    "count": 29,
+    "count": 39,
     "name": "declared_checks",
-    "of": "the 29 declared in-population OC checks, never all 173 in-denominator checks",
+    "of": "the 39 declared in-population OC checks, never all 173 in-denominator checks",
     "why_that_number_is_not_in_this_universe": "Checks an edge addresses that no file DECLARES. They carry adjudicated edges, so they are not bucket 2, and they are in no declared universe, so they are not in 2a or 2b either. Counting them here would make the complement — which is what 2a and 2b are — a complement within the very set it is taken from."
   },
   "what_this_is": "A PURE PROJECTION of the crosswalk named in `projected_from`, on the `predicate` above and on fields the crosswalk already stores. Nothing here re-computes a verdict, an edge shape or a bucket assignment. The rows are the crosswalk's own records verbatim, so a reader can check this view against the matrix byte for byte."

@@ -8,6 +8,9 @@
 #     mix run conformance/controls/crosswalk_controls.exs vacuum
 #     mix run conformance/controls/crosswalk_controls.exs selectors
 #     mix run conformance/controls/crosswalk_controls.exs composition
+#     mix run conformance/controls/crosswalk_controls.exs absence
+#     mix run conformance/controls/crosswalk_controls.exs citations
+#     mix run conformance/controls/crosswalk_controls.exs statements
 #     mix run conformance/controls/crosswalk_controls.exs all
 #
 # ORDER IS PART OF THE DESIGN. `noop` runs FIRST and on its own, because a
@@ -50,6 +53,9 @@ defmodule CrosswalkControls do
   def run(["vacuum"]), do: vacuum()
   def run(["selectors"]), do: selectors()
   def run(["composition"]), do: composition()
+  def run(["absence"]), do: absence()
+  def run(["citations"]), do: citations()
+  def run(["statements"]), do: statements()
 
   def run(["all"]) do
     noop()
@@ -60,11 +66,14 @@ defmodule CrosswalkControls do
     vacuum()
     selectors()
     composition()
+    absence()
+    citations()
+    statements()
   end
 
   def run(_) do
     IO.puts(
-      "usage: noop | keying | locator | pins | guards | vacuum | selectors | composition | all"
+      "usage: noop | keying | locator | pins | guards | vacuum | selectors | composition | absence | citations | all"
     )
 
     System.halt(2)
@@ -410,9 +419,11 @@ defmodule CrosswalkControls do
     """)
   end
 
-  defp recompile!(source) do
+  defp recompile!(source), do: recompile!(source, @locator_src)
+
+  defp recompile!(source, path) do
     Code.put_compiler_option(:ignore_module_conflict, true)
-    Code.compile_string(source, @locator_src)
+    Code.compile_string(source, path)
   after
     Code.put_compiler_option(:ignore_module_conflict, false)
   end
@@ -709,7 +720,9 @@ defmodule CrosswalkControls do
     expectations = [
       {"the client file's members", client["the_population_this_file_declares"]["selector"], src,
        rows
-       |> Enum.filter(&(&1["leg"] == "client" and (&1["cg"] == "CG7" or tagged?.(&1))))
+       |> Enum.filter(
+         &(&1["leg"] == "client" and (&1["cg"] in ~w(CG7 CG1 CG2 CG4) or tagged?.(&1)))
+       )
        |> Enum.map(& &1["key"])},
       {"the residual file's members", resid["the_population_this_file_declares"]["selector"], src,
        rows
@@ -718,7 +731,14 @@ defmodule CrosswalkControls do
       {"the client file's CHECKS", client["the_check_population_this_file_declares"]["selector"],
        sites,
        sites["rows"]
-       |> Enum.filter(&(&1["scenario"] in ["http-custom-headers", "http-invalid-tool-headers"]))
+       |> Enum.filter(
+         &(&1["scenario"] in [
+             "http-custom-headers",
+             "http-invalid-tool-headers",
+             "http-standard-headers",
+             "json-schema-ref-no-deref"
+           ])
+       )
        |> Enum.map(& &1["token"])}
     ]
 
@@ -775,12 +795,109 @@ defmodule CrosswalkControls do
     verdict("a mistyped value denotes the EMPTY set rather than erroring", none == [])
     halt_unless(none == [])
 
+    # MES-108 (C1b-ii). The two mutations C1b-i's pair could not make, because
+    # its `any_of` held ONE `cg` leaf and a dropped leaf is indistinguishable
+    # from a renamed one when there is only one. With four leaves both are
+    # distinguishable and both change the population by a DIFFERENT amount, so
+    # each says something the other does not.
+    #
+    # A dropped leaf and a mistyped leaf fail the SAME guard (G15a) but they are
+    # not the same mistake: a drop silently narrows the declared population and
+    # the file's own counts move with it, whereas a typo leaves the counts
+    # standing and empties the leaf. Only measuring both on the real anchor says
+    # which one a given red is.
+    for cg <- ~w(CG1 CG2 CG4 CG7) do
+      dropped =
+        update_in(member_sel, ["all_of"], fn [leg, %{"any_of" => leaves}] ->
+          [leg, %{"any_of" => Enum.reject(leaves, &(&1["value"] == cg))}]
+        end)
+
+      {:ok, fewer} = Crosswalk.select(dropped, src)
+
+      IO.puts(
+        "  MUTATION  the `#{cg}` leaf dropped from the member `any_of`: " <>
+          "#{length(conj)} -> #{length(fewer)}"
+      )
+
+      verdict(
+        "dropping `#{cg}` denotes a STRICTLY SMALLER population",
+        length(fewer) < length(conj)
+      )
+
+      halt_unless(length(fewer) < length(conj))
+    end
+
+    # And a leaf that is PRESENT but names a CG that does not exist. This is the
+    # one a count alone cannot catch in the other direction: the selector still
+    # has four leaves and still parses, and the population is exactly the one a
+    # dropped leaf gives — so the FILE's declared counts are what tell the two
+    # apart, which is why G15a compares the set and not the shape.
+    renamed =
+      update_in(member_sel, ["all_of"], fn [leg, %{"any_of" => leaves}] ->
+        [
+          leg,
+          %{
+            "any_of" =>
+              Enum.map(leaves, &if(&1["value"] == "CG1", do: %{&1 | "value" => "CG11"}, else: &1))
+          }
+        ]
+      end)
+
+    {:ok, wrong} = Crosswalk.select(renamed, src)
+
+    IO.puts(
+      "  MUTATION  the `CG1` leaf RENAMED to a CG that does not exist: " <>
+        "#{length(conj)} -> #{length(wrong)}"
+    )
+
+    verdict(
+      "a leaf naming an absent `cg` contributes NOTHING rather than erroring",
+      length(wrong) < length(conj)
+    )
+
+    halt_unless(length(wrong) < length(conj))
+
+    # The CHECK selector gets the same treatment, and its drop is the one that
+    # would be invisible without it: remove `http-standard-headers` and the file
+    # declares 30 checks instead of 39, bucket 2's universe shrinks with it, and
+    # every bucket-2 figure stays internally consistent over the smaller set.
+    check_sel = client["the_check_population_this_file_declares"]["selector"]
+    {:ok, all_checks} = Crosswalk.select(check_sel, sites)
+
+    without =
+      update_in(check_sel, ["any_of"], fn leaves ->
+        Enum.reject(leaves, &(&1["value"] == "http-standard-headers"))
+      end)
+
+    {:ok, fewer_checks} = Crosswalk.select(without, sites)
+
+    IO.puts(
+      "  MUTATION  `http-standard-headers` dropped from the CHECK `any_of`: " <>
+        "#{length(all_checks)} -> #{length(fewer_checks)}"
+    )
+
+    verdict(
+      "dropping a scenario removes exactly its checks from the declared population",
+      length(all_checks) - length(fewer_checks) == 9
+    )
+
+    halt_unless(length(all_checks) - length(fewer_checks) == 9)
+
     IO.puts("""
 
-      The generator catches all three — a population that is not the set its selector
-      denotes is G15a, in both directions. What this shows is the SIZE of the mistake
-      each one makes on the anchor this project actually ships, which is the thing a
-      five-row unit cannot say.
+      The generator catches every one of them — a population that is not the set its
+      selector denotes is G15a, in both directions. What this shows is the SIZE of the
+      mistake each one makes on the anchor this project actually ships, which is the
+      thing a five-row unit cannot say.
+
+      AND THE DROP FIGURES CONFIRM C1b-ii's OVERLAP MEASUREMENT FROM THE OTHER SIDE.
+      B2b attributes 23 rows to CG1 + CG2 + CG4 on the client leg, but C1b-ii homes only
+      20 of them, because 3 CG2 rows carry C1a `oc:none` tokens and were already inside
+      C1b-i's 45 through the `tokens non_empty_list` limb. Dropping the leaves one at a
+      time measures exactly that: CG1 -9, CG2 -10 (not -13 — the three are still held by
+      the tokens limb), CG4 -1. 9 + 10 + 1 = 20, the number of new homes, arrived at
+      without counting homes. A figure that two independent routes agree on is a figure;
+      one route's arithmetic is a claim.
     """)
   end
 
@@ -1261,6 +1378,600 @@ defmodule CrosswalkControls do
     )
 
     System.halt(1)
+  end
+
+  # --- absence: the two ZEROS C1b-ii's bucket-1 records rest on ---------------
+  #
+  # MES-108. Two `declared_unmatched` records assert that a search over A1's
+  # manifest returned NOTHING, and a zero is the one result that looks identical
+  # whether the search ran or not. So each gets both halves (A6):
+  #
+  #   POSITIVE CONTROL  the same predicate machinery over the same 175 rows
+  #                     returns a non-zero for terms known to be present, so the
+  #                     sweep demonstrably REACHED the population.
+  #   MUTATION          the predicate itself is replaced by one that MUST match,
+  #                     and is required to go non-zero. Without this, a sweep
+  #                     that silently read an empty row set would pass the
+  #                     positive control too — `Enum.filter` over `[]` is `[]`
+  #                     for every predicate, including the ones that "work".
+  #
+  # The mutation is the limb that matters and it is the easy one to leave out:
+  # a positive control run on DIFFERENT terms shares the row set but not the
+  # predicate path, so it cannot distinguish "this term is absent" from "this
+  # matcher cannot fire".
+
+  @searched_fields ~w(scenario id name description)
+
+  defp absence do
+    header("ABSENCE — the two searches C1b-ii records as returning zero, both halves")
+
+    rows = manifest_rows()
+    IO.puts("  population: #{@manifest} — #{length(rows)} check rows\n")
+
+    halt_unless(length(rows) == 175)
+
+    cases = [
+      {"CG2 / SEP-2133 extensions negotiation", ~r/extension/i,
+       "13 CG2 members are `no-oc-scenario` on this zero"},
+      {"CG1 / a message carrying no method", ~r/\bno method\b|methodless|without a method/i,
+       "`CG1-methodless-carries-no-routing-headers` rests on this zero"}
+    ]
+
+    for {label, pattern, rests_on} <- cases do
+      hits = sweep(rows, pattern)
+
+      IO.puts("  #{label}")
+
+      IO.puts(
+        "    #{inspect(pattern)} over #{Enum.join(@searched_fields, " + ")} -> #{length(hits)}"
+      )
+
+      verdict("THE ZERO: #{rests_on}", hits == [])
+      halt_unless(hits == [])
+
+      # POSITIVE CONTROL — the sweep reached the population.
+      controls = for t <- ~w(header schema response), do: {t, length(sweep(rows, ~r/#{t}/i))}
+
+      IO.puts(
+        "    positive control, same rows same machinery: " <>
+          Enum.map_join(controls, ", ", fn {t, n} -> "/#{t}/i -> #{n}" end)
+      )
+
+      verdict(
+        "the sweep REACHED the population — a zero here is the content's, not the sweep's",
+        Enum.all?(controls, fn {_t, n} -> n > 0 end)
+      )
+
+      halt_unless(Enum.all?(controls, fn {_t, n} -> n > 0 end))
+
+      # MUTATION — a predicate that cannot fail to match. If THIS returns zero,
+      # the row set is empty or the fields are not being read, and the zero above
+      # means nothing.
+      total = length(sweep(rows, ~r/./s))
+
+      IO.puts("    mutation, a predicate that must match every row: /./s -> #{total}")
+
+      verdict(
+        "the matcher CAN fire, over every one of the #{length(rows)} rows",
+        total == length(rows)
+      )
+
+      halt_unless(total == length(rows))
+      IO.puts("")
+    end
+
+    # The near miss C1b-ii records against the CG2 zero, MEASURED rather than
+    # quoted — and it is the figure cg-reconciliation.md §2 states as "seven".
+    #
+    # ONE FACT, READ ONCE. The two censuses' `expected` blocks are the SAME
+    # frozen set and that is asserted here rather than assumed: reading the
+    # figure out of both and printing two agreeing lines would look like two
+    # measurements corroborating each other, when it is one datum shown twice.
+    # The agreement is worth pinning, but as an identity, not as corroboration.
+    client_expected = read("docs/conformance/client-2026-07-28.json")["expected"]
+    server_expected = read("docs/conformance/server-2026-07-28.json")["expected"]
+
+    verdict(
+      "the two censuses carry the SAME frozen `expected` block — so this is one fact, not two",
+      client_expected == server_expected
+    )
+
+    halt_unless(client_expected == server_expected)
+
+    ns = client_expected["not_scored"]
+    ext = Enum.filter(ns, &(&1["reason"] == "extension"))
+    on_client = Enum.filter(ns, &(&1["leg"] == "client"))
+    ext_on_client = Enum.filter(on_client, &(&1["reason"] == "extension"))
+
+    IO.puts(
+      "  near miss: #{length(ns)} not_scored entries, #{length(ext)} carry `extension` " <>
+        "(#{length(on_client)} entries sit on the client leg, #{length(ext_on_client)} of them `extension`)"
+    )
+
+    verdict(
+      "the `extension` count is 16, NOT the 7 cg-reconciliation.md §2 states",
+      length(ext) == 16
+    )
+
+    halt_unless(length(ext) == 16)
+
+    # WHERE THE 7 CAME FROM — named, because a wrong figure with no account of
+    # its origin gets re-derived the same way by the next reader.
+    verdict(
+      "7 is the CLIENT LEG's not_scored ENTRY count, and only 6 of those 7 carry `extension`",
+      length(on_client) == 7 and length(ext_on_client) == 6
+    )
+
+    halt_unless(length(on_client) == 7 and length(ext_on_client) == 6)
+
+    IO.puts("""
+
+      Both zeros stand, and both are now zeros with a reach shown. The near-miss figure
+      does NOT stand as written elsewhere: cg-reconciliation.md §2 says `"reason":
+      "extension"` sits on "seven" not_scored scenarios, and it sits on SIXTEEN — 6 on
+      the client leg (`auth/*`) and 10 on the server leg (`tasks-*`). Seven is the client
+      leg's not_scored ENTRY count, of which only 6 carry that reason; the seventh is
+      `added-after-release`. The censuses have not moved since MES-57 (3e487f8), so this
+      is not drift and re-measuring will not fix it. The ZERO the CG2 records rest on is
+      untouched — what was wrong is the near miss named beside it, which is why this
+      control measures the near miss too. Reported as a finding against a
+      change-controlled document, not edited from MES-108.
+    """)
+  end
+
+  defp manifest_rows do
+    for s <- read(@manifest)["scenarios"], c <- s["checks"] || [] do
+      Map.put(c, "scenario", s["scenario"] || s["name"])
+    end
+  end
+
+  defp sweep(rows, pattern) do
+    Enum.filter(rows, fn r ->
+      @searched_fields |> Enum.map_join(" ", &(r[&1] || "")) |> then(&Regex.match?(pattern, &1))
+    end)
+  end
+
+  # --- citations: every evidence quote, lifted live and compared ------------
+  #
+  # MES-108. Ruling 7 says an address is not evidence, the bytes at it are. CR-3
+  # then caught two quotes in C1b-i that were not the bytes at their address (a
+  # dropped module prefix), and the general byte-at-address guard is MES-112 and
+  # is not built. So until it is, this runs the comparison MECHANICALLY rather
+  # than leaving it to a seat's eye.
+  #
+  # TWO SIDES, TWO ANCHORS, and a quote must be verbatim at an address the
+  # evidence ITSELF names — not merely present somewhere:
+  #
+  #   ET side  against the cited `file.exs:N` / `:N-M` span in the repo.
+  #   OC side  against the live harness build, restricted to the byte spans the
+  #            axis row FOR THIS EDGE'S TAG addresses. Not "somewhere in 800KB":
+  #            a quote that is only findable by searching the whole build is a
+  #            quote with no address, which is the thing ruling 7 forbids.
+  #
+  # A BARE `:N` CONTINUATION IS A FAILURE, not a lookup. `:262` after a full
+  # citation earlier in the same string has no syntactic referent — S9's
+  # bare-continuation finding — and resolving it against the nearest preceding
+  # file name is guessing. Two of C1b-ii's own drafts carried one; both were
+  # rewritten in full rather than resolved by proximity.
+  #
+  # WHAT IT DOES NOT COVER, stated rather than implied. It compares after
+  # collapsing runs of whitespace, so it accepts a quote the formatter has
+  # line-wrapped at a different point than the author did; that is deliberate
+  # (the alternative reddens on `mix format`) and it means the check is on the
+  # BYTES modulo layout, not on the layout. It only looks at backtick-delimited
+  # spans containing `=`, `(`, `[`, `!==` or `===` — a prose phrase in backticks
+  # is not treated as a quote, so an inaccurate paraphrase passes. And it says
+  # nothing about whether the quote SUPPORTS the verdict it is filed under.
+
+  @quote_re ~r/`((?:[^`]|`[^`]*`(?=[^`]*`))+?)`(?!`)/
+  @cite_re ~r/([a-z0-9_]+\.exs?):(\d+)(?:-(\d+))?/
+  @bare_cite_re ~r/(?<![\w.])(?<!\.exs)(?<!\.ex):(\d+)\b/
+
+  defp citations do
+    header("CITATIONS — every evidence quote lifted live and compared by == (ruling 7)")
+
+    require_harness!()
+    client = read(@client_edges)
+    axes = read(@c1_axes)["checks"] ++ read(@a3_axes)["checks"]
+    build = File.read!(@harness)
+
+    records =
+      client["edges"] ++ client["declared_unmatched"] ++ client["claims_without_an_edge"]
+
+    mine = Enum.filter(records, &mes_108_row?/1)
+
+    IO.puts(
+      "  #{length(records)} records in #{Path.basename(@client_edges)}, #{length(mine)} authored by MES-108\n"
+    )
+
+    halt_unless(mine != [])
+
+    {et, oc, problems} = audit(mine, axes, build)
+
+    IO.puts("  ET side  #{et} quotes verbatim at their cited test-file line spans")
+    IO.puts("  OC side  #{oc} quotes verbatim inside the axis row's own addressed harness spans")
+
+    verdict(
+      "all #{et + oc} quotes MES-108 authored are verbatim at an address the evidence names",
+      problems == []
+    )
+
+    for p <- problems, do: IO.puts("    #{inspect(p)}")
+    halt_unless(problems == [])
+
+    # POSITIVE CONTROL. `problems == []` is also what an audit that read nothing
+    # returns, so the sweep is shown to have reached the quotes: every one of
+    # MES-108's edges must have contributed at least one, and the total must be
+    # the number counted independently by walking the regex over the same rows.
+    counted =
+      mine
+      |> Enum.map(&length(source_quotes(&1["evidence"] || "")))
+      |> Enum.sum()
+
+    IO.puts("\n  POSITIVE  #{counted} source-shaped quotes found by an independent count")
+
+    verdict(
+      "the audit compared every quote the records carry — #{et + oc} of #{counted}",
+      et + oc == counted and counted > 0
+    )
+
+    halt_unless(et + oc == counted and counted > 0)
+
+    # MUTATION 1 — a quote that is not the bytes at its address. This is CR-3's
+    # exact defect, planted: the module prefix dropped from a real assertion.
+    mutated =
+      Enum.map(mine, fn r ->
+        Map.update(r, "evidence", nil, fn ev ->
+          String.replace(ev, "HeaderMirror.decode_value(header)", "decode_value(header)")
+        end)
+      end)
+
+    {_, _, caught} = audit(mutated, axes, build)
+
+    IO.puts("\n  MUTATION  a module prefix dropped from one quote (CR-3's own defect):")
+    for p <- caught, do: IO.puts("    #{inspect(p)}")
+
+    verdict("the dropped prefix is CAUGHT, and named", caught != [])
+    halt_unless(caught != [])
+
+    # MUTATION 2 — the address moved by one line, the bytes untouched. A check
+    # that only asked "is this text anywhere in the file" would pass this, and
+    # it is the drift line citations actually suffer (a commit inserting a line
+    # above them). This is why the comparison is against the CITED SPAN.
+    shifted =
+      Enum.map(mine, fn r ->
+        Map.update(
+          r,
+          "evidence",
+          nil,
+          &String.replace(&1, "routing_headers_test.exs:244", "routing_headers_test.exs:245")
+        )
+      end)
+
+    {_, _, drifted} = audit(shifted, axes, build)
+
+    IO.puts("\n  MUTATION  one citation moved by a single line, the bytes unchanged:")
+    for p <- drifted, do: IO.puts("    #{inspect(p)}")
+
+    verdict(
+      "an off-by-one ADDRESS is caught even though the bytes are still in the file",
+      drifted != []
+    )
+
+    halt_unless(drifted != [])
+
+    # MUTATION 3 — a bare `:N` continuation, which is not a wrong address but an
+    # unresolvable one. It must be a failure and not a silent skip.
+    bared =
+      Enum.map(mine, fn r ->
+        Map.update(
+          r,
+          "evidence",
+          nil,
+          &String.replace(&1, "and routing_headers_test.exs:223 asserts", "and :223 asserts")
+        )
+      end)
+
+    {_, _, unresolvable} = audit(bared, axes, build)
+
+    IO.puts("\n  MUTATION  a citation reduced to a bare `:N` with no file:")
+    for p <- unresolvable, do: IO.puts("    #{inspect(p)}")
+
+    verdict("a bare continuation is a FAILURE, not a lookup by proximity", unresolvable != [])
+    halt_unless(unresolvable != [])
+
+    IO.puts("""
+
+      WHAT THIS IS AND IS NOT. It is the mechanical half of ruling 7, run at this seat
+      over the rows THIS TICKET authored — MES-108 ran it before committing, and it
+      caught two defects in its own drafts (a harness quote checked against a test file,
+      and two bare `:N` continuations) which were fixed rather than argued.
+
+      It is NOT MES-112. MES-112 is the guard INSIDE the generator, over every row of
+      every edges file, where a bad citation cannot be committed at all. Run over the
+      inherited C1a and C1b-i rows this same audit reports 18 quotes it cannot place:
+      8 with a stale ADDRESS (content present 1-5 lines away, or line-wrapped across the
+      cited line), 5 deliberate ellipsis paraphrases, 3 prose descriptions quoted as if
+      they were source, and 2 bare continuations. None is a wrong FACT; all are
+      addresses that have drifted or were never exact. They are C1a's and C1b-i's rows
+      and re-addressing them is not MES-108's to do, so they are REPORTED and left —
+      which is also why this mode scopes itself to MES-108's rows and says so, rather
+      than going red on work it is not adjudicating.
+    """)
+  end
+
+  defp mes_108_row?(r) do
+    tag = r["tag"] || ""
+
+    String.contains?(tag, "http-standard-headers") or
+      String.contains?(tag, "json-schema-ref-no-deref") or
+      String.contains?(tag, "/CG2-") or String.contains?(tag, "/CG1-") or
+      String.contains?(r["owner"] || "", "C1b-ii")
+  end
+
+  defp audit(records, axes, build) do
+    Enum.reduce(records, {0, 0, []}, fn r, {et, oc, bad} ->
+      ev = r["evidence"] || ""
+      label = String.slice(r["claim"] || r["tag"] || "?", 0, 50)
+
+      bare =
+        for [_, n] <- Regex.scan(@bare_cite_re, ev),
+            do: {:bare_citation_has_no_file, label, ":" <> n}
+
+      et_window = cited_window(ev)
+      oc_window = axis_window(r["tag"], axes, build)
+
+      {e, o, q_bad} =
+        Enum.reduce(source_quotes(ev), {0, 0, []}, fn q, {e, o, acc} ->
+          sq = squash(q)
+
+          cond do
+            String.contains?(et_window, sq) -> {e + 1, o, acc}
+            String.contains?(oc_window, sq) -> {e, o + 1, acc}
+            true -> {e, o, [{:not_verbatim_at_any_cited_address, label, q} | acc]}
+          end
+        end)
+
+      {et + e, oc + o, bad ++ bare ++ Enum.reverse(q_bad)}
+    end)
+  end
+
+  defp source_quotes(ev) do
+    for [_, q] <- Regex.scan(@quote_re, ev),
+        Regex.match?(~r/[=(\[]|!==|===/, q),
+        do: q
+  end
+
+  defp cited_window(ev) do
+    for [_, file, from, to] <- Regex.scan(@cite_re, ev, capture: :all) |> pad_captures() do
+      case find_source(file) do
+        nil ->
+          ""
+
+        path ->
+          lines = path |> File.read!() |> String.split("\n")
+          a = String.to_integer(from)
+          b = if to == "", do: a, else: String.to_integer(to)
+          lines |> Enum.slice((a - 1)..(b - 1)//1) |> Enum.join("\n") |> squash()
+      end
+    end
+    |> Enum.join(" || ")
+  end
+
+  defp pad_captures(scans),
+    do: Enum.map(scans, fn c -> c ++ List.duplicate("", 4 - length(c)) end)
+
+  defp find_source(basename) do
+    ["test", "lib", "conformance"]
+    |> Enum.flat_map(&Path.wildcard(Path.join([&1, "**", basename])))
+    |> List.first()
+  end
+
+  defp axis_window(nil, _axes, _build), do: ""
+
+  defp axis_window(tag, axes, build) do
+    name = tag |> String.split("/") |> List.last()
+
+    for c <- axes, Enum.at(c["key"], 3) == name, reduce: "" do
+      acc ->
+        spans =
+          [c["emitting_byte_span"], get_in(c, ["emitting_site", "dist_byte_span"])] ++
+            Enum.map(c["context_excerpts"] || [], & &1["byte_span"])
+
+        bytes =
+          spans
+          |> Enum.reject(&is_nil/1)
+          |> Enum.map_join(" || ", fn [a, b] -> binary_part(build, a, b - a) end)
+
+        acc <> " || " <> bytes <> " || " <> (c["evaluator_excerpt"] || "")
+    end
+    |> squash()
+  end
+
+  defp squash(s), do: s |> String.replace(~r/\s+/, " ") |> String.trim()
+
+  # --- statements: G21, the population figures this generator's own prose states
+  #
+  # CR-5 on MES-108. `trust_status` shipped `48-member / 29-declared-check` into
+  # the committed artefact over a 68/39 population, and `crosswalk_test.exs`
+  # asserted that literal against itself, so nothing went red. It is CR-1 on
+  # MES-104 recurring one ticket later in the one file CR-1's remedy did not
+  # reach: the projector's `:population_statement` guards the twelve VIEWS, and
+  # the generator's own statements were guarded by nobody.
+  #
+  # THE MUTATIONS ARE APPLIED TO THE MECHANISM, not to an input file, for the
+  # reason `pins` gives: no input can produce the state. A stale literal is a
+  # disagreement between prose the generator authors and figures the generator
+  # derives, and both sides are in the module. Nothing on disk is touched — the
+  # module is recompiled in this VM and restored in an `after`, so a death
+  # mid-run cannot leave the shared clone mutated (S8-14).
+
+  @crosswalk_src "conformance/lib/mix/tasks/conformance.crosswalk.ex"
+  @crosswalk_lib "conformance/lib/mcp/conformance/crosswalk.ex"
+
+  defp statements do
+    header("G21 — every population figure this generator's own prose states, against the tree")
+
+    require_harness!()
+
+    a = read(@crosswalk_out)
+
+    inputs =
+      Crosswalk.string_set(
+        Enum.map(
+          [
+            @client_edges,
+            @edges,
+            @c1_axes,
+            @a3_axes,
+            @manifest,
+            @denominator,
+            @register,
+            @attribution,
+            @sites
+          ],
+          &read/1
+        )
+      )
+
+    authored = Crosswalk.authored_statements(a, inputs)
+
+    all_claims =
+      Enum.filter(Crosswalk.strings_at(a), &(Crosswalk.population_claims(elem(&1, 1)) != []))
+
+    data = length(all_claims) - length(authored)
+
+    IO.puts("  claim-bearing strings in the committed artefact: #{length(all_claims)}")
+    IO.puts("    AUTHORED by the generator (in no input document):  #{length(authored)}")
+    IO.puts("    carried through from an input document:            #{data}")
+
+    for {path, _t, claims} <- Enum.take(Enum.sort(authored), 20) do
+      IO.puts("      #{String.pad_trailing(path, 46)} #{inspect(Enum.map(claims, &elem(&1, 1)))}")
+    end
+
+    # POSITIVE CONTROL for the scan's REACH. A scan that read nothing reports the
+    # same clean zero as a scan that found nothing wrong, and the statement CR-5
+    # was raised about is the one it must be able to see.
+    verdict(
+      "the scan reaches `trust_status` — the statement CR-5 was raised about",
+      Enum.any?(authored, fn {p, _t, _c} -> p == "trust_status" end)
+    )
+
+    halt_unless(Enum.any?(authored, fn {p, _t, _c} -> p == "trust_status" end))
+
+    # POSITIVE CONTROL for the EXCLUSION, the other direction. The data rows do
+    # carry population figures — `175 manifest checks` in the bucket-1 records'
+    # own searches — so "0 stale figures" is not an artefact of a scan that
+    # excluded everything. Both directions, or neither means anything.
+    verdict(
+      "and claim-bearing DATA strings exist and are excluded as their file's claim",
+      data > 0
+    )
+
+    halt_unless(data > 0)
+
+    IO.puts(
+      "\n  the guard's report as committed:\n    #{squash(a["population_statement_guard"])}"
+    )
+
+    verdict(
+      "the report makes no population claim of its own — it is not part of what it attests",
+      Crosswalk.population_claims(a["population_statement_guard"]) == []
+    )
+
+    # POSITIVE CONTROL: the unmutated generator emits, so a refusal below is the
+    # mutation's doing and not a broken build.
+    out = tmp("statements-positive")
+    run_crosswalk(out)
+    IO.puts("\n  POSITIVE  the unmutated generator emits (#{byte_size(File.read!(out))} bytes)")
+    File.rm(out)
+
+    task_src = File.read!(@crosswalk_src)
+    lib_src = File.read!(@crosswalk_lib)
+
+    # MUTATION 1 — CR-5's DEFECT, PLANTED. The interpolated pair goes back to the
+    # literal the committed artefact actually shipped. This is the one that must
+    # go red at C1b-iii and C1c instead of shipping a third time.
+    mutate!(
+      task_src,
+      @crosswalk_src,
+      ~S|"#{f.declared_members}-member / #{f.declared_checks}-declared-check slice and no " <>|,
+      ~S|"48-member / 29-declared-check slice and no " <>|,
+      "1  the stale literal CR-5 found, put back into trust_status",
+      "are not figures"
+    )
+
+    # MUTATION 2 — a figure the run DOES hold, in the WRONG PLACE. The member
+    # count becomes the check count: 39 is a figure this crosswalk holds, so the
+    # against-the-tree limb cannot see it, and only the phrase pin can. Without
+    # this, limb 3 would be decoration.
+    mutate!(
+      task_src,
+      @crosswalk_src,
+      ~S|"#{f.declared_members}-member / #{f.declared_checks}-declared-check slice and no " <>|,
+      ~S|"#{f.declared_checks}-member / #{f.declared_checks}-declared-check slice and no " <>|,
+      "2  a HELD figure interpolated into the wrong slot (39-member, not 68)",
+      "do not state the figure this run holds"
+    )
+
+    # MUTATION 3 — the scan itself made blind. A regex edit that stops matching
+    # leaves every limb green over an artefact nobody read, which is precisely
+    # the shape a guard cannot be allowed to fail in. L1 is fail-closed on it.
+    mutate!(
+      lib_src,
+      @crosswalk_lib,
+      ~S|@population_claim ~r/(?<![\w-])(\d+)|,
+      ~S|@population_claim ~r/zzzz(?<![\w-])(\d+)|,
+      "3  the claim regex stops matching — the scan reads an EMPTY population",
+      "found NOTHING to read"
+    )
+
+    IO.puts("""
+
+      WHAT THESE DO NOT SHOW. That every figure is interpolated: a literal that coincides
+      with some OTHER held figure passes limb 2 until the population next moves — and
+      `addressed_not_declared` was 14 here, so a stale `14 checks` would have. That is the
+      residual, and it is bounded by when it fires (the next move of the population, which
+      is when the recurrence lands anyway) rather than argued away. Nor do they reach prose
+      the generator does not EMIT: the moduledoc and a branch not taken are outside the
+      universe by construction, because the universe is the artefact's own bytes.
+    """)
+  end
+
+  # Apply a single-line edit to `path`'s source in-VM, require the generator to
+  # refuse naming `expect`, and restore. A mutation that does not mutate is a
+  # green that means nothing, so a no-op replacement halts rather than passes.
+  defp mutate!(src, path, from, to, label, expect) do
+    mutated = String.replace(src, from, to)
+
+    if mutated == src do
+      IO.puts("  MUTATION COULD NOT BE APPLIED — the line the control edits has moved:")
+      IO.puts("    #{inspect(from)}")
+      System.halt(1)
+    end
+
+    out = tmp("statements-mutated")
+
+    try do
+      recompile!(mutated, path)
+      refuses("MUTATION #{label}", expect, fn -> run_crosswalk(out) end)
+
+      verdict(
+        "         and nothing was written — the guard runs before the file",
+        not File.exists?(out)
+      )
+
+      halt_unless(not File.exists?(out))
+    after
+      recompile!(src, path)
+      File.rm(out)
+    end
+
+    back = tmp("statements-restored")
+    run_crosswalk(back)
+    verdict("         restored — the same run emits again", File.exists?(back))
+    halt_unless(File.exists?(back))
+    File.rm(back)
   end
 
   defp verdict(label, true), do: IO.puts("  ok    #{label}")

@@ -1,16 +1,16 @@
 {
   "arithmetic": {
-    "bucketed": 52,
-    "edges": 57,
+    "bucketed": 63,
+    "edges": 71,
     "equation": "edges = bucketed + escalated",
-    "escalated": 5,
-    "members": 48,
-    "members_declared_unmatched": 16,
+    "escalated": 8,
+    "members": 68,
+    "members_declared_unmatched": 28,
     "members_equation": "population members = members with >=1 edge + members declared unmatched",
-    "members_with_edges": 32
+    "members_with_edges": 40
   },
   "axis_provenance": {
-    "axes_checked": 59,
+    "axes_checked": 77,
     "harness_checked": true,
     "harness_dist_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
     "harness_read_from": "/tmp/conf11/node_modules/@modelcontextprotocol/conformance/dist/index.js",
@@ -18,9 +18,9 @@
   },
   "axis_span_provenance": {
     "checked_against": "docs/conformance/oc-emitting-sites-2026-07-28.json",
-    "locator_row": 36,
+    "locator_row": 45,
     "locator_row_rejected": 4,
-    "rows": 40,
+    "rows": 49,
     "what_this_does_not_establish": "That a rejected row's span is the RIGHT one. It establishes that the row is not claiming the locator's authority for a span the locator did not give it. The bytes at the span are checked separately, and only when --harness is given.",
     "what_was_checked": "For every `locator_row` row, the committed `emitting_byte_span` is one the locator names for that row's key. For every `locator_row_rejected` row, the locator's own `rung_pin_level` is NOT `row`, the span used is NOT one the locator names, and a reason is recorded. An unknown provenance value is refused."
   },
@@ -31,10 +31,19 @@
       "owner": "A5 = MES-70, docs/conformance/bucket-0-2026-07-28.json"
     },
     "bucket_1": {
-      "count": 16,
+      "count": 28,
       "members": [
         "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
         "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
+        "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — a non-struct :client_capabilities is discarded, not passed through",
+        "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — and the first request no longer kills the client",
+        "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T15 — a server's advertised extensions are surfaced, not discarded",
+        "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — a declared extension is stamped into every request's _meta",
+        "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — and into the server/discover probe itself",
+        "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T5 — the key is omitted entirely when nothing is declared",
+        "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 a server's malformed advertisement is reported verbatim, not rewritten",
+        "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an invalid identifier is dropped on the way out; an all-invalid declaration vanishes",
+        "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an unencodable settings value never reaches the wire (dropped at start_link)",
         "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy M-2: the warn-once record shares the cache's GENERATION — a reset re-arms it",
         "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a -32020 triggers a tools/list refresh and ONE retry, which then mirrors",
         "MCP.ClientToolSchemasTest/test M-1 — a malformed tools/list result fails the REQUEST, not the client a string result likewise, and it leaves the tool caches untouched",
@@ -42,16 +51,19 @@
         "MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-BEARING page MERGES, so paging does not discard earlier pages",
         "MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-LESS listing RESETS, so a removed tool does not linger",
         "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart",
+        "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T8 — ClientCapabilities encode keeps the two apart",
         "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (4)",
         "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) a NESTED object property IS reachable — every step is a `properties` key",
         "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) an integer outside the IEEE 754 safe range is not mirrored, and says so",
         "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a non-map arguments value yields no headers rather than raising",
         "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule the exact property path is read — a same-named key elsewhere is not",
         "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector no header carries a raw CR or LF — injection is closed by construction",
+        "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a NOTIFICATION carries it too — the spec says all requests, not all responses-bearing ones",
+        "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a message with no method carries no routing headers",
         "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client with no prior tools/list, nothing is mirrored and the client says so"
       ],
       "rule": "an ET-CC member of the declared population with NO edge — A3 §6 state 3",
-      "universe": "the 48 declared members, never all 281"
+      "universe": "the 68 declared members, never all 281"
     },
     "bucket_2": {
       "checks": [
@@ -63,13 +75,15 @@
         "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_array_header",
         "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_null_header",
         "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_diff_case",
-        "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_same_case"
+        "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_same_case",
+        "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_get",
+        "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_read"
       ],
-      "count": 9,
+      "count": 11,
       "declared": true,
-      "result": "9 of the 29 declared checks carry no edge from any ET-CC member of the declared member population",
+      "result": "11 of the 39 declared checks carry no edge from any ET-CC member of the declared member population",
       "rule": "a check in a DECLARED check population that carries no edge",
-      "universe": "the 29 declared checks, never all 173",
+      "universe": "the 39 declared checks, never all 173",
       "why_not_the_rest_of_the_173": "The in-denominator checks outside every declared check population are NOT bucket 2. Bucket 2 is 'we adjudicated and found no ET counterpart'; those were not adjudicated."
     },
     "bucket_5_partial_sub_count": 8,
@@ -82,7 +96,7 @@
     "from_edges": {
       "4a": 2,
       "4b": 2,
-      "5": 48
+      "5": 59
     }
   },
   "cells": [
@@ -2047,6 +2061,548 @@
     {
       "axes": [
         {
+          "axis": "mcp_method_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_method_header_matches_body_method",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "each POST's `mcp-method` header is the body's `method`, asserted over five methods sent down one transport",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:105-106 — `assert methods == ~w(server/discover tools/list resources/list prompts/list completion/complete)`, where `methods` is each request's `mcp-method` header in send order. Positional equality against the methods actually sent discharges BOTH axes for tools/list: a missing header would give `nil` at that position and a wrong one a different string, and either breaks the list equality. The member also sends `server/discover` and `completion/complete`, for which A1 holds no check at all — our claim is wider than the declared population here, and that is stated rather than counted.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a request carries the body method",
+        "test": "test T-CG1a — Mcp-Method on every POST a request carries the body method"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_tools_list",
+        "Client sends correct Mcp-Method header on tools/list request",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_list",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_method_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_method_header_matches_body_method",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "each POST's `mcp-method` header is the body's `method`, asserted over five methods sent down one transport",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:105-106 — `assert methods == ~w(server/discover tools/list resources/list prompts/list completion/complete)`, where `methods` is each request's `mcp-method` header in send order. Positional equality against the methods actually sent discharges BOTH axes for resources/list: a missing header would give `nil` at that position and a wrong one a different string, and either breaks the list equality. The member also sends `server/discover` and `completion/complete`, for which A1 holds no check at all — our claim is wider than the declared population here, and that is stated rather than counted.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a request carries the body method",
+        "test": "test T-CG1a — Mcp-Method on every POST a request carries the body method"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_resources_list",
+        "Client sends correct Mcp-Method header on resources/list request",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_list",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_method_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_method_header_matches_body_method",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "each POST's `mcp-method` header is the body's `method`, asserted over five methods sent down one transport",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:105-106 — `assert methods == ~w(server/discover tools/list resources/list prompts/list completion/complete)`, where `methods` is each request's `mcp-method` header in send order. Positional equality against the methods actually sent discharges BOTH axes for prompts/list: a missing header would give `nil` at that position and a wrong one a different string, and either breaks the list equality. The member also sends `server/discover` and `completion/complete`, for which A1 holds no check at all — our claim is wider than the declared population here, and that is stated rather than counted.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a request carries the body method",
+        "test": "test T-CG1a — Mcp-Method on every POST a request carries the body method"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_prompts_list",
+        "Client sends correct Mcp-Method header on prompts/list request",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_list",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_name_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_name_header_matches_source_field",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the `mcp-name` header carries the body's name-source field, and WHICH field that is depends on the method",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:161 — `assert headers_of(agent, index)[\"mcp-name\"] == expected` over the three sends, `expected` being `get_weather` / `summarise` / the `file:///…` URI. Equality with the body value entails presence, so one assertion discharges both axes. This is the sharpest correspondence in the ticket: the member's per-method source-field table is the check's own `i=n===`params.uri`?t.params?.uri:t.params?.name` binding, read from the other side — which is why that binding is an addressed `context_excerpt` on the axis row and not a third axis (params.name for this one).",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri",
+        "test": "test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpNameHeader_tools_call",
+        "Client sends correct Mcp-Name header on tools/call request",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_name_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_name_header_matches_source_field",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the `mcp-name` header carries the body's name-source field, and WHICH field that is depends on the method",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:161 — `assert headers_of(agent, index)[\"mcp-name\"] == expected` over the three sends, `expected` being `get_weather` / `summarise` / the `file:///…` URI. Equality with the body value entails presence, so one assertion discharges both axes. This is the sharpest correspondence in the ticket: the member's per-method source-field table is the check's own `i=n===`params.uri`?t.params?.uri:t.params?.name` binding, read from the other side — which is why that binding is an addressed `context_excerpt` on the axis row and not a third axis (params.uri for this one).",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri",
+        "test": "test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpNameHeader_resources_read",
+        "Client sends correct Mcp-Name header on resources/read request",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_resources_read",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_name_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_name_header_matches_source_field",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the `mcp-name` header carries the body's name-source field, and WHICH field that is depends on the method",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:161 — `assert headers_of(agent, index)[\"mcp-name\"] == expected` over the three sends, `expected` being `get_weather` / `summarise` / the `file:///…` URI. Equality with the body value entails presence, so one assertion discharges both axes. This is the sharpest correspondence in the ticket: the member's per-method source-field table is the check's own `i=n===`params.uri`?t.params?.uri:t.params?.name` binding, read from the other side — which is why that binding is an addressed `context_excerpt` on the axis row and not a third axis (params.name for this one).",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri",
+        "test": "test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpNameHeader_prompts_get",
+        "Client sends correct Mcp-Name header on prompts/get request",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_prompts_get",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_method_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_method_header_matches_body_method",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a tools/list POST's `mcp-method` header is `tools/list`",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:181 — `assert headers[\"mcp-method\"] == \"tools/list\"`. Equality with the body method discharges both axes. The member's OTHER claim — that the same request carries no `mcp-name` — has no counterpart among the declared 10 and is recorded under `claims_without_an_edge`, not silently folded into this edge.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name",
+        "test": "test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_tools_list",
+        "Client sends correct Mcp-Method header on tools/list request",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_list",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_name_header_present",
+          "verdict": "contradicts"
+        },
+        {
+          "axis": "mcp_name_header_matches_source_field",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": null,
+      "bucket_attributes": [],
+      "claim": "a tools/call carrying no `params.name` emits NO `mcp-name` header, rather than an empty one",
+      "escalation": ":inconsistent_verdict_pair — match-relation.md §3",
+      "evidence": "routing_headers_test.exs:193-200 — the send is `\"method\" => \"tools/call\"` with `\"params\" => %{}`, and routing_headers_test.exs:200 asserts `refute Map.has_key?(headers_of(agent, 0), \"mcp-name\")`. The axis's SUBJECT is exactly this header's presence on a tools/call, so match-relation.md §6's mention-is-not-a-discharge rule does NOT make this silent — the two are about the same behaviour and they disagree. The check is not conditional on the field existing: the addressed `dispatch_site` excerpt shows `handlePost` calling `this.checkMcpNameHeader(e,n,`params.name`)` on every tools/call, and with no `params.name` the predicate binds `i` and `a` undefined, takes the falsy arm and pushes `Missing Mcp-Name header on ${r} request. Clients MUST include the Mcp-Name header for ${r} requests.` — i.e. FAILURE. So a client doing what this member asserts would be scored FAILURE by this check on this input. It runs green only because the scenario's fixture never sends a nameless tools/call. The match axis is silent: with no source field there is nothing to match.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a tools/call whose params carry no name emits no Mcp-Name rather than an empty one",
+        "test": "test T-CG1b — Mcp-Name for the three name-bearing methods a tools/call whose params carry no name emits no Mcp-Name rather than an empty one"
+      },
+      "note": "Escalates as `inconsistent_verdict_pair` (green OC, green ET, contradicting shape). Not bucketed, by A3 §3's own table.",
+      "oc_key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpNameHeader_tools_call",
+        "Client sends correct Mcp-Name header on tools/call request",
+        ""
+      ],
+      "shape": "contradicting",
+      "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_name_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_name_header_matches_source_field",
+          "verdict": "contradicts"
+        }
+      ],
+      "bucket": null,
+      "bucket_attributes": [],
+      "claim": "a non-ASCII tool name rides `mcp-name` as the Base64 sentinel and decodes back to the body value",
+      "escalation": ":inconsistent_verdict_pair — match-relation.md §3",
+      "evidence": "routing_headers_test.exs:211 binds `name = \"天気_get\"`; routing_headers_test.exs:222 asserts `assert String.starts_with?(header, \"=?base64?\")` and routing_headers_test.exs:223 asserts `assert HeaderMirror.decode_value(header) == name`, with routing_headers_test.exs:226 confirming the BODY still carries the plain name. Presence agrees: routing_headers_test.exs:222's subject is a property OF the header's value, which a missing header could not satisfy. The MATCH axis contradicts: the check's `a!==i` is a raw string comparison of the header against `t.params?.name`, and nothing on the client leg's `mcp-name` path decodes the sentinel — the only `=?base64?` handling in the build is SERVER-leg (`sep-2243-server-decode-base64` and siblings, a different scenario, measured by search over the build's seven occurrences of that literal). So the encoded header is not `===` the plain body name and the check pushes a mismatch error. A conformant client — streamable-http.mdx requires the encoding — is scored FAILURE here; it runs green only because the fixture's tool names are plain ASCII.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a non-ASCII tool name is encoded, and decodes back to the body value",
+        "test": "test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a non-ASCII tool name is encoded, and decodes back to the body value"
+      },
+      "note": "Escalates as `inconsistent_verdict_pair`. The disagreement is the OC check's, not ours, and it is the same root cause as the row below.",
+      "oc_key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpNameHeader_tools_call",
+        "Client sends correct Mcp-Name header on tools/call request",
+        ""
+      ],
+      "shape": "contradicting",
+      "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_name_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_name_header_matches_source_field",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "an INTERNAL space is header-safe, so a resource URI rides `mcp-name` plain and unencoded",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:232 binds `uri = \"file:///my documents/notes.md\"` and routing_headers_test.exs:244 asserts `assert headers_of(agent, 0)[\"mcp-name\"] == uri`. Equality with the body's `params.uri` discharges both axes against the `params.uri` source field. Note the member's NAME says \"is encoded\" and its assertion says the opposite — the comment above it states the rule (leading/trailing whitespace, not \"contains a space\"), and the adjudication follows the ASSERTION, not the name. It is the one T-CG1c member that does not contradict the check, and it is the control that shows the other two contradictions are about the SENTINEL and not about T-CG1c.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a resource URI with a space is encoded",
+        "test": "test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a resource URI with a space is encoded"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpNameHeader_resources_read",
+        "Client sends correct Mcp-Name header on resources/read request",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_resources_read",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_name_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_name_header_matches_source_field",
+          "verdict": "contradicts"
+        }
+      ],
+      "bucket": null,
+      "bucket_attributes": [],
+      "claim": "a CRLF-bearing tool name is neutralised — it rides `mcp-name` encoded, carries no raw CR, and injects no header",
+      "escalation": ":inconsistent_verdict_pair — match-relation.md §3",
+      "evidence": "routing_headers_test.exs:250 binds the hostile name; routing_headers_test.exs:261 asserts `assert HeaderMirror.decode_value(headers[\"mcp-name\"]) == hostile`, routing_headers_test.exs:262 asserts `refute headers[\"mcp-name\"] =~ \"\\r\"` and routing_headers_test.exs:263 asserts `refute Map.has_key?(headers, \"x-injected\")`. Presence agrees — routing_headers_test.exs:261's assertion decodes the header's value. The match axis contradicts for the same reason as the non-ASCII row: the check compares the RAW header against `t.params?.name` with `a!==i`, and the encoded form is not the hostile literal. Here the disagreement has a security shape: satisfying the check literally would mean putting a CRLF-bearing value on the wire unencoded.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a name that would inject a header is neutralised",
+        "test": "test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a name that would inject a header is neutralised"
+      },
+      "note": "Escalates as `inconsistent_verdict_pair`. Same root cause as the non-ASCII row.",
+      "oc_key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpNameHeader_tools_call",
+        "Client sends correct Mcp-Name header on tools/call request",
+        ""
+      ],
+      "shape": "contradicting",
+      "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_method_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_method_header_matches_body_method",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the mcp-method routing header rides the same request",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:349 — `assert headers[\"mcp-method\"] == \"tools/call\"` on the request driven end to end through `MCP.Client`. Equality with the body method discharges both axes. INHERITED: C1b-i (MES-104) recorded this claim under claims_without_an_edge with owner C1b-ii (CG1, http-standard-headers); the counterpart is now inside the declared check population, so it is a real edge. Only a new (member, claim, tag) triple is added — the member stays homed where C1b-i put it.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpMethodHeader_tools_call",
+        "Client sends correct Mcp-Method header on tools/call request",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_call",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_name_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_name_header_matches_source_field",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the mcp-name routing header rides the same request",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:350 — `assert headers[\"mcp-name\"] == \"test_custom_headers\"`, the tool named in the same tools/call. Equality with `params.name` discharges both axes. INHERITED from C1b-i's claims_without_an_edge, same owner line as the row above. The tool name is plain ASCII, so unlike T-CG1c's two rows this one does NOT hit the sentinel disagreement — which is what makes the pair a usable control on that finding.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpNameHeader_tools_call",
+        "Client sends correct Mcp-Name header on tools/call request",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "canary_not_fetched",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "listing and then calling a tool whose `inputSchema` `$ref`s a network URI never fetches that URI",
+      "escalation": null,
+      "evidence": "client_conformance_test.exs:131 — `assert Agent.get(hits, & &1) == 0`, the canary Plug's hit counter after a real `tools/list` and `tools/call` over Bandit against a tool whose `inputSchema` `$ref`s the canary's URL. The check's single axis `canary_not_fetched` is `this.canaryRequests.length>0` with `fail_when_true`, i.e. a counter that must stay at 0 — the same predicate, measured on our own canary. The check's PRECONDITION `this.toolsListed?` is satisfied and not merely assumed: client_conformance_test.exs:123 — `assert {:ok, %{\"tools\" => [tool]}} = Client.list_tools(client)` — lists the tools before the call, so the check would evaluate rather than report the not-evaluable branch. The axis decomposition is read from A3's `oc-axes-2026-07-28.json` and is deliberately NOT copied into `oc-axes-c1.json` (D4, one fact one home).",
+      "member": {
+        "module": "MCP.ClientConformanceTest",
+        "register_key": "MCP.ClientConformanceTest/test CG4 / T-CG4 — the client MUST NOT dereference a network $ref listing and calling a tool whose inputSchema $refs a network URI never fetches it",
+        "test": "test CG4 / T-CG4 — the client MUST NOT dereference a network $ref listing and calling a tool whose inputSchema $refs a network URI never fetches it"
+      },
+      "note": "The member's sibling `CONTROL ON THE CONTROL: the canary really does count a fetch` is not in this population — it is not an ET-CC member — but it is why the zero above is a measurement rather than an instrument that cannot fire.",
+      "oc_key": [
+        "client",
+        "json-schema-ref-no-deref",
+        "sep-2106-no-network-ref-deref",
+        "NoNetworkRefDereference",
+        "Client did not dereference the network-URI $ref in the tool inputSchema",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/json-schema-ref-no-deref/sep-2106-no-network-ref-deref/NoNetworkRefDereference",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
           "axis": "tools_call_was_made",
           "verdict": "agrees"
         },
@@ -2247,7 +2803,7 @@
     }
   ],
   "claim_level_unmatched": {
-    "count": 5,
+    "count": 4,
     "routed_to": "the PM, per case — match-relation.md §7. Whether A3 §6 should gain a claim-level state 3 is a ruling, not an adjudication an edges file can make.",
     "rows": [
       {
@@ -2259,7 +2815,8 @@
           "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method",
           "test": "test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method"
         },
-        "owner": "unowned — recommend it to C1b-ii with CG1",
+        "owner": "unowned — CONFIRMED by C1b-ii from INSIDE a declared CG1 population. No counterpart in CG1 either.",
+        "resolved_by": "MES-108 (C1b-ii), 2026-09-21. C1b-i could only argue this from OUTSIDE a declared CG1 check population; C1b-ii has one — the 9 in-denominator `http-standard-headers` checks — and re-ran the search over it. CONFIRMED, and the reason is sharper than 'none has it as its subject': the `headers` map at header_mirror_test.exs:416 is `HeaderMirror`'s MIRRORING OUTPUT, not a request's header set. CG1's six `ClientMcpMethodHeader_*` checks take the ROUTING header on a real POST as their subject, which is a different object produced further down the stack. So this is not merely unmatched in CG1 — it could not be matched by a CG1 check, and the recommendation is answered rather than forwarded again.",
         "the_search_that_found_none": "All 29 CG7 checks were read: none has `mcp-method` as its subject. The check that does is `ClientMcpMethodHeader_tools_call` (`oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_call`), which is CG1's and outside this file's declared check population — but it asserts the header is PRESENT and correct, not that it is not forged by a mirrored parameter. So this claim has no counterpart in CG1 either, and is recorded rather than deferred."
       },
       {
@@ -2283,32 +2840,22 @@
           "register_key": "MCP.ClientToolSchemasTest/test the transport seam a tools/call for a known tool carries :headers; other methods carry none",
           "test": "test the transport seam a tools/call for a known tool carries :headers; other methods carry none"
         },
-        "owner": "unowned — recommend it to C1b-ii with CG1",
+        "owner": "unowned — CONFIRMED by C1b-ii from INSIDE a declared CG1 population. No counterpart in CG1 either.",
+        "resolved_by": "MES-108 (C1b-ii), 2026-09-21. Re-run over the real 10. CONFIRMED — and the check matters, because the naive reading makes this look like a CONTRADICTION of `ClientMcpMethodHeader_tools_list` and it is not. `Enum.at(MockTransport.sent_opts(transport), 0) == []` is about the `:headers` OPT `MCP.Client` hands the transport, and the routing headers are added BELOW that seam by `MCP.Transport.StreamableHTTP.Client`, which MockTransport does not have. So a tools/list with no `:headers` opt still carries `mcp-method` on the wire, and the two statements are about different layers. Recorded rather than left implicit: a later ticket re-reading this row would otherwise have to re-derive the non-contradiction.",
         "the_search_that_found_none": "All 29 CG7 checks are emitted from `handleToolsCall`, so every one of them is conditioned on a tools/call having arrived; none has a non-tools/call request as its subject. The scenario's `handlePost` was read too: it emits no check on the tools/list path other than `http-invalid-tool-headers`'s gate, whose subject is that tools/list was SENT."
       },
       {
-        "claim": "the mcp-method routing header rides the same request (routing_headers_test.exs:349)",
-        "disposition": "counterpart exists, OUTSIDE this file's declared check population",
+        "claim": "a method with no name target carries NO `mcp-name` (routing_headers_test.exs:182 — `refute Map.has_key?(headers, \"mcp-name\")`, on a tools/list)",
+        "disposition": "no counterpart in this file's declared check population",
         "from": "conformance/data/crosswalk-edges-client.json",
         "member": {
           "module": "MCP.Transport.RoutingHeadersTest",
-          "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
-          "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not"
+          "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name",
+          "test": "test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name"
         },
-        "owner": "C1b-ii (CG1, `http-standard-headers`)",
-        "the_search_that_found_none": "The counterpart is `oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_call`, which A4 assigns to CG1. It is in A1's 173 and in the client leg, but not in this file's declared 29, so adjudicating it here would be adjudication outside the declared population — the thing this file's `not_yet_adjudicated` third state exists to prevent."
-      },
-      {
-        "claim": "the mcp-name routing header rides the same request (routing_headers_test.exs:350)",
-        "disposition": "counterpart exists, OUTSIDE this file's declared check population",
-        "from": "conformance/data/crosswalk-edges-client.json",
-        "member": {
-          "module": "MCP.Transport.RoutingHeadersTest",
-          "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
-          "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not"
-        },
-        "owner": "C1b-ii (CG1, `http-standard-headers`)",
-        "the_search_that_found_none": "The counterpart is `oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call`, which A4 assigns to CG1. It is in A1's 173 and in the client leg, but not in this file's declared 29, so adjudicating it here would be adjudication outside the declared population — the thing this file's `not_yet_adjudicated` third state exists to prevent."
+        "owner": "unowned — ESCALATED to MES-110 (A3 §6 claim-level state 3). NEW case, found by C1b-ii.",
+        "the_search_that_found_none": "All 10 of this file's declared checks were read. The three `ClientMcpNameHeader_*` checks exist only for `tools/call`, `resources/read` and `prompts/get`: the addressed `dispatch_site` excerpt shows `handlePost` calling `checkMcpNameHeader` on those three branches and on no other, so there is no check whose subject is the header's ABSENCE on a non-name-bearing method. The six `ClientMcpMethodHeader_*` checks have the Mcp-METHOD header as their subject. Widened to all 175: `/Mcp-Name/i` over the whole row returns exactly 3, and they ARE the three declared rows — there is no fourth check anywhere in the suite, on either leg, whose subject is that header.",
+        "why_it_is_recorded_here": "This is the A3 §6 claim-level-state gap MES-110 was raised for, found again by C1b-ii and NOT force-bucketed. The member is edge-bearing — its other claim carries a full edge to `ClientMcpMethodHeader_tools_list` — so it cannot go in `declared_unmatched` without making it both edge-bearing and bucket 1; and dropping this claim would report the member as fully matched, which is the failure C1b-i's `claims_without_an_edge_note` describes. No bucket is invented for it."
       }
     ],
     "what_this_is": "A claim within an EDGE-BEARING member that has no counterpart in its file's declared check population. A3 §6's state 3 is a property of a member, so there is no bucket for this and none is invented."
@@ -2327,30 +2874,42 @@
   "declared_unmatched": [
     {
       "cg": "CG2",
+      "field_added_by": "MES-108 (C1b-ii), 2026-09-21. These three records came from C1a and predate the `the_search_that_found_none` field. C1b-i rightly REFUSED to backfill a search nobody had run — a field invented after the fact is worse than an absent one. C1b-ii ran it, over the same population and at this tip, so the field is now ADDED rather than invented. The ADJUDICATION is untouched: these three were `declared_unmatched` before and are `declared_unmatched` now, with the same tags and the same members. What changed is that the record says what was read. Three rows sitting silent in a block where ten speak is a difference a reader would have to explain, and the explanation would have been 'nobody looked', which is no longer true.",
       "member": {
         "module": "MCP.ClientConformanceTest",
         "register_key": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
         "test": "test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta"
       },
-      "tag": "oc:none/no-oc-scenario/CG2-outbound-meta"
+      "tag": "oc:none/no-oc-scenario/CG2-outbound-meta",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
     },
     {
       "cg": "CG2",
+      "field_added_by": "MES-108 (C1b-ii), 2026-09-21. These three records came from C1a and predate the `the_search_that_found_none` field. C1b-i rightly REFUSED to backfill a search nobody had run — a field invented after the fact is worse than an absent one. C1b-ii ran it, over the same population and at this tip, so the field is now ADDED rather than invented. The ADJUDICATION is untouched: these three were `declared_unmatched` before and are `declared_unmatched` now, with the same tags and the same members. What changed is that the record says what was read. Three rows sitting silent in a block where ten speak is a difference a reader would have to explain, and the explanation would have been 'nobody looked', which is no longer true.",
       "member": {
         "module": "MCP.ClientConformanceTest",
         "register_key": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
         "test": "test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact"
       },
-      "tag": "oc:none/no-oc-scenario/CG2-inbound-parse"
+      "tag": "oc:none/no-oc-scenario/CG2-inbound-parse",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
     },
     {
       "cg": "CG2",
+      "field_added_by": "MES-108 (C1b-ii), 2026-09-21. These three records came from C1a and predate the `the_search_that_found_none` field. C1b-i rightly REFUSED to backfill a search nobody had run — a field invented after the fact is worse than an absent one. C1b-ii ran it, over the same population and at this tip, so the field is now ADDED rather than invented. The ADJUDICATION is untouched: these three were `declared_unmatched` before and are `declared_unmatched` now, with the same tags and the same members. What changed is that the record says what was read. Three rows sitting silent in a block where ten speak is a difference a reader would have to explain, and the explanation would have been 'nobody looked', which is no longer true.",
       "member": {
         "module": "MCP.Protocol.CapabilitiesTest",
         "register_key": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart",
         "test": "test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart"
       },
-      "tag": "oc:none/no-oc-scenario/CG2-absent-yields-nil"
+      "tag": "oc:none/no-oc-scenario/CG2-absent-yields-nil",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
     },
     {
       "cg": "CG7",
@@ -2498,10 +3057,164 @@
       "tag": "oc:none/no-oc-fixture-case/CG7-cache-miss-no-mirroring",
       "the_search_that_found_none": "The scenario's client driver always issues tools/list before tools/call — indeed `http-invalid-tool-headers` emits a FAILING gate check when it does not (`sep-2243-invalid-tool-tools-list-gate`, which A5 leaves in the denominator). So no fixture case reaches a tools/call with no prior listing. All 29 CG7 check names were read for one whose subject is mirroring in the ABSENCE of a schema: none is.",
       "why_no_counterpart": "The member's remaining claim — that the `mcp-name` routing header still rides the call — does have a counterpart, `ClientMcpNameHeader_tools_call`, but it is CG1's and outside this file's declared check population. So this member has no counterpart HERE, which is what `declared_unmatched` means in a file that declares its own check population; the CG1 claim is recorded under `claims_without_an_edge` and routed to C1b-ii."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "a non-struct `:client_capabilities` is discarded rather than passed through",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — a non-struct :client_capabilities is discarded, not passed through",
+        "test": "test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — a non-struct :client_capabilities is discarded, not passed through"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-non-struct-caps-discarded",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "a bad `:client_capabilities` does not kill the client on its first request",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — and the first request no longer kills the client",
+        "test": "test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — and the first request no longer kills the client"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-bad-caps-does-not-kill-client",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "a server's advertised extensions are surfaced to the caller, not discarded",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T15 — a server's advertised extensions are surfaced, not discarded",
+        "test": "test extensions negotiation (SEP-2133) — T4, T5, T15 T15 — a server's advertised extensions are surfaced, not discarded"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-server-extensions-surfaced",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "a declared extension is stamped into every request's `_meta`",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — a declared extension is stamped into every request's _meta",
+        "test": "test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — a declared extension is stamped into every request's _meta"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-declared-extension-stamped",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "the same stamping reaches the `server/discover` probe itself",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — and into the server/discover probe itself",
+        "test": "test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — and into the server/discover probe itself"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-stamped-into-discover-probe",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "the `_meta` extensions key is omitted entirely when nothing is declared",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T5 — the key is omitted entirely when nothing is declared",
+        "test": "test extensions negotiation (SEP-2133) — T4, T5, T15 T5 — the key is omitted entirely when nothing is declared"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-key-omitted-when-nothing-declared",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "a server's malformed advertisement is reported verbatim, not rewritten",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 a server's malformed advertisement is reported verbatim, not rewritten",
+        "test": "test extensions negotiation (SEP-2133) — T4, T5, T15 a server's malformed advertisement is reported verbatim, not rewritten"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-malformed-advertisement-verbatim",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "an invalid extension identifier is dropped outbound, and an all-invalid declaration vanishes",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an invalid identifier is dropped on the way out; an all-invalid declaration vanishes",
+        "test": "test extensions negotiation (SEP-2133) — T4, T5, T15 an invalid identifier is dropped on the way out; an all-invalid declaration vanishes"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-invalid-identifier-dropped",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "an unencodable settings value never reaches the wire",
+      "member": {
+        "module": "MCP.ClientTest",
+        "register_key": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an unencodable settings value never reaches the wire (dropped at start_link)",
+        "test": "test extensions negotiation (SEP-2133) — T4, T5, T15 an unencodable settings value never reaches the wire (dropped at start_link)"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-unencodable-settings-dropped",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG2",
+      "claim_the_slot_names": "`ClientCapabilities` encoding keeps `extensions` and `experimental` apart",
+      "member": {
+        "module": "MCP.Protocol.CapabilitiesTest",
+        "register_key": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T8 — ClientCapabilities encode keeps the two apart",
+        "test": "test extensions vs experimental — the 2x2 (T6-T9) T8 — ClientCapabilities encode keeps the two apart"
+      },
+      "tag": "oc:none/no-oc-scenario/CG2-encode-keeps-the-two-apart",
+      "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
+      "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
+      "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": "CG1",
+      "claim_the_slot_names": "a notification — a message with no id — carries `Mcp-Method` like any other POST",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a NOTIFICATION carries it too — the spec says all requests, not all responses-bearing ones",
+        "test": "test T-CG1a — Mcp-Method on every POST a NOTIFICATION carries it too — the spec says all requests, not all responses-bearing ones"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG1-notification-carries-mcp-method",
+      "the_search_that_found_none": "RUN AT THIS TIP. The check-emitting code IS general over methods: `checkMcpMethodHeader` computes `ClientMcpMethodHeader_${n.replace(/\\//g,`_`)}` from the body method, so a `notifications/cancelled` POST would emit `ClientMcpMethodHeader_notifications_cancelled`. No such key is in A1's 175 — no case in the scenario drives a notification, which is what `no-oc-fixture-case` names. The near miss is named rather than left for a reader to trip over: `/notification/i` over the whole row of all 175 returns 6, and exactly ONE is a routing-header check — `ClientMcpMethodHeader_notifications_initialized`. That one is OUT OF DENOMINATOR: A5's bucket-0 artefact records it `removed_by_spec` (`reason_code`), because 2026-07-28 removed the initialize handshake under SEP-2575, and it is one of the only 2 of 175 A5 excludes. So the nearest existing check is unavailable as a counterpart BY RULE, not by absence. The sweep is shown to have reached the population: `/response/i` over the same 175 rows returns 17.",
+      "why_no_counterpart": "`no-oc-fixture-case` — the scenario exists and is matched, and its check-emitting predicate would score this behaviour; what is missing is a case that sends a notification. The distinction from `no-oc-scenario` is load-bearing here: this is a gap in the suite's DRIVING, and a harness bump that adds a notification case would create the counterpart without any change to the predicate."
+    },
+    {
+      "cg": "CG1",
+      "claim_the_slot_names": "a message with no `method` — a response — carries neither routing header",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a message with no method carries no routing headers",
+        "test": "test T-CG1a — Mcp-Method on every POST a message with no method carries no routing headers"
+      },
+      "tag": "oc:none/no-oc-scenario/CG1-methodless-carries-no-routing-headers",
+      "the_search_that_found_none": "RUN AT THIS TIP. All 175 manifest rows were swept for one whose SUBJECT is a message carrying no method (`/\\bno method\\b|methodless|without a method/i` over scenario + id + name + description): 0. The sweep reached the population — `/response/i` over the same rows returns 17, `/header/i` 45. And the reason it is 0 is structural rather than incidental: the harness's handling of a methodless message is the EARLY RETURN `if(!n||this.methodHeaderChecks.has(n))return;`, which this ticket records as a PRECONDITION on the Method rows, not as an axis. `oc-axes-c1.json`'s `preconditions_rule` states that an ET claim can neither agree with nor contradict a precondition, so there is no axis for this claim to land on even though the code path exists and is addressed.",
+      "why_no_counterpart": "`no-oc-scenario` — no check ANYWHERE in the 175 has this as its subject, so the search is over all 175 rather than over a fixture. A new fixture case could not create one either: the behaviour is the suite's own non-evaluation condition, so scoring it would require a new check, not a new case. That is the difference from the notification row above, and it is why the two carry different reason slugs."
     }
   ],
   "escalations": {
-    "count": 5,
+    "count": 8,
     "routed_to": "the PM, per case — match-relation.md §7. An escalation is NOT a bucket and is never counted as one.",
     "rows": [
       {
@@ -2538,6 +3251,27 @@
         "member": "MCP.ClientToolSchemasTest / test W6 — SEP-2243 tool exclusion an excluded tool leaves no annotations behind, so calling it mirrors nothing",
         "shape": "partial",
         "tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header"
+      },
+      {
+        "claim": "a tools/call carrying no `params.name` emits NO `mcp-name` header, rather than an empty one",
+        "escalation": ":inconsistent_verdict_pair — match-relation.md §3",
+        "member": "MCP.Transport.RoutingHeadersTest / test T-CG1b — Mcp-Name for the three name-bearing methods a tools/call whose params carry no name emits no Mcp-Name rather than an empty one",
+        "shape": "contradicting",
+        "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call"
+      },
+      {
+        "claim": "a non-ASCII tool name rides `mcp-name` as the Base64 sentinel and decodes back to the body value",
+        "escalation": ":inconsistent_verdict_pair — match-relation.md §3",
+        "member": "MCP.Transport.RoutingHeadersTest / test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a non-ASCII tool name is encoded, and decodes back to the body value",
+        "shape": "contradicting",
+        "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call"
+      },
+      {
+        "claim": "a CRLF-bearing tool name is neutralised — it rides `mcp-name` encoded, carries no raw CR, and injects no header",
+        "escalation": ":inconsistent_verdict_pair — match-relation.md §3",
+        "member": "MCP.Transport.RoutingHeadersTest / test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a name that would inject a header is neutralised",
+        "shape": "contradicting",
+        "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call"
       }
     ]
   },
@@ -2556,9 +3290,9 @@
     "what_the_crosswalk_is_keyed_on": "A3's token for the address and A1's six-field key for the join. The token carries five fields; `description` cannot live in a test name, so reversibility is THROUGH A1's manifest, not lexical.",
     "what_the_two_directions_establish": "POSITIVE: the obvious keyings DO merge rows on this population, so the hazard is real here and not merely quoted from A1. NEGATIVE: A1's six-field key merges none. Either direction alone is vacuous — a control that only ran the second would pass over a crosswalk keyed on `id`."
   },
-  "owner": "MES-97 (C1a) and MES-104 (C1b-i)",
+  "owner": "MES-97 (C1a), MES-104 (C1b-i) and MES-108 (C1b-ii)",
   "population": {
-    "check_count": 34,
+    "check_count": 42,
     "checks": [
       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_ControlChar",
       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_CrLf",
@@ -2580,6 +3314,14 @@
       "oc:client/http-custom-headers/sep-2243-client-supports-custom-headers/ClientSupportsCustomHeaders",
       "oc:client/http-invalid-tool-headers/sep-2243-client-reject-invalid-tool/ClientKeepsValidTool",
       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header",
+      "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_list",
+      "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_list",
+      "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_call",
+      "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_list",
+      "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_prompts_get",
+      "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_resources_read",
+      "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+      "oc:client/json-schema-ref-no-deref/sep-2106-no-network-ref-deref/NoNetworkRefDereference",
       "oc:client/request-metadata/sep-2575-client-declares-elicitation-capability/ClientDeclaresElicitationCapability",
       "oc:client/request-metadata/sep-2575-client-declares-roots-capability/ClientDeclaresRootsCapability",
       "oc:client/request-metadata/sep-2575-client-declares-sampling-capability/ClientDeclaresSamplingCapability",
@@ -2615,7 +3357,7 @@
       "count": 14,
       "declared_by": [
         {
-          "declares_checks": 29,
+          "declares_checks": 39,
           "path": "conformance/data/crosswalk-edges-client.json"
         },
         {
@@ -2627,7 +3369,7 @@
       "why_this_is_not_refused": "An edge addresses the check its claim is about; refusing one outside the declared check population would force a file to declare every scenario it touches, and then bucket 2 would report every UNADJUDICATED sibling as having no ET counterpart. That is the false claim the third state exists to prevent."
     },
     "declared": true,
-    "declared_check_count": 29,
+    "declared_check_count": 39,
     "declared_checks": [
       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_ControlChar",
       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_CrLf",
@@ -2657,7 +3399,17 @@
       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_null_header",
       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header",
       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_diff_case",
-      "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_same_case"
+      "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_same_case",
+      "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_get",
+      "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_list",
+      "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_list",
+      "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_read",
+      "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_call",
+      "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_list",
+      "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_prompts_get",
+      "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_resources_read",
+      "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+      "oc:client/json-schema-ref-no-deref/sep-2106-no-network-ref-deref/NoNetworkRefDereference"
     ],
     "files": [
       {
@@ -2691,9 +3443,19 @@
             "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_null_header",
             "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header",
             "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_diff_case",
-            "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_same_case"
+            "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_same_case",
+            "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_get",
+            "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_list",
+            "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_list",
+            "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_read",
+            "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_call",
+            "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_list",
+            "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_prompts_get",
+            "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_resources_read",
+            "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+            "oc:client/json-schema-ref-no-deref/sep-2106-no-network-ref-deref/NoNetworkRefDereference"
           ],
-          "rule": "The 29 in-denominator OC checks A4 assigns to CG7. This file is total over them: every one is axis-decomposed, and every one either carries an edge or is reported in bucket 2 by name.",
+          "rule": "The in-denominator OC checks A4 assigns to CG7 (29), CG1 (9) and CG4 (1). This file is total over them: every one is axis-decomposed, and every one either carries an edge or is reported in bucket 2 by name.",
           "selector": {
             "any_of": [
               {
@@ -2705,10 +3467,20 @@
                 "field": "scenario",
                 "test": "equals",
                 "value": "http-invalid-tool-headers"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "http-standard-headers"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "json-schema-ref-no-deref"
               }
             ],
-            "denotes": "The 29 in-denominator OC checks A4 assigns to CG7 — `http-custom-headers` 18 + `http-invalid-tool-headers` 11 (cg-reconciliation.md §4's scenario table). The selector names the SCENARIOS rather than the 29 tokens, so a check added to either scenario by a harness bump joins the population instead of being silently outside it.",
-            "evaluated": "29 checks denoted; equal to the count this file declares, and every one of them is axis-decomposed (G19).",
+            "denotes": "The 39 in-denominator OC checks A4 assigns to CG7, CG1 and CG4 — `http-custom-headers` 18 + `http-invalid-tool-headers` 11 (CG7) + `http-standard-headers` 9 (CG1) + `json-schema-ref-no-deref` 1 (CG4). The selector names the SCENARIOS rather than the 39 tokens, so a check added to any of them by a harness bump joins the population instead of being silently outside it.",
+            "evaluated": "39 checks denoted; equal to the count this file declares, and every one of them is axis-decomposed (G19).",
             "key_field": "token",
             "rows_at": "rows",
             "source": "docs/conformance/oc-emitting-sites-2026-07-28.json",
@@ -2738,6 +3510,14 @@
           "oc:client/http-custom-headers/sep-2243-client-supports-custom-headers/ClientSupportsCustomHeaders",
           "oc:client/http-invalid-tool-headers/sep-2243-client-reject-invalid-tool/ClientKeepsValidTool",
           "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_list",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_list",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_call",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_list",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_prompts_get",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_resources_read",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+          "oc:client/json-schema-ref-no-deref/sep-2106-no-network-ref-deref/NoNetworkRefDereference",
           "oc:client/request-metadata/sep-2575-client-declares-elicitation-capability/ClientDeclaresElicitationCapability",
           "oc:client/request-metadata/sep-2575-client-declares-roots-capability/ClientDeclaresRootsCapability",
           "oc:client/request-metadata/sep-2575-client-declares-sampling-capability/ClientDeclaresSamplingCapability",
@@ -2778,12 +3558,23 @@
           "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_null_header",
           "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header",
           "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_diff_case",
-          "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_same_case"
+          "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_same_case",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_get",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_list",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_list",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_read",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_call",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_list",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_prompts_get",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_resources_read",
+          "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+          "oc:client/json-schema-ref-no-deref/sep-2106-no-network-ref-deref/NoNetworkRefDereference"
         ],
-        "member_count": 45,
+        "member_count": 65,
         "members": [
           "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
           "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
+          "MCP.ClientConformanceTest/test CG4 / T-CG4 — the client MUST NOT dereference a network $ref listing and calling a tool whose inputSchema $refs a network URI never fetches it",
           "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) a server requestState is echoed verbatim on the retry (control)",
           "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an absent server requestState produces a retry with NO requestState key",
           "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an explicit null server requestState also produces NO requestState key",
@@ -2794,6 +3585,15 @@
           "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) it falls back to its configured default when the message carries no _meta version",
           "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) the transport derives mcp-protocol-version from the message's own _meta",
           "MCP.ClientTest/test MRTR client retry an input_required result is transparently completed via :on_input_required",
+          "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — a non-struct :client_capabilities is discarded, not passed through",
+          "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — and the first request no longer kills the client",
+          "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T15 — a server's advertised extensions are surfaced, not discarded",
+          "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — a declared extension is stamped into every request's _meta",
+          "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — and into the server/discover probe itself",
+          "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T5 — the key is omitted entirely when nothing is declared",
+          "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 a server's malformed advertisement is reported verbatim, not rewritten",
+          "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an invalid identifier is dropped on the way out; an all-invalid declaration vanishes",
+          "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an unencodable settings value never reaches the wire (dropped at start_link)",
           "MCP.ClientTest/test per-request _meta every request carries protocolVersion + client identity/capabilities",
           "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy M-2: the warn-once record shares the cache's GENERATION — a reset re-arms it",
           "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a -32020 triggers a tools/list refresh and ONE retry, which then mirrors",
@@ -2806,6 +3606,7 @@
           "MCP.ClientToolSchemasTest/test the transport seam a tools/call for a known tool carries :headers; other methods carry none",
           "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON",
           "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart",
+          "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T8 — ClientCapabilities encode keeps the two apart",
           "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (1)",
           "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (2)",
           "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (3)",
@@ -2823,15 +3624,24 @@
           "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector plain ASCII is sent as-is",
           "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method",
           "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector unannotated parameters are NOT mirrored",
+          "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a NOTIFICATION carries it too — the spec says all requests, not all responses-bearing ones",
+          "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a message with no method carries no routing headers",
+          "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a request carries the body method",
+          "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name",
+          "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a tools/call whose params carry no name emits no Mcp-Name rather than an empty one",
+          "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri",
+          "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a name that would inject a header is neutralised",
+          "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a non-ASCII tool name is encoded, and decodes back to the body value",
+          "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a resource URI with a space is encoded",
           "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client a null argument omits its header",
           "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
           "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client with no prior tools/list, nothing is mirrored and the client says so",
           "MCP.Transport.RoutingHeadersTest/test the version header rides the message (D-4), on the wire it matches the body _meta, not the transport's configured default"
         ],
-        "members_declared_unmatched": 16,
-        "members_with_edges": 29,
+        "members_declared_unmatched": 28,
+        "members_with_edges": 37,
         "path": "conformance/data/crosswalk-edges-client.json",
-        "rule": "Every ET-CC member B2b attributes to the CLIENT leg that is either in CG7 — C1b-i's slice — or was already adjudicated by C1a (a token, or a contradicts_oc record). NOTHING outside it is adjudicated here.",
+        "rule": "Every ET-CC member B2b attributes to the CLIENT leg that is in CG7 — C1b-i's slice — or in CG1, CG2 or CG4 — C1b-ii's — or was already adjudicated by C1a (a token, or a contradicts_oc record). NOTHING outside it is adjudicated here.",
         "selector": {
           "all_of": [
             {
@@ -2847,6 +3657,21 @@
                   "value": "CG7"
                 },
                 {
+                  "field": "cg",
+                  "test": "equals",
+                  "value": "CG1"
+                },
+                {
+                  "field": "cg",
+                  "test": "equals",
+                  "value": "CG2"
+                },
+                {
+                  "field": "cg",
+                  "test": "equals",
+                  "value": "CG4"
+                },
+                {
                   "field": "tokens",
                   "test": "non_empty_list"
                 },
@@ -2857,8 +3682,8 @@
               ]
             }
           ],
-          "denotes": "45 ET-CC members: the 29 B2b attributes to the CLIENT leg and CG7 — C1b-i's own slice — plus the 18 client members C1a had already adjudicated, whose rows moved here under the PM's composition ruling. The two sets overlap in exactly 2 members (the CG7 rows C1a already carried a token for), which is why 29 + 18 is 45 and not 47.",
-          "evaluated": "45 members denoted; set-equal to the population this file derives in both directions (G15a). The counts block was checked field by field (G15b).",
+          "denotes": "65 ET-CC members. C1b-i declared 45 (CG7's 29 plus C1a's 18 moved rows, overlapping in 2, which is why 29 + 18 is 45 and not 47). C1b-ii's sub-population — `leg = client AND cg in {CG1, CG2, CG4}` — is 23 rows: CG1 9, CG2 13, CG4 1. It adds 20 new member homes, not 23: THREE of the CG2 rows carry C1a `oc:none` tokens and were therefore already inside C1b-i's 45 through the `tokens non_empty_list` limb, and they are NOT re-homed. 45 + 20 = 65. The same overlap shape C1b-i recorded for CG7, and one-home is preserved precisely by not re-homing those three.",
+          "evaluated": "65 members denoted; set-equal to the population this file derives in both directions (G15a). The counts block was checked field by field (G15b).",
           "key_field": "key",
           "rows_at": "rows",
           "source": "docs/conformance/etcc-attribution.json",
@@ -2924,11 +3749,12 @@
         }
       }
     ],
-    "inherited_tokens_guard": "G20 ran over the 48 declared members; 0 inherited tokens unaccounted for.",
-    "member_count": 48,
+    "inherited_tokens_guard": "G20 ran over the 68 declared members; 0 inherited tokens unaccounted for.",
+    "member_count": 68,
     "members": [
       "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
       "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
+      "MCP.ClientConformanceTest/test CG4 / T-CG4 — the client MUST NOT dereference a network $ref listing and calling a tool whose inputSchema $refs a network URI never fetches it",
       "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) a server requestState is echoed verbatim on the retry (control)",
       "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an absent server requestState produces a retry with NO requestState key",
       "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an explicit null server requestState also produces NO requestState key",
@@ -2939,6 +3765,15 @@
       "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) it falls back to its configured default when the message carries no _meta version",
       "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) the transport derives mcp-protocol-version from the message's own _meta",
       "MCP.ClientTest/test MRTR client retry an input_required result is transparently completed via :on_input_required",
+      "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — a non-struct :client_capabilities is discarded, not passed through",
+      "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — and the first request no longer kills the client",
+      "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T15 — a server's advertised extensions are surfaced, not discarded",
+      "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — a declared extension is stamped into every request's _meta",
+      "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — and into the server/discover probe itself",
+      "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T5 — the key is omitted entirely when nothing is declared",
+      "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 a server's malformed advertisement is reported verbatim, not rewritten",
+      "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an invalid identifier is dropped on the way out; an all-invalid declaration vanishes",
+      "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an unencodable settings value never reaches the wire (dropped at start_link)",
       "MCP.ClientTest/test per-request _meta every request carries protocolVersion + client identity/capabilities",
       "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy M-2: the warn-once record shares the cache's GENERATION — a reset re-arms it",
       "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a -32020 triggers a tools/list refresh and ONE retry, which then mirrors",
@@ -2952,6 +3787,7 @@
       "MCP.IntegrationTest/test tools: list, echo, add, isError, unknown",
       "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON",
       "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart",
+      "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T8 — ClientCapabilities encode keeps the two apart",
       "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (1)",
       "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (2)",
       "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (3)",
@@ -2970,25 +3806,35 @@
       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method",
       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector unannotated parameters are NOT mirrored",
       "MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)",
+      "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a NOTIFICATION carries it too — the spec says all requests, not all responses-bearing ones",
+      "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a message with no method carries no routing headers",
+      "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a request carries the body method",
+      "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name",
+      "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a tools/call whose params carry no name emits no Mcp-Name rather than an empty one",
+      "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri",
+      "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a name that would inject a header is neutralised",
+      "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a non-ASCII tool name is encoded, and decodes back to the body value",
+      "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a resource URI with a space is encoded",
       "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client a null argument omits its header",
       "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
       "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client with no prior tools/list, nothing is mirrored and the client says so",
       "MCP.Transport.RoutingHeadersTest/test the version header rides the message (D-4), on the wire it matches the body _meta, not the transport's configured default",
       "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601"
     ],
-    "members_declared_unmatched": 16,
-    "members_with_edges": 32,
+    "members_declared_unmatched": 28,
+    "members_with_edges": 40,
     "outside_the_population": {
-      "et_cc_members": 233,
-      "in_denominator_checks": 130,
-      "owners": "C1b-ii and C1b-iii (MES-104's siblings — CG1/CG2/CG4 and the 55 no-CG client members); C1c = MES-105 (server leg + the 29 none_determinable)",
+      "et_cc_members": 213,
+      "in_denominator_checks": 120,
+      "owners": "C1b-iii = MES-109 (the client-leg members no CG covers); C1c = MES-105 (server leg + the 29 none_determinable). NOT C1b-ii, which rendered this artefact: a field naming its own producer as still owing the remainder is CR-1's defect (MES-104) and it recurred here as CR-5 (MES-108). The sub-population figures the previous wording carried are the register's to state, not this artefact's — this artefact holds no figure it did not derive (G21).",
       "state": "not_yet_adjudicated",
       "why_it_is_a_third_state": "Distinct from bucket 1 ('we looked and there is no counterpart') and from A3 §6 state 4 ('nobody has adjudicated this member, and the guard FAILS it'). Reporting these as bucket 1 would assert of each something false of every one.",
       "why_not_173_minus_the_declared": "A check that carries an edge has been adjudicated whether or not any file DECLARES it. 14 of the addressed checks lie outside every declared check population — the inherited C1a edges — and counting them as not_yet_adjudicated would be as wrong in one direction as counting them in bucket 2 would be in the other."
     },
-    "rule": "conformance/data/crosswalk-edges-client.json: Every ET-CC member B2b attributes to the CLIENT leg that is either in CG7 — C1b-i's slice — or was already adjudicated by C1a (a token, or a contradicts_oc record). NOTHING outside it is adjudicated here.  ||  conformance/data/crosswalk-edges.json: The ET-CC members C1a had adjudicated — a token or a contradicts_oc record — that are NOT on the client leg: 2 server and 1 none_determinable. C1a's 18 client rows moved to crosswalk-edges-client.json under MES-104's composition ruling; these 3 stayed, unchanged, and C1c (MES-105) absorbs them whole.",
-    "state_4_guard": "ran over these 48 members; 0 fired. ENTAILED BY G15a AND THEREFORE UNABLE TO FIRE, and that is recorded rather than left to be read as evidence: the population is set-equal to its selector's denotation in both directions, and it is derived from the file's own rows, so every member has a row and every row has a tag. It was equally entailed in C1a, where the selector and the tagging predicate were the same predicate. What fires on an EMPTY crosswalk is the vacuum guard, not this. The completeness question that is NOT entailed is G20 — every token B2b already records against a member of this population is still carried by one of that member's rows."
+    "rule": "conformance/data/crosswalk-edges-client.json: Every ET-CC member B2b attributes to the CLIENT leg that is in CG7 — C1b-i's slice — or in CG1, CG2 or CG4 — C1b-ii's — or was already adjudicated by C1a (a token, or a contradicts_oc record). NOTHING outside it is adjudicated here.  ||  conformance/data/crosswalk-edges.json: The ET-CC members C1a had adjudicated — a token or a contradicts_oc record — that are NOT on the client leg: 2 server and 1 none_determinable. C1a's 18 client rows moved to crosswalk-edges-client.json under MES-104's composition ruling; these 3 stayed, unchanged, and C1c (MES-105) absorbs them whole.",
+    "state_4_guard": "ran over these 68 members; 0 fired. ENTAILED BY G15a AND THEREFORE UNABLE TO FIRE, and that is recorded rather than left to be read as evidence: the population is set-equal to its selector's denotation in both directions, and it is derived from the file's own rows, so every member has a row and every row has a tag. It was equally entailed in C1a, where the selector and the tagging predicate were the same predicate. What fires on an EMPTY crosswalk is the vacuum guard, not this. The completeness question that is NOT entailed is G20 — every token B2b already records against a member of this population is still carried by one of that member's rows."
   },
+  "population_statement_guard": "G21 — every population figure this generator's own prose states is one this run derived. Scanned 12 authored statements against the 17 distinct figures the run holds, and pinned 6 load-bearing phrases built from those figures independently of the text. THE UNIVERSE IS THE EMITTED ARTEFACT, not a list this module declares: a string is this generator's own iff it occurs in no input document, so a statement added later is inside the guard without anyone remembering to add it. This block is written AFTER the scan and is required to carry no population claim of its own, so it is not part of what it attests. BOUNDS: a figure spelled as a word, or stated without the noun it counts, is invisible to the scan — both occur here and are handled by interpolating them, not by the scan; a literal that coincides with some other held figure survives until the population next moves, which is when CR-5's recurrence would land anyway; and prose this generator does not EMIT (the moduledoc, a branch not taken) is outside the universe by construction.",
   "residuals": [
     {
       "id": "X1",
@@ -2996,7 +3842,7 @@
     },
     {
       "id": "X2",
-      "text": "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — the attempts were made and none succeeded, which is not the same as proven. The bound is narrow. The generator now refuses a duplicated join key (G14), a population that is not the set its external selector denotes or that disagrees with its own declared counts (G15), and a manifest whose verdicts have drifted from A5's bucket-0 artefact (G16). Every falsification class is shown firing on a mutated input with the unmutated build as the negative control in the same run, at the OS exit status and not only in-VM, and restored green after; C1a's own thirteen are re-run with the after-restoration they lacked. A per-row bucket-assignment drift is caught naming the row and the buckets it crosses (conformance/controls/crosswalk_falsification_controls.exs). What that does NOT establish: that any axis verdict is right (X1 is untouched — an axis verdict is a judgement and no refusal can reach it), and that anything outside the declared population was falsified at all. MES-104 added four refusals to the set C3 covers — G17 (two files declaring the same member), G18 (an axis row citing a provenance for its emitting span the locator does not support), G19 (a DECLARED check with no axis decomposition) and G20 (an inherited B2b token no row carries) — each shown firing on a mutated input with the unmutated build as the negative control in the same run. C1b-ii, C1b-iii and C1c (MES-105) own the rest."
+      "text": "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — the attempts were made and none succeeded, which is not the same as proven. The bound is narrow. The generator now refuses a duplicated join key (G14), a population that is not the set its external selector denotes or that disagrees with its own declared counts (G15), and a manifest whose verdicts have drifted from A5's bucket-0 artefact (G16). Every falsification class is shown firing on a mutated input with the unmutated build as the negative control in the same run, at the OS exit status and not only in-VM, and restored green after; C1a's own thirteen are re-run with the after-restoration they lacked. A per-row bucket-assignment drift is caught naming the row and the buckets it crosses (conformance/controls/crosswalk_falsification_controls.exs). What that does NOT establish: that any axis verdict is right (X1 is untouched — an axis verdict is a judgement and no refusal can reach it), and that anything outside the declared population was falsified at all. MES-104 added four refusals to the set C3 covers — G17 (two files declaring the same member), G18 (an axis row citing a provenance for its emitting span the locator does not support), G19 (a DECLARED check with no axis decomposition) and G20 (an inherited B2b token no row carries) — each shown firing on a mutated input with the unmutated build as the negative control in the same run. MES-108 added G21, which refuses a population figure in this generator's own prose that the run did not derive. What lies OUTSIDE the declared population is unfalsified, and the tickets that own it are the ones `population.outside_the_population.owners` names — this residual does not name them, because it named C1b-ii while C1b-ii was rendering it, and a statement that names its own producer as still owing the remainder is CR-1 (MES-104) recurring as CR-5 (MES-108)."
     },
     {
       "id": "X6",
@@ -3012,7 +3858,7 @@
     },
     {
       "id": "X5",
-      "text": "The member population is 48 across two edges files — C1b-i's 45 client members and the 3 non-client rows C1a's file was re-declared to. Two of the checks C1a addresses enter through A3 §1's cardinality rule and §4's published worked edge, not through B2b's tokens — inherited, not newly adjudicated, and said so in the edges file."
+      "text": "The member population is 68 across 2 edges files — 65 members from crosswalk-edges-client.json and 3 members from crosswalk-edges.json. Two of the checks C1a addresses enter through A3 §1's cardinality rule and §4's published worked edge, not through B2b's tokens — inherited, not newly adjudicated, and said so in the edges file. Every figure in this sentence is interpolated: all three were literals until MES-108, and two of the three were already wrong when CR-5 found them."
     },
     {
       "id": "X7",
@@ -3020,22 +3866,22 @@
     },
     {
       "id": "X8",
-      "text": "BUCKET 2 WAS EMPTY BY CONSTRUCTION UNTIL THIS TICKET. C1a derived its check universe from the tags its own edges carried, so the complement within it was necessarily empty and `CHECKED, AND ZERO — all 14 checks in the declared population carry at least one edge` could not have said anything else. A file may now declare its check population from an external anchor, and C1b-i's first non-vacuous answer is NINE: nine of CG7's 29 OC checks carry no edge from any ET-CC member. A file that declares none contributes none to the universe and the artefact reports that bucket 2 was not asked, rather than reporting a zero."
+      "text": "BUCKET 2 WAS EMPTY BY CONSTRUCTION UNTIL MES-104. C1a derived its check universe from the tags its own edges carried, so the complement within it was necessarily empty and its `CHECKED, AND ZERO` could not have said anything else. A file may now declare its check population from an external anchor. This run's answer is 11 of the 39 declared checks carrying no edge from any ET-CC member. A file that declares none contributes none to the universe and the artefact reports that bucket 2 was not asked, rather than reporting a zero. The answer is interpolated — this sentence froze C1b-i's at nine and went on stating it after MES-108 moved the check population (CR-5)."
     },
     {
       "id": "X9",
-      "text": "A CLAIM-LEVEL STATE 3 HAS NO BUCKET. A3 §6's state 3 is a property of a MEMBER, and the bucket-1 reconciliation requires a member to be edge-bearing or declared unmatched, never both — so a member matching on some claims and not on others has nowhere to record the unmatched ones. C1b-i found five. They are carried in `claim_level_unmatched` with the search that found none, and ESCALATED. Whether A3 §6 should gain a claim-level state is the PM's."
+      "text": "A CLAIM-LEVEL STATE 3 HAS NO BUCKET. A3 §6's state 3 is a property of a MEMBER, and the bucket-1 reconciliation requires a member to be edge-bearing or declared unmatched, never both — so a member matching on some claims and not on others has nowhere to record the unmatched ones. C1b-i found five; MES-108 resolved two of them into real edges and found one more. This run carries 4 of them in `claim_level_unmatched`, each with the search that found none, and ESCALATED — the figure interpolated, because it was written as a word and so would not have moved (CR-5). Whether A3 §6 should gain a claim-level state is the PM's."
     }
   ],
   "revision": "2026-07-28",
   "schema": "crosswalk/1",
   "totality": {
     "every_declared_check_is_decomposed_and_accounted_for": {
-      "declared": 29,
+      "declared": 39,
       "equation": "declared checks = checks with an edge + bucket 2",
-      "in_bucket_2": 9,
+      "in_bucket_2": 11,
       "why_this_is_not_a_set_equality": "C1a asserted `every declared check appears` as a set equality, and it held TRIVIALLY: the declared set was derived from the tags the edges carried, so the two sides were the same list twice. Once the checks are declared from outside the file the equality is no longer expected — the checks that do NOT appear are bucket 2, which is the answer rather than a failure.",
-      "with_an_edge": 20
+      "with_an_edge": 28
     },
     "every_declared_member_appears": {
       "equal": true,
@@ -3045,11 +3891,11 @@
     "measure": "SET COMPARISON, not arithmetic — two counts agreeing is not two sets agreeing.",
     "negatives_are_enumerated_not_counted": "Bucket 1's members and bucket 2's checks are listed by name in `buckets`, and the not_yet_adjudicated remainder is counted with its owner named (A2d / ruling 4)."
   },
-  "trust_status": "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — over the declared 48-member / 29-declared-check slice (C1a's 21 as re-split by MES-104, plus CG7's 27 new) and no further. (Standing, not proven: the attempts were made and none succeeded. `UNFALSIFIED` here previously meant `not yet attempted`.) Ruling 5 asked for the control this artefact was unfalsified against: the generator refuses on each falsification class with the mutation committed and shown firing, a drifted per-row bucket assignment is caught naming the row and the buckets it crosses, and the artefact re-derives byte-identically from a second source path. That last is a CONSISTENCY pin, not a correctness claim (ruling 9, residual X6). Nothing here establishes that an axis verdict is RIGHT (X1), and nothing outside the declared population has been falsified at all — C1b (MES-104) and C1c (MES-105) own that.",
+  "trust_status": "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — over the declared 68-member / 39-declared-check slice and no further. Both figures are INTERPOLATED from the population this run derives, and the slice is NOT decomposed by ticket here. The pair was a literal that had to be re-typed by hand at every move of the population: it was re-typed at MES-104, the population moved again at MES-108, and it was not. That is an argument against the SHAPE and not against an author — it is CR-1 (MES-104) recurring in the one generator CR-1's remedy did not reach (CR-5, MES-108). The parenthetical was the worse half — it enumerated the slice in a way that positively excluded the members the very run rendering it had just added — so it is dropped rather than re-typed: a fresh decomposition would be a third literal, and `population.files` carries the same fact derived. G21 refuses a figure here that the run did not derive. (Standing, not proven: the attempts were made and none succeeded. `UNFALSIFIED` here previously meant `not yet attempted`.) Ruling 5 asked for the control this artefact was unfalsified against: the generator refuses on each falsification class with the mutation committed and shown firing, a drifted per-row bucket assignment is caught naming the row and the buckets it crosses, and the artefact re-derives byte-identically from a second source path. That last is a CONSISTENCY pin, not a correctness claim (ruling 9, residual X6). Nothing here establishes that an axis verdict is RIGHT (X1), and nothing outside the declared population has been falsified at all — the tickets `population.outside_the_population.owners` names own that.",
   "verdict_mapping": {
     "observed_statuses": {
       "FAILURE": 4,
-      "SUCCESS": 53
+      "SUCCESS": 67
     },
     "rule": "SUCCESS -> :green. FAILURE -> :red. WARNING -> :green carrying warning: true.",
     "warning_basis": "PM-ratified D2, measured not chosen: WARNING is leg-dependent — the client-leg reducer fails it, `requirements_exit` and the server-leg reducer ignore it — and BOTH in-denominator WARNING checks are on the server leg, where the reducer that would disagree does not apply.",

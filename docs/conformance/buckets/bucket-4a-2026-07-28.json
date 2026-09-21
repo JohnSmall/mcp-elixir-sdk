@@ -5,7 +5,7 @@
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 48 declared ET-CC members and 29\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 233 members and\n130 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 14 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "population_banner": "POPULATION: this projection covers 68 declared ET-CC members and 39\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 213 members and\n120 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 14 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
   "predicate": "`cells` where the stored `bucket` == \"4a\". Universe: the crosswalk's edges.",
   "projected_from": {
     "bucket_zero": {
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 186840,
+      "bytes": 281457,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "d068abff28bcb179199e530fa3c7dbeec21a5f5a4abe0a39750e23493542f358"
+      "sha256": "b150085b2c5a31e6ecfe8a4815528dd05b385ccac4296d5cbaebfa541ae46bbf"
     }
   },
   "revision": "2026-07-28",
@@ -103,7 +103,7 @@
   "schema": "bucket-view/1",
   "title": "OC red, ET-CC green — contradiction",
   "universe": {
-    "count": 57,
+    "count": 71,
     "name": "edges",
     "of": "the crosswalk's `cells`"
   },

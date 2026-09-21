@@ -115,6 +115,23 @@ defmodule CrosswalkFalsificationControls do
 
     positive("the unmutated edges build cleanly")
 
+    # The two figures these expectations name are DERIVED here, from the same
+    # external anchor the selectors use, so a population change moves them with
+    # the population instead of leaving a literal behind (S9-11).
+    declared = edges["the_population_this_file_declares"]["members"]
+
+    tokened =
+      read(@attribution)["rows"]
+      |> Enum.count(&(&1["leg"] == "client" and (&1["tokens"] || []) != []))
+
+    extra = declared - tokened
+
+    declared_checks = edges["the_check_population_this_file_declares"]["checks"]
+
+    custom_header_checks =
+      read(@sites)["rows"]
+      |> Enum.count(&(&1["scenario"] == "http-custom-headers"))
+
     n =
       count_refusals([
         {"G14  an edge duplicated VERBATIM — the (member, claim, tag) triple twice",
@@ -133,11 +150,19 @@ defmodule CrosswalkFalsificationControls do
          ["is not the set its own selector denotes", "absent from this file (1)"],
          fn -> build(update_in(edges["declared_unmatched"], &tl/1)) end},
         {"G15  the selector denotes FEWER rows than the file derives (the `extra` direction)",
-         ["is not the set its own selector denotes", "not denoted by the selector (27)"],
+         ["is not the set its own selector denotes", "not denoted by the selector (#{extra})"],
          fn ->
-           # Drops the `cg = CG7` branch, so the selector denotes only the 18
-           # client members C1a had already adjudicated while the file still
-           # carries all 45.
+           # Drops every `cg` branch, so the selector denotes only the client
+           # members C1a had already adjudicated (by token) while the file still
+           # carries its whole declared population.
+           #
+           # THE FIGURE IS COMPUTED, NOT WRITTEN. It was the literal 27 until
+           # MES-108, and MES-108 moved the population to 65 — so the control went
+           # red for the right reason and then would have been "fixed" by swapping
+           # one literal for another, which is the same defect one ticket later.
+           # `extra` is derived from B2b's real anchor above, so this expectation
+           # still asserts that the generator names the RIGHT number without
+           # asserting which number that is.
            build(
              narrow_selector(edges, "all_of", [
                %{"field" => "leg", "test" => "equals", "value" => "client"},
@@ -146,9 +171,12 @@ defmodule CrosswalkFalsificationControls do
            )
          end},
         {"G15  the declared COUNTS lie while every SET still agrees",
-         ["disagrees with what the generator derives", "members: declared 46, derived 45"],
+         [
+           "disagrees with what the generator derives",
+           "members: declared #{declared + 1}, derived #{declared}"
+         ],
          fn ->
-           build(put_in(edges, ["the_population_this_file_declares", "members"], 46))
+           build(put_in(edges, ["the_population_this_file_declares", "members"], declared + 1))
          end},
         {"G15  no selector at all — prose with no executable half", ["carries no `selector`"],
          fn ->
@@ -180,7 +208,10 @@ defmodule CrosswalkFalsificationControls do
          [":selector_combinator_is_empty"],
          fn -> build(narrow_selector(edges, "all_of", [])) end},
         {"G15  the CHECK population's selector denotes a different set than it declares",
-         ["check population declares 29 checks and its own", "selector denotes 18"],
+         [
+           "check population declares #{declared_checks} checks and its own",
+           "selector denotes #{custom_header_checks}"
+         ],
          fn ->
            build(
              update_in(
@@ -427,7 +458,102 @@ defmodule CrosswalkFalsificationControls do
     verdict("exactly one row moved, 5 -> 3", match?([%{from: "5", to: "3"}], moved2))
     halt_unless(match?([%{from: "5", to: "3"}], moved2))
 
-    # RESTORED: the same comparison that just caught two drifts finds none again.
+    IO.puts("""
+
+      MUTATION 3 — MES-108 (C1b-ii). An ESCALATED row, `contradicts` -> `agrees`.
+
+      Mutations 1 and 2 both move a row between two BUCKETS. This one moves a row
+      OUT OF ESCALATION and into bucket 5, which is a different failure and the one
+      C1b-ii's substantive finding rests on: three `ClientMcpNameHeader_*` edges carry
+      a `contradicts` verdict, and `MatchKey.bucket/1` escalates `(green, green,
+      :contradicting)` rather than bucketing it. Soften one token and the edge stops
+      escalating and is quietly counted as a full agreement instead — no refusal fires,
+      the arithmetic still reconciles, and the crosswalk reports one fewer disagreement
+      than it found. A pinned per-row assignment is the ONLY thing that sees it, which
+      is exactly why C3 pinned them.
+
+      The target is found by property and uniqueness is asserted, so a later ticket
+      adding a second such row goes red here rather than re-aiming this mutation in
+      silence. It is the row whose FIRST axis contradicts — the nameless tools/call,
+      where the check's dispatch is unconditional. It is NOT one of the sentinel pair,
+      and that is a measured choice rather than a preference: those two share the
+      property "escalated, LAST axis contradicts", so aiming at it fires the uniqueness
+      guard. The whole contradicting population is pinned separately just below, so
+      picking one target does not leave the other two unattested.
+    """)
+
+    # THE POPULATION THE MUTATION IS DRAWN FROM, pinned. A mutation shows ONE row
+    # can move; it says nothing about how many rows of that kind exist, and a
+    # silently vanishing contradiction would leave this control green. Counted
+    # from the committed cells, not from the edges files, so it is the DERIVED
+    # verdict that is pinned and not the authored one.
+    contradicting =
+      read(@crosswalk_out)["cells"]
+      |> Enum.filter(fn c ->
+        is_nil(c["bucket"]) and Enum.any?(c["axes"], &(&1["verdict"] == "contradicts"))
+      end)
+
+    IO.puts(
+      "  population pin: #{length(contradicting)} escalated cells carry a `contradicts` axis"
+    )
+
+    for c <- contradicting, do: IO.puts("    #{c["tag"]}")
+
+    verdict(
+      "exactly 3 — C1b-ii's finding, and it cannot shrink without this going red",
+      length(contradicting) == 3
+    )
+
+    halt_unless(length(contradicting) == 3)
+
+    {softened, where3} =
+      mutate_one(
+        docs,
+        committed,
+        fn cell, edge ->
+          cell == "escalated" and hd(edge["axes"])["verdict"] == "contradicts"
+        end,
+        fn edge ->
+          update_in(edge, ["axes", Access.at(0), "verdict"], fn "contradicts" -> "agrees" end)
+        end
+      )
+
+    IO.puts("  target found in #{Path.basename(where3)} by property, not by index")
+
+    {n_esc, moved_esc} = compare(committed, softened)
+
+    show_moves("MUTATION 3", n_esc, moved_esc)
+
+    verdict(
+      "exactly one row moved, escalated -> 5",
+      match?([%{from: "escalated", to: "5"}], moved_esc)
+    )
+
+    halt_unless(match?([%{from: "escalated", to: "5"}], moved_esc))
+
+    # AND THIS ONE IS *NOT* INVISIBLE TO THE ARITHMETIC — stated, not quietly
+    # skipped. Mutations 1 and 2 move a row between two buckets, which leaves every
+    # total standing; that is what makes the per-row pin the only detector and it is
+    # the case `invisible_to_arithmetic/2` exists to demonstrate. This one moves a row
+    # ACROSS the bucketed/escalated boundary, so `escalated` falls 8 -> 7 and bucket 5
+    # rises 59 -> 60, and a totals-based check WOULD see something. Calling
+    # `invisible_to_arithmetic/2` here would assert the opposite of what is true, so it
+    # is not called; the weaker claim is made instead, and it is still worth making.
+    #
+    # Worth making because a moving total says only THAT something changed. It does not
+    # say which row, in which direction, or that the row which stopped escalating is a
+    # contradiction that was found and then unfound. A reader of a close-out comparing
+    # "8 escalations" to "7" has to already suspect this to look. The pin NAMES it.
+    {n_arith, moved_arith} = compare(committed, softened)
+
+    verdict(
+      "the per-row pin names the row; the totals only say a number moved",
+      n_arith == map_size(committed) and length(moved_arith) == 1
+    )
+
+    halt_unless(n_arith == map_size(committed) and length(moved_arith) == 1)
+
+    # RESTORED: the same comparison that just caught three drifts finds none again.
     {n3, moved3} = compare(committed, docs)
 
     verdict(

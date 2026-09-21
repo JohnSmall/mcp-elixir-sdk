@@ -1,11 +1,11 @@
 {
   "bucket": null,
-  "count": 5,
+  "count": 8,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 48 declared ET-CC members and 29\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 233 members and\n130 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 14 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "population_banner": "POPULATION: this projection covers 68 declared ET-CC members and 39\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 213 members and\n120 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 14 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
   "predicate": "`cells` where the stored `bucket` is null and an `escalation` is recorded.",
   "projected_from": {
     "bucket_zero": {
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 186840,
+      "bytes": 281457,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "d068abff28bcb179199e530fa3c7dbeec21a5f5a4abe0a39750e23493542f358"
+      "sha256": "b150085b2c5a31e6ecfe8a4815528dd05b385ccac4296d5cbaebfa541ae46bbf"
     }
   },
   "revision": "2026-07-28",
@@ -207,14 +207,131 @@
         "oc_status_at_accepted_run": "SUCCESS",
         "oc_warning": false
       }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_name_header_present",
+          "verdict": "contradicts"
+        },
+        {
+          "axis": "mcp_name_header_matches_source_field",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": null,
+      "bucket_attributes": [],
+      "claim": "a tools/call carrying no `params.name` emits NO `mcp-name` header, rather than an empty one",
+      "escalation": ":inconsistent_verdict_pair — match-relation.md §3",
+      "evidence": "routing_headers_test.exs:193-200 — the send is `\"method\" => \"tools/call\"` with `\"params\" => %{}`, and routing_headers_test.exs:200 asserts `refute Map.has_key?(headers_of(agent, 0), \"mcp-name\")`. The axis's SUBJECT is exactly this header's presence on a tools/call, so match-relation.md §6's mention-is-not-a-discharge rule does NOT make this silent — the two are about the same behaviour and they disagree. The check is not conditional on the field existing: the addressed `dispatch_site` excerpt shows `handlePost` calling `this.checkMcpNameHeader(e,n,`params.name`)` on every tools/call, and with no `params.name` the predicate binds `i` and `a` undefined, takes the falsy arm and pushes `Missing Mcp-Name header on ${r} request. Clients MUST include the Mcp-Name header for ${r} requests.` — i.e. FAILURE. So a client doing what this member asserts would be scored FAILURE by this check on this input. It runs green only because the scenario's fixture never sends a nameless tools/call. The match axis is silent: with no source field there is nothing to match.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a tools/call whose params carry no name emits no Mcp-Name rather than an empty one",
+        "test": "test T-CG1b — Mcp-Name for the three name-bearing methods a tools/call whose params carry no name emits no Mcp-Name rather than an empty one"
+      },
+      "note": "Escalates as `inconsistent_verdict_pair` (green OC, green ET, contradicting shape). Not bucketed, by A3 §3's own table.",
+      "oc_key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpNameHeader_tools_call",
+        "Client sends correct Mcp-Name header on tools/call request",
+        ""
+      ],
+      "shape": "contradicting",
+      "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_name_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_name_header_matches_source_field",
+          "verdict": "contradicts"
+        }
+      ],
+      "bucket": null,
+      "bucket_attributes": [],
+      "claim": "a non-ASCII tool name rides `mcp-name` as the Base64 sentinel and decodes back to the body value",
+      "escalation": ":inconsistent_verdict_pair — match-relation.md §3",
+      "evidence": "routing_headers_test.exs:211 binds `name = \"天気_get\"`; routing_headers_test.exs:222 asserts `assert String.starts_with?(header, \"=?base64?\")` and routing_headers_test.exs:223 asserts `assert HeaderMirror.decode_value(header) == name`, with routing_headers_test.exs:226 confirming the BODY still carries the plain name. Presence agrees: routing_headers_test.exs:222's subject is a property OF the header's value, which a missing header could not satisfy. The MATCH axis contradicts: the check's `a!==i` is a raw string comparison of the header against `t.params?.name`, and nothing on the client leg's `mcp-name` path decodes the sentinel — the only `=?base64?` handling in the build is SERVER-leg (`sep-2243-server-decode-base64` and siblings, a different scenario, measured by search over the build's seven occurrences of that literal). So the encoded header is not `===` the plain body name and the check pushes a mismatch error. A conformant client — streamable-http.mdx requires the encoding — is scored FAILURE here; it runs green only because the fixture's tool names are plain ASCII.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a non-ASCII tool name is encoded, and decodes back to the body value",
+        "test": "test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a non-ASCII tool name is encoded, and decodes back to the body value"
+      },
+      "note": "Escalates as `inconsistent_verdict_pair`. The disagreement is the OC check's, not ours, and it is the same root cause as the row below.",
+      "oc_key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpNameHeader_tools_call",
+        "Client sends correct Mcp-Name header on tools/call request",
+        ""
+      ],
+      "shape": "contradicting",
+      "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_name_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_name_header_matches_source_field",
+          "verdict": "contradicts"
+        }
+      ],
+      "bucket": null,
+      "bucket_attributes": [],
+      "claim": "a CRLF-bearing tool name is neutralised — it rides `mcp-name` encoded, carries no raw CR, and injects no header",
+      "escalation": ":inconsistent_verdict_pair — match-relation.md §3",
+      "evidence": "routing_headers_test.exs:250 binds the hostile name; routing_headers_test.exs:261 asserts `assert HeaderMirror.decode_value(headers[\"mcp-name\"]) == hostile`, routing_headers_test.exs:262 asserts `refute headers[\"mcp-name\"] =~ \"\\r\"` and routing_headers_test.exs:263 asserts `refute Map.has_key?(headers, \"x-injected\")`. Presence agrees — routing_headers_test.exs:261's assertion decodes the header's value. The match axis contradicts for the same reason as the non-ASCII row: the check compares the RAW header against `t.params?.name` with `a!==i`, and the encoded form is not the hostile literal. Here the disagreement has a security shape: satisfying the check literally would mean putting a CRLF-bearing value on the wire unencoded.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a name that would inject a header is neutralised",
+        "test": "test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a name that would inject a header is neutralised"
+      },
+      "note": "Escalates as `inconsistent_verdict_pair`. Same root cause as the non-ASCII row.",
+      "oc_key": [
+        "client",
+        "http-standard-headers",
+        "sep-2243-client-includes-standard-headers",
+        "ClientMcpNameHeader_tools_call",
+        "Client sends correct Mcp-Name header on tools/call request",
+        ""
+      ],
+      "shape": "contradicting",
+      "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
     }
   ],
   "schema": "escalated-view/1",
   "title": "escalated — routed to the PM, in NO bucket",
   "universe": {
-    "count": 57,
+    "count": 71,
     "name": "edges",
     "of": "the crosswalk's `cells`"
   },
-  "what_this_is": "THE ELEVENTH VIEW, OUTSIDE THE TEN. The crosswalk's own rule is that \"an escalation is NOT a bucket and is never counted as one\" (match-relation.md §7). These rows are therefore visibly excluded by rule, each with its reason, rather than invisibly dropped — and rendering one into a bucket would launder a PM escalation into an adjudication, which is the one thing this ticket must not do. AC2's partition holds over the 52 BUCKETED edges; these 5 are enumerated here and are counted in the edge equation as their own term."
+  "what_this_is": "THE ELEVENTH VIEW, OUTSIDE THE TEN. The crosswalk's own rule is that \"an escalation is NOT a bucket and is never counted as one\" (match-relation.md §7). These rows are therefore visibly excluded by rule, each with its reason, rather than invisibly dropped — and rendering one into a bucket would launder a PM escalation into an adjudication, which is the one thing this ticket must not do. AC2's partition holds over the 63 BUCKETED edges; these 8 are enumerated here and are counted in the edge equation as their own term."
 }

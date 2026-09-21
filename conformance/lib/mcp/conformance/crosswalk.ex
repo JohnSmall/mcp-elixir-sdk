@@ -586,4 +586,157 @@ defmodule MCP.Conformance.Crosswalk do
           "regenerating the other, and a wrong run would be wrong in both."
     }
   end
+
+  # --- G21: the population statements this generator AUTHORS -----------------
+  #
+  # CR-1 on MES-104 found C1a's population written as hard-coded text in the
+  # PROJECTOR and fixed it there, interpolating every figure and adding
+  # `:population_statement`. The CROSSWALK GENERATOR's own statements got no
+  # such guard, and one ticket later `trust_status` still read `48-member /
+  # 29-declared-check` over a 68/39 population while the twelve views it is
+  # projected into interpolated the right pair — CR-5 on MES-108, the same
+  # defect in the one file the remedy did not reach.
+  #
+  # The three functions below are that guard's decision logic, here rather than
+  # in the task so gate 5 covers them.
+  #
+  # THE UNIVERSE IS EXTERNAL, and that is the part that matters. A guard whose
+  # population is a list the guarded module declares cannot see a statement
+  # nobody added to the list. So the scan runs over the EMITTED ARTEFACT — every
+  # string it actually ships — and a string is the generator's OWN iff it does
+  # not occur in any input document. Prose copied out of an edges file is that
+  # file's claim, checked by G15; prose the generator composed is this guard's.
+
+  # The lookbehind is not decoration: without it `MES-108 moved the check
+  # population` reads as a claim of 108 checks, and the guard would refuse its
+  # own explanation of why it exists. Digits that continue an identifier are not
+  # a figure; digits that begin a word are.
+  @population_claim ~r/(?<![\w-])(\d+)[\s-](?:[A-Za-z][\w-]*[\s-]){0,2}?(?:members?|checks?)\b/
+
+  @doc """
+  Every `{path, string}` in a decoded JSON document, the path dotted and list
+  indices bracketed.
+
+  Public because it is how both the artefact and the inputs are enumerated, and
+  a control that had to re-implement the walk would be attesting its own walk.
+  """
+  @spec strings_at(term()) :: [{String.t(), String.t()}]
+  def strings_at(doc), do: doc |> collect([], []) |> Enum.sort()
+
+  defp collect(node, path, acc) do
+    case node do
+      %{} = m ->
+        Enum.reduce(m, acc, fn {k, v}, a -> collect(v, [to_string(k) | path], a) end)
+
+      l when is_list(l) ->
+        l
+        |> Enum.with_index()
+        |> Enum.reduce(acc, fn {v, i}, a -> collect(v, ["[#{i}]" | path], a) end)
+
+      s when is_binary(s) ->
+        [{path |> Enum.reverse() |> Enum.join("."), s} | acc]
+
+      _ ->
+        acc
+    end
+  end
+
+  @doc "Every distinct string appearing anywhere in `docs` — the authorship anchor."
+  @spec string_set([term()]) :: MapSet.t(String.t())
+  def string_set(docs) do
+    docs
+    |> Enum.flat_map(fn doc -> Enum.map(strings_at(doc), fn {_p, s} -> s end) end)
+    |> MapSet.new()
+  end
+
+  @doc """
+  Every population figure `text` states, as `{figure, the phrase it sits in}`.
+
+  A figure is DIGITS followed, within two words, by `member(s)` or `check(s)`.
+
+  WHAT IT CANNOT SEE, stated rather than implied, because a guard that hides its
+  blind spots is worse than one that has none: a figure spelled as a word
+  (`C1b-i found five`), and a figure stated without its noun (`the member
+  population is 48 across two edges files`, `never all 281`). Both occur in this
+  generator's prose. They are handled by interpolating them anyway, not by the
+  scan — so the scan is the backstop for what is added NEXT, and the
+  interpolation is what makes today's text right.
+  """
+  @spec population_claims(String.t()) :: [{integer(), String.t()}]
+  def population_claims(text) do
+    @population_claim
+    |> Regex.scan(text)
+    |> Enum.map(fn [whole, n | _] -> {String.to_integer(n), whole} end)
+  end
+
+  @doc "The regex, so a control can show the scan's reach without restating it."
+  @spec population_claim_regex() :: Regex.t()
+  def population_claim_regex, do: @population_claim
+
+  @doc """
+  Every claim-bearing string the `artefact` ships that the generator AUTHORED —
+  i.e. that is not one of `input_strings`.
+
+  Returns `{path, text, claims}`.
+  """
+  @spec authored_statements(term(), MapSet.t(String.t())) ::
+          [{String.t(), String.t(), [{integer(), String.t()}]}]
+  def authored_statements(artefact, input_strings) do
+    for {path, text} <- strings_at(artefact),
+        not MapSet.member?(input_strings, text),
+        claims = population_claims(text),
+        claims != [],
+        do: {path, text, claims}
+  end
+
+  @doc """
+  Every figure an authored statement states that is **not** one the crosswalk
+  holds.
+
+  `held` is the set of the run's own derived figures. This is the limb that goes
+  RED AGAINST THE TREE: a literal that was right when it was written stops being
+  a figure the crosswalk holds the moment the population moves, which is exactly
+  CR-5's recurrence and exactly when it must fail.
+
+  What it does **not** establish: that a figure IS interpolated. A literal that
+  coincides with some other held figure survives until the population moves —
+  `addressed_not_declared` was 14 here, so a stale `14 checks` would have passed
+  this limb on the day it was measured. The phrase pin below is what catches a
+  held-but-wrong figure in a statement whose wording is load-bearing.
+  """
+  @spec unheld_figures([{String.t(), String.t(), [{integer(), String.t()}]}], MapSet.t(integer())) ::
+          [{String.t(), integer(), String.t()}]
+  def unheld_figures(statements, held) do
+    for {path, _text, claims} <- statements,
+        {figure, phrase} <- claims,
+        not MapSet.member?(held, figure),
+        do: {path, figure, phrase}
+  end
+
+  @doc """
+  Every `{path, phrase}` in `required` whose phrase is absent from the statement
+  at that path in `artefact`.
+
+  The phrases are built by the CALLER from the run's figures, independently of
+  the templates that produced the text, so the two have to be edited together —
+  a consistency pin (ruling 9), not a proof that either wording is right. It
+  catches the interpolation of the WRONG held figure, which `unheld_figures/2`
+  cannot see.
+  """
+  @spec missing_phrases(term(), [{String.t(), String.t()}]) :: [{String.t(), String.t()}]
+  def missing_phrases(artefact, required) do
+    at = Map.new(strings_at(artefact))
+
+    # `Enum.filter` and not a comprehension: `for ..., text = Map.get(at, path)`
+    # reads as a binding and behaves as a TRUTHINESS FILTER, so an ABSENT
+    # statement — the fail-closed case this exists for — was silently dropped
+    # instead of reported. Caught by the unit that drives the absent case, which
+    # is the argument for writing that unit at all.
+    Enum.filter(required, fn {path, phrase} ->
+      case Map.get(at, path) do
+        nil -> true
+        text -> not String.contains?(text, phrase)
+      end
+    end)
+  end
 end

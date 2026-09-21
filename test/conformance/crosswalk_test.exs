@@ -608,6 +608,146 @@ defmodule MCP.Conformance.CrosswalkTest do
     end
   end
 
+  describe "G21 — the population figures this generator's own prose states (CR-5)" do
+    @artefact "docs/conformance/crosswalk-2026-07-28.json"
+
+    setup do
+      %{a: @artefact |> File.read!() |> Jason.decode!()}
+    end
+
+    test "a figure is digits with its noun within two words — and an identifier is not one" do
+      assert [{68, "68 declared members"}] =
+               Crosswalk.population_claims("the 68 declared members")
+
+      assert [{39, "39-declared-check"}] =
+               Crosswalk.population_claims("a 39-declared-check slice")
+
+      # `MES-108 moved the check population` is not a claim of 108 checks. Without
+      # the lookbehind the guard refused its own explanation of why it exists,
+      # which is how this case was found rather than imagined.
+      assert Crosswalk.population_claims("after MES-108 moved the check population") == []
+
+      # The stated blind spots, asserted so they cannot be quietly lost: a figure
+      # spelled as a word, and a figure without the noun it counts.
+      assert Crosswalk.population_claims("C1b-i found five") == []
+      assert Crosswalk.population_claims("never all 281") == []
+    end
+
+    test "authorship is decided against the INPUTS, not against a list the module keeps" do
+      artefact = %{"mine" => "the 68 declared members", "theirs" => "over 175 manifest checks"}
+      inputs = Crosswalk.string_set([%{"rows" => [%{"note" => "over 175 manifest checks"}]}])
+
+      assert [{"mine", "the 68 declared members", [{68, _}]}] =
+               Crosswalk.authored_statements(artefact, inputs)
+
+      # POSITIVE CONTROL for the exclusion: the data string IS claim-bearing, so
+      # a scan that reached nothing would produce the same one-row answer for the
+      # wrong reason.
+      assert length(Crosswalk.authored_statements(artefact, MapSet.new())) == 2
+    end
+
+    test "a figure the crosswalk does not hold is reported; one it holds is not" do
+      statements = [{"trust_status", "a 48-member slice", [{48, "48-member"}]}]
+
+      assert Crosswalk.unheld_figures(statements, MapSet.new([68, 39])) ==
+               [{"trust_status", 48, "48-member"}]
+
+      assert Crosswalk.unheld_figures(statements, MapSet.new([48])) == []
+    end
+
+    test "the phrase pin fires on a HELD figure in the wrong place" do
+      a = %{"trust_status" => "the 39-member slice"}
+
+      # 39 is a figure this run holds — the check population. Stated as the
+      # MEMBER count it is still wrong, and `unheld_figures/2` cannot see it,
+      # because a wrong held figure is a held figure.
+      assert Crosswalk.unheld_figures(
+               Crosswalk.authored_statements(a, MapSet.new()),
+               MapSet.new([39, 68])
+             ) == []
+
+      assert Crosswalk.missing_phrases(a, [{"trust_status", "68-member"}]) ==
+               [{"trust_status", "68-member"}]
+
+      assert Crosswalk.missing_phrases(a, [{"trust_status", "39-member"}]) == []
+    end
+
+    test "an absent statement is a missing phrase, not a pass" do
+      # The residual pins resolve a path through the residual's `id`. A reordered
+      # or deleted residual yields a path that is not there, and fail-closed
+      # means that reads as missing rather than as satisfied.
+      assert Crosswalk.missing_phrases(%{}, [{"residuals.[].text", "anything"}]) ==
+               [{"residuals.[].text", "anything"}]
+    end
+
+    test "the committed artefact carries the guard's report, and it makes no claim of its own",
+         %{a: a} do
+      report = a["population_statement_guard"]
+      assert report =~ "every population figure this generator's own prose states"
+      assert report =~ "THE UNIVERSE IS THE EMITTED ARTEFACT"
+
+      # The block is written after the scan, so it must not itself state a
+      # population figure — otherwise it would be part of what it attests.
+      assert Crosswalk.population_claims(report) == []
+
+      # And it states its own bounds rather than implying there are none.
+      assert report =~ "BOUNDS:"
+    end
+
+    test "every figure the committed artefact's own prose states is one it holds", %{a: a} do
+      # The whole guard, re-run here over the committed file against the figures
+      # the file itself carries. It is the generator's verdict re-taken from the
+      # artefact rather than read off it.
+      held =
+        MapSet.new([
+          a["arithmetic"]["members"],
+          a["arithmetic"]["members_with_edges"],
+          a["arithmetic"]["members_declared_unmatched"],
+          a["arithmetic"]["edges"],
+          a["arithmetic"]["escalated"],
+          length(a["population"]["declared_checks"]),
+          length(a["population"]["checks"]),
+          a["population"]["outside_the_population"]["et_cc_members"],
+          a["population"]["outside_the_population"]["in_denominator_checks"],
+          a["population"]["member_count"] +
+            a["population"]["outside_the_population"]["et_cc_members"],
+          a["buckets"]["bucket_1"]["count"],
+          a["buckets"]["bucket_2"]["count"],
+          a["claim_level_unmatched"]["count"],
+          173,
+          175
+        ])
+
+      held =
+        Enum.reduce(a["population"]["files"], held, &MapSet.put(&2, &1["member_count"]))
+
+      inputs =
+        Crosswalk.string_set(
+          Enum.map(
+            ~w(conformance/data/crosswalk-edges-client.json
+               conformance/data/crosswalk-edges.json
+               conformance/data/oc-axes-c1.json
+               docs/conformance/oc-axes-2026-07-28.json
+               docs/conformance/in-scope-2026-07-28.json
+               docs/conformance/bucket-0-2026-07-28.json
+               docs/conformance/etcc-register.json
+               docs/conformance/etcc-attribution.json
+               docs/conformance/oc-emitting-sites-2026-07-28.json),
+            &(&1 |> File.read!() |> Jason.decode!())
+          )
+        )
+
+      statements = Crosswalk.authored_statements(a, inputs)
+
+      # POSITIVE CONTROL: the scan reached the statement CR-5 was raised about.
+      # Without it a scan that read nothing would report this same clean zero.
+      assert Enum.any?(statements, fn {path, _t, _c} -> path == "trust_status" end)
+      assert length(statements) > 5
+
+      assert Crosswalk.unheld_figures(statements, held) == []
+    end
+  end
+
   describe "the committed crosswalk artefact" do
     setup do
       %{a: "docs/conformance/crosswalk-2026-07-28.json" |> File.read!() |> Jason.decode!()}
@@ -763,6 +903,16 @@ defmodule MCP.Conformance.CrosswalkTest do
       assert p["outside_the_population"]["in_denominator_checks"] == 173 - length(adjudicated)
       assert p["outside_the_population"]["owners"] =~ "C1c"
       assert p["outside_the_population"]["owners"] =~ "MES-105"
+
+      # And it does not name the ticket that RENDERED it as still owing the
+      # remainder. That is CR-1's defect (MES-104) and it recurred here as CR-5:
+      # MES-108 adjudicated CG1/CG2/CG4, so a field still routing them to C1b-ii
+      # is describing work this very artefact contains.
+      # Owners are written `<name> = <KEY> (...)`, so this asks the structural
+      # question rather than exempting a phrase: no owner entry is C1b-ii.
+      refute p["outside_the_population"]["owners"] =~ ~r/C1b-ii\s*=/
+      assert p["outside_the_population"]["owners"] =~ "MES-109"
+      assert p["outside_the_population"]["owners"] =~ "NOT C1b-ii"
     end
 
     test "the keying control ran BOTH directions and recorded a positive result", %{a: a} do
@@ -813,7 +963,22 @@ defmodule MCP.Conformance.CrosswalkTest do
       # weaker one. `UNFALSIFIED` here meant "not yet attempted", so the antonym had
       # to be spelled out rather than left to read as "found to be false".
       assert a["trust_status"] =~ "not proven"
-      assert a["trust_status"] =~ "48-member / 29-declared-check slice"
+      # CR-5 on MES-108. This line asserted the LITERAL `48-member /
+      # 29-declared-check slice` — the module constant against itself. It passed
+      # while the same artefact's arithmetic said 68 and 39, and it is what made
+      # the recurrence invisible: a unit that compares a statement to the
+      # statement cannot fail. The pair is now taken from the artefact's own
+      # derivation, so the assertion CAN fail, and does the moment the prose
+      # stops following the population.
+      members = a["arithmetic"]["members"]
+      checks = length(a["population"]["declared_checks"])
+      assert a["trust_status"] =~ "#{members}-member / #{checks}-declared-check slice"
+
+      # And the decomposition is gone rather than re-written: "C1a's 21 plus
+      # CG7's 27" enumerated the slice in a way that excluded MES-108's 20, and
+      # a fresh decomposition would be a third literal rotting the same way.
+      refute a["trust_status"] =~ "48-member"
+      refute a["trust_status"] =~ ~r/C1a's 21|CG7's 27/
       assert a["trust_status"] =~ "CONSISTENCY pin, not a correctness claim"
       # The stale claim is the OPENING word, not the string anywhere: the new text
       # explains what `UNFALSIFIED` used to mean here, so a bare `refute =~` would
@@ -823,9 +988,14 @@ defmodule MCP.Conformance.CrosswalkTest do
       x2 = Enum.find(a["residuals"], &(&1["id"] == "X2"))
       assert x2["text"] =~ "FALSIFICATION-TESTED by C3 (MES-99) and STANDING"
       assert x2["text"] =~ "not the same as proven"
-      assert x2["text"] =~ "C1b-ii, C1b-iii and C1c (MES-105) own the rest"
-      # MES-104's four new refusals are named, not summarised as "more guards".
-      for g <- ~w(G17 G18 G19 G20), do: assert(x2["text"] =~ g)
+      # It read "C1b-ii, C1b-iii and C1c (MES-105) own the rest" while C1b-ii
+      # was rendering it — CR-1's other half (MES-104), recurring as CR-5. The
+      # owners live in one place and the residual points at it.
+      assert x2["text"] =~ "`population.outside_the_population.owners` names"
+      refute x2["text"] =~ "C1b-ii, C1b-iii and C1c (MES-105) own the rest"
+      # MES-104's four new refusals and MES-108's are named, not summarised as
+      # "more guards".
+      for g <- ~w(G17 G18 G19 G20 G21), do: assert(x2["text"] =~ g)
 
       # X1 is what no refusal can reach, and C3 must not be read as having reached it.
       assert x2["text"] =~ "X1 is untouched"
