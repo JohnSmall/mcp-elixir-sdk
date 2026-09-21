@@ -1,11 +1,11 @@
 {
   "bucket": "5b",
-  "count": 15,
+  "count": 48,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: the declared 21-member / 14-check slice adjudicated by\nMES-97 (C1a). This is NOT the whole conformance picture. The full\ncomparison is 281 ET-CC members and 173 in-denominator OC checks; the\nremaining 260 members and 159 checks are not_yet_adjudicated -- a third\nstate, distinct from bucket 1 -- and are owned by C1b (MES-104, client\nleg) and C1c (MES-105, server leg + the 29 none_determinable).\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. When C1b and C1c land, this projection re-runs\nand fills.",
+  "population_banner": "POPULATION: this projection covers 48 declared ET-CC members and 29\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 233 members and\n130 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 14 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
   "predicate": "`cells` where the stored `bucket` == \"5\" AND the stored `oc_key[0]` == \"client\". Universe: the crosswalk's edges.",
   "projected_from": {
     "bucket_zero": {
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 60423,
+      "bytes": 186840,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "3a46a6cd4e7157570f40d5863e1c72c08712c9bb768f4ff64f2463f96b3e3844"
+      "sha256": "d068abff28bcb179199e530fa3c7dbeec21a5f5a4abe0a39750e23493542f358"
     }
   },
   "revision": "2026-07-28",
@@ -392,51 +392,6 @@
     {
       "axes": [
         {
-          "axis": "tools_call_was_made",
-          "verdict": "agrees"
-        },
-        {
-          "axis": "argument_a_is_a_number",
-          "verdict": "silent"
-        },
-        {
-          "axis": "argument_b_is_a_number",
-          "verdict": "silent"
-        }
-      ],
-      "bucket": "5",
-      "bucket_attributes": [
-        "partial"
-      ],
-      "claim": "a tools/call to `add` with two numeric arguments is issued and returns their sum",
-      "escalation": null,
-      "evidence": "integration_test.exs:149-150 — `Client.call_tool(client, \"add\", %{\"a\" => 3, \"b\" => 4})` returns `\"7\"`. The call being made is asserted directly. The two type axes are NOT: the assertion is on the tool's RESULT, and a client sending `\"3\"`/`\"4\"` as JSON strings would be caught here only if this SDK's own `add` tool refused them — a property of the fixture server, not of this assertion. Silent, on the CG5 rule: a test whose subject is downstream of the requirement does not discharge it.",
-      "member": {
-        "module": "MCP.IntegrationTest",
-        "register_key": "MCP.IntegrationTest/test tools: list, echo, add, isError, unknown",
-        "test": "test tools: list, echo, add, isError, unknown"
-      },
-      "note": null,
-      "oc_key": [
-        "client",
-        "tools_call",
-        "tool-add-numbers",
-        "ToolAddNumbers",
-        "Validates that the add_numbers tool works correctly",
-        ""
-      ],
-      "shape": "partial",
-      "tag": "oc:client/tools_call/tool-add-numbers/ToolAddNumbers",
-      "verdicts": {
-        "et": "green",
-        "oc": "green",
-        "oc_status_at_accepted_run": "SUCCESS",
-        "oc_warning": false
-      }
-    },
-    {
-      "axes": [
-        {
           "axis": "capability_value_is_a_plain_object",
           "verdict": "agrees"
         }
@@ -573,12 +528,1320 @@
         "oc_status_at_accepted_run": "SUCCESS",
         "oc_warning": false
       }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "silent"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a plain-ASCII value is carried as the header value unchanged",
+      "escalation": null,
+      "evidence": "header_mirror.ex:160-161 — `iex> MCP.Protocol.HeaderMirror.encode_value(\"us-west1\")` -> `\"us-west1\"`. `us-west1` is the fixture's own `region` argument and `Ga` calls it header-safe, so the OC check requires the header to carry it PLAIN, which is what the doctest asserts. SILENT on presence: a doctest of the encoder observes a return value, never a request, so no assertion here has an emitted header as its subject.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (1)",
+        "test": "doctest MCP.Protocol.HeaderMirror.encode_value/1 (1)"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_Region",
+        "Client sends correct Mcp-Param-Region header (string value)",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "silent"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a non-ASCII value is carried as the Base64 sentinel",
+      "escalation": null,
+      "evidence": "header_mirror.ex:163-164 — `encode_value(\"Hello, 世界\")` -> `\"=?base64?SGVsbG8sIOS4lueVjA==?=\"`. `Hello, 世界` is the fixture's `non_ascii_val` verbatim, and `Ga` returns true for it, so `Ka` requires the sentinel and requires it to decode back to the body value — the doctest's expected string is exactly that sentinel. SILENT on presence, as for the sibling doctests.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (2)",
+        "test": "doctest MCP.Protocol.HeaderMirror.encode_value/1 (2)"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_NonAscii",
+        "Client sends correct Mcp-Param-NonAscii header (string value)",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_NonAscii",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "silent"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a value with leading and trailing whitespace is carried as the Base64 sentinel",
+      "escalation": null,
+      "evidence": "header_mirror.ex:166-167 — `encode_value(\" padded \")` -> `\"=?base64?IHBhZGRlZCA=?=\"`. ` padded ` is the fixture's `whitespace_val` verbatim; `Ga`'s final clause `return e!==e.trim()` is what makes it unsafe. SILENT on presence.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (3)",
+        "test": "doctest MCP.Protocol.HeaderMirror.encode_value/1 (3)"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_Whitespace",
+        "Client sends correct Mcp-Param-Whitespace header (string value)",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Whitespace",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "null_or_absent_parameter_header_is_omitted",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a null-valued annotated parameter produces no header, while a non-null sibling still does",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:431-432 — `assert [{\"mcp-param-region\", \"us-east1\"}] = HeaderMirror.headers_for(annotations, %{\"region\" => \"us-east1\", \"verbose\" => nil})`. The assertion's subject is the whole header list for a call carrying a null `verbose`: it requires the verbose header ABSENT and the region header present, which is the check's `t===void 0` over `mcp-param-verbose` plus the control that the omission is selective rather than total.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a null value omits the header; so does an absent one",
+        "test": "test value encoding — omission and the sentinel's ambiguity rule a null value omits the header; so does an absent one"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-omit-null",
+        "ClientCustomHeaderOmitNull",
+        "Client MUST omit Mcp-Param header when parameter value is null or not provided",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-omit-null/ClientCustomHeaderOmitNull",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "null_or_absent_parameter_header_is_omitted",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "an ABSENT annotated parameter also produces no header",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:434 — `assert [] = HeaderMirror.headers_for(annotations, %{})`. A second subject, so a second claim and a second edge rather than a collapse (match-relation.md §1). The check's description names BOTH conditions — `when parameter value is null or not provided` — so the same axis carries both.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a null value omits the header; so does an absent one",
+        "test": "test value encoding — omission and the sentinel's ambiguity rule a null value omits the header; so does an absent one"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-omit-null",
+        "ClientCustomHeaderOmitNull",
+        "Client MUST omit Mcp-Param header when parameter value is null or not provided",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-omit-null/ClientCustomHeaderOmitNull",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a value with only internal spaces is carried plain, not encoded",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:385 — `assert headers[\"mcp-param-internalspace\"] == \"us west 1\"`. `headers` is a map of the produced header list, so an absent key compares as nil and the assertion fails: presence is entailed, not assumed. `Ga` is FALSE for `us west 1` (0x20 is neither <32 nor >126 and the value equals its own trim), so the check requires the plain form.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector INTERNAL spaces stay plain — only leading/trailing whitespace forces encoding",
+        "test": "test value encoding — the fixture's own 16-value vector INTERNAL spaces stay plain — only leading/trailing whitespace forces encoding"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_InternalSpace",
+        "Client sends correct Mcp-Param-InternalSpace header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_InternalSpace",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "an empty-string argument produces a present header with an empty value",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:349-350 — `assert Map.has_key?(headers, \"mcp-param-emptyval\")` and `assert headers[\"mcp-param-emptyval\"] == \"\"`. Two assertions, ONE subject (the emptyval header), so one claim. The first discharges the presence axis directly; the OC check agrees — `if(a===void 0)o.push(`Missing Mcp-Param-EmptyVal header…`)` treats an absent header as a failure even for an empty value.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an EMPTY string is present with an empty value, not omitted",
+        "test": "test value encoding — the fixture's own 16-value vector an EMPTY string is present with an empty value, not omitted"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_EmptyVal",
+        "Client sends correct Mcp-Param-EmptyVal header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_EmptyVal",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the priority argument is mirrored as \"42\"",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:339 — `assert headers[\"mcp-param-priority\"] == \"42\"`. One assertion per header, so three subjects and three claims. The check's `Ka` is called with `e=String(n)` for an integer and `e=n?`true`:`false`` for a boolean, so the expected wire form is exactly the string asserted here.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false",
+        "test": "test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-encode-values",
+        "ClientCustomHeader_Priority",
+        "Client sends correct Mcp-Param-Priority header (integer value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Priority",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the verbose argument is mirrored as \"false\"",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:340 — `assert headers[\"mcp-param-verbose\"] == \"false\"`. One assertion per header, so three subjects and three claims. The check's `Ka` is called with `e=String(n)` for an integer and `e=n?`true`:`false`` for a boolean, so the expected wire form is exactly the string asserted here.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false",
+        "test": "test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-encode-values",
+        "ClientCustomHeader_Verbose",
+        "Client sends correct Mcp-Param-Verbose header (boolean value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Verbose",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the debug argument is mirrored as \"true\"",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:341 — `assert headers[\"mcp-param-debug\"] == \"true\"`. One assertion per header, so three subjects and three claims. The check's `Ka` is called with `e=String(n)` for an integer and `e=n?`true`:`false`` for a boolean, so the expected wire form is exactly the string asserted here.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false",
+        "test": "test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-encode-values",
+        "ClientCustomHeader_Debug",
+        "Client sends correct Mcp-Param-Debug header (boolean value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Debug",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the NonAscii argument is mirrored as its exact Base64 sentinel",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:355 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the `=?base64?…?=` shape AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+        "test": "test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_NonAscii",
+        "Client sends correct Mcp-Param-NonAscii header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_NonAscii",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the Whitespace argument is mirrored as its exact Base64 sentinel",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:356 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the `=?base64?…?=` shape AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+        "test": "test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_Whitespace",
+        "Client sends correct Mcp-Param-Whitespace header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Whitespace",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the LeadingSpace argument is mirrored as its exact Base64 sentinel",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:357 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the `=?base64?…?=` shape AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+        "test": "test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_LeadingSpace",
+        "Client sends correct Mcp-Param-LeadingSpace header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_LeadingSpace",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the TrailingSpace argument is mirrored as its exact Base64 sentinel",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:358 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the `=?base64?…?=` shape AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+        "test": "test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_TrailingSpace",
+        "Client sends correct Mcp-Param-TrailingSpace header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_TrailingSpace",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "the ControlChar argument's header is sentinel-SHAPED",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:360-363 — `assert String.starts_with?(headers[key], \"=?base64?\")` and `assert String.ends_with?(headers[key], \"?=\")` for `mcp-param-controlchar`. PRESENCE agrees: `String.starts_with?/2` raises a FunctionClauseError on the nil an absent key returns, so an omitted header reddens the unit. VALUE is SILENT, and this is a reading rather than a judgement: the assertion's subject is the header's SHAPE, and `Ka`'s branch requires the decoded payload to EQUAL the body value, which a shape cannot establish. The sibling unit `every encoded value decodes back to exactly the body value` (header_mirror_test.exs:367) does discharge it — but B2b attributes that unit to leg `none_determinable`, so it is outside this file's declared population and is C1c's (MES-105). Recorded rather than borrowed.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+        "test": "test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_ControlChar",
+        "Client sends correct Mcp-Param-ControlChar header (string value)",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_ControlChar",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "the CrLf argument's header is sentinel-SHAPED",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:360-363 — `assert String.starts_with?(headers[key], \"=?base64?\")` and `assert String.ends_with?(headers[key], \"?=\")` for `mcp-param-crlf`. PRESENCE agrees: `String.starts_with?/2` raises a FunctionClauseError on the nil an absent key returns, so an omitted header reddens the unit. VALUE is SILENT, and this is a reading rather than a judgement: the assertion's subject is the header's SHAPE, and `Ka`'s branch requires the decoded payload to EQUAL the body value, which a shape cannot establish. The sibling unit `every encoded value decodes back to exactly the body value` (header_mirror_test.exs:367) does discharge it — but B2b attributes that unit to leg `none_determinable`, so it is outside this file's declared population and is C1c's (MES-105). Recorded rather than borrowed.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+        "test": "test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_CrLf",
+        "Client sends correct Mcp-Param-CrLf header (string value)",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_CrLf",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "the Tab argument's header is sentinel-SHAPED",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:360-363 — `assert String.starts_with?(headers[key], \"=?base64?\")` and `assert String.ends_with?(headers[key], \"?=\")` for `mcp-param-tab`. PRESENCE agrees: `String.starts_with?/2` raises a FunctionClauseError on the nil an absent key returns, so an omitted header reddens the unit. VALUE is SILENT, and this is a reading rather than a judgement: the assertion's subject is the header's SHAPE, and `Ka`'s branch requires the decoded payload to EQUAL the body value, which a shape cannot establish. The sibling unit `every encoded value decodes back to exactly the body value` (header_mirror_test.exs:367) does discharge it — but B2b attributes that unit to leg `none_determinable`, so it is outside this file's declared population and is C1c's (MES-105). Recorded rather than borrowed.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+        "test": "test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_Tab",
+        "Client sends correct Mcp-Param-Tab header (string value)",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Tab",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the region argument is mirrored plain",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:331 — `assert headers[\"mcp-param-region\"] == \"us-west1\"`, against the fixture's own `region` value. Presence is entailed by the equality (an absent key compares as nil).",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector plain ASCII is sent as-is",
+        "test": "test value encoding — the fixture's own 16-value vector plain ASCII is sent as-is"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_Region",
+        "Client sends correct Mcp-Param-Region header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the method_val argument is mirrored plain",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:332 — `assert headers[\"mcp-param-method\"] == \"test-method\"`. A second header, so a second subject and a second claim.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector plain ASCII is sent as-is",
+        "test": "test value encoding — the fixture's own 16-value vector plain ASCII is sent as-is"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_Method",
+        "Client sends correct Mcp-Param-Method header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Method",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the `Method` annotation produces an Mcp-Param-Method header carrying the argument",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:415 — `assert headers[\"mcp-param-method\"] == \"test-method\"`. The fixture's own description for this parameter names the case: `tests that x-mcp-header \"Method\" produces Mcp-Param-Method (not Mcp-Method)`.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method",
+        "test": "test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_Method",
+        "Client sends correct Mcp-Param-Method header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Method",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "unannotated_string_parameter_is_not_mirrored",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "an unannotated STRING parameter is not mirrored",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:405 — `refute Map.has_key?(headers, \"mcp-param-query\")`, and `query` is the fixture's own unannotated string parameter. The check reads the same header: `let r=e.headers[`mcp-param-query`]` and passes on `r===void 0`.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector unannotated parameters are NOT mirrored",
+        "test": "test value encoding — the fixture's own 16-value vector unannotated parameters are NOT mirrored"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeaderNoMirrorUnannotated",
+        "Client MUST NOT add Mcp-Param headers for parameters without x-mcp-header",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorUnannotated",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "unannotated_number_parameter_is_not_mirrored",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "an unannotated NUMBER parameter is not mirrored",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:406 — `refute Map.has_key?(headers, \"mcp-param-floatval\")`, and `float_val` is the fixture's own unannotated number parameter. A4 measured that this check is NOT the `number`-exclusion constraint — that one is about an ANNOTATED number — and this claim is the one the check actually makes.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector unannotated parameters are NOT mirrored",
+        "test": "test value encoding — the fixture's own 16-value vector unannotated parameters are NOT mirrored"
+      },
+      "note": "A4's adversarial pairing, re-read and confirmed at the pinned build: the check's own description says `number-typed float_val is served UNANNOTATED per SEP-2243`, and the member's `refute` is about that same unannotated parameter. The register stands.",
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeaderNoMirrorNumber",
+        "Client MUST NOT add Mcp-Param headers for parameters without x-mcp-header (number-typed float_val is served unannotated per SEP-2243)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorNumber",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "invalid_tool_is_not_called",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a tool whose x-mcp-header sits on an object-typed property is dropped from tools/list",
+      "escalation": null,
+      "evidence": "client_tool_schemas_test.exs:97 — `assert Enum.map(tools, & &1[\"name\"]) == [\"good\", \"plain\"]` over a listing containing `invalid_tool(\"bad\")`, which is the fixture's `invalid_object_header` class. A JUDGEMENT rather than a reading, and said so in those words: the check's subject is `this.calledTools.has(e)` — the tool was never CALLED — and this assertion's subject is that it never reached the caller to be called. The behaviour the axis names, that an invalid tool is excluded, is the subject of both; the observation point differs.",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept",
+        "test": "test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-invalid-tool-headers",
+        "sep-2243-x-mcp-header-primitive-only",
+        "ClientRejectsInvalidTool_invalid_object_header",
+        "Client MUST NOT call tool 'invalid_object_header' with invalid x-mcp-header",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "valid_sibling_tool_is_still_called",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the valid tools in the same listing survive the exclusion",
+      "escalation": null,
+      "evidence": "client_tool_schemas_test.exs:97 — the same assertion, read for its other subject: `good` and `plain` are BOTH still present. The check's error message states the requirement in those terms: `A single malformed tool definition must not prevent other valid tools from being used.` Judgement again on the observation point — kept in the listing versus called.",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept",
+        "test": "test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-invalid-tool-headers",
+        "sep-2243-client-reject-invalid-tool",
+        "ClientKeepsValidTool",
+        "Client MUST keep valid tools while excluding invalid ones",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-invalid-tool-headers/sep-2243-client-reject-invalid-tool/ClientKeepsValidTool",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "at_least_one_mcp_param_header_present",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a tools/call for a known annotated tool carries the mirrored header",
+      "escalation": null,
+      "evidence": "client_tool_schemas_test.exs:397-398 — `assert Enum.at(MockTransport.sent_opts(transport), 1)[:headers] == [{\"mcp-param-region\", \"us-west1\"}]`. The check's predicate is exactly the existential: `Object.keys(e.headers).some(e=>e.startsWith(`mcp-param-`))`. A list equality with one mcp-param header entails it.",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test the transport seam a tools/call for a known tool carries :headers; other methods carry none",
+        "test": "test the transport seam a tools/call for a known tool carries :headers; other methods carry none"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-supports-custom-headers",
+        "ClientSupportsCustomHeaders",
+        "Client supports custom headers: calls the x-mcp-header annotated tool and mirrors at least one parameter",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-supports-custom-headers/ClientSupportsCustomHeaders",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "on a real HTTP request, the mcp-param-region argument arrives as \"us-west1\"",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:339 — `assert headers[\"mcp-param-region\"] == \"us-west1\"`, read off a Bandit server's `conn.req_headers` rather than off the encoder's return value. This is the END-TO-END observation the OC check makes, at the same observation point: the check reads `e.headers[`mcp-param-region`]` on the request it received.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_Region",
+        "Client sends correct Mcp-Param-Region header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "on a real HTTP request, the mcp-param-priority argument arrives as \"42\"",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:340 — `assert headers[\"mcp-param-priority\"] == \"42\"`, read off a Bandit server's `conn.req_headers` rather than off the encoder's return value. This is the END-TO-END observation the OC check makes, at the same observation point: the check reads `e.headers[`mcp-param-priority`]` on the request it received.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-encode-values",
+        "ClientCustomHeader_Priority",
+        "Client sends correct Mcp-Param-Priority header (integer value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Priority",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "on a real HTTP request, the mcp-param-verbose argument arrives as \"false\"",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:341 — `assert headers[\"mcp-param-verbose\"] == \"false\"`, read off a Bandit server's `conn.req_headers` rather than off the encoder's return value. This is the END-TO-END observation the OC check makes, at the same observation point: the check reads `e.headers[`mcp-param-verbose`]` on the request it received.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-encode-values",
+        "ClientCustomHeader_Verbose",
+        "Client sends correct Mcp-Param-Verbose header (boolean value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Verbose",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "on a real HTTP request, the mcp-param-nonascii argument arrives as \"=?base64?SGVsbG8sIOS4lueVjA==?=\"",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:342 — `assert headers[\"mcp-param-nonascii\"] == \"=?base64?SGVsbG8sIOS4lueVjA==?=\"`, read off a Bandit server's `conn.req_headers` rather than off the encoder's return value. This is the END-TO-END observation the OC check makes, at the same observation point: the check reads `e.headers[`mcp-param-nonascii`]` on the request it received.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_NonAscii",
+        "Client sends correct Mcp-Param-NonAscii header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_NonAscii",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "on a real HTTP request, the mcp-param-emptyval argument arrives as \"\"",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:345 — `assert headers[\"mcp-param-emptyval\"] == \"\"`, read off a Bandit server's `conn.req_headers` rather than off the encoder's return value. This is the END-TO-END observation the OC check makes, at the same observation point: the check reads `e.headers[`mcp-param-emptyval`]` on the request it received.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_EmptyVal",
+        "Client sends correct Mcp-Param-EmptyVal header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_EmptyVal",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "unannotated_string_parameter_is_not_mirrored",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "on a real HTTP request, the unannotated `query` argument produces no header",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:346 — `refute Map.has_key?(headers, \"mcp-param-query\")`, on the wire. Same subject and same observation point as the check's `r===void 0`.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeaderNoMirrorUnannotated",
+        "Client MUST NOT add Mcp-Param headers for parameters without x-mcp-header",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorUnannotated",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "on a real HTTP request, a non-null annotated argument is still mirrored",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:367 — `assert headers[\"mcp-param-region\"] == \"us-east1\"`. The value differs from the fixture's (`us-east1`, not `us-west1`) and the axis is unaffected: the check's `Ka(a,e,r)` compares the header against the BODY value of the same request, whatever it is, and `Ga` calls both strings safe, so both require the plain form.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client a null argument omits its header",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client a null argument omits its header"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_Region",
+        "Client sends correct Mcp-Param-Region header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "null_or_absent_parameter_header_is_omitted",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "on a real HTTP request, a null-valued annotated argument produces no header",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:368 — `refute Map.has_key?(headers, \"mcp-param-verbose\")` after calling with `\"verbose\" => nil`. The check reads that exact header on its own null-fixture tool and passes on `t===void 0`.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client a null argument omits its header",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client a null argument omits its header"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-omit-null",
+        "ClientCustomHeaderOmitNull",
+        "Client MUST omit Mcp-Param header when parameter value is null or not provided",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-omit-null/ClientCustomHeaderOmitNull",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "tools_call_was_made",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "argument_a_is_a_number",
+          "verdict": "silent"
+        },
+        {
+          "axis": "argument_b_is_a_number",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a tools/call to `add` with two numeric arguments is issued and returns their sum",
+      "escalation": null,
+      "evidence": "integration_test.exs:149-150 — `Client.call_tool(client, \"add\", %{\"a\" => 3, \"b\" => 4})` returns `\"7\"`. The call being made is asserted directly. The two type axes are NOT: the assertion is on the tool's RESULT, and a client sending `\"3\"`/`\"4\"` as JSON strings would be caught here only if this SDK's own `add` tool refused them — a property of the fixture server, not of this assertion. Silent, on the CG5 rule: a test whose subject is downstream of the requirement does not discharge it.",
+      "member": {
+        "module": "MCP.IntegrationTest",
+        "register_key": "MCP.IntegrationTest/test tools: list, echo, add, isError, unknown",
+        "test": "test tools: list, echo, add, isError, unknown"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "tools_call",
+        "tool-add-numbers",
+        "ToolAddNumbers",
+        "Validates that the add_numbers tool works correctly",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/tools_call/tool-add-numbers/ToolAddNumbers",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
     }
   ],
   "schema": "bucket-view/1",
   "title": "green in both — client",
   "universe": {
-    "count": 23,
+    "count": 57,
     "name": "edges",
     "of": "the crosswalk's `cells`"
   },

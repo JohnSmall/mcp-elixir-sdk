@@ -337,10 +337,207 @@ defmodule MCP.Conformance.CrosswalkTest do
                Crosswalk.select(@selector, dupes)
     end
 
-    test "a malformed selector refuses — including an empty any_of, which selects nothing" do
-      for bad <- [%{}, %{"rows_at" => "rows"}, Map.put(@selector, "any_of", []), nil] do
+    test "a malformed selector refuses — no rows_at, no key_field, not a map" do
+      for bad <- [%{}, %{"rows_at" => "rows"}, %{"key_field" => "key"}, nil] do
         assert {:error, {:malformed_selector, ^bad}} = Crosswalk.select(bad, @source)
       end
+    end
+
+    test "a selector with no combinator at the root refuses, naming the three" do
+      assert {:error, {:selector_root_names_no_combinator, combinators}} =
+               Crosswalk.select(Map.delete(@selector, "any_of"), @source)
+
+      assert combinators == Crosswalk.combinators()
+    end
+
+    test "a selector naming TWO combinators at the root refuses rather than picking one" do
+      # Whichever clause matched first would silently choose between two
+      # different populations.
+      assert {:error, {:selector_root_names_several_combinators, ["any_of", "all_of"]}} =
+               Crosswalk.select(Map.put(@selector, "all_of", [%{}]), @source)
+    end
+
+    test "an EMPTY combinator list refuses — a vacuous all_of is true of every row" do
+      for name <- Crosswalk.combinators() do
+        sel = @selector |> Map.delete("any_of") |> Map.put(name, [])
+        assert {:error, :selector_combinator_is_empty} = Crosswalk.select(sel, @source)
+      end
+    end
+
+    test "a combinator whose value is not a list refuses" do
+      assert {:error, {:selector_combinator_is_not_a_list, "nope"}} =
+               Crosswalk.select(Map.put(@selector, "any_of", "nope"), @source)
+    end
+
+    test "a node that is not a map refuses" do
+      assert {:error, {:selector_node_is_not_a_map, "leaf"}} =
+               Crosswalk.select(Map.put(@selector, "any_of", ["leaf"]), @source)
+    end
+  end
+
+  # MES-104 added `equals`, `all_of` and `none_of` — the least the client leg's
+  # population needed and nothing more. Each gets a POSITIVE control (it denotes
+  # the set claimed, set-compared against an independently computed one) and a
+  # MUTATION (the predicate can go wrong and the difference is visible).
+  describe "select/2 — the tests and combinators MES-104 added" do
+    @rows [
+      %{"key" => "a", "leg" => "client", "cg" => "CG7", "tokens" => []},
+      %{"key" => "b", "leg" => "client", "cg" => nil, "tokens" => ["oc:x"]},
+      %{"key" => "c", "leg" => "client", "cg" => "CG1", "tokens" => []},
+      %{"key" => "d", "leg" => "server", "cg" => "CG7", "tokens" => ["oc:y"]},
+      %{"key" => "e", "leg" => "none_determinable", "cg" => nil, "tokens" => []}
+    ]
+    @src %{"rows" => @rows}
+
+    defp sel(node), do: Map.merge(%{"rows_at" => "rows", "key_field" => "key"}, node)
+
+    defp expect(node, keys) do
+      assert {:ok, got} = Crosswalk.select(sel(node), @src)
+      assert got == keys
+      got
+    end
+
+    test "equals — positive, and a wrong value denotes a different set" do
+      expect(
+        %{"any_of" => [%{"field" => "leg", "test" => "equals", "value" => "client"}]},
+        ~w(a b c)
+      )
+
+      # MUTATION: the value alone decides, so a typo silently selects nothing.
+      expect(%{"any_of" => [%{"field" => "leg", "test" => "equals", "value" => "clientt"}]}, [])
+    end
+
+    test "equals refuses a non-string value rather than comparing structures" do
+      for v <- [1, nil, ["client"], %{}] do
+        assert {:error, {:unknown_selector_test, _}} =
+                 Crosswalk.select(
+                   sel(%{"any_of" => [%{"field" => "leg", "test" => "equals", "value" => v}]}),
+                   @src
+                 )
+      end
+    end
+
+    test "equals with no `value` at all refuses — an absent field is not a null one" do
+      assert {:error, {:unknown_selector_test, _}} =
+               Crosswalk.select(
+                 sel(%{"any_of" => [%{"field" => "leg", "test" => "equals"}]}),
+                 @src
+               )
+    end
+
+    test "all_of is a CONJUNCTION — and behaving as any_of would be visible" do
+      conj = [
+        %{"field" => "leg", "test" => "equals", "value" => "client"},
+        %{"field" => "cg", "test" => "equals", "value" => "CG7"}
+      ]
+
+      expect(%{"all_of" => conj}, ~w(a))
+
+      # THE MUTATION THAT MATTERS: the same two nodes under `any_of` denote a
+      # different set. On the real anchor the two differ by 78 members; here by
+      # three rows, and the point is the same — a combinator silently behaving
+      # as its sibling changes the population without changing the selector's
+      # shape.
+      expect(%{"any_of" => conj}, ~w(a b c d))
+    end
+
+    test "none_of is a NEGATION, and states the rule rather than enumerating the alternatives" do
+      tagged = %{"field" => "tokens", "test" => "non_empty_list"}
+      not_client = %{"none_of" => [%{"field" => "leg", "test" => "equals", "value" => "client"}]}
+
+      expect(%{"all_of" => [tagged, not_client]}, ~w(d))
+
+      # The enumeration that would denote the same set TODAY, and the mutation
+      # that separates them: a new leg value joins `none_of[client]` and is
+      # silently dropped by the enumeration.
+      enumerated = %{
+        "any_of" => [
+          %{"field" => "leg", "test" => "equals", "value" => "server"},
+          %{"field" => "leg", "test" => "equals", "value" => "none_determinable"}
+        ]
+      }
+
+      expect(%{"all_of" => [tagged, enumerated]}, ~w(d))
+
+      grown = %{"rows" => @rows ++ [%{"key" => "f", "leg" => "gateway", "tokens" => ["oc:z"]}]}
+
+      assert {:ok, ~w(d f)} = Crosswalk.select(sel(%{"all_of" => [tagged, not_client]}), grown)
+      assert {:ok, ~w(d)} = Crosswalk.select(sel(%{"all_of" => [tagged, enumerated]}), grown)
+    end
+
+    test "combinators NEST, and the exactly-one rule applies at every depth" do
+      expect(
+        %{
+          "all_of" => [
+            %{"field" => "leg", "test" => "equals", "value" => "client"},
+            %{
+              "any_of" => [
+                %{"field" => "cg", "test" => "equals", "value" => "CG7"},
+                %{"field" => "tokens", "test" => "non_empty_list"}
+              ]
+            }
+          ]
+        },
+        ~w(a b)
+      )
+
+      assert {:error, {:selector_node_names_several_combinators, ["any_of", "all_of"]}} =
+               Crosswalk.select(
+                 sel(%{"all_of" => [%{"any_of" => [%{}], "all_of" => [%{}]}]}),
+                 @src
+               )
+    end
+  end
+
+  # MES-104. `axes_exist/3`'s duplicate-axis clause was UNREACHABLE: the
+  # preceding clause computed `named -- known`, and list subtraction removes one
+  # occurrence per element, so a duplicate always left a residue and was
+  # reported as an axis the decomposition does not contain — over an axis that
+  # is plainly in it. Found by a control that asserts WHICH guard fires.
+  describe "cell/4 — a duplicated axis is reported as a duplicate, not as an unknown one" do
+    @known [
+      "client",
+      "sep-2322-client-request-state",
+      "sep-2322-client-request-state-echoed",
+      "MRTRClientRequestStateEchoed",
+      "Client MUST echo back the exact value of requestState when retrying",
+      ""
+    ]
+
+    defp dup_edge(axes) do
+      %{
+        "member" => %{"module" => "M", "test" => "t", "register_key" => "M/t"},
+        "claim" => "c",
+        "tag" => MatchKey.encode!(@known),
+        "axes" => Enum.map(axes, &%{"axis" => &1, "verdict" => "agrees"}),
+        "et_verdict" => "green",
+        "evidence" => "e"
+      }
+    end
+
+    defp build(axes, decomposition) do
+      Crosswalk.cell(
+        dup_edge(axes),
+        [@known],
+        %{@known => "SUCCESS"},
+        %{@known => decomposition}
+      )
+    end
+
+    test "a duplicate of a KNOWN axis is :axis_named_twice" do
+      assert {:error, {:axis_named_twice, ["a", "a"]}} = build(~w(a a), ~w(a b))
+    end
+
+    test "a duplicate where the check has exactly ONE axis is also :axis_named_twice" do
+      assert {:error, {:axis_named_twice, ["a", "a"]}} = build(~w(a a), ~w(a))
+    end
+
+    test "a genuinely unknown axis is still :axis_not_in_decomposition" do
+      assert {:error, {:axis_not_in_decomposition, ["z"], ["a", "b"]}} = build(~w(a b z), ~w(a b))
+    end
+
+    test "an unknown axis named TWICE reports it ONCE, not twice" do
+      assert {:error, {:axis_not_in_decomposition, ["z"], ["a"]}} = build(~w(a z z), ~w(a))
     end
   end
 
@@ -481,9 +678,16 @@ defmodule MCP.Conformance.CrosswalkTest do
       assert t["every_declared_member_appears"]["equal"]
       assert t["every_declared_member_appears"]["missing"] == []
       assert t["every_declared_member_appears"]["extra"] == []
-      assert t["every_declared_check_appears"]["equal"]
-      assert t["every_declared_check_appears"]["missing"] == []
-      assert t["every_declared_check_appears"]["extra"] == []
+      # MES-104: `every_declared_check_appears` was a set equality that held
+      # TRIVIALLY — the declared set was derived from the tags the edges
+      # carried, so both sides were the same list twice. Once the checks are
+      # declared from outside the file the checks that do NOT appear are
+      # bucket 2, which is the answer rather than a failure.
+      c = t["every_declared_check_is_decomposed_and_accounted_for"]
+      assert c["declared"] == c["with_an_edge"] + c["in_bucket_2"]
+      assert c["in_bucket_2"] == a["buckets"]["bucket_2"]["count"]
+      assert c["why_this_is_not_a_set_equality"] =~ "held"
+      refute Map.has_key?(t, "every_declared_check_appears")
     end
 
     test "bucket 1 is exactly the declared-unmatched members, by set", %{a: a} do
@@ -491,12 +695,40 @@ defmodule MCP.Conformance.CrosswalkTest do
       assert %{equal: true} = Crosswalk.set_compare(declared, a["buckets"]["bucket_1"]["members"])
     end
 
-    test "bucket 2 is empty and says which universe it is empty over", %{a: a} do
+    test "bucket 2 is NON-EMPTY for the first time, over a declared universe", %{a: a} do
       b2 = a["buckets"]["bucket_2"]
-      assert b2["count"] == 0
-      assert b2["checks"] == []
-      assert b2["universe"] =~ "#{a["population"]["check_count"]} declared checks"
+
+      assert b2["declared"]
+      assert b2["count"] == length(b2["checks"])
+      assert b2["count"] > 0, "bucket 2 was empty BY CONSTRUCTION until MES-104 (residual X8)"
+      assert b2["universe"] =~ "#{a["population"]["declared_check_count"]} declared checks"
       assert b2["universe"] =~ "never all 173"
+
+      # Every bucket-2 check is DECLARED and carries no edge — the two halves of
+      # what the bucket means, asserted rather than taken from the count.
+      declared = MapSet.new(a["population"]["declared_checks"])
+      with_edges = MapSet.new(Enum.map(a["cells"], & &1["tag"]))
+
+      for tag <- b2["checks"] do
+        assert MapSet.member?(declared, tag)
+        refute MapSet.member?(with_edges, tag)
+      end
+    end
+
+    test "a check ADDRESSED but not DECLARED is neither bucket 2 nor not_yet_adjudicated",
+         %{a: a} do
+      outside = a["population"]["checks_addressed_outside_the_declared_check_population"]
+      declared = MapSet.new(a["population"]["declared_checks"])
+      b2 = MapSet.new(a["buckets"]["bucket_2"]["checks"])
+
+      assert outside["count"] == length(outside["checks"])
+      assert outside["count"] > 0
+
+      for tag <- outside["checks"] do
+        refute MapSet.member?(declared, tag)
+        refute MapSet.member?(b2, tag)
+        assert Enum.any?(a["cells"], &(&1["tag"] == tag))
+      end
     end
 
     test "buckets 3 and 6 are zero because every ET verdict is green — the predicate, not the number",
@@ -520,10 +752,16 @@ defmodule MCP.Conformance.CrosswalkTest do
       assert p["declared"]
       assert p["member_count"] == length(p["members"])
       assert p["check_count"] == length(p["checks"])
+      assert p["declared_check_count"] == length(p["declared_checks"])
       assert p["outside_the_population"]["state"] == "not_yet_adjudicated"
       assert p["outside_the_population"]["et_cc_members"] == 281 - p["member_count"]
-      assert p["outside_the_population"]["in_denominator_checks"] == 173 - p["check_count"]
-      assert p["outside_the_population"]["owners"] =~ "MES-104"
+
+      # A check that carries an edge is adjudicated whether or not a file
+      # DECLARES it, so the remainder is 173 minus the UNION and not minus
+      # either one (MES-104).
+      adjudicated = Enum.uniq(p["declared_checks"] ++ p["checks"])
+      assert p["outside_the_population"]["in_denominator_checks"] == 173 - length(adjudicated)
+      assert p["outside_the_population"]["owners"] =~ "C1c"
       assert p["outside_the_population"]["owners"] =~ "MES-105"
     end
 
@@ -560,7 +798,9 @@ defmodule MCP.Conformance.CrosswalkTest do
         assert is_binary(cell["evidence"])
         assert String.length(cell["evidence"]) > 40, cell["claim"]
         # a file:line address, and the assertion at it
-        assert cell["evidence"] =~ ~r/\.exs:\d+/, cell["claim"]
+        # `.ex` as well as `.exs`: a DOCTEST's source is the lib file the
+        # doctest is written in, and C1b-i's population contains four.
+        assert cell["evidence"] =~ ~r/\.exs?:\d+/, cell["claim"]
       end
     end
 
@@ -573,7 +813,7 @@ defmodule MCP.Conformance.CrosswalkTest do
       # weaker one. `UNFALSIFIED` here meant "not yet attempted", so the antonym had
       # to be spelled out rather than left to read as "found to be false".
       assert a["trust_status"] =~ "not proven"
-      assert a["trust_status"] =~ "declared 21-member / 14-check slice and no further"
+      assert a["trust_status"] =~ "48-member / 29-declared-check slice"
       assert a["trust_status"] =~ "CONSISTENCY pin, not a correctness claim"
       # The stale claim is the OPENING word, not the string anywhere: the new text
       # explains what `UNFALSIFIED` used to mean here, so a bare `refute =~` would
@@ -583,23 +823,106 @@ defmodule MCP.Conformance.CrosswalkTest do
       x2 = Enum.find(a["residuals"], &(&1["id"] == "X2"))
       assert x2["text"] =~ "FALSIFICATION-TESTED by C3 (MES-99) and STANDING"
       assert x2["text"] =~ "not the same as proven"
-      assert x2["text"] =~ "C1b (MES-104) and C1c (MES-105) own the rest"
+      assert x2["text"] =~ "C1b-ii, C1b-iii and C1c (MES-105) own the rest"
+      # MES-104's four new refusals are named, not summarised as "more guards".
+      for g <- ~w(G17 G18 G19 G20), do: assert(x2["text"] =~ g)
 
       # X1 is what no refusal can reach, and C3 must not be read as having reached it.
       assert x2["text"] =~ "X1 is untouched"
     end
 
-    test "the population records the selector it was checked against (G15)", %{a: a} do
-      sel = a["population"]["selector"]
+    test "EVERY file records the selector it was checked against (G15)", %{a: a} do
+      files = a["population"]["files"]
+      assert length(files) > 1, "MES-104 made --edges repeatable; one file would not exercise it"
 
-      # The anchor is EXTERNAL — that is the whole content of G15. A selector
-      # naming the edges file would be circular by another route.
-      assert sel["source"] == "docs/conformance/etcc-attribution.json"
-      refute sel["source"] =~ "crosswalk-edges"
-      assert sel["rows_at"] == "rows"
-      assert sel["key_field"] == "key"
-      assert sel["evaluated"] =~ "#{a["population"]["member_count"]} members denoted"
-      assert sel["evaluated"] =~ "both"
+      for f <- files do
+        sel = f["selector"]
+
+        # The anchor is EXTERNAL — that is the whole content of G15. A selector
+        # naming the edges file would be circular by another route.
+        assert sel["source"] == "docs/conformance/etcc-attribution.json"
+        refute sel["source"] =~ "crosswalk-edges"
+        assert sel["rows_at"] == "rows"
+        assert sel["key_field"] == "key"
+        assert sel["evaluated"] =~ "#{f["member_count"]} members denoted"
+        assert sel["evaluated"] =~ "both"
+      end
+    end
+
+    test "the files' declared populations are DISJOINT — one member, one home (G17)", %{a: a} do
+      files = a["population"]["files"]
+
+      for {f, i} <- Enum.with_index(files), g <- Enum.drop(files, i + 1) do
+        shared = MapSet.intersection(MapSet.new(f["members"]), MapSet.new(g["members"]))
+        assert MapSet.size(shared) == 0, "#{f["path"]} and #{g["path"]} share #{inspect(shared)}"
+      end
+
+      # And the union is the population, by SET rather than by the sum.
+      union = files |> Enum.flat_map(& &1["members"]) |> Enum.sort()
+      assert %{equal: true} = Crosswalk.set_compare(union, a["population"]["members"])
+    end
+
+    test "a file may declare a CHECK population, and one here does not", %{a: a} do
+      files = a["population"]["files"]
+
+      declaring = Enum.filter(files, &(&1["check_population"] != nil))
+      silent = Enum.filter(files, &(&1["check_population"] == nil))
+
+      assert declaring != [], "bucket 2 needs a declared universe to be answerable at all"
+      assert silent != [], "a file that declares none must still be admissible"
+
+      for f <- declaring do
+        sel = f["check_population"]["selector"]
+        assert sel["source"] == "docs/conformance/oc-emitting-sites-2026-07-28.json"
+        refute sel["source"] =~ "crosswalk-edges"
+        assert sel["evaluated"] =~ "axis-decomposed (G19)"
+        assert length(f["check_population"]["checks"]) == length(f["declared_checks"])
+      end
+
+      for f <- silent, do: assert(f["declared_checks"] == [])
+    end
+
+    test "the state-4 guard records that it is ENTAILED, and G20 records what is not", %{a: a} do
+      p = a["population"]
+
+      # A green from a guard that cannot fire is not evidence, and the artefact
+      # has to say which kind of green it is (residual X7).
+      assert p["state_4_guard"] =~ "ENTAILED BY G15a AND THEREFORE UNABLE TO FIRE"
+      assert p["inherited_tokens_guard"] =~ "G20"
+
+      x7 = Enum.find(a["residuals"], &(&1["id"] == "X7"))
+      assert x7["text"] =~ "ENTAILED BY G15a"
+      assert x7["text"] =~ "vacuum guard is what fires"
+    end
+
+    test "the axis spans are checked against the locator, and rejections are counted (G18)",
+         %{a: a} do
+      g = a["axis_span_provenance"]
+
+      assert g["checked_against"] == "docs/conformance/oc-emitting-sites-2026-07-28.json"
+      assert g["rows"] == g["locator_row"] + g["locator_row_rejected"]
+      assert g["locator_row"] > 0
+      assert g["locator_row_rejected"] > 0, "a guard with no live rejection is a promise"
+      assert g["what_this_does_not_establish"] =~ "RIGHT one"
+    end
+
+    test "claim-level unmatched rows are escalated, and every one names its search", %{a: a} do
+      c = a["claim_level_unmatched"]
+
+      assert c["count"] == length(c["rows"])
+      assert c["count"] > 0
+      assert c["routed_to"] =~ "the PM"
+
+      with_edges = MapSet.new(Enum.map(a["cells"], & &1["member"]["register_key"]))
+
+      for row <- c["rows"] do
+        # The record is only admissible against a member that HAS an edge — a
+        # member with none is state 3 whole and belongs in bucket 1.
+        assert MapSet.member?(with_edges, row["member"]["register_key"])
+        assert String.length(row["the_search_that_found_none"]) > 80
+        assert is_binary(row["owner"]) and row["owner"] != ""
+        assert is_binary(row["from"])
+      end
     end
 
     test "the cross-source agreement is recorded, and named CONSISTENCY (G16)", %{a: a} do

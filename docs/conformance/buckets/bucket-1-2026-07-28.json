@@ -1,12 +1,12 @@
 {
   "bucket": "1",
-  "count": 5,
+  "count": 16,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: the declared 21-member / 14-check slice adjudicated by\nMES-97 (C1a). This is NOT the whole conformance picture. The full\ncomparison is 281 ET-CC members and 173 in-denominator OC checks; the\nremaining 260 members and 159 checks are not_yet_adjudicated -- a third\nstate, distinct from bucket 1 -- and are owned by C1b (MES-104, client\nleg) and C1c (MES-105, server leg + the 29 none_determinable).\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. When C1b and C1c land, this projection re-runs\nand fills.",
-  "predicate": "Declared-population ET-CC members carrying NO edge in `cells`: the complement of `members_with_edges` over the declared population, taken through `Crosswalk.project(:bucket_1, ...)`. Universe: the 21 declared members, never all 281.",
+  "population_banner": "POPULATION: this projection covers 48 declared ET-CC members and 29\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 233 members and\n130 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 14 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "predicate": "Declared-population ET-CC members carrying NO edge in `cells`: the complement of `members_with_edges` over the declared population, taken through `Crosswalk.project(:bucket_1, ...)`. Universe: the 48 declared members, never all 281 members.",
   "projected_from": {
     "bucket_zero": {
       "bytes": 176409,
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 60423,
+      "bytes": 186840,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "3a46a6cd4e7157570f40d5863e1c72c08712c9bb768f4ff64f2463f96b3e3844"
+      "sha256": "d068abff28bcb179199e530fa3c7dbeec21a5f5a4abe0a39750e23493542f358"
     }
   },
   "revision": "2026-07-28",
@@ -40,6 +40,72 @@
       "tag": "oc:none/no-oc-scenario/CG2-inbound-parse"
     },
     {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy M-2: the warn-once record shares the cache's GENERATION — a reset re-arms it",
+        "test": "test C-2 — the cache-miss and staleness policy M-2: the warn-once record shares the cache's GENERATION — a reset re-arms it"
+      },
+      "tag": "oc:none/no-oc-scenario/CG7-cache-miss-warn-once",
+      "the_search_that_found_none": "All 173 in-denominator check names, ids and descriptions were read for one whose subject is a client-side tool-schema CACHE. None is: the harness observes requests on the wire and has no way to observe, or to require, that a client caches anything. The two bucket-0 checks were read too, and are not it either.",
+      "why_no_counterpart": "A warn-once-per-cache-generation policy is a diagnostic property of OUR client. Nothing on the wire distinguishes a client that warned from one that did not, so the absence is `no-oc-scenario` — the suite has no such check anywhere — rather than a fixture gap."
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a -32020 triggers a tools/list refresh and ONE retry, which then mirrors",
+        "test": "test C-2 — the cache-miss and staleness policy a -32020 triggers a tools/list refresh and ONE retry, which then mirrors"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG7-header-mismatch-recovery",
+      "the_search_that_found_none": "The `http-custom-headers` scenario's `handleToolsCall` was read in full at the pinned build: every arm ends in `this.sendJson(t,{…result:{resultType:`complete`…}})`. It never returns an error, and `-32020` does not occur anywhere in the scenario. The 29 CG7 check names were then read for one about a retry or a refresh: none is.",
+      "why_no_counterpart": "The scenario exists and is matched, but its fixture never rejects a call, so no case exercises the client's recovery from a header mismatch."
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test M-1 — a malformed tools/list result fails the REQUEST, not the client a string result likewise, and it leaves the tool caches untouched",
+        "test": "test M-1 — a malformed tools/list result fails the REQUEST, not the client a string result likewise, and it leaves the tool caches untouched"
+      },
+      "tag": "oc:none/no-oc-scenario/CG7-malformed-tools-list-result",
+      "the_search_that_found_none": "All 173 in-denominator check names, ids and descriptions were read for one whose subject is a client-side tool-schema CACHE. None is: the harness observes requests on the wire and has no way to observe, or to require, that a client caches anything. The two bucket-0 checks were read too, and are not it either.",
+      "why_no_counterpart": "A claim about surviving a malformed SERVER response. The harness is the server here, so it cannot check a client's reaction to its own malformed output without emitting one, and no scenario does."
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test M-5 — a malformed REFRESH result fails the call, not the client a null refresh result returns the ORIGINAL -32020 alongside the malformed term",
+        "test": "test M-5 — a malformed REFRESH result fails the call, not the client a null refresh result returns the ORIGINAL -32020 alongside the malformed term"
+      },
+      "tag": "oc:none/no-oc-scenario/CG7-malformed-refresh-result",
+      "the_search_that_found_none": "All 173 in-denominator check names, ids and descriptions were read for one whose subject is a client-side tool-schema CACHE. None is: the harness observes requests on the wire and has no way to observe, or to require, that a client caches anything. The two bucket-0 checks were read too, and are not it either.",
+      "why_no_counterpart": "The same absence as CG7-malformed-tools-list-result, on the recovery path. Kept as its own member rather than merged: it is a different code path and a different member."
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-BEARING page MERGES, so paging does not discard earlier pages",
+        "test": "test W5 — the cache's reset/merge rule (the pagination trap) a cursor-BEARING page MERGES, so paging does not discard earlier pages"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG7-tools-list-pagination",
+      "the_search_that_found_none": "The `http-custom-headers` scenario's tools/list handler was read at the pinned build: it answers one page — `result:{tools:[…two tools…]}` — with no `nextCursor` key at all, and `http-invalid-tool-headers` likewise. So no fixture case pages. The 29 CG7 check names were read for one about pagination: none is.",
+      "why_no_counterpart": "The merge/reset rule is what decides whether an earlier page's annotations survive a later one. Both scenarios serve a single page, so the rule is never exercised — a fixture gap, not an absent scenario."
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-LESS listing RESETS, so a removed tool does not linger",
+        "test": "test W5 — the cache's reset/merge rule (the pagination trap) a cursor-LESS listing RESETS, so a removed tool does not linger"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG7-tools-list-pagination",
+      "the_search_that_found_none": "The `http-custom-headers` scenario's tools/list handler was read at the pinned build: it answers one page — `result:{tools:[…two tools…]}` — with no `nextCursor` key at all, and `http-invalid-tool-headers` likewise. So no fixture case pages. The 29 CG7 check names were read for one about pagination: none is.",
+      "why_no_counterpart": "The merge/reset rule is what decides whether an earlier page's annotations survive a later one. Both scenarios serve a single page, so the rule is never exercised — a fixture gap, not an absent scenario."
+    },
+    {
       "cg": "CG2",
       "member": {
         "module": "MCP.Protocol.CapabilitiesTest",
@@ -47,6 +113,17 @@
         "test": "test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart"
       },
       "tag": "oc:none/no-oc-scenario/CG2-absent-yields-nil"
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (4)",
+        "test": "doctest MCP.Protocol.HeaderMirror.encode_value/1 (4)"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG7-sentinel-literal-ambiguity",
+      "the_search_that_found_none": "Both CG7 scenarios' fixtures were read at the pinned build. `http-custom-headers` serves two tools and ONE argument vector — the 16 values of the alpha.11 `http-custom-headers` fixture's own argument vector, enumerated in header_mirror_test.exs:305-322 — and no value in it is sentinel-shaped (`=?base64?…?=`); `http-invalid-tool-headers` sends no annotated VALUES at all, only ten malformed tool DEFINITIONS (`Ua`). The 29 CG7 check names were then read for one whose predicate is about a plain value that looks encoded: none is. `Ka` would in fact mis-handle such a value — `Ga` calls it safe, so `Wa` decodes it and the comparison is made against the DECODED form — but no fixture case reaches that path.",
+      "why_no_counterpart": "streamable-http.mdx:508-510 requires a client to Base64-encode a plain-ASCII value that matches the sentinel pattern, or a server cannot tell an encoded value from a literal one. The scenario exists and is matched; its fixture holds no case that exercises the constraint — which is what `no-oc-fixture-case` names, as against `no-oc-scenario`."
     },
     {
       "cg": "CG7",
@@ -65,14 +142,66 @@
         "test": "test annotation validity — the three constraints NO harness check covers (spec-only) an integer outside the IEEE 754 safe range is not mirrored, and says so"
       },
       "tag": "oc:none/no-oc-fixture-case/CG7-integer-safe-range"
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a non-map arguments value yields no headers rather than raising",
+        "test": "test value encoding — omission and the sentinel's ambiguity rule a non-map arguments value yields no headers rather than raising"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG7-non-map-arguments",
+      "the_search_that_found_none": "The fixture's `handleToolsCall` reads `n.params?.arguments||{}` and the scenario's own client driver always sends an object, so no case sends a non-map `arguments`. All 29 CG7 check names were read for one whose predicate is about malformed `arguments`: none is.",
+      "why_no_counterpart": "A robustness claim about our own encoder's input, not about the wire. The OC harness cannot construct the case because it observes the client rather than driving its API."
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule the exact property path is read — a same-named key elsewhere is not",
+        "test": "test value encoding — omission and the sentinel's ambiguity rule the exact property path is read — a same-named key elsewhere is not"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG7-nested-path-exact",
+      "the_search_that_found_none": "Every annotated property in both `http-custom-headers` tool schemas is TOP-LEVEL — read at the pinned build: `region`, `priority`, `verbose`, `debug`, `empty_val`, `method_val`, `non_ascii_val`, `whitespace_val`, `leading_space_val`, `trailing_space_val`, `internal_space_val`, `control_char_val`, `crlf_val`, `tab_val`. No fixture tool nests an annotation, so no fixture call can distinguish reading the annotated PATH from reading a same-named key anywhere. The 29 check names were read for one about path resolution: none is.",
+      "why_no_counterpart": "Distinct from `CG7-static-reachability`, which is about whether a nested annotation is VALID. This is about which value is read at call time once it is. Both are unexercised by the fixture, for the same reason and by two different constraints."
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector no header carries a raw CR or LF — injection is closed by construction",
+        "test": "test value encoding — the fixture's own 16-value vector no header carries a raw CR or LF — injection is closed by construction"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG7-no-raw-crlf-across-all-headers",
+      "the_search_that_found_none": "All 29 CG7 checks were read. Each `ClientCustomHeader_*` check's predicate quantifies over ONE named header — `checkParamHeader` is called once per annotated parameter and `a=e.headers[i]` reads that parameter's header alone. No check's predicate quantifies over the header SET, and neither `ClientSupportsCustomHeaders` (`some(...)`, an existential over names, not values) nor the two NoMirror checks (`===void 0` on one named header) is universal either.",
+      "why_no_counterpart": "The member asserts a UNIVERSAL property — no produced header value carries a raw CR or LF, and every produced header NAME is lower-case — over the whole 16-value vector. It is the injection-closure property, and it is stronger than the conjunction of the per-parameter checks: it would still fail if a SEVENTEENTH header appeared carrying a newline. Filing it on `ClientCustomHeader_CrLf` would report agreement on a check whose subject is one header's value."
+    },
+    {
+      "cg": "CG7",
+      "claims_whose_counterpart_is_outside_this_files_check_population": [
+        {
+          "claim": "the mcp-name routing header still rides a cache-miss call (routing_headers_test.exs:388)",
+          "counterpart": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+          "owner": "C1b-ii (CG1, `http-standard-headers`)",
+          "why_it_is_recorded_here": "The counterpart is in A1's 173 and on the client leg, but not in this file's declared 29. The member is declared unmatched WITHIN this file's check population, which is what that state means here — and saying only that would read as 'no counterpart anywhere', which is false of this claim."
+        }
+      ],
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client with no prior tools/list, nothing is mirrored and the client says so",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client with no prior tools/list, nothing is mirrored and the client says so"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG7-cache-miss-no-mirroring",
+      "the_search_that_found_none": "The scenario's client driver always issues tools/list before tools/call — indeed `http-invalid-tool-headers` emits a FAILING gate check when it does not (`sep-2243-invalid-tool-tools-list-gate`, which A5 leaves in the denominator). So no fixture case reaches a tools/call with no prior listing. All 29 CG7 check names were read for one whose subject is mirroring in the ABSENCE of a schema: none is.",
+      "why_no_counterpart": "The member's remaining claim — that the `mcp-name` routing header still rides the call — does have a counterpart, `ClientMcpNameHeader_tools_call`, but it is CG1's and outside this file's declared check population. So this member has no counterpart HERE, which is what `declared_unmatched` means in a file that declares its own check population; the CG1 claim is recorded under `claims_without_an_edge` and routed to C1b-ii."
     }
   ],
   "schema": "bucket-view/1",
   "title": "ET-CC member with no OC counterpart",
   "universe": {
-    "count": 21,
+    "count": 48,
     "name": "declared_members",
-    "of": "the declared ET-CC members, never all 281"
+    "of": "the 48 declared ET-CC members, never all 281 members"
   },
   "what_this_is": "A PURE PROJECTION of the crosswalk named in `projected_from`, on the `predicate` above and on fields the crosswalk already stores. Nothing here re-computes a verdict, an edge shape or a bucket assignment. The rows are the crosswalk's own records verbatim, so a reader can check this view against the matrix byte for byte."
 }

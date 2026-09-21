@@ -4,15 +4,15 @@
   "derivation": "projection",
   "emptiness_reason": {
     "code": "by_adjudication",
-    "measured": "declared checks carrying no edge: 0 of 14.",
+    "measured": "declared checks carrying no edge: 9 of 29. (14 further checks carry an edge but are DECLARED by no file, so they are in no universe this view takes a complement within.)",
     "result": "CHECKED, AND ZERO — within the declared slice. Not 'never asked'.",
     "ticket_that_would_fill_it": "A future adjudication inside the declared slice, or C1b/C1c widening it.",
-    "what_would_fill_it": "a declared server-leg OC check that no ET-CC member covers. Over the declared 14, explicitly NOT over the 173: the 159 in-denominator checks outside the population are not bucket 2, they are not_yet_adjudicated (C1b/C1c)."
+    "what_would_fill_it": "a declared server-leg OC check that no ET-CC member covers. Over the 29 DECLARED checks, explicitly NOT over the 173 in-denominator checks: the ones outside every declared check population are not bucket 2, they are not_yet_adjudicated (C1b-ii, C1b-iii, C1c)."
   },
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: the declared 21-member / 14-check slice adjudicated by\nMES-97 (C1a). This is NOT the whole conformance picture. The full\ncomparison is 281 ET-CC members and 173 in-denominator OC checks; the\nremaining 260 members and 159 checks are not_yet_adjudicated -- a third\nstate, distinct from bucket 1 -- and are owned by C1b (MES-104, client\nleg) and C1c (MES-105, server leg + the 29 none_determinable).\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. When C1b and C1c land, this projection re-runs\nand fills.",
-  "predicate": "Declared-population OC checks carrying NO edge in `cells`, whose token's leg segment is `server`. Complement taken through `Crosswalk.project(:bucket_2, ...)`, then filtered on the leg the token already carries. Universe: the server-leg checks of the declared 14, never all 173.",
+  "population_banner": "POPULATION: this projection covers 48 declared ET-CC members and 29\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 233 members and\n130 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 14 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "predicate": "Declared-population OC checks carrying NO edge in `cells`, whose token's leg segment is `server`. Complement taken through `Crosswalk.project(:bucket_2, ...)`, then filtered on the leg the token already carries. Universe: the server-leg half of the 29 declared checks, never all 173 in-denominator checks.",
   "projected_from": {
     "bucket_zero": {
       "bytes": 176409,
@@ -20,9 +20,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 60423,
+      "bytes": 186840,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "3a46a6cd4e7157570f40d5863e1c72c08712c9bb768f4ff64f2463f96b3e3844"
+      "sha256": "d068abff28bcb179199e530fa3c7dbeec21a5f5a4abe0a39750e23493542f358"
     }
   },
   "revision": "2026-07-28",
@@ -30,9 +30,11 @@
   "schema": "bucket-view/1",
   "title": "OC check with no ET-CC match — server",
   "universe": {
-    "count": 14,
+    "addressed_but_not_declared": 14,
+    "count": 29,
     "name": "declared_checks",
-    "of": "the declared in-population OC checks, never all 173"
+    "of": "the 29 declared in-population OC checks, never all 173 in-denominator checks",
+    "why_that_number_is_not_in_this_universe": "Checks an edge addresses that no file DECLARES. They carry adjudicated edges, so they are not bucket 2, and they are in no declared universe, so they are not in 2a or 2b either. Counting them here would make the complement — which is what 2a and 2b are — a complement within the very set it is taken from."
   },
   "what_this_is": "A PURE PROJECTION of the crosswalk named in `projected_from`, on the `predicate` above and on fields the crosswalk already stores. Nothing here re-computes a verdict, an edge shape or a bucket assignment. The rows are the crosswalk's own records verbatim, so a reader can check this view against the matrix byte for byte."
 }

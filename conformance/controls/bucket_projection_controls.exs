@@ -50,17 +50,19 @@ defmodule BucketProjectionControls do
   def run(["movement"]), do: movement()
   def run(["refusals"]), do: refusals()
   def run(["guard-mutation"]), do: guard_mutation()
+  def run(["population"]), do: population()
 
   def run(["all"]) do
     noop()
     movement()
     refusals()
+    population()
     guard_mutation()
-    IO.puts("\n== ALL FOUR MODES GREEN ==\n")
+    IO.puts("\n== ALL FIVE MODES GREEN ==\n")
   end
 
   def run(_) do
-    IO.puts("usage: noop | movement | refusals | guard-mutation | all")
+    IO.puts("usage: noop | movement | refusals | population | guard-mutation | all")
     System.halt(2)
   end
 
@@ -243,10 +245,25 @@ defmodule BucketProjectionControls do
     verdict("bucket 1 loses exactly that member, and exactly one new edge lands in 5b", ok)
     halt_unless(ok)
 
+    # DERIVED from the mutated document, not written down: a hard-coded
+    # `1(4) + members_with_edges(17)` was right for C1a's 21 members and went
+    # stale the moment MES-104 took the population to 48. A control that has to
+    # be re-typed when the population grows is one that will be re-typed wrong.
     eq = equations(mutated)
+    members = length(mutated["population"]["members"])
+    unmatched = length(mutated["declared_unmatched"])
+
+    edged =
+      mutated["cells"]
+      |> Enum.map(&get_in(&1, ["member", "register_key"]))
+      |> Enum.uniq()
+      |> length()
+
+    expected = "#{members} = 1(#{unmatched}) + members_with_edges(#{edged})"
+
     IO.puts("            #{eq["declared_members"]}")
-    holds = String.contains?(eq["declared_members"], "1(4) + members_with_edges(17)")
-    verdict("the member equation re-balances at 21 = 4 + 17", holds)
+    holds = String.contains?(eq["declared_members"], expected)
+    verdict("the member equation re-balances at #{expected}", holds)
     halt_unless(holds)
   end
 
@@ -254,8 +271,17 @@ defmodule BucketProjectionControls do
   # one CLIENT check and it must enter 2b, not 2a.
   defp m5(doc, base) do
     tag = sole_edge_check(doc)
-    mutated = update_in(doc["cells"], fn cs -> Enum.reject(cs, &(&1["tag"] == tag)) end)
     dropped = Enum.find(doc["cells"], &(&1["tag"] == tag))
+
+    # The crosswalk's OWN bucket 2 has to move with the cells, because MES-104's
+    # check partition pins the projected bucket 2 against the stored one. A
+    # mutation that dropped the edge and left the stored block alone would be
+    # testing the pin rather than the movement — and it fires, which is the pin
+    # working.
+    mutated =
+      doc
+      |> update_in(["cells"], fn cs -> Enum.reject(cs, &(&1["tag"] == tag)) end)
+      |> update_in(["buckets", "bucket_2", "checks"], &Enum.sort([tag | &1]))
 
     after_ = placements(mutated)
     {moved, added, removed} = diff(base, after_)
@@ -353,9 +379,18 @@ defmodule BucketProjectionControls do
       {"leg             a cell's oc_key[0] is `gateway`",
        ["[leg]", "LEG GUARD", "1 cells and 0 declared checks"],
        put_in(doc, ["cells", Access.at(five), "oc_key", Access.at(0)], "gateway")},
+      # `population["checks"]` is the checks the cells ADDRESS; MES-104 made the
+      # leg guard's subject the DECLARED ones, which is the set 2a/2b split. A
+      # retag of the addressed list no longer reaches the guard — correctly, it
+      # is not the set being split — so the mutation moves to the declared one,
+      # and the stored bucket 2 with it, since the retagged check has no edge.
       {"leg             a DECLARED CHECK's token carries an unknown leg",
        ["[leg]", "LEG GUARD", "0 cells and 1 declared checks"],
-       update_in(doc, ["population", "checks"], fn [c | rest] -> [retag(c) | rest] end)},
+       doc
+       |> update_in(["population", "declared_checks"], fn [c | rest] -> [retag(c) | rest] end)
+       |> update_in(["buckets", "bucket_2", "checks"], fn cs ->
+         [retag(hd(doc["population"]["declared_checks"])) | cs]
+       end)},
       {"edge_partition  a cell's stored bucket is `7` — a view nobody renders",
        ["[edge_partition]", "EDGE PARTITION", "cells that reach no view (1)"],
        put_in(doc, ["cells", Access.at(five), "bucket"], "7")},
@@ -369,23 +404,51 @@ defmodule BucketProjectionControls do
       {"member_partition a declared_unmatched record dropped — bucket 1 without a record",
        ["[member_partition]", "MEMBER PARTITION", "no declared_unmatched record (1)"],
        update_in(doc["declared_unmatched"], &tl/1)},
-      {"check_partition  a cell's tag names a check outside the declared population",
-       ["[check_partition]", "CHECK PARTITION", "outside the declared population (1)"],
-       put_in(doc, ["cells", Access.at(five), "tag"], "oc:client/request-metadata/no-such/NoSuch")},
+      # MES-104 re-cut the check partition: a cell tagging an undeclared check
+      # is now a NAMED state (addressed, not declared), so it no longer breaks
+      # it. What the guard pins is the crosswalk's OWN stored bucket 2 against
+      # the one the views project — two independently produced statements.
+      {"check_partition  the stored bucket 2 disagrees with the projected one",
+       [
+         "[check_partition]",
+         "CHECK PARTITION",
+         "in 2a or 2b, not in the crosswalk's bucket 2 (1)"
+       ], update_in(doc, ["buckets", "bucket_2", "checks"], &tl/1)},
+      {"check_partition  the stored bucket 2 names a check that reaches no view",
+       ["[check_partition]", "CHECK PARTITION", "in the crosswalk's bucket 2, in no view (1)"],
+       update_in(doc, ["buckets", "bucket_2", "checks"], &["oc:client/s/c/Absent" | &1])},
+      # CR-1 on MES-104. Both limbs the crosswalk can move; P3 and P4 are
+      # module-level and are the `population` mode below.
+      {"population_statement the crosswalk states nothing about what lies outside it",
+       [
+         "[population_statement]",
+         "POPULATION STATEMENT",
+         "population.outside_the_population.et_cc_members",
+         "0 members and 0 checks are not_yet_adjudicated"
+       ], update_in(doc, ["population"], &Map.delete(&1, "outside_the_population"))},
+      {"population_statement a stated member_count its own member list contradicts",
+       [
+         "[population_statement]",
+         "POPULATION STATEMENT",
+         "population.member_count: states 21, the list holds 48"
+       ], put_in(doc, ["population", "member_count"], 21)},
       {"(reused)        an EMPTY declared population — C1's own refusal-without-a-universe",
        [":empty_population"], put_in(doc, ["population", "members"], [])}
     ]
   end
 
   # A crosswalk with no edges satisfies every partition check here PERFECTLY:
-  # all 21 members fall into bucket 1, all 14 checks into 2a/2b, every set
+  # every member falls into bucket 1, every declared check into 2a/2b, every set
   # comparison is equal and all three equations reconcile. That is S9-15's
   # vacuum in this artefact's own shape, and it is what `:vacuum` fires on.
   defp empty_matrix(doc) do
     unmatched =
       Enum.map(doc["population"]["members"], &%{"member" => %{"register_key" => &1}})
 
-    doc |> Map.put("cells", []) |> Map.put("declared_unmatched", unmatched)
+    doc
+    |> Map.put("cells", [])
+    |> Map.put("declared_unmatched", unmatched)
+    |> put_in(["buckets", "bucket_2", "checks"], Enum.sort(doc["population"]["declared_checks"]))
   end
 
   defp retag(tag) do
@@ -440,6 +503,172 @@ defmodule BucketProjectionControls do
   # them is the only thing standing between this generator and a clean-looking
   # projection of an empty matrix.
 
+  # === population — CR-1's defect put back, and caught ======================
+  #
+  # The two limbs a mutated CROSSWALK can fire are in `refusals`. These two are
+  # MODULE-level: a population figure written as a literal (P3) and a figure
+  # interpolated from the wrong place (P4). Neither can be reached by any
+  # input, so the mechanism is mutated instead (the F4 method CR re-ran at its
+  # own seat) — in the VM by `Code.compile_string`, restored in an `after`,
+  # nothing written to disk, so a seat death mid-run cannot leave the shared
+  # clone mutated (S8-14).
+  #
+  # The P3 mutation is not a synthetic one. It is C1a's ACTUAL banner, the
+  # bytes twelve committed views carried at 2a92bba while the crosswalk beside
+  # them said 48/29 — the defect CR-1 raised, put back verbatim.
+
+  @c1a_banner """
+  POPULATION: the declared 21-member / 14-check slice adjudicated by
+  MES-97 (C1a). This is NOT the whole conformance picture. The full
+  comparison is 281 ET-CC members and 173 in-denominator OC checks; the
+  remaining 260 members and 159 checks are not_yet_adjudicated -- a third
+  state, distinct from bucket 1 -- and are owned by C1b (MES-104, client
+  leg) and C1c (MES-105, server leg + the 29 none_determinable).
+  """
+
+  defp population do
+    header("POPULATION STATEMENT — CR-1's defect put back into the module, and caught")
+
+    doc = read(@crosswalk)
+    source = File.read!(@module_src)
+
+    # POSITIVE CONTROL FIRST, and it is the one that says the scan reached
+    # anything: `frozen_figures == []` over an EMPTY statement list is the same
+    # green as over a clean one.
+    statements = BucketProjection.statements(BucketProjection.sentinel_figures())
+    figures = BucketProjection.figures(doc, read(@bucket_zero))
+
+    IO.puts("  POSITIVE  #{length(statements)} statements scanned, #{map_size(figures)} figures")
+    IO.puts("            #{inspect(Enum.take(Map.to_list(figures), 4))} ...")
+
+    verdict(
+      "the shipped templates carry no frozen figure, over a NON-EMPTY statement set",
+      BucketProjection.frozen_figures(statements) == [] and length(statements) == 25
+    )
+
+    halt_unless(BucketProjection.frozen_figures(statements) == [] and length(statements) == 25)
+
+    verdict(
+      "every shipped statement states the figures THIS crosswalk holds",
+      BucketProjection.missing_phrases(BucketProjection.statements(figures), figures) == []
+    )
+
+    try do
+      red_source(
+        "P3 — C1a's real banner, hard-coded, over a 48/29 crosswalk",
+        source,
+        &c1a_banner_back/1,
+        doc,
+        ["[population_statement]", "HARD-CODED", "banner: 21", "banner: 14", "banner: 260"]
+      )
+
+      red_source(
+        "P4 — the banner interpolated from the MANIFEST count, not the member count",
+        source,
+        &wrong_figure/1,
+        doc,
+        ["[population_statement]", "do not state the figure this tree holds", "banner: expected"]
+      )
+
+      whole_instrument(source)
+    after
+      recompile!(source)
+    end
+
+    positive("RESTORED — the module is back and the unmutated crosswalk projects cleanly")
+    halt_unless(match?({:ok, _}, project(doc)))
+  end
+
+  # The two above drive `project/3`. This drives the COMMAND the merge gate
+  # runs. CR-1's objection was not that the banner was wrong — it was that
+  # nothing went red against the TREE, because the unit compared the view to
+  # the recorded constant and `--check` re-projected that same constant. So
+  # the closing question is whether `mix conformance.buckets --check` itself
+  # now fails with a stale banner over the committed crosswalk. It does.
+  defp whole_instrument(source) do
+    recompile!(c1a_banner_back(source))
+
+    outcome =
+      try do
+        Mix.Task.rerun("conformance.buckets", ["--check", "-o", @committed])
+        :green
+      rescue
+        e -> {:red, Exception.message(e)}
+      end
+
+    case outcome do
+      {:red, message} ->
+        IO.puts("  RED       `mix conformance.buckets --check`, with C1a's banner back")
+        IO.puts("            #{first_line(message)}")
+
+        verdict(
+          "the COMMAND fails, not only the function — a stale banner is red against the tree",
+          String.contains?(message, "[population_statement]")
+        )
+
+        halt_unless(String.contains?(message, "[population_statement]"))
+
+      :green ->
+        halt("`--check` PASSED over a hard-coded banner — the guard does not reach the command.")
+    end
+  end
+
+  # C1a's banner put back as a literal `@banner_template`. It renders the same
+  # bytes whatever the crosswalk says, which is precisely what P3 detects: the
+  # numbers do not move under a sentinel render.
+  defp c1a_banner_back(source) do
+    anchor = "  @banner_template \"\"\"\n"
+
+    unless String.contains?(source, anchor),
+      do: halt("the @banner_template anchor is not in #{@module_src}")
+
+    [head, rest] = String.split(source, anchor, parts: 2)
+    [_old_body, tail] = String.split(rest, "\"\"\"\n", parts: 2)
+
+    head <> anchor <> @c1a_banner <> "\"\"\"\n" <> tail
+  end
+
+  # One placeholder swapped for another REAL one. P3 cannot see this: 175 moves
+  # under a sentinel render exactly as 48 does. Only the phrase pin catches it.
+  defp wrong_figure(source) do
+    old = "POPULATION: this projection covers {{declared_members}} declared"
+    new = "POPULATION: this projection covers {{manifest_checks}} declared"
+
+    unless String.contains?(source, old),
+      do: halt("the banner's first figure is not #{inspect(old)} in #{@module_src}")
+
+    String.replace(source, old, new)
+  end
+
+  defp red_source(label, source, mutate, doc, expected) do
+    recompile!(mutate.(source))
+
+    outcome = project(doc)
+
+    case outcome do
+      {:error, {guard, message}} ->
+        IO.puts("  RED       #{label}")
+        IO.puts("            [#{guard}] #{first_line(message)}")
+
+        carried = Enum.reject(expected, &String.contains?("[#{guard}] " <> message, &1))
+
+        verdict(
+          "refused, and the message carries every fragment the defect implies",
+          carried == []
+        )
+
+        halt_unless(carried == [])
+
+      {:ok, _} ->
+        IO.puts("  GREEN     #{label}")
+        halt("THE MUTATION WAS NOT CAUGHT — #{label}. The guard is decoration.")
+    end
+  end
+
+  defp project(doc) do
+    BucketProjection.project(doc, read(@bucket_zero), %{"t" => "control"})
+  end
+
   defp guard_mutation do
     header("GUARD MUTATION — each guard removed in turn, and shown to have been load-bearing")
 
@@ -475,7 +704,7 @@ defmodule BucketProjectionControls do
 
     outcome = outcome(mutated)
 
-    IO.puts("  #{String.pad_trailing(to_string(guard), 17)}#{label}")
+    IO.puts("  #{String.pad_trailing(to_string(guard), 21)}#{label}")
     IO.puts("      -> #{describe(outcome)}")
 
     still_named? = match?({:refused, m} when is_binary(m), outcome) and named?(outcome, guard)
@@ -497,13 +726,29 @@ defmodule BucketProjectionControls do
   defp describe({:refused, msg}),
     do: "still refuses, at a LATER guard: #{first_line(msg)}"
 
+  # Matched as a REGION rather than as one exact line: `@guards` outgrew 98
+  # columns when MES-104 added `:population_statement`, so `mix format` broke
+  # it across lines and a literal anchor stopped resolving. The list the region
+  # holds is then checked against `guards/0` before anything is replaced — an
+  # anchor that matched the wrong text would otherwise remove a guard nobody
+  # asked for and the mode would still read green.
   defp without_guard(source, guard, all) do
-    old = "  @guards " <> inspect(all)
-    new = "  @guards " <> inspect(all -- [guard])
+    anchor = ~r/\n  @guards \[[^\]]*\]/
 
-    if String.contains?(source, old),
-      do: String.replace(source, old, new),
-      else: halt("the @guards anchor is not in #{@module_src} as #{inspect(old)}")
+    case Regex.run(anchor, source) do
+      nil ->
+        halt("the @guards anchor is not in #{@module_src} as a `@guards [...]` list")
+
+      [region] ->
+        found =
+          Regex.scan(~r/:([a-z_]+)/, region)
+          |> Enum.map(fn [_m, name] -> String.to_existing_atom(name) end)
+
+        if found != all,
+          do: halt("the @guards region holds #{inspect(found)}, not #{inspect(all)}")
+
+        String.replace(source, anchor, "\n  @guards " <> inspect(all -- [guard]))
+    end
   end
 
   defp recompile!(source) do
@@ -643,16 +888,22 @@ defmodule BucketProjectionControls do
 
   # edges + (declared members with no edge) + (declared checks with no edge) +
   # A5's out-of-denominator checks. Every term read off an input file.
+  # MES-104: the bucket-2 universe is the DECLARED check population, not the
+  # checks the cells address. The two were the same list while C1a derived one
+  # from the other; they are not any more — 14 checks carry an edge and are
+  # declared by no file — so taking `population["checks"]` here would expect 14
+  # rows that 2a and 2b correctly do not contain.
   defp expected_rows(doc) do
     members = length(doc["population"]["members"])
-    checks = length(doc["population"]["checks"])
+    declared = doc["population"]["declared_checks"] || []
     with_edges = doc["cells"] |> Enum.map(&get_in(&1, ["member", "register_key"])) |> Enum.uniq()
     tagged = doc["cells"] |> Enum.map(& &1["tag"]) |> Enum.uniq()
 
     bucket_0 =
       @bucket_zero |> read() |> Map.fetch!("checks") |> Enum.count(&(not &1["matchable"]))
 
-    length(doc["cells"]) + (members - length(with_edges)) + (checks - length(tagged)) + bucket_0
+    length(doc["cells"]) + (members - length(with_edges)) +
+      Enum.count(declared, &(&1 not in tagged)) + bucket_0
   end
 
   defp index_of(doc, pred), do: Enum.find_index(doc["cells"], pred)
@@ -660,15 +911,24 @@ defmodule BucketProjectionControls do
 
   # A check with exactly ONE edge, on the client leg, whose member carries other
   # edges — so dropping it moves the CHECK and leaves the member universe alone.
+  # It has to be a DECLARED check as well as a client-leg one with a single
+  # edge: MES-104 separated the bucket-2 universe from the checks the cells
+  # address, and dropping the only edge of an ADDRESSED-but-undeclared check
+  # takes it out of the views altogether rather than putting it in 2b. That is
+  # correct — it is in no universe to be a complement within — and it is not
+  # the movement this control is about. Sorted, so the choice is reproducible.
   defp sole_edge_check(doc) do
     tags = Enum.frequencies_by(doc["cells"], & &1["tag"])
     members = Enum.frequencies_by(doc["cells"], &get_in(&1, ["member", "register_key"]))
+    declared = MapSet.new(doc["population"]["declared_checks"] || [])
 
     doc["cells"]
     |> Enum.filter(fn c ->
       tags[c["tag"]] == 1 and Enum.at(c["oc_key"], 0) == "client" and c["bucket"] == "5" and
-        members[get_in(c, ["member", "register_key"])] > 1
+        members[get_in(c, ["member", "register_key"])] > 1 and
+        MapSet.member?(declared, c["tag"])
     end)
+    |> Enum.sort_by(& &1["tag"])
     |> hd()
     |> Map.fetch!("tag")
   end

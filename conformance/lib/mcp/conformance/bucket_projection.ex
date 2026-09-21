@@ -70,19 +70,54 @@ defmodule MCP.Conformance.BucketProjection do
   # The guard set, as a list of ids so that `guard-mutation` can remove exactly
   # one of them by a single-line edit and re-run the input it catches. A guard
   # whose removal changes nothing is decoration.
-  @guards [:vacuum, :leg, :edge_partition, :member_partition, :check_partition]
+  @guards [
+    :vacuum,
+    :leg,
+    :edge_partition,
+    :member_partition,
+    :check_partition,
+    :population_statement
+  ]
 
-  @banner """
-  POPULATION: the declared 21-member / 14-check slice adjudicated by
-  MES-97 (C1a). This is NOT the whole conformance picture. The full
-  comparison is 281 ET-CC members and 173 in-denominator OC checks; the
-  remaining 260 members and 159 checks are not_yet_adjudicated -- a third
-  state, distinct from bucket 1 -- and are owned by C1b (MES-104, client
-  leg) and C1c (MES-105, server leg + the 29 none_determinable).
+  # --- the population figures, and why no statement here states one --------
+  #
+  # CR-1 on MES-104. The banner and three predicates below used to carry
+  # C1a's 21-member / 14-check population as HARD-CODED text. C1b-i moved the
+  # population to 48/29 and the strings did not move with it, so twelve
+  # committed views declared a population their own computed `universe` counts
+  # contradicted, and the banner named as PENDING the very ticket that was
+  # rendering it. Nothing went red: the unit compared the view against the
+  # recorded constant and `--check` re-projected that same constant, so both
+  # sides were the constant (the guard-19 shape).
+  #
+  # The fix is not better strings. EVERY population figure that any emitted
+  # statement carries is interpolated from the crosswalk under projection,
+  # through `figures/1`, and `:population_statement` refuses a statement that
+  # carries a population figure it did not interpolate. C1b-ii, C1b-iii and
+  # C1c each move these numbers again.
+  @figure_keys ~w(declared_members declared_checks addressed_not_declared
+                  outside_members outside_checks total_members
+                  in_denominator_checks manifest_checks unmatchable_checks)a
 
-  A count of zero in this view means zero WITHIN THAT SLICE. It does not
-  mean zero in the suite. When C1b and C1c land, this projection re-runs
-  and fills.\
+  @banner_template """
+  POPULATION: this projection covers {{declared_members}} declared ET-CC
+  members and {{declared_checks}} declared in-population OC checks. That is
+  the slice adjudicated so far, and it is NOT the whole conformance picture:
+  the full comparison is {{total_members}} ET-CC members and
+  {{in_denominator_checks}} in-denominator OC checks, of which
+  {{outside_members}} members and {{outside_checks}} checks are
+  not_yet_adjudicated -- a third state, distinct from bucket 1 -- owned by the
+  tickets the crosswalk's own `outside_the_population` block names. A further
+  {{addressed_not_declared}} checks carry an edge without being declared by
+  any file, so they are counted in neither.
+
+  A count of zero in this view means zero WITHIN THAT SLICE. It does not mean
+  zero in the suite. As the declared population grows this projection re-runs
+  and fills.
+
+  EVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected; none
+  is written here. The [population_statement] guard refuses a population
+  figure that is not.\
   """
 
   @buckets [
@@ -90,7 +125,7 @@ defmodule MCP.Conformance.BucketProjection do
       id: "0",
       title: "out of denominator — unmatchable by construction",
       derivation: "citation",
-      universe: "oc_checks_175"
+      universe: "oc_checks_manifest"
     },
     %{
       id: "1",
@@ -148,27 +183,30 @@ defmodule MCP.Conformance.BucketProjection do
     }
   ]
 
-  @predicates %{
+  @predicate_templates %{
     "0" =>
       "CITATION, not a projection. The in-scope OC checks A5 (MES-70) classified " <>
-        "`matchable: false` in `docs/conformance/bucket-0-2026-07-28.json`. Universe: the 175 " <>
-        "checks of A1's manifest. They were removed from the denominator BEFORE the join — the " <>
-        "crosswalk is built against 173 — so they appear in no cell and cannot be filtered out " <>
-        "of one.",
+        "`matchable: false` in `docs/conformance/bucket-0-2026-07-28.json`. Universe: the " <>
+        "{{manifest_checks}} checks of A1's manifest. They were removed from the denominator " <>
+        "BEFORE the join — the crosswalk is built against {{in_denominator_checks}} checks — " <>
+        "so they appear in no cell and cannot be filtered out of one.",
     "1" =>
       "Declared-population ET-CC members carrying NO edge in `cells`: the complement of " <>
         "`members_with_edges` over the declared population, taken through " <>
-        "`Crosswalk.project(:bucket_1, ...)`. Universe: the 21 declared members, never all 281.",
+        "`Crosswalk.project(:bucket_1, ...)`. Universe: the {{declared_members}} declared " <>
+        "members, never all {{total_members}} members.",
     "2a" =>
       "Declared-population OC checks carrying NO edge in `cells`, whose token's leg segment is " <>
         "`server`. Complement taken through `Crosswalk.project(:bucket_2, ...)`, then filtered " <>
-        "on the leg the token already carries. Universe: the server-leg checks of the declared " <>
-        "14, never all 173.",
+        "on the leg the token already carries. Universe: the server-leg half of the " <>
+        "{{declared_checks}} declared checks, never all {{in_denominator_checks}} " <>
+        "in-denominator checks.",
     "2b" =>
       "Declared-population OC checks carrying NO edge in `cells`, whose token's leg segment is " <>
         "`client`. Complement taken through `Crosswalk.project(:bucket_2, ...)`, then filtered " <>
-        "on the leg the token already carries. Universe: the client-leg checks of the declared " <>
-        "14, never all 173.",
+        "on the leg the token already carries. Universe: the client-leg half of the " <>
+        "{{declared_checks}} declared checks, never all {{in_denominator_checks}} " <>
+        "in-denominator checks.",
     "3" => "`cells` where the stored `bucket` == \"3\". Universe: the crosswalk's edges.",
     "4a" => "`cells` where the stored `bucket` == \"4a\". Universe: the crosswalk's edges.",
     "4b" => "`cells` where the stored `bucket` == \"4b\". Universe: the crosswalk's edges.",
@@ -194,14 +232,18 @@ defmodule MCP.Conformance.BucketProjection do
     "1" => {"by_adjudication", "a declared ET-CC member with no OC counterpart."},
     "2a" =>
       {"by_adjudication",
-       "a declared server-leg OC check that no ET-CC member covers. Over the declared 14, " <>
-         "explicitly NOT over the 173: the 159 in-denominator checks outside the population " <>
-         "are not bucket 2, they are not_yet_adjudicated (C1b/C1c)."},
+       "a declared server-leg OC check that no ET-CC member covers. Over the " <>
+         "{{declared_checks}} DECLARED checks, explicitly NOT over the " <>
+         "{{in_denominator_checks}} in-denominator checks: the ones outside every declared " <>
+         "check population are not bucket 2, they are not_yet_adjudicated (C1b-ii, C1b-iii, " <>
+         "C1c)."},
     "2b" =>
       {"by_adjudication",
-       "a declared client-leg OC check that no ET-CC member covers. Over the declared 14, " <>
-         "explicitly NOT over the 173: the 159 in-denominator checks outside the population " <>
-         "are not bucket 2, they are not_yet_adjudicated (C1b/C1c)."},
+       "a declared client-leg OC check that no ET-CC member covers. Over the " <>
+         "{{declared_checks}} DECLARED checks, explicitly NOT over the " <>
+         "{{in_denominator_checks}} in-denominator checks: the ones outside every declared " <>
+         "check population are not bucket 2, they are not_yet_adjudicated (C1b-ii, C1b-iii, " <>
+         "C1c)."},
     "3" =>
       {"by_construction",
        "an ET-CC member that FAILS against a check the harness passes. Not reachable while " <>
@@ -210,8 +252,8 @@ defmodule MCP.Conformance.BucketProjection do
     "4b" => {"by_slice", "a server-leg incompleteness inside the declared slice."},
     "5a" =>
       {"by_slice",
-       "a server-leg agreement inside the declared slice. THIS IS NOT A STRUCTURAL FACT. All " <>
-         "15 green-in-both edges adjudicated so far are client-leg; the declared slice simply " <>
+       "a server-leg agreement inside the declared slice. THIS IS NOT A STRUCTURAL FACT. Every " <>
+         "green-in-both edge adjudicated so far is client-leg; the declared slice simply " <>
          "contains no server-leg agreement yet. An unqualified empty \"green in both — " <>
          "server\" view would read as \"this SDK agrees with the official suite nowhere on the " <>
          "server leg\", which is FALSE. C1c (MES-105) is the ticket that fills it."},
@@ -236,20 +278,168 @@ defmodule MCP.Conformance.BucketProjection do
   @spec guards() :: [atom()]
   def guards, do: @guards
 
+  # The `of` line each universe carries into every view and into the roll-up's
+  # equations. Templates for the same reason the banner is one: two of these
+  # state a TOTAL, and a total moves every time a sibling ticket declares more.
+  @universe_of %{
+    "edges" => "the crosswalk's `cells`",
+    "declared_members" =>
+      "the {{declared_members}} declared ET-CC members, never all {{total_members}} members",
+    "declared_checks" =>
+      "the {{declared_checks}} declared in-population OC checks, never all " <>
+        "{{in_denominator_checks}} in-denominator checks",
+    "oc_checks_manifest" =>
+      "A1's frozen manifest of {{manifest_checks}} checks, before the {{unmatchable_checks}} " <>
+        "bucket-0 checks are removed, leaving {{in_denominator_checks}} in-denominator checks"
+  }
+
   @doc "The ten bucket ids, in page order."
   @spec bucket_ids() :: [String.t()]
   def bucket_ids, do: Enum.map(@buckets, & &1.id)
 
-  @doc "The static spec of one bucket — title, derivation, universe, predicate."
+  @doc """
+  The static spec of one bucket — title, derivation, universe, and the
+  UNRENDERED predicate template.
+
+  `spec/2` is what a view uses. This arity exists for the parts that are the
+  same whatever the population is, and it deliberately does not hand back a
+  `:predicate`: a caller that got one without passing figures would be
+  rendering `{{declared_members}}` into an artefact.
+  """
   @spec spec(String.t()) :: map()
   def spec(id) do
     b = Enum.find(@buckets, &(&1.id == id)) || raise ArgumentError, "no such bucket: #{id}"
-    Map.put(b, :predicate, Map.fetch!(@predicates, id))
+    Map.put(b, :predicate_template, Map.fetch!(@predicate_templates, id))
   end
 
-  @doc "The population banner every view and the roll-up carry verbatim."
-  @spec banner() :: String.t()
-  def banner, do: @banner
+  @doc "The spec of one bucket with its predicate rendered against `figures`."
+  @spec spec(String.t(), map()) :: map()
+  def spec(id, figures) do
+    s = spec(id)
+    Map.put(s, :predicate, render(s.predicate_template, figures))
+  end
+
+  @doc """
+  The population banner every view and the roll-up carry, rendered against the
+  figures of the crosswalk being projected.
+
+  There is no arity-zero form. A banner that can be produced without the
+  crosswalk is a banner that can disagree with it, which is CR-1 on MES-104.
+  """
+  @spec banner(map()) :: String.t()
+  def banner(figures), do: @banner_template |> render(figures) |> reflow()
+
+  # Re-wrapped AFTER substitution, per paragraph. A template wrapped by hand is
+  # wrapped for the figures it was written against: `48` and `1024` are not the
+  # same width, so the committed artefact would go ragged every time the
+  # population moved — a small thing, but this whole ticket is about text that
+  # no longer matches its numbers.
+  defp reflow(text) do
+    text
+    |> String.split(~r/\n\s*\n/)
+    |> Enum.map_join("\n\n", &wrap/1)
+  end
+
+  defp wrap(paragraph) do
+    paragraph
+    |> String.split(~r/\s+/, trim: true)
+    |> Enum.reduce([], &place_word/2)
+    |> Enum.reverse()
+    |> Enum.join("\n")
+  end
+
+  defp place_word(word, [line | rest]) when byte_size(line) + 1 + byte_size(word) <= 72,
+    do: [line <> " " <> word | rest]
+
+  defp place_word(word, lines), do: [word | lines]
+
+  @doc """
+  The population figures, every one of them COUNTED from the crosswalk under
+  projection or read from a field that crosswalk states.
+
+  A figure the crosswalk does not state is `nil`, and every figure derived
+  from it is `nil` too — the `:population_statement` guard then refuses,
+  naming the field. A figure that cannot be determined is a refusal; it is not
+  a zero, because "0 members are not_yet_adjudicated" is the most dangerous
+  sentence this generator could emit.
+  """
+  @spec figures(map(), map()) :: %{atom() => non_neg_integer() | nil}
+  def figures(crosswalk, bucket_zero) do
+    population = crosswalk["population"] || %{}
+    outside = population["outside_the_population"] || %{}
+    manifest = bucket_zero["checks"] || []
+
+    cells = crosswalk["cells"] || []
+    members = population["members"] || []
+    checks = population["declared_checks"] || []
+    addressed = cells |> Enum.map(& &1["tag"]) |> Enum.uniq()
+
+    declared_members = length(members)
+    declared_checks = length(checks)
+    not_declared = length(addressed -- checks)
+    outside_members = outside["et_cc_members"]
+    outside_checks = outside["in_denominator_checks"]
+
+    %{
+      declared_members: declared_members,
+      declared_checks: declared_checks,
+      addressed_not_declared: not_declared,
+      outside_members: outside_members,
+      outside_checks: outside_checks,
+      total_members: sum([declared_members, outside_members]),
+      in_denominator_checks: sum([declared_checks, outside_checks, not_declared]),
+      manifest_checks: length(manifest),
+      unmatchable_checks: Enum.count(manifest, &(&1["matchable"] == false))
+    }
+  end
+
+  @doc "The figure keys, so a control can enumerate them without reaching in."
+  @spec figure_keys() :: [atom()]
+  def figure_keys, do: @figure_keys
+
+  @doc """
+  Every population STATEMENT this generator emits, labelled, rendered against
+  `figures`.
+
+  This is the population `:population_statement` scans, and it is public so a
+  control can assert the scan reached all of it — a scan over an empty
+  population finds no defect and reports exactly the green of a scan that
+  found none.
+  """
+  @spec statements(map()) :: [{String.t(), String.t()}]
+  def statements(figures) do
+    [{"banner", banner(figures)}] ++
+      Enum.map(bucket_ids(), &{"predicate #{&1}", spec(&1, figures).predicate}) ++
+      Enum.map(Enum.sort(Map.keys(@universe_of)), fn name ->
+        {"universe.of #{name}", render(Map.fetch!(@universe_of, name), figures)}
+      end) ++
+      Enum.map(bucket_ids(), fn id ->
+        {"emptiness #{id}", render(elem(Map.fetch!(@emptiness, id), 1), figures)}
+      end)
+  end
+
+  # `{{key}}` -> the figure. An unknown key RAISES: a template naming a figure
+  # that does not exist would otherwise emit `{{typo}}` into a committed
+  # artefact, where it reads as decoration rather than as a fault.
+  defp render(template, figures) do
+    Regex.replace(~r/\{\{([a-z_]+)\}\}/, template, fn _whole, key ->
+      case Map.fetch(figures, safe_key(key)) do
+        {:ok, nil} -> "UNSTATED"
+        {:ok, value} -> to_string(value)
+        :error -> raise ArgumentError, "no such population figure: #{key}"
+      end
+    end)
+  end
+
+  defp safe_key(key) do
+    String.to_existing_atom(key)
+  rescue
+    ArgumentError -> :__no_such_figure__
+  end
+
+  defp sum(parts) do
+    if Enum.any?(parts, &is_nil/1), do: nil, else: Enum.sum(parts)
+  end
 
   @doc """
   Project one crosswalk into the ten views, the escalated view and the roll-up.
@@ -278,11 +468,19 @@ defmodule MCP.Conformance.BucketProjection do
     cells = crosswalk["cells"] || []
     population = crosswalk["population"] || %{}
     members = population["members"] || []
-    checks = population["checks"] || []
+
+    # The bucket-2 universe is the DECLARED check population, never the checks
+    # the cells happen to address. MES-104 separated the two: an edges file may
+    # declare its checks from an external anchor, and it may also address checks
+    # no file declares (C1a's inherited rows do). Projecting the complement
+    # within the addressed set is what made bucket 2 empty by construction —
+    # the set would be its own universe.
+    checks = population["declared_checks"] || []
+    addressed = cells |> Enum.map(& &1["tag"]) |> Enum.uniq() |> Enum.sort()
     unmatched = crosswalk["declared_unmatched"] || []
 
     members_with_edges = cells |> Enum.map(&member_key/1) |> Enum.uniq() |> Enum.sort()
-    checks_with_edges = cells |> Enum.map(& &1["tag"]) |> Enum.uniq() |> Enum.sort()
+    checks_with_edges = Enum.filter(addressed, &(&1 in checks))
 
     base = %{
       cells: cells,
@@ -291,6 +489,7 @@ defmodule MCP.Conformance.BucketProjection do
       sources: sources,
       members: members,
       checks: checks,
+      addressed: addressed,
       unmatched: unmatched,
       members_with_edges: members_with_edges,
       checks_with_edges: checks_with_edges
@@ -301,6 +500,7 @@ defmodule MCP.Conformance.BucketProjection do
     base
     |> Map.put(:rows, rows)
     |> Map.put(:escalated, Enum.filter(cells, &(&1["bucket"] == nil)))
+    |> Map.put(:figures, figures(crosswalk, bucket_zero))
     |> partitions()
   end
 
@@ -327,11 +527,29 @@ defmodule MCP.Conformance.BucketProjection do
 
   defp rows_for(id, ctx), do: Enum.filter(ctx.cells, &(&1["bucket"] == id))
 
+  # A crosswalk whose edges files declare NO check population has no bucket-2
+  # question to answer, and `Crosswalk.project/2` refusing the complement is
+  # how that is found out. The refusal is REPORTED — the view is empty with the
+  # `not_declared` reason — rather than raised: an empty 2a/2b carrying
+  # `by_adjudication` would say "we looked at the declared checks and every one
+  # of them is covered", which is a claim nobody made.
   defp unmatched_checks(ctx, want) do
-    :bucket_2
-    |> complement(ctx.checks, ctx.checks_with_edges)
-    |> Enum.map(&%{"tag" => &1, "leg" => tag_leg(&1)})
-    |> Enum.filter(&(&1["leg"] == want))
+    case Crosswalk.project(:bucket_2, %{
+           population: ctx.checks,
+           with_edges: ctx.checks_with_edges
+         }) do
+      {:ok, rows} ->
+        rows
+        |> Enum.sort()
+        |> Enum.map(&%{"tag" => &1, "leg" => tag_leg(&1)})
+        |> Enum.filter(&(&1["leg"] == want))
+
+      {:error, :empty_population} ->
+        []
+
+      {:error, reason} ->
+        raise ArgumentError, "bucket_2 could not be projected: #{inspect(reason)}"
+    end
   end
 
   # Both complements go THROUGH `Crosswalk.project/2` rather than being
@@ -378,9 +596,29 @@ defmodule MCP.Conformance.BucketProjection do
       edges: Crosswalk.set_compare(Enum.map(ctx.cells, &edge_key/1), projected),
       members: Crosswalk.set_compare(ctx.members, bucket_1 ++ ctx.members_with_edges),
       member_records: Crosswalk.set_compare(unmatched_keys, bucket_1),
-      checks: Crosswalk.set_compare(ctx.checks, bucket_2 ++ ctx.checks_with_edges),
+      # The CHECK partition, re-cut by MES-104 because its old form could no
+      # longer fail. It compared the declared checks against `2a ++ 2b ++ the
+      # checks carrying an edge` — and once the declared checks became the
+      # bucket-2 UNIVERSE, `2a ++ 2b` is that universe minus the edge-bearing
+      # ones by construction, so the two sides were the same set written twice.
+      # A guard entailed by the way its own inputs are computed is as empty as
+      # one nobody calls.
+      #
+      # What it compares now is the crosswalk's OWN stored bucket 2 against the
+      # one these views project. Two independently produced statements about the
+      # same thing — `mix conformance.crosswalk` computed the first, this module
+      # the second — so a disagreement is a real defect: an edited artefact, or
+      # a projection that has drifted from the matrix it claims to render. A
+      # CONSISTENCY pin in ruling 9's sense; it does not witness that either is
+      # right.
+      checks: Crosswalk.set_compare(stored_bucket_2(ctx.crosswalk), bucket_2),
+      checks_reach_a_view: Crosswalk.set_compare(ctx.checks, bucket_2 ++ ctx.checks_with_edges),
       pairwise: pairwise(ctx)
     })
+  end
+
+  defp stored_bucket_2(crosswalk) do
+    get_in(crosswalk, ["buckets", "bucket_2", "checks"]) || []
   end
 
   defp edge_key(cell), do: [member_key(cell), cell["claim"], cell["tag"]]
@@ -494,19 +732,251 @@ defmodule MCP.Conformance.BucketProjection do
 
   defp guard(:check_partition, ctx) do
     c = ctx.partition.checks
+    r = ctx.partition.checks_reach_a_view
 
-    if c.equal do
+    if c.equal and r.equal do
       nil
     else
       {:check_partition,
-       "CHECK PARTITION — bucket 2a, bucket 2b and the checks carrying an edge do not " <>
-         "partition the declared checks:\n" <>
-         "  declared checks reaching no view (#{length(c.missing)}):\n" <>
+       "CHECK PARTITION — the bucket 2 these views project is not the bucket 2 the crosswalk " <>
+         "stores, or the declared checks are not partitioned by 2a, 2b and the checks carrying " <>
+         "an edge:\n" <>
+         "  in the crosswalk's bucket 2, in no view (#{length(c.missing)}):\n" <>
          Enum.map_join(c.missing, "\n", &"    #{&1}") <>
-         "\n  checks named by a cell but outside the declared population (#{length(c.extra)}):\n" <>
-         Enum.map_join(c.extra, "\n", &"    #{&1}")}
+         "\n  in 2a or 2b, not in the crosswalk's bucket 2 (#{length(c.extra)}):\n" <>
+         Enum.map_join(c.extra, "\n", &"    #{&1}") <>
+         "\n  declared checks reaching no view (#{length(r.missing)}):\n" <>
+         Enum.map_join(r.missing, "\n", &"    #{&1}") <>
+         "\n  in a view, not a declared check (#{length(r.extra)}):\n" <>
+         Enum.map_join(r.extra, "\n", &"    #{&1}")}
     end
   end
+
+  # --- :population_statement -------------------------------------------------
+  #
+  # CR-1's guard. The four limbs answer four different questions, and none of
+  # them is entailed by the interpolation that fixed the instance:
+  #
+  #   P1  can the figures be determined at all? A crosswalk that does not state
+  #       its outside-the-population block gives `nil`, and a banner rendered
+  #       over a nil is the "0 members remain" sentence. Fail-closed.
+  #   P2  do the crosswalk's OWN stated counts agree with its own lists? Two
+  #       statements produced separately inside one artefact, pinned. This is
+  #       the limb a mutated CROSSWALK fires, which is why the guard is visible
+  #       to `guard-mutation`.
+  #   P3  does any emitted statement carry a population figure it did not
+  #       interpolate? Answered by rendering every statement a SECOND time
+  #       against sentinel figures and looking for a number that did not move.
+  #       A literal cannot move, so it is caught by its own constancy — no
+  #       allow-list of permitted numbers, which would decay into the
+  #       exception list that licenses the next one.
+  #   P4  do the rendered statements actually STATE the tree's figures? P3
+  #       catches a literal; P4 catches an interpolation of the WRONG figure,
+  #       which P3 cannot see because a wrong figure moves under sentinels just
+  #       as a right one does. The phrases are built here, independently of the
+  #       templates, so the two have to be edited together — a consistency pin
+  #       (ruling 9), not a proof that either wording is right.
+  #
+  # WHAT IT DOES NOT COVER, stated rather than implied. The scan reads the
+  # statements in `statements/1` only, so prose elsewhere in this module —
+  # moduledoc, `boundary/0`, the residual texts — is outside it. It reads a
+  # figure written in DIGITS adjacent to `members` or `checks`; a figure spelled
+  # as a word, or stated without its noun, is not a claim it can see.
+  @population_claim ~r/(\d+)[\s-](?:[A-Za-z][\w-]*[\s-]){0,3}?(?:members?|checks?)\b/
+
+  @required_crosswalk_fields [
+    ["population", "member_count"],
+    ["population", "declared_check_count"],
+    ["population", "outside_the_population", "et_cc_members"],
+    ["population", "outside_the_population", "in_denominator_checks"]
+  ]
+
+  # Four limbs, in order of what they can determine: no figures at all, figures
+  # the artefact contradicts, a figure that is not a figure, a figure in the
+  # wrong place. The first to fire is the one reported, so the message names
+  # the cheapest true explanation rather than the last one checked.
+  defp guard(:population_statement, ctx) do
+    Enum.find_value(
+      [
+        &undeterminable/1,
+        &stated_counts/1,
+        &hard_coded_figures/1,
+        &statements_against_the_tree/1
+      ],
+      & &1.(ctx)
+    )
+  end
+
+  # P1
+  defp undeterminable(ctx) do
+    missing = Enum.reject(@required_crosswalk_fields, &(get_in(ctx.crosswalk, &1) != nil))
+
+    if missing == [] do
+      nil
+    else
+      {:population_statement,
+       "POPULATION STATEMENT — the crosswalk does not state #{length(missing)} of the figures " <>
+         "every view's banner declares, so the population cannot be determined and this " <>
+         "generator will not guess one. Rendering a nil as 0 would emit \"0 members and 0 " <>
+         "checks are not_yet_adjudicated\", which is the strongest false claim these artefacts " <>
+         "could make:\n" <> Enum.map_join(missing, "\n", &"  #{Enum.join(&1, ".")}")}
+    end
+  end
+
+  # P2
+  defp stated_counts(ctx) do
+    pairs = [
+      {"population.member_count", get_in(ctx.crosswalk, ["population", "member_count"]),
+       length(ctx.members)},
+      {"population.declared_check_count",
+       get_in(ctx.crosswalk, ["population", "declared_check_count"]), length(ctx.checks)}
+    ]
+
+    case Enum.reject(pairs, fn {_f, stated, counted} -> stated == counted end) do
+      [] ->
+        nil
+
+      bad ->
+        {:population_statement,
+         "POPULATION STATEMENT — the crosswalk's own stated counts disagree with its own " <>
+           "lists, so a banner interpolated from either would be a statement the other " <>
+           "artefact contradicts:\n" <>
+           Enum.map_join(bad, "\n", fn {field, stated, counted} ->
+             "  #{field}: states #{inspect(stated)}, the list holds #{counted}"
+           end)}
+    end
+  end
+
+  @doc """
+  The sentinel figures P3 renders against — one distinct improbable value per
+  figure key, so a number that is not one of them did not come from a figure.
+  """
+  @spec sentinel_figures() :: %{atom() => pos_integer()}
+  def sentinel_figures,
+    do: Map.new(Enum.with_index(@figure_keys), fn {k, i} -> {k, 900_001 + i} end)
+
+  @doc """
+  Every population figure in `statements` that is NOT a sentinel — i.e. every
+  one that a render against `sentinel_figures/0` left standing, which is every
+  one written as a literal.
+
+  Public because it is P3's whole decision, and a decision only a whole-module
+  recompile can reach is a decision gate 5 cannot hold. The control does the
+  recompile; the units drive this.
+  """
+  @spec frozen_figures([{String.t(), String.t()}]) :: [{String.t(), String.t(), String.t()}]
+  def frozen_figures(statements) do
+    allowed = sentinel_figures() |> Map.values() |> MapSet.new()
+
+    for {label, text} <- statements,
+        [_whole, number | _] <- Regex.scan(@population_claim, text),
+        not MapSet.member?(allowed, String.to_integer(number)),
+        do: {label, number, text}
+  end
+
+  @doc """
+  Every phrase a statement is required to contain and does not, with the
+  phrases built from `figures` rather than from the templates.
+
+  Public for the same reason as `frozen_figures/1`.
+  """
+  @spec missing_phrases([{String.t(), String.t()}], map()) :: [{String.t(), String.t()}]
+  def missing_phrases(statements, figures) do
+    rendered = Map.new(statements, fn {label, text} -> {label, squash(text)} end)
+
+    for {label, phrases} <- required_phrases(figures),
+        text = Map.get(rendered, label),
+        text != nil,
+        phrase <- phrases,
+        not String.contains?(text, squash(phrase)),
+        do: {label, phrase}
+  end
+
+  # P3
+  defp hard_coded_figures(_ctx) do
+    frozen = frozen_figures(statements(sentinel_figures()))
+
+    if frozen == [] do
+      nil
+    else
+      {:population_statement,
+       "POPULATION STATEMENT — #{length(frozen)} population figure(s) are HARD-CODED. Every " <>
+         "figure below survived a render against sentinel figures unchanged, so it states a " <>
+         "population this generator did not count. That is CR-1 on MES-104: C1a's banner was a " <>
+         "literal, three populations went past it, and twelve committed views declared a slice " <>
+         "their own universe counts contradicted. Interpolate it from `figures/1`:\n" <>
+         Enum.map_join(frozen, "\n", fn {label, number, text} ->
+           "  #{label}: #{number} — in #{inspect(String.slice(text, 0, 90))}"
+         end)}
+    end
+  end
+
+  # P4
+  defp statements_against_the_tree(ctx) do
+    absent = missing_phrases(statements(ctx.figures), ctx.figures)
+
+    if absent == [] do
+      nil
+    else
+      {:population_statement,
+       "POPULATION STATEMENT — #{length(absent)} statement(s) do not state the figure this " <>
+         "tree holds. The phrase is built from the crosswalk under projection and looked for " <>
+         "in the rendered statement, so this fires on an interpolation of the WRONG figure, " <>
+         "which the hard-coded check cannot see (a wrong figure moves under sentinels exactly " <>
+         "as a right one does):\n" <>
+         Enum.map_join(absent, "\n", fn {label, phrase} ->
+           "  #{label}: expected to contain #{inspect(phrase)}"
+         end)}
+    end
+  end
+
+  # Written HERE and not in the templates, on purpose: a pin between two
+  # independently authored statements is only a pin while they are two.
+  defp required_phrases(f) do
+    %{
+      "banner" => [
+        "#{f.declared_members} declared ET-CC members",
+        "#{f.declared_checks} declared in-population OC checks",
+        "#{f.total_members} ET-CC members",
+        "#{f.in_denominator_checks} in-denominator OC checks",
+        "#{f.outside_members} members and #{f.outside_checks} checks are not_yet_adjudicated",
+        "#{f.addressed_not_declared} checks carry an edge"
+      ],
+      "predicate 0" => [
+        "the #{f.manifest_checks} checks of A1's manifest",
+        "built against #{f.in_denominator_checks} checks"
+      ],
+      "predicate 1" => [
+        "the #{f.declared_members} declared members",
+        "never all #{f.total_members} members"
+      ],
+      "predicate 2a" => [
+        "the #{f.declared_checks} declared checks",
+        "never all #{f.in_denominator_checks} in-denominator checks"
+      ],
+      "predicate 2b" => [
+        "the #{f.declared_checks} declared checks",
+        "never all #{f.in_denominator_checks} in-denominator checks"
+      ],
+      "universe.of declared_members" => [
+        "the #{f.declared_members} declared ET-CC members",
+        "never all #{f.total_members} members"
+      ],
+      "universe.of declared_checks" => [
+        "the #{f.declared_checks} declared in-population OC checks",
+        "never all #{f.in_denominator_checks} in-denominator checks"
+      ],
+      "universe.of oc_checks_manifest" => [
+        "manifest of #{f.manifest_checks} checks",
+        "the #{f.unmatchable_checks} bucket-0 checks",
+        "leaving #{f.in_denominator_checks} in-denominator checks"
+      ]
+    }
+  end
+
+  # A template wraps; a phrase written on one line does not. Both sides are
+  # whitespace-collapsed so the pin is on the WORDS and not on the fill.
+  defp squash(text), do: text |> String.replace(~r/\s+/, " ") |> String.trim()
 
   # --- the artefacts --------------------------------------------------------
 
@@ -520,7 +990,7 @@ defmodule MCP.Conformance.BucketProjection do
   end
 
   defp view(id, ctx) do
-    s = spec(id)
+    s = spec(id, ctx.figures)
     rows = Map.fetch!(ctx.rows, id)
 
     %{
@@ -533,7 +1003,7 @@ defmodule MCP.Conformance.BucketProjection do
       "derivation" => s.derivation,
       "predicate" => s.predicate,
       "universe" => universe(s.universe, ctx),
-      "population_banner" => @banner,
+      "population_banner" => banner(ctx.figures),
       "projected_from" => ctx.sources,
       "what_this_is" => what_this_is(s.derivation),
       "count" => length(rows),
@@ -556,40 +1026,68 @@ defmodule MCP.Conformance.BucketProjection do
   end
 
   defp universe("edges", ctx),
-    do: %{"name" => "edges", "count" => length(ctx.cells), "of" => "the crosswalk's `cells`"}
+    do: %{"name" => "edges", "count" => length(ctx.cells), "of" => universe_of("edges", ctx)}
 
   defp universe("declared_members", ctx),
     do: %{
       "name" => "declared_members",
       "count" => length(ctx.members),
-      "of" => "the declared ET-CC members, never all 281"
+      "of" => universe_of("declared_members", ctx)
     }
 
   defp universe("declared_checks", ctx),
     do: %{
       "name" => "declared_checks",
       "count" => length(ctx.checks),
-      "of" => "the declared in-population OC checks, never all 173"
+      "of" => universe_of("declared_checks", ctx),
+      "addressed_but_not_declared" => length(ctx.addressed) - length(ctx.checks_with_edges),
+      "why_that_number_is_not_in_this_universe" =>
+        "Checks an edge addresses that no file DECLARES. They carry adjudicated edges, so they " <>
+          "are not bucket 2, and they are in no declared universe, so they are not in 2a or 2b " <>
+          "either. Counting them here would make the complement — which is what 2a and 2b are — " <>
+          "a complement within the very set it is taken from."
     }
 
-  defp universe("oc_checks_175", ctx),
+  defp universe("oc_checks_manifest", ctx),
     do: %{
-      "name" => "oc_checks_175",
+      "name" => "oc_checks_manifest",
       "count" => length(ctx.bucket_zero["checks"] || []),
-      "of" => "A1's frozen manifest, before the 2 bucket-0 removals leave 173"
+      "of" => universe_of("oc_checks_manifest", ctx)
     }
+
+  defp universe_of(name, ctx), do: render(Map.fetch!(@universe_of, name), ctx.figures)
 
   # Emitted ONLY when the view is really empty, and carrying a MEASURE rather
   # than an assertion: "checked, and zero" has to say what was checked.
   defp emptiness(_id, [_ | _], _ctx), do: nil
 
-  defp emptiness(id, [], ctx) do
+  defp emptiness(id, [], ctx) when id in ["2a", "2b"] do
+    if ctx.checks == [] do
+      %{
+        "code" => "not_declared",
+        "result" =>
+          "NOT ASKED — no edges file in this run declares a check population, so bucket 2 has no " <>
+            "universe and this view is empty for want of a question, not for want of a member.",
+        "what_would_fill_it" =>
+          "An edges file declaring its check population from an external anchor. Until one does, " <>
+            "`Crosswalk.project/2` refuses the complement and that refusal is what this is.",
+        "measured" => "declared checks: 0. Addressed by an edge: #{length(ctx.addressed)}.",
+        "ticket_that_would_fill_it" => "whichever ticket declares the checks for this leg"
+      }
+    else
+      standard_emptiness(id, ctx)
+    end
+  end
+
+  defp emptiness(id, [], ctx), do: standard_emptiness(id, ctx)
+
+  defp standard_emptiness(id, ctx) do
     {code, fill} = Map.fetch!(@emptiness, id)
 
     %{
       "code" => code,
       "result" => "CHECKED, AND ZERO — within the declared slice. Not 'never asked'.",
-      "what_would_fill_it" => fill,
+      "what_would_fill_it" => render(fill, ctx.figures),
       "measured" => measure(id, ctx),
       "ticket_that_would_fill_it" => filler(code)
     }
@@ -604,7 +1102,9 @@ defmodule MCP.Conformance.BucketProjection do
 
   defp measure(id, ctx) when id in ["2a", "2b"] do
     "declared checks carrying no edge: #{length(ctx.checks) - length(ctx.checks_with_edges)} " <>
-      "of #{length(ctx.checks)}."
+      "of #{length(ctx.checks)}. (#{length(ctx.addressed) - length(ctx.checks_with_edges)} " <>
+      "further checks carry an edge but are DECLARED by no file, so they are in no universe " <>
+      "this view takes a complement within.)"
   end
 
   defp measure("5a", ctx) do
@@ -639,7 +1139,7 @@ defmodule MCP.Conformance.BucketProjection do
       "derivation" => "projection",
       "predicate" => "`cells` where the stored `bucket` is null and an `escalation` is recorded.",
       "universe" => universe("edges", ctx),
-      "population_banner" => @banner,
+      "population_banner" => banner(ctx.figures),
       "projected_from" => ctx.sources,
       "what_this_is" =>
         "THE ELEVENTH VIEW, OUTSIDE THE TEN. The crosswalk's own rule is that \"an escalation " <>
@@ -666,7 +1166,7 @@ defmodule MCP.Conformance.BucketProjection do
         "The count roll-up, itself a projection: every figure below is derived from the same " <>
           "filters that wrote the views, in the same run. It makes the partition arithmetic " <>
           "VISIBLE. It does not prove the partition — E2 owns that proof as the epic's exit.",
-      "population_banner" => @banner,
+      "population_banner" => banner(ctx.figures),
       "projected_from" => ctx.sources,
       "counts" => counts(ctx),
       "equations" => equations(ctx),
@@ -731,16 +1231,16 @@ defmodule MCP.Conformance.BucketProjection do
         "declared_members",
         length(ctx.members),
         member_terms,
-        "the declared ET-CC members, never all 281"
+        universe_of("declared_members", ctx)
       ),
       equation(
         "declared_checks",
         length(ctx.checks),
         check_terms,
-        "the declared in-population OC checks, never all 173"
+        universe_of("declared_checks", ctx)
       ),
       %{
-        "universe" => "oc_checks_175",
+        "universe" => "oc_checks_manifest",
         "of" => "A1's frozen manifest — CITED from A5, not derived here",
         "total" => length(ctx.bucket_zero["checks"] || []),
         "terms" => [
@@ -799,7 +1299,19 @@ defmodule MCP.Conformance.BucketProjection do
           "bucket 1, projected as a complement, equals the set the crosswalk declares unmatched"
         ),
       "declared_checks" =>
-        direction_report(p.checks, "every declared check is in 2a, in 2b, or carries an edge"),
+        direction_report(
+          p.checks,
+          "the bucket 2 these views project equals the bucket 2 the crosswalk stores — a " <>
+            "CONSISTENCY pin between two independently produced statements (ruling 9), not a " <>
+            "claim that either is right"
+        ),
+      "declared_checks_reach_a_view" =>
+        direction_report(
+          p.checks_reach_a_view,
+          "every declared check is in 2a, in 2b, or carries an edge. ENTAILED by the way the " <>
+            "views are computed and therefore unable to fail — recorded as arithmetic, not as " <>
+            "evidence (MES-104)"
+        ),
       "pairwise_disjoint" => %{
         "pairs_compared" => length(p.pairwise),
         "within_universe_pairs" => length(within),
@@ -842,7 +1354,7 @@ defmodule MCP.Conformance.BucketProjection do
     [
       %{
         "id" => "C2-R1",
-        "text" => String.replace(@banner, "\n", " ")
+        "text" => String.replace(banner(ctx.figures), "\n", " ")
       },
       %{
         "id" => "C2-R2",
@@ -856,7 +1368,8 @@ defmodule MCP.Conformance.BucketProjection do
       %{
         "id" => "C2-R3",
         "text" =>
-          "BUCKET 0 IS A CITATION. Its two rows are A5's records verbatim and were removed " <>
+          "BUCKET 0 IS A CITATION. Its #{ctx.figures.unmatchable_checks} rows are A5's " <>
+            "records verbatim and were removed " <>
             "from the denominator before the join, so nine of the ten views are projections " <>
             "and the tenth says on its face why it is not."
       },

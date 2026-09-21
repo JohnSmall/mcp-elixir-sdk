@@ -214,13 +214,13 @@ defmodule Mix.Tasks.Conformance.Buckets do
     empty = if c["empty"], do: "  EMPTY (#{c["emptiness_code"]})", else: ""
 
     "      #{label}#{String.pad_leading(to_string(c["count"]), 4)}  " <>
-      "#{String.pad_trailing(c["universe"], 18)}#{c["title"]}#{empty}"
+      "#{String.pad_trailing(c["universe"], 20)}#{c["title"]}#{empty}"
   end
 
   defp equation_line(e) do
     terms = Enum.map_join(e["terms"], " + ", &"#{&1["term"]}(#{&1["count"]})")
 
-    "      #{String.pad_trailing(e["universe"], 18)}#{e["total"]} = #{terms}  " <>
+    "      #{String.pad_trailing(e["universe"], 20)}#{e["total"]} = #{terms}  " <>
       "[#{if e["holds"], do: "holds", else: "DOES NOT HOLD"}]"
   end
 

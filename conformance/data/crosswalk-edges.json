@@ -1,37 +1,53 @@
 {
   "schema": "crosswalk-edges/1",
   "revision": "2026-07-28",
-  "owner": "MES-97 (C1a)",
+  "owner": "MES-97 (C1a), re-declared by MES-104 (C1b-i) to its 3 non-client rows",
   "authored_by_hand": true,
   "what_this_is": "The AUTHORED adjudications the crosswalk is built from — one record per (ET-CC member, claim, OC check). Judgements are data with evidence; derivations are code. `tag`, `oc_key`, `shape` and `bucket` appear NOWHERE here: the generator derives all four through MCP.Conformance.MatchKey and refuses any edge whose stored form disagrees, so a stored edge cannot lie about its own axes or address a key it does not encode.",
   "the_population_this_file_declares": {
-    "members": 21,
-    "members_with_edges": 16,
-    "members_declared_unmatched": 5,
-    "checks_addressed": 14,
-    "rule": "The ET-CC members that B2b (MES-82, docs/conformance/etcc-attribution.json) had already adjudicated — the 19 carrying a token plus the 2 carrying a contradicts_oc record. NOTHING outside it is adjudicated here.",
+    "members": 3,
+    "members_with_edges": 3,
+    "members_declared_unmatched": 0,
+    "checks_addressed": 4,
+    "rule": "The ET-CC members C1a had adjudicated — a token or a contradicts_oc record — that are NOT on the client leg: 2 server and 1 none_determinable. C1a's 18 client rows moved to crosswalk-edges-client.json under MES-104's composition ruling; these 3 stayed, unchanged, and C1c (MES-105) absorbs them whole.",
     "selector": {
       "what_this_is": "The EXECUTABLE half of `rule`. The generator evaluates it against the source named below and requires the result to be SET-EQUAL, in both directions, to the population this file derives. Prose only becomes a guard when something can run it.",
-      "why_it_must_name_a_file_other_than_this_one": "C1a derived the declared population by unioning the register_keys this file itself carries. So a dropped edge or a dropped declared_unmatched row did not violate the universe, it SHRANK it — measured on MES-99, both built cleanly at 20 members with the edge equation, the member equation and both set-comparison directions still exact. An artefact internally perfect while being about less than it claims. A selector that read this file's own rows would be circular by another route and would catch neither.",
+      "why_it_must_name_a_file_other_than_this_one": "C1a derived its declared population by unioning the register_keys the edges file itself carried, so a dropped row did not violate the universe, it SHRANK it — measured on MES-99, both a dropped edge and a dropped declared_unmatched row built cleanly at 20 members with every set comparison still exact. A selector that read this file's own rows would be circular by another route.",
       "source": "docs/conformance/etcc-attribution.json",
       "source_owner": "B2b (MES-82) — the ET-CC attribution register",
       "rows_at": "rows",
       "key_field": "key",
-      "any_of": [
+      "all_of": [
         {
-          "field": "tokens",
-          "test": "non_empty_list"
+          "any_of": [
+            {
+              "field": "tokens",
+              "test": "non_empty_list"
+            },
+            {
+              "field": "contradicts_oc",
+              "test": "not_null"
+            }
+          ]
         },
         {
-          "field": "contradicts_oc",
-          "test": "not_null"
+          "none_of": [
+            {
+              "field": "leg",
+              "test": "equals",
+              "value": "client"
+            }
+          ]
         }
       ],
-      "denotes": "The 19 ET-CC members carrying an `oc:` or `oc:none` token plus the 2 carrying a contradicts_oc record — 21, and the same 21 `rule` states in prose.",
-      "c1b_and_c1c_declare_their_own": "The selector is per-population and is read from this file, never hard-coded in the generator. C1b (MES-104) and C1c (MES-105) state the rule denoting THEIR leg rather than inheriting a literal 21."
+      "denotes": "The 3 non-client members of C1a's original 21: MCP.Server.DispatchTest and MCP.Transport.StreamableHTTPStatelessTest (server, both carrying a contradicts_oc record) and MCP.IntegrationTest (none_determinable, carrying a token).",
+      "why_none_of_and_not_an_enumeration_of_the_other_legs": "`leg` happens to take three values in B2b today, so `any_of[server, none_determinable]` would denote the same 3 rows. It would do so only while that remains true: a fourth leg value would silently drop its members out of this population, and nothing would go red. `none_of[client]` states the rule the prose states and carries no assumption about the field's range.",
+      "c1b_and_c1c_declare_their_own": "The selector is per-population and is read from this file, never hard-coded in the generator. C1c (MES-105) states the rule denoting the server leg rather than inheriting a literal 3."
     },
     "everything_else_is": "not_yet_adjudicated — a THIRD state, distinct from bucket 1 ('we looked, there is no counterpart') and from A3 §6 state 4 ('nobody has adjudicated this member'). 260 ET-CC members and 159 in-denominator checks are in it. C1b (MES-104, client leg) and C1c (MES-105, server leg) own them.",
-    "why_14_checks_and_not_12": "B2b's tokens and contradicts_oc records address TWELVE distinct checks. Two more — HttpServerMethodNotFound404ping and HttpServerMethodNotFound404loggingsetLevel — enter through ONE member, MCP.Transport.StreamableHTTPStatelessTest's `initialize is gone → -32022; ping/logging.setLevel → -32601`. This is NOT new adjudication: match-relation.md §1's cardinality table names that member by file and line and rules it yields THREE edges, and §4's worked edge record then publishes the ping edge complete with its two axes and its `:partial` shape. A3 assigns the per-claim decomposition to C1 and C1a records the result. Dropping the two would leave a member the ratified rule says has three claims contributing one, which is the collapse §1 forbids."
+    "why_4_checks_and_not_2": "C1a's original block explained the same thing over 14 checks and the same two rows carry it here. B2b's tokens address TWO of these four; the other two — HttpServerMethodNotFound404ping and HttpServerMethodNotFound404loggingsetLevel — enter through ONE member, MCP.Transport.StreamableHTTPStatelessTest's `initialize is gone -> -32022; ping/logging.setLevel -> -32601`. This is NOT new adjudication: match-relation.md §1's cardinality table names that member by file and line and rules it yields THREE edges, and §4's worked edge record publishes the ping edge complete with its two axes and its `:partial` shape. Dropping them would leave a member the ratified rule says has three claims contributing one, which is the collapse §1 forbids.",
+    "the_fourth_check": "`tool-add-numbers` / ToolAddNumbers, addressed by MCP.IntegrationTest — the none_determinable member. It is why this residual is 3 members and 4 checks rather than 2 and 3.",
+    "no_check_population_is_declared_here": "Deliberately. These 3 rows are a residual awaiting C1c, not a leg anyone claims totality over, and declaring a check population would put the rest of `server-stateless` into bucket 2 — asserting of each sibling check that we looked and found no ET counterpart, which nobody has. A file with no declared check population contributes none to bucket 2's universe; its checks are derived from its own edges, exactly as C1a did."
   },
   "what_a_record_carries_and_why": {
     "member": "MES-67's unit: module AND test name. The `register_key` is docs/conformance/etcc-row-key.md §1's key and is what joins this file to the register; it was extracted from the register, never typed.",
@@ -45,256 +61,6 @@
   "how_a_silent_axis_was_decided": "Conservatively, and the rule is stated rather than applied case by case: a claim counts as covering an axis only when an assertion's SUBJECT is the behaviour that axis names. A test asserting a tool's RESULT does not cover an axis about the ARGUMENTS' wire type, and a test asserting that a capability is ABSENT does not cover an axis about the SHAPE of a present one. This is match-relation.md §6's CG5 rule — a mention is not a discharge — turned on our own side of the relation. Where it was a judgement rather than a reading, the edge's `evidence` says so in those words.",
   "the_all_silent_case": "Four edges have EVERY axis silent. They are recorded and ESCALATED, never bucketed. A3 §2 rules that covering zero of one axis 'is no match, not a partial one'; generalised to N axes that is exactly this case, and A3 §3's table has no row for it — `shape_from_axes/1` would call it `:partial` and bucket 5 would swallow it. Dropping the edges instead would be worse: the member would then look edge-less and therefore bucket-1, asserting 'we looked and there is no counterpart' where the truth is 'there is a counterpart and our claim does not touch its predicate'. Escalation is A3 §7's own mechanism for a case the rule does not decide.",
   "edges": [
-    {
-      "member": {
-        "module": "MCP.ClientDefectsTest",
-        "test": "test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) a server requestState is echoed verbatim on the retry (control)",
-        "register_key": "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) a server requestState is echoed verbatim on the retry (control)"
-      },
-      "claim": "the retry carries the server's requestState, byte-for-byte as sent",
-      "tag": "oc:client/sep-2322-client-request-state/sep-2322-client-request-state-echoed/MRTRClientRequestStateEchoed",
-      "axes": [
-        {
-          "axis": "retry_carries_the_request_state",
-          "verdict": "agrees"
-        },
-        {
-          "axis": "echoed_request_state_is_verbatim",
-          "verdict": "agrees"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "client_defects_test.exs:161 — `assert retry[\"params\"][\"requestState\"] == \"opaque-server-token\"` against a server that sent exactly that string. One assertion discharges both axes: equality with the sent value entails the key's presence."
-    },
-    {
-      "member": {
-        "module": "MCP.ClientDefectsTest",
-        "test": "test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an absent server requestState produces a retry with NO requestState key",
-        "register_key": "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an absent server requestState produces a retry with NO requestState key"
-      },
-      "claim": "when the server sent no requestState, the retry carries no requestState KEY",
-      "tag": "oc:client/sep-2322-client-request-state/sep-2322-client-no-state-omitted/MRTRClientNoStateOmitted",
-      "axes": [
-        {
-          "axis": "retry_omits_request_state_when_none_was_sent",
-          "verdict": "agrees"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "client_defects_test.exs:90 — `refute Map.has_key?(retry[\"params\"], \"requestState\")` after an InputRequiredResult with the field absent. Key absence, not a nil value, which is the distinction the check's `!==undefined` test turns on."
-    },
-    {
-      "member": {
-        "module": "MCP.ClientDefectsTest",
-        "test": "test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an explicit null server requestState also produces NO requestState key",
-        "register_key": "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an explicit null server requestState also produces NO requestState key"
-      },
-      "claim": "an explicit JSON null requestState is the same wire fact as an absent one, and also yields no key",
-      "tag": "oc:client/sep-2322-client-request-state/sep-2322-client-no-state-omitted/MRTRClientNoStateOmitted",
-      "axes": [
-        {
-          "axis": "retry_omits_request_state_when_none_was_sent",
-          "verdict": "agrees"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "client_defects_test.exs:110ff — the discriminating sibling of the row above. Same axis, a different input; A3 §1 keeps them as two edges because they are two claims."
-    },
-    {
-      "member": {
-        "module": "MCP.ClientDefectsTest",
-        "test": "test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 naming a version we support is retried exactly once",
-        "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 naming a version we support is retried exactly once"
-      },
-      "claim": "the retry's `_meta` protocolVersion is the version the server offered",
-      "tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
-      "axes": [
-        {
-          "axis": "retry_meta_version_is_supported",
-          "verdict": "agrees"
-        },
-        {
-          "axis": "retry_header_version_is_supported",
-          "verdict": "silent"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "client_defects_test.exs:308 — `assert retry[\"params\"][\"_meta\"][\"io.modelcontextprotocol/protocolVersion\"] == \"2026-07-28\"`. Driven through MockTransport, which has no HTTP layer, so the header axis is not merely unasserted — it is unreachable from this member."
-    },
-    {
-      "member": {
-        "module": "MCP.ClientDefectsTest",
-        "test": "test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 offering only versions we do not support is surfaced, never retried",
-        "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 offering only versions we do not support is surfaced, never retried"
-      },
-      "claim": "a -32022 offering no version we support is surfaced to the caller and produces no retry at all",
-      "tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
-      "axes": [
-        {
-          "axis": "retry_meta_version_is_supported",
-          "verdict": "silent"
-        },
-        {
-          "axis": "retry_header_version_is_supported",
-          "verdict": "silent"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "client_defects_test.exs:345-346 — asserts the error surfaces and `length(sent_messages) == 1`. There is no retry, so neither axis — both of which are predicates ON a retry — is touched."
-    },
-    {
-      "member": {
-        "module": "MCP.ClientDefectsTest",
-        "test": "test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 with no usable data is surfaced, never retried",
-        "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 with no usable data is surfaced, never retried"
-      },
-      "claim": "a -32022 carrying no usable `supported` data is surfaced and produces no retry",
-      "tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
-      "axes": [
-        {
-          "axis": "retry_meta_version_is_supported",
-          "verdict": "silent"
-        },
-        {
-          "axis": "retry_header_version_is_supported",
-          "verdict": "silent"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "client_defects_test.exs:362-363 — same shape as the row above, a different malformed input."
-    },
-    {
-      "member": {
-        "module": "MCP.ClientDefectsTest",
-        "test": "test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) the retry re-stamps the version chosen from `supported`",
-        "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) the retry re-stamps the version chosen from `supported`"
-      },
-      "claim": "the retry completes after a -32022 whose `supported` names the configured version",
-      "tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
-      "axes": [
-        {
-          "axis": "retry_meta_version_is_supported",
-          "verdict": "silent"
-        },
-        {
-          "axis": "retry_header_version_is_supported",
-          "verdict": "silent"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "client_defects_test.exs:376 — the ONLY version assertion in this test is on `first`, the request BEFORE the rejection; the retry's own `_meta` is never asserted. The member's name says 're-stamps' and its assertions do not check it. Recorded as S9-17; not fixed here (epic ruling 3).",
-      "note": "The name promises more than the assertions deliver. Left standing and routed."
-    },
-    {
-      "member": {
-        "module": "MCP.ClientDefectsTest",
-        "test": "test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) it falls back to its configured default when the message carries no _meta version",
-        "register_key": "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) it falls back to its configured default when the message carries no _meta version"
-      },
-      "claim": "a POST whose message carries no `_meta` version still leaves with an mcp-protocol-version header",
-      "tag": "oc:client/request-metadata/sep-2575-http-client-sends-version-header/ClientSendsVersionHeader",
-      "axes": [
-        {
-          "axis": "http_protocol_version_header_present",
-          "verdict": "agrees"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "client_defects_test.exs:276 — `assert {\"mcp-protocol-version\", \"2026-07-28\"} in headers` from `HTTPClient.build_headers/2`. The check's axis is presence; this asserts presence with a value."
-    },
-    {
-      "member": {
-        "module": "MCP.ClientDefectsTest",
-        "test": "test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) the transport derives mcp-protocol-version from the message's own _meta",
-        "register_key": "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) the transport derives mcp-protocol-version from the message's own _meta"
-      },
-      "claim": "the POST leaves with an mcp-protocol-version header",
-      "tag": "oc:client/request-metadata/sep-2575-http-client-sends-version-header/ClientSendsVersionHeader",
-      "axes": [
-        {
-          "axis": "http_protocol_version_header_present",
-          "verdict": "agrees"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "client_defects_test.exs:263 — `assert {\"mcp-protocol-version\", \"1999-01-01\"} in headers`. Presence, asserted as part of the equality."
-    },
-    {
-      "member": {
-        "module": "MCP.ClientDefectsTest",
-        "test": "test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) the transport derives mcp-protocol-version from the message's own _meta",
-        "register_key": "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) the transport derives mcp-protocol-version from the message's own _meta"
-      },
-      "claim": "the mcp-protocol-version header equals the message's own `_meta` protocolVersion, not the transport's configured default",
-      "tag": "oc:client/request-metadata/sep-2575-http-version-header-matches-meta/ClientVersionHeaderMatchesMeta",
-      "axes": [
-        {
-          "axis": "version_header_equals_meta_version",
-          "verdict": "agrees"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "client_defects_test.exs:251-263 — the transport is configured `2026-07-28`, the message's `_meta` says `1999-01-01`, and the header comes back `1999-01-01`. The configured default is the discriminator: an implementation that ignored `_meta` would pass a weaker test and fail this one."
-    },
-    {
-      "member": {
-        "module": "MCP.ClientTest",
-        "test": "test MRTR client retry an input_required result is transparently completed via :on_input_required",
-        "register_key": "MCP.ClientTest/test MRTR client retry an input_required result is transparently completed via :on_input_required"
-      },
-      "claim": "the MRTR retry echoes the server's requestState verbatim",
-      "tag": "oc:client/sep-2322-client-request-state/sep-2322-client-request-state-echoed/MRTRClientRequestStateEchoed",
-      "axes": [
-        {
-          "axis": "retry_carries_the_request_state",
-          "verdict": "agrees"
-        },
-        {
-          "axis": "echoed_request_state_is_verbatim",
-          "verdict": "agrees"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "client_test.exs:292 — `assert retry[\"params\"][\"requestState\"] == \"rs-1\"` against a server that sent `rs-1`."
-    },
-    {
-      "member": {
-        "module": "MCP.ClientTest",
-        "test": "test per-request _meta every request carries protocolVersion + client identity/capabilities",
-        "register_key": "MCP.ClientTest/test per-request _meta every request carries protocolVersion + client identity/capabilities"
-      },
-      "claim": "every request's `_meta` carries both protocolVersion and clientCapabilities",
-      "tag": "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta",
-      "axes": [
-        {
-          "axis": "meta_carries_protocol_version",
-          "verdict": "agrees"
-        },
-        {
-          "axis": "meta_carries_client_capabilities",
-          "verdict": "agrees"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "client_test.exs:152 and :154 — `meta[\"io.modelcontextprotocol/protocolVersion\"] == \"2026-07-28\"` and `is_map(meta[\"io.modelcontextprotocol/clientCapabilities\"])`. Two assertions, one per conjunct of the check's `l=a&&c`."
-    },
-    {
-      "member": {
-        "module": "MCP.ClientTest",
-        "test": "test per-request _meta every request carries protocolVersion + client identity/capabilities",
-        "register_key": "MCP.ClientTest/test per-request _meta every request carries protocolVersion + client identity/capabilities"
-      },
-      "claim": "every request's `_meta` carries clientInfo",
-      "tag": "oc:client/request-metadata/sep-2575-client-sends-client-info/ClientSendsClientInfo",
-      "axes": [
-        {
-          "axis": "meta_carries_client_info",
-          "verdict": "agrees"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "client_test.exs:153 — `meta[\"io.modelcontextprotocol/clientInfo\"][\"name\"] == \"test-client\"`. Indexing into it entails its presence."
-    },
     {
       "member": {
         "module": "MCP.IntegrationTest",
@@ -319,92 +85,6 @@
       ],
       "et_verdict": "green",
       "evidence": "integration_test.exs:149-150 — `Client.call_tool(client, \"add\", %{\"a\" => 3, \"b\" => 4})` returns `\"7\"`. The call being made is asserted directly. The two type axes are NOT: the assertion is on the tool's RESULT, and a client sending `\"3\"`/`\"4\"` as JSON strings would be caught here only if this SDK's own `add` tool refused them — a property of the fixture server, not of this assertion. Silent, on the CG5 rule: a test whose subject is downstream of the requirement does not discharge it."
-    },
-    {
-      "member": {
-        "module": "MCP.Protocol.CapabilitiesTest",
-        "test": "test ClientCapabilities round-trips through JSON",
-        "register_key": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON"
-      },
-      "claim": "the encoded `roots` capability is a JSON object",
-      "tag": "oc:client/request-metadata/sep-2575-client-declares-roots-capability/ClientDeclaresRootsCapability",
-      "axes": [
-        {
-          "axis": "capability_value_is_a_plain_object",
-          "verdict": "agrees"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "capabilities_test.exs:97 — `assert decoded[\"roots\"][\"listChanged\"] == true`. Indexing a key out of the decoded value entails it is a non-null, non-array object, which is the whole of the check's axis."
-    },
-    {
-      "member": {
-        "module": "MCP.Protocol.CapabilitiesTest",
-        "test": "test ClientCapabilities round-trips through JSON",
-        "register_key": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON"
-      },
-      "claim": "the encoded `sampling` capability is a JSON object",
-      "tag": "oc:client/request-metadata/sep-2575-client-declares-sampling-capability/ClientDeclaresSamplingCapability",
-      "axes": [
-        {
-          "axis": "capability_value_is_a_plain_object",
-          "verdict": "agrees"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "capabilities_test.exs:98 — `assert decoded[\"sampling\"] == %{}`. An empty map is a non-null, non-array object; equality with `%{}` establishes the type as well as the contents."
-    },
-    {
-      "member": {
-        "module": "MCP.Protocol.CapabilitiesTest",
-        "test": "test ClientCapabilities round-trips through JSON",
-        "register_key": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON"
-      },
-      "claim": "an undeclared `elicitation` capability is omitted from the encoding entirely",
-      "tag": "oc:client/request-metadata/sep-2575-client-declares-elicitation-capability/ClientDeclaresElicitationCapability",
-      "axes": [
-        {
-          "axis": "capability_value_is_a_plain_object",
-          "verdict": "silent"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "capabilities_test.exs:99 — `refute Map.has_key?(decoded, \"elicitation\")`. This addresses the check's PRECONDITION (`d&&e in d`), not its axis: it asserts the branch on which the check SKIPS. A precondition is not an axis and a claim about one is neither agreement nor contradiction.",
-      "note": "The one edge in this population whose claim lands on a precondition rather than on an axis."
-    },
-    {
-      "member": {
-        "module": "MCP.Transport.RoutingHeadersTest",
-        "test": "test the version header rides the message (D-4), on the wire it matches the body _meta, not the transport's configured default",
-        "register_key": "MCP.Transport.RoutingHeadersTest/test the version header rides the message (D-4), on the wire it matches the body _meta, not the transport's configured default"
-      },
-      "claim": "the POST leaves on the wire with an mcp-protocol-version header",
-      "tag": "oc:client/request-metadata/sep-2575-http-client-sends-version-header/ClientSendsVersionHeader",
-      "axes": [
-        {
-          "axis": "http_protocol_version_header_present",
-          "verdict": "agrees"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "routing_headers_test.exs:285 — `headers_of(agent, 0)[\"mcp-protocol-version\"] == \"2030-01-01\"` read off a request the server actually received. Unlike the D-4 pair this is the wire, not `build_headers/2`."
-    },
-    {
-      "member": {
-        "module": "MCP.Transport.RoutingHeadersTest",
-        "test": "test the version header rides the message (D-4), on the wire it matches the body _meta, not the transport's configured default",
-        "register_key": "MCP.Transport.RoutingHeadersTest/test the version header rides the message (D-4), on the wire it matches the body _meta, not the transport's configured default"
-      },
-      "claim": "on the wire, the mcp-protocol-version header equals the message's own `_meta` protocolVersion",
-      "tag": "oc:client/request-metadata/sep-2575-http-version-header-matches-meta/ClientVersionHeaderMatchesMeta",
-      "axes": [
-        {
-          "axis": "version_header_equals_meta_version",
-          "verdict": "agrees"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "routing_headers_test.exs:273-285 — transport configured `2026-07-28`, message `_meta` `2030-01-01`, header received `2030-01-01`."
     },
     {
       "member": {
@@ -495,52 +175,6 @@
       "note": "The third of A3 §1's three edges for this member."
     }
   ],
-  "declared_unmatched": [
-    {
-      "member": {
-        "module": "MCP.ClientConformanceTest",
-        "test": "test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
-        "register_key": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta"
-      },
-      "tag": "oc:none/no-oc-scenario/CG2-outbound-meta",
-      "cg": "CG2"
-    },
-    {
-      "member": {
-        "module": "MCP.ClientConformanceTest",
-        "test": "test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
-        "register_key": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact"
-      },
-      "tag": "oc:none/no-oc-scenario/CG2-inbound-parse",
-      "cg": "CG2"
-    },
-    {
-      "member": {
-        "module": "MCP.Protocol.CapabilitiesTest",
-        "test": "test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart",
-        "register_key": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart"
-      },
-      "tag": "oc:none/no-oc-scenario/CG2-absent-yields-nil",
-      "cg": "CG2"
-    },
-    {
-      "member": {
-        "module": "MCP.Protocol.HeaderMirrorTest",
-        "test": "test annotation validity — the three constraints NO harness check covers (spec-only) a NESTED object property IS reachable — every step is a `properties` key",
-        "register_key": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) a NESTED object property IS reachable — every step is a `properties` key"
-      },
-      "tag": "oc:none/no-oc-fixture-case/CG7-static-reachability",
-      "cg": "CG7"
-    },
-    {
-      "member": {
-        "module": "MCP.Protocol.HeaderMirrorTest",
-        "test": "test annotation validity — the three constraints NO harness check covers (spec-only) an integer outside the IEEE 754 safe range is not mirrored, and says so",
-        "register_key": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) an integer outside the IEEE 754 safe range is not mirrored, and says so"
-      },
-      "tag": "oc:none/no-oc-fixture-case/CG7-integer-safe-range",
-      "cg": "CG7"
-    }
-  ],
+  "declared_unmatched": [],
   "declared_unmatched_note": "A3 §6 state 3 — members adjudicated as having NO OC counterpart. They are bucket 1 over this population. The generator asserts each tag guard-checks to state 3 (decodes as `oc:none`, does NOT resolve as an oc key) before counting it."
 }

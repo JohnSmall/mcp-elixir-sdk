@@ -60,8 +60,15 @@
 # set, not only this ticket's, is covered by an after-restoration.
 
 defmodule CrosswalkFalsificationControls do
+  alias MCP.Conformance.Crosswalk
+
   @harness "/tmp/conf11/node_modules/@modelcontextprotocol/conformance/dist/index.js"
 
+  # MES-104 split the edges by leg. Every mutation below is applied to the
+  # CLIENT file — where the composition ruling put all 45 adjudicated client
+  # members — and the residual file rides along unmutated, so each control runs
+  # over the real two-file crosswalk rather than over a single-file one.
+  @client_edges "conformance/data/crosswalk-edges-client.json"
   @edges "conformance/data/crosswalk-edges.json"
   @c1_axes "conformance/data/oc-axes-c1.json"
   @a3_axes "docs/conformance/oc-axes-2026-07-28.json"
@@ -70,6 +77,7 @@ defmodule CrosswalkFalsificationControls do
   @register "docs/conformance/etcc-register.json"
   @attribution "docs/conformance/etcc-attribution.json"
   @crosswalk_out "docs/conformance/crosswalk-2026-07-28.json"
+  @sites "docs/conformance/oc-emitting-sites-2026-07-28.json"
 
   @c1a_controls "conformance/controls/crosswalk_controls.exs"
 
@@ -102,7 +110,7 @@ defmodule CrosswalkFalsificationControls do
     header("REFUSALS — every falsification class, mutated and shown to refuse (AC1)")
 
     require_harness!()
-    edges = read(@edges)
+    edges = read(@client_edges)
     first = hd(edges["edges"])
 
     positive("the unmutated edges build cleanly")
@@ -125,20 +133,22 @@ defmodule CrosswalkFalsificationControls do
          ["is not the set its own selector denotes", "absent from this file (1)"],
          fn -> build(update_in(edges["declared_unmatched"], &tl/1)) end},
         {"G15  the selector denotes FEWER rows than the file derives (the `extra` direction)",
-         ["is not the set its own selector denotes", "not denoted by the selector (2)"],
+         ["is not the set its own selector denotes", "not denoted by the selector (27)"],
          fn ->
+           # Drops the `cg = CG7` branch, so the selector denotes only the 18
+           # client members C1a had already adjudicated while the file still
+           # carries all 45.
            build(
-             put_in(
-               edges,
-               ["the_population_this_file_declares", "selector", "any_of"],
-               [%{"field" => "tokens", "test" => "non_empty_list"}]
-             )
+             narrow_selector(edges, "all_of", [
+               %{"field" => "leg", "test" => "equals", "value" => "client"},
+               %{"field" => "tokens", "test" => "non_empty_list"}
+             ])
            )
          end},
         {"G15  the declared COUNTS lie while every SET still agrees",
-         ["disagrees with what the generator derives", "members: declared 22, derived 21"],
+         ["disagrees with what the generator derives", "members: declared 46, derived 45"],
          fn ->
-           build(put_in(edges, ["the_population_this_file_declares", "members"], 22))
+           build(put_in(edges, ["the_population_this_file_declares", "members"], 46))
          end},
         {"G15  no selector at all — prose with no executable half", ["carries no `selector`"],
          fn ->
@@ -150,15 +160,42 @@ defmodule CrosswalkFalsificationControls do
          [":unknown_selector_test"],
          fn ->
            build(
+             narrow_selector(edges, "any_of", [
+               %{"field" => "tokens", "test" => "looks_about_right"}
+             ])
+           )
+         end},
+        {"G15  a selector naming TWO root combinators — a silent choice between two populations",
+         [":selector_root_names_several_combinators"],
+         fn ->
+           build(
              put_in(
                edges,
                ["the_population_this_file_declares", "selector", "any_of"],
-               [%{"field" => "tokens", "test" => "looks_about_right"}]
+               [%{"field" => "tokens", "test" => "non_empty_list"}]
+             )
+           )
+         end},
+        {"G15  an EMPTY root combinator — a vacuous all_of is true of every row",
+         [":selector_combinator_is_empty"],
+         fn -> build(narrow_selector(edges, "all_of", [])) end},
+        {"G15  the CHECK population's selector denotes a different set than it declares",
+         ["check population declares 29 checks and its own", "selector denotes 18"],
+         fn ->
+           build(
+             update_in(
+               edges,
+               ["the_check_population_this_file_declares", "selector"],
+               fn sel ->
+                 Map.put(sel, "any_of", [
+                   %{"field" => "scenario", "test" => "equals", "value" => "http-custom-headers"}
+                 ])
+               end
              )
            )
          end},
         {"G15  the selector's `source` is not the anchor this run was given",
-         ["as its source, but this run was", "etcc-register.json"],
+         ["as its source, but this run", "etcc-register.json"],
          fn ->
            build(
              put_in(
@@ -240,6 +277,18 @@ defmodule CrosswalkFalsificationControls do
     """)
   end
 
+  # Replaces the selector's ROOT combinator rather than adding one beside it:
+  # MES-104's selectors are rooted on `all_of`, and a mutation that simply set
+  # `any_of` would be caught as two root combinators — a real refusal, but not
+  # the one the case was planted to cause.
+  defp narrow_selector(doc, combinator, nodes) do
+    update_in(doc, ["the_population_this_file_declares", "selector"], fn sel ->
+      sel
+      |> Map.drop(Crosswalk.combinators())
+      |> Map.put(combinator, nodes)
+    end)
+  end
+
   defp count_refusals(cases) do
     Enum.each(cases, fn {label, expected, fun} -> refuses(label, expected, fun) end)
     length(cases)
@@ -256,7 +305,7 @@ defmodule CrosswalkFalsificationControls do
   defp wrong_reason do
     header("WRONG REASON — the expectation matcher, shown refusing a real refusal")
 
-    edges = read(@edges)
+    edges = read(@client_edges)
 
     IO.puts("""
       The mutation below (a verbatim duplicate edge) DOES refuse — `refusals` shows it
@@ -286,12 +335,12 @@ defmodule CrosswalkFalsificationControls do
     header("DRIFT — a wrong crosswalk moves a bucket, and is caught naming the row (AC2)")
 
     require_harness!()
-    edges = read(@edges)
+    docs = %{@client_edges => read(@client_edges), @edges => read(@edges)}
     committed = assignments(read(@crosswalk_out))
 
     # POSITIVE CONTROL: the unmutated regeneration compares every row and moves
     # none. Without it, "0 moved" could mean the comparison reached no rows.
-    {n, moved} = compare(committed, edges)
+    {n, moved} = compare(committed, docs)
     IO.puts("  POSITIVE  #{n} of #{map_size(committed)} rows compared, #{length(moved)} moved")
 
     verdict(
@@ -314,14 +363,44 @@ defmodule CrosswalkFalsificationControls do
       depending on which axis an implementation happened to test first".
     """)
 
-    drifted = put_in(edges, ["edges", Access.at(20), "axes", Access.at(0), "verdict"], "agrees")
+    # RE-AIMED BY MES-104, and by PROPERTY rather than by index. The old form
+    # was `edges["edges"][20]` — a position in one file. The composition ruling
+    # moved 18 rows out of that file and the `:83` edge is now in a different
+    # one altogether, so position 20 addressed an unrelated CG7 row and the
+    # mutation moved nothing while still reading as applied. An index into an
+    # authored list is a citation, and citations die to later commits.
+    #
+    # The target is now found by what makes it the target: the only edge whose
+    # committed cell is bucket 4a and whose first axis reads `contradicts`. The
+    # control asserts there is exactly ONE, so a future ticket adding a second
+    # 4a edge goes red here rather than silently re-aiming this mutation.
+    {drifted, where} =
+      mutate_one(
+        docs,
+        committed,
+        fn cell, edge ->
+          # TWO edges are bucket 4a with a contradicting first axis — the same
+          # claim asserted at the dispatch layer and over HTTP. The prose above
+          # names the HTTP one, so the predicate does too; uniqueness is then
+          # asserted rather than assumed.
+          cell == "4a" and
+            edge["member"]["module"] == "MCP.Transport.StreamableHTTPStatelessTest" and
+            hd(edge["axes"])["verdict"] == "contradicts"
+        end,
+        fn edge ->
+          update_in(edge, ["axes", Access.at(0), "verdict"], fn "contradicts" -> "agrees" end)
+        end
+      )
+
+    IO.puts("  target found in #{Path.basename(where)} by property, not by index")
+
     {n1, moved1} = compare(committed, drifted)
 
     show_moves("MUTATION 1", n1, moved1)
     verdict("exactly one row moved, 4a -> 4b", match?([%{from: "4a", to: "4b"}], moved1))
     halt_unless(match?([%{from: "4a", to: "4b"}], moved1))
 
-    invisible_to_arithmetic(edges, drifted)
+    invisible_to_arithmetic(docs, drifted)
 
     IO.puts("""
 
@@ -331,7 +410,17 @@ defmodule CrosswalkFalsificationControls do
       two populated ones.
     """)
 
-    reddened = put_in(edges, ["edges", Access.at(0), "et_verdict"], "red")
+    {reddened, where2} =
+      mutate_one(
+        docs,
+        committed,
+        fn cell, _edge -> cell == "5" end,
+        &Map.put(&1, "et_verdict", "red"),
+        :first
+      )
+
+    IO.puts("  target found in #{Path.basename(where2)} by property, not by index")
+
     {n2, moved2} = compare(committed, reddened)
 
     show_moves("MUTATION 2", n2, moved2)
@@ -339,7 +428,7 @@ defmodule CrosswalkFalsificationControls do
     halt_unless(match?([%{from: "5", to: "3"}], moved2))
 
     # RESTORED: the same comparison that just caught two drifts finds none again.
-    {n3, moved3} = compare(committed, edges)
+    {n3, moved3} = compare(committed, docs)
 
     verdict(
       "RESTORED — #{n3} rows compared, #{length(moved3)} moved",
@@ -356,8 +445,8 @@ defmodule CrosswalkFalsificationControls do
   end
 
   # The property that makes a per-ROW pin necessary rather than decorative.
-  defp invisible_to_arithmetic(edges, drifted) do
-    a = regenerate(edges)
+  defp invisible_to_arithmetic(docs, drifted) do
+    a = regenerate(docs)
     b = regenerate(drifted)
 
     rows =
@@ -413,8 +502,47 @@ defmodule CrosswalkFalsificationControls do
     end)
   end
 
-  defp compare(committed, edges_doc) do
-    regenerated = assignments(regenerate(edges_doc))
+  # Finds the ONE edge across both files whose committed cell and own shape
+  # satisfy `find`, applies `change` to it, and returns the whole two-file map
+  # with that one edge changed. `:first` relaxes the uniqueness requirement for
+  # a mutation where any matching row will do; the default requires exactly one,
+  # so a population that grows a second candidate goes red here instead of
+  # re-aiming the mutation silently.
+  defp mutate_one(docs, committed, find, change, arity \\ :unique) do
+    hits =
+      for {path, doc} <- docs,
+          {edge, i} <- Enum.with_index(doc["edges"]),
+          key = {edge["member"]["register_key"], edge["claim"], edge["tag"]},
+          cell = Map.get(committed, key),
+          find.(cell, edge),
+          do: {path, i}
+
+    hits = Enum.sort(hits)
+
+    case {arity, hits} do
+      {:unique, [{path, i}]} ->
+        {Map.update!(docs, path, &update_in(&1, ["edges", Access.at(i)], change)), path}
+
+      {:first, [{path, i} | _]} ->
+        {Map.update!(docs, path, &update_in(&1, ["edges", Access.at(i)], change)), path}
+
+      {:unique, other} ->
+        IO.puts("  MUTATION TARGET IS NOT UNIQUE — #{length(other)} edges match.")
+
+        IO.puts(
+          "  A mutation whose target moved is a green that means nothing. Re-cut the predicate."
+        )
+
+        System.halt(1)
+
+      {_, []} ->
+        IO.puts("  MUTATION TARGET NOT FOUND — no edge matches the predicate.")
+        System.halt(1)
+    end
+  end
+
+  defp compare(committed, docs) do
+    regenerated = assignments(regenerate(docs))
 
     shared =
       committed
@@ -539,7 +667,7 @@ defmodule CrosswalkFalsificationControls do
     header("EXIT STATUS — the OS-level claim AC1 makes, measured rather than inferred")
 
     require_harness!()
-    edges = read(@edges)
+    edges = read(@client_edges)
     committed = File.read!(@crosswalk_out)
 
     out = tmp("exit-positive")
@@ -559,12 +687,11 @@ defmodule CrosswalkFalsificationControls do
     for {label, expected, doc} <- [
           {"G14  an edge duplicated verbatim", "G14 — repeated (member, claim, tag) triples",
            update_in(edges["edges"], &[hd(&1) | &1])},
-          {"G15  one edge dropped", "G15 — the population this file derives",
-           dropped_edge(edges)},
-          {"G15  one declared_unmatched member dropped", "G15 — the population this file derives",
+          {"G15  one edge dropped", "G15a — the population", dropped_edge(edges)},
+          {"G15  one declared_unmatched member dropped", "G15a — the population",
            update_in(edges["declared_unmatched"], &tl/1)},
-          {"G15  the declared counts lie", "G15 — `the_population_this_file_declares`",
-           put_in(edges, ["the_population_this_file_declares", "members"], 22)}
+          {"G15  the declared counts lie", "G15b —",
+           put_in(edges, ["the_population_this_file_declares", "members"], 46)}
         ] do
       path = write_tmp("edges", doc)
       o = tmp("exit-mutated")
@@ -705,40 +832,49 @@ defmodule CrosswalkFalsificationControls do
     end
   end
 
-  defp regenerate(edges_doc) do
-    path = write_tmp("edges", edges_doc)
+  defp regenerate(docs) when is_map(docs) do
+    paths = Enum.map(docs, fn {name, doc} -> write_tmp(Path.basename(name), doc) end)
     out = tmp("regenerated")
 
     try do
-      crosswalk(out, edges: path)
+      crosswalk(out, edges: paths)
       read(out)
     after
-      File.rm(path)
+      Enum.each(paths, &File.rm/1)
       File.rm(out)
     end
   end
 
   defp args(out, o) do
-    base = [
-      "--edges",
-      Keyword.get(o, :edges, @edges),
-      "--manifest",
-      Keyword.get(o, :manifest, @manifest),
-      "--denominator",
-      @denominator,
-      "--register",
-      @register,
-      "--attribution",
-      Keyword.get(o, :attribution, @attribution),
-      "--a3-axes",
-      @a3_axes,
-      "--c1-axes",
-      @c1_axes,
-      "--harness",
-      Keyword.get(o, :harness, @harness),
-      "-o",
-      out
-    ]
+    edges =
+      case Keyword.get(o, :edges) do
+        nil -> [@client_edges, @edges]
+        one when is_binary(one) -> [one, @edges]
+        many when is_list(many) -> many
+      end
+
+    base =
+      Enum.flat_map(edges, &["--edges", &1]) ++
+        [
+          "--manifest",
+          Keyword.get(o, :manifest, @manifest),
+          "--denominator",
+          @denominator,
+          "--register",
+          @register,
+          "--attribution",
+          Keyword.get(o, :attribution, @attribution),
+          "--a3-axes",
+          @a3_axes,
+          "--c1-axes",
+          @c1_axes,
+          "--emitting-sites",
+          @sites,
+          "--harness",
+          Keyword.get(o, :harness, @harness),
+          "-o",
+          out
+        ]
 
     case Keyword.get(o, :verdicts_from) do
       nil -> base

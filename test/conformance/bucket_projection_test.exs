@@ -78,14 +78,59 @@ defmodule MCP.Conformance.BucketProjectionTest do
       Enum.map(cells, & &1["tag"]) ++
         ["oc:server/scenario-I/check-I/CheckI", "oc:client/scenario-J/check-J/CheckJ"]
 
-    Map.merge(
-      %{
-        "cells" => cells,
-        "population" => %{"members" => Enum.sort(members), "checks" => Enum.sort(checks)},
-        "declared_unmatched" => [unmatched("H")]
+    %{
+      "cells" => cells,
+      "population" => %{
+        "members" => Enum.sort(members),
+        "checks" => Enum.sort(checks),
+        # MES-104 separated the DECLARED check population from the checks the
+        # cells address: the bucket-2 universe is the first, never the second.
+        "declared_checks" => Enum.sort(checks)
       },
-      overrides
+      "declared_unmatched" => [unmatched("H")]
+    }
+    |> Map.merge(overrides)
+    |> with_stored_bucket_2()
+    |> with_stated_counts()
+  end
+
+  # The counts the crosswalk states about ITSELF, which `:population_statement`
+  # pins against the lists beside them (MES-104 / CR-1). DERIVED here, like the
+  # stored bucket 2 above, so a test that overrides `population` does not plant
+  # a disagreement it did not mean to plant — the one that DOES mean to plants
+  # it afterwards.
+  #
+  # `outside_the_population` is stated because the guard is FAIL-CLOSED on it.
+  # A crosswalk that does not say how much lies outside its declared slice
+  # cannot have a banner written for it, and a banner that filled the gap with
+  # a zero would read "nothing remains to adjudicate".
+  defp with_stated_counts(doc) do
+    doc
+    |> put_in(["population", "member_count"], length(doc["population"]["members"]))
+    |> put_in(
+      ["population", "declared_check_count"],
+      length(doc["population"]["declared_checks"] || [])
     )
+    |> put_in(
+      ["population", "outside_the_population"],
+      %{"et_cc_members" => 3, "in_denominator_checks" => 2}
+    )
+  end
+
+  # The crosswalk's OWN bucket 2, which the check partition pins the projected
+  # one against (MES-104). DERIVED from whatever cells the override left, so a
+  # test that drops a cell does not silently plant a disagreement it did not
+  # mean to plant — the ones that DO mean to, plant it after this.
+  defp with_stored_bucket_2(doc) do
+    addressed = Enum.map(doc["cells"], & &1["tag"])
+    declared = get_in(doc, ["population", "declared_checks"]) || []
+
+    Map.put(doc, "buckets", %{
+      "bucket_2" => %{
+        "declared" => true,
+        "checks" => declared |> Enum.reject(&(&1 in addressed)) |> Enum.sort()
+      }
+    })
   end
 
   defp bucket_zero do
@@ -116,9 +161,17 @@ defmodule MCP.Conformance.BucketProjectionTest do
 
     test "every bucket carries a predicate, and only bucket 0 is a citation" do
       for id <- BucketProjection.bucket_ids() do
-        spec = BucketProjection.spec(id)
+        spec = BucketProjection.spec(id, figures())
         assert is_binary(spec.predicate) and spec.predicate != ""
         assert spec.derivation == if(id == "0", do: "citation", else: "projection")
+      end
+    end
+
+    test "spec/1 hands back the TEMPLATE, never a predicate a caller could emit" do
+      for id <- BucketProjection.bucket_ids() do
+        spec = BucketProjection.spec(id)
+        refute Map.has_key?(spec, :predicate)
+        assert is_binary(spec.predicate_template)
       end
     end
 
@@ -172,13 +225,36 @@ defmodule MCP.Conformance.BucketProjectionTest do
              end)
     end
 
-    test "every view carries the population banner and its predicate verbatim", %{files: files} do
-      for {_name, doc} <- files do
-        assert doc["population_banner"] == BucketProjection.banner()
+    # REWRITTEN BY CR-1 ON MES-104. This used to assert
+    # `doc["population_banner"] == BucketProjection.banner()`, which compared a
+    # view against the recorded constant and never against the tree the view
+    # describes — so it stayed green through three population changes while
+    # twelve committed views declared C1a's 21/14 slice over a 48/29
+    # adjudication. What it asserts now is that the banner states figures
+    # COUNTED from the fixture, independently of the module's own figures/2.
+    test "every view's banner states the population counted from the crosswalk", %{files: files} do
+      doc = fixture()
+      members = length(doc["population"]["members"])
+      checks = length(doc["population"]["declared_checks"])
+      outside_members = doc["population"]["outside_the_population"]["et_cc_members"]
+
+      for {_name, view} <- files do
+        banner = squash(view["population_banner"])
+
+        assert banner =~ "#{members} declared ET-CC members"
+        assert banner =~ "#{checks} declared in-population OC checks"
+        assert banner =~ "#{members + outside_members} ET-CC members"
+        refute banner =~ "{{"
       end
+    end
+
+    test "the banner and every predicate are the same in all twelve files", %{files: files} do
+      banners = files |> Map.values() |> Enum.map(& &1["population_banner"]) |> Enum.uniq()
+      assert length(banners) == 1
 
       for id <- BucketProjection.bucket_ids() do
-        assert view(files, id)["predicate"] == BucketProjection.spec(id).predicate
+        assert view(files, id)["predicate"] ==
+                 BucketProjection.spec(id, figures()).predicate
       end
     end
   end
@@ -244,7 +320,7 @@ defmodule MCP.Conformance.BucketProjectionTest do
 
     test "there are three derived equations plus the cited bucket-0 one", %{roll_up: r} do
       assert Enum.map(r["equations"], & &1["universe"]) ==
-               ~w(edges declared_members declared_checks oc_checks_175)
+               ~w(edges declared_members declared_checks oc_checks_manifest)
 
       assert Enum.all?(r["equations"], & &1["holds"])
     end
@@ -303,7 +379,8 @@ defmodule MCP.Conformance.BucketProjectionTest do
     end
 
     test "leg — a declared check whose token leg is not server or client" do
-      doc = update_in(fixture(), ["population", "checks"], &["oc:gateway/s/c/C" | &1])
+      doc =
+        update_in(fixture(), ["population", "declared_checks"], &["oc:gateway/s/c/C" | &1])
 
       assert {:error, {:leg, message}} = BucketProjection.project(doc, bucket_zero(), %{})
       assert message =~ "declared checks carry a leg outside"
@@ -337,18 +414,160 @@ defmodule MCP.Conformance.BucketProjectionTest do
       assert message =~ "no declared_unmatched record (1)"
     end
 
-    test "check_partition — a cell tagging a check outside the declared population" do
-      doc = put_in(fixture(), ["cells", Access.at(0), "tag"], "oc:client/s/c/Nope")
+    # MES-104 re-cut this guard. Its old form — declared checks against
+    # `2a ++ 2b ++ the edge-bearing checks` — became entailed once the declared
+    # checks were the bucket-2 universe, so a cell tagging a check outside the
+    # declared population no longer breaks it: that check is simply ADDRESSED
+    # and not DECLARED, which is a state the artefact now names. What the guard
+    # pins is the crosswalk's own stored bucket 2 against the projected one.
+    test "check_partition — the crosswalk's stored bucket 2 disagrees with the projection" do
+      doc =
+        put_in(fixture(), ["buckets", "bucket_2", "checks"], [
+          "oc:client/scenario-J/check-J/CheckJ"
+        ])
 
       assert {:error, {:check_partition, message}} =
                BucketProjection.project(doc, bucket_zero(), %{})
 
-      assert message =~ "outside the declared population (1)"
+      assert message =~ "in 2a or 2b, not in the crosswalk's bucket 2 (1)"
+    end
+
+    test "check_partition — a DECLARED check that reaches no view at all" do
+      # The entailed limb, shown able to fail when its inputs are made to
+      # disagree: a declared check that is neither edge-bearing nor in 2a/2b
+      # cannot arise from the projection itself, so it is planted on the stored
+      # side and the second direction catches it.
+      doc =
+        update_in(fixture(), ["buckets", "bucket_2", "checks"], &["oc:gateway/s/c/Absent" | &1])
+
+      assert {:error, {:check_partition, message}} =
+               BucketProjection.project(doc, bucket_zero(), %{})
+
+      assert message =~ "in the crosswalk's bucket 2, in no view (1)"
+    end
+
+    # CR-1's guard, one unit per limb. The limb a MODULE mutation fires (P3, a
+    # hard-coded figure put back into a template) is driven here through
+    # `frozen_figures/1` — the whole-module recompile that plants the real
+    # C1a banner is `bucket_projection_controls.exs population`.
+    test "population_statement P1 — the crosswalk does not state what lies outside" do
+      doc = update_in(fixture(), ["population"], &Map.delete(&1, "outside_the_population"))
+
+      assert {:error, {:population_statement, message}} =
+               BucketProjection.project(doc, bucket_zero(), %{})
+
+      assert message =~ "does not state 2 of the figures"
+      assert message =~ "population.outside_the_population.et_cc_members"
+      assert message =~ "population.outside_the_population.in_denominator_checks"
+      assert message =~ "0 members and 0 checks are not_yet_adjudicated"
+    end
+
+    test "population_statement P2 — a stated member_count the member list contradicts" do
+      doc = put_in(fixture(), ["population", "member_count"], 21)
+
+      assert {:error, {:population_statement, message}} =
+               BucketProjection.project(doc, bucket_zero(), %{})
+
+      assert message =~ "population.member_count: states 21, the list holds 8"
+    end
+
+    test "population_statement P2 — a stated declared_check_count the list contradicts" do
+      doc = put_in(fixture(), ["population", "declared_check_count"], 14)
+
+      assert {:error, {:population_statement, message}} =
+               BucketProjection.project(doc, bucket_zero(), %{})
+
+      assert message =~ "population.declared_check_count: states 14, the list holds 9"
+    end
+
+    test "population_statement P3 — the shipped templates carry no frozen figure" do
+      # The POSITIVE control for P3, and the one that says the scan reached the
+      # population rather than reaching nothing: a green `frozen_figures == []`
+      # over an EMPTY statement list would read identically (S9-18 again). So
+      # the counts are asserted too — 9 figure keys, 25 statements, 26 figures
+      # actually interpolated into them.
+      sentinels = BucketProjection.sentinel_figures()
+      statements = BucketProjection.statements(sentinels)
+
+      assert map_size(sentinels) == 9
+      assert length(statements) == 25
+      assert BucketProjection.frozen_figures(statements) == []
+
+      interpolated =
+        statements
+        |> Enum.flat_map(fn {_l, text} -> Regex.scan(~r/\b90000\d\b/, text) end)
+        |> length()
+
+      assert interpolated == 26
+    end
+
+    test "population_statement P3 — a figure written as a literal is caught by its constancy" do
+      # C1a's own words, which is what twelve committed views carried.
+      planted = [
+        {"banner", "POPULATION: the declared 21-member / 14-check slice adjudicated by MES-97."},
+        {"predicate 1", "Universe: the 21 declared members, never all 281 members."}
+      ]
+
+      frozen = BucketProjection.frozen_figures(planted)
+
+      assert Enum.map(frozen, fn {label, number, _text} -> {label, number} end) ==
+               [{"banner", "21"}, {"banner", "14"}, {"predicate 1", "21"}, {"predicate 1", "281"}]
+    end
+
+    test "population_statement P3 — a ticket id, a revision and a date are not claims" do
+      # The scan must not fire on every integer, or it becomes an allow-list.
+      refute_claim = fn text -> assert BucketProjection.frozen_figures([{"x", text}]) == [] end
+
+      refute_claim.("owned by C1b-ii (MES-104) and C1c (MES-105), revision 2026-07-28")
+      refute_claim.("A3 §6 state 4, recorded as S9-15 and ruling 7")
+      refute_claim.("bucket-0-2026-07-28.json holds A5's records")
+    end
+
+    test "population_statement P4 — a statement interpolated from the WRONG figure" do
+      f = figures()
+
+      # P3 cannot see this one: 175 is a real figure and moves under sentinels
+      # exactly as 8 would. P4 is what catches it.
+      wrong = [
+        {"banner",
+         BucketProjection.banner(f)
+         |> String.replace("#{f.declared_members} declared ET-CC", "175 declared ET-CC")}
+      ]
+
+      assert [{"banner", phrase}] = BucketProjection.missing_phrases(wrong, f)
+      assert phrase == "#{f.declared_members} declared ET-CC members"
+    end
+
+    test "population_statement P4 — the shipped statements all state the tree's figures" do
+      f = figures()
+      assert BucketProjection.missing_phrases(BucketProjection.statements(f), f) == []
+    end
+
+    test "a figure a template names and the map does not carry RAISES, never renders" do
+      # `{{declared_members}}` against a map without it would otherwise emit
+      # the placeholder into a committed artefact, where it reads as
+      # decoration rather than as a fault.
+      assert_raise ArgumentError, ~r/no such population figure: declared_members/, fn ->
+        BucketProjection.banner(%{})
+      end
+    end
+
+    test "a figure the crosswalk leaves UNSTATED renders as UNSTATED, never as 0" do
+      f = Map.put(figures(), :outside_members, nil)
+      assert BucketProjection.banner(f) =~ "UNSTATED members"
+      refute BucketProjection.banner(f) =~ "0 members and"
     end
 
     test "the guard list is what the controls enumerate" do
       assert BucketProjection.guards() ==
-               [:vacuum, :leg, :edge_partition, :member_partition, :check_partition]
+               [
+                 :vacuum,
+                 :leg,
+                 :edge_partition,
+                 :member_partition,
+                 :check_partition,
+                 :population_statement
+               ]
     end
 
     test "an unmutated fixture passes every guard — the negative control" do
@@ -402,9 +621,10 @@ defmodule MCP.Conformance.BucketProjectionTest do
         |> Enum.filter(&(view(files, &1)["count"] == 0))
         |> Map.new(&{&1, view(files, &1)["emptiness_reason"]["code"]})
 
+      # 2b is POPULATED from MES-104 on — the first non-vacuous bucket 2 this
+      # project has had. Four views are empty, over three codes.
       assert empty == %{
                "2a" => "by_adjudication",
-               "2b" => "by_adjudication",
                "3" => "by_construction",
                "5a" => "by_slice",
                "6" => "by_construction"
@@ -423,4 +643,8 @@ defmodule MCP.Conformance.BucketProjectionTest do
   end
 
   defp read!(path), do: path |> File.read!() |> Jason.decode!()
+
+  defp figures, do: BucketProjection.figures(fixture(), bucket_zero())
+
+  defp squash(text), do: text |> String.replace(~r/\s+/, " ") |> String.trim()
 end

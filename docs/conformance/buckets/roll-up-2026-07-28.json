@@ -7,11 +7,11 @@
       "emptiness_code": null,
       "empty": false,
       "title": "out of denominator — unmatchable by construction",
-      "universe": "oc_checks_175"
+      "universe": "oc_checks_manifest"
     },
     {
       "bucket": "1",
-      "count": 5,
+      "count": 16,
       "derivation": "projection",
       "emptiness_code": null,
       "empty": false,
@@ -29,10 +29,10 @@
     },
     {
       "bucket": "2b",
-      "count": 0,
+      "count": 9,
       "derivation": "projection",
-      "emptiness_code": "by_adjudication",
-      "empty": true,
+      "emptiness_code": null,
+      "empty": false,
       "title": "OC check with no ET-CC match — client",
       "universe": "declared_checks"
     },
@@ -74,7 +74,7 @@
     },
     {
       "bucket": "5b",
-      "count": 15,
+      "count": 48,
       "derivation": "projection",
       "emptiness_code": null,
       "empty": false,
@@ -92,7 +92,7 @@
     },
     {
       "bucket": "escalated",
-      "count": 4,
+      "count": 5,
       "derivation": "projection",
       "emptiness_code": null,
       "empty": false,
@@ -105,7 +105,7 @@
       "holds": true,
       "measure": "The arithmetic is the VISIBLE half. The evidence is the set comparison in `partition`, both directions with the negatives enumerated — two counts agreeing is not two sets agreeing.",
       "of": "the crosswalk's `cells`",
-      "sum": 23,
+      "sum": 57,
       "terms": [
         {
           "count": 0,
@@ -124,7 +124,7 @@
           "term": "5a"
         },
         {
-          "count": 15,
+          "count": 48,
           "term": "5b"
         },
         {
@@ -132,51 +132,51 @@
           "term": "6"
         },
         {
-          "count": 4,
+          "count": 5,
           "term": "escalated"
         }
       ],
-      "total": 23,
+      "total": 57,
       "universe": "edges"
     },
     {
       "holds": true,
       "measure": "The arithmetic is the VISIBLE half. The evidence is the set comparison in `partition`, both directions with the negatives enumerated — two counts agreeing is not two sets agreeing.",
-      "of": "the declared ET-CC members, never all 281",
-      "sum": 21,
+      "of": "the 48 declared ET-CC members, never all 281 members",
+      "sum": 48,
       "terms": [
         {
-          "count": 5,
+          "count": 16,
           "term": "1"
         },
         {
-          "count": 16,
+          "count": 32,
           "term": "members_with_edges"
         }
       ],
-      "total": 21,
+      "total": 48,
       "universe": "declared_members"
     },
     {
       "holds": true,
       "measure": "The arithmetic is the VISIBLE half. The evidence is the set comparison in `partition`, both directions with the negatives enumerated — two counts agreeing is not two sets agreeing.",
-      "of": "the declared in-population OC checks, never all 173",
-      "sum": 14,
+      "of": "the 29 declared in-population OC checks, never all 173 in-denominator checks",
+      "sum": 29,
       "terms": [
         {
           "count": 0,
           "term": "2a"
         },
         {
-          "count": 0,
+          "count": 9,
           "term": "2b"
         },
         {
-          "count": 14,
+          "count": 20,
           "term": "checks_with_edges"
         }
       ],
-      "total": 14,
+      "total": 29,
       "universe": "declared_checks"
     },
     {
@@ -195,7 +195,7 @@
         }
       ],
       "total": 175,
-      "universe": "oc_checks_175"
+      "universe": "oc_checks_manifest"
     }
   ],
   "generated_by": "mix conformance.buckets",
@@ -208,7 +208,13 @@
       "missing": []
     },
     "declared_checks": {
-      "claim": "every declared check is in 2a, in 2b, or carries an edge",
+      "claim": "the bucket 2 these views project equals the bucket 2 the crosswalk stores — a CONSISTENCY pin between two independently produced statements (ruling 9), not a claim that either is right",
+      "equal": true,
+      "extra": [],
+      "missing": []
+    },
+    "declared_checks_reach_a_view": {
+      "claim": "every declared check is in 2a, in 2b, or carries an edge. ENTAILED by the way the views are computed and therefore unable to fail — recorded as arithmetic, not as evidence (MES-104)",
       "equal": true,
       "extra": [],
       "missing": []
@@ -622,7 +628,7 @@
     },
     "who_proves_it": "E2 (the epic's exit) PROVES the partition. This ticket establishes it MECHANICALLY and reports the comparison; the distinction is deliberate and E2's result is not claimed here."
   },
-  "population_banner": "POPULATION: the declared 21-member / 14-check slice adjudicated by\nMES-97 (C1a). This is NOT the whole conformance picture. The full\ncomparison is 281 ET-CC members and 173 in-denominator OC checks; the\nremaining 260 members and 159 checks are not_yet_adjudicated -- a third\nstate, distinct from bucket 1 -- and are owned by C1b (MES-104, client\nleg) and C1c (MES-105, server leg + the 29 none_determinable).\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. When C1b and C1c land, this projection re-runs\nand fills.",
+  "population_banner": "POPULATION: this projection covers 48 declared ET-CC members and 29\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 233 members and\n130 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 14 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
   "projected_from": {
     "bucket_zero": {
       "bytes": 176409,
@@ -630,15 +636,15 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 60423,
+      "bytes": 186840,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "3a46a6cd4e7157570f40d5863e1c72c08712c9bb768f4ff64f2463f96b3e3844"
+      "sha256": "d068abff28bcb179199e530fa3c7dbeec21a5f5a4abe0a39750e23493542f358"
     }
   },
   "residuals": [
     {
       "id": "C2-R1",
-      "text": "POPULATION: the declared 21-member / 14-check slice adjudicated by MES-97 (C1a). This is NOT the whole conformance picture. The full comparison is 281 ET-CC members and 173 in-denominator OC checks; the remaining 260 members and 159 checks are not_yet_adjudicated -- a third state, distinct from bucket 1 -- and are owned by C1b (MES-104, client leg) and C1c (MES-105, server leg + the 29 none_determinable).  A count of zero in this view means zero WITHIN THAT SLICE. It does not mean zero in the suite. When C1b and C1c land, this projection re-runs and fills."
+      "text": "POPULATION: this projection covers 48 declared ET-CC members and 29 declared in-population OC checks. That is the slice adjudicated so far, and it is NOT the whole conformance picture: the full comparison is 281 ET-CC members and 173 in-denominator OC checks, of which 233 members and 130 checks are not_yet_adjudicated -- a third state, distinct from bucket 1 -- owned by the tickets the crosswalk's own `outside_the_population` block names. A further 14 checks carry an edge without being declared by any file, so they are counted in neither.  A count of zero in this view means zero WITHIN THAT SLICE. It does not mean zero in the suite. As the declared population grows this projection re-runs and fills.  EVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected; none is written here. The [population_statement] guard refuses a population figure that is not."
     },
     {
       "id": "C2-R2",
@@ -646,7 +652,7 @@
     },
     {
       "id": "C2-R3",
-      "text": "BUCKET 0 IS A CITATION. Its two rows are A5's records verbatim and were removed from the denominator before the join, so nine of the ten views are projections and the tenth says on its face why it is not."
+      "text": "BUCKET 0 IS A CITATION. Its 2 rows are A5's records verbatim and were removed from the denominator before the join, so nine of the ten views are projections and the tenth says on its face why it is not."
     },
     {
       "id": "C2-R4",

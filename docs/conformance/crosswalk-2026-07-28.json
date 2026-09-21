@@ -1,20 +1,28 @@
 {
   "arithmetic": {
-    "bucketed": 19,
-    "edges": 23,
+    "bucketed": 52,
+    "edges": 57,
     "equation": "edges = bucketed + escalated",
-    "escalated": 4,
-    "members": 21,
-    "members_declared_unmatched": 5,
+    "escalated": 5,
+    "members": 48,
+    "members_declared_unmatched": 16,
     "members_equation": "population members = members with >=1 edge + members declared unmatched",
-    "members_with_edges": 16
+    "members_with_edges": 32
   },
   "axis_provenance": {
-    "axes_checked": 16,
+    "axes_checked": 59,
     "harness_checked": true,
     "harness_dist_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
     "harness_read_from": "/tmp/conf11/node_modules/@modelcontextprotocol/conformance/dist/index.js",
     "what_was_checked": "every axis `expr`, every precondition `guard` and every listed conjunct occurs VERBATIM in the bytes at the span its row names — the emitting excerpt or a named context excerpt."
+  },
+  "axis_span_provenance": {
+    "checked_against": "docs/conformance/oc-emitting-sites-2026-07-28.json",
+    "locator_row": 36,
+    "locator_row_rejected": 4,
+    "rows": 40,
+    "what_this_does_not_establish": "That a rejected row's span is the RIGHT one. It establishes that the row is not claiming the locator's authority for a span the locator did not give it. The bytes at the span are checked separately, and only when --harness is given.",
+    "what_was_checked": "For every `locator_row` row, the committed `emitting_byte_span` is one the locator names for that row's key. For every `locator_row_rejected` row, the locator's own `rung_pin_level` is NOT `row`, the span used is NOT one the locator names, and a reason is recorded. An unknown provenance value is refused."
   },
   "buckets": {
     "bucket_0": {
@@ -23,26 +31,48 @@
       "owner": "A5 = MES-70, docs/conformance/bucket-0-2026-07-28.json"
     },
     "bucket_1": {
-      "count": 5,
+      "count": 16,
       "members": [
         "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
         "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
+        "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy M-2: the warn-once record shares the cache's GENERATION — a reset re-arms it",
+        "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a -32020 triggers a tools/list refresh and ONE retry, which then mirrors",
+        "MCP.ClientToolSchemasTest/test M-1 — a malformed tools/list result fails the REQUEST, not the client a string result likewise, and it leaves the tool caches untouched",
+        "MCP.ClientToolSchemasTest/test M-5 — a malformed REFRESH result fails the call, not the client a null refresh result returns the ORIGINAL -32020 alongside the malformed term",
+        "MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-BEARING page MERGES, so paging does not discard earlier pages",
+        "MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-LESS listing RESETS, so a removed tool does not linger",
         "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart",
+        "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (4)",
         "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) a NESTED object property IS reachable — every step is a `properties` key",
-        "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) an integer outside the IEEE 754 safe range is not mirrored, and says so"
+        "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) an integer outside the IEEE 754 safe range is not mirrored, and says so",
+        "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a non-map arguments value yields no headers rather than raising",
+        "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule the exact property path is read — a same-named key elsewhere is not",
+        "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector no header carries a raw CR or LF — injection is closed by construction",
+        "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client with no prior tools/list, nothing is mirrored and the client says so"
       ],
       "rule": "an ET-CC member of the declared population with NO edge — A3 §6 state 3",
-      "universe": "the 21 declared members, never all 281"
+      "universe": "the 48 declared members, never all 281"
     },
     "bucket_2": {
-      "checks": [],
-      "count": 0,
-      "result": "CHECKED, AND ZERO — all 14 checks in the declared population carry at least one edge",
-      "rule": "an in-population OC check with no edge",
-      "universe": "the 14 declared checks, never all 173",
-      "why_not_159": "The 159 in-denominator checks outside the population are NOT bucket 2. Bucket 2 is 'we adjudicated and found no ET counterpart'; those were not adjudicated. C1b/C1c own them."
+      "checks": [
+        "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_colon_in_name",
+        "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_control_char_name",
+        "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_non_ascii_name",
+        "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_space_in_name",
+        "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-not-empty/ClientRejectsInvalidTool_invalid_empty_header",
+        "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_array_header",
+        "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_null_header",
+        "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_diff_case",
+        "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_same_case"
+      ],
+      "count": 9,
+      "declared": true,
+      "result": "9 of the 29 declared checks carry no edge from any ET-CC member of the declared member population",
+      "rule": "a check in a DECLARED check population that carries no edge",
+      "universe": "the 29 declared checks, never all 173",
+      "why_not_the_rest_of_the_173": "The in-denominator checks outside every declared check population are NOT bucket 2. Bucket 2 is 'we adjudicated and found no ET counterpart'; those were not adjudicated."
     },
-    "bucket_5_partial_sub_count": 2,
+    "bucket_5_partial_sub_count": 8,
     "empty_by_construction": {
       "bucket_3": "green OC / red ET — 0",
       "bucket_6": "red in both — 0",
@@ -52,7 +82,7 @@
     "from_edges": {
       "4a": 2,
       "4b": 2,
-      "5": 15
+      "5": 48
     }
   },
   "cells": [
@@ -544,51 +574,6 @@
     {
       "axes": [
         {
-          "axis": "tools_call_was_made",
-          "verdict": "agrees"
-        },
-        {
-          "axis": "argument_a_is_a_number",
-          "verdict": "silent"
-        },
-        {
-          "axis": "argument_b_is_a_number",
-          "verdict": "silent"
-        }
-      ],
-      "bucket": "5",
-      "bucket_attributes": [
-        "partial"
-      ],
-      "claim": "a tools/call to `add` with two numeric arguments is issued and returns their sum",
-      "escalation": null,
-      "evidence": "integration_test.exs:149-150 — `Client.call_tool(client, \"add\", %{\"a\" => 3, \"b\" => 4})` returns `\"7\"`. The call being made is asserted directly. The two type axes are NOT: the assertion is on the tool's RESULT, and a client sending `\"3\"`/`\"4\"` as JSON strings would be caught here only if this SDK's own `add` tool refused them — a property of the fixture server, not of this assertion. Silent, on the CG5 rule: a test whose subject is downstream of the requirement does not discharge it.",
-      "member": {
-        "module": "MCP.IntegrationTest",
-        "register_key": "MCP.IntegrationTest/test tools: list, echo, add, isError, unknown",
-        "test": "test tools: list, echo, add, isError, unknown"
-      },
-      "note": null,
-      "oc_key": [
-        "client",
-        "tools_call",
-        "tool-add-numbers",
-        "ToolAddNumbers",
-        "Validates that the add_numbers tool works correctly",
-        ""
-      ],
-      "shape": "partial",
-      "tag": "oc:client/tools_call/tool-add-numbers/ToolAddNumbers",
-      "verdicts": {
-        "et": "green",
-        "oc": "green",
-        "oc_status_at_accepted_run": "SUCCESS",
-        "oc_warning": false
-      }
-    },
-    {
-      "axes": [
-        {
           "axis": "capability_value_is_a_plain_object",
           "verdict": "agrees"
         }
@@ -764,6 +749,1349 @@
     {
       "axes": [
         {
+          "axis": "mcp_param_header_present",
+          "verdict": "silent"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a plain-ASCII value is carried as the header value unchanged",
+      "escalation": null,
+      "evidence": "header_mirror.ex:160-161 — `iex> MCP.Protocol.HeaderMirror.encode_value(\"us-west1\")` -> `\"us-west1\"`. `us-west1` is the fixture's own `region` argument and `Ga` calls it header-safe, so the OC check requires the header to carry it PLAIN, which is what the doctest asserts. SILENT on presence: a doctest of the encoder observes a return value, never a request, so no assertion here has an emitted header as its subject.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (1)",
+        "test": "doctest MCP.Protocol.HeaderMirror.encode_value/1 (1)"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_Region",
+        "Client sends correct Mcp-Param-Region header (string value)",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "silent"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a non-ASCII value is carried as the Base64 sentinel",
+      "escalation": null,
+      "evidence": "header_mirror.ex:163-164 — `encode_value(\"Hello, 世界\")` -> `\"=?base64?SGVsbG8sIOS4lueVjA==?=\"`. `Hello, 世界` is the fixture's `non_ascii_val` verbatim, and `Ga` returns true for it, so `Ka` requires the sentinel and requires it to decode back to the body value — the doctest's expected string is exactly that sentinel. SILENT on presence, as for the sibling doctests.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (2)",
+        "test": "doctest MCP.Protocol.HeaderMirror.encode_value/1 (2)"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_NonAscii",
+        "Client sends correct Mcp-Param-NonAscii header (string value)",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_NonAscii",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "silent"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a value with leading and trailing whitespace is carried as the Base64 sentinel",
+      "escalation": null,
+      "evidence": "header_mirror.ex:166-167 — `encode_value(\" padded \")` -> `\"=?base64?IHBhZGRlZCA=?=\"`. ` padded ` is the fixture's `whitespace_val` verbatim; `Ga`'s final clause `return e!==e.trim()` is what makes it unsafe. SILENT on presence.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (3)",
+        "test": "doctest MCP.Protocol.HeaderMirror.encode_value/1 (3)"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_Whitespace",
+        "Client sends correct Mcp-Param-Whitespace header (string value)",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Whitespace",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "null_or_absent_parameter_header_is_omitted",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a null-valued annotated parameter produces no header, while a non-null sibling still does",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:431-432 — `assert [{\"mcp-param-region\", \"us-east1\"}] = HeaderMirror.headers_for(annotations, %{\"region\" => \"us-east1\", \"verbose\" => nil})`. The assertion's subject is the whole header list for a call carrying a null `verbose`: it requires the verbose header ABSENT and the region header present, which is the check's `t===void 0` over `mcp-param-verbose` plus the control that the omission is selective rather than total.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a null value omits the header; so does an absent one",
+        "test": "test value encoding — omission and the sentinel's ambiguity rule a null value omits the header; so does an absent one"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-omit-null",
+        "ClientCustomHeaderOmitNull",
+        "Client MUST omit Mcp-Param header when parameter value is null or not provided",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-omit-null/ClientCustomHeaderOmitNull",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "null_or_absent_parameter_header_is_omitted",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "an ABSENT annotated parameter also produces no header",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:434 — `assert [] = HeaderMirror.headers_for(annotations, %{})`. A second subject, so a second claim and a second edge rather than a collapse (match-relation.md §1). The check's description names BOTH conditions — `when parameter value is null or not provided` — so the same axis carries both.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a null value omits the header; so does an absent one",
+        "test": "test value encoding — omission and the sentinel's ambiguity rule a null value omits the header; so does an absent one"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-omit-null",
+        "ClientCustomHeaderOmitNull",
+        "Client MUST omit Mcp-Param header when parameter value is null or not provided",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-omit-null/ClientCustomHeaderOmitNull",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a value with only internal spaces is carried plain, not encoded",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:385 — `assert headers[\"mcp-param-internalspace\"] == \"us west 1\"`. `headers` is a map of the produced header list, so an absent key compares as nil and the assertion fails: presence is entailed, not assumed. `Ga` is FALSE for `us west 1` (0x20 is neither <32 nor >126 and the value equals its own trim), so the check requires the plain form.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector INTERNAL spaces stay plain — only leading/trailing whitespace forces encoding",
+        "test": "test value encoding — the fixture's own 16-value vector INTERNAL spaces stay plain — only leading/trailing whitespace forces encoding"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_InternalSpace",
+        "Client sends correct Mcp-Param-InternalSpace header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_InternalSpace",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "an empty-string argument produces a present header with an empty value",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:349-350 — `assert Map.has_key?(headers, \"mcp-param-emptyval\")` and `assert headers[\"mcp-param-emptyval\"] == \"\"`. Two assertions, ONE subject (the emptyval header), so one claim. The first discharges the presence axis directly; the OC check agrees — `if(a===void 0)o.push(`Missing Mcp-Param-EmptyVal header…`)` treats an absent header as a failure even for an empty value.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an EMPTY string is present with an empty value, not omitted",
+        "test": "test value encoding — the fixture's own 16-value vector an EMPTY string is present with an empty value, not omitted"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_EmptyVal",
+        "Client sends correct Mcp-Param-EmptyVal header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_EmptyVal",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the priority argument is mirrored as \"42\"",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:339 — `assert headers[\"mcp-param-priority\"] == \"42\"`. One assertion per header, so three subjects and three claims. The check's `Ka` is called with `e=String(n)` for an integer and `e=n?`true`:`false`` for a boolean, so the expected wire form is exactly the string asserted here.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false",
+        "test": "test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-encode-values",
+        "ClientCustomHeader_Priority",
+        "Client sends correct Mcp-Param-Priority header (integer value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Priority",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the verbose argument is mirrored as \"false\"",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:340 — `assert headers[\"mcp-param-verbose\"] == \"false\"`. One assertion per header, so three subjects and three claims. The check's `Ka` is called with `e=String(n)` for an integer and `e=n?`true`:`false`` for a boolean, so the expected wire form is exactly the string asserted here.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false",
+        "test": "test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-encode-values",
+        "ClientCustomHeader_Verbose",
+        "Client sends correct Mcp-Param-Verbose header (boolean value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Verbose",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the debug argument is mirrored as \"true\"",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:341 — `assert headers[\"mcp-param-debug\"] == \"true\"`. One assertion per header, so three subjects and three claims. The check's `Ka` is called with `e=String(n)` for an integer and `e=n?`true`:`false`` for a boolean, so the expected wire form is exactly the string asserted here.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false",
+        "test": "test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-encode-values",
+        "ClientCustomHeader_Debug",
+        "Client sends correct Mcp-Param-Debug header (boolean value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Debug",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the NonAscii argument is mirrored as its exact Base64 sentinel",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:355 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the `=?base64?…?=` shape AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+        "test": "test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_NonAscii",
+        "Client sends correct Mcp-Param-NonAscii header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_NonAscii",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the Whitespace argument is mirrored as its exact Base64 sentinel",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:356 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the `=?base64?…?=` shape AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+        "test": "test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_Whitespace",
+        "Client sends correct Mcp-Param-Whitespace header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Whitespace",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the LeadingSpace argument is mirrored as its exact Base64 sentinel",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:357 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the `=?base64?…?=` shape AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+        "test": "test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_LeadingSpace",
+        "Client sends correct Mcp-Param-LeadingSpace header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_LeadingSpace",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the TrailingSpace argument is mirrored as its exact Base64 sentinel",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:358 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the `=?base64?…?=` shape AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+        "test": "test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_TrailingSpace",
+        "Client sends correct Mcp-Param-TrailingSpace header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_TrailingSpace",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "the ControlChar argument's header is sentinel-SHAPED",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:360-363 — `assert String.starts_with?(headers[key], \"=?base64?\")` and `assert String.ends_with?(headers[key], \"?=\")` for `mcp-param-controlchar`. PRESENCE agrees: `String.starts_with?/2` raises a FunctionClauseError on the nil an absent key returns, so an omitted header reddens the unit. VALUE is SILENT, and this is a reading rather than a judgement: the assertion's subject is the header's SHAPE, and `Ka`'s branch requires the decoded payload to EQUAL the body value, which a shape cannot establish. The sibling unit `every encoded value decodes back to exactly the body value` (header_mirror_test.exs:367) does discharge it — but B2b attributes that unit to leg `none_determinable`, so it is outside this file's declared population and is C1c's (MES-105). Recorded rather than borrowed.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+        "test": "test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_ControlChar",
+        "Client sends correct Mcp-Param-ControlChar header (string value)",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_ControlChar",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "the CrLf argument's header is sentinel-SHAPED",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:360-363 — `assert String.starts_with?(headers[key], \"=?base64?\")` and `assert String.ends_with?(headers[key], \"?=\")` for `mcp-param-crlf`. PRESENCE agrees: `String.starts_with?/2` raises a FunctionClauseError on the nil an absent key returns, so an omitted header reddens the unit. VALUE is SILENT, and this is a reading rather than a judgement: the assertion's subject is the header's SHAPE, and `Ka`'s branch requires the decoded payload to EQUAL the body value, which a shape cannot establish. The sibling unit `every encoded value decodes back to exactly the body value` (header_mirror_test.exs:367) does discharge it — but B2b attributes that unit to leg `none_determinable`, so it is outside this file's declared population and is C1c's (MES-105). Recorded rather than borrowed.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+        "test": "test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_CrLf",
+        "Client sends correct Mcp-Param-CrLf header (string value)",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_CrLf",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "the Tab argument's header is sentinel-SHAPED",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:360-363 — `assert String.starts_with?(headers[key], \"=?base64?\")` and `assert String.ends_with?(headers[key], \"?=\")` for `mcp-param-tab`. PRESENCE agrees: `String.starts_with?/2` raises a FunctionClauseError on the nil an absent key returns, so an omitted header reddens the unit. VALUE is SILENT, and this is a reading rather than a judgement: the assertion's subject is the header's SHAPE, and `Ka`'s branch requires the decoded payload to EQUAL the body value, which a shape cannot establish. The sibling unit `every encoded value decodes back to exactly the body value` (header_mirror_test.exs:367) does discharge it — but B2b attributes that unit to leg `none_determinable`, so it is outside this file's declared population and is C1c's (MES-105). Recorded rather than borrowed.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+        "test": "test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_Tab",
+        "Client sends correct Mcp-Param-Tab header (string value)",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Tab",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the region argument is mirrored plain",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:331 — `assert headers[\"mcp-param-region\"] == \"us-west1\"`, against the fixture's own `region` value. Presence is entailed by the equality (an absent key compares as nil).",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector plain ASCII is sent as-is",
+        "test": "test value encoding — the fixture's own 16-value vector plain ASCII is sent as-is"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_Region",
+        "Client sends correct Mcp-Param-Region header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the method_val argument is mirrored plain",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:332 — `assert headers[\"mcp-param-method\"] == \"test-method\"`. A second header, so a second subject and a second claim.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector plain ASCII is sent as-is",
+        "test": "test value encoding — the fixture's own 16-value vector plain ASCII is sent as-is"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_Method",
+        "Client sends correct Mcp-Param-Method header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Method",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the `Method` annotation produces an Mcp-Param-Method header carrying the argument",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:415 — `assert headers[\"mcp-param-method\"] == \"test-method\"`. The fixture's own description for this parameter names the case: `tests that x-mcp-header \"Method\" produces Mcp-Param-Method (not Mcp-Method)`.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method",
+        "test": "test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_Method",
+        "Client sends correct Mcp-Param-Method header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Method",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "unannotated_string_parameter_is_not_mirrored",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "an unannotated STRING parameter is not mirrored",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:405 — `refute Map.has_key?(headers, \"mcp-param-query\")`, and `query` is the fixture's own unannotated string parameter. The check reads the same header: `let r=e.headers[`mcp-param-query`]` and passes on `r===void 0`.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector unannotated parameters are NOT mirrored",
+        "test": "test value encoding — the fixture's own 16-value vector unannotated parameters are NOT mirrored"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeaderNoMirrorUnannotated",
+        "Client MUST NOT add Mcp-Param headers for parameters without x-mcp-header",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorUnannotated",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "unannotated_number_parameter_is_not_mirrored",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "an unannotated NUMBER parameter is not mirrored",
+      "escalation": null,
+      "evidence": "header_mirror_test.exs:406 — `refute Map.has_key?(headers, \"mcp-param-floatval\")`, and `float_val` is the fixture's own unannotated number parameter. A4 measured that this check is NOT the `number`-exclusion constraint — that one is about an ANNOTATED number — and this claim is the one the check actually makes.",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector unannotated parameters are NOT mirrored",
+        "test": "test value encoding — the fixture's own 16-value vector unannotated parameters are NOT mirrored"
+      },
+      "note": "A4's adversarial pairing, re-read and confirmed at the pinned build: the check's own description says `number-typed float_val is served UNANNOTATED per SEP-2243`, and the member's `refute` is about that same unannotated parameter. The register stands.",
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeaderNoMirrorNumber",
+        "Client MUST NOT add Mcp-Param headers for parameters without x-mcp-header (number-typed float_val is served unannotated per SEP-2243)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorNumber",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "invalid_tool_is_not_called",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": null,
+      "bucket_attributes": [],
+      "claim": "a tool excluded for an invalid annotation leaves no annotations behind, so calling it anyway mirrors nothing",
+      "escalation": "no_axis_contact — every axis of this check is silent. A3 §2 rules that covering zero of one axis is no match, not a partial one; generalised to 1 axes that is this edge. §3's table has no row for it, so it escalates rather than being bucketed.",
+      "evidence": "client_tool_schemas_test.exs:125-146. The member's `invalid_tool/1` helper (:55-63) builds exactly the fixture's `invalid_object_header` class — an `x-mcp-header` on a property of `\"type\" => \"object\"` — so the counterpart check is unambiguous. The single axis is SILENT: the check's subject is whether the client CALLED the tool, and this member deliberately calls it, asserting instead that the call carries no headers (`assert [] = … Keyword.get(:headers, [])`). The two are not in conflict — the call here is the TEST's choice through `Client.call_tool/3`, not the client's own selection — but the assertion's subject is the headers, not the calling.",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an excluded tool leaves no annotations behind, so calling it mirrors nothing",
+        "test": "test W6 — SEP-2243 tool exclusion an excluded tool leaves no annotations behind, so calling it mirrors nothing"
+      },
+      "note": "ALL AXES SILENT. Recorded and ESCALATED, never bucketed, per this file's all-silent rule. The question for the PM is narrow and worth asking: our client excludes the tool from tools/list and drops its annotations, but does not refuse a direct `call_tool/3` on the name. Whether SEP-2243's `MUST reject (exclude) such tools` reaches that far is a requirement reading, not an adjudication this file can make.",
+      "oc_key": [
+        "client",
+        "http-invalid-tool-headers",
+        "sep-2243-x-mcp-header-primitive-only",
+        "ClientRejectsInvalidTool_invalid_object_header",
+        "Client MUST NOT call tool 'invalid_object_header' with invalid x-mcp-header",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "invalid_tool_is_not_called",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a tool whose x-mcp-header sits on an object-typed property is dropped from tools/list",
+      "escalation": null,
+      "evidence": "client_tool_schemas_test.exs:97 — `assert Enum.map(tools, & &1[\"name\"]) == [\"good\", \"plain\"]` over a listing containing `invalid_tool(\"bad\")`, which is the fixture's `invalid_object_header` class. A JUDGEMENT rather than a reading, and said so in those words: the check's subject is `this.calledTools.has(e)` — the tool was never CALLED — and this assertion's subject is that it never reached the caller to be called. The behaviour the axis names, that an invalid tool is excluded, is the subject of both; the observation point differs.",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept",
+        "test": "test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-invalid-tool-headers",
+        "sep-2243-x-mcp-header-primitive-only",
+        "ClientRejectsInvalidTool_invalid_object_header",
+        "Client MUST NOT call tool 'invalid_object_header' with invalid x-mcp-header",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "valid_sibling_tool_is_still_called",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the valid tools in the same listing survive the exclusion",
+      "escalation": null,
+      "evidence": "client_tool_schemas_test.exs:97 — the same assertion, read for its other subject: `good` and `plain` are BOTH still present. The check's error message states the requirement in those terms: `A single malformed tool definition must not prevent other valid tools from being used.` Judgement again on the observation point — kept in the listing versus called.",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept",
+        "test": "test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-invalid-tool-headers",
+        "sep-2243-client-reject-invalid-tool",
+        "ClientKeepsValidTool",
+        "Client MUST keep valid tools while excluding invalid ones",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-invalid-tool-headers/sep-2243-client-reject-invalid-tool/ClientKeepsValidTool",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "at_least_one_mcp_param_header_present",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a tools/call for a known annotated tool carries the mirrored header",
+      "escalation": null,
+      "evidence": "client_tool_schemas_test.exs:397-398 — `assert Enum.at(MockTransport.sent_opts(transport), 1)[:headers] == [{\"mcp-param-region\", \"us-west1\"}]`. The check's predicate is exactly the existential: `Object.keys(e.headers).some(e=>e.startsWith(`mcp-param-`))`. A list equality with one mcp-param header entails it.",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test the transport seam a tools/call for a known tool carries :headers; other methods carry none",
+        "test": "test the transport seam a tools/call for a known tool carries :headers; other methods carry none"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-supports-custom-headers",
+        "ClientSupportsCustomHeaders",
+        "Client supports custom headers: calls the x-mcp-header annotated tool and mirrors at least one parameter",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-supports-custom-headers/ClientSupportsCustomHeaders",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "on a real HTTP request, the mcp-param-region argument arrives as \"us-west1\"",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:339 — `assert headers[\"mcp-param-region\"] == \"us-west1\"`, read off a Bandit server's `conn.req_headers` rather than off the encoder's return value. This is the END-TO-END observation the OC check makes, at the same observation point: the check reads `e.headers[`mcp-param-region`]` on the request it received.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_Region",
+        "Client sends correct Mcp-Param-Region header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "on a real HTTP request, the mcp-param-priority argument arrives as \"42\"",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:340 — `assert headers[\"mcp-param-priority\"] == \"42\"`, read off a Bandit server's `conn.req_headers` rather than off the encoder's return value. This is the END-TO-END observation the OC check makes, at the same observation point: the check reads `e.headers[`mcp-param-priority`]` on the request it received.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-encode-values",
+        "ClientCustomHeader_Priority",
+        "Client sends correct Mcp-Param-Priority header (integer value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Priority",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "on a real HTTP request, the mcp-param-verbose argument arrives as \"false\"",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:341 — `assert headers[\"mcp-param-verbose\"] == \"false\"`, read off a Bandit server's `conn.req_headers` rather than off the encoder's return value. This is the END-TO-END observation the OC check makes, at the same observation point: the check reads `e.headers[`mcp-param-verbose`]` on the request it received.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-encode-values",
+        "ClientCustomHeader_Verbose",
+        "Client sends correct Mcp-Param-Verbose header (boolean value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Verbose",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "on a real HTTP request, the mcp-param-nonascii argument arrives as \"=?base64?SGVsbG8sIOS4lueVjA==?=\"",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:342 — `assert headers[\"mcp-param-nonascii\"] == \"=?base64?SGVsbG8sIOS4lueVjA==?=\"`, read off a Bandit server's `conn.req_headers` rather than off the encoder's return value. This is the END-TO-END observation the OC check makes, at the same observation point: the check reads `e.headers[`mcp-param-nonascii`]` on the request it received.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-base64-unsafe",
+        "ClientCustomHeader_NonAscii",
+        "Client sends correct Mcp-Param-NonAscii header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_NonAscii",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "on a real HTTP request, the mcp-param-emptyval argument arrives as \"\"",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:345 — `assert headers[\"mcp-param-emptyval\"] == \"\"`, read off a Bandit server's `conn.req_headers` rather than off the encoder's return value. This is the END-TO-END observation the OC check makes, at the same observation point: the check reads `e.headers[`mcp-param-emptyval`]` on the request it received.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_EmptyVal",
+        "Client sends correct Mcp-Param-EmptyVal header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_EmptyVal",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "unannotated_string_parameter_is_not_mirrored",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "on a real HTTP request, the unannotated `query` argument produces no header",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:346 — `refute Map.has_key?(headers, \"mcp-param-query\")`, on the wire. Same subject and same observation point as the check's `r===void 0`.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeaderNoMirrorUnannotated",
+        "Client MUST NOT add Mcp-Param headers for parameters without x-mcp-header",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorUnannotated",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "on a real HTTP request, a non-null annotated argument is still mirrored",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:367 — `assert headers[\"mcp-param-region\"] == \"us-east1\"`. The value differs from the fixture's (`us-east1`, not `us-west1`) and the axis is unaffected: the check's `Ka(a,e,r)` compares the header against the BODY value of the same request, whatever it is, and `Ga` calls both strings safe, so both require the plain form.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client a null argument omits its header",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client a null argument omits its header"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-mirrors-designated-params",
+        "ClientCustomHeader_Region",
+        "Client sends correct Mcp-Param-Region header (string value)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "null_or_absent_parameter_header_is_omitted",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "on a real HTTP request, a null-valued annotated argument produces no header",
+      "escalation": null,
+      "evidence": "routing_headers_test.exs:368 — `refute Map.has_key?(headers, \"mcp-param-verbose\")` after calling with `\"verbose\" => nil`. The check reads that exact header on its own null-fixture tool and passes on `t===void 0`.",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client a null argument omits its header",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client a null argument omits its header"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "http-custom-headers",
+        "sep-2243-client-omit-null",
+        "ClientCustomHeaderOmitNull",
+        "Client MUST omit Mcp-Param header when parameter value is null or not provided",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:client/http-custom-headers/sep-2243-client-omit-null/ClientCustomHeaderOmitNull",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "tools_call_was_made",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "argument_a_is_a_number",
+          "verdict": "silent"
+        },
+        {
+          "axis": "argument_b_is_a_number",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a tools/call to `add` with two numeric arguments is issued and returns their sum",
+      "escalation": null,
+      "evidence": "integration_test.exs:149-150 — `Client.call_tool(client, \"add\", %{\"a\" => 3, \"b\" => 4})` returns `\"7\"`. The call being made is asserted directly. The two type axes are NOT: the assertion is on the tool's RESULT, and a client sending `\"3\"`/`\"4\"` as JSON strings would be caught here only if this SDK's own `add` tool refused them — a property of the fixture server, not of this assertion. Silent, on the CG5 rule: a test whose subject is downstream of the requirement does not discharge it.",
+      "member": {
+        "module": "MCP.IntegrationTest",
+        "register_key": "MCP.IntegrationTest/test tools: list, echo, add, isError, unknown",
+        "test": "test tools: list, echo, add, isError, unknown"
+      },
+      "note": null,
+      "oc_key": [
+        "client",
+        "tools_call",
+        "tool-add-numbers",
+        "ToolAddNumbers",
+        "Validates that the add_numbers tool works correctly",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:client/tools_call/tool-add-numbers/ToolAddNumbers",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
           "axis": "jsonrpc_error_code",
           "verdict": "contradicts"
         },
@@ -918,6 +2246,73 @@
       }
     }
   ],
+  "claim_level_unmatched": {
+    "count": 5,
+    "routed_to": "the PM, per case — match-relation.md §7. Whether A3 §6 should gain a claim-level state 3 is a ruling, not an adjudication an edges file can make.",
+    "rows": [
+      {
+        "claim": "an annotated parameter cannot forge the Mcp-Method ROUTING header (header_mirror_test.exs:416 — `refute Map.has_key?(headers, \"mcp-method\")`)",
+        "disposition": "no counterpart in this file's declared check population",
+        "from": "conformance/data/crosswalk-edges-client.json",
+        "member": {
+          "module": "MCP.Protocol.HeaderMirrorTest",
+          "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method",
+          "test": "test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method"
+        },
+        "owner": "unowned — recommend it to C1b-ii with CG1",
+        "the_search_that_found_none": "All 29 CG7 checks were read: none has `mcp-method` as its subject. The check that does is `ClientMcpMethodHeader_tools_call` (`oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_call`), which is CG1's and outside this file's declared check population — but it asserts the header is PRESENT and correct, not that it is not forged by a mirrored parameter. So this claim has no counterpart in CG1 either, and is recorded rather than deferred."
+      },
+      {
+        "claim": "the exclusion is logged naming the tool and the reason (client_tool_schemas_test.exs:107-108 — `assert log =~ ~s(EXCLUDING tool \"bad\" from tools/list)` and `assert log =~ \"only string, integer and boolean are permitted\"`)",
+        "disposition": "no counterpart in this file's declared check population",
+        "from": "conformance/data/crosswalk-edges-client.json",
+        "member": {
+          "module": "MCP.ClientToolSchemasTest",
+          "register_key": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept",
+          "test": "test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept"
+        },
+        "owner": "unowned — SEP-2243's SHOULD-log has no OC check on either leg",
+        "the_search_that_found_none": "All 29 CG7 checks were read for one whose subject is a diagnostic: none is. A log line is invisible on the wire, so the harness cannot observe it at all — the same reason the four cache members above are `no-oc-scenario`."
+      },
+      {
+        "claim": "a NON-tools/call request carries no :headers at all (client_tool_schemas_test.exs:395 — `assert Enum.at(MockTransport.sent_opts(transport), 0) == []`, the tools/list)",
+        "disposition": "no counterpart in this file's declared check population",
+        "from": "conformance/data/crosswalk-edges-client.json",
+        "member": {
+          "module": "MCP.ClientToolSchemasTest",
+          "register_key": "MCP.ClientToolSchemasTest/test the transport seam a tools/call for a known tool carries :headers; other methods carry none",
+          "test": "test the transport seam a tools/call for a known tool carries :headers; other methods carry none"
+        },
+        "owner": "unowned — recommend it to C1b-ii with CG1",
+        "the_search_that_found_none": "All 29 CG7 checks are emitted from `handleToolsCall`, so every one of them is conditioned on a tools/call having arrived; none has a non-tools/call request as its subject. The scenario's `handlePost` was read too: it emits no check on the tools/list path other than `http-invalid-tool-headers`'s gate, whose subject is that tools/list was SENT."
+      },
+      {
+        "claim": "the mcp-method routing header rides the same request (routing_headers_test.exs:349)",
+        "disposition": "counterpart exists, OUTSIDE this file's declared check population",
+        "from": "conformance/data/crosswalk-edges-client.json",
+        "member": {
+          "module": "MCP.Transport.RoutingHeadersTest",
+          "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+          "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not"
+        },
+        "owner": "C1b-ii (CG1, `http-standard-headers`)",
+        "the_search_that_found_none": "The counterpart is `oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_call`, which A4 assigns to CG1. It is in A1's 173 and in the client leg, but not in this file's declared 29, so adjudicating it here would be adjudication outside the declared population — the thing this file's `not_yet_adjudicated` third state exists to prevent."
+      },
+      {
+        "claim": "the mcp-name routing header rides the same request (routing_headers_test.exs:350)",
+        "disposition": "counterpart exists, OUTSIDE this file's declared check population",
+        "from": "conformance/data/crosswalk-edges-client.json",
+        "member": {
+          "module": "MCP.Transport.RoutingHeadersTest",
+          "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+          "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not"
+        },
+        "owner": "C1b-ii (CG1, `http-standard-headers`)",
+        "the_search_that_found_none": "The counterpart is `oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call`, which A4 assigns to CG1. It is in A1's 173 and in the client leg, but not in this file's declared 29, so adjudicating it here would be adjudication outside the declared population — the thing this file's `not_yet_adjudicated` third state exists to prevent."
+      }
+    ],
+    "what_this_is": "A claim within an EDGE-BEARING member that has no counterpart in its file's declared check population. A3 §6's state 3 is a property of a member, so there is no bucket for this and none is invented."
+  },
   "cross_source_agreement": {
     "agrees": true,
     "compared": 175,
@@ -974,10 +2369,139 @@
         "test": "test annotation validity — the three constraints NO harness check covers (spec-only) an integer outside the IEEE 754 safe range is not mirrored, and says so"
       },
       "tag": "oc:none/no-oc-fixture-case/CG7-integer-safe-range"
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (4)",
+        "test": "doctest MCP.Protocol.HeaderMirror.encode_value/1 (4)"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG7-sentinel-literal-ambiguity",
+      "the_search_that_found_none": "Both CG7 scenarios' fixtures were read at the pinned build. `http-custom-headers` serves two tools and ONE argument vector — the 16 values of the alpha.11 `http-custom-headers` fixture's own argument vector, enumerated in header_mirror_test.exs:305-322 — and no value in it is sentinel-shaped (`=?base64?…?=`); `http-invalid-tool-headers` sends no annotated VALUES at all, only ten malformed tool DEFINITIONS (`Ua`). The 29 CG7 check names were then read for one whose predicate is about a plain value that looks encoded: none is. `Ka` would in fact mis-handle such a value — `Ga` calls it safe, so `Wa` decodes it and the comparison is made against the DECODED form — but no fixture case reaches that path.",
+      "why_no_counterpart": "streamable-http.mdx:508-510 requires a client to Base64-encode a plain-ASCII value that matches the sentinel pattern, or a server cannot tell an encoded value from a literal one. The scenario exists and is matched; its fixture holds no case that exercises the constraint — which is what `no-oc-fixture-case` names, as against `no-oc-scenario`."
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a non-map arguments value yields no headers rather than raising",
+        "test": "test value encoding — omission and the sentinel's ambiguity rule a non-map arguments value yields no headers rather than raising"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG7-non-map-arguments",
+      "the_search_that_found_none": "The fixture's `handleToolsCall` reads `n.params?.arguments||{}` and the scenario's own client driver always sends an object, so no case sends a non-map `arguments`. All 29 CG7 check names were read for one whose predicate is about malformed `arguments`: none is.",
+      "why_no_counterpart": "A robustness claim about our own encoder's input, not about the wire. The OC harness cannot construct the case because it observes the client rather than driving its API."
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule the exact property path is read — a same-named key elsewhere is not",
+        "test": "test value encoding — omission and the sentinel's ambiguity rule the exact property path is read — a same-named key elsewhere is not"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG7-nested-path-exact",
+      "the_search_that_found_none": "Every annotated property in both `http-custom-headers` tool schemas is TOP-LEVEL — read at the pinned build: `region`, `priority`, `verbose`, `debug`, `empty_val`, `method_val`, `non_ascii_val`, `whitespace_val`, `leading_space_val`, `trailing_space_val`, `internal_space_val`, `control_char_val`, `crlf_val`, `tab_val`. No fixture tool nests an annotation, so no fixture call can distinguish reading the annotated PATH from reading a same-named key anywhere. The 29 check names were read for one about path resolution: none is.",
+      "why_no_counterpart": "Distinct from `CG7-static-reachability`, which is about whether a nested annotation is VALID. This is about which value is read at call time once it is. Both are unexercised by the fixture, for the same reason and by two different constraints."
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector no header carries a raw CR or LF — injection is closed by construction",
+        "test": "test value encoding — the fixture's own 16-value vector no header carries a raw CR or LF — injection is closed by construction"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG7-no-raw-crlf-across-all-headers",
+      "the_search_that_found_none": "All 29 CG7 checks were read. Each `ClientCustomHeader_*` check's predicate quantifies over ONE named header — `checkParamHeader` is called once per annotated parameter and `a=e.headers[i]` reads that parameter's header alone. No check's predicate quantifies over the header SET, and neither `ClientSupportsCustomHeaders` (`some(...)`, an existential over names, not values) nor the two NoMirror checks (`===void 0` on one named header) is universal either.",
+      "why_no_counterpart": "The member asserts a UNIVERSAL property — no produced header value carries a raw CR or LF, and every produced header NAME is lower-case — over the whole 16-value vector. It is the injection-closure property, and it is stronger than the conjunction of the per-parameter checks: it would still fail if a SEVENTEENTH header appeared carrying a newline. Filing it on `ClientCustomHeader_CrLf` would report agreement on a check whose subject is one header's value."
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy M-2: the warn-once record shares the cache's GENERATION — a reset re-arms it",
+        "test": "test C-2 — the cache-miss and staleness policy M-2: the warn-once record shares the cache's GENERATION — a reset re-arms it"
+      },
+      "tag": "oc:none/no-oc-scenario/CG7-cache-miss-warn-once",
+      "the_search_that_found_none": "All 173 in-denominator check names, ids and descriptions were read for one whose subject is a client-side tool-schema CACHE. None is: the harness observes requests on the wire and has no way to observe, or to require, that a client caches anything. The two bucket-0 checks were read too, and are not it either.",
+      "why_no_counterpart": "A warn-once-per-cache-generation policy is a diagnostic property of OUR client. Nothing on the wire distinguishes a client that warned from one that did not, so the absence is `no-oc-scenario` — the suite has no such check anywhere — rather than a fixture gap."
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a -32020 triggers a tools/list refresh and ONE retry, which then mirrors",
+        "test": "test C-2 — the cache-miss and staleness policy a -32020 triggers a tools/list refresh and ONE retry, which then mirrors"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG7-header-mismatch-recovery",
+      "the_search_that_found_none": "The `http-custom-headers` scenario's `handleToolsCall` was read in full at the pinned build: every arm ends in `this.sendJson(t,{…result:{resultType:`complete`…}})`. It never returns an error, and `-32020` does not occur anywhere in the scenario. The 29 CG7 check names were then read for one about a retry or a refresh: none is.",
+      "why_no_counterpart": "The scenario exists and is matched, but its fixture never rejects a call, so no case exercises the client's recovery from a header mismatch."
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test M-1 — a malformed tools/list result fails the REQUEST, not the client a string result likewise, and it leaves the tool caches untouched",
+        "test": "test M-1 — a malformed tools/list result fails the REQUEST, not the client a string result likewise, and it leaves the tool caches untouched"
+      },
+      "tag": "oc:none/no-oc-scenario/CG7-malformed-tools-list-result",
+      "the_search_that_found_none": "All 173 in-denominator check names, ids and descriptions were read for one whose subject is a client-side tool-schema CACHE. None is: the harness observes requests on the wire and has no way to observe, or to require, that a client caches anything. The two bucket-0 checks were read too, and are not it either.",
+      "why_no_counterpart": "A claim about surviving a malformed SERVER response. The harness is the server here, so it cannot check a client's reaction to its own malformed output without emitting one, and no scenario does."
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test M-5 — a malformed REFRESH result fails the call, not the client a null refresh result returns the ORIGINAL -32020 alongside the malformed term",
+        "test": "test M-5 — a malformed REFRESH result fails the call, not the client a null refresh result returns the ORIGINAL -32020 alongside the malformed term"
+      },
+      "tag": "oc:none/no-oc-scenario/CG7-malformed-refresh-result",
+      "the_search_that_found_none": "All 173 in-denominator check names, ids and descriptions were read for one whose subject is a client-side tool-schema CACHE. None is: the harness observes requests on the wire and has no way to observe, or to require, that a client caches anything. The two bucket-0 checks were read too, and are not it either.",
+      "why_no_counterpart": "The same absence as CG7-malformed-tools-list-result, on the recovery path. Kept as its own member rather than merged: it is a different code path and a different member."
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-BEARING page MERGES, so paging does not discard earlier pages",
+        "test": "test W5 — the cache's reset/merge rule (the pagination trap) a cursor-BEARING page MERGES, so paging does not discard earlier pages"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG7-tools-list-pagination",
+      "the_search_that_found_none": "The `http-custom-headers` scenario's tools/list handler was read at the pinned build: it answers one page — `result:{tools:[…two tools…]}` — with no `nextCursor` key at all, and `http-invalid-tool-headers` likewise. So no fixture case pages. The 29 CG7 check names were read for one about pagination: none is.",
+      "why_no_counterpart": "The merge/reset rule is what decides whether an earlier page's annotations survive a later one. Both scenarios serve a single page, so the rule is never exercised — a fixture gap, not an absent scenario."
+    },
+    {
+      "cg": "CG7",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-LESS listing RESETS, so a removed tool does not linger",
+        "test": "test W5 — the cache's reset/merge rule (the pagination trap) a cursor-LESS listing RESETS, so a removed tool does not linger"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG7-tools-list-pagination",
+      "the_search_that_found_none": "The `http-custom-headers` scenario's tools/list handler was read at the pinned build: it answers one page — `result:{tools:[…two tools…]}` — with no `nextCursor` key at all, and `http-invalid-tool-headers` likewise. So no fixture case pages. The 29 CG7 check names were read for one about pagination: none is.",
+      "why_no_counterpart": "The merge/reset rule is what decides whether an earlier page's annotations survive a later one. Both scenarios serve a single page, so the rule is never exercised — a fixture gap, not an absent scenario."
+    },
+    {
+      "cg": "CG7",
+      "claims_whose_counterpart_is_outside_this_files_check_population": [
+        {
+          "claim": "the mcp-name routing header still rides a cache-miss call (routing_headers_test.exs:388)",
+          "counterpart": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+          "owner": "C1b-ii (CG1, `http-standard-headers`)",
+          "why_it_is_recorded_here": "The counterpart is in A1's 173 and on the client leg, but not in this file's declared 29. The member is declared unmatched WITHIN this file's check population, which is what that state means here — and saying only that would read as 'no counterpart anywhere', which is false of this claim."
+        }
+      ],
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client with no prior tools/list, nothing is mirrored and the client says so",
+        "test": "test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client with no prior tools/list, nothing is mirrored and the client says so"
+      },
+      "tag": "oc:none/no-oc-fixture-case/CG7-cache-miss-no-mirroring",
+      "the_search_that_found_none": "The scenario's client driver always issues tools/list before tools/call — indeed `http-invalid-tool-headers` emits a FAILING gate check when it does not (`sep-2243-invalid-tool-tools-list-gate`, which A5 leaves in the denominator). So no fixture case reaches a tools/call with no prior listing. All 29 CG7 check names were read for one whose subject is mirroring in the ABSENCE of a schema: none is.",
+      "why_no_counterpart": "The member's remaining claim — that the `mcp-name` routing header still rides the call — does have a counterpart, `ClientMcpNameHeader_tools_call`, but it is CG1's and outside this file's declared check population. So this member has no counterpart HERE, which is what `declared_unmatched` means in a file that declares its own check population; the CG1 claim is recorded under `claims_without_an_edge` and routed to C1b-ii."
     }
   ],
   "escalations": {
-    "count": 4,
+    "count": 5,
     "routed_to": "the PM, per case — match-relation.md §7. An escalation is NOT a bucket and is never counted as one.",
     "rows": [
       {
@@ -1007,6 +2531,13 @@
         "member": "MCP.Protocol.CapabilitiesTest / test ClientCapabilities round-trips through JSON",
         "shape": "partial",
         "tag": "oc:client/request-metadata/sep-2575-client-declares-elicitation-capability/ClientDeclaresElicitationCapability"
+      },
+      {
+        "claim": "a tool excluded for an invalid annotation leaves no annotations behind, so calling it anyway mirrors nothing",
+        "escalation": "no_axis_contact — every axis of this check is silent. A3 §2 rules that covering zero of one axis is no match, not a partial one; generalised to 1 axes that is this edge. §3's table has no row for it, so it escalates rather than being bucketed.",
+        "member": "MCP.ClientToolSchemasTest / test W6 — SEP-2243 tool exclusion an excluded tool leaves no annotations behind, so calling it mirrors nothing",
+        "shape": "partial",
+        "tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header"
       }
     ]
   },
@@ -1021,13 +2552,34 @@
     "measure": "ROWS LOST — rows that disappear when the projection is deduplicated. A1's measure and match-relation.md §5's, so the keyings are compared in the unit those documents already use.",
     "population": "the 173 in-denominator rows",
     "rows": 173,
+    "the_row_this_leg_DEPENDS_on": "`sep-2243-client-includes-standard-headers` — NINE in-denominator client checks share that one `check_id`: ClientMcpMethodHeader_tools_list / _tools_call / _resources_list / _resources_read / _prompts_list / _prompts_get and ClientMcpNameHeader_tools_call / _resources_read / _prompts_get, plus the 2 SKIPPED ones, 11 rows on one id. Keying on `check_id` would merge nine CLIENT checks into one; A1's six-field key merges none. It is CG1's whole scenario, so it is a row the client leg depends on rather than an example quoted from A1 — and it is why the control stays on the 173: re-scoped to CG7's 29, the `name` and `description` limbs lose NOTHING (measured 0 of 54 on the whole client leg) and could not fire at all, which is the vacuity the two-direction design exists to prevent.",
     "what_the_crosswalk_is_keyed_on": "A3's token for the address and A1's six-field key for the join. The token carries five fields; `description` cannot live in a test name, so reversibility is THROUGH A1's manifest, not lexical.",
     "what_the_two_directions_establish": "POSITIVE: the obvious keyings DO merge rows on this population, so the hazard is real here and not merely quoted from A1. NEGATIVE: A1's six-field key merges none. Either direction alone is vacuous — a control that only ran the second would pass over a crosswalk keyed on `id`."
   },
-  "owner": "MES-97 (C1a)",
+  "owner": "MES-97 (C1a) and MES-104 (C1b-i)",
   "population": {
-    "check_count": 14,
+    "check_count": 34,
     "checks": [
+      "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_ControlChar",
+      "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_CrLf",
+      "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_LeadingSpace",
+      "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_NonAscii",
+      "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Tab",
+      "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_TrailingSpace",
+      "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Whitespace",
+      "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Debug",
+      "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Priority",
+      "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Verbose",
+      "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorNumber",
+      "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorUnannotated",
+      "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_EmptyVal",
+      "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_InternalSpace",
+      "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Method",
+      "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+      "oc:client/http-custom-headers/sep-2243-client-omit-null/ClientCustomHeaderOmitNull",
+      "oc:client/http-custom-headers/sep-2243-client-supports-custom-headers/ClientSupportsCustomHeaders",
+      "oc:client/http-invalid-tool-headers/sep-2243-client-reject-invalid-tool/ClientKeepsValidTool",
+      "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header",
       "oc:client/request-metadata/sep-2575-client-declares-elicitation-capability/ClientDeclaresElicitationCapability",
       "oc:client/request-metadata/sep-2575-client-declares-roots-capability/ClientDeclaresRootsCapability",
       "oc:client/request-metadata/sep-2575-client-declares-sampling-capability/ClientDeclaresSamplingCapability",
@@ -1043,8 +2595,337 @@
       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel",
       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping"
     ],
+    "checks_addressed_outside_the_declared_check_population": {
+      "checks": [
+        "oc:client/request-metadata/sep-2575-client-declares-elicitation-capability/ClientDeclaresElicitationCapability",
+        "oc:client/request-metadata/sep-2575-client-declares-roots-capability/ClientDeclaresRootsCapability",
+        "oc:client/request-metadata/sep-2575-client-declares-sampling-capability/ClientDeclaresSamplingCapability",
+        "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta",
+        "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
+        "oc:client/request-metadata/sep-2575-client-sends-client-info/ClientSendsClientInfo",
+        "oc:client/request-metadata/sep-2575-http-client-sends-version-header/ClientSendsVersionHeader",
+        "oc:client/request-metadata/sep-2575-http-version-header-matches-meta/ClientVersionHeaderMatchesMeta",
+        "oc:client/sep-2322-client-request-state/sep-2322-client-no-state-omitted/MRTRClientNoStateOmitted",
+        "oc:client/sep-2322-client-request-state/sep-2322-client-request-state-echoed/MRTRClientRequestStateEchoed",
+        "oc:client/tools_call/tool-add-numbers/ToolAddNumbers",
+        "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
+        "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel",
+        "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping"
+      ],
+      "count": 14,
+      "declared_by": [
+        {
+          "declares_checks": 29,
+          "path": "conformance/data/crosswalk-edges-client.json"
+        },
+        {
+          "declares_checks": 0,
+          "path": "conformance/data/crosswalk-edges.json"
+        }
+      ],
+      "what_this_is": "Checks an edge addresses that no file declares. They carry adjudicated edges and take NO part in bucket 2, because bucket 2 is a complement and these checks are not in any declared universe to be complemented within.",
+      "why_this_is_not_refused": "An edge addresses the check its claim is about; refusing one outside the declared check population would force a file to declare every scenario it touches, and then bucket 2 would report every UNADJUDICATED sibling as having no ET counterpart. That is the false claim the third state exists to prevent."
+    },
     "declared": true,
-    "member_count": 21,
+    "declared_check_count": 29,
+    "declared_checks": [
+      "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_ControlChar",
+      "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_CrLf",
+      "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_LeadingSpace",
+      "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_NonAscii",
+      "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Tab",
+      "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_TrailingSpace",
+      "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Whitespace",
+      "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Debug",
+      "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Priority",
+      "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Verbose",
+      "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorNumber",
+      "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorUnannotated",
+      "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_EmptyVal",
+      "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_InternalSpace",
+      "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Method",
+      "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+      "oc:client/http-custom-headers/sep-2243-client-omit-null/ClientCustomHeaderOmitNull",
+      "oc:client/http-custom-headers/sep-2243-client-supports-custom-headers/ClientSupportsCustomHeaders",
+      "oc:client/http-invalid-tool-headers/sep-2243-client-reject-invalid-tool/ClientKeepsValidTool",
+      "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_colon_in_name",
+      "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_control_char_name",
+      "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_non_ascii_name",
+      "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_space_in_name",
+      "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-not-empty/ClientRejectsInvalidTool_invalid_empty_header",
+      "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_array_header",
+      "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_null_header",
+      "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header",
+      "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_diff_case",
+      "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_same_case"
+    ],
+    "files": [
+      {
+        "check_population": {
+          "checks": [
+            "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_ControlChar",
+            "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_CrLf",
+            "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_LeadingSpace",
+            "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_NonAscii",
+            "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Tab",
+            "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_TrailingSpace",
+            "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Whitespace",
+            "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Debug",
+            "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Priority",
+            "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Verbose",
+            "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorNumber",
+            "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorUnannotated",
+            "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_EmptyVal",
+            "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_InternalSpace",
+            "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Method",
+            "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+            "oc:client/http-custom-headers/sep-2243-client-omit-null/ClientCustomHeaderOmitNull",
+            "oc:client/http-custom-headers/sep-2243-client-supports-custom-headers/ClientSupportsCustomHeaders",
+            "oc:client/http-invalid-tool-headers/sep-2243-client-reject-invalid-tool/ClientKeepsValidTool",
+            "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_colon_in_name",
+            "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_control_char_name",
+            "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_non_ascii_name",
+            "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_space_in_name",
+            "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-not-empty/ClientRejectsInvalidTool_invalid_empty_header",
+            "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_array_header",
+            "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_null_header",
+            "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header",
+            "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_diff_case",
+            "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_same_case"
+          ],
+          "rule": "The 29 in-denominator OC checks A4 assigns to CG7. This file is total over them: every one is axis-decomposed, and every one either carries an edge or is reported in bucket 2 by name.",
+          "selector": {
+            "any_of": [
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "http-custom-headers"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "http-invalid-tool-headers"
+              }
+            ],
+            "denotes": "The 29 in-denominator OC checks A4 assigns to CG7 — `http-custom-headers` 18 + `http-invalid-tool-headers` 11 (cg-reconciliation.md §4's scenario table). The selector names the SCENARIOS rather than the 29 tokens, so a check added to either scenario by a harness bump joins the population instead of being silently outside it.",
+            "evaluated": "29 checks denoted; equal to the count this file declares, and every one of them is axis-decomposed (G19).",
+            "key_field": "token",
+            "rows_at": "rows",
+            "source": "docs/conformance/oc-emitting-sites-2026-07-28.json",
+            "source_owner": "MES-97 (C1a) — `mix conformance.locator`'s output, one row per in-denominator check",
+            "what_this_is": "The check half of the declaration, and the reason bucket 2 can now be non-empty. C1a derived its check population from the tags its own edges carried, so bucket 2 — the complement of the edge-bearing checks within it — was EMPTY BY CONSTRUCTION and its `CHECKED, AND ZERO` was a vacuous truth. Declaring the checks from outside the file is what makes the question answerable.",
+            "why_the_locator_artefact_and_not_A1s_manifest": "A1's manifest nests its checks under scenarios and its key is a six-field LIST; the selector's `key_field` must name a string field, and refuses anything else rather than stringifying it. The locator artefact is flat, carries one row per in-denominator check, and already carries the TOKEN — which is the field the edges in this file address checks by, so the two sides are compared in the same unit."
+          }
+        },
+        "checks_addressed": [
+          "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_ControlChar",
+          "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_CrLf",
+          "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_LeadingSpace",
+          "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_NonAscii",
+          "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Tab",
+          "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_TrailingSpace",
+          "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Whitespace",
+          "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Debug",
+          "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Priority",
+          "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Verbose",
+          "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorNumber",
+          "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorUnannotated",
+          "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_EmptyVal",
+          "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_InternalSpace",
+          "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Method",
+          "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+          "oc:client/http-custom-headers/sep-2243-client-omit-null/ClientCustomHeaderOmitNull",
+          "oc:client/http-custom-headers/sep-2243-client-supports-custom-headers/ClientSupportsCustomHeaders",
+          "oc:client/http-invalid-tool-headers/sep-2243-client-reject-invalid-tool/ClientKeepsValidTool",
+          "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header",
+          "oc:client/request-metadata/sep-2575-client-declares-elicitation-capability/ClientDeclaresElicitationCapability",
+          "oc:client/request-metadata/sep-2575-client-declares-roots-capability/ClientDeclaresRootsCapability",
+          "oc:client/request-metadata/sep-2575-client-declares-sampling-capability/ClientDeclaresSamplingCapability",
+          "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta",
+          "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
+          "oc:client/request-metadata/sep-2575-client-sends-client-info/ClientSendsClientInfo",
+          "oc:client/request-metadata/sep-2575-http-client-sends-version-header/ClientSendsVersionHeader",
+          "oc:client/request-metadata/sep-2575-http-version-header-matches-meta/ClientVersionHeaderMatchesMeta",
+          "oc:client/sep-2322-client-request-state/sep-2322-client-no-state-omitted/MRTRClientNoStateOmitted",
+          "oc:client/sep-2322-client-request-state/sep-2322-client-request-state-echoed/MRTRClientRequestStateEchoed"
+        ],
+        "declared_checks": [
+          "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_ControlChar",
+          "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_CrLf",
+          "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_LeadingSpace",
+          "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_NonAscii",
+          "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Tab",
+          "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_TrailingSpace",
+          "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Whitespace",
+          "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Debug",
+          "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Priority",
+          "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Verbose",
+          "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorNumber",
+          "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorUnannotated",
+          "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_EmptyVal",
+          "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_InternalSpace",
+          "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Method",
+          "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+          "oc:client/http-custom-headers/sep-2243-client-omit-null/ClientCustomHeaderOmitNull",
+          "oc:client/http-custom-headers/sep-2243-client-supports-custom-headers/ClientSupportsCustomHeaders",
+          "oc:client/http-invalid-tool-headers/sep-2243-client-reject-invalid-tool/ClientKeepsValidTool",
+          "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_colon_in_name",
+          "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_control_char_name",
+          "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_non_ascii_name",
+          "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_space_in_name",
+          "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-not-empty/ClientRejectsInvalidTool_invalid_empty_header",
+          "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_array_header",
+          "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_null_header",
+          "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header",
+          "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_diff_case",
+          "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_same_case"
+        ],
+        "member_count": 45,
+        "members": [
+          "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
+          "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
+          "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) a server requestState is echoed verbatim on the retry (control)",
+          "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an absent server requestState produces a retry with NO requestState key",
+          "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an explicit null server requestState also produces NO requestState key",
+          "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 naming a version we support is retried exactly once",
+          "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 offering only versions we do not support is surfaced, never retried",
+          "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 with no usable data is surfaced, never retried",
+          "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) the retry re-stamps the version chosen from `supported`",
+          "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) it falls back to its configured default when the message carries no _meta version",
+          "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) the transport derives mcp-protocol-version from the message's own _meta",
+          "MCP.ClientTest/test MRTR client retry an input_required result is transparently completed via :on_input_required",
+          "MCP.ClientTest/test per-request _meta every request carries protocolVersion + client identity/capabilities",
+          "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy M-2: the warn-once record shares the cache's GENERATION — a reset re-arms it",
+          "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a -32020 triggers a tools/list refresh and ONE retry, which then mirrors",
+          "MCP.ClientToolSchemasTest/test M-1 — a malformed tools/list result fails the REQUEST, not the client a string result likewise, and it leaves the tool caches untouched",
+          "MCP.ClientToolSchemasTest/test M-5 — a malformed REFRESH result fails the call, not the client a null refresh result returns the ORIGINAL -32020 alongside the malformed term",
+          "MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-BEARING page MERGES, so paging does not discard earlier pages",
+          "MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-LESS listing RESETS, so a removed tool does not linger",
+          "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an excluded tool leaves no annotations behind, so calling it mirrors nothing",
+          "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept",
+          "MCP.ClientToolSchemasTest/test the transport seam a tools/call for a known tool carries :headers; other methods carry none",
+          "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON",
+          "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart",
+          "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (1)",
+          "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (2)",
+          "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (3)",
+          "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (4)",
+          "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) a NESTED object property IS reachable — every step is a `properties` key",
+          "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) an integer outside the IEEE 754 safe range is not mirrored, and says so",
+          "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a non-map arguments value yields no headers rather than raising",
+          "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a null value omits the header; so does an absent one",
+          "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule the exact property path is read — a same-named key elsewhere is not",
+          "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector INTERNAL spaces stay plain — only leading/trailing whitespace forces encoding",
+          "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an EMPTY string is present with an empty value, not omitted",
+          "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false",
+          "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector no header carries a raw CR or LF — injection is closed by construction",
+          "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+          "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector plain ASCII is sent as-is",
+          "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method",
+          "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector unannotated parameters are NOT mirrored",
+          "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client a null argument omits its header",
+          "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+          "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client with no prior tools/list, nothing is mirrored and the client says so",
+          "MCP.Transport.RoutingHeadersTest/test the version header rides the message (D-4), on the wire it matches the body _meta, not the transport's configured default"
+        ],
+        "members_declared_unmatched": 16,
+        "members_with_edges": 29,
+        "path": "conformance/data/crosswalk-edges-client.json",
+        "rule": "Every ET-CC member B2b attributes to the CLIENT leg that is either in CG7 — C1b-i's slice — or was already adjudicated by C1a (a token, or a contradicts_oc record). NOTHING outside it is adjudicated here.",
+        "selector": {
+          "all_of": [
+            {
+              "field": "leg",
+              "test": "equals",
+              "value": "client"
+            },
+            {
+              "any_of": [
+                {
+                  "field": "cg",
+                  "test": "equals",
+                  "value": "CG7"
+                },
+                {
+                  "field": "tokens",
+                  "test": "non_empty_list"
+                },
+                {
+                  "field": "contradicts_oc",
+                  "test": "not_null"
+                }
+              ]
+            }
+          ],
+          "denotes": "45 ET-CC members: the 29 B2b attributes to the CLIENT leg and CG7 — C1b-i's own slice — plus the 18 client members C1a had already adjudicated, whose rows moved here under the PM's composition ruling. The two sets overlap in exactly 2 members (the CG7 rows C1a already carried a token for), which is why 29 + 18 is 45 and not 47.",
+          "evaluated": "45 members denoted; set-equal to the population this file derives in both directions (G15a). The counts block was checked field by field (G15b).",
+          "key_field": "key",
+          "rows_at": "rows",
+          "source": "docs/conformance/etcc-attribution.json",
+          "source_owner": "B2b (MES-82) — the ET-CC attribution register",
+          "what_this_is": "The EXECUTABLE half of `rule`. The generator evaluates it against the source named below and requires the result to be SET-EQUAL, in both directions, to the population this file derives. Prose only becomes a guard when something can run it.",
+          "why_it_must_name_a_file_other_than_this_one": "C1a derived its declared population by unioning the register_keys the edges file itself carried, so a dropped row did not violate the universe, it SHRANK it — measured on MES-99, both a dropped edge and a dropped declared_unmatched row built cleanly at 20 members with every set comparison still exact. A selector that read this file's own rows would be circular by another route.",
+          "why_the_cg_conjunct_and_not_the_whole_client_leg": "MES-104 was re-scoped to C1b-i = CG7 at the plan hop. The other 62 client members are C1b-ii's (CG1 + CG2 + CG4) and C1b-iii's (the 55 with no CG), and the assertion that the three sub-populations UNION to all 107 lands on C1b-iii, the last of them — not here."
+        }
+      },
+      {
+        "check_population": null,
+        "checks_addressed": [
+          "oc:client/tools_call/tool-add-numbers/ToolAddNumbers",
+          "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
+          "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel",
+          "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping"
+        ],
+        "declared_checks": [],
+        "member_count": 3,
+        "members": [
+          "MCP.IntegrationTest/test tools: list, echo, add, isError, unknown",
+          "MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)",
+          "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601"
+        ],
+        "members_declared_unmatched": 0,
+        "members_with_edges": 3,
+        "path": "conformance/data/crosswalk-edges.json",
+        "rule": "The ET-CC members C1a had adjudicated — a token or a contradicts_oc record — that are NOT on the client leg: 2 server and 1 none_determinable. C1a's 18 client rows moved to crosswalk-edges-client.json under MES-104's composition ruling; these 3 stayed, unchanged, and C1c (MES-105) absorbs them whole.",
+        "selector": {
+          "all_of": [
+            {
+              "any_of": [
+                {
+                  "field": "tokens",
+                  "test": "non_empty_list"
+                },
+                {
+                  "field": "contradicts_oc",
+                  "test": "not_null"
+                }
+              ]
+            },
+            {
+              "none_of": [
+                {
+                  "field": "leg",
+                  "test": "equals",
+                  "value": "client"
+                }
+              ]
+            }
+          ],
+          "c1b_and_c1c_declare_their_own": "The selector is per-population and is read from this file, never hard-coded in the generator. C1c (MES-105) states the rule denoting the server leg rather than inheriting a literal 3.",
+          "denotes": "The 3 non-client members of C1a's original 21: MCP.Server.DispatchTest and MCP.Transport.StreamableHTTPStatelessTest (server, both carrying a contradicts_oc record) and MCP.IntegrationTest (none_determinable, carrying a token).",
+          "evaluated": "3 members denoted; set-equal to the population this file derives in both directions (G15a). The counts block was checked field by field (G15b).",
+          "key_field": "key",
+          "rows_at": "rows",
+          "source": "docs/conformance/etcc-attribution.json",
+          "source_owner": "B2b (MES-82) — the ET-CC attribution register",
+          "what_this_is": "The EXECUTABLE half of `rule`. The generator evaluates it against the source named below and requires the result to be SET-EQUAL, in both directions, to the population this file derives. Prose only becomes a guard when something can run it.",
+          "why_it_must_name_a_file_other_than_this_one": "C1a derived its declared population by unioning the register_keys the edges file itself carried, so a dropped row did not violate the universe, it SHRANK it — measured on MES-99, both a dropped edge and a dropped declared_unmatched row built cleanly at 20 members with every set comparison still exact. A selector that read this file's own rows would be circular by another route.",
+          "why_none_of_and_not_an_enumeration_of_the_other_legs": "`leg` happens to take three values in B2b today, so `any_of[server, none_determinable]` would denote the same 3 rows. It would do so only while that remains true: a fourth leg value would silently drop its members out of this population, and nothing would go red. `none_of[client]` states the rule the prose states and carries no assumption about the field's range."
+        }
+      }
+    ],
+    "inherited_tokens_guard": "G20 ran over the 48 declared members; 0 inherited tokens unaccounted for.",
+    "member_count": 48,
     "members": [
       "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
       "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
@@ -1059,47 +2940,54 @@
       "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) the transport derives mcp-protocol-version from the message's own _meta",
       "MCP.ClientTest/test MRTR client retry an input_required result is transparently completed via :on_input_required",
       "MCP.ClientTest/test per-request _meta every request carries protocolVersion + client identity/capabilities",
+      "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy M-2: the warn-once record shares the cache's GENERATION — a reset re-arms it",
+      "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a -32020 triggers a tools/list refresh and ONE retry, which then mirrors",
+      "MCP.ClientToolSchemasTest/test M-1 — a malformed tools/list result fails the REQUEST, not the client a string result likewise, and it leaves the tool caches untouched",
+      "MCP.ClientToolSchemasTest/test M-5 — a malformed REFRESH result fails the call, not the client a null refresh result returns the ORIGINAL -32020 alongside the malformed term",
+      "MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-BEARING page MERGES, so paging does not discard earlier pages",
+      "MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-LESS listing RESETS, so a removed tool does not linger",
+      "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an excluded tool leaves no annotations behind, so calling it mirrors nothing",
+      "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept",
+      "MCP.ClientToolSchemasTest/test the transport seam a tools/call for a known tool carries :headers; other methods carry none",
       "MCP.IntegrationTest/test tools: list, echo, add, isError, unknown",
       "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON",
       "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart",
+      "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (1)",
+      "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (2)",
+      "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (3)",
+      "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (4)",
       "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) a NESTED object property IS reachable — every step is a `properties` key",
       "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) an integer outside the IEEE 754 safe range is not mirrored, and says so",
+      "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a non-map arguments value yields no headers rather than raising",
+      "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a null value omits the header; so does an absent one",
+      "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule the exact property path is read — a same-named key elsewhere is not",
+      "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector INTERNAL spaces stay plain — only leading/trailing whitespace forces encoding",
+      "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an EMPTY string is present with an empty value, not omitted",
+      "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false",
+      "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector no header carries a raw CR or LF — injection is closed by construction",
+      "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+      "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector plain ASCII is sent as-is",
+      "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method",
+      "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector unannotated parameters are NOT mirrored",
       "MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)",
+      "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client a null argument omits its header",
+      "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+      "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client with no prior tools/list, nothing is mirrored and the client says so",
       "MCP.Transport.RoutingHeadersTest/test the version header rides the message (D-4), on the wire it matches the body _meta, not the transport's configured default",
       "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601"
     ],
-    "members_declared_unmatched": 5,
-    "members_with_edges": 16,
+    "members_declared_unmatched": 16,
+    "members_with_edges": 32,
     "outside_the_population": {
-      "et_cc_members": 260,
-      "in_denominator_checks": 159,
-      "owners": "C1b = MES-104 (client leg), C1c = MES-105 (server leg + the 29 none_determinable)",
+      "et_cc_members": 233,
+      "in_denominator_checks": 130,
+      "owners": "C1b-ii and C1b-iii (MES-104's siblings — CG1/CG2/CG4 and the 55 no-CG client members); C1c = MES-105 (server leg + the 29 none_determinable)",
       "state": "not_yet_adjudicated",
-      "why_it_is_a_third_state": "Distinct from bucket 1 ('we looked and there is no counterpart') and from A3 §6 state 4 ('nobody has adjudicated this member, and the guard FAILS it'). Reporting these as bucket 1 would assert of 260 members something false of every one."
+      "why_it_is_a_third_state": "Distinct from bucket 1 ('we looked and there is no counterpart') and from A3 §6 state 4 ('nobody has adjudicated this member, and the guard FAILS it'). Reporting these as bucket 1 would assert of each something false of every one.",
+      "why_not_173_minus_the_declared": "A check that carries an edge has been adjudicated whether or not any file DECLARES it. 14 of the addressed checks lie outside every declared check population — the inherited C1a edges — and counting them as not_yet_adjudicated would be as wrong in one direction as counting them in bucket 2 would be in the other."
     },
-    "rule": "The ET-CC members that B2b (MES-82, docs/conformance/etcc-attribution.json) had already adjudicated — the 19 carrying a token plus the 2 carrying a contradicts_oc record. NOTHING outside it is adjudicated here.",
-    "selector": {
-      "any_of": [
-        {
-          "field": "tokens",
-          "test": "non_empty_list"
-        },
-        {
-          "field": "contradicts_oc",
-          "test": "not_null"
-        }
-      ],
-      "c1b_and_c1c_declare_their_own": "The selector is per-population and is read from this file, never hard-coded in the generator. C1b (MES-104) and C1c (MES-105) state the rule denoting THEIR leg rather than inheriting a literal 21.",
-      "denotes": "The 19 ET-CC members carrying an `oc:` or `oc:none` token plus the 2 carrying a contradicts_oc record — 21, and the same 21 `rule` states in prose.",
-      "evaluated": "21 members denoted; set-equal to the derived population in both directions (G15a). The counts block was checked field by field (G15b).",
-      "key_field": "key",
-      "rows_at": "rows",
-      "source": "docs/conformance/etcc-attribution.json",
-      "source_owner": "B2b (MES-82) — the ET-CC attribution register",
-      "what_this_is": "The EXECUTABLE half of `rule`. The generator evaluates it against the source named below and requires the result to be SET-EQUAL, in both directions, to the population this file derives. Prose only becomes a guard when something can run it.",
-      "why_it_must_name_a_file_other_than_this_one": "C1a derived the declared population by unioning the register_keys this file itself carries. So a dropped edge or a dropped declared_unmatched row did not violate the universe, it SHRANK it — measured on MES-99, both built cleanly at 20 members with the edge equation, the member equation and both set-comparison directions still exact. An artefact internally perfect while being about less than it claims. A selector that read this file's own rows would be circular by another route and would catch neither."
-    },
-    "state_4_guard": "ran over these 21 members; 0 fired"
+    "rule": "conformance/data/crosswalk-edges-client.json: Every ET-CC member B2b attributes to the CLIENT leg that is either in CG7 — C1b-i's slice — or was already adjudicated by C1a (a token, or a contradicts_oc record). NOTHING outside it is adjudicated here.  ||  conformance/data/crosswalk-edges.json: The ET-CC members C1a had adjudicated — a token or a contradicts_oc record — that are NOT on the client leg: 2 server and 1 none_determinable. C1a's 18 client rows moved to crosswalk-edges-client.json under MES-104's composition ruling; these 3 stayed, unchanged, and C1c (MES-105) absorbs them whole.",
+    "state_4_guard": "ran over these 48 members; 0 fired. ENTAILED BY G15a AND THEREFORE UNABLE TO FIRE, and that is recorded rather than left to be read as evidence: the population is set-equal to its selector's denotation in both directions, and it is derived from the file's own rows, so every member has a row and every row has a tag. It was equally entailed in C1a, where the selector and the tagging predicate were the same predicate. What fires on an EMPTY crosswalk is the vacuum guard, not this. The completeness question that is NOT entailed is G20 — every token B2b already records against a member of this population is still carried by one of that member's rows."
   },
   "residuals": [
     {
@@ -1108,7 +2996,7 @@
     },
     {
       "id": "X2",
-      "text": "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — the attempts were made and none succeeded, which is not the same as proven. The bound is narrow. The generator now refuses a duplicated join key (G14), a population that is not the set its external selector denotes or that disagrees with its own declared counts (G15), and a manifest whose verdicts have drifted from A5's bucket-0 artefact (G16). Every falsification class is shown firing on a mutated input with the unmutated build as the negative control in the same run, at the OS exit status and not only in-VM, and restored green after; C1a's own thirteen are re-run with the after-restoration they lacked. A per-row bucket-assignment drift is caught naming the row and the buckets it crosses (conformance/controls/crosswalk_falsification_controls.exs). What that does NOT establish: that any axis verdict is right (X1 is untouched — an axis verdict is a judgement and no refusal can reach it), and that anything outside the declared 21 members / 14 checks was falsified at all. C1b (MES-104) and C1c (MES-105) own the rest."
+      "text": "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — the attempts were made and none succeeded, which is not the same as proven. The bound is narrow. The generator now refuses a duplicated join key (G14), a population that is not the set its external selector denotes or that disagrees with its own declared counts (G15), and a manifest whose verdicts have drifted from A5's bucket-0 artefact (G16). Every falsification class is shown firing on a mutated input with the unmutated build as the negative control in the same run, at the OS exit status and not only in-VM, and restored green after; C1a's own thirteen are re-run with the after-restoration they lacked. A per-row bucket-assignment drift is caught naming the row and the buckets it crosses (conformance/controls/crosswalk_falsification_controls.exs). What that does NOT establish: that any axis verdict is right (X1 is untouched — an axis verdict is a judgement and no refusal can reach it), and that anything outside the declared population was falsified at all. MES-104 added four refusals to the set C3 covers — G17 (two files declaring the same member), G18 (an axis row citing a provenance for its emitting span the locator does not support), G19 (a DECLARED check with no axis decomposition) and G20 (an inherited B2b token no row carries) — each shown firing on a mutated input with the unmutated build as the negative control in the same run. C1b-ii, C1b-iii and C1c (MES-105) own the rest."
     },
     {
       "id": "X6",
@@ -1124,16 +3012,30 @@
     },
     {
       "id": "X5",
-      "text": "The population is 21 members and 14 checks. Two of the 14 enter through A3 §1's cardinality rule and §4's published worked edge, not through B2b's tokens — inherited, not newly adjudicated, and said so in the edges file."
+      "text": "The member population is 48 across two edges files — C1b-i's 45 client members and the 3 non-client rows C1a's file was re-declared to. Two of the checks C1a addresses enter through A3 §1's cardinality rule and §4's published worked edge, not through B2b's tokens — inherited, not newly adjudicated, and said so in the edges file."
+    },
+    {
+      "id": "X7",
+      "text": "A3 §6's STATE-4 GUARD IS ENTAILED BY G15a and cannot fire. The population is set-equal to its selector's denotation in both directions and is derived from the file's own rows, so every member has a row and every row has a tag. This was already true in C1a, where the selector and the tagging predicate were literally the same predicate — so D3's claim that the state-4 guard 'is the limb that makes an EMPTY crosswalk fail' is not what happens: `check_population([], tagged)` returns `:ok`, and the vacuum guard is what fires. Recorded rather than removed, because the guard is A3 §6's ratified one and dropping it would be a silent change to a ratified rule. The completeness question that is NOT entailed is G20."
+    },
+    {
+      "id": "X8",
+      "text": "BUCKET 2 WAS EMPTY BY CONSTRUCTION UNTIL THIS TICKET. C1a derived its check universe from the tags its own edges carried, so the complement within it was necessarily empty and `CHECKED, AND ZERO — all 14 checks in the declared population carry at least one edge` could not have said anything else. A file may now declare its check population from an external anchor, and C1b-i's first non-vacuous answer is NINE: nine of CG7's 29 OC checks carry no edge from any ET-CC member. A file that declares none contributes none to the universe and the artefact reports that bucket 2 was not asked, rather than reporting a zero."
+    },
+    {
+      "id": "X9",
+      "text": "A CLAIM-LEVEL STATE 3 HAS NO BUCKET. A3 §6's state 3 is a property of a MEMBER, and the bucket-1 reconciliation requires a member to be edge-bearing or declared unmatched, never both — so a member matching on some claims and not on others has nowhere to record the unmatched ones. C1b-i found five. They are carried in `claim_level_unmatched` with the search that found none, and ESCALATED. Whether A3 §6 should gain a claim-level state is the PM's."
     }
   ],
   "revision": "2026-07-28",
   "schema": "crosswalk/1",
   "totality": {
-    "every_declared_check_appears": {
-      "equal": true,
-      "extra": [],
-      "missing": []
+    "every_declared_check_is_decomposed_and_accounted_for": {
+      "declared": 29,
+      "equation": "declared checks = checks with an edge + bucket 2",
+      "in_bucket_2": 9,
+      "why_this_is_not_a_set_equality": "C1a asserted `every declared check appears` as a set equality, and it held TRIVIALLY: the declared set was derived from the tags the edges carried, so the two sides were the same list twice. Once the checks are declared from outside the file the equality is no longer expected — the checks that do NOT appear are bucket 2, which is the answer rather than a failure.",
+      "with_an_edge": 20
     },
     "every_declared_member_appears": {
       "equal": true,
@@ -1143,11 +3045,11 @@
     "measure": "SET COMPARISON, not arithmetic — two counts agreeing is not two sets agreeing.",
     "negatives_are_enumerated_not_counted": "Bucket 1's members and bucket 2's checks are listed by name in `buckets`, and the not_yet_adjudicated remainder is counted with its owner named (A2d / ruling 4)."
   },
-  "trust_status": "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — over the declared 21-member / 14-check slice and no further. (Standing, not proven: the attempts were made and none succeeded. `UNFALSIFIED` here previously meant `not yet attempted`.) Ruling 5 asked for the control this artefact was unfalsified against: the generator refuses on each falsification class with the mutation committed and shown firing, a drifted per-row bucket assignment is caught naming the row and the buckets it crosses, and the artefact re-derives byte-identically from a second source path. That last is a CONSISTENCY pin, not a correctness claim (ruling 9, residual X6). Nothing here establishes that an axis verdict is RIGHT (X1), and nothing outside the declared population has been falsified at all — C1b (MES-104) and C1c (MES-105) own that.",
+  "trust_status": "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — over the declared 48-member / 29-declared-check slice (C1a's 21 as re-split by MES-104, plus CG7's 27 new) and no further. (Standing, not proven: the attempts were made and none succeeded. `UNFALSIFIED` here previously meant `not yet attempted`.) Ruling 5 asked for the control this artefact was unfalsified against: the generator refuses on each falsification class with the mutation committed and shown firing, a drifted per-row bucket assignment is caught naming the row and the buckets it crosses, and the artefact re-derives byte-identically from a second source path. That last is a CONSISTENCY pin, not a correctness claim (ruling 9, residual X6). Nothing here establishes that an axis verdict is RIGHT (X1), and nothing outside the declared population has been falsified at all — C1b (MES-104) and C1c (MES-105) own that.",
   "verdict_mapping": {
     "observed_statuses": {
       "FAILURE": 4,
-      "SUCCESS": 19
+      "SUCCESS": 53
     },
     "rule": "SUCCESS -> :green. FAILURE -> :red. WARNING -> :green carrying warning: true.",
     "warning_basis": "PM-ratified D2, measured not chosen: WARNING is leg-dependent — the client-leg reducer fails it, `requirements_exit` and the server-leg reducer ignore it — and BOTH in-denominator WARNING checks are on the server leg, where the reducer that would disagree does not apply.",

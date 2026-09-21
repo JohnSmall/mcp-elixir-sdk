@@ -6,6 +6,8 @@
 #     mix run conformance/controls/crosswalk_controls.exs pins
 #     mix run conformance/controls/crosswalk_controls.exs guards
 #     mix run conformance/controls/crosswalk_controls.exs vacuum
+#     mix run conformance/controls/crosswalk_controls.exs selectors
+#     mix run conformance/controls/crosswalk_controls.exs composition
 #     mix run conformance/controls/crosswalk_controls.exs all
 #
 # ORDER IS PART OF THE DESIGN. `noop` runs FIRST and on its own, because a
@@ -28,6 +30,7 @@ defmodule CrosswalkControls do
 
   @harness "/tmp/conf11/node_modules/@modelcontextprotocol/conformance/dist/index.js"
 
+  @client_edges "conformance/data/crosswalk-edges-client.json"
   @edges "conformance/data/crosswalk-edges.json"
   @c1_axes "conformance/data/oc-axes-c1.json"
   @a3_axes "docs/conformance/oc-axes-2026-07-28.json"
@@ -37,6 +40,7 @@ defmodule CrosswalkControls do
   @attribution "docs/conformance/etcc-attribution.json"
   @crosswalk_out "docs/conformance/crosswalk-2026-07-28.json"
   @locator_out "docs/conformance/oc-emitting-sites-2026-07-28.json"
+  @sites @locator_out
 
   def run(["noop"]), do: noop()
   def run(["keying"]), do: keying()
@@ -44,6 +48,8 @@ defmodule CrosswalkControls do
   def run(["pins"]), do: pins()
   def run(["guards"]), do: guards()
   def run(["vacuum"]), do: vacuum()
+  def run(["selectors"]), do: selectors()
+  def run(["composition"]), do: composition()
 
   def run(["all"]) do
     noop()
@@ -52,10 +58,15 @@ defmodule CrosswalkControls do
     pins()
     guards()
     vacuum()
+    selectors()
+    composition()
   end
 
   def run(_) do
-    IO.puts("usage: noop | keying | locator | pins | guards | vacuum | all")
+    IO.puts(
+      "usage: noop | keying | locator | pins | guards | vacuum | selectors | composition | all"
+    )
+
     System.halt(2)
   end
 
@@ -365,9 +376,13 @@ defmodule CrosswalkControls do
     try do
       recompile!(mutated)
 
-      refuses("MUTATION  pin_level/2 claims ROW for every id_table_value row", fn ->
-        run_locator(refused)
-      end)
+      refuses(
+        "MUTATION  pin_level/2 claims ROW for every id_table_value row",
+        "rows claim a ROW-LEVEL pin while their own rung_detail says",
+        fn ->
+          run_locator(refused)
+        end
+      )
 
       verdict(
         "and nothing was written — the guard runs before the file",
@@ -408,61 +423,83 @@ defmodule CrosswalkControls do
     header("GUARDS — each fail-closed condition, mutated and shown to refuse")
 
     require_harness!()
-    edges = read(@edges)
+    # The mutations are applied to the CLIENT file, which is where MES-104's
+    # composition ruling put every interesting row; the residual file rides
+    # along unmutated on every run, so each refusal below is a refusal over a
+    # REAL two-file crosswalk rather than over a single-file one.
+    edges = read(@client_edges)
     first = hd(edges["edges"])
 
     # POSITIVE CONTROL FIRST: the unmutated build succeeds, so a refusal below
     # is the mutation's doing and not a broken harness.
     out = tmp("guard-positive")
-    run_crosswalk(out, edges: @edges)
+    run_crosswalk(out)
     IO.puts("  POSITIVE  the unmutated edges build cleanly (#{byte_size(File.read!(out))} bytes)")
     File.rm(out)
 
-    refuses("1  a tag that does not resolve in A1's manifest (A3 §6 state 2)", fn ->
-      build_edges(put_first(edges, Map.put(first, "tag", first["tag"] <> "zzz")))
-    end)
+    refuses(
+      "1  a tag that does not resolve in A1's manifest (A3 §6 state 2)",
+      "did not survive re-derivation",
+      fn ->
+        build_edges(put_first(edges, Map.put(first, "tag", first["tag"] <> "zzz")))
+      end
+    )
 
-    refuses("2  a well-formed tag naming a check that does not exist", fn ->
-      build_edges(
-        put_first(
-          edges,
-          Map.put(first, "tag", "oc:client/request-metadata/no-such-check/NoSuchCheck")
+    refuses(
+      "2  a well-formed tag naming a check that does not exist",
+      "did not survive re-derivation",
+      fn ->
+        build_edges(
+          put_first(
+            edges,
+            Map.put(first, "tag", "oc:client/request-metadata/no-such-check/NoSuchCheck")
+          )
         )
-      )
-    end)
+      end
+    )
 
-    refuses("3  an `oc:none` tag used as an EDGE tag", fn ->
+    refuses("3  an `oc:none` tag used as an EDGE tag", "oc_none_tag_on_an_edge", fn ->
       build_edges(
         put_first(edges, Map.put(first, "tag", "oc:none/no-oc-scenario/CG2-outbound-meta"))
       )
     end)
 
-    refuses("4  an axis name the check's decomposition does not contain", fn ->
-      build_edges(
-        put_first(
-          edges,
-          Map.put(first, "axes", [%{"axis" => "invented_axis", "verdict" => "agrees"}])
+    refuses(
+      "4  an axis name the check's decomposition does not contain",
+      "axis_not_in_decomposition",
+      fn ->
+        build_edges(
+          put_first(
+            edges,
+            Map.put(first, "axes", [%{"axis" => "invented_axis", "verdict" => "agrees"}])
+          )
         )
-      )
-    end)
+      end
+    )
 
-    refuses("5  an axis set that is not the decomposition's WHOLE set", fn ->
+    refuses("5  an axis set that is not the decomposition's WHOLE set", "axes_not_total", fn ->
       two = Enum.find(edges["edges"], &(length(&1["axes"]) > 1))
       build_edges(replace(edges, two, Map.put(two, "axes", [hd(two["axes"])])))
     end)
 
-    refuses("6  one axis named twice", fn ->
+    refuses("6  one axis named twice", "axis_named_twice", fn ->
       a = hd(first["axes"])
       build_edges(put_first(edges, Map.put(first, "axes", [a, a])))
     end)
 
-    refuses("7  a member that is not ET-CC in the register", fn ->
+    refuses("7  a member that is not ET-CC in the register", "not ET-CC in the register", fn ->
       build_edges(
         put_first(edges, put_in(first, ["member", "register_key"], "MCP.NoSuchTest/test nope"))
       )
     end)
 
-    refuses("8  a member in the population carrying NEITHER token kind (A3 §6 state 4)", fn ->
+    # MES-104 re-measured this one. The label used to say A3 §6 state 4, and
+    # the state-4 guard is what it was written for — but that guard is ENTAILED
+    # by G15a (residual X7) and cannot fire. What actually refuses an untagged
+    # member is G15a's `extra` limb: the member is in the file and not in the
+    # set its selector denotes. The mutation is unchanged and still caught; the
+    # label now names the guard that catches it.
+    refuses("8  a member in the population that its own selector does not denote", "G15a", fn ->
       untagged = %{
         "member" => %{
           "module" => "MCP.ClientTest",
@@ -475,59 +512,71 @@ defmodule CrosswalkControls do
       build_edges(update_in(edges, ["declared_unmatched"], &[untagged | &1]))
     end)
 
-    refuses("9  an `oc:` token in declared_unmatched — state 1 masquerading as state 3", fn ->
-      d = hd(edges["declared_unmatched"])
+    refuses(
+      "9  an `oc:` token in declared_unmatched — state 1 masquerading as state 3",
+      "state 3",
+      fn ->
+        d = hd(edges["declared_unmatched"])
 
-      build_edges(
-        update_in(edges, ["declared_unmatched"], fn [_ | t] ->
-          [Map.put(d, "tag", first["tag"]) | t]
-        end)
-      )
-    end)
+        build_edges(
+          update_in(edges, ["declared_unmatched"], fn [_ | t] ->
+            [Map.put(d, "tag", first["tag"]) | t]
+          end)
+        )
+      end
+    )
 
-    refuses("10  an edge with no tag at all", fn ->
+    refuses("10  an edge with no tag at all", "edge_has_no_tag", fn ->
       build_edges(put_first(edges, Map.delete(first, "tag")))
     end)
 
-    refuses("11  an ET verdict outside {green, red}", fn ->
+    refuses("11  an ET verdict outside {green, red}", "bad_et_verdict", fn ->
       build_edges(put_first(edges, Map.put(first, "et_verdict", "amber")))
     end)
 
     # The axis artefacts must not both claim a check — D4, one fact one home.
-    refuses("12  A3's axes and C1's axes decomposing the SAME check (D4)", fn ->
-      a3 = read(@a3_axes)
-      c1 = read(@c1_axes)
-      clash = update_in(c1, ["checks"], &[hd(a3["checks"]) | &1])
-      path = write_tmp("c1-axes", clash)
+    refuses(
+      "12  A3's axes and C1's axes decomposing the SAME check (D4)",
+      "one fact, two homes",
+      fn ->
+        a3 = read(@a3_axes)
+        c1 = read(@c1_axes)
+        clash = update_in(c1, ["checks"], &[hd(a3["checks"]) | &1])
+        path = write_tmp("c1-axes", clash)
 
-      try do
-        run_crosswalk(tmp("d4"), c1_axes: path)
-      after
-        File.rm(path)
+        try do
+          run_crosswalk(tmp("d4"), c1_axes: path)
+        after
+          File.rm(path)
+        end
       end
-    end)
+    )
 
     # The committed axis spans are addresses into /tmp. Move the bytes.
-    refuses("13  a committed axis expr that is not verbatim at its committed span", fn ->
-      c1 = read(@c1_axes)
+    refuses(
+      "13  a committed axis expr that is not verbatim at its committed span",
+      "not verbatim at their committed spans",
+      fn ->
+        c1 = read(@c1_axes)
 
-      broken =
-        update_in(c1, ["checks"], fn cs ->
-          List.update_at(cs, 0, fn c ->
-            update_in(c, ["axes"], fn ax ->
-              List.update_at(ax, 0, &Map.put(&1, "expr", "o===void 1"))
+        broken =
+          update_in(c1, ["checks"], fn cs ->
+            List.update_at(cs, 0, fn c ->
+              update_in(c, ["axes"], fn ax ->
+                List.update_at(ax, 0, &Map.put(&1, "expr", "o===void 1"))
+              end)
             end)
           end)
-        end)
 
-      path = write_tmp("c1-axes", broken)
+        path = write_tmp("c1-axes", broken)
 
-      try do
-        run_crosswalk(tmp("spans"), c1_axes: path)
-      after
-        File.rm(path)
+        try do
+          run_crosswalk(tmp("spans"), c1_axes: path)
+        after
+          File.rm(path)
+        end
       end
-    end)
+    )
 
     # POSITIVE CONTROL, AFTER — added by MES-99 (C3). This mode ran its positive
     # control only BEFORE its thirteen mutations, so "restored green" was never
@@ -535,7 +584,7 @@ defmodule CrosswalkControls do
     # touch the tree, but that is the claim, and an unrun check and a null result
     # are the same artefact.
     back = tmp("guard-restored")
-    run_crosswalk(back, edges: @edges)
+    run_crosswalk(back)
     restored = File.read!(back) == File.read!(@crosswalk_out)
     File.rm(back)
 
@@ -571,7 +620,7 @@ defmodule CrosswalkControls do
 
     empty = %{edges | "edges" => [], "declared_unmatched" => []}
 
-    refuses("the empty crosswalk", fn -> build_edges(empty) end)
+    refuses("the empty crosswalk", "declares an EMPTY population", fn -> build_edges(empty) end)
 
     IO.puts("""
       It refuses because an empty population is a population with nothing to be total
@@ -632,6 +681,488 @@ defmodule CrosswalkControls do
     halt_unless(is_nil(bucket))
   end
 
+  # --- selectors: the new language, driven against the REAL anchor ----------
+  #
+  # `test/conformance/crosswalk_test.exs` unit-tests `select/2` on a five-row
+  # synthetic source, which is where the decision logic belongs. What that
+  # CANNOT show is that the selectors the committed files actually carry denote
+  # the populations they claim, over B2b's real 281 rows — a unit passing on
+  # five rows says nothing about the anchor this project ships. Both, because
+  # neither subsumes the other.
+
+  defp selectors do
+    header("SELECTORS — the committed selectors, evaluated against B2b's real 281 rows")
+
+    src = read(@attribution)
+    client = read(@client_edges)
+    resid = read(@edges)
+    sites = read(@sites)
+
+    rows = src["rows"]
+    IO.puts("  anchor: #{@attribution} — #{length(rows)} rows\n")
+
+    # POSITIVE, and compared against a set computed a DIFFERENT way: the
+    # selector is evaluated by `select/2`, the expectation by `Enum.filter` over
+    # the same rows. A selector checked against itself proves nothing.
+    tagged? = fn r -> (r["tokens"] || []) != [] or r["contradicts_oc"] != nil end
+
+    expectations = [
+      {"the client file's members", client["the_population_this_file_declares"]["selector"], src,
+       rows
+       |> Enum.filter(&(&1["leg"] == "client" and (&1["cg"] == "CG7" or tagged?.(&1))))
+       |> Enum.map(& &1["key"])},
+      {"the residual file's members", resid["the_population_this_file_declares"]["selector"], src,
+       rows
+       |> Enum.filter(&(tagged?.(&1) and &1["leg"] != "client"))
+       |> Enum.map(& &1["key"])},
+      {"the client file's CHECKS", client["the_check_population_this_file_declares"]["selector"],
+       sites,
+       sites["rows"]
+       |> Enum.filter(&(&1["scenario"] in ["http-custom-headers", "http-invalid-tool-headers"]))
+       |> Enum.map(& &1["token"])}
+    ]
+
+    for {label, selector, source, expected} <- expectations do
+      {:ok, got} = Crosswalk.select(selector, source)
+      c = Crosswalk.set_compare(expected, got)
+
+      IO.puts(
+        "    #{String.pad_trailing(label, 30)} #{String.pad_leading(to_string(length(got)), 3)} denoted"
+      )
+
+      verdict(
+        "POSITIVE — #{label}: set-equal to an independently computed set, both directions",
+        c.equal
+      )
+
+      halt_unless(c.equal)
+    end
+
+    # THE MUTATION THAT MATTERS, measured on the real anchor rather than argued:
+    # `all_of` silently behaving as `any_of` does not error, does not change the
+    # selector's shape, and changes the population.
+    member_sel = client["the_population_this_file_declares"]["selector"]
+    as_any = member_sel |> Map.delete("all_of") |> Map.put("any_of", member_sel["all_of"])
+
+    {:ok, conj} = Crosswalk.select(member_sel, src)
+    {:ok, disj} = Crosswalk.select(as_any, src)
+
+    IO.puts("\n  MUTATION  the client file's `all_of` read as `any_of`:")
+
+    IO.puts(
+      "    #{length(conj)} members -> #{length(disj)}  (#{length(disj) - length(conj)} more)"
+    )
+
+    verdict(
+      "the two combinators denote DIFFERENT populations on this anchor",
+      length(disj) != length(conj)
+    )
+
+    halt_unless(length(disj) != length(conj))
+
+    # And the `equals` value, which is the whole content of the leg conjunct.
+    typo =
+      update_in(member_sel, ["all_of"], fn [leg | rest] ->
+        [Map.put(leg, "value", "cleint") | rest]
+      end)
+
+    {:ok, none} = Crosswalk.select(typo, src)
+
+    IO.puts(
+      "  MUTATION  one character wrong in the `equals` value: #{length(conj)} -> #{length(none)}"
+    )
+
+    verdict("a mistyped value denotes the EMPTY set rather than erroring", none == [])
+    halt_unless(none == [])
+
+    IO.puts("""
+
+      The generator catches all three — a population that is not the set its selector
+      denotes is G15a, in both directions. What this shows is the SIZE of the mistake
+      each one makes on the anchor this project actually ships, which is the thing a
+      five-row unit cannot say.
+    """)
+  end
+
+  # --- composition: what MES-104's multi-file crosswalk made possible -------
+  #
+  # G17, G18, G19 and G20 are refusals that could not exist before `--edges`
+  # became repeatable and a file could declare its CHECK population. Each gets
+  # a positive control — the unmutated two-file build — and a mutation.
+
+  defp composition do
+    header("COMPOSITION — the four refusals the two-file crosswalk needs, each shown firing")
+
+    require_harness!()
+    client = read(@client_edges)
+    resid = read(@edges)
+    sites = read(@sites)
+    axes = read(@c1_axes)
+
+    out = tmp("composition-positive")
+    run_crosswalk(out)
+    a = read(out)
+    File.rm(out)
+
+    IO.puts("  POSITIVE  the unmutated two-file build succeeds")
+
+    IO.puts(
+      "            #{length(a["population"]["files"])} files, #{a["population"]["member_count"]} members, " <>
+        "#{a["population"]["declared_check_count"]} declared checks, #{length(a["cells"])} edges"
+    )
+
+    # --- G17: one member, one home -----------------------------------------
+    #
+    # The probe has to get PAST two earlier guards to reach G17, and that is
+    # worth stating rather than discovering. Copying a declared_unmatched row
+    # into the second file is caught by G14 (a member declared unmatched
+    # twice); adding any row to a file its selector does not denote is caught
+    # by G15a. So the second file below denotes exactly the one member it
+    # carries — `key equals <that member>` — and gives it a DIFFERENT claim, so
+    # neither earlier guard has anything to say and the overlap is the only
+    # defect left.
+    shared = hd(client["edges"])
+
+    probe = %{
+      "schema" => "crosswalk-edges/1",
+      "the_population_this_file_declares" => %{
+        "members" => 1,
+        "members_with_edges" => 1,
+        "members_declared_unmatched" => 0,
+        "checks_addressed" => 1,
+        "rule" => "one member, named — a G17 probe",
+        "selector" => %{
+          "source" => @attribution,
+          "rows_at" => "rows",
+          "key_field" => "key",
+          "all_of" => [
+            %{
+              "field" => "key",
+              "test" => "equals",
+              "value" => shared["member"]["register_key"]
+            }
+          ]
+        }
+      },
+      "edges" => [Map.put(shared, "claim", "a second claim, so G14 has nothing to say")],
+      "declared_unmatched" => []
+    }
+
+    refuses(
+      "G17  the same member declared by BOTH files",
+      "G17 — two edges files declare the SAME member",
+      fn -> run_two(client, probe) end
+    )
+
+    refuses(
+      "G14 gets there first when the overlap is a REPEATED declared_unmatched row",
+      "G14 — members declared unmatched more than once",
+      fn ->
+        dup = Map.put(probe, "declared_unmatched", [hd(client["declared_unmatched"])])
+        run_two(client, dup)
+      end
+    )
+
+    # And the same file given twice, which is the cheapest way to double a
+    # population without editing anything at all.
+    refuses(
+      "G17  the same edges FILE given to --edges twice",
+      "the same edges file was given twice",
+      fn ->
+        path = write_tmp("same", client)
+
+        try do
+          run_crosswalk(tmp("same-twice"), edges: [path, path])
+        after
+          File.rm(path)
+        end
+      end
+    )
+
+    # --- G18: the emitting span's provenance --------------------------------
+    accepted = Enum.find(axes["checks"], &(&1["emitting_span_provenance"] == "locator_row"))
+
+    rejected =
+      Enum.find(axes["checks"], &(&1["emitting_span_provenance"] == "locator_row_rejected"))
+
+    verdict(
+      "G18 has BOTH kinds of row on real data — an acceptance and a rejection",
+      accepted != nil and rejected != nil
+    )
+
+    halt_unless(accepted != nil and rejected != nil)
+
+    IO.puts(
+      "            rejected: #{Enum.at(rejected["key"], 3)} — locator rung " <>
+        "#{Enum.find(sites["rows"], &(&1["key"] == rejected["key"]))["rung"]} at pin level " <>
+        "#{Enum.find(sites["rows"], &(&1["key"] == rejected["key"]))["rung_pin_level"]}"
+    )
+
+    refuses(
+      "G18  an accepted row whose span the locator does not name",
+      "span_is_not_one_the_locator_names",
+      fn ->
+        run_axes(mutate_axis(axes, accepted["key"], &Map.put(&1, "emitting_byte_span", [0, 10])))
+      end
+    )
+
+    refuses(
+      "G18  a row claiming a provenance that is not one of the two",
+      "unknown_emitting_span_provenance",
+      fn ->
+        run_axes(
+          mutate_axis(axes, accepted["key"], &Map.put(&1, "emitting_span_provenance", "trust me"))
+        )
+      end
+    )
+
+    refuses(
+      "G18  a rejection of a span the locator DOES pin to the row",
+      "rejected_a_row_level_pin",
+      fn ->
+        run_axes(
+          mutate_axis(axes, accepted["key"], fn c ->
+            c
+            |> Map.put("emitting_span_provenance", "locator_row_rejected")
+            |> Map.put("emitting_span_provenance_why", "because")
+            |> Map.put("emitting_byte_span", [0, 10])
+          end)
+        )
+      end
+    )
+
+    refuses(
+      "G18  a rejection that gives no reason",
+      "rejection_gives_no_reason",
+      fn ->
+        run_axes(
+          mutate_axis(axes, rejected["key"], &Map.delete(&1, "emitting_span_provenance_why"))
+        )
+      end
+    )
+
+    refuses(
+      "G18  a rejection that then uses the very span it rejected",
+      "rejection_uses_the_span_it_rejected",
+      fn ->
+        row = Enum.find(sites["rows"], &(&1["key"] == rejected["key"]))
+        span = hd(row["sites"])["byte_span"]
+        run_axes(mutate_axis(axes, rejected["key"], &Map.put(&1, "emitting_byte_span", span)))
+      end
+    )
+
+    # --- G19: a declared check nobody decomposed ----------------------------
+    refuses(
+      "G19  a DECLARED check with no axis decomposition",
+      "DECLARED check population have no axis",
+      fn ->
+        # It has to be a BUCKET-2 check. Dropping the decomposition of a check
+        # that CARRIES an edge is caught earlier, by `cells!` — an edge cannot
+        # re-derive without one — so G19's content is exactly the checks with
+        # NO edge, which is the set bucket 2 reports. The check stays DECLARED
+        # by the client file's selector, so reporting it in bucket 2 would be
+        # saying 'we looked and found no ET counterpart' about a check nobody
+        # read.
+        name =
+          a["buckets"]["bucket_2"]["checks"]
+          |> Enum.sort()
+          |> hd()
+          |> String.split("/")
+          |> List.last()
+
+        dropped = Enum.find(axes["checks"], &(Enum.at(&1["key"], 3) == name))
+
+        run_axes(
+          update_in(axes, ["checks"], fn cs -> Enum.reject(cs, &(&1["key"] == dropped["key"])) end)
+        )
+      end
+    )
+
+    refuses(
+      "G19  cells! gets there first when the undecomposed check CARRIES an edge",
+      "check_has_no_axis_decomposition",
+      fn ->
+        edged =
+          Enum.find(axes["checks"], fn c ->
+            Enum.any?(a["cells"], &(&1["oc_key"] == c["key"]))
+          end)
+
+        run_axes(
+          update_in(axes, ["checks"], fn cs -> Enum.reject(cs, &(&1["key"] == edged["key"])) end)
+        )
+      end
+    )
+
+    # --- G20: an inherited token lost in transit ----------------------------
+    inherited =
+      Enum.find(client["declared_unmatched"], fn u ->
+        String.starts_with?(u["tag"], "oc:none/no-oc-fixture-case/CG7-static-reachability")
+      end)
+
+    verdict("G20 has a live subject — a B2b token carried by a MOVED row", inherited != nil)
+    halt_unless(inherited != nil)
+
+    refuses(
+      "G20  a moved row whose inherited B2b token has been re-slugged",
+      "G20 —",
+      fn ->
+        reslugged =
+          update_in(client, ["declared_unmatched"], fn us ->
+            Enum.map(us, fn u ->
+              if u == inherited,
+                do: Map.put(u, "tag", "oc:none/no-oc-fixture-case/CG7-static-reachability-x"),
+                else: u
+            end)
+          end)
+
+        run_two(reslugged, resid)
+      end
+    )
+
+    # --- bucket 2: the thing all of this was for ----------------------------
+    b2 = a["buckets"]["bucket_2"]
+
+    IO.puts("\n  BUCKET 2 — non-empty for the first time in this project:")
+
+    IO.puts(
+      "    #{b2["count"]} of the #{a["population"]["declared_check_count"]} declared checks carry no edge"
+    )
+
+    for tag <- b2["checks"], do: IO.puts("      #{tag}")
+
+    verdict("bucket 2 is DECLARED and non-empty", b2["declared"] and b2["count"] > 0)
+    halt_unless(b2["declared"] and b2["count"] > 0)
+
+    # THE MUTATION THAT SHOWS IT IS NOT VACUOUS: take the check population away
+    # and the same edges report bucket 2 as NOT ASKED, not as zero. That is the
+    # difference between C1a's answer and this one.
+    without = tmp("composition-no-checks")
+    run_two_to(Map.delete(client, "the_check_population_this_file_declares"), resid, without)
+    w = read(without)
+    File.rm(without)
+
+    IO.puts("\n  the SAME edges with no declared check population:")
+    IO.puts("    bucket 2: #{w["buckets"]["bucket_2"]["result"]}")
+
+    verdict(
+      "without a declared universe bucket 2 is NOT REPORTED, never zero",
+      w["buckets"]["bucket_2"]["declared"] == false
+    )
+
+    halt_unless(w["buckets"]["bucket_2"]["declared"] == false)
+
+    # And the counter-mutation: declaring the checks but dropping the edges that
+    # cover them grows bucket 2 rather than shrinking the universe. This is the
+    # C1a defect restated — under the old derived universe, dropping an edge
+    # made the universe smaller and bucket 2 stayed at zero.
+    fewer = tmp("composition-fewer-edges")
+
+    # The target has to be a DECLARED check every one of whose edge-bearing
+    # members also edges elsewhere — otherwise dropping its edges drops a member
+    # out of the population and G15a refuses the mutated file before bucket 2
+    # is ever computed. Chosen by that property rather than hard-coded, so a
+    # later ticket's edges cannot silently re-aim it (the Access.at(20) lesson).
+    edges_per_member = Enum.frequencies_by(a["cells"], & &1["member"]["register_key"])
+
+    dropped_tag =
+      Enum.find(Enum.sort(a["population"]["declared_checks"]), fn tag ->
+        cells = Enum.filter(a["cells"], &(&1["tag"] == tag))
+
+        cells != [] and
+          Enum.all?(cells, fn c ->
+            Map.fetch!(edges_per_member, c["member"]["register_key"]) >
+              Enum.count(cells, &(&1["member"]["register_key"] == c["member"]["register_key"]))
+          end)
+      end)
+
+    verdict(
+      "a droppable declared check exists — every member of it edges elsewhere too",
+      dropped_tag != nil
+    )
+
+    halt_unless(dropped_tag != nil)
+    IO.puts("            target: #{dropped_tag}")
+
+    run_two_to(
+      update_in(client, ["edges"], fn es -> Enum.reject(es, &(&1["tag"] == dropped_tag)) end)
+      |> recount(),
+      resid,
+      fewer
+    )
+
+    f = read(fewer)
+    File.rm(fewer)
+
+    IO.puts("\n  dropping every edge on ONE declared check:")
+    IO.puts("    bucket 2: #{b2["count"]} -> #{f["buckets"]["bucket_2"]["count"]}")
+
+    verdict(
+      "a declared check losing its edges GROWS bucket 2 — the universe does not shrink with it",
+      f["buckets"]["bucket_2"]["count"] == b2["count"] + 1
+    )
+
+    halt_unless(f["buckets"]["bucket_2"]["count"] == b2["count"] + 1)
+
+    IO.puts("""
+
+      C1a's bucket 2 could not have been anything but zero: its universe was the set of
+      tags its own edges carried, so the complement was taken inside the set it was taken
+      from. The check above is the difference — the same edges, one declaration apart.
+    """)
+  end
+
+  # The counts block is the file's statement about itself and G15b checks it,
+  # so a mutation that changes the rows has to restate them or it is caught by
+  # the wrong guard.
+  defp recount(doc) do
+    members =
+      Enum.uniq(
+        Enum.map(doc["edges"], & &1["member"]["register_key"]) ++
+          Enum.map(doc["declared_unmatched"], & &1["member"]["register_key"])
+      )
+
+    update_in(doc, ["the_population_this_file_declares"], fn d ->
+      %{
+        d
+        | "members" => length(members),
+          "members_with_edges" =>
+            doc["edges"] |> Enum.map(& &1["member"]["register_key"]) |> Enum.uniq() |> length(),
+          "members_declared_unmatched" => length(doc["declared_unmatched"]),
+          "checks_addressed" => doc["edges"] |> Enum.map(& &1["tag"]) |> Enum.uniq() |> length()
+      }
+    end)
+  end
+
+  defp mutate_axis(axes, key, fun) do
+    update_in(axes, ["checks"], fn cs ->
+      Enum.map(cs, fn c -> if c["key"] == key, do: fun.(c), else: c end)
+    end)
+  end
+
+  defp run_axes(axes) do
+    path = write_tmp("c1-axes", axes)
+
+    try do
+      run_crosswalk(tmp("axes-mutated"), c1_axes: path)
+    after
+      File.rm(path)
+    end
+  end
+
+  defp run_two(client, resid), do: run_two_to(client, resid, tmp("two-mutated"))
+
+  defp run_two_to(client, resid, out) do
+    a = write_tmp("client", client)
+    b = write_tmp("resid", resid)
+
+    try do
+      run_crosswalk(out, edges: [a, b])
+    after
+      File.rm(a)
+      File.rm(b)
+    end
+  end
+
   # --- plumbing -------------------------------------------------------------
 
   defp run_locator(out) do
@@ -648,34 +1179,46 @@ defmodule CrosswalkControls do
   end
 
   defp run_crosswalk(out, overrides \\ []) do
-    Mix.Task.rerun("conformance.crosswalk", [
-      "--edges",
-      Keyword.get(overrides, :edges, @edges),
-      "--manifest",
-      @manifest,
-      "--denominator",
-      @denominator,
-      "--register",
-      @register,
-      "--attribution",
-      @attribution,
-      "--a3-axes",
-      @a3_axes,
-      "--c1-axes",
-      Keyword.get(overrides, :c1_axes, @c1_axes),
-      "--harness",
-      @harness,
-      "-o",
-      out
-    ])
+    edges =
+      case Keyword.get(overrides, :edges) do
+        nil -> [@client_edges, @edges]
+        one when is_binary(one) -> [one]
+        many when is_list(many) -> many
+      end
+
+    Mix.Task.rerun(
+      "conformance.crosswalk",
+      Enum.flat_map(edges, &["--edges", &1]) ++
+        [
+          "--manifest",
+          @manifest,
+          "--denominator",
+          @denominator,
+          "--register",
+          @register,
+          "--attribution",
+          @attribution,
+          "--a3-axes",
+          @a3_axes,
+          "--c1-axes",
+          Keyword.get(overrides, :c1_axes, @c1_axes),
+          "--emitting-sites",
+          Keyword.get(overrides, :sites, @sites),
+          "--harness",
+          @harness,
+          "-o",
+          out
+        ]
+    )
   end
 
+  # The mutated CLIENT file plus the untouched residual one — the real shape.
   defp build_edges(doc) do
     path = write_tmp("edges", doc)
     out = tmp("mutated")
 
     try do
-      run_crosswalk(out, edges: path)
+      run_crosswalk(out, edges: [path, @edges])
     after
       File.rm(path)
       File.rm(out)
@@ -687,12 +1230,25 @@ defmodule CrosswalkControls do
   defp replace(doc, old, new),
     do: update_in(doc, ["edges"], fn es -> Enum.map(es, &if(&1 == old, do: new, else: &1)) end)
 
-  defp refuses(label, fun) do
+  # `refuses/3` takes the FRAGMENT the refusal must contain. "It raised" is not
+  # "the planted defect was caught": a mutation can trip an unrelated guard, or
+  # a typo in the control itself, and a bare rescue reads both as success.
+  defp refuses(label, expect, fun) do
     fun.()
     IO.puts("  DID NOT REFUSE  #{label}")
     System.halt(1)
   rescue
-    e -> IO.puts("  refused  #{label}\n           #{first_line(Exception.message(e))}")
+    e ->
+      msg = Exception.message(e)
+
+      if String.contains?(msg, expect) do
+        IO.puts("  refused  #{label}\n           #{first_line(msg)}")
+      else
+        IO.puts("  WRONG GUARD  #{label}")
+        IO.puts("           expected the refusal to name: #{inspect(expect)}")
+        IO.puts("           got: #{first_line(msg)}")
+        System.halt(1)
+      end
   end
 
   defp shows_failure(label, {:error, detail}) do

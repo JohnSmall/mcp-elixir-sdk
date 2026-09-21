@@ -1,7 +1,7 @@
 {
   "schema": "oc-axes-c1/1",
   "revision": "2026-07-28",
-  "owner": "MES-97 (C1a)",
+  "owner": "MES-97 (C1a) and MES-104 (C1b-i)",
   "authored_by_hand": true,
   "what_this_is": "The per-check AXIS DECOMPOSITION for the OC checks C1a's crosswalk lands an edge on and A3 did NOT decompose. A3 committed 13 of the 175; its scope block hands the other 162 to C1. This file holds C1a's share of them and nothing else.",
   "why_a_second_file_and_not_an_edit_of_A3s": "Editing docs/conformance/oc-axes-2026-07-28.json would give one artefact two owners — the MES-24 two-censuses defect, where the two disagree and nothing detects it. A3 owns its 13; C1 owns what C1 extracts. Disjointness is ASSERTED BY THE BUILDER (mix conformance.crosswalk refuses on any overlap), not left to a convention. PM-ratified as D4, MES-97 comment 27858.",
@@ -18,15 +18,16 @@
   "polarity_rule": "`pass_when_true` — the expression being TRUE is the passing arm. `fail_when_true` — the expression being TRUE is the failing arm. Read off the branch the excerpt actually writes, never off the requirement's wording.",
   "preconditions_rule": "A list of `{guard, kind, on_failure, reads}`. A precondition is NOT an axis: its failure does not make the check fail, it makes the check not evaluate (SKIPPED). An ET claim cannot agree or contradict a precondition, so `shape_from_axes/1` never sees one.",
   "scope": {
-    "checks_decomposed": 11,
-    "population": "the OC checks that C1a's declared population lands an edge on, minus the one A3 already decomposed",
+    "checks_decomposed": 40,
+    "population": "The OC checks C1a's and C1b-i's declared populations land an edge on, minus the one A3 already decomposed. C1a contributed 11 (request-metadata, MRTR and tools_call); C1b-i contributes the 29 CG7 checks — `http-custom-headers` 18 + `http-invalid-tool-headers` 11 — ALL of them, including the 9 that carry no ET-CC edge, because a bucket-2 check must be decomposed before it can be shown to have no counterpart.",
     "the_one_A3_already_has": "sep-2575-http-server-method-not-found-404-initialize / HttpServerMethodNotFound404initialize — C1a's 12th check. Read from A3's file, NOT re-extracted here. One fact, one home.",
-    "not_decomposed": "The remaining 161 of the 173. They are C1b's (MES-104, client leg) and C1c's (MES-105, server leg), and an axis decomposition is only consumed where an edge exists."
+    "not_decomposed": "The remaining 132 of the 173. They are C1b-ii's, C1b-iii's (MES-104's siblings) and C1c's (MES-105)."
   },
   "checks": [
     {
       "key": ["client", "request-metadata", "sep-2575-http-client-sends-version-header", "ClientSendsVersionHeader", "Client sends MCP-Protocol-Version header on every POST", ""],
       "emitting_byte_span": [339418, 339837],
+      "emitting_span_provenance": "locator_row",
       "context_excerpts": [
         {"label": "header_binding", "byte_span": [339311, 339417], "why": "binds `o`, the header the predicate reads"}
       ],
@@ -46,6 +47,7 @@
     {
       "key": ["client", "request-metadata", "sep-2575-client-populates-meta", "ClientPopulatesMeta", "Client populates _meta on every request with the required fields (protocolVersion, clientCapabilities)", ""],
       "emitting_byte_span": [339945, 340354],
+      "emitting_span_provenance": "locator_row",
       "context_excerpts": [
         {"label": "meta_bindings", "byte_span": [339311, 339417], "why": "binds `i` (the request's _meta) and `a` (the protocolVersion conjunct)"},
         {"label": "conjunction", "byte_span": [339838, 339944], "why": "binds `c` (the clientCapabilities conjunct) and `l=a&&c`, the predicate itself"}
@@ -75,6 +77,7 @@
     {
       "key": ["client", "request-metadata", "sep-2575-client-sends-client-info", "ClientSendsClientInfo", "Client SHOULD include io.modelcontextprotocol/clientInfo in every request's _meta (spec PR #3002)", ""],
       "emitting_byte_span": [340355, 340764],
+      "emitting_span_provenance": "locator_row",
       "context_excerpts": [
         {"label": "client_info_binding", "byte_span": [339838, 339944], "why": "binds `s`, the clientInfo the predicate reads"}
       ],
@@ -96,6 +99,7 @@
     {
       "key": ["client", "request-metadata", "sep-2575-http-version-header-matches-meta", "ClientVersionHeaderMatchesMeta", "MCP-Protocol-Version header matches _meta.protocolVersion", ""],
       "emitting_byte_span": [340794, 341227],
+      "emitting_span_provenance": "locator_row",
       "context_excerpts": [
         {"label": "precondition_binding", "byte_span": [340765, 340793], "why": "binds `u`, the guard that decides SKIPPED"}
       ],
@@ -122,6 +126,7 @@
     {
       "key": ["client", "request-metadata", "sep-2575-client-declares-roots-capability", "ClientDeclaresRootsCapability", "Client declares valid roots capability if present", ""],
       "emitting_byte_span": [341697, 341783],
+      "emitting_span_provenance": "locator_row",
       "context_excerpts": [
         {"label": "capability_helper", "byte_span": [341284, 341400], "why": "the emitting site is a call to the helper `f`; the predicate is in the helper body, not at the call"},
         {"label": "capabilities_binding", "byte_span": [341228, 341283], "why": "binds `d`, the declared capability map the helper reads"}
@@ -154,6 +159,7 @@
     {
       "key": ["client", "request-metadata", "sep-2575-client-declares-sampling-capability", "ClientDeclaresSamplingCapability", "Client declares valid sampling capability if present", ""],
       "emitting_byte_span": [341784, 341879],
+      "emitting_span_provenance": "locator_row",
       "context_excerpts": [
         {"label": "capability_helper", "byte_span": [341284, 341400], "why": "same helper `f`, called with `sampling`"},
         {"label": "capabilities_binding", "byte_span": [341228, 341283], "why": "binds `d`"}
@@ -186,6 +192,7 @@
     {
       "key": ["client", "request-metadata", "sep-2575-client-declares-elicitation-capability", "ClientDeclaresElicitationCapability", "Client declares valid elicitation capability if present", ""],
       "emitting_byte_span": [341880, 341984],
+      "emitting_span_provenance": "locator_row",
       "context_excerpts": [
         {"label": "capability_helper", "byte_span": [341284, 341400], "why": "same helper `f`, called with `elicitation`"},
         {"label": "capabilities_binding", "byte_span": [341228, 341283], "why": "binds `d`"}
@@ -218,6 +225,7 @@
     {
       "key": ["client", "request-metadata", "sep-2575-client-retry-supported-version", "ClientRetrySupportedVersion", "Client retries with a supported version when first choice is rejected", ""],
       "emitting_byte_span": [342044, 342442],
+      "emitting_span_provenance": "locator_row",
       "context_excerpts": [
         {"label": "status_mutation_site", "byte_span": [342663, 342884], "why": "THE PREDICATE IS HERE, NOT AT THE EMITTING SITE — see emitting_site_is_not_the_predicate below"}
       ],
@@ -247,6 +255,7 @@
     {
       "key": ["client", "sep-2322-client-request-state", "sep-2322-client-request-state-echoed", "MRTRClientRequestStateEchoed", "Client MUST echo back the exact value of requestState when retrying", ""],
       "emitting_byte_span": [345980, 346351],
+      "emitting_span_provenance": "locator_row",
       "context_excerpts": [
         {"label": "error_accumulator", "byte_span": [345762, 345979], "why": "the predicate is `l.length===0` and `l` is an error list; the conditions that push into it ARE the axes"}
       ],
@@ -275,6 +284,7 @@
     {
       "key": ["client", "sep-2322-client-request-state", "sep-2322-client-no-state-omitted", "MRTRClientNoStateOmitted", "If InputRequiredResult does not contain requestState, client MUST NOT include one in the retry", ""],
       "emitting_byte_span": [347327, 347685],
+      "emitting_span_provenance": "locator_row",
       "context_excerpts": [
         {"label": "error_accumulator", "byte_span": [347206, 347234], "why": "binds `a` and holds the single guarded push that decides the status"}
       ],
@@ -294,6 +304,7 @@
     {
       "key": ["client", "tools_call", "tool-add-numbers", "ToolAddNumbers", "Validates that the add_numbers tool works correctly", ""],
       "emitting_byte_span": [5894, 6331],
+      "emitting_span_provenance": "locator_row",
       "context_excerpts": [],
       "axes": [
         {
@@ -325,6 +336,1174 @@
       "not_scored_by_the_check": "The excerpt computes `result:t.a+t.b` in its DETAILS, but no conjunct tests it. The check scores that the call was made with two numeric arguments — never that the answer was right. A reader going by the description ('Validates that the add_numbers tool works correctly') would score us against arithmetic the predicate does not test. A3 §2's rule, on the check this population happens to include.",
       "preconditions": [],
       "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-custom-headers", "sep-2243-client-mirrors-designated-params", "ClientCustomHeader_Region", "Client sends correct Mcp-Param-Region header (string value)", ""],
+      "emitting_byte_span": [714077, 714434],
+      "emitting_span_provenance": "locator_row_rejected",
+      "emitting_span_provenance_why": "The locator resolved this row on the `id_literal_site` rung at pin level `check` — it pins the CHECK ID, not the row — and the 2 site(s) it names ([711090, 711556]; [712511, 712909]) are the emitting sites of NAMED SIBLINGS (ClientCustomHeaderNoMirrorNumber / ...NoMirrorUnannotated), which share this row's id `sep-2243-client-mirrors-designated-params`. Using a span the locator itself declines to pin to the row would address another check's bytes. The span used is the templated `this.checks.push({id:c,name:`ClientCustomHeader_${t}`...})` that actually emits this row, located by unique-substring search in the same build.",
+      "check_id_found_in": "context:check_param_header_body",
+      "check_id_binding": "`c=s?`sep-2243-client-base64-unsafe`:r===`number`||r===`integer`||r===`boolean`?`sep-2243-client-encode-values`:`sep-2243-client-mirrors-designated-params`` — the id is COMPUTED from the value and the declared type, so it is not a literal at the emitting site. This row's id is `sep-2243-client-mirrors-designated-params`.",
+      "context_excerpts": [
+        {"label": "check_param_header_body", "byte_span": [713525, 714077], "why": "binds `a` (the header), `o` (the error list the predicate reads) and `c` (this row's own check id); holds BOTH sites that push into `o`"},
+        {"label": "call_site", "byte_span": [710566, 710617], "why": "the ONE call that emits this row: it names the annotation `Region`, the argument `i.region` and the declared type `string`. Without it the 14 ClientCustomHeader_* rows share one evaluator and nothing in the decomposition distinguishes them."},
+        {"label": "value_comparison", "byte_span": [704700, 705166], "why": "`Ka(e,t,n)` — the comparison whose truthy return is the error `o` collects; the value axis is a verdict about THIS function's contract"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "expr": "a===void 0",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `if(a===void 0)o.push(`Missing Mcp-Param-${t} header. ...`)` — the TRUE arm pushes an error, and the status is `o.length===0?`SUCCESS`:`FAILURE``, so TRUE is the failure",
+          "requires": "a request carrying i.region MUST carry an Mcp-Param-Region header"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "expr": "Ka(a,e,r)",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `let t=Ka(a,e,r);t&&o.push(t)` — `Ka` returns an error STRING or null, so a truthy return is the failing arm",
+          "requires": "the Mcp-Param-Region header must carry \"us-west1\" under the spec's encoding rules — plain, because `Ga` calls this value header-safe"
+        }
+      ],
+      "conjunct_grouping": {
+        "predicate": "o.length===0",
+        "conjuncts": ["a===void 0", "let t=Ka(a,e,r);t&&o.push(t)"],
+        "grouped_as": 2,
+        "why": "`o` is an error list and the predicate is that it is EMPTY, so the check passes iff neither push happened. The two pushes are the two conjuncts, and they are the two axes."
+      },
+      "preconditions": [
+        {
+          "guard": "if(n==null)return;",
+          "kind": "argument_present",
+          "on_failure": "check_not_emitted",
+          "reads": "the argument value passed to checkParamHeader"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS",
+      "shared_evaluator": "All 14 ClientCustomHeader_* rows are emitted by ONE call, `checkParamHeader`, and so share one predicate and one pair of axes. The three ids they carry (mirrors-designated-params / encode-values / base64-unsafe) are selected by the VALUE and the declared type, not by a different test — which is why the axis SET is identical across them and the `call_site` excerpt is what distinguishes the rows."
+    },
+    {
+      "key": ["client", "http-custom-headers", "sep-2243-client-encode-values", "ClientCustomHeader_Priority", "Client sends correct Mcp-Param-Priority header (integer value)", ""],
+      "emitting_byte_span": [714077, 714434],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:check_param_header_body",
+      "check_id_binding": "`c=s?`sep-2243-client-base64-unsafe`:r===`number`||r===`integer`||r===`boolean`?`sep-2243-client-encode-values`:`sep-2243-client-mirrors-designated-params`` — the id is COMPUTED from the value and the declared type, so it is not a literal at the emitting site. This row's id is `sep-2243-client-encode-values`.",
+      "context_excerpts": [
+        {"label": "check_param_header_body", "byte_span": [713525, 714077], "why": "binds `a` (the header), `o` (the error list the predicate reads) and `c` (this row's own check id); holds BOTH sites that push into `o`"},
+        {"label": "call_site", "byte_span": [710618, 710674], "why": "the ONE call that emits this row: it names the annotation `Priority`, the argument `i.priority` and the declared type `integer`. Without it the 14 ClientCustomHeader_* rows share one evaluator and nothing in the decomposition distinguishes them."},
+        {"label": "value_comparison", "byte_span": [704700, 705166], "why": "`Ka(e,t,n)` — the comparison whose truthy return is the error `o` collects; the value axis is a verdict about THIS function's contract"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "expr": "a===void 0",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `if(a===void 0)o.push(`Missing Mcp-Param-${t} header. ...`)` — the TRUE arm pushes an error, and the status is `o.length===0?`SUCCESS`:`FAILURE``, so TRUE is the failure",
+          "requires": "a request carrying i.priority MUST carry an Mcp-Param-Priority header"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "expr": "Ka(a,e,r)",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `let t=Ka(a,e,r);t&&o.push(t)` — `Ka` returns an error STRING or null, so a truthy return is the failing arm",
+          "requires": "the Mcp-Param-Priority header must carry 42 under the spec's encoding rules — plain, because `Ga` calls this value header-safe"
+        }
+      ],
+      "conjunct_grouping": {
+        "predicate": "o.length===0",
+        "conjuncts": ["a===void 0", "let t=Ka(a,e,r);t&&o.push(t)"],
+        "grouped_as": 2,
+        "why": "`o` is an error list and the predicate is that it is EMPTY, so the check passes iff neither push happened. The two pushes are the two conjuncts, and they are the two axes."
+      },
+      "preconditions": [
+        {
+          "guard": "if(n==null)return;",
+          "kind": "argument_present",
+          "on_failure": "check_not_emitted",
+          "reads": "the argument value passed to checkParamHeader"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS",
+      "shared_evaluator": "All 14 ClientCustomHeader_* rows are emitted by ONE call, `checkParamHeader`, and so share one predicate and one pair of axes. The three ids they carry (mirrors-designated-params / encode-values / base64-unsafe) are selected by the VALUE and the declared type, not by a different test — which is why the axis SET is identical across them and the `call_site` excerpt is what distinguishes the rows."
+    },
+    {
+      "key": ["client", "http-custom-headers", "sep-2243-client-encode-values", "ClientCustomHeader_Verbose", "Client sends correct Mcp-Param-Verbose header (boolean value)", ""],
+      "emitting_byte_span": [714077, 714434],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:check_param_header_body",
+      "check_id_binding": "`c=s?`sep-2243-client-base64-unsafe`:r===`number`||r===`integer`||r===`boolean`?`sep-2243-client-encode-values`:`sep-2243-client-mirrors-designated-params`` — the id is COMPUTED from the value and the declared type, so it is not a literal at the emitting site. This row's id is `sep-2243-client-encode-values`.",
+      "context_excerpts": [
+        {"label": "check_param_header_body", "byte_span": [713525, 714077], "why": "binds `a` (the header), `o` (the error list the predicate reads) and `c` (this row's own check id); holds BOTH sites that push into `o`"},
+        {"label": "call_site", "byte_span": [710675, 710767], "why": "the ONE call that emits this row: it names the annotation `Verbose`, the argument `i.verbose` and the declared type `boolean`. Without it the 14 ClientCustomHeader_* rows share one evaluator and nothing in the decomposition distinguishes them."},
+        {"label": "value_comparison", "byte_span": [704700, 705166], "why": "`Ka(e,t,n)` — the comparison whose truthy return is the error `o` collects; the value axis is a verdict about THIS function's contract"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "expr": "a===void 0",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `if(a===void 0)o.push(`Missing Mcp-Param-${t} header. ...`)` — the TRUE arm pushes an error, and the status is `o.length===0?`SUCCESS`:`FAILURE``, so TRUE is the failure",
+          "requires": "a request carrying i.verbose MUST carry an Mcp-Param-Verbose header"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "expr": "Ka(a,e,r)",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `let t=Ka(a,e,r);t&&o.push(t)` — `Ka` returns an error STRING or null, so a truthy return is the failing arm",
+          "requires": "the Mcp-Param-Verbose header must carry false under the spec's encoding rules — plain, because `Ga` calls this value header-safe"
+        }
+      ],
+      "conjunct_grouping": {
+        "predicate": "o.length===0",
+        "conjuncts": ["a===void 0", "let t=Ka(a,e,r);t&&o.push(t)"],
+        "grouped_as": 2,
+        "why": "`o` is an error list and the predicate is that it is EMPTY, so the check passes iff neither push happened. The two pushes are the two conjuncts, and they are the two axes."
+      },
+      "preconditions": [
+        {
+          "guard": "if(n==null)return;",
+          "kind": "argument_present",
+          "on_failure": "check_not_emitted",
+          "reads": "the argument value passed to checkParamHeader"
+        },
+        {
+          "guard": "i.verbose!==void 0&&i.verbose!==null&&",
+          "kind": "argument_present_at_the_call_site",
+          "on_failure": "check_not_emitted",
+          "reads": "i.verbose"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS",
+      "shared_evaluator": "All 14 ClientCustomHeader_* rows are emitted by ONE call, `checkParamHeader`, and so share one predicate and one pair of axes. The three ids they carry (mirrors-designated-params / encode-values / base64-unsafe) are selected by the VALUE and the declared type, not by a different test — which is why the axis SET is identical across them and the `call_site` excerpt is what distinguishes the rows."
+    },
+    {
+      "key": ["client", "http-custom-headers", "sep-2243-client-encode-values", "ClientCustomHeader_Debug", "Client sends correct Mcp-Param-Debug header (boolean value)", ""],
+      "emitting_byte_span": [714077, 714434],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:check_param_header_body",
+      "check_id_binding": "`c=s?`sep-2243-client-base64-unsafe`:r===`number`||r===`integer`||r===`boolean`?`sep-2243-client-encode-values`:`sep-2243-client-mirrors-designated-params`` — the id is COMPUTED from the value and the declared type, so it is not a literal at the emitting site. This row's id is `sep-2243-client-encode-values`.",
+      "context_excerpts": [
+        {"label": "check_param_header_body", "byte_span": [713525, 714077], "why": "binds `a` (the header), `o` (the error list the predicate reads) and `c` (this row's own check id); holds BOTH sites that push into `o`"},
+        {"label": "call_site", "byte_span": [710768, 710852], "why": "the ONE call that emits this row: it names the annotation `Debug`, the argument `i.debug` and the declared type `boolean`. Without it the 14 ClientCustomHeader_* rows share one evaluator and nothing in the decomposition distinguishes them."},
+        {"label": "value_comparison", "byte_span": [704700, 705166], "why": "`Ka(e,t,n)` — the comparison whose truthy return is the error `o` collects; the value axis is a verdict about THIS function's contract"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "expr": "a===void 0",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `if(a===void 0)o.push(`Missing Mcp-Param-${t} header. ...`)` — the TRUE arm pushes an error, and the status is `o.length===0?`SUCCESS`:`FAILURE``, so TRUE is the failure",
+          "requires": "a request carrying i.debug MUST carry an Mcp-Param-Debug header"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "expr": "Ka(a,e,r)",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `let t=Ka(a,e,r);t&&o.push(t)` — `Ka` returns an error STRING or null, so a truthy return is the failing arm",
+          "requires": "the Mcp-Param-Debug header must carry true under the spec's encoding rules — plain, because `Ga` calls this value header-safe"
+        }
+      ],
+      "conjunct_grouping": {
+        "predicate": "o.length===0",
+        "conjuncts": ["a===void 0", "let t=Ka(a,e,r);t&&o.push(t)"],
+        "grouped_as": 2,
+        "why": "`o` is an error list and the predicate is that it is EMPTY, so the check passes iff neither push happened. The two pushes are the two conjuncts, and they are the two axes."
+      },
+      "preconditions": [
+        {
+          "guard": "if(n==null)return;",
+          "kind": "argument_present",
+          "on_failure": "check_not_emitted",
+          "reads": "the argument value passed to checkParamHeader"
+        },
+        {
+          "guard": "i.debug!==void 0&&i.debug!==null&&",
+          "kind": "argument_present_at_the_call_site",
+          "on_failure": "check_not_emitted",
+          "reads": "i.debug"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS",
+      "shared_evaluator": "All 14 ClientCustomHeader_* rows are emitted by ONE call, `checkParamHeader`, and so share one predicate and one pair of axes. The three ids they carry (mirrors-designated-params / encode-values / base64-unsafe) are selected by the VALUE and the declared type, not by a different test — which is why the axis SET is identical across them and the `call_site` excerpt is what distinguishes the rows."
+    },
+    {
+      "key": ["client", "http-custom-headers", "sep-2243-client-mirrors-designated-params", "ClientCustomHeader_EmptyVal", "Client sends correct Mcp-Param-EmptyVal header (string value)", ""],
+      "emitting_byte_span": [714077, 714434],
+      "emitting_span_provenance": "locator_row_rejected",
+      "emitting_span_provenance_why": "The locator resolved this row on the `id_literal_site` rung at pin level `check` — it pins the CHECK ID, not the row — and the 2 site(s) it names ([711090, 711556]; [712511, 712909]) are the emitting sites of NAMED SIBLINGS (ClientCustomHeaderNoMirrorNumber / ...NoMirrorUnannotated), which share this row's id `sep-2243-client-mirrors-designated-params`. Using a span the locator itself declines to pin to the row would address another check's bytes. The span used is the templated `this.checks.push({id:c,name:`ClientCustomHeader_${t}`...})` that actually emits this row, located by unique-substring search in the same build.",
+      "check_id_found_in": "context:check_param_header_body",
+      "check_id_binding": "`c=s?`sep-2243-client-base64-unsafe`:r===`number`||r===`integer`||r===`boolean`?`sep-2243-client-encode-values`:`sep-2243-client-mirrors-designated-params`` — the id is COMPUTED from the value and the declared type, so it is not a literal at the emitting site. This row's id is `sep-2243-client-mirrors-designated-params`.",
+      "context_excerpts": [
+        {"label": "check_param_header_body", "byte_span": [713525, 714077], "why": "binds `a` (the header), `o` (the error list the predicate reads) and `c` (this row's own check id); holds BOTH sites that push into `o`"},
+        {"label": "call_site", "byte_span": [710853, 710951], "why": "the ONE call that emits this row: it names the annotation `EmptyVal`, the argument `i.empty_val` and the declared type `string`. Without it the 14 ClientCustomHeader_* rows share one evaluator and nothing in the decomposition distinguishes them."},
+        {"label": "value_comparison", "byte_span": [704700, 705166], "why": "`Ka(e,t,n)` — the comparison whose truthy return is the error `o` collects; the value axis is a verdict about THIS function's contract"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "expr": "a===void 0",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `if(a===void 0)o.push(`Missing Mcp-Param-${t} header. ...`)` — the TRUE arm pushes an error, and the status is `o.length===0?`SUCCESS`:`FAILURE``, so TRUE is the failure",
+          "requires": "a request carrying i.empty_val MUST carry an Mcp-Param-EmptyVal header"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "expr": "Ka(a,e,r)",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `let t=Ka(a,e,r);t&&o.push(t)` — `Ka` returns an error STRING or null, so a truthy return is the failing arm",
+          "requires": "the Mcp-Param-EmptyVal header must carry \"\" under the spec's encoding rules — plain, because `Ga` calls this value header-safe"
+        }
+      ],
+      "conjunct_grouping": {
+        "predicate": "o.length===0",
+        "conjuncts": ["a===void 0", "let t=Ka(a,e,r);t&&o.push(t)"],
+        "grouped_as": 2,
+        "why": "`o` is an error list and the predicate is that it is EMPTY, so the check passes iff neither push happened. The two pushes are the two conjuncts, and they are the two axes."
+      },
+      "preconditions": [
+        {
+          "guard": "if(n==null)return;",
+          "kind": "argument_present",
+          "on_failure": "check_not_emitted",
+          "reads": "the argument value passed to checkParamHeader"
+        },
+        {
+          "guard": "i.empty_val!==void 0&&i.empty_val!==null&&",
+          "kind": "argument_present_at_the_call_site",
+          "on_failure": "check_not_emitted",
+          "reads": "i.empty_val"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS",
+      "shared_evaluator": "All 14 ClientCustomHeader_* rows are emitted by ONE call, `checkParamHeader`, and so share one predicate and one pair of axes. The three ids they carry (mirrors-designated-params / encode-values / base64-unsafe) are selected by the VALUE and the declared type, not by a different test — which is why the axis SET is identical across them and the `call_site` excerpt is what distinguishes the rows."
+    },
+    {
+      "key": ["client", "http-custom-headers", "sep-2243-client-mirrors-designated-params", "ClientCustomHeader_Method", "Client sends correct Mcp-Param-Method header (string value)", ""],
+      "emitting_byte_span": [714077, 714434],
+      "emitting_span_provenance": "locator_row_rejected",
+      "emitting_span_provenance_why": "The locator resolved this row on the `id_literal_site` rung at pin level `check` — it pins the CHECK ID, not the row — and the 2 site(s) it names ([711090, 711556]; [712511, 712909]) are the emitting sites of NAMED SIBLINGS (ClientCustomHeaderNoMirrorNumber / ...NoMirrorUnannotated), which share this row's id `sep-2243-client-mirrors-designated-params`. Using a span the locator itself declines to pin to the row would address another check's bytes. The span used is the templated `this.checks.push({id:c,name:`ClientCustomHeader_${t}`...})` that actually emits this row, located by unique-substring search in the same build.",
+      "check_id_found_in": "context:check_param_header_body",
+      "check_id_binding": "`c=s?`sep-2243-client-base64-unsafe`:r===`number`||r===`integer`||r===`boolean`?`sep-2243-client-encode-values`:`sep-2243-client-mirrors-designated-params`` — the id is COMPUTED from the value and the declared type, so it is not a literal at the emitting site. This row's id is `sep-2243-client-mirrors-designated-params`.",
+      "context_excerpts": [
+        {"label": "check_param_header_body", "byte_span": [713525, 714077], "why": "binds `a` (the header), `o` (the error list the predicate reads) and `c` (this row's own check id); holds BOTH sites that push into `o`"},
+        {"label": "call_site", "byte_span": [710952, 711051], "why": "the ONE call that emits this row: it names the annotation `Method`, the argument `i.method_val` and the declared type `string`. Without it the 14 ClientCustomHeader_* rows share one evaluator and nothing in the decomposition distinguishes them."},
+        {"label": "value_comparison", "byte_span": [704700, 705166], "why": "`Ka(e,t,n)` — the comparison whose truthy return is the error `o` collects; the value axis is a verdict about THIS function's contract"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "expr": "a===void 0",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `if(a===void 0)o.push(`Missing Mcp-Param-${t} header. ...`)` — the TRUE arm pushes an error, and the status is `o.length===0?`SUCCESS`:`FAILURE``, so TRUE is the failure",
+          "requires": "a request carrying i.method_val MUST carry an Mcp-Param-Method header"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "expr": "Ka(a,e,r)",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `let t=Ka(a,e,r);t&&o.push(t)` — `Ka` returns an error STRING or null, so a truthy return is the failing arm",
+          "requires": "the Mcp-Param-Method header must carry \"test-method\" under the spec's encoding rules — plain, because `Ga` calls this value header-safe"
+        }
+      ],
+      "conjunct_grouping": {
+        "predicate": "o.length===0",
+        "conjuncts": ["a===void 0", "let t=Ka(a,e,r);t&&o.push(t)"],
+        "grouped_as": 2,
+        "why": "`o` is an error list and the predicate is that it is EMPTY, so the check passes iff neither push happened. The two pushes are the two conjuncts, and they are the two axes."
+      },
+      "preconditions": [
+        {
+          "guard": "if(n==null)return;",
+          "kind": "argument_present",
+          "on_failure": "check_not_emitted",
+          "reads": "the argument value passed to checkParamHeader"
+        },
+        {
+          "guard": "i.method_val!==void 0&&i.method_val!==null&&",
+          "kind": "argument_present_at_the_call_site",
+          "on_failure": "check_not_emitted",
+          "reads": "i.method_val"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS",
+      "shared_evaluator": "All 14 ClientCustomHeader_* rows are emitted by ONE call, `checkParamHeader`, and so share one predicate and one pair of axes. The three ids they carry (mirrors-designated-params / encode-values / base64-unsafe) are selected by the VALUE and the declared type, not by a different test — which is why the axis SET is identical across them and the `call_site` excerpt is what distinguishes the rows."
+    },
+    {
+      "key": ["client", "http-custom-headers", "sep-2243-client-base64-unsafe", "ClientCustomHeader_NonAscii", "Client sends correct Mcp-Param-NonAscii header (string value)", ""],
+      "emitting_byte_span": [714077, 714434],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:check_param_header_body",
+      "check_id_binding": "`c=s?`sep-2243-client-base64-unsafe`:r===`number`||r===`integer`||r===`boolean`?`sep-2243-client-encode-values`:`sep-2243-client-mirrors-designated-params`` — the id is COMPUTED from the value and the declared type, so it is not a literal at the emitting site. This row's id is `sep-2243-client-base64-unsafe`.",
+      "context_excerpts": [
+        {"label": "check_param_header_body", "byte_span": [713525, 714077], "why": "binds `a` (the header), `o` (the error list the predicate reads) and `c` (this row's own check id); holds BOTH sites that push into `o`"},
+        {"label": "call_site", "byte_span": [711557, 711667], "why": "the ONE call that emits this row: it names the annotation `NonAscii`, the argument `i.non_ascii_val` and the declared type `string`. Without it the 14 ClientCustomHeader_* rows share one evaluator and nothing in the decomposition distinguishes them."},
+        {"label": "value_comparison", "byte_span": [704700, 705166], "why": "`Ka(e,t,n)` — the comparison whose truthy return is the error `o` collects; the value axis is a verdict about THIS function's contract"},
+        {"label": "unsafe_value_predicate", "byte_span": [704567, 704700], "why": "`Ga(e)` — the predicate that decides whether a value must be Base64-encoded; it is what selects this row's id and what `Ka` branches on"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "expr": "a===void 0",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `if(a===void 0)o.push(`Missing Mcp-Param-${t} header. ...`)` — the TRUE arm pushes an error, and the status is `o.length===0?`SUCCESS`:`FAILURE``, so TRUE is the failure",
+          "requires": "a request carrying i.non_ascii_val MUST carry an Mcp-Param-NonAscii header"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "expr": "Ka(a,e,r)",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `let t=Ka(a,e,r);t&&o.push(t)` — `Ka` returns an error STRING or null, so a truthy return is the failing arm",
+          "requires": "the Mcp-Param-NonAscii header must carry \"Hello, 世界\" under the spec's encoding rules — Base64 sentinel, because `Ga` calls this value unsafe"
+        }
+      ],
+      "conjunct_grouping": {
+        "predicate": "o.length===0",
+        "conjuncts": ["a===void 0", "let t=Ka(a,e,r);t&&o.push(t)"],
+        "grouped_as": 2,
+        "why": "`o` is an error list and the predicate is that it is EMPTY, so the check passes iff neither push happened. The two pushes are the two conjuncts, and they are the two axes."
+      },
+      "preconditions": [
+        {
+          "guard": "if(n==null)return;",
+          "kind": "argument_present",
+          "on_failure": "check_not_emitted",
+          "reads": "the argument value passed to checkParamHeader"
+        },
+        {
+          "guard": "i.non_ascii_val!==void 0&&i.non_ascii_val!==null&&",
+          "kind": "argument_present_at_the_call_site",
+          "on_failure": "check_not_emitted",
+          "reads": "i.non_ascii_val"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS",
+      "shared_evaluator": "All 14 ClientCustomHeader_* rows are emitted by ONE call, `checkParamHeader`, and so share one predicate and one pair of axes. The three ids they carry (mirrors-designated-params / encode-values / base64-unsafe) are selected by the VALUE and the declared type, not by a different test — which is why the axis SET is identical across them and the `call_site` excerpt is what distinguishes the rows."
+    },
+    {
+      "key": ["client", "http-custom-headers", "sep-2243-client-base64-unsafe", "ClientCustomHeader_Whitespace", "Client sends correct Mcp-Param-Whitespace header (string value)", ""],
+      "emitting_byte_span": [714077, 714434],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:check_param_header_body",
+      "check_id_binding": "`c=s?`sep-2243-client-base64-unsafe`:r===`number`||r===`integer`||r===`boolean`?`sep-2243-client-encode-values`:`sep-2243-client-mirrors-designated-params`` — the id is COMPUTED from the value and the declared type, so it is not a literal at the emitting site. This row's id is `sep-2243-client-base64-unsafe`.",
+      "context_excerpts": [
+        {"label": "check_param_header_body", "byte_span": [713525, 714077], "why": "binds `a` (the header), `o` (the error list the predicate reads) and `c` (this row's own check id); holds BOTH sites that push into `o`"},
+        {"label": "call_site", "byte_span": [711668, 711783], "why": "the ONE call that emits this row: it names the annotation `Whitespace`, the argument `i.whitespace_val` and the declared type `string`. Without it the 14 ClientCustomHeader_* rows share one evaluator and nothing in the decomposition distinguishes them."},
+        {"label": "value_comparison", "byte_span": [704700, 705166], "why": "`Ka(e,t,n)` — the comparison whose truthy return is the error `o` collects; the value axis is a verdict about THIS function's contract"},
+        {"label": "unsafe_value_predicate", "byte_span": [704567, 704700], "why": "`Ga(e)` — the predicate that decides whether a value must be Base64-encoded; it is what selects this row's id and what `Ka` branches on"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "expr": "a===void 0",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `if(a===void 0)o.push(`Missing Mcp-Param-${t} header. ...`)` — the TRUE arm pushes an error, and the status is `o.length===0?`SUCCESS`:`FAILURE``, so TRUE is the failure",
+          "requires": "a request carrying i.whitespace_val MUST carry an Mcp-Param-Whitespace header"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "expr": "Ka(a,e,r)",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `let t=Ka(a,e,r);t&&o.push(t)` — `Ka` returns an error STRING or null, so a truthy return is the failing arm",
+          "requires": "the Mcp-Param-Whitespace header must carry \" padded \" under the spec's encoding rules — Base64 sentinel, because `Ga` calls this value unsafe"
+        }
+      ],
+      "conjunct_grouping": {
+        "predicate": "o.length===0",
+        "conjuncts": ["a===void 0", "let t=Ka(a,e,r);t&&o.push(t)"],
+        "grouped_as": 2,
+        "why": "`o` is an error list and the predicate is that it is EMPTY, so the check passes iff neither push happened. The two pushes are the two conjuncts, and they are the two axes."
+      },
+      "preconditions": [
+        {
+          "guard": "if(n==null)return;",
+          "kind": "argument_present",
+          "on_failure": "check_not_emitted",
+          "reads": "the argument value passed to checkParamHeader"
+        },
+        {
+          "guard": "i.whitespace_val!==void 0&&i.whitespace_val!==null&&",
+          "kind": "argument_present_at_the_call_site",
+          "on_failure": "check_not_emitted",
+          "reads": "i.whitespace_val"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS",
+      "shared_evaluator": "All 14 ClientCustomHeader_* rows are emitted by ONE call, `checkParamHeader`, and so share one predicate and one pair of axes. The three ids they carry (mirrors-designated-params / encode-values / base64-unsafe) are selected by the VALUE and the declared type, not by a different test — which is why the axis SET is identical across them and the `call_site` excerpt is what distinguishes the rows."
+    },
+    {
+      "key": ["client", "http-custom-headers", "sep-2243-client-base64-unsafe", "ClientCustomHeader_LeadingSpace", "Client sends correct Mcp-Param-LeadingSpace header (string value)", ""],
+      "emitting_byte_span": [714077, 714434],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:check_param_header_body",
+      "check_id_binding": "`c=s?`sep-2243-client-base64-unsafe`:r===`number`||r===`integer`||r===`boolean`?`sep-2243-client-encode-values`:`sep-2243-client-mirrors-designated-params`` — the id is COMPUTED from the value and the declared type, so it is not a literal at the emitting site. This row's id is `sep-2243-client-base64-unsafe`.",
+      "context_excerpts": [
+        {"label": "check_param_header_body", "byte_span": [713525, 714077], "why": "binds `a` (the header), `o` (the error list the predicate reads) and `c` (this row's own check id); holds BOTH sites that push into `o`"},
+        {"label": "call_site", "byte_span": [711784, 711910], "why": "the ONE call that emits this row: it names the annotation `LeadingSpace`, the argument `i.leading_space_val` and the declared type `string`. Without it the 14 ClientCustomHeader_* rows share one evaluator and nothing in the decomposition distinguishes them."},
+        {"label": "value_comparison", "byte_span": [704700, 705166], "why": "`Ka(e,t,n)` — the comparison whose truthy return is the error `o` collects; the value axis is a verdict about THIS function's contract"},
+        {"label": "unsafe_value_predicate", "byte_span": [704567, 704700], "why": "`Ga(e)` — the predicate that decides whether a value must be Base64-encoded; it is what selects this row's id and what `Ka` branches on"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "expr": "a===void 0",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `if(a===void 0)o.push(`Missing Mcp-Param-${t} header. ...`)` — the TRUE arm pushes an error, and the status is `o.length===0?`SUCCESS`:`FAILURE``, so TRUE is the failure",
+          "requires": "a request carrying i.leading_space_val MUST carry an Mcp-Param-LeadingSpace header"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "expr": "Ka(a,e,r)",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `let t=Ka(a,e,r);t&&o.push(t)` — `Ka` returns an error STRING or null, so a truthy return is the failing arm",
+          "requires": "the Mcp-Param-LeadingSpace header must carry \" us-west1\" under the spec's encoding rules — Base64 sentinel, because `Ga` calls this value unsafe"
+        }
+      ],
+      "conjunct_grouping": {
+        "predicate": "o.length===0",
+        "conjuncts": ["a===void 0", "let t=Ka(a,e,r);t&&o.push(t)"],
+        "grouped_as": 2,
+        "why": "`o` is an error list and the predicate is that it is EMPTY, so the check passes iff neither push happened. The two pushes are the two conjuncts, and they are the two axes."
+      },
+      "preconditions": [
+        {
+          "guard": "if(n==null)return;",
+          "kind": "argument_present",
+          "on_failure": "check_not_emitted",
+          "reads": "the argument value passed to checkParamHeader"
+        },
+        {
+          "guard": "i.leading_space_val!==void 0&&i.leading_space_val!==null&&",
+          "kind": "argument_present_at_the_call_site",
+          "on_failure": "check_not_emitted",
+          "reads": "i.leading_space_val"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS",
+      "shared_evaluator": "All 14 ClientCustomHeader_* rows are emitted by ONE call, `checkParamHeader`, and so share one predicate and one pair of axes. The three ids they carry (mirrors-designated-params / encode-values / base64-unsafe) are selected by the VALUE and the declared type, not by a different test — which is why the axis SET is identical across them and the `call_site` excerpt is what distinguishes the rows."
+    },
+    {
+      "key": ["client", "http-custom-headers", "sep-2243-client-base64-unsafe", "ClientCustomHeader_TrailingSpace", "Client sends correct Mcp-Param-TrailingSpace header (string value)", ""],
+      "emitting_byte_span": [714077, 714434],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:check_param_header_body",
+      "check_id_binding": "`c=s?`sep-2243-client-base64-unsafe`:r===`number`||r===`integer`||r===`boolean`?`sep-2243-client-encode-values`:`sep-2243-client-mirrors-designated-params`` — the id is COMPUTED from the value and the declared type, so it is not a literal at the emitting site. This row's id is `sep-2243-client-base64-unsafe`.",
+      "context_excerpts": [
+        {"label": "check_param_header_body", "byte_span": [713525, 714077], "why": "binds `a` (the header), `o` (the error list the predicate reads) and `c` (this row's own check id); holds BOTH sites that push into `o`"},
+        {"label": "call_site", "byte_span": [711911, 712041], "why": "the ONE call that emits this row: it names the annotation `TrailingSpace`, the argument `i.trailing_space_val` and the declared type `string`. Without it the 14 ClientCustomHeader_* rows share one evaluator and nothing in the decomposition distinguishes them."},
+        {"label": "value_comparison", "byte_span": [704700, 705166], "why": "`Ka(e,t,n)` — the comparison whose truthy return is the error `o` collects; the value axis is a verdict about THIS function's contract"},
+        {"label": "unsafe_value_predicate", "byte_span": [704567, 704700], "why": "`Ga(e)` — the predicate that decides whether a value must be Base64-encoded; it is what selects this row's id and what `Ka` branches on"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "expr": "a===void 0",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `if(a===void 0)o.push(`Missing Mcp-Param-${t} header. ...`)` — the TRUE arm pushes an error, and the status is `o.length===0?`SUCCESS`:`FAILURE``, so TRUE is the failure",
+          "requires": "a request carrying i.trailing_space_val MUST carry an Mcp-Param-TrailingSpace header"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "expr": "Ka(a,e,r)",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `let t=Ka(a,e,r);t&&o.push(t)` — `Ka` returns an error STRING or null, so a truthy return is the failing arm",
+          "requires": "the Mcp-Param-TrailingSpace header must carry \"us-west1 \" under the spec's encoding rules — Base64 sentinel, because `Ga` calls this value unsafe"
+        }
+      ],
+      "conjunct_grouping": {
+        "predicate": "o.length===0",
+        "conjuncts": ["a===void 0", "let t=Ka(a,e,r);t&&o.push(t)"],
+        "grouped_as": 2,
+        "why": "`o` is an error list and the predicate is that it is EMPTY, so the check passes iff neither push happened. The two pushes are the two conjuncts, and they are the two axes."
+      },
+      "preconditions": [
+        {
+          "guard": "if(n==null)return;",
+          "kind": "argument_present",
+          "on_failure": "check_not_emitted",
+          "reads": "the argument value passed to checkParamHeader"
+        },
+        {
+          "guard": "i.trailing_space_val!==void 0&&i.trailing_space_val!==null&&",
+          "kind": "argument_present_at_the_call_site",
+          "on_failure": "check_not_emitted",
+          "reads": "i.trailing_space_val"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS",
+      "shared_evaluator": "All 14 ClientCustomHeader_* rows are emitted by ONE call, `checkParamHeader`, and so share one predicate and one pair of axes. The three ids they carry (mirrors-designated-params / encode-values / base64-unsafe) are selected by the VALUE and the declared type, not by a different test — which is why the axis SET is identical across them and the `call_site` excerpt is what distinguishes the rows."
+    },
+    {
+      "key": ["client", "http-custom-headers", "sep-2243-client-mirrors-designated-params", "ClientCustomHeader_InternalSpace", "Client sends correct Mcp-Param-InternalSpace header (string value)", ""],
+      "emitting_byte_span": [714077, 714434],
+      "emitting_span_provenance": "locator_row_rejected",
+      "emitting_span_provenance_why": "The locator resolved this row on the `id_literal_site` rung at pin level `check` — it pins the CHECK ID, not the row — and the 2 site(s) it names ([711090, 711556]; [712511, 712909]) are the emitting sites of NAMED SIBLINGS (ClientCustomHeaderNoMirrorNumber / ...NoMirrorUnannotated), which share this row's id `sep-2243-client-mirrors-designated-params`. Using a span the locator itself declines to pin to the row would address another check's bytes. The span used is the templated `this.checks.push({id:c,name:`ClientCustomHeader_${t}`...})` that actually emits this row, located by unique-substring search in the same build.",
+      "check_id_found_in": "context:check_param_header_body",
+      "check_id_binding": "`c=s?`sep-2243-client-base64-unsafe`:r===`number`||r===`integer`||r===`boolean`?`sep-2243-client-encode-values`:`sep-2243-client-mirrors-designated-params`` — the id is COMPUTED from the value and the declared type, so it is not a literal at the emitting site. This row's id is `sep-2243-client-mirrors-designated-params`.",
+      "context_excerpts": [
+        {"label": "check_param_header_body", "byte_span": [713525, 714077], "why": "binds `a` (the header), `o` (the error list the predicate reads) and `c` (this row's own check id); holds BOTH sites that push into `o`"},
+        {"label": "call_site", "byte_span": [712042, 712172], "why": "the ONE call that emits this row: it names the annotation `InternalSpace`, the argument `i.internal_space_val` and the declared type `string`. Without it the 14 ClientCustomHeader_* rows share one evaluator and nothing in the decomposition distinguishes them."},
+        {"label": "value_comparison", "byte_span": [704700, 705166], "why": "`Ka(e,t,n)` — the comparison whose truthy return is the error `o` collects; the value axis is a verdict about THIS function's contract"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "expr": "a===void 0",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `if(a===void 0)o.push(`Missing Mcp-Param-${t} header. ...`)` — the TRUE arm pushes an error, and the status is `o.length===0?`SUCCESS`:`FAILURE``, so TRUE is the failure",
+          "requires": "a request carrying i.internal_space_val MUST carry an Mcp-Param-InternalSpace header"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "expr": "Ka(a,e,r)",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `let t=Ka(a,e,r);t&&o.push(t)` — `Ka` returns an error STRING or null, so a truthy return is the failing arm",
+          "requires": "the Mcp-Param-InternalSpace header must carry \"us west 1\" under the spec's encoding rules — plain, because `Ga` calls this value header-safe"
+        }
+      ],
+      "conjunct_grouping": {
+        "predicate": "o.length===0",
+        "conjuncts": ["a===void 0", "let t=Ka(a,e,r);t&&o.push(t)"],
+        "grouped_as": 2,
+        "why": "`o` is an error list and the predicate is that it is EMPTY, so the check passes iff neither push happened. The two pushes are the two conjuncts, and they are the two axes."
+      },
+      "preconditions": [
+        {
+          "guard": "if(n==null)return;",
+          "kind": "argument_present",
+          "on_failure": "check_not_emitted",
+          "reads": "the argument value passed to checkParamHeader"
+        },
+        {
+          "guard": "i.internal_space_val!==void 0&&i.internal_space_val!==null&&",
+          "kind": "argument_present_at_the_call_site",
+          "on_failure": "check_not_emitted",
+          "reads": "i.internal_space_val"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS",
+      "shared_evaluator": "All 14 ClientCustomHeader_* rows are emitted by ONE call, `checkParamHeader`, and so share one predicate and one pair of axes. The three ids they carry (mirrors-designated-params / encode-values / base64-unsafe) are selected by the VALUE and the declared type, not by a different test — which is why the axis SET is identical across them and the `call_site` excerpt is what distinguishes the rows."
+    },
+    {
+      "key": ["client", "http-custom-headers", "sep-2243-client-base64-unsafe", "ClientCustomHeader_ControlChar", "Client sends correct Mcp-Param-ControlChar header (string value)", ""],
+      "emitting_byte_span": [714077, 714434],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:check_param_header_body",
+      "check_id_binding": "`c=s?`sep-2243-client-base64-unsafe`:r===`number`||r===`integer`||r===`boolean`?`sep-2243-client-encode-values`:`sep-2243-client-mirrors-designated-params`` — the id is COMPUTED from the value and the declared type, so it is not a literal at the emitting site. This row's id is `sep-2243-client-base64-unsafe`.",
+      "context_excerpts": [
+        {"label": "check_param_header_body", "byte_span": [713525, 714077], "why": "binds `a` (the header), `o` (the error list the predicate reads) and `c` (this row's own check id); holds BOTH sites that push into `o`"},
+        {"label": "call_site", "byte_span": [712173, 712295], "why": "the ONE call that emits this row: it names the annotation `ControlChar`, the argument `i.control_char_val` and the declared type `string`. Without it the 14 ClientCustomHeader_* rows share one evaluator and nothing in the decomposition distinguishes them."},
+        {"label": "value_comparison", "byte_span": [704700, 705166], "why": "`Ka(e,t,n)` — the comparison whose truthy return is the error `o` collects; the value axis is a verdict about THIS function's contract"},
+        {"label": "unsafe_value_predicate", "byte_span": [704567, 704700], "why": "`Ga(e)` — the predicate that decides whether a value must be Base64-encoded; it is what selects this row's id and what `Ka` branches on"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "expr": "a===void 0",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `if(a===void 0)o.push(`Missing Mcp-Param-${t} header. ...`)` — the TRUE arm pushes an error, and the status is `o.length===0?`SUCCESS`:`FAILURE``, so TRUE is the failure",
+          "requires": "a request carrying i.control_char_val MUST carry an Mcp-Param-ControlChar header"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "expr": "Ka(a,e,r)",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `let t=Ka(a,e,r);t&&o.push(t)` — `Ka` returns an error STRING or null, so a truthy return is the failing arm",
+          "requires": "the Mcp-Param-ControlChar header must carry \"line1\\nline2\" under the spec's encoding rules — Base64 sentinel, because `Ga` calls this value unsafe"
+        }
+      ],
+      "conjunct_grouping": {
+        "predicate": "o.length===0",
+        "conjuncts": ["a===void 0", "let t=Ka(a,e,r);t&&o.push(t)"],
+        "grouped_as": 2,
+        "why": "`o` is an error list and the predicate is that it is EMPTY, so the check passes iff neither push happened. The two pushes are the two conjuncts, and they are the two axes."
+      },
+      "preconditions": [
+        {
+          "guard": "if(n==null)return;",
+          "kind": "argument_present",
+          "on_failure": "check_not_emitted",
+          "reads": "the argument value passed to checkParamHeader"
+        },
+        {
+          "guard": "i.control_char_val!==void 0&&i.control_char_val!==null&&",
+          "kind": "argument_present_at_the_call_site",
+          "on_failure": "check_not_emitted",
+          "reads": "i.control_char_val"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS",
+      "shared_evaluator": "All 14 ClientCustomHeader_* rows are emitted by ONE call, `checkParamHeader`, and so share one predicate and one pair of axes. The three ids they carry (mirrors-designated-params / encode-values / base64-unsafe) are selected by the VALUE and the declared type, not by a different test — which is why the axis SET is identical across them and the `call_site` excerpt is what distinguishes the rows."
+    },
+    {
+      "key": ["client", "http-custom-headers", "sep-2243-client-base64-unsafe", "ClientCustomHeader_CrLf", "Client sends correct Mcp-Param-CrLf header (string value)", ""],
+      "emitting_byte_span": [714077, 714434],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:check_param_header_body",
+      "check_id_binding": "`c=s?`sep-2243-client-base64-unsafe`:r===`number`||r===`integer`||r===`boolean`?`sep-2243-client-encode-values`:`sep-2243-client-mirrors-designated-params`` — the id is COMPUTED from the value and the declared type, so it is not a literal at the emitting site. This row's id is `sep-2243-client-base64-unsafe`.",
+      "context_excerpts": [
+        {"label": "check_param_header_body", "byte_span": [713525, 714077], "why": "binds `a` (the header), `o` (the error list the predicate reads) and `c` (this row's own check id); holds BOTH sites that push into `o`"},
+        {"label": "call_site", "byte_span": [712296, 712387], "why": "the ONE call that emits this row: it names the annotation `CrLf`, the argument `i.crlf_val` and the declared type `string`. Without it the 14 ClientCustomHeader_* rows share one evaluator and nothing in the decomposition distinguishes them."},
+        {"label": "value_comparison", "byte_span": [704700, 705166], "why": "`Ka(e,t,n)` — the comparison whose truthy return is the error `o` collects; the value axis is a verdict about THIS function's contract"},
+        {"label": "unsafe_value_predicate", "byte_span": [704567, 704700], "why": "`Ga(e)` — the predicate that decides whether a value must be Base64-encoded; it is what selects this row's id and what `Ka` branches on"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "expr": "a===void 0",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `if(a===void 0)o.push(`Missing Mcp-Param-${t} header. ...`)` — the TRUE arm pushes an error, and the status is `o.length===0?`SUCCESS`:`FAILURE``, so TRUE is the failure",
+          "requires": "a request carrying i.crlf_val MUST carry an Mcp-Param-CrLf header"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "expr": "Ka(a,e,r)",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `let t=Ka(a,e,r);t&&o.push(t)` — `Ka` returns an error STRING or null, so a truthy return is the failing arm",
+          "requires": "the Mcp-Param-CrLf header must carry \"line1\\r\\nline2\" under the spec's encoding rules — Base64 sentinel, because `Ga` calls this value unsafe"
+        }
+      ],
+      "conjunct_grouping": {
+        "predicate": "o.length===0",
+        "conjuncts": ["a===void 0", "let t=Ka(a,e,r);t&&o.push(t)"],
+        "grouped_as": 2,
+        "why": "`o` is an error list and the predicate is that it is EMPTY, so the check passes iff neither push happened. The two pushes are the two conjuncts, and they are the two axes."
+      },
+      "preconditions": [
+        {
+          "guard": "if(n==null)return;",
+          "kind": "argument_present",
+          "on_failure": "check_not_emitted",
+          "reads": "the argument value passed to checkParamHeader"
+        },
+        {
+          "guard": "i.crlf_val!==void 0&&i.crlf_val!==null&&",
+          "kind": "argument_present_at_the_call_site",
+          "on_failure": "check_not_emitted",
+          "reads": "i.crlf_val"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS",
+      "shared_evaluator": "All 14 ClientCustomHeader_* rows are emitted by ONE call, `checkParamHeader`, and so share one predicate and one pair of axes. The three ids they carry (mirrors-designated-params / encode-values / base64-unsafe) are selected by the VALUE and the declared type, not by a different test — which is why the axis SET is identical across them and the `call_site` excerpt is what distinguishes the rows."
+    },
+    {
+      "key": ["client", "http-custom-headers", "sep-2243-client-base64-unsafe", "ClientCustomHeader_Tab", "Client sends correct Mcp-Param-Tab header (string value)", ""],
+      "emitting_byte_span": [714077, 714434],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:check_param_header_body",
+      "check_id_binding": "`c=s?`sep-2243-client-base64-unsafe`:r===`number`||r===`integer`||r===`boolean`?`sep-2243-client-encode-values`:`sep-2243-client-mirrors-designated-params`` — the id is COMPUTED from the value and the declared type, so it is not a literal at the emitting site. This row's id is `sep-2243-client-base64-unsafe`.",
+      "context_excerpts": [
+        {"label": "check_param_header_body", "byte_span": [713525, 714077], "why": "binds `a` (the header), `o` (the error list the predicate reads) and `c` (this row's own check id); holds BOTH sites that push into `o`"},
+        {"label": "call_site", "byte_span": [712388, 712475], "why": "the ONE call that emits this row: it names the annotation `Tab`, the argument `i.tab_val` and the declared type `string`. Without it the 14 ClientCustomHeader_* rows share one evaluator and nothing in the decomposition distinguishes them."},
+        {"label": "value_comparison", "byte_span": [704700, 705166], "why": "`Ka(e,t,n)` — the comparison whose truthy return is the error `o` collects; the value axis is a verdict about THIS function's contract"},
+        {"label": "unsafe_value_predicate", "byte_span": [704567, 704700], "why": "`Ga(e)` — the predicate that decides whether a value must be Base64-encoded; it is what selects this row's id and what `Ka` branches on"}
+      ],
+      "axes": [
+        {
+          "axis": "mcp_param_header_present",
+          "expr": "a===void 0",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `if(a===void 0)o.push(`Missing Mcp-Param-${t} header. ...`)` — the TRUE arm pushes an error, and the status is `o.length===0?`SUCCESS`:`FAILURE``, so TRUE is the failure",
+          "requires": "a request carrying i.tab_val MUST carry an Mcp-Param-Tab header"
+        },
+        {
+          "axis": "mcp_param_header_value_matches_body",
+          "expr": "Ka(a,e,r)",
+          "expr_found_in": "context:check_param_header_body",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `let t=Ka(a,e,r);t&&o.push(t)` — `Ka` returns an error STRING or null, so a truthy return is the failing arm",
+          "requires": "the Mcp-Param-Tab header must carry \"\\tindented\" under the spec's encoding rules — Base64 sentinel, because `Ga` calls this value unsafe"
+        }
+      ],
+      "conjunct_grouping": {
+        "predicate": "o.length===0",
+        "conjuncts": ["a===void 0", "let t=Ka(a,e,r);t&&o.push(t)"],
+        "grouped_as": 2,
+        "why": "`o` is an error list and the predicate is that it is EMPTY, so the check passes iff neither push happened. The two pushes are the two conjuncts, and they are the two axes."
+      },
+      "preconditions": [
+        {
+          "guard": "if(n==null)return;",
+          "kind": "argument_present",
+          "on_failure": "check_not_emitted",
+          "reads": "the argument value passed to checkParamHeader"
+        },
+        {
+          "guard": "i.tab_val!==void 0&&i.tab_val!==null&&",
+          "kind": "argument_present_at_the_call_site",
+          "on_failure": "check_not_emitted",
+          "reads": "i.tab_val"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS",
+      "shared_evaluator": "All 14 ClientCustomHeader_* rows are emitted by ONE call, `checkParamHeader`, and so share one predicate and one pair of axes. The three ids they carry (mirrors-designated-params / encode-values / base64-unsafe) are selected by the VALUE and the declared type, not by a different test — which is why the axis SET is identical across them and the `call_site` excerpt is what distinguishes the rows."
+    },
+    {
+      "key": ["client", "http-custom-headers", "sep-2243-client-supports-custom-headers", "ClientSupportsCustomHeaders", "Client supports custom headers: calls the x-mcp-header annotated tool and mirrors at least one parameter", ""],
+      "emitting_byte_span": [710172, 710565],
+      "emitting_span_provenance": "locator_row",
+      "context_excerpts": [
+        {"label": "supports_binding", "byte_span": [710107, 710172], "why": "binds `t`, the whole predicate: SOME request header starts with `mcp-param-`"},
+        {"label": "tool_call_dispatch", "byte_span": [710052, 710107], "why": "the gate: nothing in this branch is emitted unless the client calls `test_custom_headers`"}
+      ],
+      "axes": [
+        {
+          "axis": "at_least_one_mcp_param_header_present",
+          "expr": "t?`SUCCESS`:`FAILURE`",
+          "expr_found_in": "evaluator_excerpt",
+          "polarity": "pass_when_true",
+          "polarity_reading": "the excerpt writes `status:t?`SUCCESS`:`FAILURE`` — the TRUE arm is the pass, and `t` is bound immediately above to `Object.keys(e.headers).some(e=>e.startsWith(`mcp-param-`))`",
+          "requires": "a tools/call for the annotated tool must carry at least one Mcp-Param-* header"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "if(r===`test_custom_headers`){this.toolCallReceived=!0;",
+          "kind": "tool_was_called",
+          "on_failure": "check_not_emitted",
+          "reads": "the tools/call request's params.name"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-custom-headers", "sep-2243-client-mirrors-designated-params", "ClientCustomHeaderNoMirrorNumber", "Client MUST NOT add Mcp-Param headers for parameters without x-mcp-header (number-typed float_val is served unannotated per SEP-2243)", ""],
+      "emitting_byte_span": [711090, 711556],
+      "emitting_span_provenance": "locator_row",
+      "context_excerpts": [
+        {"label": "no_mirror_number_binding", "byte_span": [711052, 711090], "why": "binds `n` to the header the predicate reads, and names the parameter the row is about"},
+        {"label": "tool_call_dispatch", "byte_span": [710052, 710107], "why": "the gate: the branch is entered only on a `test_custom_headers` call"}
+      ],
+      "axes": [
+        {
+          "axis": "unannotated_number_parameter_is_not_mirrored",
+          "expr": "n===void 0",
+          "expr_found_in": "evaluator_excerpt",
+          "polarity": "pass_when_true",
+          "polarity_reading": "the excerpt writes `status:n===void 0?`SUCCESS`:`FAILURE`` — the TRUE arm is the pass; `n` is the `mcp-param-floatval` request header",
+          "requires": "an UNANNOTATED number parameter (`float_val`) must NOT be mirrored. A4 measured this is NOT the `number`-exclusion constraint: that one is about an ANNOTATED number, which the spec forbids outright."
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "if(r===`test_custom_headers`){this.toolCallReceived=!0;",
+          "kind": "tool_was_called",
+          "on_failure": "check_not_emitted",
+          "reads": "the tools/call request's params.name"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-custom-headers", "sep-2243-client-mirrors-designated-params", "ClientCustomHeaderNoMirrorUnannotated", "Client MUST NOT add Mcp-Param headers for parameters without x-mcp-header", ""],
+      "emitting_byte_span": [712511, 712909],
+      "emitting_span_provenance": "locator_row",
+      "context_excerpts": [
+        {"label": "no_mirror_unannotated_binding", "byte_span": [712476, 712511], "why": "binds `r` to the header the predicate reads, and names the parameter the row is about"},
+        {"label": "tool_call_dispatch", "byte_span": [710052, 710107], "why": "the gate: the branch is entered only on a `test_custom_headers` call"}
+      ],
+      "axes": [
+        {
+          "axis": "unannotated_string_parameter_is_not_mirrored",
+          "expr": "r===void 0",
+          "expr_found_in": "evaluator_excerpt",
+          "polarity": "pass_when_true",
+          "polarity_reading": "the excerpt writes `status:r===void 0?`SUCCESS`:`FAILURE`` — the TRUE arm is the pass; `r` is the `mcp-param-query` request header",
+          "requires": "an unannotated string parameter (`query`) must NOT be mirrored"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "if(r===`test_custom_headers`){this.toolCallReceived=!0;",
+          "kind": "tool_was_called",
+          "on_failure": "check_not_emitted",
+          "reads": "the tools/call request's params.name"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-custom-headers", "sep-2243-client-omit-null", "ClientCustomHeaderOmitNull", "Client MUST omit Mcp-Param header when parameter value is null or not provided", ""],
+      "emitting_byte_span": [713016, 713391],
+      "emitting_span_provenance": "locator_row",
+      "context_excerpts": [
+        {"label": "omit_null_binding", "byte_span": [712979, 713016], "why": "binds `t` to the header the predicate reads"},
+        {"label": "null_tool_call_dispatch", "byte_span": [712910, 712979], "why": "the gate: this row is emitted only on a call to the SECOND fixture tool, `test_custom_headers_null`"}
+      ],
+      "axes": [
+        {
+          "axis": "null_or_absent_parameter_header_is_omitted",
+          "expr": "t===void 0",
+          "expr_found_in": "evaluator_excerpt",
+          "polarity": "pass_when_true",
+          "polarity_reading": "the excerpt writes `status:t===void 0?`SUCCESS`:`FAILURE`` — the TRUE arm is the pass; `t` is the `mcp-param-verbose` request header",
+          "requires": "an annotated parameter whose value is null or not provided must produce NO Mcp-Param header"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "else if(r===`test_custom_headers_null`){this.nullToolCallReceived=!0;",
+          "kind": "tool_was_called",
+          "on_failure": "check_not_emitted",
+          "reads": "the tools/call request's params.name"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-invalid-tool-headers", "sep-2243-client-reject-invalid-tool", "ClientKeepsValidTool", "Client MUST keep valid tools while excluding invalid ones", ""],
+      "emitting_byte_span": [714697, 715859],
+      "emitting_span_provenance": "locator_row",
+      "context_excerpts": [
+        {"label": "invalid_tool_id_table", "byte_span": [703879, 704457], "why": "`Ua` — the fixture's ten invalid-tool cases and the check id each carries. It is what the emitting loop iterates, so it is where this row's own case name and id are literals."}
+      ],
+      "axes": [
+        {
+          "axis": "valid_sibling_tool_is_still_called",
+          "expr": "let e=this.calledTools.has(`valid_tool`);",
+          "expr_found_in": "evaluator_excerpt",
+          "polarity": "pass_when_true",
+          "polarity_reading": "the excerpt writes `status:e?`SUCCESS`:`FAILURE`` immediately after this binding — the TRUE arm is the pass",
+          "requires": "a single malformed tool definition must not prevent the VALID tools in the same tools/list from being used"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "this.toolsListSent||this.checks.push({id:`sep-2243-invalid-tool-tools-list-gate`",
+          "kind": "tools_list_was_sent",
+          "on_failure": "a separate gate check FAILS; these rows are still emitted",
+          "reads": "whether the client sent tools/list at all"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-invalid-tool-headers", "sep-2243-x-mcp-header-not-empty", "ClientRejectsInvalidTool_invalid_empty_header", "Client MUST NOT call tool 'invalid_empty_header' with invalid x-mcp-header", ""],
+      "emitting_byte_span": [714697, 715859],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:invalid_tool_id_table",
+      "check_id_binding": "`for(let[e,t]of Object.entries(Ua)){...this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`...` — both the id and the name are LOOP VARIABLES at the emitting site. This row's pair is `invalid_empty_header:`sep-2243-x-mcp-header-not-empty`` in `Ua`.",
+      "context_excerpts": [
+        {"label": "invalid_tool_id_table", "byte_span": [703879, 704457], "why": "`Ua` — the fixture's ten invalid-tool cases and the check id each carries. It is what the emitting loop iterates, so it is where this row's own case name and id are literals."},
+        {"label": "id_table_entry", "byte_span": [703883, 703937], "why": "this row's OWN entry in `Ua` — the case name `invalid_empty_header` and the id `sep-2243-x-mcp-header-not-empty` as one literal pair. It is what distinguishes this row from the other nine, which share the emitting site byte-for-byte."}
+      ],
+      "axes": [
+        {
+          "axis": "invalid_tool_is_not_called",
+          "expr": "let n=this.calledTools.has(e);",
+          "expr_found_in": "evaluator_excerpt",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `status:n?`FAILURE`:`SUCCESS`` — the TRUE arm is the FAILURE; `e` is the loop's case name, `invalid_empty_header` for this row",
+          "requires": "the client must EXCLUDE the fixture tool `invalid_empty_header`, whose x-mcp-header annotation violates the `sep-2243-x-mcp-header-not-empty` constraint, and so must never call it"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "this.toolsListSent||this.checks.push({id:`sep-2243-invalid-tool-tools-list-gate`",
+          "kind": "tools_list_was_sent",
+          "on_failure": "a separate gate check FAILS; these rows are still emitted",
+          "reads": "whether the client sent tools/list at all"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-invalid-tool-headers", "sep-2243-x-mcp-header-primitive-only", "ClientRejectsInvalidTool_invalid_object_header", "Client MUST NOT call tool 'invalid_object_header' with invalid x-mcp-header", ""],
+      "emitting_byte_span": [714697, 715859],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:invalid_tool_id_table",
+      "check_id_binding": "`for(let[e,t]of Object.entries(Ua)){...this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`...` — both the id and the name are LOOP VARIABLES at the emitting site. This row's pair is `invalid_object_header:`sep-2243-x-mcp-header-primitive-only`` in `Ua`.",
+      "context_excerpts": [
+        {"label": "invalid_tool_id_table", "byte_span": [703879, 704457], "why": "`Ua` — the fixture's ten invalid-tool cases and the check id each carries. It is what the emitting loop iterates, so it is where this row's own case name and id are literals."},
+        {"label": "id_table_entry", "byte_span": [703938, 703998], "why": "this row's OWN entry in `Ua` — the case name `invalid_object_header` and the id `sep-2243-x-mcp-header-primitive-only` as one literal pair. It is what distinguishes this row from the other nine, which share the emitting site byte-for-byte."}
+      ],
+      "axes": [
+        {
+          "axis": "invalid_tool_is_not_called",
+          "expr": "let n=this.calledTools.has(e);",
+          "expr_found_in": "evaluator_excerpt",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `status:n?`FAILURE`:`SUCCESS`` — the TRUE arm is the FAILURE; `e` is the loop's case name, `invalid_object_header` for this row",
+          "requires": "the client must EXCLUDE the fixture tool `invalid_object_header`, whose x-mcp-header annotation violates the `sep-2243-x-mcp-header-primitive-only` constraint, and so must never call it"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "this.toolsListSent||this.checks.push({id:`sep-2243-invalid-tool-tools-list-gate`",
+          "kind": "tools_list_was_sent",
+          "on_failure": "a separate gate check FAILS; these rows are still emitted",
+          "reads": "whether the client sent tools/list at all"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-invalid-tool-headers", "sep-2243-x-mcp-header-primitive-only", "ClientRejectsInvalidTool_invalid_array_header", "Client MUST NOT call tool 'invalid_array_header' with invalid x-mcp-header", ""],
+      "emitting_byte_span": [714697, 715859],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:invalid_tool_id_table",
+      "check_id_binding": "`for(let[e,t]of Object.entries(Ua)){...this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`...` — both the id and the name are LOOP VARIABLES at the emitting site. This row's pair is `invalid_array_header:`sep-2243-x-mcp-header-primitive-only`` in `Ua`.",
+      "context_excerpts": [
+        {"label": "invalid_tool_id_table", "byte_span": [703879, 704457], "why": "`Ua` — the fixture's ten invalid-tool cases and the check id each carries. It is what the emitting loop iterates, so it is where this row's own case name and id are literals."},
+        {"label": "id_table_entry", "byte_span": [703999, 704058], "why": "this row's OWN entry in `Ua` — the case name `invalid_array_header` and the id `sep-2243-x-mcp-header-primitive-only` as one literal pair. It is what distinguishes this row from the other nine, which share the emitting site byte-for-byte."}
+      ],
+      "axes": [
+        {
+          "axis": "invalid_tool_is_not_called",
+          "expr": "let n=this.calledTools.has(e);",
+          "expr_found_in": "evaluator_excerpt",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `status:n?`FAILURE`:`SUCCESS`` — the TRUE arm is the FAILURE; `e` is the loop's case name, `invalid_array_header` for this row",
+          "requires": "the client must EXCLUDE the fixture tool `invalid_array_header`, whose x-mcp-header annotation violates the `sep-2243-x-mcp-header-primitive-only` constraint, and so must never call it"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "this.toolsListSent||this.checks.push({id:`sep-2243-invalid-tool-tools-list-gate`",
+          "kind": "tools_list_was_sent",
+          "on_failure": "a separate gate check FAILS; these rows are still emitted",
+          "reads": "whether the client sent tools/list at all"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-invalid-tool-headers", "sep-2243-x-mcp-header-primitive-only", "ClientRejectsInvalidTool_invalid_null_header", "Client MUST NOT call tool 'invalid_null_header' with invalid x-mcp-header", ""],
+      "emitting_byte_span": [714697, 715859],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:invalid_tool_id_table",
+      "check_id_binding": "`for(let[e,t]of Object.entries(Ua)){...this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`...` — both the id and the name are LOOP VARIABLES at the emitting site. This row's pair is `invalid_null_header:`sep-2243-x-mcp-header-primitive-only`` in `Ua`.",
+      "context_excerpts": [
+        {"label": "invalid_tool_id_table", "byte_span": [703879, 704457], "why": "`Ua` — the fixture's ten invalid-tool cases and the check id each carries. It is what the emitting loop iterates, so it is where this row's own case name and id are literals."},
+        {"label": "id_table_entry", "byte_span": [704059, 704117], "why": "this row's OWN entry in `Ua` — the case name `invalid_null_header` and the id `sep-2243-x-mcp-header-primitive-only` as one literal pair. It is what distinguishes this row from the other nine, which share the emitting site byte-for-byte."}
+      ],
+      "axes": [
+        {
+          "axis": "invalid_tool_is_not_called",
+          "expr": "let n=this.calledTools.has(e);",
+          "expr_found_in": "evaluator_excerpt",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `status:n?`FAILURE`:`SUCCESS`` — the TRUE arm is the FAILURE; `e` is the loop's case name, `invalid_null_header` for this row",
+          "requires": "the client must EXCLUDE the fixture tool `invalid_null_header`, whose x-mcp-header annotation violates the `sep-2243-x-mcp-header-primitive-only` constraint, and so must never call it"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "this.toolsListSent||this.checks.push({id:`sep-2243-invalid-tool-tools-list-gate`",
+          "kind": "tools_list_was_sent",
+          "on_failure": "a separate gate check FAILS; these rows are still emitted",
+          "reads": "whether the client sent tools/list at all"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-invalid-tool-headers", "sep-2243-x-mcp-header-unique", "ClientRejectsInvalidTool_invalid_duplicate_same_case", "Client MUST NOT call tool 'invalid_duplicate_same_case' with invalid x-mcp-header", ""],
+      "emitting_byte_span": [714697, 715859],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:invalid_tool_id_table",
+      "check_id_binding": "`for(let[e,t]of Object.entries(Ua)){...this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`...` — both the id and the name are LOOP VARIABLES at the emitting site. This row's pair is `invalid_duplicate_same_case:`sep-2243-x-mcp-header-unique`` in `Ua`.",
+      "context_excerpts": [
+        {"label": "invalid_tool_id_table", "byte_span": [703879, 704457], "why": "`Ua` — the fixture's ten invalid-tool cases and the check id each carries. It is what the emitting loop iterates, so it is where this row's own case name and id are literals."},
+        {"label": "id_table_entry", "byte_span": [704118, 704176], "why": "this row's OWN entry in `Ua` — the case name `invalid_duplicate_same_case` and the id `sep-2243-x-mcp-header-unique` as one literal pair. It is what distinguishes this row from the other nine, which share the emitting site byte-for-byte."}
+      ],
+      "axes": [
+        {
+          "axis": "invalid_tool_is_not_called",
+          "expr": "let n=this.calledTools.has(e);",
+          "expr_found_in": "evaluator_excerpt",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `status:n?`FAILURE`:`SUCCESS`` — the TRUE arm is the FAILURE; `e` is the loop's case name, `invalid_duplicate_same_case` for this row",
+          "requires": "the client must EXCLUDE the fixture tool `invalid_duplicate_same_case`, whose x-mcp-header annotation violates the `sep-2243-x-mcp-header-unique` constraint, and so must never call it"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "this.toolsListSent||this.checks.push({id:`sep-2243-invalid-tool-tools-list-gate`",
+          "kind": "tools_list_was_sent",
+          "on_failure": "a separate gate check FAILS; these rows are still emitted",
+          "reads": "whether the client sent tools/list at all"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-invalid-tool-headers", "sep-2243-x-mcp-header-unique", "ClientRejectsInvalidTool_invalid_duplicate_diff_case", "Client MUST NOT call tool 'invalid_duplicate_diff_case' with invalid x-mcp-header", ""],
+      "emitting_byte_span": [714697, 715859],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:invalid_tool_id_table",
+      "check_id_binding": "`for(let[e,t]of Object.entries(Ua)){...this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`...` — both the id and the name are LOOP VARIABLES at the emitting site. This row's pair is `invalid_duplicate_diff_case:`sep-2243-x-mcp-header-unique`` in `Ua`.",
+      "context_excerpts": [
+        {"label": "invalid_tool_id_table", "byte_span": [703879, 704457], "why": "`Ua` — the fixture's ten invalid-tool cases and the check id each carries. It is what the emitting loop iterates, so it is where this row's own case name and id are literals."},
+        {"label": "id_table_entry", "byte_span": [704177, 704235], "why": "this row's OWN entry in `Ua` — the case name `invalid_duplicate_diff_case` and the id `sep-2243-x-mcp-header-unique` as one literal pair. It is what distinguishes this row from the other nine, which share the emitting site byte-for-byte."}
+      ],
+      "axes": [
+        {
+          "axis": "invalid_tool_is_not_called",
+          "expr": "let n=this.calledTools.has(e);",
+          "expr_found_in": "evaluator_excerpt",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `status:n?`FAILURE`:`SUCCESS`` — the TRUE arm is the FAILURE; `e` is the loop's case name, `invalid_duplicate_diff_case` for this row",
+          "requires": "the client must EXCLUDE the fixture tool `invalid_duplicate_diff_case`, whose x-mcp-header annotation violates the `sep-2243-x-mcp-header-unique` constraint, and so must never call it"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "this.toolsListSent||this.checks.push({id:`sep-2243-invalid-tool-tools-list-gate`",
+          "kind": "tools_list_was_sent",
+          "on_failure": "a separate gate check FAILS; these rows are still emitted",
+          "reads": "whether the client sent tools/list at all"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-invalid-tool-headers", "sep-2243-x-mcp-header-charset", "ClientRejectsInvalidTool_invalid_space_in_name", "Client MUST NOT call tool 'invalid_space_in_name' with invalid x-mcp-header", ""],
+      "emitting_byte_span": [714697, 715859],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:invalid_tool_id_table",
+      "check_id_binding": "`for(let[e,t]of Object.entries(Ua)){...this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`...` — both the id and the name are LOOP VARIABLES at the emitting site. This row's pair is `invalid_space_in_name:`sep-2243-x-mcp-header-charset`` in `Ua`.",
+      "context_excerpts": [
+        {"label": "invalid_tool_id_table", "byte_span": [703879, 704457], "why": "`Ua` — the fixture's ten invalid-tool cases and the check id each carries. It is what the emitting loop iterates, so it is where this row's own case name and id are literals."},
+        {"label": "id_table_entry", "byte_span": [704236, 704289], "why": "this row's OWN entry in `Ua` — the case name `invalid_space_in_name` and the id `sep-2243-x-mcp-header-charset` as one literal pair. It is what distinguishes this row from the other nine, which share the emitting site byte-for-byte."}
+      ],
+      "axes": [
+        {
+          "axis": "invalid_tool_is_not_called",
+          "expr": "let n=this.calledTools.has(e);",
+          "expr_found_in": "evaluator_excerpt",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `status:n?`FAILURE`:`SUCCESS`` — the TRUE arm is the FAILURE; `e` is the loop's case name, `invalid_space_in_name` for this row",
+          "requires": "the client must EXCLUDE the fixture tool `invalid_space_in_name`, whose x-mcp-header annotation violates the `sep-2243-x-mcp-header-charset` constraint, and so must never call it"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "this.toolsListSent||this.checks.push({id:`sep-2243-invalid-tool-tools-list-gate`",
+          "kind": "tools_list_was_sent",
+          "on_failure": "a separate gate check FAILS; these rows are still emitted",
+          "reads": "whether the client sent tools/list at all"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-invalid-tool-headers", "sep-2243-x-mcp-header-charset", "ClientRejectsInvalidTool_invalid_colon_in_name", "Client MUST NOT call tool 'invalid_colon_in_name' with invalid x-mcp-header", ""],
+      "emitting_byte_span": [714697, 715859],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:invalid_tool_id_table",
+      "check_id_binding": "`for(let[e,t]of Object.entries(Ua)){...this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`...` — both the id and the name are LOOP VARIABLES at the emitting site. This row's pair is `invalid_colon_in_name:`sep-2243-x-mcp-header-charset`` in `Ua`.",
+      "context_excerpts": [
+        {"label": "invalid_tool_id_table", "byte_span": [703879, 704457], "why": "`Ua` — the fixture's ten invalid-tool cases and the check id each carries. It is what the emitting loop iterates, so it is where this row's own case name and id are literals."},
+        {"label": "id_table_entry", "byte_span": [704290, 704343], "why": "this row's OWN entry in `Ua` — the case name `invalid_colon_in_name` and the id `sep-2243-x-mcp-header-charset` as one literal pair. It is what distinguishes this row from the other nine, which share the emitting site byte-for-byte."}
+      ],
+      "axes": [
+        {
+          "axis": "invalid_tool_is_not_called",
+          "expr": "let n=this.calledTools.has(e);",
+          "expr_found_in": "evaluator_excerpt",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `status:n?`FAILURE`:`SUCCESS`` — the TRUE arm is the FAILURE; `e` is the loop's case name, `invalid_colon_in_name` for this row",
+          "requires": "the client must EXCLUDE the fixture tool `invalid_colon_in_name`, whose x-mcp-header annotation violates the `sep-2243-x-mcp-header-charset` constraint, and so must never call it"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "this.toolsListSent||this.checks.push({id:`sep-2243-invalid-tool-tools-list-gate`",
+          "kind": "tools_list_was_sent",
+          "on_failure": "a separate gate check FAILS; these rows are still emitted",
+          "reads": "whether the client sent tools/list at all"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-invalid-tool-headers", "sep-2243-x-mcp-header-charset", "ClientRejectsInvalidTool_invalid_non_ascii_name", "Client MUST NOT call tool 'invalid_non_ascii_name' with invalid x-mcp-header", ""],
+      "emitting_byte_span": [714697, 715859],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:invalid_tool_id_table",
+      "check_id_binding": "`for(let[e,t]of Object.entries(Ua)){...this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`...` — both the id and the name are LOOP VARIABLES at the emitting site. This row's pair is `invalid_non_ascii_name:`sep-2243-x-mcp-header-charset`` in `Ua`.",
+      "context_excerpts": [
+        {"label": "invalid_tool_id_table", "byte_span": [703879, 704457], "why": "`Ua` — the fixture's ten invalid-tool cases and the check id each carries. It is what the emitting loop iterates, so it is where this row's own case name and id are literals."},
+        {"label": "id_table_entry", "byte_span": [704344, 704398], "why": "this row's OWN entry in `Ua` — the case name `invalid_non_ascii_name` and the id `sep-2243-x-mcp-header-charset` as one literal pair. It is what distinguishes this row from the other nine, which share the emitting site byte-for-byte."}
+      ],
+      "axes": [
+        {
+          "axis": "invalid_tool_is_not_called",
+          "expr": "let n=this.calledTools.has(e);",
+          "expr_found_in": "evaluator_excerpt",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `status:n?`FAILURE`:`SUCCESS`` — the TRUE arm is the FAILURE; `e` is the loop's case name, `invalid_non_ascii_name` for this row",
+          "requires": "the client must EXCLUDE the fixture tool `invalid_non_ascii_name`, whose x-mcp-header annotation violates the `sep-2243-x-mcp-header-charset` constraint, and so must never call it"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "this.toolsListSent||this.checks.push({id:`sep-2243-invalid-tool-tools-list-gate`",
+          "kind": "tools_list_was_sent",
+          "on_failure": "a separate gate check FAILS; these rows are still emitted",
+          "reads": "whether the client sent tools/list at all"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
+    },
+    {
+      "key": ["client", "http-invalid-tool-headers", "sep-2243-x-mcp-header-charset", "ClientRejectsInvalidTool_invalid_control_char_name", "Client MUST NOT call tool 'invalid_control_char_name' with invalid x-mcp-header", ""],
+      "emitting_byte_span": [714697, 715859],
+      "emitting_span_provenance": "locator_row",
+      "check_id_found_in": "context:invalid_tool_id_table",
+      "check_id_binding": "`for(let[e,t]of Object.entries(Ua)){...this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`...` — both the id and the name are LOOP VARIABLES at the emitting site. This row's pair is `invalid_control_char_name:`sep-2243-x-mcp-header-charset`` in `Ua`.",
+      "context_excerpts": [
+        {"label": "invalid_tool_id_table", "byte_span": [703879, 704457], "why": "`Ua` — the fixture's ten invalid-tool cases and the check id each carries. It is what the emitting loop iterates, so it is where this row's own case name and id are literals."},
+        {"label": "id_table_entry", "byte_span": [704399, 704456], "why": "this row's OWN entry in `Ua` — the case name `invalid_control_char_name` and the id `sep-2243-x-mcp-header-charset` as one literal pair. It is what distinguishes this row from the other nine, which share the emitting site byte-for-byte."}
+      ],
+      "axes": [
+        {
+          "axis": "invalid_tool_is_not_called",
+          "expr": "let n=this.calledTools.has(e);",
+          "expr_found_in": "evaluator_excerpt",
+          "polarity": "fail_when_true",
+          "polarity_reading": "the excerpt writes `status:n?`FAILURE`:`SUCCESS`` — the TRUE arm is the FAILURE; `e` is the loop's case name, `invalid_control_char_name` for this row",
+          "requires": "the client must EXCLUDE the fixture tool `invalid_control_char_name`, whose x-mcp-header annotation violates the `sep-2243-x-mcp-header-charset` constraint, and so must never call it"
+        }
+      ],
+      "preconditions": [
+        {
+          "guard": "this.toolsListSent||this.checks.push({id:`sep-2243-invalid-tool-tools-list-gate`",
+          "kind": "tools_list_was_sent",
+          "on_failure": "a separate gate check FAILS; these rows are still emitted",
+          "reads": "whether the client sent tools/list at all"
+        }
+      ],
+      "status_at_accepted_run": "SUCCESS"
     }
-  ]
+  ],
+  "emitting_span_provenance_rule": "Every row states where its `emitting_byte_span` came from, and the generator CHECKS the statement against MES-97's locator output (G18). `locator_row` — the span is one the locator names for this row's key, and the generator requires that. `locator_row_rejected` — the locator's own `rung_pin_level` for that row is NOT `row`, so it does not claim to pin the row; the span it names belongs to a sibling and is refused. The generator then requires the reverse: the pin level must not be `row`, the span used must NOT be one of the locator's, and a reason must be given. Four of C1b-i's 29 rows are rejections; C1a's 11 are all `locator_row`, and were so before this field existed.",
+  "check_id_location_rule": "C1a's 11 rows all carry their check id as a backtick literal at the emitting site, and the generator required exactly that. Fourteen of C1b-i's rows emit with `id:c` — a value COMPUTED from the argument's value and declared type — and ten more with `id:t`, a loop variable. So a row may name `check_id_found_in`: the pool entry whose bytes must carry the id literal. It defaults to `evaluator_excerpt`, which is C1a's behaviour unchanged, and the named entry must exist. This WEAKENS the guard from `the id is at the emitting site` to `the id is verbatim at an ADDRESSED span this row names`, and that is said plainly rather than left to be noticed: what it still refuses is a row whose id occurs nowhere it points at."
 }

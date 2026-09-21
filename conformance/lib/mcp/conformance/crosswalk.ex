@@ -79,6 +79,8 @@ defmodule MCP.Conformance.Crosswalk do
 
   alias MCP.Conformance.MatchKey
 
+  @combinators ~w(any_of all_of none_of)
+
   @typedoc "A joined crosswalk cell."
   @type cell :: map()
 
@@ -186,7 +188,17 @@ defmodule MCP.Conformance.Crosswalk do
 
       {:ok, known} ->
         named = Enum.map(edge["axes"], & &1["axis"])
-        unknown = named -- known
+
+        # `Enum.uniq(named) -- known`, NOT `named -- known`. List subtraction
+        # removes one occurrence per element, so a DUPLICATED axis always left a
+        # residue and tripped `:axis_not_in_decomposition` first — which made
+        # the `:axis_named_twice` clause below unreachable for every input, and
+        # made the refusal name the wrong defect. Measured on MES-104 by a
+        # control that asserts WHICH guard fires rather than that one did:
+        # duplicating the first axis of the first edge reported
+        # `{:axis_not_in_decomposition, ["retry_carries_the_request_state"], ...}`
+        # over an axis that is plainly in the decomposition.
+        unknown = Enum.uniq(named) -- known
 
         cond do
           unknown != [] -> {:error, {:axis_not_in_decomposition, unknown, known}}
@@ -289,10 +301,11 @@ defmodule MCP.Conformance.Crosswalk do
   Buckets 1 and 2 over a declared universe — and **refused** without one.
 
   Both are complements over the edge set, and a complement is not a fact about
-  the world without a universe to take it in. Asking for bucket 1 over "all 281
-  ET-CC members" when only 21 were adjudicated would report 260 members as
-  *"we looked and there is no counterpart"*, which is false of every one of
-  them.
+  the world without a universe to take it in. A WORKED EXAMPLE, from C1a's
+  slice and not a statement of the current population: had bucket 1 been taken
+  over all 281 ET-CC members when only the 21 C1a adjudicated were in scope, it
+  would have reported the other 260 as *"we looked and there is no
+  counterpart"*, which was false of every one of them.
   """
   @spec project(:bucket_1 | :bucket_2, map()) :: {:ok, [term()]} | {:error, term()}
   def project(_which, %{population: nil}), do: {:error, :no_declared_population}
@@ -395,15 +408,31 @@ defmodule MCP.Conformance.Crosswalk do
   are not unique (a duplicate would silently merge two rows into one member and
   hide the drop it was brought in to catch).
 
-  Supported tests are `non_empty_list` and `not_null` — deliberately two, and
-  deliberately named rather than a general expression language: a selector rich
-  enough to compute is a selector rich enough to lie.
+  ## The selector language — named, non-computing, and fail-closed
+
+  Leaf **tests**: `non_empty_list`, `not_null`, `equals` (which takes a
+  `value`). **Combinators**: `any_of`, `all_of`, `none_of`, each taking a
+  non-empty list of nodes, and each node is itself a leaf or a combinator, so
+  they nest.
+
+  Deliberately named rather than a general expression language: a selector rich
+  enough to compute is a selector rich enough to lie. It is fail-closed on an
+  unknown `test`, on a node carrying more than one combinator, on an **empty**
+  combinator list (a vacuous `all_of` is true of every row and a vacuous
+  `any_of` is true of none — both are lies waiting to happen), on an absent
+  `rows_at`, on a `key_field` a row does not carry, and on a source whose keys
+  are not unique.
+
+  `is_null` is **not** implemented, and that is worth saying rather than
+  leaving as an absence: C1b-i has no use for it, and a selector test nothing
+  calls is a guard on a dead path (S9-15). C1b-iii adds it when its own
+  population needs it.
   """
   @spec select(map(), map()) :: {:ok, [String.t()]} | {:error, term()}
-  def select(%{"rows_at" => rows_at, "key_field" => key_field, "any_of" => [_ | _] = tests}, src) do
-    with {:ok, preds} <- predicates(tests),
+  def select(%{"rows_at" => rows_at, "key_field" => key_field} = selector, src) do
+    with {:ok, pred} <- root_predicate(selector),
          {:ok, rows} <- rows_at(src, rows_at),
-         {:ok, keys} <- keys_of(rows, key_field, preds) do
+         {:ok, keys} <- keys_of(rows, key_field, pred) do
       case (keys -- Enum.uniq(keys)) |> Enum.uniq() do
         [] -> {:ok, Enum.sort(keys)}
         dupes -> {:error, {:selector_source_has_duplicate_keys, dupes}}
@@ -413,6 +442,21 @@ defmodule MCP.Conformance.Crosswalk do
 
   def select(other, _src), do: {:error, {:malformed_selector, other}}
 
+  @doc "The combinator names `select/2` accepts, in one place so a control can enumerate them."
+  @spec combinators() :: [String.t()]
+  def combinators, do: @combinators
+
+  # The ROOT must be a combinator, and exactly one: a selector naming two would
+  # otherwise be read as whichever clause matched first, which is a silent
+  # choice between two different populations.
+  defp root_predicate(selector) do
+    case Enum.filter(@combinators, &Map.has_key?(selector, &1)) do
+      [one] -> combinator(one, Map.fetch!(selector, one))
+      [] -> {:error, {:selector_root_names_no_combinator, @combinators}}
+      many -> {:error, {:selector_root_names_several_combinators, many}}
+    end
+  end
+
   defp rows_at(src, rows_at) do
     case Map.get(src, rows_at) do
       rows when is_list(rows) -> {:ok, rows}
@@ -420,10 +464,10 @@ defmodule MCP.Conformance.Crosswalk do
     end
   end
 
-  defp keys_of(rows, key_field, preds) do
+  defp keys_of(rows, key_field, pred) do
     keys =
       rows
-      |> Enum.filter(fn row -> Enum.any?(preds, & &1.(row)) end)
+      |> Enum.filter(pred)
       |> Enum.map(&Map.get(&1, key_field))
 
     if Enum.any?(keys, &(not is_binary(&1))),
@@ -431,22 +475,54 @@ defmodule MCP.Conformance.Crosswalk do
       else: {:ok, keys}
   end
 
-  defp predicates(tests) do
-    Enum.reduce_while(tests, {:ok, []}, fn t, {:ok, acc} ->
-      case predicate(t) do
+  defp combinator(_name, []), do: {:error, :selector_combinator_is_empty}
+
+  defp combinator(name, nodes) when is_list(nodes) do
+    nodes
+    |> Enum.reduce_while({:ok, []}, fn n, {:ok, acc} ->
+      case predicate(n) do
         {:ok, f} -> {:cont, {:ok, [f | acc]}}
         {:error, r} -> {:halt, {:error, r}}
       end
     end)
+    |> case do
+      {:ok, preds} -> {:ok, apply_combinator(name, Enum.reverse(preds))}
+      {:error, r} -> {:error, r}
+    end
   end
 
-  defp predicate(%{"field" => f, "test" => "non_empty_list"}),
+  defp combinator(_name, other), do: {:error, {:selector_combinator_is_not_a_list, other}}
+
+  defp apply_combinator("any_of", preds), do: fn row -> Enum.any?(preds, & &1.(row)) end
+  defp apply_combinator("all_of", preds), do: fn row -> Enum.all?(preds, & &1.(row)) end
+  defp apply_combinator("none_of", preds), do: fn row -> not Enum.any?(preds, & &1.(row)) end
+
+  # A node is a combinator or a leaf, and the "exactly one combinator" rule
+  # applies at every depth rather than only at the root.
+  defp predicate(node) when is_map(node) do
+    case Enum.filter(@combinators, &Map.has_key?(node, &1)) do
+      [] -> leaf(node)
+      [one] -> combinator(one, Map.fetch!(node, one))
+      many -> {:error, {:selector_node_names_several_combinators, many}}
+    end
+  end
+
+  defp predicate(other), do: {:error, {:selector_node_is_not_a_map, other}}
+
+  defp leaf(%{"field" => f, "test" => "non_empty_list"}),
     do: {:ok, fn row -> is_list(Map.get(row, f)) and Map.get(row, f) != [] end}
 
-  defp predicate(%{"field" => f, "test" => "not_null"}),
+  defp leaf(%{"field" => f, "test" => "not_null"}),
     do: {:ok, fn row -> Map.get(row, f) != nil end}
 
-  defp predicate(other), do: {:error, {:unknown_selector_test, other}}
+  # `equals` compares to a STRING and refuses anything else. A test that could
+  # compare to a list or a map would be comparing structures the anchor's
+  # schema is free to change under it, and `nil == nil` would make an absent
+  # field indistinguishable from a null one.
+  defp leaf(%{"field" => f, "test" => "equals", "value" => v}) when is_binary(v),
+    do: {:ok, fn row -> Map.get(row, f) == v end}
+
+  defp leaf(other), do: {:error, {:unknown_selector_test, other}}
 
   @doc """
   **G15b** — the four counts the edges file declares about itself, against the
