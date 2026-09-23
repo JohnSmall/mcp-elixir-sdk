@@ -1,11 +1,11 @@
 {
   "bucket": "4b",
-  "count": 2,
+  "count": 6,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 110 declared ET-CC members and 54\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 171 members and\n116 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 3 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "population_banner": "POPULATION: this projection covers 167 declared ET-CC members and 84\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 114 members and\n89 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
   "predicate": "`cells` where the stored `bucket` == \"4b\". Universe: the crosswalk's edges.",
   "projected_from": {
     "bucket_zero": {
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 404281,
+      "bytes": 574284,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "a2ea4e8917523d08a91a553d0639e984b74f012b21970509f8489f82f3479255"
+      "sha256": "3ce08b0c1b055d28c3789b25e731852a7e7908938b112ec45d3bf12fb019a466"
     }
   },
   "revision": "2026-07-28",
@@ -98,12 +98,168 @@
         "oc_status_at_accepted_run": "FAILURE",
         "oc_warning": false
       }
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_status",
+          "verdict": "silent"
+        },
+        {
+          "axis": "jsonrpc_error_code",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "4b",
+      "bucket_attributes": [],
+      "claim": "a dispatched `ping` is answered with -32601 method-not-found",
+      "escalation": null,
+      "evidence": "dispatch_test.exs:88-95 — `assert ping_resp[\"error\"][\"code\"] == -32_601`. The OC axis `i?.error?.code!==-32601` is `fail_when_true`, so -32601 is the passing direction and our claim agrees. The check is nonetheless RED, and its message says why: `Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601` — the code half is satisfied and the status half is not. the ET claim is asserted at `MCP.Server.Dispatch`, BELOW the transport — the unit never constructs an HTTP response, so nothing in it has an HTTP status as its subject and the axis is silent by `how_a_silent_axis_was_decided`'s rule rather than by omission.",
+      "member": {
+        "module": "MCP.Server.DispatchTest",
+        "register_key": "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)",
+        "test": "test ping and logging/setLevel are removed → method not found (-32601)"
+      },
+      "note": "The 4b shape in its purest form: red OC, green ET, agreement on the conjunct our unit reaches and silence on the one it cannot. The incompleteness is OURS, and it is a real one — nothing in this SDK's suite asserts a 404 for a removed method.",
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404-ping",
+        "HttpServerMethodNotFound404ping",
+        "If the server does not implement the removed RPC method 'ping', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping",
+      "verdicts": {
+        "et": "green",
+        "oc": "red",
+        "oc_status_at_accepted_run": "FAILURE",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_status",
+          "verdict": "silent"
+        },
+        {
+          "axis": "jsonrpc_error_code",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "4b",
+      "bucket_attributes": [],
+      "claim": "a dispatched `logging/setLevel` is answered with -32601 method-not-found",
+      "escalation": null,
+      "evidence": "dispatch_test.exs:88-95 — `assert log_resp[\"error\"][\"code\"] == -32_601` for `logging/setLevel`. One unit, two claims, two checks: the OC suite keys the removed methods one row per method (the `id_template_prefix` loop over `[`initialize`,`ping`,`logging/setLevel`,`resources/subscribe`,`resources/unsubscribe`]`), so collapsing them into one edge would have lost a row. the ET claim is asserted at `MCP.Server.Dispatch`, BELOW the transport — the unit never constructs an HTTP response, so nothing in it has an HTTP status as its subject and the axis is silent by `how_a_silent_axis_was_decided`'s rule rather than by omission.",
+      "member": {
+        "module": "MCP.Server.DispatchTest",
+        "register_key": "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)",
+        "test": "test ping and logging/setLevel are removed → method not found (-32601)"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404-logging-setlevel",
+        "HttpServerMethodNotFound404loggingsetLevel",
+        "If the server does not implement the removed RPC method 'logging/setLevel', it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel",
+      "verdicts": {
+        "et": "green",
+        "oc": "red",
+        "oc_status_at_accepted_run": "FAILURE",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_status",
+          "verdict": "silent"
+        },
+        {
+          "axis": "jsonrpc_error_code",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "4b",
+      "bucket_attributes": [],
+      "claim": "a deployment that cannot serve subscriptions/listen answers it with -32601, never a silent black hole",
+      "escalation": null,
+      "evidence": "subscriptions_dispatch_test.exs:368-373 — `json_mode = config(streaming: false)`, then `Dispatch.dispatch(listen_request(%{\"toolsListChanged\" => true}), ctx(), json_mode)` and `assert error[\"code\"] == -32_601`. The OC check is the GENERIC unimplemented-method row, not one of the five removed-method rows, and a deployment that does not implement `subscriptions/listen` is exactly its case. Asserted below the transport, so the status axis is silent.",
+      "member": {
+        "module": "MCP.Server.SubscriptionsDispatchTest",
+        "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-5 JSON mode refuses the method outright a non-streaming driver gets -32601, never a silent black hole",
+        "test": "test T-5 JSON mode refuses the method outright a non-streaming driver gets -32601, never a silent black hole"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404",
+        "HttpServerMethodNotFound404",
+        "If the server does not implement the requested RPC method, it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404",
+      "verdicts": {
+        "et": "green",
+        "oc": "red",
+        "oc_status_at_accepted_run": "FAILURE",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_status",
+          "verdict": "silent"
+        },
+        {
+          "axis": "jsonrpc_error_code",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "4b",
+      "bucket_attributes": [],
+      "claim": "a handler that implements no handle_listen/3 likewise yields -32601 for subscriptions/listen",
+      "escalation": null,
+      "evidence": "subscriptions_dispatch_test.exs:388-389 — `assert {:reply, %{\"error\" => %{\"code\" => -32_601}}, _} =` for a config built over a handler with no `handle_listen/3`. The second of the two routes into the same refusal; both are filed because the claims differ even though the check does not.",
+      "member": {
+        "module": "MCP.Server.SubscriptionsDispatchTest",
+        "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-5 JSON mode refuses the method outright a handler with no handle_listen/3 also gets -32601",
+        "test": "test T-5 JSON mode refuses the method outright a handler with no handle_listen/3 also gets -32601"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404",
+        "HttpServerMethodNotFound404",
+        "If the server does not implement the requested RPC method, it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404",
+      "verdicts": {
+        "et": "green",
+        "oc": "red",
+        "oc_status_at_accepted_run": "FAILURE",
+        "oc_warning": false
+      }
     }
   ],
   "schema": "bucket-view/1",
   "title": "OC red, ET-CC green — incompleteness",
   "universe": {
-    "count": 76,
+    "count": 106,
     "name": "edges",
     "of": "the crosswalk's `cells`"
   },

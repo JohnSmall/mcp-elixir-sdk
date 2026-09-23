@@ -35,7 +35,13 @@ defmodule CrosswalkControls do
   @harness "/tmp/conf11/node_modules/@modelcontextprotocol/conformance/dist/index.js"
 
   @client_edges "conformance/data/crosswalk-edges-client.json"
+  # MES-105 (C1c-i) established the SERVER-leg file. Every "all the edges files"
+  # list below has to carry it or the control silently runs over a smaller
+  # crosswalk than the committed one — which is not a red, it is a QUIETER
+  # GREEN, and the `drift` pin in the falsification controls is what caught it.
+  @server_edges "conformance/data/crosswalk-edges-server.json"
   @edges "conformance/data/crosswalk-edges.json"
+  @all_edges [@client_edges, @server_edges, @edges]
   @c1_axes "conformance/data/oc-axes-c1.json"
   @a3_axes "docs/conformance/oc-axes-2026-07-28.json"
   @manifest "docs/conformance/in-scope-2026-07-28.json"
@@ -733,6 +739,7 @@ defmodule CrosswalkControls do
 
     src = read(@attribution)
     client = read(@client_edges)
+    server = read(@server_edges)
     resid = read(@edges)
     sites = read(@sites)
 
@@ -761,8 +768,23 @@ defmodule CrosswalkControls do
        |> Enum.map(& &1["key"])},
       {"the residual file's members", resid["the_population_this_file_declares"]["selector"], src,
        rows
-       |> Enum.filter(&(tagged?.(&1) and &1["leg"] != "client"))
+       |> Enum.filter(&(tagged?.(&1) and &1["leg"] not in ["client", "server"]))
        |> Enum.map(& &1["key"])},
+      # MES-105 (C1c-i). The expectation is computed with `String.starts_with?`
+      # over the same rows, which is a DIFFERENT route to the same set than
+      # `select/2` takes — the point of every entry in this list.
+      {"the server file's members", server["the_population_this_file_declares"]["selector"], src,
+       rows
+       |> Enum.filter(fn r ->
+         r["leg"] == "server" and
+           Enum.any?(server_modules(server), &String.starts_with?(r["key"], &1))
+       end)
+       |> Enum.map(& &1["key"])},
+      {"the server file's CHECKS", server["the_check_population_this_file_declares"]["selector"],
+       sites,
+       sites["rows"]
+       |> Enum.filter(&(&1["scenario"] == "server-stateless"))
+       |> Enum.map(& &1["token"])},
       {"the client file's CHECKS", client["the_check_population_this_file_declares"]["selector"],
        sites,
        sites["rows"]
@@ -1017,6 +1039,141 @@ defmodule CrosswalkControls do
 
     halt_unless(length(conj) - length(no_null) == 42)
 
+    # --- MES-105 (C1c-i): the `starts_with` leaf, and the module cut ---------
+    #
+    # Three things are measured here and none of them is entailed by the
+    # positive control above, which only says the selector denotes what an
+    # independently written filter denotes.
+    #
+    #   1. THE LEAF CAN FIRE AND CAN BE WRONG. A one-character change to a
+    #      module prefix must empty that leaf, exactly as the `equals` typo
+    #      does. A leaf that denoted its population regardless of its value
+    #      would pass the positive control.
+    #   2. THE TRAILING `/` IS LOAD-BEARING, and by how much. Strip it from
+    #      every prefix and `MCP.Transport.StreamableHTTP` stops naming one
+    #      module and starts naming two — a widening no count of the declared
+    #      population would predict from the selector's shape.
+    #   3. THE `leg` CONJUNCT REMOVES SOMETHING. A conjunct entailed by its
+    #      neighbours is a guard that cannot fire (S9-21), and this one is not:
+    #      two rows outside the server leg carry one of these module prefixes.
+    server_sel = server["the_population_this_file_declares"]["selector"]
+    {:ok, server_members} = Crosswalk.select(server_sel, src)
+
+    IO.puts("\n  STARTS_WITH  the server file's module cut: #{length(server_members)} denoted")
+
+    for module <- server_modules(server) do
+      typoed = replace_prefix(server_sel, module, String.replace_suffix(module, "/", "X/"))
+      {:ok, fewer} = Crosswalk.select(typoed, src)
+
+      IO.puts(
+        "  MUTATION  one character wrong in the `#{String.trim_trailing(module, "/")}` prefix: " <>
+          "#{length(server_members)} -> #{length(fewer)}"
+      )
+
+      verdict(
+        "a mistyped prefix denotes the EMPTY set for that leaf rather than erroring, " <>
+          "so the module really is what the leaf is doing",
+        length(fewer) < length(server_members)
+      )
+
+      halt_unless(length(fewer) < length(server_members))
+    end
+
+    # THE TRAILING SLASH, and the claim it was MEASURED OUT OF. C1c-i's edges
+    # file first said the trailing `/` was load-bearing because
+    # `MCP.Transport.StreamableHTTP` would otherwise name two modules. Run, the
+    # mutation moved the population by ZERO — and it had to, because that string
+    # is not one of the prefixes the selector uses: the leaves carry FULL module
+    # names, and over all 21 server modules (and all 30 in B2b) NOT ONE is a
+    # plain string-prefix of another. So on the shipped anchor the slash removes
+    # nothing, the prose was wrong, and both were corrected rather than the
+    # control being softened to agree with the claim.
+    #
+    # It is still kept, and what it buys is stated as what it is: a bound
+    # against a module ADDED LATER whose name extends one of these. That case
+    # has no live instance, so it is CONSTRUCTED — one synthetic anchor row —
+    # and both selectors are run against it. Anything less would be asserting a
+    # property of a case nobody has produced, which is the thing this file
+    # exists to refuse.
+    {:ok, slashless_live} =
+      Crosswalk.select(strip_slashes(server_sel), src)
+
+    IO.puts(
+      "  MUTATION  the trailing `/` stripped from every module prefix, on the LIVE anchor: " <>
+        "#{length(server_members)} -> #{length(slashless_live)}"
+    )
+
+    collisions =
+      for m <- server_modules(server),
+          n <- Enum.map(rows, &(&1["key"] |> String.split("/") |> hd())) |> Enum.uniq(),
+          n != String.trim_trailing(m, "/"),
+          String.starts_with?(n, String.trim_trailing(m, "/")),
+          do: n
+
+    verdict(
+      "on THIS anchor the slash removes NOTHING — #{length(collisions)} of B2b's modules " <>
+        "extend one of these eight names, so the earlier claim that it was load-bearing " <>
+        "HERE was wrong and is corrected in the file",
+      length(slashless_live) == length(server_members) and collisions == []
+    )
+
+    halt_unless(length(slashless_live) == length(server_members) and collisions == [])
+
+    # THE CONSTRUCTED CASE. One synthetic row on the server leg whose module
+    # EXTENDS a declared one. The slashed selector must refuse it and the
+    # slashless one must admit it — both directions on the same fixture, because
+    # a fixture that fails to discriminate shows up as a green (S11 note).
+    intruder = String.trim_trailing(hd(server_modules(server)), "/") <> "Extra"
+    planted = %{"rows" => rows ++ [%{"key" => intruder <> "/test x", "leg" => "server"}]}
+
+    {:ok, strict} = Crosswalk.select(server_sel, planted)
+    {:ok, relaxed} = Crosswalk.select(strip_slashes(server_sel), planted)
+
+    IO.puts(
+      "  CONSTRUCTED  a synthetic server row in #{intruder}: " <>
+        "with the `/` #{length(strict)} denoted, without it #{length(relaxed)}"
+    )
+
+    verdict(
+      "the trailing `/` REFUSES a module that merely extends a declared name, and the " <>
+        "slashless form ADMITS it — the bound the slash actually buys, shown on the one " <>
+        "case that can show it",
+      length(strict) == length(server_members) and length(relaxed) == length(server_members) + 1
+    )
+
+    halt_unless(
+      length(strict) == length(server_members) and length(relaxed) == length(server_members) + 1
+    )
+
+    # THE `leg` CONJUNCT. Drop it and see whether anything joins. If nothing
+    # did, the conjunct would be entailed by the module leaves and could never
+    # fire — which is worth knowing either way, so it is MEASURED and the
+    # verdict names the rows.
+    legless = update_in(server_sel, ["all_of"], fn [_leg, any_of] -> [any_of] end)
+    {:ok, without_leg} = Crosswalk.select(legless, src)
+    strays = without_leg -- server_members
+
+    IO.puts(
+      "  MUTATION  the `leg equals server` conjunct dropped: " <>
+        "#{length(server_members)} -> #{length(without_leg)}"
+    )
+
+    for k <- strays do
+      leg = rows |> Enum.find(&(&1["key"] == k)) |> Map.get("leg")
+      IO.puts("      would admit (leg #{inspect(leg)}): #{String.slice(k, 0, 84)}")
+    end
+
+    verdict(
+      "the `leg` conjunct REMOVES rows the module leaves admit, so it is not a conjunct " <>
+        "entailed by its neighbours (S9-21)",
+      strays != [] and
+        Enum.all?(strays, fn k ->
+          rows |> Enum.find(&(&1["key"] == k)) |> Map.get("leg") != "server"
+        end)
+    )
+
+    halt_unless(strays != [])
+
     IO.puts("""
 
       The generator catches every one of them — a population that is not the set its
@@ -1045,6 +1202,41 @@ defmodule CrosswalkControls do
       Every one of these drop figures is measured on the shipped anchor by the same
       machinery that evaluates the committed selector.
     """)
+  end
+
+  # The module prefixes the server file's own selector names, read OUT of the
+  # committed selector rather than listed here: a second copy would be a second
+  # thing to keep true, and the copy is always the one that rots (D4).
+  defp server_modules(server) do
+    server["the_population_this_file_declares"]["selector"]["all_of"]
+    |> Enum.find_value(fn
+      %{"any_of" => leaves} -> Enum.map(leaves, & &1["value"])
+      _ -> nil
+    end)
+  end
+
+  defp strip_slashes(selector) do
+    update_in(selector, ["all_of"], fn [leg, %{"any_of" => leaves}] ->
+      [
+        leg,
+        %{
+          "any_of" =>
+            Enum.map(leaves, &Map.update!(&1, "value", fn v -> String.trim_trailing(v, "/") end))
+        }
+      ]
+    end)
+  end
+
+  defp replace_prefix(selector, from, to) do
+    update_in(selector, ["all_of"], fn [leg, %{"any_of" => leaves}] ->
+      [
+        leg,
+        %{
+          "any_of" =>
+            Enum.map(leaves, &if(&1["value"] == from, do: %{&1 | "value" => to}, else: &1))
+        }
+      ]
+    end)
   end
 
   # --- composition: what MES-104's multi-file crosswalk made possible -------
@@ -1214,6 +1406,102 @@ defmodule CrosswalkControls do
       end
     )
 
+    # --- the COMPOSED check id, MES-105 (C1c-i) -----------------------------
+    #
+    # The `server-stateless` RequestMetaInvalid trio emits with a TEMPLATE, and
+    # its composed ids occur NOWHERE in the 809 KB build — so the literal guard
+    # `the id is verbatim at a span this row names` could not be satisfied by
+    # any choice of `check_id_found_in`. `check_id_composition` answers the same
+    # question of every PART of the id instead.
+    #
+    # A weaker guard would have let the rows through, and a weaker guard is
+    # exactly what a reader cannot tell from a stronger one by reading a green.
+    # So each limb is planted separately and each refusal is required to NAME
+    # ITS OWN failure: "it raised" is not "the planted defect was caught".
+    composed =
+      Enum.find(axes["checks"], &Map.has_key?(&1, "check_id_composition")) ||
+        halt_with("no axis row uses `check_id_composition` — this block has nothing to test")
+
+    IO.puts(
+      "\n  COMPOSED CHECK ID — #{Enum.at(composed["key"], 2)}\n" <>
+        "    template #{inspect(composed["check_id_composition"]["template"])} " <>
+        "+ #{inspect(composed["check_id_composition"]["substitution"])}"
+    )
+
+    # POSITIVE CONTROL. The unmutated row builds — without it every refusal
+    # below could be a refusal of something the row does wrong anyway.
+    IO.puts("  POSITIVE  the unmutated composed row builds cleanly")
+    run_axes(axes)
+
+    mutate_comp = fn f ->
+      run_axes(mutate_axis(axes, composed["key"], &update_in(&1, ["check_id_composition"], f)))
+    end
+
+    refuses(
+      "COMPOSITION  the substitution changed, so the parts no longer make the id",
+      "composition_does_not_yield_the_check_id",
+      fn -> mutate_comp.(&Map.put(&1, "substitution", "missing-met")) end
+    )
+
+    refuses(
+      "COMPOSITION  the template changed, so it is not verbatim in the build",
+      "composition_part_not_verbatim",
+      fn -> mutate_comp.(&Map.put(&1, "template", "sep-2575-request-meta-invalid-${e.slugg}")) end
+    )
+
+    refuses(
+      "COMPOSITION  the substitution pointed at a span that does not carry it",
+      "composition_part_not_verbatim",
+      fn -> mutate_comp.(&Map.put(&1, "substitution_found_in", "evaluator_excerpt")) end
+    )
+
+    refuses(
+      "COMPOSITION  a span the row does not name",
+      "composition_names_no_such_span",
+      fn -> mutate_comp.(&Map.put(&1, "substitution_found_in", "context:nowhere")) end
+    )
+
+    refuses(
+      "COMPOSITION  a hole that occurs zero times — a literal wearing another name",
+      "composition_hole_occurs_n_times",
+      fn -> mutate_comp.(&Map.put(&1, "hole", "${e.nothing}")) end
+    )
+
+    refuses(
+      "COMPOSITION  BOTH `check_id_found_in` and `check_id_composition` — two answers, one question",
+      "check_id_is_both_located_and_composed",
+      fn ->
+        run_axes(
+          mutate_axis(
+            axes,
+            composed["key"],
+            &Map.put(&1, "check_id_found_in", "evaluator_excerpt")
+          )
+        )
+      end
+    )
+
+    # AND THE ONE THAT MATTERS MOST: with the composition removed the row falls
+    # back to the LITERAL guard, and the literal guard must refuse it — because
+    # the id really is nowhere in the build. If this went green, the composition
+    # field would be decoration on a row the old guard already accepted, and
+    # every refusal above would be about a field nothing needed.
+    refuses(
+      "COMPOSITION  the field REMOVED — the literal guard refuses the row, which is why the " <>
+        "field exists at all",
+      "span_does_not_carry_the_check_id",
+      fn ->
+        run_axes(mutate_axis(axes, composed["key"], &Map.delete(&1, "check_id_composition")))
+      end
+    )
+
+    # RESTORED.
+    IO.puts(
+      "  POSITIVE  the unmutated composed row still builds cleanly, after all seven mutations"
+    )
+
+    run_axes(axes)
+
     # --- G19: a declared check nobody decomposed ----------------------------
     refuses(
       "G19  a DECLARED check with no axis decomposition",
@@ -1299,8 +1587,23 @@ defmodule CrosswalkControls do
     # THE MUTATION THAT SHOWS IT IS NOT VACUOUS: take the check population away
     # and the same edges report bucket 2 as NOT ASKED, not as zero. That is the
     # difference between C1a's answer and this one.
+    #
+    # EVERY declaring file, not just the client one. bucket 2's universe is the
+    # UNION of the check populations the files declare, so with MES-105's server
+    # file also declaring 30 the client-only mutation left a universe standing
+    # and the control read 16-of-30 as `not reported`. The property being tested
+    # is `no declared universe at all`, and the mutation has to produce that
+    # state rather than a smaller one.
     without = tmp("composition-no-checks")
-    run_two_to(Map.delete(client, "the_check_population_this_file_declares"), resid, without)
+    undeclared = &Map.delete(&1, "the_check_population_this_file_declares")
+
+    run_three_to(
+      undeclared.(client),
+      undeclared.(read(@server_edges)),
+      resid,
+      without
+    )
+
     w = read(without)
     File.rm(without)
 
@@ -1414,15 +1717,30 @@ defmodule CrosswalkControls do
 
   defp run_two(client, resid), do: run_two_to(client, resid, tmp("two-mutated"))
 
-  defp run_two_to(client, resid, out) do
-    a = write_tmp("client", client)
-    b = write_tmp("resid", resid)
+  # NAMED `two` FOR THE TWO MUTABLE FILES, and it now writes THREE: the server
+  # file rides along unmutated, exactly as the residual one does. Before MES-105
+  # wired it in, the bucket-2 mutation below built over 54 declared checks while
+  # its baseline came from the committed artefact's 84 — so "bucket 2: 30 -> 15"
+  # read as a catastrophic mutation when what had happened was that the control
+  # stopped building the crosswalk it was measuring. A control that silently
+  # builds a SMALLER artefact than the committed one is the quiet failure this
+  # whole file is written against.
+  defp run_two_to(client, resid, out),
+    do: run_three_to(client, read(@server_edges), resid, out)
+
+  # All three files as DOCUMENTS, for the mutations that have to reach more than
+  # one of them — bucket 2's universe is the union of what the files declare, so
+  # a property about its ABSENCE cannot be produced by editing one file.
+  defp run_three_to(client, server, resid, out) do
+    paths =
+      Enum.map([{"client", client}, {"server", server}, {"resid", resid}], fn {stem, doc} ->
+        write_tmp(stem, doc)
+      end)
 
     try do
-      run_crosswalk(out, edges: [a, b])
+      run_crosswalk(out, edges: paths)
     after
-      File.rm(a)
-      File.rm(b)
+      Enum.each(paths, &File.rm/1)
     end
   end
 
@@ -1444,7 +1762,7 @@ defmodule CrosswalkControls do
   defp run_crosswalk(out, overrides \\ []) do
     edges =
       case Keyword.get(overrides, :edges) do
-        nil -> [@client_edges, @edges]
+        nil -> @all_edges
         one when is_binary(one) -> [one]
         many when is_list(many) -> many
       end
@@ -1475,13 +1793,14 @@ defmodule CrosswalkControls do
     )
   end
 
-  # The mutated CLIENT file plus the untouched residual one — the real shape.
+  # The mutated CLIENT file plus the untouched SERVER and residual ones — the
+  # real three-file shape the committed artefact is built from.
   defp build_edges(doc) do
     path = write_tmp("edges", doc)
     out = tmp("mutated")
 
     try do
-      run_crosswalk(out, edges: [path, @edges])
+      run_crosswalk(out, edges: [path, @server_edges, @edges])
     after
       File.rm(path)
       File.rm(out)
@@ -1574,13 +1893,11 @@ defmodule CrosswalkControls do
     halt_unless(length(rows) == 175)
 
     entries =
-      Enum.flat_map([@client_edges, @edges], fn path ->
+      Enum.flat_map(@all_edges, fn path ->
         Enum.map(read(path)["absence_searches"] || [], &{path, &1})
       end)
 
-    IO.puts(
-      "  #{length(entries)} registered searches across #{length([@client_edges, @edges])} edges files"
-    )
+    IO.puts("  #{length(entries)} registered searches across #{length(@all_edges)} edges files")
 
     IO.puts("  manifest population: #{@manifest} — #{length(rows)} check rows\n")
 
@@ -1649,16 +1966,47 @@ defmodule CrosswalkControls do
       IO.puts("    (#{path})\n")
     end
 
-    fixture = Enum.count(entries, fn {_p, e} -> e["kind"] == "no-oc-fixture-case" end)
+    # THE KINDS, counted rather than named. There were two when this was written
+    # and MES-105 added three more; a control that asserted "exactly two" would
+    # have gone red on a correct file, and one that asserted "at least two"
+    # would stop noticing a kind that quietly vanished. So the histogram is
+    # PRINTED, and what is asserted is that no kind is the only kind — which is
+    # the property the original pair was really about.
+    kinds = entries |> Enum.frequencies_by(fn {_p, e} -> e["kind"] end) |> Enum.sort()
+
+    IO.puts("  `oc:none` reason slugs in use, and how many searches each has:")
+    for {k, n} <- kinds, do: IO.puts("    #{String.pad_trailing(k, 30)} #{n}")
 
     verdict(
-      "BOTH `oc:none` slugs are exercised — #{fixture} fixture-case searches and " <>
-        "#{length(entries) - fixture} scenario searches, so the two are kept apart by use " <>
-        "and not only by convention",
-      fixture > 0 and fixture < length(entries)
+      "every registered search's kind is EXERCISED and none is the only one — the slugs are " <>
+        "kept apart by use and not only by convention (#{length(kinds)} kinds over " <>
+        "#{length(entries)} searches)",
+      length(kinds) > 1 and Enum.all?(kinds, fn {_k, n} -> n > 0 end)
     )
 
-    halt_unless(fixture > 0 and fixture < length(entries))
+    halt_unless(length(kinds) > 1)
+
+    # AND every kind a ROW uses is a kind some ENTRY declares, in both
+    # directions. G23d compares them per row; this is the set comparison, which
+    # catches a slug that has no search behind it at all.
+    row_kinds =
+      @all_edges
+      |> Enum.flat_map(fn path ->
+        read(path)["declared_unmatched"]
+        |> Enum.map(&(&1["tag"] |> String.split("/") |> Enum.at(1)))
+      end)
+      |> Enum.uniq()
+      |> Enum.sort()
+
+    entry_kinds = kinds |> Enum.map(&elem(&1, 0)) |> Enum.sort()
+
+    verdict(
+      "the slugs the ROWS use and the kinds the ENTRIES declare are the same set: " <>
+        "#{inspect(row_kinds)}",
+      row_kinds == entry_kinds
+    )
+
+    halt_unless(row_kinds == entry_kinds)
 
     near_miss_census()
   end
@@ -1680,8 +2028,20 @@ defmodule CrosswalkControls do
     re = Regex.compile!(pattern)
 
     case e["population"] do
-      %{"kind" => "manifest_rows"} ->
-        {"#{length(rows)} manifest rows", length(sweep(rows, re)), length(rows)}
+      %{"kind" => "manifest_rows"} = p ->
+        pop = restrict(e, rows)
+
+        # THE ENTRY'S OWN ROW COUNT, CHECKED. It is a figure in a committed file
+        # and nothing re-derived it before MES-105; an entry claiming to sweep
+        # 119 rows while sweeping 175 would get a zero that was easier than the
+        # one it claimed, and the difference is invisible in the output.
+        if length(pop) != p["rows"] do
+          IO.puts("  #{e["id"]}: RECORDS #{p["rows"]} rows, this run restricts to #{length(pop)}")
+          System.halt(1)
+        end
+
+        {"#{length(pop)} manifest rows#{restrict_label(p["restrict"])}", length(sweep(pop, re)),
+         length(pop)}
 
       %{"kind" => "harness_bytes", "byte_span" => [from, to]} ->
         text = harness_bytes(from, to)
@@ -1697,6 +2057,37 @@ defmodule CrosswalkControls do
         IO.puts("  UNKNOWN POPULATION KIND in #{e["id"]}: #{inspect(other)}")
         System.halt(1)
     end
+  end
+
+  # `restrict` — the SUB-POPULATION an entry declares, applied here rather than
+  # recognised from a label. MES-105 (C1c-i) introduced it because the server
+  # leg needs three kinds of zero and they are not interchangeable:
+  # `no-oc-scenario` means no such check ANYWHERE and sweeps all 175;
+  # `no-oc-server-check` means none on OUR leg and sweeps the 119 server rows,
+  # because the client-leg counterparts it names in its near miss would
+  # otherwise come back as hits; `no-oc-check-in-this-scenario` means none among
+  # the checks the file DECLARES and sweeps those. Sweeping all 175 for the last
+  # two would return their own counterparts and the entry would have to explain
+  # away a zero it could not get.
+  #
+  # It is a {field, value} pair and not a name, so a control cannot be written
+  # that agrees with a label while restricting to something else, and an entry
+  # naming a field the rows do not carry restricts to NOTHING — which then fails
+  # the row-count check above rather than passing with an easy zero.
+  defp restrict(e, rows) do
+    case get_in(e, ["population", "restrict"]) do
+      nil -> rows
+      %{"field" => f, "value" => v} -> Enum.filter(rows, &(Map.get(&1, f) == v))
+      other -> halt_with("#{e["id"]}: unknown population restrict #{inspect(other)}")
+    end
+  end
+
+  defp restrict_label(nil), do: ""
+  defp restrict_label(%{"field" => f, "value" => v}), do: " where #{f} = #{v}"
+
+  defp halt_with(msg) do
+    IO.puts("  " <> msg)
+    System.halt(1)
   end
 
   defp harness_bytes(from, to) do
@@ -1922,7 +2313,7 @@ defmodule CrosswalkControls do
         "G22b  a client member B2b has and no edges file carries",
         ["G22b", "is NOT total over it", cg9["key"]],
         fn out ->
-          os_crosswalk(out, attribution: attr_path, edges: [edges_path, @edges])
+          os_crosswalk(out, attribution: attr_path, edges: [edges_path, @server_edges, @edges])
         end
       )
     after
@@ -2130,7 +2521,7 @@ defmodule CrosswalkControls do
 
   defp os_crosswalk(out, overrides) do
     edges =
-      Enum.flat_map(Keyword.get(overrides, :edges, [@client_edges, @edges]), &["--edges", &1])
+      Enum.flat_map(Keyword.get(overrides, :edges, @all_edges), &["--edges", &1])
 
     System.cmd(
       "mix",
@@ -2511,6 +2902,7 @@ defmodule CrosswalkControls do
         Enum.map(
           [
             @client_edges,
+            @server_edges,
             @edges,
             @c1_axes,
             @a3_axes,

@@ -1,17 +1,11 @@
 {
   "bucket": "5a",
-  "count": 0,
+  "count": 20,
   "derivation": "projection",
-  "emptiness_reason": {
-    "code": "by_slice",
-    "measured": "bucket-5 cells with `oc_key[0] == \"server\"`: 0 of 62. The other 62 are client-leg.",
-    "result": "CHECKED, AND ZERO — within the declared slice. Not 'never asked'.",
-    "ticket_that_would_fill_it": "C1b (MES-104, client leg) and C1c (MES-105, server leg) widen the population.",
-    "what_would_fill_it": "a server-leg agreement inside the declared slice. THIS IS NOT A STRUCTURAL FACT. Every green-in-both edge adjudicated so far is client-leg; the declared slice simply contains no server-leg agreement yet. An unqualified empty \"green in both — server\" view would read as \"this SDK agrees with the official suite nowhere on the server leg\", which is FALSE. C1c (MES-105) is the ticket that fills it."
-  },
+  "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 110 declared ET-CC members and 54\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 171 members and\n116 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 3 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "population_banner": "POPULATION: this projection covers 167 declared ET-CC members and 84\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 114 members and\n89 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
   "predicate": "`cells` where the stored `bucket` == \"5\" AND the stored `oc_key[0]` == \"server\". Universe: the crosswalk's edges.",
   "projected_from": {
     "bucket_zero": {
@@ -20,17 +14,762 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 404281,
+      "bytes": 574284,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "a2ea4e8917523d08a91a553d0639e984b74f012b21970509f8489f82f3479255"
+      "sha256": "3ce08b0c1b055d28c3789b25e731852a7e7908938b112ec45d3bf12fb019a466"
     }
   },
   "revision": "2026-07-28",
-  "rows": [],
+  "rows": [
+    {
+      "axes": [
+        {
+          "axis": "discover_result_carries_supported_versions",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "discover_result_carries_capabilities",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the DiscoverResult carries both mandatory discover fields — a supportedVersions list and a capabilities object",
+      "escalation": null,
+      "evidence": "discover_test.exs:24-29 — `assert map[\"supportedVersions\"] == [\"2026-07-28\"]` and `assert is_map(map[\"capabilities\"])`. Both of the check's disjuncts are asserted, so this edge is `:full` rather than `:partial`, and the second assertion is the one that makes it so: the OC predicate is `!g?.supportedVersions||!g?.capabilities`, and a unit asserting only the first would leave the second axis silent.",
+      "member": {
+        "module": "MCP.Protocol.Messages.DiscoverTest",
+        "register_key": "MCP.Protocol.Messages.DiscoverTest/test to_map/1 produces the schema shape",
+        "test": "test to_map/1 produces the schema shape"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-implements-discover",
+        "ServerImplementsDiscover",
+        "Servers MUST implement server/discover.",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "server_info_in_result_meta_carries_a_name",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "server_info_in_result_meta_carries_a_version",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "the server identifies itself in the result's _meta, under io.modelcontextprotocol/serverInfo, by name",
+      "escalation": null,
+      "evidence": "discover_test.exs:30 — `assert map[\"_meta\"][\"io.modelcontextprotocol/serverInfo\"][\"name\"] == \"mcp_elixir_sdk\"`. The VERSION axis is silent and not agreed: the fixture at discover_test.exs:18 does set one — `server_info: %Implementation{name: \"mcp_elixir_sdk\", version: \"2.0.0\"}` — but no assertion reads it back out of the map, so nothing here would redden if `to_map/1` dropped it.",
+      "member": {
+        "module": "MCP.Protocol.Messages.DiscoverTest",
+        "register_key": "MCP.Protocol.Messages.DiscoverTest/test to_map/1 produces the schema shape",
+        "test": "test to_map/1 produces the schema shape"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-identifies-in-result-meta",
+        "ServerIdentifiesInResultMeta",
+        "Servers SHOULD identify themselves via _meta['io.modelcontextprotocol/serverInfo'] on responses (spec PR #3002).",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/server-stateless/sep-2575-server-identifies-in-result-meta/ServerIdentifiesInResultMeta",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "discover_result_carries_supported_versions",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "discover_result_carries_capabilities",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a real server/discover dispatch returns a result carrying supportedVersions",
+      "escalation": null,
+      "evidence": "dispatch_test.exs:122-129 — `assert result[\"supportedVersions\"] == [@version]` off a REAL `Dispatch.dispatch/3`, with `refute Map.has_key?(result, \"protocolVersions\")` pinning the pre-fix shape as gone. Unlike the `to_map/1` unit this one asserts nothing about `capabilities`, so that axis is silent here even though the sibling edge agrees on it — the two are different members and the adjudication is per claim.",
+      "member": {
+        "module": "MCP.Server.DispatchTest",
+        "register_key": "MCP.Server.DispatchTest/test server/discover: schema shape (supportedVersions + CacheableResult fields; serverInfo in _meta)",
+        "test": "test server/discover: schema shape (supportedVersions + CacheableResult fields; serverInfo in _meta)"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-implements-discover",
+        "ServerImplementsDiscover",
+        "Servers MUST implement server/discover.",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "server_info_in_result_meta_carries_a_name",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "server_info_in_result_meta_carries_a_version",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a real server/discover dispatch puts the server's name in the result's _meta serverInfo",
+      "escalation": null,
+      "evidence": "dispatch_test.exs:126-129 — `assert result[\"_meta\"][\"io.modelcontextprotocol/serverInfo\"][\"name\"] == \"mcp_elixir_sdk\"`, with `refute Map.has_key?(result, \"serverInfo\")` pinning that it is NOT top-level. No assertion reads `version`, so that axis is silent.",
+      "member": {
+        "module": "MCP.Server.DispatchTest",
+        "register_key": "MCP.Server.DispatchTest/test server/discover: schema shape (supportedVersions + CacheableResult fields; serverInfo in _meta)",
+        "test": "test server/discover: schema shape (supportedVersions + CacheableResult fields; serverInfo in _meta)"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-identifies-in-result-meta",
+        "ServerIdentifiesInResultMeta",
+        "Servers SHOULD identify themselves via _meta['io.modelcontextprotocol/serverInfo'] on responses (spec PR #3002).",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/server-stateless/sep-2575-server-identifies-in-result-meta/ServerIdentifiesInResultMeta",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "discover_result_carries_supported_versions",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "discover_result_carries_capabilities",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "server/discover over real HTTP returns a result carrying supportedVersions",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:55 — `assert r[\"supportedVersions\"] == [@version]`, where `r` is the decoded `result` of a POST through the real plug. `capabilities` is not asserted anywhere in this unit.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test server/discover returns the schema-shaped result with no version gate",
+        "test": "test server/discover returns the schema-shaped result with no version gate"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-implements-discover",
+        "ServerImplementsDiscover",
+        "Servers MUST implement server/discover.",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "server_info_in_result_meta_carries_a_name",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "server_info_in_result_meta_carries_a_version",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "server/discover over real HTTP puts the server's name in the result's _meta serverInfo",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:57 — `assert r[\"_meta\"][\"io.modelcontextprotocol/serverInfo\"][\"name\"]`. It asserts PRESENCE and not a value, which is exactly what the OC axis `!e?.name` tests; `version` is untouched.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test server/discover returns the schema-shaped result with no version gate",
+        "test": "test server/discover returns the schema-shaped result with no version gate"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-identifies-in-result-meta",
+        "ServerIdentifiesInResultMeta",
+        "Servers SHOULD identify themselves via _meta['io.modelcontextprotocol/serverInfo'] on responses (spec PR #3002).",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/server-stateless/sep-2575-server-identifies-in-result-meta/ServerIdentifiesInResultMeta",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "client_info_less_request_is_not_an_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "client_info_less_request_returns_http_200",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a server/discover request carrying no clientInfo is SERVED — HTTP 200 with a result, not an error",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:52-55 — `conn = post(opts(), rpc(\"server/discover\", %{}))` sends `params` with NO `_meta` at all, and the unit then asserts `assert conn.status == 200` and reads `result` back with `assert r[\"supportedVersions\"] == [@version]`. Both axes are covered: the status assertion is the HTTP-200 axis literally, and reading the `result` key is the no-error axis — `result(conn)` returns `nil` for an error body and the equality would redden. THE FIXTURES DIFFER AND THE DIFFERENCE IS STATED: the OC probe omits `clientInfo` ALONE (it sends protocolVersion and clientCapabilities), while this unit omits the whole `_meta`. For `server/discover` the two coincide — the unit's own name says `with no version gate`, and the check's own scenario places it on a method that applies none — so the claim entails the check's case rather than merely resembling it. On any OTHER method it would not, and this edge must not be read as licensing that.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test server/discover returns the schema-shaped result with no version gate",
+        "test": "test server/discover returns the schema-shaped result with no version gate"
+      },
+      "note": "The only edge in this slice that is `:full` against a GREEN check on BOTH axes without a silent one to carry it. It is also the slice's clearest case of an ET unit being STRONGER than the OC check: the check asks whether an absent `clientInfo` is tolerated, the unit asks whether an absent `_meta` is.",
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-request-meta-client-info-optional",
+        "RequestMetaClientInfoOptional",
+        "Serves requests whose _meta omits io.modelcontextprotocol/clientInfo (clientInfo is a SHOULD).",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/server-stateless/sep-2575-request-meta-client-info-optional/RequestMetaClientInfoOptional",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "advertised_tools_capability_is_honoured",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "unadvertised_tools_capability_yields_method_not_found",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a server advertising the tools capability answers tools/list with a tools array",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:62-63 — `list = post(opts(), rpc(\"tools/list\", with_meta(%{}))) |> result()` and `assert Enum.any?(list[\"tools\"], &(&1[\"name\"] == \"whoami\"))`: `tools/list` answers with a list, and it contains a real tool. The second axis is the OTHER arm of the check's `h.tools` CASE SPLIT — what a server that does NOT advertise the capability must do — and this SDK advertises it, so no unit of ours can take that branch. Silent, and silent for a reason that is a property of the check rather than a gap in the suite.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/list then tools/call work directly, no initialize first",
+        "test": "test tools/list then tools/call work directly, no initialize first"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-discover-capabilities-match-handlers",
+        "DiscoverCapabilitiesMatchHandlers",
+        "capabilities matches what the server honors on real RPC calls",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "listen_stream_notifications_carry_the_subscription_id",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the acknowledgement carries this subscription's id in params._meta under io.modelcontextprotocol/subscriptionId",
+      "escalation": null,
+      "evidence": "subscriptions_dispatch_test.exs:105-112 — the whole acknowledgement compared against the pinned example, including `\"_meta\" => %{@sub_id_key => \"listen-1\"}` inside `\"params\" => %{`. The OC axis quantifies over EVERY `notifications/*` frame on a listen stream — `t=N.filter(e=>typeof e?.method==`string`&&e.method.startsWith(`notifications/`))` — and the acknowledgement's own method is `notifications/subscriptions/acknowledged`, so the ack is inside that population and this claim covers the axis over it.",
+      "member": {
+        "module": "MCP.Server.SubscriptionsDispatchTest",
+        "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) the acknowledgment matches the pinned SubscriptionsAcknowledgedNotification example",
+        "test": "test T-1 wire shapes (pinned to schema/2026-07-28 examples) the acknowledgment matches the pinned SubscriptionsAcknowledgedNotification example"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-tags-subscription-id",
+        "ServerTagsSubscriptionId",
+        "Listen-stream notifications carry _meta.../subscriptionId",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "listen_stream_notifications_carry_the_subscription_id",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a resources/updated notification frame carries the subscription id in params._meta",
+      "escalation": null,
+      "evidence": "subscriptions_dispatch_test.exs:138-149 — the framed notification compared whole, carrying `\"_meta\" => %{@sub_id_key => \"listen-1\"}` beside `\"uri\" => \"file:///project/src/main.rs\"`. `Methods.resources_updated()` is a `notifications/` method, so this frame is in the axis's population.",
+      "member": {
+        "module": "MCP.Server.SubscriptionsDispatchTest",
+        "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) a resources/updated frame matches the pinned notification example",
+        "test": "test T-1 wire shapes (pinned to schema/2026-07-28 examples) a resources/updated frame matches the pinned notification example"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-tags-subscription-id",
+        "ServerTagsSubscriptionId",
+        "Listen-stream notifications carry _meta.../subscriptionId",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "listen_stream_notifications_carry_the_subscription_id",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the acknowledgement's params._meta subscriptionId is the id the request was opened with, uncoerced",
+      "escalation": null,
+      "evidence": "subscriptions_dispatch_test.exs:219-221 — `assert sub.ack[\"params\"][\"_meta\"][Meta.subscription_id_key()] == 42` and `assert sub.ack[\"method\"] == Methods.subscriptions_acknowledged()` for a subscription opened with `id: 42`. The key is reached through `Meta.subscription_id_key()` rather than spelled out, and that function's value is what the axis names — the indirection is why this evidence quotes the call and not the string.",
+      "member": {
+        "module": "MCP.Server.SubscriptionsDispatchTest",
+        "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-2 the acknowledgment reports what was honoured the ack carries this subscription's id in _meta",
+        "test": "test T-2 the acknowledgment reports what was honoured the ack carries this subscription's id in _meta"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-tags-subscription-id",
+        "ServerTagsSubscriptionId",
+        "Listen-stream notifications carry _meta.../subscriptionId",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "first_listen_stream_frame_is_the_acknowledgement",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the first frame a subscriptions/listen stream carries is notifications/subscriptions/acknowledged",
+      "escalation": null,
+      "evidence": "subscriptions_stream_test.exs:272-276 — `assert {:ok, event, _stream} = next_event(stream)` on a freshly opened stream, then `assert ack[\"method\"] == \"notifications/subscriptions/acknowledged\"`. The FIRST event off the socket, which is the axis's `t=N[0]` exactly: the OC predicate is `t?.method===`notifications/subscriptions/acknowledged``, and the position lives in the binding rather than in the comparison on both sides.",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the first message is notifications/subscriptions/acknowledged",
+        "test": "test the stream opens with its acknowledgment the first message is notifications/subscriptions/acknowledged"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-sends-subscription-ack",
+        "ServerSendsSubscriptionAck",
+        "notifications/subscriptions/acknowledged is the first message on a subscriptions/listen stream",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/server-stateless/sep-2575-server-sends-subscription-ack/ServerSendsSubscriptionAck",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "listen_stream_notifications_carry_the_subscription_id",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "that first frame carries the subscription id in params._meta",
+      "escalation": null,
+      "evidence": "subscriptions_stream_test.exs:277 — `assert ack[\"params\"][\"_meta\"][@sub_id_key] == \"listen-1\"`, read off a REAL SSE socket rather than off a constructed map. One member, two claims, two checks: the position claim is the sibling edge on `ServerSendsSubscriptionAck`.",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the first message is notifications/subscriptions/acknowledged",
+        "test": "test the stream opens with its acknowledgment the first message is notifications/subscriptions/acknowledged"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-tags-subscription-id",
+        "ServerTagsSubscriptionId",
+        "Listen-stream notifications carry _meta.../subscriptionId",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "first_listen_stream_frame_is_the_acknowledgement",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "even a handler that emits inside handle_listen/3 cannot get a frame out ahead of the acknowledgement",
+      "escalation": null,
+      "evidence": "subscriptions_stream_test.exs:308-310 — `assert {:ok, first, stream} = next_event(stream)` and `assert decode(first)[\"method\"] == \"notifications/subscriptions/acknowledged\"` against `SubscribingHandler`, which emits INSIDE `handle_listen/3` — i.e. strictly before the ack can have been written. The OC check reads the first frame of a stream opened against a cooperative server; this unit reads it against one built to violate the ordering, so it agrees with the axis on a harder instance than the check itself constructs.",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment nothing bearing this subscription's id precedes its acknowledgment",
+        "test": "test the stream opens with its acknowledgment nothing bearing this subscription's id precedes its acknowledgment"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-sends-subscription-ack",
+        "ServerSendsSubscriptionAck",
+        "notifications/subscriptions/acknowledged is the first message on a subscriptions/listen stream",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/server-stateless/sep-2575-server-sends-subscription-ack/ServerSendsSubscriptionAck",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "listen_stream_notifications_carry_the_subscription_id",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the notification that follows the acknowledgement carries the same subscription id",
+      "escalation": null,
+      "evidence": "subscriptions_stream_test.exs:313-314 — `assert decode(second)[\"method\"] == \"notifications/tools/list_changed\"` and `assert decode(second)[\"params\"][\"_meta\"][@sub_id_key] == \"eager\"`. The SECOND frame, so this claim covers the axis over a delivered notification where the sibling edges cover it over the acknowledgement — between them the two halves of the axis's population.",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment nothing bearing this subscription's id precedes its acknowledgment",
+        "test": "test the stream opens with its acknowledgment nothing bearing this subscription's id precedes its acknowledgment"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-tags-subscription-id",
+        "ServerTagsSubscriptionId",
+        "Listen-stream notifications carry _meta.../subscriptionId",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "listen_stream_notifications_carry_the_subscription_id",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a notification delivered over the wire is stamped with the subscription id in params._meta",
+      "escalation": null,
+      "evidence": "subscriptions_stream_test.exs:334-335 — `assert frame[\"method\"] == \"notifications/tools/list_changed\"` and `assert frame[\"params\"][\"_meta\"][@sub_id_key] == \"listen-1\"`, read off a real SSE socket after a push at the handler's sink.",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test delivery over the wire an opted-in notification arrives, stamped with the subscription id",
+        "test": "test delivery over the wire an opted-in notification arrives, stamped with the subscription id"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-tags-subscription-id",
+        "ServerTagsSubscriptionId",
+        "Listen-stream notifications carry _meta.../subscriptionId",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "unrequested_notification_type_is_not_delivered",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a notification type the filter did not request never reaches the stream",
+      "escalation": null,
+      "evidence": "subscriptions_stream_test.exs:348-356 — three unrequested pushes (`sink.(\"notifications/prompts/list_changed\", %{})` among them), then one that IS opted in, and `assert decode(event)[\"method\"] == \"notifications/tools/list_changed\"`: the NEXT event off the socket is the requested one, so none of the three arrived. The opted-in push is the positive control the OC check does not have — without it the assertion would pass just as well on a dead stream.",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test delivery over the wire an unrequested type never reaches the wire",
+        "test": "test delivery over the wire an unrequested type never reaches the wire"
+      },
+      "note": "The polarity mirrors the check's rather than matching its fixture: the OC probe filters to `promptsListChanged` and provokes a TOOL change, this unit filters to `toolsListChanged` and pushes prompts/progress/message. Same axis, opposite direction, which is stronger corroboration than the same direction twice.",
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-honors-notification-filter",
+        "ServerHonorsNotificationFilter",
+        "Server doesn't send notification types the client didn't request",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/server-stateless/sep-2575-server-honors-notification-filter/ServerHonorsNotificationFilter",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "listen_stream_notifications_carry_the_subscription_id",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a live subscription goes on delivering frames stamped with its own id after another client's crafted request fails",
+      "escalation": null,
+      "evidence": "subscriptions_stream_test.exs:992-994 — `assert :ok = sink.(\"notifications/tools/list_changed\", %{})` and `assert decode(event)[\"params\"][\"_meta\"][@sub_id_key] == \"sub-A\"` after a second client's crafted request, whose body set that same id at subscriptions_stream_test.exs:978 (`\"id\" => \"sub-A\",`), has been refused with 500. The continued delivery is what carries the claim; the tag on it is what covers this axis.",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test the obligation is armed off the decoded message a second client cannot tear down a live subscription it does not own (R4)",
+        "test": "test the obligation is armed off the decoded message a second client cannot tear down a live subscription it does not own (R4)"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-tags-subscription-id",
+        "ServerTagsSubscriptionId",
+        "Listen-stream notifications carry _meta.../subscriptionId",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "error_response_echoes_the_request_id",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the SSE-framed error a refused listen produces carries the JSON-RPC id of the request that provoked it",
+      "escalation": null,
+      "evidence": "subscriptions_stream_test.exs:683-685 — `refusal = Jason.decode!(event.data)`, `assert refusal[\"id\"] == \"refuse-me\"` and `assert refusal[\"error\"][\"code\"] == -32_603`, against a request whose body set `\"id\" => \"refuse-me\"` at subscriptions_stream_test.exs:666 (`\"id\" => \"refuse-me\",`). The OC predicate is `e.id!==t` at the helper `u=(e,t)=>{e&&e.error&&e.id!==t&&r.push` — an error response whose id differs from the request's is the failure — and this is that comparison made by hand on a real response.",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test every exit from a listen runs teardown a REFUSED listen tells the handler and kills the sink (F1)",
+        "test": "test every exit from a listen runs teardown a REFUSED listen tells the handler and kills the sink (F1)"
+      },
+      "note": "Both halves of the check's guard are present in the unit and not merely in its outcome: the response IS an error (`refusal[\"error\"][\"code\"]`), which is the helper's `e&&e.error` precondition, and the id is compared against the one the request carried.",
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-error-jsonrpc-id",
+        "HttpServerErrorJsonrpcId",
+        "All error responses carry the request JSON-RPC id",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/server-stateless/sep-2575-http-server-error-jsonrpc-id/HttpServerErrorJsonrpcId",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "error_response_echoes_the_request_id",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a handler-side exit during teardown does not cost the error response its request id",
+      "escalation": null,
+      "evidence": "subscriptions_stream_test.exs:876-877 — `assert refusal[\"id\"] == \"exit-in-teardown\"` and `assert refusal[\"error\"][\"code\"] == -32_603` for a request that set `\"id\" => \"exit-in-teardown\"` at subscriptions_stream_test.exs:854 (`\"id\" => \"exit-in-teardown\",`). The same axis as the refusal edge, on the path where the SDK's own teardown faults — an instance the OC probe set cannot construct, because it has no way to make a conforming server's teardown exit.",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test the exits that raise before a branch is chosen a handler-side exit in teardown does not replace the refusal response (R3)",
+        "test": "test the exits that raise before a branch is chosen a handler-side exit in teardown does not replace the refusal response (R3)"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-error-jsonrpc-id",
+        "HttpServerErrorJsonrpcId",
+        "All error responses carry the request JSON-RPC id",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/server-stateless/sep-2575-http-server-error-jsonrpc-id/HttpServerErrorJsonrpcId",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    }
+  ],
   "schema": "bucket-view/1",
   "title": "green in both — server",
   "universe": {
-    "count": 76,
+    "count": 106,
     "name": "edges",
     "of": "the crosswalk's `cells`"
   },

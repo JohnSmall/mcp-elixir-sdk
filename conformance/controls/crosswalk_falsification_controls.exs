@@ -69,7 +69,15 @@ defmodule CrosswalkFalsificationControls do
   # members — and the residual file rides along unmutated, so each control runs
   # over the real two-file crosswalk rather than over a single-file one.
   @client_edges "conformance/data/crosswalk-edges-client.json"
+  # MES-105 (C1c-i)'s SERVER-leg file rides along unmutated in every build, the
+  # same way the residual one does, so each control runs over the real
+  # THREE-file crosswalk. Leaving it out is not a red but a quieter green: the
+  # `drift` pin below compared 72 of 106 rows and still reported "0 moved",
+  # which is why that mode asserts its own denominator against the committed
+  # artefact rather than against whatever it happened to build.
+  @server_edges "conformance/data/crosswalk-edges-server.json"
   @edges "conformance/data/crosswalk-edges.json"
+  @all_edges [@client_edges, @server_edges, @edges]
   @c1_axes "conformance/data/oc-axes-c1.json"
   @a3_axes "docs/conformance/oc-axes-2026-07-28.json"
   @manifest "docs/conformance/in-scope-2026-07-28.json"
@@ -84,19 +92,24 @@ defmodule CrosswalkFalsificationControls do
   def run(["refusals"]), do: refusals()
   def run(["wrong_reason"]), do: wrong_reason()
   def run(["drift"]), do: drift()
+  def run(["escalations"]), do: escalations()
   def run(["second_source"]), do: second_source()
   def run(["exit_status"]), do: exit_status()
 
   def run(["all"]) do
     refusals()
     drift()
+    escalations()
     second_source()
     exit_status()
-    IO.puts("\n== ALL FOUR MODES GREEN ==\n")
+    IO.puts("\n== ALL FIVE MODES GREEN ==\n")
   end
 
   def run(_) do
-    IO.puts("usage: refusals | drift | second_source | exit_status | wrong_reason | all")
+    IO.puts(
+      "usage: refusals | drift | escalations | second_source | exit_status | wrong_reason | all"
+    )
+
     System.halt(2)
   end
 
@@ -366,7 +379,7 @@ defmodule CrosswalkFalsificationControls do
     header("DRIFT — a wrong crosswalk moves a bucket, and is caught naming the row (AC2)")
 
     require_harness!()
-    docs = %{@client_edges => read(@client_edges), @edges => read(@edges)}
+    docs = Map.new(@all_edges, &{&1, read(&1)})
     committed = assignments(read(@crosswalk_out))
 
     # POSITIVE CONTROL: the unmutated regeneration compares every row and moves
@@ -410,12 +423,19 @@ defmodule CrosswalkFalsificationControls do
         docs,
         committed,
         fn cell, edge ->
-          # TWO edges are bucket 4a with a contradicting first axis — the same
-          # claim asserted at the dispatch layer and over HTTP. The prose above
-          # names the HTTP one, so the predicate does too; uniqueness is then
-          # asserted rather than assumed.
+          # RE-AIMED AGAIN BY MES-105 (C1c-i), and for the reason this control
+          # was built to produce. `4a AND module == StreamableHTTPStatelessTest
+          # AND first axis contradicts` was unique when the 4a population was
+          # two rows; the server leg took it to five, and that module now owns
+          # TWO of them — the `initialize` row the prose above names and a
+          # `RequestMetaInvalid` row that did not exist before. The uniqueness
+          # guard fired, which is the whole point of asserting uniqueness
+          # rather than taking the first hit: a silently re-aimed mutation is a
+          # green that means nothing. The predicate now names the check as well
+          # as the member, so it denotes the row the prose describes.
           cell == "4a" and
             edge["member"]["module"] == "MCP.Transport.StreamableHTTPStatelessTest" and
+            String.contains?(edge["tag"], "method-not-found-404-initialize") and
             hd(edge["axes"])["verdict"] == "contradicts"
         end,
         fn edge ->
@@ -535,8 +555,11 @@ defmodule CrosswalkFalsificationControls do
     # skipped. Mutations 1 and 2 move a row between two buckets, which leaves every
     # total standing; that is what makes the per-row pin the only detector and it is
     # the case `invisible_to_arithmetic/2` exists to demonstrate. This one moves a row
-    # ACROSS the bucketed/escalated boundary, so `escalated` falls 8 -> 7 and bucket 5
-    # rises 59 -> 60, and a totals-based check WOULD see something. Calling
+    # ACROSS the bucketed/escalated boundary, so the `escalated` total falls by one and
+    # bucket 5 rises by one, and a totals-based check WOULD see something. (Written as a
+    # DELTA and not as a pair of figures: MES-105 found the original "8 -> 7 and 59 -> 60"
+    # already stale, because the server leg moved both totals and nothing re-derived a
+    # comment.) Calling
     # `invisible_to_arithmetic/2` here would assert the opposite of what is true, so it
     # is not called; the weaker claim is made instead, and it is still worth making.
     #
@@ -568,6 +591,301 @@ defmodule CrosswalkFalsificationControls do
       The pin is the committed artefact itself. A second copy of the assignments would
       be a second thing to keep true, and the copy is always the one that rots (D4).
     """)
+  end
+
+  # === escalations — MES-105 (C1c-i), at the PM's direction ==================
+  #
+  # A3 §3 has THREE combinations that do not bucket. Two have fired on live data
+  # and are pinned by `drift`. The third —
+  #
+  #     (red OC, green ET, :full)  ->  {:escalate, :divergent_despite_agreement}
+  #
+  # has NEVER fired, on either leg, and C1c-i measured that it cannot fire from
+  # the server-stateless slice's claims either (the file's own
+  # `what_the_red_OC_population_did_and_did_not_exercise` says why). A rule that
+  # has never fired is unfalsified, and the first leg with a substantial red-OC
+  # population is the wrong moment to ship one — so this mode exercises it on
+  # REAL server-stateless data rather than waiting for data that may never come.
+  #
+  # IT IS NOT ENOUGH TO SHOW IT FIRING. A rule that escalated every red-OC edge
+  # would fire here too, and would pass a one-direction control while being
+  # wrong. So each limb is driven in BOTH directions:
+  #
+  #   1. 4a / 4b — the partition that SHARES a verdict pair. A real red-OC edge
+  #      whose shape is :partial buckets 4b; make its shape :contradicting and
+  #      it moves to 4a. Same pair, same file, different mechanism.
+  #   2. divergent_despite_agreement — the same real 4b edge, its silent axis
+  #      raised to `agrees` so the shape becomes :full. It must STOP bucketing
+  #      and escalate.
+  #   3. THE DISCRIMINATION. The same :full mutation, with the OC verdict also
+  #      flipped to green at BOTH committed status artefacts. It must stop
+  #      escalating and bucket as 5. Without this limb the mode attests
+  #      "escalates when :full", which is a weaker claim than the rule makes.
+  #
+  # The OC verdict is flipped at the ARTEFACTS and not in the edge: the edge
+  # file carries no OC verdict, by design (the generator derives it), so the
+  # only honest way to mutate it is to mutate the source it is derived from.
+  # BOTH artefacts are patched because G16 compares them and would refuse a
+  # one-sided edit before the bucket was ever computed — which would be a
+  # refusal for the wrong reason, and a refusal for the wrong reason is not
+  # evidence (the `wrong_reason` mode exists for exactly that confusion).
+
+  defp escalations do
+    header("ESCALATIONS — 4a/4b both ways, and the rule that had never fired (MES-105)")
+
+    require_harness!()
+    docs = Map.new(@all_edges, &{&1, read(&1)})
+    committed = assignments(read(@crosswalk_out))
+
+    positive("the unmutated three-file build reproduces every committed assignment")
+    {n0, moved0} = compare(committed, docs)
+
+    verdict(
+      "#{n0} rows compared, #{length(moved0)} moved",
+      n0 == map_size(committed) and moved0 == []
+    )
+
+    halt_unless(n0 == map_size(committed) and moved0 == [])
+
+    # THE TARGET, found by property and asserted unique. A red-OC, green-ET,
+    # :partial edge on the server leg whose silent axis is `http_status` — the
+    # 4b shape C1c-i's own close-out calls the purest instance of it.
+    target =
+      read(@crosswalk_out)["cells"]
+      |> Enum.filter(fn c ->
+        c["bucket"] == "4b" and c["member"]["module"] == "MCP.Server.DispatchTest" and
+          Enum.any?(c["axes"], &(&1["axis"] == "http_status" and &1["verdict"] == "silent")) and
+          String.contains?(c["tag"], "method-not-found-404-ping")
+      end)
+
+    IO.puts("  target population: #{length(target)} cell(s) match the predicate")
+    for c <- target, do: IO.puts("    #{c["tag"]}")
+
+    verdict(
+      "exactly one target, so the mutations below cannot silently re-aim",
+      length(target) == 1
+    )
+
+    halt_unless(length(target) == 1)
+
+    [cell] = target
+    tag = cell["tag"]
+    key = Enum.at(cell["oc_key"], 3)
+
+    # KEYED ON THE JOIN'S OWN KEY — (member, claim, tag) — and not on the tag
+    # alone. Two edges in this file carry this tag: C1a's inherited row from
+    # `StreamableHTTPStatelessTest` and C1c-i's from `Server.DispatchTest`, the
+    # same claim asserted at two seams. Keying on the tag matched both and the
+    # uniqueness guard fired, which is the second time on this ticket that a
+    # predicate written for the two-file crosswalk stopped denoting one row.
+    slot = {cell["member"]["register_key"], cell["claim"], tag}
+    picks? = fn edge -> {edge["member"]["register_key"], edge["claim"], edge["tag"]} == slot end
+
+    IO.puts("""
+
+      LIMB 1 — 4a / 4b, the partition that shares a verdict pair. The target is red OC,
+      green ET and :partial, so it buckets 4b. Turn its ONE agreeing axis into a
+      contradiction and the shape becomes :contradicting, which is 4a. The two cells
+      differ by nothing except the shape, which is exactly what makes the pair hard.
+    """)
+
+    {as_4a, _} =
+      mutate_one(docs, committed, fn _c, e -> picks?.(e) end, fn edge ->
+        update_in(edge, ["axes"], fn axes ->
+          Enum.map(
+            axes,
+            &if(&1["verdict"] == "agrees", do: %{&1 | "verdict" => "contradicts"}, else: &1)
+          )
+        end)
+      end)
+
+    {n1, moved1} = compare(committed, as_4a)
+    show_moves("LIMB 1", n1, moved1)
+    verdict("exactly one row moved, 4b -> 4a", match?([%{from: "4b", to: "4a"}], moved1))
+    halt_unless(match?([%{from: "4b", to: "4a"}], moved1))
+
+    IO.puts("""
+
+      LIMB 2 — the rule that had never fired. Raise the SILENT axis to `agrees` and the
+      shape becomes :full. `(red, green, :full)` has no row in A3 §3's table, so
+      MatchKey.bucket/1 escalates it as `divergent_despite_agreement` and the row leaves
+      the buckets altogether. This is its FIRST firing on real data, on either leg.
+    """)
+
+    {as_full, _} =
+      mutate_one(docs, committed, fn _c, e -> picks?.(e) end, fn edge ->
+        update_in(edge, ["axes"], fn axes ->
+          Enum.map(
+            axes,
+            &if(&1["verdict"] == "silent", do: %{&1 | "verdict" => "agrees"}, else: &1)
+          )
+        end)
+      end)
+
+    {n2, moved2} = compare(committed, as_full)
+    show_moves("LIMB 2", n2, moved2)
+
+    verdict(
+      "exactly one row moved, 4b -> escalated",
+      match?([%{from: "4b", to: "escalated"}], moved2)
+    )
+
+    halt_unless(match?([%{from: "4b", to: "escalated"}], moved2))
+
+    named = escalation_reason(as_full, slot)
+    IO.puts("  reason recorded: #{String.slice(named, 0, 110)}")
+
+    verdict(
+      "and it escalates as divergent_despite_agreement — the REASON, not merely the fact",
+      String.contains?(named, "divergent_despite_agreement")
+    )
+
+    halt_unless(String.contains?(named, "divergent_despite_agreement"))
+
+    IO.puts("""
+
+      LIMB 3 — THE DISCRIMINATION. The same :full edge, with the OC verdict flipped to
+      green at both committed status artefacts. `(green, green, :full)` IS a row in the
+      table, so the escalation must STOP and the edge must bucket as 5. A rule that
+      labelled every red-OC edge would keep escalating here and pass limb 2 regardless.
+    """)
+
+    {n3, moved3} = compare_with_green_oc(committed, as_full, key)
+    show_moves("LIMB 3", n3, moved3)
+
+    # TWO rows move, not one, and the second is the point rather than noise. The
+    # OC verdict is a property of the CHECK, not of the edge — the edges file
+    # carries none and the generator derives it — so flipping this check's
+    # status moves EVERY edge on it. This tag carries two: the target, and C1a's
+    # inherited row asserting the same claim at the transport seam. The target
+    # goes :full -> bucket 5 (the escalation stops); the sibling stays :partial
+    # and goes 4b -> 5. Asserting "exactly one moved" would have been asserting
+    # that an edge nobody mutated was unaffected by a change to its own check,
+    # which is false and would have had to be made true by weakening the patch.
+    siblings =
+      read(@crosswalk_out)["cells"]
+      |> Enum.filter(&(&1["tag"] == tag and &1["bucket"] == "4b"))
+
+    IO.puts("  edges on this check committed at 4b: #{length(siblings)} (every one must move)")
+
+    target_move =
+      Enum.find(moved3, &(&1.tag == tag and &1.claim == cell["claim"]))
+
+    good =
+      length(moved3) == length(siblings) and
+        Enum.all?(moved3, &(&1.tag == tag and &1.from == "4b" and &1.to == "5")) and
+        target_move != nil
+
+    verdict(
+      "the same edge, one OC verdict greener, moves 4b -> 5 and does NOT escalate — " <>
+        "and the movers are exactly this check's edges",
+      good
+    )
+
+    halt_unless(good)
+
+    # RESTORED, and the OC flip restored with it: the patched artefacts are temp
+    # copies and the committed ones were never written to.
+    {n4, moved4} = compare(committed, docs)
+
+    verdict(
+      "RESTORED — #{n4} rows compared, #{length(moved4)} moved",
+      n4 == map_size(committed) and moved4 == []
+    )
+
+    halt_unless(moved4 == [])
+
+    IO.puts("""
+
+      WHAT THIS MODE DOES NOT ESTABLISH. That any server-stateless edge IS
+      divergent-despite-agreement — none is, and the edges file says so and says why. It
+      establishes that the rule is reachable, that it names its own reason, and that it
+      is DISCRIMINATING: it is decided by the verdict pair and the shape together, not by
+      redness alone. That is the most a control can say about a combination the data has
+      not produced, and it is more than "implemented and unit-tested" was saying.
+    """)
+  end
+
+  # The escalation REASON for one cell, read out of a regenerated artefact and
+  # found by the join's own key. `escalated` is not a bucket, so `assignments/1`
+  # collapses every escalation to the same label — asserting on that alone would
+  # pass for an edge escalating for a DIFFERENT reason, which is the
+  # `wrong_reason` confusion one level down. Keyed on {member, claim, tag} and
+  # not on the tag, for the same reason the mutation is: two edges share this
+  # tag and `Enum.find` on it returned the UNMUTATED one, reading the absent
+  # reason of a row that never escalated as a failure of the row that did.
+  defp escalation_reason(docs, {_m, _c, _t} = slot) do
+    regenerate(docs)["cells"]
+    |> Enum.find(%{}, &({&1["member"]["register_key"], &1["claim"], &1["tag"]} == slot))
+    |> Map.get("escalation", "")
+    |> to_string()
+  end
+
+  # Regenerate with ONE check's committed status flipped to SUCCESS in BOTH the
+  # manifest and A5's bucket-0 artefact, keyed on the check NAME (the fourth
+  # field of A1's six-field key). Both, because G16 compares them and a one-sided
+  # patch refuses before a bucket is computed.
+  defp compare_with_green_oc(committed, docs, name) do
+    manifest = read(@manifest)
+    denominator = read(@denominator)
+
+    patched_manifest =
+      update_in(manifest["scenarios"], fn scenarios ->
+        Enum.map(scenarios, fn s ->
+          update_in(s["checks"], fn cs ->
+            Enum.map(
+              cs,
+              &if(Enum.at(&1["key"], 3) == name, do: Map.put(&1, "status", "SUCCESS"), else: &1)
+            )
+          end)
+        end)
+      end)
+
+    patched_denominator =
+      update_in(denominator["checks"], fn cs ->
+        Enum.map(
+          cs,
+          &if(Enum.at(&1["key"], 3) == name, do: Map.put(&1, "status", "SUCCESS"), else: &1)
+        )
+      end)
+
+    flipped_m = count_status(patched_manifest, manifest)
+
+    IO.puts(
+      "  OC verdict patched for #{inspect(name)} in both artefacts (#{flipped_m} manifest row(s))"
+    )
+
+    halt_unless(flipped_m == 1)
+
+    mpath = write_tmp("manifest", patched_manifest)
+    dpath = write_tmp("denominator", patched_denominator)
+    paths = Enum.map(docs, fn {n, doc} -> write_tmp(Path.basename(n), doc) end)
+    out = tmp("green-oc")
+
+    try do
+      crosswalk(out, edges: paths, manifest: mpath, denominator: dpath)
+      regenerated = assignments(read(out))
+      shared = committed |> Map.keys() |> Enum.filter(&Map.has_key?(regenerated, &1))
+
+      moved =
+        shared
+        |> Enum.filter(&(Map.fetch!(committed, &1) != Map.fetch!(regenerated, &1)))
+        |> Enum.map(fn {_m, claim, t} = k ->
+          %{from: Map.fetch!(committed, k), to: Map.fetch!(regenerated, k), claim: claim, tag: t}
+        end)
+
+      {length(shared), moved}
+    after
+      Enum.each([mpath, dpath, out | paths], &File.rm/1)
+    end
+  end
+
+  defp count_status(patched, original) do
+    flat = fn doc ->
+      Enum.flat_map(doc["scenarios"], & &1["checks"]) |> Enum.map(& &1["status"])
+    end
+
+    Enum.zip(flat.(patched), flat.(original)) |> Enum.count(fn {a, b} -> a != b end)
   end
 
   # The property that makes a per-ROW pin necessary rather than decorative.
@@ -974,8 +1292,8 @@ defmodule CrosswalkFalsificationControls do
   defp args(out, o) do
     edges =
       case Keyword.get(o, :edges) do
-        nil -> [@client_edges, @edges]
-        one when is_binary(one) -> [one, @edges]
+        nil -> @all_edges
+        one when is_binary(one) -> [one, @server_edges, @edges]
         many when is_list(many) -> many
       end
 
@@ -985,7 +1303,7 @@ defmodule CrosswalkFalsificationControls do
           "--manifest",
           Keyword.get(o, :manifest, @manifest),
           "--denominator",
-          @denominator,
+          Keyword.get(o, :denominator, @denominator),
           "--register",
           @register,
           "--attribution",

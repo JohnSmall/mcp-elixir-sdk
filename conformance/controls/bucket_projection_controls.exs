@@ -296,15 +296,51 @@ defmodule BucketProjectionControls do
     verdict("the check enters 2b and NOT 2a, and only its own edge leaves", ok)
     halt_unless(ok)
 
-    empties = emptiness_codes(mutated)
-    IO.puts("            2a: #{inspect(empties["2a"])}   2b: #{inspect(empties["2b"])}")
+    # THE LEG SPLIT, which is what 2a and 2b ARE. The old assertion here read
+    # "2a still declares itself empty; 2b no longer does" — true only while the
+    # server leg was unadjudicated. MES-105 (C1c-i) put 16 server checks in 2a,
+    # so 2a stopped being empty and a correct mutation started failing a
+    # statement about the world rather than about the projector.
+    #
+    # What the mutation actually demonstrates survives that: a CLIENT check
+    # losing its edges lands in 2b, 2a is untouched, and the two views are split
+    # by LEG and not by which one happens to be populated. Asserted over the
+    # membership of both, so it holds at every size including zero.
+    legs = fn id, doc -> Enum.map(view_checks(id, doc), &(&1 |> String.split("/") |> hd())) end
+
+    a2 = legs.("2a", mutated)
+    b2 = legs.("2b", mutated)
+
+    IO.puts("            2a: #{length(a2)} checks   2b: #{length(b2)} checks")
+
+    split =
+      Enum.all?(a2, &(&1 == "oc:server")) and Enum.all?(b2, &(&1 == "oc:client")) and
+        view_checks("2a", mutated) == view_checks("2a", doc) and
+        tag in view_checks("2b", mutated)
 
     verdict(
-      "2a still declares itself empty; 2b no longer does",
-      empties["2a"] != nil and empties["2b"] == nil
+      "2a holds only server checks and 2b only client ones; 2a is UNCHANGED by a client " <>
+        "mutation and 2b has gained exactly this check",
+      split
     )
 
-    halt_unless(empties["2a"] != nil and empties["2b"] == nil)
+    halt_unless(split)
+  end
+
+  # The checks one bucket-2 view holds, rendered from a crosswalk document.
+  defp view_checks(id, doc) do
+    dir = project_to(doc)
+
+    try do
+      Path.join(dir, "bucket-#{id}-#{@rev}.json")
+      |> File.read!()
+      |> Jason.decode!()
+      |> Map.get("rows", [])
+      |> Enum.map(& &1["tag"])
+      |> Enum.sort()
+    after
+      File.rm_rf!(dir)
+    end
   end
 
   defp moved(label, base, mutated, expected, why) do

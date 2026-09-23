@@ -1,0 +1,1920 @@
+{
+ "schema": "crosswalk-edges/1",
+ "revision": "2026-07-28",
+ "owner": "MES-105 (C1c-i). C1a's (MES-97) 4 edges over 2 server members were MOVED here unchanged.",
+ "authored_by_hand": true,
+ "what_this_is": "The AUTHORED adjudications for the SERVER leg — one record per (ET-CC member, claim, OC check). Judgements are data with evidence; derivations are code. `oc_key`, `shape` and `bucket` appear NOWHERE here: the generator derives them through MCP.Conformance.MatchKey and refuses any edge whose stored tag does not re-encode from the key it resolves to. It mirrors `crosswalk-edges-client.json` field for field, and where it does NOT the difference is stated on the field rather than left to be noticed.",
+ "why_this_file_declares_no_leg_yet": "`leg` and `the_sub_populations_this_file_records` are DELIBERATELY ABSENT, and they are both-or-neither. Declaring `leg: server` is what turns G22b on — the generator then evaluates `all_of[{leg equals server}]` fresh against B2b and refuses the build unless EVERY server ET-CC member has a row here. This file holds 59 of the leg's 145, so declaring the leg would correctly RED the build. `leg_totality!` therefore reports NOT ASSERTED, which is the honest state of a partial leg and not a gap: the assertion becomes available exactly when C1c-iv closes the leg, and until then nothing here claims a totality it does not have. Note what this costs — G22b is the guard that would catch a MEMBER SILENTLY MISSING from the leg, and it cannot fire on this file. What still bites is G15a, which compares this file's derived population against its own selector's denotation in both directions; that catches a member missing from THIS SLICE, and it is strictly weaker than the leg-wide check.",
+ "what_C1c_i_establishes_for_C1c_ii_iii_and_iv": "This is the FIRST server-leg ticket and three things it settles are inherited rather than re-decided. (1) THE FILE: one edges file for the whole server leg, this one, appended to by each later slice — not one per ticket, which would split the leg by the accident of which member was adjudicated first. (2) THE MEMBER SELECTOR: `all_of[{leg equals server}, any_of[{key starts_with \"<Module>/\"} ...]]`, evaluated against B2b. The server rows carry no `cg` and no `tokens` — measured, all 145 — and `leg_reason` partitions by code path rather than by OC scenario, so no `equals` predicate over the anchor denotes a server sub-population at all; the module does, and modules partition the leg exactly (21 of them, keys unique, no prefix collision with the trailing `/`). A later slice adds its modules to the `any_of` and changes nothing else. (3) THE AXIS-EXTRACTION METHOD, which is written out in `oc-axes-c1.json`'s own `scope.how_the_18_were_cut` rather than here, because that is where its inputs live.",
+ "why_the_leg_conjunct_is_load_bearing": "`all_of[{leg equals server}, any_of[...]]` — and the first conjunct is not belt-and-braces. MEASURED at this tip: two rows outside the server leg carry a key with one of these eight module prefixes — `MCP.Protocol.Messages.DiscoverTest/test from_map/1 round-trips the schema shape` (leg `client`) and `MCP.Transport.SubscriptionsStreamTest/test T-8 keep-alive comment lines our parser ignores` (leg `none_determinable`). Drop the `leg` conjunct and both join this population, which would adjudicate a client member inside the server file and put a none_determinable row where C1c-iv is owed it. Recorded because a conjunct that removes nothing is a guard entailed by its neighbour, and this one removes two.",
+ "the_population_this_file_declares": {
+  "members": 59,
+  "members_with_edges": 25,
+  "members_declared_unmatched": 34,
+  "checks_addressed": 14,
+  "rule": "Every ET-CC member B2b attributes to the SERVER leg whose test lives in one of EIGHT modules: the STATELESS CORE — MCP.Transport.StreamableHTTPStatelessTest, MCP.Server.DispatchTest, MCP.Protocol.MetaTest, MCP.Protocol.Messages.DiscoverTest and MCP.Server.CapabilityHonestyTest — and the SUBSCRIPTION family — MCP.Server.SubscriptionsDispatchTest, MCP.Transport.SubscriptionsStreamTest and MCP.Server.NotificationCollectorTest. NOTHING outside these eight modules is adjudicated here; the leg's other thirteen modules are C1c-ii/iii/iv's.",
+  "how_the_leg_closes": "As a PARTITION and not as a cover. The eight modules declared here hold 59 of the leg's 145 members and the other thirteen hold the remaining 86; 59 + 86 = 145, with no module in both halves because a module prefix denotes disjoint key sets. That is why C1c-iv can turn G22b on by ADDING clauses rather than by reconciling overlaps — and why `the_sub_populations_this_file_records`, when it is finally written, will be a partition rather than the COVER the client file had to declare (its four slices overlap in 18 members). Stated here rather than in `rule` because the generator composes every file's `rule` into one string and G21 then reads that composition as its own prose, so an arithmetic sentence there is refused as an uninterpolated population figure — correctly: it is a figure about a population this run does not derive.",
+  "why_the_cut_is_by_MODULE_and_not_by_SCENARIO": "The dispatch asked for `leg=server AND the server-stateless scenario` and that predicate is NOT EXECUTABLE over the anchor: B2b's rows carry cg, cg_basis, contradicts_oc, key, leg, leg_reason and tokens — no scenario field — and `selected!/4` hard-refuses a member selector whose source is not the attribution file. `cg` is null on all 145 server rows and `tokens` is empty on all 145, so neither discriminates; `leg_reason` has ten values and partitions by CODE PATH (59 and 39 on the two dispatch/plug ones), which is not the same cut as the OC scenario. The MODULE is already in the anchor — `key` is `Module/test` — so a prefix predicate over `key` denotes the slice, and PM-ratified on 2026-09-23 it is the pattern the rest of the leg follows. The CHECK half of the declaration is still by scenario, because the locator artefact does carry one.",
+  "what_the_trailing_slash_buys_and_what_it_does_not": "Each prefix ends in `/`, and the reason is PROSPECTIVE rather than live — stated that way because the first draft of this field claimed otherwise and the control measured it out. The claim was that without the slash `MCP.Transport.StreamableHTTP` would name both MCP.Transport.StreamableHTTPStatelessTest and MCP.Transport.StreamableHTTP.ACTest. That string is not one of the prefixes this selector uses: the leaves carry FULL module names, and over all 21 server modules — over all 30 in B2b — NOT ONE is a plain string-prefix of another. `mix run conformance/controls/crosswalk_controls.exs selectors` strips the slash from every leaf and measures the population unchanged, so on the shipped anchor the slash removes NOTHING. What it buys is a bound against a module ADDED LATER whose name EXTENDS one of these eight — `...DispatchTestExtra` and the like. That case has no live instance, so the control CONSTRUCTS one: a synthetic server row in an extending module, refused by the slashed selector and admitted by the slashless one, on the same fixture and in both directions. The slash is therefore kept as a discipline whose value is future, and NOT as a fact about this anchor.",
+  "why_a_prefix_predicate_and_not_an_enumeration": "An enumeration of `key equals` leaves needs no new code and was rejected for the reason C1b-iii's `cg is_null` was chosen over one: an enumeration CANNOT DENOTE A MEMBER ADDED LATER. A new test in one of these eight modules would fall silently outside the population, and G15a — which compares the derived population against the selector's denotation — would stay green over the omission, because the omission would be in the universe as well as in the file. The prefix predicate picks the new member up and G15a then reds naming it as `missing`. The cost is one new selector leaf, and the leaf's caller is the population it was added for, so it is not S9-15's guard on a dead path.",
+  "selector": {
+   "what_this_is": "The EXECUTABLE half of `rule`. The generator evaluates it against the source named below and requires the result to be SET-EQUAL, in both directions, to the population this file derives. Prose only becomes a guard when something can run it.",
+   "source": "docs/conformance/etcc-attribution.json",
+   "source_owner": "B2b (MES-82) — the ET-CC attribution register",
+   "rows_at": "rows",
+   "key_field": "key",
+   "all_of": [
+    {
+     "field": "leg",
+     "test": "equals",
+     "value": "server"
+    },
+    {
+     "any_of": [
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.Protocol.Messages.DiscoverTest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.Protocol.MetaTest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.Server.CapabilityHonestyTest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.Server.DispatchTest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.Server.NotificationCollectorTest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.Server.SubscriptionsDispatchTest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.Transport.StreamableHTTPStatelessTest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.Transport.SubscriptionsStreamTest/"
+      }
+     ]
+    }
+   ],
+   "denotes": "59 ET-CC members — MCP.Transport.SubscriptionsStreamTest 17, MCP.Server.SubscriptionsDispatchTest 16, MCP.Transport.StreamableHTTPStatelessTest 16, MCP.Server.DispatchTest 5, MCP.Protocol.MetaTest 2, MCP.Protocol.Messages.DiscoverTest 1, MCP.Server.CapabilityHonestyTest 1 and MCP.Server.NotificationCollectorTest 1. What the trailing `/` does and does not buy is measured in the field of that name; it is NOT a fact about this anchor.",
+   "everything_else_is": "not_yet_adjudicated — NOT bucket 1, and not state 4."
+  }
+ },
+ "the_check_population_this_file_declares": {
+  "checks": 30,
+  "rule": "EVERY in-denominator OC check in the `server-stateless` scenario — all 30, the largest single scenario in the suite and the stateless-core boundary this revision turns on. This file is total over them: every one is axis-decomposed (12 by A3, 18 by C1c-i), and every one either carries an edge or is reported in bucket 2 by name.",
+  "selector": {
+   "what_this_is": "The check half of the declaration, and what makes bucket 2 answerable. It names the SCENARIO rather than the 30 tokens, so a check added to it by a harness bump joins the population instead of falling silently outside it.",
+   "source": "docs/conformance/oc-emitting-sites-2026-07-28.json",
+   "source_owner": "MES-97 (C1a) — `mix conformance.locator`'s output, one row per in-denominator check",
+   "rows_at": "rows",
+   "key_field": "token",
+   "any_of": [
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "server-stateless"
+    }
+   ],
+   "denotes": "All 30 in-denominator `server-stateless` checks. ONE clause, where the client file needed seven: the client leg is spread over seven scenarios and this slice is exactly one, which is the whole reason the ticket was cut on scenario seams.",
+   "why_the_locator_artefact_and_not_A1s_manifest": "A1's manifest nests its checks under scenarios and its key is a six-field LIST; the selector's `key_field` must name a STRING field and refuses anything else rather than stringifying it. The locator artefact is flat and carries a `token`. Same reason the client file gives.",
+   "the_bound_this_leaves": "The declared CHECK population is one scenario, so a bucket-1 row here means `no counterpart among these 30` and not `no counterpart anywhere` — `what_unmatched_means_in_a_file_that_declares_its_own_checks` in the client file states the rule and it is not restated. Three of this file's 17 searches are scoped that way and say so in their `kind`: SRV02, SRV07 and SRV08 name REAL counterparts in `dns-rebinding-protection`, `caching` and the `input-required-result-*` family, so that whichever later C1c slice declares those scenarios inherits the member instead of re-searching for it."
+  }
+ },
+ "what_a_record_carries_and_why": {
+  "member": "module, test and the B2b `register_key` — the join key, and the only one G15a uses.",
+  "claim": "ONE claim within the member (A3 §1). A member making several contributes several edges and they are never collapsed.",
+  "tag": "the OC check's token, re-derived and required to equal the stored one.",
+  "axes": "one verdict per axis of the check's decomposition — `agrees`, `contradicts` or `silent`. The set must be the decomposition's WHOLE set.",
+  "et_verdict": "green on every record here: all 59 members are green at the accepted run, which is why buckets 3 and 6 are empty by construction.",
+  "evidence": "the ET assertion, cited by line span, and the OC conjunct it meets. Every quoted byte-string is verbatim at an address the evidence itself names (G30).",
+  "not_carried": "`oc_key`, `shape`, `bucket` — all three are derived by the generator and refused if stored.",
+  "note": "used where a record needs something said about it that is not its evidence — an escalation, a measured surprise, a bound.",
+  "why_contradicts_and_not_silent": "carried by the three contradicting edges, because that is the judgement a reader is most likely to want to disagree with.",
+  "authored_by": "the ticket. Present on every record MES-105 authored and ABSENT on the four C1a inherited from crosswalk-edges.json, which is how the client file marks its own inherited rows — provenance readable by the field's absence rather than by a second copy of the ticket key."
+ },
+ "how_a_silent_axis_was_decided": "The client file's rule, applied unchanged and NOT restated here: a claim covers an axis only when an assertion's SUBJECT is the behaviour that axis names. What IS new on this leg is how often the rule bites on one axis of a two-axis check, and it bites the same way every time: eight of this file's red-OC edges are silent on an `http_status` axis and agree on a `jsonrpc_error_code` one. That is not a coincidence, it is the shape of this SDK's suite — `MCP.Server.DispatchTest` asserts below the transport and cannot see a status, and `MCP.Transport.StreamableHTTPStatelessTest` reads `error(conn)` rather than `conn.status` on every removed-method path. It is a real gap in our coverage and it is what puts those edges in 4b rather than leaving them able to reach 4a.",
+ "the_all_silent_case": "THREE edges have EVERY axis silent. They are recorded and ESCALATED as `no_axis_contact`, never bucketed — A3 §2 rules that covering zero of one axis is no match rather than a partial one, generalised to N axes is exactly this, and A3 §3's table has no row for it. The client file has four of these and the rule is the same. What differs is that TWO of the three here are against a check that is RED at the accepted run (`ServerUnsupportedVersionError`), so the silence is not harmless: it is the precise reason our green tells us nothing about why the harness failed us. Each of the three says on its own record what the near-agreement was and where it stopped.",
+ "the_contradicting_edges": "5 edges carry a `contradicts` verdict and they are the first substantial disagreement the crosswalk has recorded — the client leg's three all sat on one check family. They are three findings, not five. FIRST, the `initialize` pair (inherited from C1a, moved here unchanged): this SDK answers a removed `initialize` with -32022 UnsupportedProtocolVersion where the suite requires -32601, asserted once below the transport and once over real HTTP. SECOND, the `RequestMetaInvalid` pair, authored here: a request whose `_meta` is missing is answered -32022 where the check requires -32602 Invalid params — the same disagreement about which error a stateless-core violation earns, reached by a different route, and a one-axis check so there is nothing silent to soften it. THIRD, and sharpest, `subscriptions/listen` in JSON mode: our unit asserts HTTP 200 and PASSES where the check's `http_status` axis requires 404, WHILE AGREEING with the same check's `jsonrpc_error_code` axis. Every other red-OC edge in this file is silent on `http_status` because the unit never looks; that one looked and wrote down the other answer. All five are 4a — red OC, green ET, contradicting — and none escalates, because `(red, green, :contradicting)` is a row the ratified table has.",
+ "why_contradicts_and_not_silent": "`how_a_silent_axis_was_decided` is conservative about claiming COVERAGE — a claim covers an axis only when an assertion's SUBJECT is the behaviour that axis names. It is NOT a rule for suppressing disagreement, and reading it that way would make it a rule for hiding exactly what a crosswalk exists to find. The client file states this and it is cited rather than restated; what is new here is that it now decides FIVE edges instead of three, and that on this leg the two readings give visibly different answers. Each of the five carries its own `why_contradicts_and_not_silent` where the judgement is not obvious from the evidence.",
+ "what_the_red_OC_population_did_and_did_not_exercise": "This is the first slice with a substantial red-OC population — 17 FAILURE and 13 SUCCESS among the declared checks, against 54 of 54 SUCCESS across the whole client leg — so it is the first at which buckets 4a and 4b are reachable on real data. Both are: 5 edges land 4a and 6 land 4b, out of 13 edges against a red check. A3 §3's THIRD combination, `(red, green, :full) -> :divergent_despite_agreement`, is STILL NOT LIVE, and that is a MEASUREMENT rather than an oversight. For it to fire, an edge would have to agree with EVERY axis of a red check. Every red check reached here either has a single axis our claims contradict (the RequestMetaInvalid family — we answer -32022 where -32602 is required) or has an `http_status` axis no unit of ours asserts: 8 of the 13 red-OC edges are silent on exactly that axis. The one unit that DOES assert a status asserts the wrong one, which is a contradiction and not an agreement. So the combination is unreachable from this slice's claims, and saying so is worth more than manufacturing an edge to reach it. The escalation is nonetheless EXERCISED on real server-stateless data by `conformance/controls/crosswalk_falsification_controls.exs escalations`, which takes a real 4b edge from this file, mutates its silent `http_status` axis to `agrees` in memory and requires the escalation to fire, then mutates the OC verdict to green on the same edge and requires it to STOP firing and bucket as 5. Both directions, because a rule that fires on everything is not discriminating and a control that only shows it firing cannot tell the difference.",
+ "edges": [
+  {
+   "member": {
+    "module": "MCP.Server.DispatchTest",
+    "test": "test initialize is removed → UnsupportedProtocolVersion (-32022)",
+    "register_key": "MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)"
+   },
+   "claim": "a removed `initialize` yields JSON-RPC error -32022",
+   "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
+   "axes": [
+    {
+     "axis": "jsonrpc_error_code",
+     "verdict": "contradicts"
+    },
+    {
+     "axis": "http_status",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "dispatch_test.exs:84 — `assert resp[\"error\"][\"code\"] == -32_022` where the check REQUIRES -32601. Driven at `Dispatch.dispatch/3`, below the transport, so there is no HTTP status for the second axis to be about.",
+   "note": "The epic's own worked 4a contradiction, at the dispatch layer."
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test initialize is gone → -32022; ping/logging.setLevel → -32601",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601"
+   },
+   "claim": "a removed `initialize` over HTTP yields JSON-RPC error -32022",
+   "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
+   "axes": [
+    {
+     "axis": "jsonrpc_error_code",
+     "verdict": "contradicts"
+    },
+    {
+     "axis": "http_status",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "streamable_http_stateless_test.exs:89 — `assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022` where the check requires -32601. Driven through the real plug, so an HTTP status EXISTS on the response; the test does not assert it, which is what makes the status axis silent rather than agreeing.",
+   "note": "The same contradiction as the dispatch row, one layer up. A3 §1's cardinality table names this member as yielding THREE edges; this is the first."
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test initialize is gone → -32022; ping/logging.setLevel → -32601",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601"
+   },
+   "claim": "a removed `ping` over HTTP yields JSON-RPC error -32601",
+   "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping",
+   "axes": [
+    {
+     "axis": "jsonrpc_error_code",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "http_status",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "streamable_http_stateless_test.exs:90 — `assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601`, which is the code the check requires. The HTTP status is not asserted.",
+   "note": "INHERITED, NOT NEWLY ADJUDICATED: this is match-relation.md §4's worked edge record, published by A3 with these axes and this shape. A3 §1 assigns the per-claim decomposition of this member to C1; §4 then performs it. C1a records it rather than re-deciding it."
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test initialize is gone → -32022; ping/logging.setLevel → -32601",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601"
+   },
+   "claim": "a removed `logging/setLevel` over HTTP yields JSON-RPC error -32601",
+   "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel",
+   "axes": [
+    {
+     "axis": "jsonrpc_error_code",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "http_status",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "streamable_http_stateless_test.exs:91 — `assert error(post(opts(), rpc(\"logging/setLevel\", %{\"level\" => \"info\"})))[\"code\"] == -32_601`. Same shape as the ping claim, a different removed method.",
+   "note": "The third of A3 §1's three edges for this member."
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Messages.DiscoverTest",
+    "test": "test to_map/1 produces the schema shape",
+    "register_key": "MCP.Protocol.Messages.DiscoverTest/test to_map/1 produces the schema shape"
+   },
+   "claim": "the DiscoverResult carries both mandatory discover fields — a supportedVersions list and a capabilities object",
+   "tag": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
+   "axes": [
+    {
+     "axis": "discover_result_carries_supported_versions",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "discover_result_carries_capabilities",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "discover_test.exs:24-29 — `assert map[\"supportedVersions\"] == [\"2026-07-28\"]` and `assert is_map(map[\"capabilities\"])`. Both of the check's disjuncts are asserted, so this edge is `:full` rather than `:partial`, and the second assertion is the one that makes it so: the OC predicate is `!g?.supportedVersions||!g?.capabilities`, and a unit asserting only the first would leave the second axis silent.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Messages.DiscoverTest",
+    "test": "test to_map/1 produces the schema shape",
+    "register_key": "MCP.Protocol.Messages.DiscoverTest/test to_map/1 produces the schema shape"
+   },
+   "claim": "the server identifies itself in the result's _meta, under io.modelcontextprotocol/serverInfo, by name",
+   "tag": "oc:server/server-stateless/sep-2575-server-identifies-in-result-meta/ServerIdentifiesInResultMeta",
+   "axes": [
+    {
+     "axis": "server_info_in_result_meta_carries_a_name",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "server_info_in_result_meta_carries_a_version",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "discover_test.exs:30 — `assert map[\"_meta\"][\"io.modelcontextprotocol/serverInfo\"][\"name\"] == \"mcp_elixir_sdk\"`. The VERSION axis is silent and not agreed: the fixture at discover_test.exs:18 does set one — `server_info: %Implementation{name: \"mcp_elixir_sdk\", version: \"2.0.0\"}` — but no assertion reads it back out of the map, so nothing here would redden if `to_map/1` dropped it.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.DispatchTest",
+    "test": "test server/discover: schema shape (supportedVersions + CacheableResult fields; serverInfo in _meta)",
+    "register_key": "MCP.Server.DispatchTest/test server/discover: schema shape (supportedVersions + CacheableResult fields; serverInfo in _meta)"
+   },
+   "claim": "a real server/discover dispatch returns a result carrying supportedVersions",
+   "tag": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
+   "axes": [
+    {
+     "axis": "discover_result_carries_supported_versions",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "discover_result_carries_capabilities",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "dispatch_test.exs:122-129 — `assert result[\"supportedVersions\"] == [@version]` off a REAL `Dispatch.dispatch/3`, with `refute Map.has_key?(result, \"protocolVersions\")` pinning the pre-fix shape as gone. Unlike the `to_map/1` unit this one asserts nothing about `capabilities`, so that axis is silent here even though the sibling edge agrees on it — the two are different members and the adjudication is per claim.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.DispatchTest",
+    "test": "test server/discover: schema shape (supportedVersions + CacheableResult fields; serverInfo in _meta)",
+    "register_key": "MCP.Server.DispatchTest/test server/discover: schema shape (supportedVersions + CacheableResult fields; serverInfo in _meta)"
+   },
+   "claim": "a real server/discover dispatch puts the server's name in the result's _meta serverInfo",
+   "tag": "oc:server/server-stateless/sep-2575-server-identifies-in-result-meta/ServerIdentifiesInResultMeta",
+   "axes": [
+    {
+     "axis": "server_info_in_result_meta_carries_a_name",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "server_info_in_result_meta_carries_a_version",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "dispatch_test.exs:126-129 — `assert result[\"_meta\"][\"io.modelcontextprotocol/serverInfo\"][\"name\"] == \"mcp_elixir_sdk\"`, with `refute Map.has_key?(result, \"serverInfo\")` pinning that it is NOT top-level. No assertion reads `version`, so that axis is silent.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test server/discover returns the schema-shaped result with no version gate",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test server/discover returns the schema-shaped result with no version gate"
+   },
+   "claim": "server/discover over real HTTP returns a result carrying supportedVersions",
+   "tag": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
+   "axes": [
+    {
+     "axis": "discover_result_carries_supported_versions",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "discover_result_carries_capabilities",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "streamable_http_stateless_test.exs:55 — `assert r[\"supportedVersions\"] == [@version]`, where `r` is the decoded `result` of a POST through the real plug. `capabilities` is not asserted anywhere in this unit.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test server/discover returns the schema-shaped result with no version gate",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test server/discover returns the schema-shaped result with no version gate"
+   },
+   "claim": "server/discover over real HTTP puts the server's name in the result's _meta serverInfo",
+   "tag": "oc:server/server-stateless/sep-2575-server-identifies-in-result-meta/ServerIdentifiesInResultMeta",
+   "axes": [
+    {
+     "axis": "server_info_in_result_meta_carries_a_name",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "server_info_in_result_meta_carries_a_version",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "streamable_http_stateless_test.exs:57 — `assert r[\"_meta\"][\"io.modelcontextprotocol/serverInfo\"][\"name\"]`. It asserts PRESENCE and not a value, which is exactly what the OC axis `!e?.name` tests; `version` is untouched.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test server/discover returns the schema-shaped result with no version gate",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test server/discover returns the schema-shaped result with no version gate"
+   },
+   "claim": "a server/discover request carrying no clientInfo is SERVED — HTTP 200 with a result, not an error",
+   "tag": "oc:server/server-stateless/sep-2575-request-meta-client-info-optional/RequestMetaClientInfoOptional",
+   "axes": [
+    {
+     "axis": "client_info_less_request_is_not_an_error",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "client_info_less_request_returns_http_200",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "streamable_http_stateless_test.exs:52-55 — `conn = post(opts(), rpc(\"server/discover\", %{}))` sends `params` with NO `_meta` at all, and the unit then asserts `assert conn.status == 200` and reads `result` back with `assert r[\"supportedVersions\"] == [@version]`. Both axes are covered: the status assertion is the HTTP-200 axis literally, and reading the `result` key is the no-error axis — `result(conn)` returns `nil` for an error body and the equality would redden. THE FIXTURES DIFFER AND THE DIFFERENCE IS STATED: the OC probe omits `clientInfo` ALONE (it sends protocolVersion and clientCapabilities), while this unit omits the whole `_meta`. For `server/discover` the two coincide — the unit's own name says `with no version gate`, and the check's own scenario places it on a method that applies none — so the claim entails the check's case rather than merely resembling it. On any OTHER method it would not, and this edge must not be read as licensing that.",
+   "note": "The only edge in this slice that is `:full` against a GREEN check on BOTH axes without a silent one to carry it. It is also the slice's clearest case of an ET unit being STRONGER than the OC check: the check asks whether an absent `clientInfo` is tolerated, the unit asks whether an absent `_meta` is.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test tools/list then tools/call work directly, no initialize first",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/list then tools/call work directly, no initialize first"
+   },
+   "claim": "a server advertising the tools capability answers tools/list with a tools array",
+   "tag": "oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers",
+   "axes": [
+    {
+     "axis": "advertised_tools_capability_is_honoured",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "unadvertised_tools_capability_yields_method_not_found",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "streamable_http_stateless_test.exs:62-63 — `list = post(opts(), rpc(\"tools/list\", with_meta(%{}))) |> result()` and `assert Enum.any?(list[\"tools\"], &(&1[\"name\"] == \"whoami\"))`: `tools/list` answers with a list, and it contains a real tool. The second axis is the OTHER arm of the check's `h.tools` CASE SPLIT — what a server that does NOT advertise the capability must do — and this SDK advertises it, so no unit of ours can take that branch. Silent, and silent for a reason that is a property of the check rather than a gap in the suite.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.DispatchTest",
+    "test": "test ping and logging/setLevel are removed → method not found (-32601)",
+    "register_key": "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)"
+   },
+   "claim": "a dispatched `ping` is answered with -32601 method-not-found",
+   "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping",
+   "axes": [
+    {
+     "axis": "http_status",
+     "verdict": "silent"
+    },
+    {
+     "axis": "jsonrpc_error_code",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "dispatch_test.exs:88-95 — `assert ping_resp[\"error\"][\"code\"] == -32_601`. The OC axis `i?.error?.code!==-32601` is `fail_when_true`, so -32601 is the passing direction and our claim agrees. The check is nonetheless RED, and its message says why: `Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601` — the code half is satisfied and the status half is not. the ET claim is asserted at `MCP.Server.Dispatch`, BELOW the transport — the unit never constructs an HTTP response, so nothing in it has an HTTP status as its subject and the axis is silent by `how_a_silent_axis_was_decided`'s rule rather than by omission.",
+   "note": "The 4b shape in its purest form: red OC, green ET, agreement on the conjunct our unit reaches and silence on the one it cannot. The incompleteness is OURS, and it is a real one — nothing in this SDK's suite asserts a 404 for a removed method.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.DispatchTest",
+    "test": "test ping and logging/setLevel are removed → method not found (-32601)",
+    "register_key": "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)"
+   },
+   "claim": "a dispatched `logging/setLevel` is answered with -32601 method-not-found",
+   "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel",
+   "axes": [
+    {
+     "axis": "http_status",
+     "verdict": "silent"
+    },
+    {
+     "axis": "jsonrpc_error_code",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "dispatch_test.exs:88-95 — `assert log_resp[\"error\"][\"code\"] == -32_601` for `logging/setLevel`. One unit, two claims, two checks: the OC suite keys the removed methods one row per method (the `id_template_prefix` loop over `[`initialize`,`ping`,`logging/setLevel`,`resources/subscribe`,`resources/unsubscribe`]`), so collapsing them into one edge would have lost a row. the ET claim is asserted at `MCP.Server.Dispatch`, BELOW the transport — the unit never constructs an HTTP response, so nothing in it has an HTTP status as its subject and the axis is silent by `how_a_silent_axis_was_decided`'s rule rather than by omission.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.DispatchTest",
+    "test": "test request without a protocolVersion _meta fails fast (-32022)",
+    "register_key": "MCP.Server.DispatchTest/test request without a protocolVersion _meta fails fast (-32022)"
+   },
+   "claim": "a tools/call carrying no _meta at all is rejected with -32022, not -32602",
+   "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+   "axes": [
+    {
+     "axis": "rejection_error_code_is_invalid_params",
+     "verdict": "contradicts"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "dispatch_test.exs:101-105 — `Dispatch.dispatch(req(\"tools/call\", %{\"name\" => \"whoami\"}), ctx(\"PM\"), config())` sends params with no `_meta`, and `assert resp[\"error\"][\"code\"] == -32_022`. The OC check's `missing-meta` fixture is exactly that request shape — `{slug:`missing-meta`,...,params:{},rpcId:101}` — and its single axis requires -32602. A one-axis check with a contradicting claim is `:contradicting` whole, so this is 4a with nothing silent to soften it.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.DispatchTest",
+    "test": "test old-shape (2025-11-25) version fails fast (-32022)",
+    "register_key": "MCP.Server.DispatchTest/test old-shape (2025-11-25) version fails fast (-32022)"
+   },
+   "claim": "a request whose _meta names a real but unsupported earlier version is rejected with -32022",
+   "tag": "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError",
+   "axes": [
+    {
+     "axis": "error_data_supported_is_a_non_empty_array",
+     "verdict": "silent"
+    },
+    {
+     "axis": "error_data_supported_lists_only_versions_the_server_reports",
+     "verdict": "silent"
+    },
+    {
+     "axis": "error_data_requested_echoes_the_requested_version",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "dispatch_test.exs:109-112 — `assert resp[\"error\"][\"code\"] == -32_022` for `_meta` carrying `\"2025-11-25\"`. The assertion's subject is the error CODE; all three of the check's axes are predicates on `error.data` — that it carries a non-empty `supported` array, that every entry is a version the server reports, and that `requested` echoes what was asked for. Nothing in this unit reads the error object's data member at all.",
+   "note": "ALL AXES SILENT, escalated as `no_axis_contact`, never bucketed. This is the client-leg file's `the_all_silent_case` on the server leg, and it is a finding rather than an accident: the OC check scores the SHAPE of the UnsupportedProtocolVersionError's data and this SDK's suite scores only its code. The check is RED at the accepted run, so the silence is not harmless — it is the precise reason our green tells us nothing about why the harness failed us here.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.MetaTest",
+    "test": "test validate_protocol_version/2 mismatched (e.g. legacy 2025-11-25) → {:error, {:unsupported, got}}",
+    "register_key": "MCP.Protocol.MetaTest/test validate_protocol_version/2 mismatched (e.g. legacy 2025-11-25) → {:error, {:unsupported, got}}"
+   },
+   "claim": "validate_protocol_version/2 classifies a known earlier version as unsupported, echoing the version it was given",
+   "tag": "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError",
+   "axes": [
+    {
+     "axis": "error_data_supported_is_a_non_empty_array",
+     "verdict": "silent"
+    },
+    {
+     "axis": "error_data_supported_lists_only_versions_the_server_reports",
+     "verdict": "silent"
+    },
+    {
+     "axis": "error_data_requested_echoes_the_requested_version",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "meta_test.exs:50-51 — `assert Meta.validate_protocol_version(meta, @version) == {:error, {:unsupported, \"2025-11-25\"}}`. The tuple DOES carry the requested version back, which is the nearest this unit comes to the `error_data_requested_echoes_the_requested_version` axis — and it is not near enough. The axis is a predicate on `error.data.requested`, a WIRE field of the JSON-RPC error object; `{:error, {:unsupported, _}}` is an SDK-invented container that B2b's own register records as `mixed` for that reason, and no assertion here follows it to the wire.",
+   "note": "ALL AXES SILENT, escalated as `no_axis_contact`. Recorded rather than dropped because the near-agreement is the interesting part: the SDK has the value the check wants and this unit stops one step short of asserting where it ends up.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test a request without a protocolVersion _meta fails fast (-32022)",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test a request without a protocolVersion _meta fails fast (-32022)"
+   },
+   "claim": "a tools/call over real HTTP carrying no _meta is rejected with -32022, not -32602",
+   "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+   "axes": [
+    {
+     "axis": "rejection_error_code_is_invalid_params",
+     "verdict": "contradicts"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "streamable_http_stateless_test.exs:83-84 — `conn = post(opts(), rpc(\"tools/call\", %{\"name\" => \"whoami\"}))` and `assert error(conn)[\"code\"] == -32_022`, driven through the real plug. The same contradiction as the `Dispatch`-level sibling, carried this time over the transport the OC probe itself uses, which removes the one reading under which the dispatch-level edge might have been an artefact of the seam it was asserted at.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.SubscriptionsDispatchTest",
+    "test": "test T-1 wire shapes (pinned to schema/2026-07-28 examples) the acknowledgment matches the pinned SubscriptionsAcknowledgedNotification example",
+    "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) the acknowledgment matches the pinned SubscriptionsAcknowledgedNotification example"
+   },
+   "claim": "the acknowledgement carries this subscription's id in params._meta under io.modelcontextprotocol/subscriptionId",
+   "tag": "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
+   "axes": [
+    {
+     "axis": "listen_stream_notifications_carry_the_subscription_id",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "subscriptions_dispatch_test.exs:105-112 — the whole acknowledgement compared against the pinned example, including `\"_meta\" => %{@sub_id_key => \"listen-1\"}` inside `\"params\" => %{`. The OC axis quantifies over EVERY `notifications/*` frame on a listen stream — `t=N.filter(e=>typeof e?.method==`string`&&e.method.startsWith(`notifications/`))` — and the acknowledgement's own method is `notifications/subscriptions/acknowledged`, so the ack is inside that population and this claim covers the axis over it.",
+   "why_this_check_and_not_ServerSendsSubscriptionAck": "`ServerSendsSubscriptionAck`'s single axis is `t?.method===`notifications/subscriptions/acknowledged`` over `t=N[0]` — the FIRST frame. Its subject is the ack's POSITION on a stream, and this unit tests `Subscriptions.acknowledgment/2` as a function: it builds the message, it does not open a stream, so nothing in it could redden if the ack were sent second. The position claim is made by `subscriptions_stream_test.exs`, and that is where the edge on that check is filed.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.SubscriptionsDispatchTest",
+    "test": "test T-1 wire shapes (pinned to schema/2026-07-28 examples) a resources/updated frame matches the pinned notification example",
+    "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) a resources/updated frame matches the pinned notification example"
+   },
+   "claim": "a resources/updated notification frame carries the subscription id in params._meta",
+   "tag": "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
+   "axes": [
+    {
+     "axis": "listen_stream_notifications_carry_the_subscription_id",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "subscriptions_dispatch_test.exs:138-149 — the framed notification compared whole, carrying `\"_meta\" => %{@sub_id_key => \"listen-1\"}` beside `\"uri\" => \"file:///project/src/main.rs\"`. `Methods.resources_updated()` is a `notifications/` method, so this frame is in the axis's population.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.SubscriptionsDispatchTest",
+    "test": "test T-2 the acknowledgment reports what was honoured the ack carries this subscription's id in _meta",
+    "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-2 the acknowledgment reports what was honoured the ack carries this subscription's id in _meta"
+   },
+   "claim": "the acknowledgement's params._meta subscriptionId is the id the request was opened with, uncoerced",
+   "tag": "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
+   "axes": [
+    {
+     "axis": "listen_stream_notifications_carry_the_subscription_id",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "subscriptions_dispatch_test.exs:219-221 — `assert sub.ack[\"params\"][\"_meta\"][Meta.subscription_id_key()] == 42` and `assert sub.ack[\"method\"] == Methods.subscriptions_acknowledged()` for a subscription opened with `id: 42`. The key is reached through `Meta.subscription_id_key()` rather than spelled out, and that function's value is what the axis names — the indirection is why this evidence quotes the call and not the string.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test the stream opens with its acknowledgment the first message is notifications/subscriptions/acknowledged",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the first message is notifications/subscriptions/acknowledged"
+   },
+   "claim": "the first frame a subscriptions/listen stream carries is notifications/subscriptions/acknowledged",
+   "tag": "oc:server/server-stateless/sep-2575-server-sends-subscription-ack/ServerSendsSubscriptionAck",
+   "axes": [
+    {
+     "axis": "first_listen_stream_frame_is_the_acknowledgement",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "subscriptions_stream_test.exs:272-276 — `assert {:ok, event, _stream} = next_event(stream)` on a freshly opened stream, then `assert ack[\"method\"] == \"notifications/subscriptions/acknowledged\"`. The FIRST event off the socket, which is the axis's `t=N[0]` exactly: the OC predicate is `t?.method===`notifications/subscriptions/acknowledged``, and the position lives in the binding rather than in the comparison on both sides.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test the stream opens with its acknowledgment the first message is notifications/subscriptions/acknowledged",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the first message is notifications/subscriptions/acknowledged"
+   },
+   "claim": "that first frame carries the subscription id in params._meta",
+   "tag": "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
+   "axes": [
+    {
+     "axis": "listen_stream_notifications_carry_the_subscription_id",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "subscriptions_stream_test.exs:277 — `assert ack[\"params\"][\"_meta\"][@sub_id_key] == \"listen-1\"`, read off a REAL SSE socket rather than off a constructed map. One member, two claims, two checks: the position claim is the sibling edge on `ServerSendsSubscriptionAck`.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test the stream opens with its acknowledgment nothing bearing this subscription's id precedes its acknowledgment",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment nothing bearing this subscription's id precedes its acknowledgment"
+   },
+   "claim": "even a handler that emits inside handle_listen/3 cannot get a frame out ahead of the acknowledgement",
+   "tag": "oc:server/server-stateless/sep-2575-server-sends-subscription-ack/ServerSendsSubscriptionAck",
+   "axes": [
+    {
+     "axis": "first_listen_stream_frame_is_the_acknowledgement",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "subscriptions_stream_test.exs:308-310 — `assert {:ok, first, stream} = next_event(stream)` and `assert decode(first)[\"method\"] == \"notifications/subscriptions/acknowledged\"` against `SubscribingHandler`, which emits INSIDE `handle_listen/3` — i.e. strictly before the ack can have been written. The OC check reads the first frame of a stream opened against a cooperative server; this unit reads it against one built to violate the ordering, so it agrees with the axis on a harder instance than the check itself constructs.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test the stream opens with its acknowledgment nothing bearing this subscription's id precedes its acknowledgment",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment nothing bearing this subscription's id precedes its acknowledgment"
+   },
+   "claim": "the notification that follows the acknowledgement carries the same subscription id",
+   "tag": "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
+   "axes": [
+    {
+     "axis": "listen_stream_notifications_carry_the_subscription_id",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "subscriptions_stream_test.exs:313-314 — `assert decode(second)[\"method\"] == \"notifications/tools/list_changed\"` and `assert decode(second)[\"params\"][\"_meta\"][@sub_id_key] == \"eager\"`. The SECOND frame, so this claim covers the axis over a delivered notification where the sibling edges cover it over the acknowledgement — between them the two halves of the axis's population.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test delivery over the wire an opted-in notification arrives, stamped with the subscription id",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test delivery over the wire an opted-in notification arrives, stamped with the subscription id"
+   },
+   "claim": "a notification delivered over the wire is stamped with the subscription id in params._meta",
+   "tag": "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
+   "axes": [
+    {
+     "axis": "listen_stream_notifications_carry_the_subscription_id",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "subscriptions_stream_test.exs:334-335 — `assert frame[\"method\"] == \"notifications/tools/list_changed\"` and `assert frame[\"params\"][\"_meta\"][@sub_id_key] == \"listen-1\"`, read off a real SSE socket after a push at the handler's sink.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test delivery over the wire an unrequested type never reaches the wire",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test delivery over the wire an unrequested type never reaches the wire"
+   },
+   "claim": "a notification type the filter did not request never reaches the stream",
+   "tag": "oc:server/server-stateless/sep-2575-server-honors-notification-filter/ServerHonorsNotificationFilter",
+   "axes": [
+    {
+     "axis": "unrequested_notification_type_is_not_delivered",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "subscriptions_stream_test.exs:348-356 — three unrequested pushes (`sink.(\"notifications/prompts/list_changed\", %{})` among them), then one that IS opted in, and `assert decode(event)[\"method\"] == \"notifications/tools/list_changed\"`: the NEXT event off the socket is the requested one, so none of the three arrived. The opted-in push is the positive control the OC check does not have — without it the assertion would pass just as well on a dead stream.",
+   "note": "The polarity mirrors the check's rather than matching its fixture: the OC probe filters to `promptsListChanged` and provokes a TOOL change, this unit filters to `toolsListChanged` and pushes prompts/progress/message. Same axis, opposite direction, which is stronger corroboration than the same direction twice.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test the obligation is armed off the decoded message a second client cannot tear down a live subscription it does not own (R4)",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test the obligation is armed off the decoded message a second client cannot tear down a live subscription it does not own (R4)"
+   },
+   "claim": "a live subscription goes on delivering frames stamped with its own id after another client's crafted request fails",
+   "tag": "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
+   "axes": [
+    {
+     "axis": "listen_stream_notifications_carry_the_subscription_id",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "subscriptions_stream_test.exs:992-994 — `assert :ok = sink.(\"notifications/tools/list_changed\", %{})` and `assert decode(event)[\"params\"][\"_meta\"][@sub_id_key] == \"sub-A\"` after a second client's crafted request, whose body set that same id at subscriptions_stream_test.exs:978 (`\"id\" => \"sub-A\",`), has been refused with 500. The continued delivery is what carries the claim; the tag on it is what covers this axis.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.SubscriptionsDispatchTest",
+    "test": "test T-5 JSON mode refuses the method outright a non-streaming driver gets -32601, never a silent black hole",
+    "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-5 JSON mode refuses the method outright a non-streaming driver gets -32601, never a silent black hole"
+   },
+   "claim": "a deployment that cannot serve subscriptions/listen answers it with -32601, never a silent black hole",
+   "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404",
+   "axes": [
+    {
+     "axis": "http_status",
+     "verdict": "silent"
+    },
+    {
+     "axis": "jsonrpc_error_code",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "subscriptions_dispatch_test.exs:368-373 — `json_mode = config(streaming: false)`, then `Dispatch.dispatch(listen_request(%{\"toolsListChanged\" => true}), ctx(), json_mode)` and `assert error[\"code\"] == -32_601`. The OC check is the GENERIC unimplemented-method row, not one of the five removed-method rows, and a deployment that does not implement `subscriptions/listen` is exactly its case. Asserted below the transport, so the status axis is silent.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.SubscriptionsDispatchTest",
+    "test": "test T-5 JSON mode refuses the method outright a handler with no handle_listen/3 also gets -32601",
+    "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-5 JSON mode refuses the method outright a handler with no handle_listen/3 also gets -32601"
+   },
+   "claim": "a handler that implements no handle_listen/3 likewise yields -32601 for subscriptions/listen",
+   "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404",
+   "axes": [
+    {
+     "axis": "http_status",
+     "verdict": "silent"
+    },
+    {
+     "axis": "jsonrpc_error_code",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "subscriptions_dispatch_test.exs:388-389 — `assert {:reply, %{\"error\" => %{\"code\" => -32_601}}, _} =` for a config built over a handler with no `handle_listen/3`. The second of the two routes into the same refusal; both are filed because the claims differ even though the check does not.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream"
+   },
+   "claim": "in JSON mode subscriptions/listen is refused with -32601 inside an HTTP 200 response",
+   "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404",
+   "axes": [
+    {
+     "axis": "http_status",
+     "verdict": "contradicts"
+    },
+    {
+     "axis": "jsonrpc_error_code",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "subscriptions_stream_test.exs:1028-1029 — `assert response.status == 200` and `assert response.body[\"error\"][\"code\"] == -32_601`, over a real socket through `Req`. The OC axis `te.status!==404` is `fail_when_true` and requires 404; this unit asserts 200 and PASSES, so the claim contradicts it. The code axis agrees. Contradiction beats silence in `shape_from_axes/1`, so the edge is `:contradicting` and lands 4a.",
+   "note": "THE SLICE'S SHARPEST FINDING, and the only edge in it that contradicts an axis it ALSO agrees with on the same check. Our SDK and the harness agree on WHICH JSON-RPC error an unimplemented method earns and disagree on the HTTP status it rides on — and this unit does not merely fail to assert 404, it asserts 200 and is green. Every other red-OC edge in this slice is silent on `http_status` because the unit never looks at it; this one looked, and wrote down the other answer.",
+   "why_contradicts_and_not_silent": "The subject of `assert response.status == 200` is the HTTP status of the response to an unimplemented method, which is the behaviour `http_status` names. There is no reading of `how_a_silent_axis_was_decided` on which an assertion whose subject IS the axis counts as not covering it, and reading it that way would turn a coverage rule into a rule for hiding disagreement.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test every exit from a listen runs teardown a REFUSED listen tells the handler and kills the sink (F1)",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test every exit from a listen runs teardown a REFUSED listen tells the handler and kills the sink (F1)"
+   },
+   "claim": "the SSE-framed error a refused listen produces carries the JSON-RPC id of the request that provoked it",
+   "tag": "oc:server/server-stateless/sep-2575-http-server-error-jsonrpc-id/HttpServerErrorJsonrpcId",
+   "axes": [
+    {
+     "axis": "error_response_echoes_the_request_id",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "subscriptions_stream_test.exs:683-685 — `refusal = Jason.decode!(event.data)`, `assert refusal[\"id\"] == \"refuse-me\"` and `assert refusal[\"error\"][\"code\"] == -32_603`, against a request whose body set `\"id\" => \"refuse-me\"` at subscriptions_stream_test.exs:666 (`\"id\" => \"refuse-me\",`). The OC predicate is `e.id!==t` at the helper `u=(e,t)=>{e&&e.error&&e.id!==t&&r.push` — an error response whose id differs from the request's is the failure — and this is that comparison made by hand on a real response.",
+   "note": "Both halves of the check's guard are present in the unit and not merely in its outcome: the response IS an error (`refusal[\"error\"][\"code\"]`), which is the helper's `e&&e.error` precondition, and the id is compared against the one the request carried.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test the exits that raise before a branch is chosen a handler-side exit in teardown does not replace the refusal response (R3)",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test the exits that raise before a branch is chosen a handler-side exit in teardown does not replace the refusal response (R3)"
+   },
+   "claim": "a handler-side exit during teardown does not cost the error response its request id",
+   "tag": "oc:server/server-stateless/sep-2575-http-server-error-jsonrpc-id/HttpServerErrorJsonrpcId",
+   "axes": [
+    {
+     "axis": "error_response_echoes_the_request_id",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "subscriptions_stream_test.exs:876-877 — `assert refusal[\"id\"] == \"exit-in-teardown\"` and `assert refusal[\"error\"][\"code\"] == -32_603` for a request that set `\"id\" => \"exit-in-teardown\"` at subscriptions_stream_test.exs:854 (`\"id\" => \"exit-in-teardown\",`). The same axis as the refusal edge, on the path where the SDK's own teardown faults — an instance the OC probe set cannot construct, because it has no way to make a conforming server's teardown exit.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.CapabilityHonestyTest",
+    "test": "test a listChanged claim needs a channel to honour it on absent, not present-and-false: the key never reaches the wire",
+    "register_key": "MCP.Server.CapabilityHonestyTest/test a listChanged claim needs a channel to honour it on absent, not present-and-false: the key never reaches the wire"
+   },
+   "claim": "a listChanged claim the deployment has no channel to honour never reaches the wire as `false` — the key is absent",
+   "tag": "oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers",
+   "axes": [
+    {
+     "axis": "advertised_tools_capability_is_honoured",
+     "verdict": "silent"
+    },
+    {
+     "axis": "unadvertised_tools_capability_yields_method_not_found",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "capability_honesty_test.exs:60-69 — `assert wire[\"tools\"] == %{}` and `refute Map.has_key?(wire[\"tools\"], \"listChanged\")`, on the far side of the hand-written encoder — `wire` is built at capability_honesty_test.exs:60-64 by `|> Jason.encode!()` then `|> Jason.decode!()`. The check's two axes are both about the `tools` capability as a WHOLE against a real `tools/list` call — `!Array.isArray(e?.result?.tools)` in the advertised arm and `e?.error?.code!==-32601` in the other — and this unit makes no RPC call at all. Neither axis is touched.",
+   "note": "ALL AXES SILENT, escalated as `no_axis_contact`. Filed as an EDGE rather than as bucket 1 because the check's subject really is this member's subject — `DiscoverCapabilitiesMatchHandlers` is the capability-honesty rule and this unit is the capability-honesty test — and the mismatch is one of GRANULARITY: the OC check scores honesty at the level of a whole capability (`tools`, present or absent, against `tools/list`), and this unit scores it at the level of a SUB-KEY (`tools.listChanged`, absent rather than false, against whether a delivery channel exists). A server could pass the check while advertising a `listChanged` it cannot honour, which is the gap the member was written for. Recording it as bucket 1 would say the suite has nothing on capability honesty, and it has; recording an agreement would say this unit corroborates a check it never exercises.",
+   "authored_by": "MES-105 (C1c-i)"
+  }
+ ],
+ "declared_unmatched": [
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test matching Mcp-Method routes normally; a mismatch is rejected (-32020)",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test matching Mcp-Method routes normally; a mismatch is rejected (-32020)"
+   },
+   "tag": "oc:none/no-oc-server-check/McpMethod-vs-method",
+   "cg": null,
+   "search_id": "SRV01",
+   "claim_the_slot_names": "a request whose `Mcp-Method` header matches its JSON-RPC method routes normally, and one whose header disagrees is rejected -32020",
+   "why_no_counterpart": "`no-oc-server-check` — the suite scores SEP-2243 on the client only. Measured at this tip: 0 of the 119 server rows mention any of the three header families, while the client leg carries 28 rows that do.",
+   "why_this_search_is_this_claims_search": "The claim is a SERVER rejecting a routing header that disagrees with the body. SRV01's subject is exactly that obligation, and its near miss is the client-side half the suite does carry — which is why a grep for the header names is the wrong instrument here and a leg-scoped sweep is the right one.",
+   "the_search_that_found_none": "a SERVER validating a SEP-2243 routing header against the request body — `Mcp-Method` against the JSON-RPC `method`, and `Mcp-Name` against `params.name` (or `params.uri` on `resources/read`) — and rejecting a mismatch with -32020",
+   "the_near_miss_that_is_not_a_counterpart": "The eleven `http-standard-headers` rows and the seventeen `http-custom-headers` rows — `ClientMcpMethodHeader_tools_call`, `ClientMcpNameHeader_tools_call`, `ClientCustomHeader_Method` and their siblings. A reader who greps `mcp-method`, finds rows and stops would take these for the counterpart. They are all CLIENT-leg, and every one of them scores whether the CLIENT SENDS the header correctly; not one asks what a SERVER does with a header that disagrees with the body it arrived on. The two are different obligations on different peers, and SEP-2243 imposes both.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test Mcp-Name mismatch against params.name is rejected (-32020)",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test Mcp-Name mismatch against params.name is rejected (-32020)"
+   },
+   "tag": "oc:none/no-oc-server-check/McpName-vs-params-name",
+   "cg": null,
+   "search_id": "SRV01",
+   "claim_the_slot_names": "an `Mcp-Name` header that does not match `params.name` on `tools/call` is rejected -32020",
+   "why_no_counterpart": "`no-oc-server-check` — the suite scores SEP-2243 on the client only. Measured at this tip: 0 of the 119 server rows mention any of the three header families, while the client leg carries 28 rows that do.",
+   "why_this_search_is_this_claims_search": "The claim is a SERVER rejecting a routing header that disagrees with the body. SRV01's subject is exactly that obligation, and its near miss is the client-side half the suite does carry — which is why a grep for the header names is the wrong instrument here and a leg-scoped sweep is the right one.",
+   "the_search_that_found_none": "a SERVER validating a SEP-2243 routing header against the request body — `Mcp-Method` against the JSON-RPC `method`, and `Mcp-Name` against `params.name` (or `params.uri` on `resources/read`) — and rejecting a mismatch with -32020",
+   "the_near_miss_that_is_not_a_counterpart": "The eleven `http-standard-headers` rows and the seventeen `http-custom-headers` rows — `ClientMcpMethodHeader_tools_call`, `ClientMcpNameHeader_tools_call`, `ClientCustomHeader_Method` and their siblings. A reader who greps `mcp-method`, finds rows and stops would take these for the counterpart. They are all CLIENT-leg, and every one of them scores whether the CLIENT SENDS the header correctly; not one asks what a SERVER does with a header that disagrees with the body it arrived on. The two are different obligations on different peers, and SEP-2243 imposes both.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test resources/read — Mcp-Name is validated against params.uri (mismatch → -32020)",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test resources/read — Mcp-Name is validated against params.uri (mismatch → -32020)"
+   },
+   "tag": "oc:none/no-oc-server-check/McpName-vs-params-uri",
+   "cg": null,
+   "search_id": "SRV01",
+   "claim_the_slot_names": "on `resources/read` the `Mcp-Name` target is `params.uri` rather than `params.name`, and a mismatch is rejected -32020",
+   "why_no_counterpart": "`no-oc-server-check` — the suite scores SEP-2243 on the client only. Measured at this tip: 0 of the 119 server rows mention any of the three header families, while the client leg carries 28 rows that do.",
+   "why_this_search_is_this_claims_search": "The claim is a SERVER rejecting a routing header that disagrees with the body. SRV01's subject is exactly that obligation, and its near miss is the client-side half the suite does carry — which is why a grep for the header names is the wrong instrument here and a leg-scoped sweep is the right one.",
+   "the_search_that_found_none": "a SERVER validating a SEP-2243 routing header against the request body — `Mcp-Method` against the JSON-RPC `method`, and `Mcp-Name` against `params.name` (or `params.uri` on `resources/read`) — and rejecting a mismatch with -32020",
+   "the_near_miss_that_is_not_a_counterpart": "The eleven `http-standard-headers` rows and the seventeen `http-custom-headers` rows — `ClientMcpMethodHeader_tools_call`, `ClientMcpNameHeader_tools_call`, `ClientCustomHeader_Method` and their siblings. A reader who greps `mcp-method`, finds rows and stops would take these for the counterpart. They are all CLIENT-leg, and every one of them scores whether the CLIENT SENDS the header correctly; not one asks what a SERVER does with a header that disagrees with the body it arrived on. The two are different obligations on different peers, and SEP-2243 imposes both.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test AC7 — non-localhost origin is rejected 403; the identity factory never runs",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test AC7 — non-localhost origin is rejected 403; the identity factory never runs"
+   },
+   "tag": "oc:none/no-oc-check-in-this-scenario/AC7-origin-403",
+   "cg": null,
+   "search_id": "SRV02",
+   "claim_the_slot_names": "a non-localhost `Origin` is answered 403 and the per-request identity factory is never invoked",
+   "why_no_counterpart": "`no-oc-check-in-this-scenario` — `server-stateless` carries no Origin or Host check at all (0 of 30), and the counterpart that does exist is in `dns-rebinding-protection`, outside this file's declared 30.",
+   "why_this_search_is_this_claims_search": "The claim is origin enforcement on the server. SRV02's subject is that, and its 'near miss' is in fact the counterpart — recorded as such rather than dressed as an absence.",
+   "the_search_that_found_none": "a server REJECTING a request whose `Origin` is not localhost, and doing so before any per-request identity work has run",
+   "the_near_miss_that_is_not_a_counterpart": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. This is not a near miss in the usual sense: it is a REAL COUNTERPART for the rejection half of the claim, and it sits two scenarios away from this file's declared population. It is named here so that the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What neither OC row covers is the ORDERING half — that the identity factory never runs — which is an SDK property the suite has no vocabulary for.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test GET and DELETE are not allowed (405), and allow names only POST",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test GET and DELETE are not allowed (405), and allow names only POST"
+   },
+   "tag": "oc:none/no-oc-scenario/verb-405-allow-POST",
+   "cg": null,
+   "search_id": "SRV03",
+   "claim_the_slot_names": "`GET` and `DELETE` are answered 405, and the `allow` header names only `POST`",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention 405, method-not-allowed, an allow header or DELETE. The 2026-07-28 revision removed the GET listen stream and the DELETE session teardown, so the verbs a server must now refuse are exactly the ones the suite stopped having a reason to ask about.",
+   "why_this_search_is_this_claims_search": "The claim is about an HTTP verb refusal. SRV03's subject is that, and its near miss is the one row a reader would plausibly mistake for it.",
+   "the_search_that_found_none": "an MCP endpoint REFUSING an HTTP verb it does not serve — `GET` or `DELETE` answered 405 with an `allow` header naming only `POST`",
+   "the_near_miss_that_is_not_a_counterpart": "`HttpServerMethodNotFound404` — `If the server does not implement the requested RPC method, it MUST respond with 404 Not Found and a JSON-RPC error with code -32601`. A reader looking for `the server refuses` finds it and could stop. It is not a counterpart: its subject is an unimplemented JSON-RPC METHOD named inside a POST body, and this claim's subject is an HTTP VERB the endpoint does not serve at all — a refusal made before any body is parsed, and carrying no JSON-RPC error because there is no JSON-RPC request to answer.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test MC-6 — a collector that fails to start fails cleanly (-32603), no handler invoked",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test MC-6 — a collector that fails to start fails cleanly (-32603), no handler invoked"
+   },
+   "tag": "oc:none/no-oc-scenario/collector-start-failure",
+   "cg": null,
+   "search_id": "SRV04",
+   "claim_the_slot_names": "a notification collector that fails to start yields 500 / -32603 with no `resultType` in the body and no secret in it, while the log carries both",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention -32603, an internal error, a leak or a redaction. The suite scores what a CONFORMING server does; it has no probe that makes a server's own machinery fail, and without one it cannot ask what a server says when it does.",
+   "why_this_search_is_this_claims_search": "The claim is containment of an internal fault. SRV04's subject is that, and the near miss is the suite's only other error row, whose subject is the opposite case — the server working correctly and reporting a tool's error.",
+   "the_search_that_found_none": "a server whose OWN machinery fails mid-request answering a controlled -32603 whose `data` does not leak the internal cause, rather than a bare crash or a partial success",
+   "the_near_miss_that_is_not_a_counterpart": "`ToolsCallError` — `Tool returns error correctly` — in the server scenario `tools-call-error`. It is the suite's only row about a server producing an error at all, and a reader could take it for this. It is not: its subject is a TOOL returning a declared error result through the protocol's own error channel, which is the server working correctly. This claim's subject is the server's own INFRASTRUCTURE failing — a collector that will not start, an identity factory that raises, a chunked response that cannot open — where there is no tool-level error to return and the only question is what the client is told instead.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test MC-6 — a factory that raises fails cleanly (-32603) with no handler invoked",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test MC-6 — a factory that raises fails cleanly (-32603) with no handler invoked"
+   },
+   "tag": "oc:none/no-oc-scenario/identity-factory-raises",
+   "cg": null,
+   "search_id": "SRV04",
+   "claim_the_slot_names": "an identity factory that raises yields 500 / -32603 and the secret it was given never reaches the response body",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention -32603, an internal error, a leak or a redaction. The suite scores what a CONFORMING server does; it has no probe that makes a server's own machinery fail, and without one it cannot ask what a server says when it does.",
+   "why_this_search_is_this_claims_search": "The claim is containment of an internal fault. SRV04's subject is that, and the near miss is the suite's only other error row, whose subject is the opposite case — the server working correctly and reporting a tool's error.",
+   "the_search_that_found_none": "a server whose OWN machinery fails mid-request answering a controlled -32603 whose `data` does not leak the internal cause, rather than a bare crash or a partial success",
+   "the_near_miss_that_is_not_a_counterpart": "`ToolsCallError` — `Tool returns error correctly` — in the server scenario `tools-call-error`. It is the suite's only row about a server producing an error at all, and a reader could take it for this. It is not: its subject is a TOOL returning a declared error result through the protocol's own error channel, which is the server working correctly. This claim's subject is the server's own INFRASTRUCTURE failing — a collector that will not start, an identity factory that raises, a chunked response that cannot open — where there is no tool-level error to return and the only question is what the client is told instead.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test MC-6 a stream that cannot start fails cleanly controlled -32603, nothing streamed, and the handler is told",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test MC-6 a stream that cannot start fails cleanly controlled -32603, nothing streamed, and the handler is told"
+   },
+   "tag": "oc:none/no-oc-scenario/stream-start-failure",
+   "cg": null,
+   "search_id": "SRV04",
+   "claim_the_slot_names": "a subscription stream that cannot start yields 500 / -32603 with a CONTROLLED `error.data` that does not carry the internal cause",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention -32603, an internal error, a leak or a redaction. The suite scores what a CONFORMING server does; it has no probe that makes a server's own machinery fail, and without one it cannot ask what a server says when it does.",
+   "why_this_search_is_this_claims_search": "The claim is containment of an internal fault. SRV04's subject is that, and the near miss is the suite's only other error row, whose subject is the opposite case — the server working correctly and reporting a tool's error.",
+   "the_search_that_found_none": "a server whose OWN machinery fails mid-request answering a controlled -32603 whose `data` does not leak the internal cause, rather than a bare crash or a partial success",
+   "the_near_miss_that_is_not_a_counterpart": "`ToolsCallError` — `Tool returns error correctly` — in the server scenario `tools-call-error`. It is the suite's only row about a server producing an error at all, and a reader could take it for this. It is not: its subject is a TOOL returning a declared error result through the protocol's own error channel, which is the server working correctly. This claim's subject is the server's own INFRASTRUCTURE failing — a collector that will not start, an identity factory that raises, a chunked response that cannot open — where there is no tool-level error to return and the only question is what the client is told instead.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.SubscriptionsDispatchTest",
+    "test": "test open-time authorization via the honoured subset a handler may refuse the subscription outright",
+    "register_key": "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset a handler may refuse the subscription outright"
+   },
+   "tag": "oc:none/no-oc-scenario/handler-refusal--32603",
+   "cg": null,
+   "search_id": "SRV04",
+   "claim_the_slot_names": "a handler refusing a subscription outright is reported to the client as -32603 in the wire error object",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention -32603, an internal error, a leak or a redaction. The suite scores what a CONFORMING server does; it has no probe that makes a server's own machinery fail, and without one it cannot ask what a server says when it does.",
+   "why_this_search_is_this_claims_search": "The claim is containment of an internal fault. SRV04's subject is that, and the near miss is the suite's only other error row, whose subject is the opposite case — the server working correctly and reporting a tool's error.",
+   "the_search_that_found_none": "a server whose OWN machinery fails mid-request answering a controlled -32603 whose `data` does not leak the internal cause, rather than a bare crash or a partial success",
+   "the_near_miss_that_is_not_a_counterpart": "`ToolsCallError` — `Tool returns error correctly` — in the server scenario `tools-call-error`. It is the suite's only row about a server producing an error at all, and a reader could take it for this. It is not: its subject is a TOOL returning a declared error result through the protocol's own error channel, which is the server working correctly. This claim's subject is the server's own INFRASTRUCTURE failing — a collector that will not start, an identity factory that raises, a chunked response that cannot open — where there is no tool-level error to return and the only question is what the client is told instead.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test a malformed body is a parse error → -32700",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test a malformed body is a parse error → -32700"
+   },
+   "tag": "oc:none/no-oc-scenario/malformed-body--32700",
+   "cg": null,
+   "search_id": "SRV05",
+   "claim_the_slot_names": "a body that is not valid JSON yields HTTP 400 and JSON-RPC -32700",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention -32700 or a parse error. Every probe the harness sends is machine-generated valid JSON, so the suite never constructs the input this claim is about.",
+   "why_this_search_is_this_claims_search": "The claim is the parse-error path. SRV05's subject is that, and its near miss is the invalid-params family a reader would otherwise merge it with.",
+   "the_search_that_found_none": "a body that is not JSON at all being answered with a JSON-RPC parse error, -32700, and HTTP 400",
+   "the_near_miss_that_is_not_a_counterpart": "`RequestMetaInvalid` and `ResourcesNotFoundErrorCode` — both -32602, Invalid params. A reader tracing `the request was bad, what code comes back` finds these. They are not counterparts: -32602 presupposes a request that PARSED and whose params were then found wanting, and this claim's subject is a body that never became a JSON-RPC request at all — the one case in which there is no `id` to answer and no `params` to be invalid.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test a raising handler leaves no notification residue for the next request (SSE)",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test a raising handler leaves no notification residue for the next request (SSE)"
+   },
+   "tag": "oc:none/no-oc-scenario/no-residue-after-raise",
+   "cg": null,
+   "search_id": "SRV06",
+   "claim_the_slot_names": "after a handler raises mid-request the NEXT request's SSE body carries none of the previous request's notifications or identity, while carrying its own",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention residue, cross-request leakage or per-request isolation. The harness drives one request at a time and reads each response on its own, so the boundary these members assert across is one it never looks at.",
+   "why_this_search_is_this_claims_search": "The claim is about the request-scoped notification collector — its contents, its lifetime or its isolation. SRV06's subject is that boundary, and its near miss is the one suite row about notifications a request did not ask for, which is a question about scope rather than about crossing.",
+   "the_search_that_found_none": "notification state from one request being visible to the NEXT — a request-scoped collector whose contents, or whose lifetime, cross a request boundary",
+   "the_near_miss_that_is_not_a_counterpart": "`ServerNoLogWithoutLogLevel` — `No notifications/message for requests that didn't set _meta.../logLevel` — and `ServerAcceptsMultiplePostStreams`. The first asks whether a notification should have been sent to THIS request at all, and the second whether two concurrent POSTs both work. Neither asks whether one request's notifications can turn up on another's response, which is the property these members are about; the suite's probes are sequential and independent, so it never observes the boundary.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test the collector's lifetime ends strictly before the stream's the collector is gone by the time the stream is live",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test the collector's lifetime ends strictly before the stream's the collector is gone by the time the stream is live"
+   },
+   "tag": "oc:none/no-oc-scenario/collector-lifetime-ends-first",
+   "cg": null,
+   "search_id": "SRV06",
+   "claim_the_slot_names": "the request-scoped collector is already gone by the time a subscription stream is live, and the discard is counted in the log",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention residue, cross-request leakage or per-request isolation. The harness drives one request at a time and reads each response on its own, so the boundary these members assert across is one it never looks at.",
+   "why_this_search_is_this_claims_search": "The claim is about the request-scoped notification collector — its contents, its lifetime or its isolation. SRV06's subject is that boundary, and its near miss is the one suite row about notifications a request did not ask for, which is a question about scope rather than about crossing.",
+   "the_search_that_found_none": "notification state from one request being visible to the NEXT — a request-scoped collector whose contents, or whose lifetime, cross a request boundary",
+   "the_near_miss_that_is_not_a_counterpart": "`ServerNoLogWithoutLogLevel` — `No notifications/message for requests that didn't set _meta.../logLevel` — and `ServerAcceptsMultiplePostStreams`. The first asks whether a notification should have been sent to THIS request at all, and the second whether two concurrent POSTs both work. Neither asks whether one request's notifications can turn up on another's response, which is the property these members are about; the suite's probes are sequential and independent, so it never observes the boundary.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.NotificationCollectorTest",
+    "test": "test drain returns pushed notifications as wire maps, in emission order (G3)",
+    "register_key": "MCP.Server.NotificationCollectorTest/test drain returns pushed notifications as wire maps, in emission order (G3)"
+   },
+   "tag": "oc:none/no-oc-scenario/collector-drain-wire-maps",
+   "cg": null,
+   "search_id": "SRV06",
+   "claim_the_slot_names": "the collector drains its notifications as WIRE maps, in emission order, each carrying `jsonrpc` and none carrying an `id`",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention residue, cross-request leakage or per-request isolation. The harness drives one request at a time and reads each response on its own, so the boundary these members assert across is one it never looks at.",
+   "why_this_search_is_this_claims_search": "The claim is about the request-scoped notification collector — its contents, its lifetime or its isolation. SRV06's subject is that boundary, and its near miss is the one suite row about notifications a request did not ask for, which is a question about scope rather than about crossing.",
+   "the_search_that_found_none": "notification state from one request being visible to the NEXT — a request-scoped collector whose contents, or whose lifetime, cross a request boundary",
+   "the_near_miss_that_is_not_a_counterpart": "`ServerNoLogWithoutLogLevel` — `No notifications/message for requests that didn't set _meta.../logLevel` — and `ServerAcceptsMultiplePostStreams`. The first asks whether a notification should have been sent to THIS request at all, and the second whether two concurrent POSTs both work. Neither asks whether one request's notifications can turn up on another's response, which is the property these members are about; the suite's probes are sequential and independent, so it never observes the boundary.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test list/read results carry caching hints (ttlMs/cacheScope)",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test list/read results carry caching hints (ttlMs/cacheScope)"
+   },
+   "tag": "oc:none/no-oc-check-in-this-scenario/CacheableResult-hints",
+   "cg": null,
+   "search_id": "SRV07",
+   "claim_the_slot_names": "`tools/list` results carry `ttlMs` and `cacheScope`",
+   "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 30 `server-stateless` rows mention caching or ttl, while the `caching` scenario carries seven that do.",
+   "why_this_search_is_this_claims_search": "The claim is the caching hints on a list result. SRV07's subject is exactly that, and the search is scoped to the declared 30 because the claim being made is about THIS population.",
+   "the_search_that_found_none": "a list or read RESULT carrying the CacheableResult hints — `ttlMs` and `cacheScope`",
+   "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`. These are COUNTERPARTS, not near misses, and they are outside this file's declared 30. Named so the row reads as `homed elsewhere`: whichever C1c ticket declares `caching` should pick this member up rather than search for it again.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test tools/call input-required → retry with requestState → completion",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion"
+   },
+   "tag": "oc:none/no-oc-check-in-this-scenario/MRTR-server-round-trip",
+   "cg": null,
+   "search_id": "SRV08",
+   "claim_the_slot_names": "a `tools/call` answered `input_required` with a `requestState` is completed by a retry carrying that state back",
+   "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 30, and thirty-five rows elsewhere on the server leg.",
+   "why_this_search_is_this_claims_search": "The claim is the server's MRTR round trip. SRV08's subject is that, and its near miss is the request-state family inside the declared 30 that a reader could merge it with.",
+   "the_search_that_found_none": "the SERVER half of the MRTR round trip — an `input_required` result carrying a `requestState` and an `inputRequests` list, the client's retry, and the completion that follows",
+   "the_near_miss_that_is_not_a_counterpart": "`RequestMetaInvalid` and the other `_meta` rows, which are the only `server-stateless` rows about request-scoped state at all. They are not counterparts: `_meta` is state the CLIENT supplies on every request, and `requestState` is state the SERVER mints to resume one. The real counterparts are the thirty-five `input-required-result-*` rows, which are SERVER-leg and outside this file's declared 30 — they are C1c-ii's, and this row exists so that ticket inherits the member rather than rediscovering it.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.SubscriptionsDispatchTest",
+    "test": "test T-1 wire shapes (pinned to schema/2026-07-28 examples) an absent notifications object is -32602, not a silently empty stream",
+    "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) an absent notifications object is -32602, not a silently empty stream"
+   },
+   "tag": "oc:none/no-oc-scenario/absent-notifications--32602",
+   "cg": null,
+   "search_id": "SRV09",
+   "claim_the_slot_names": "an absent `notifications` object is -32602 on the wire, not a silently empty stream",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about the listen request's own `notifications` field being absent or ill-typed. The harness constructs its listen requests from its own fixtures and they are always well-formed.",
+   "why_this_search_is_this_claims_search": "The claim is validation of the listen request itself. SRV09's subject is that, and its near miss is the `_meta` rejection family, which shares the method and the error code and not the field.",
+   "the_search_that_found_none": "the `subscriptions/listen` REQUEST's own params being validated — a missing or ill-typed `notifications` object answered -32602 rather than opening a stream that carries nothing",
+   "the_near_miss_that_is_not_a_counterpart": "`RequestMetaInvalid` — `Rejects request with missing _meta with -32602 Invalid params`. Same method family, same error code, and a reader could stop there. It is not a counterpart: its subject is the `_meta` envelope every request carries, and this claim's subject is the `notifications` FILTER that only `subscriptions/listen` has. The suite opens listen streams and scores what comes out of them; it never sends a malformed one.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.SubscriptionsDispatchTest",
+    "test": "test T-1 wire shapes (pinned to schema/2026-07-28 examples) notifications is required; {} is legal and means subscribe to nothing",
+    "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) notifications is required; {} is legal and means subscribe to nothing"
+   },
+   "tag": "oc:none/no-oc-scenario/empty-filter-is-legal",
+   "cg": null,
+   "search_id": "SRV09",
+   "claim_the_slot_names": "`notifications: {}` is LEGAL and means subscribe to nothing, while an absent one and a non-object one are errors",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about the listen request's own `notifications` field being absent or ill-typed. The harness constructs its listen requests from its own fixtures and they are always well-formed.",
+   "why_this_search_is_this_claims_search": "The claim is validation of the listen request itself. SRV09's subject is that, and its near miss is the `_meta` rejection family, which shares the method and the error code and not the field.",
+   "the_search_that_found_none": "the `subscriptions/listen` REQUEST's own params being validated — a missing or ill-typed `notifications` object answered -32602 rather than opening a stream that carries nothing",
+   "the_near_miss_that_is_not_a_counterpart": "`RequestMetaInvalid` — `Rejects request with missing _meta with -32602 Invalid params`. Same method family, same error code, and a reader could stop there. It is not a counterpart: its subject is the `_meta` envelope every request carries, and this claim's subject is the `notifications` FILTER that only `subscriptions/listen` has. The suite opens listen streams and scores what comes out of them; it never sends a malformed one.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.SubscriptionsDispatchTest",
+    "test": "test T-1 wire shapes (pinned to schema/2026-07-28 examples) the request parses as the pinned SubscriptionsListenRequest example",
+    "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) the request parses as the pinned SubscriptionsListenRequest example"
+   },
+   "tag": "oc:none/no-oc-scenario/listen-request-parses",
+   "cg": null,
+   "search_id": "SRV09",
+   "claim_the_slot_names": "the schema's own listen example parses, and the `notifications` object comes back verbatim",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about the listen request's own `notifications` field being absent or ill-typed. The harness constructs its listen requests from its own fixtures and they are always well-formed.",
+   "why_this_search_is_this_claims_search": "The claim is validation of the listen request itself. SRV09's subject is that, and its near miss is the `_meta` rejection family, which shares the method and the error code and not the field.",
+   "the_search_that_found_none": "the `subscriptions/listen` REQUEST's own params being validated — a missing or ill-typed `notifications` object answered -32602 rather than opening a stream that carries nothing",
+   "the_near_miss_that_is_not_a_counterpart": "`RequestMetaInvalid` — `Rejects request with missing _meta with -32602 Invalid params`. Same method family, same error code, and a reader could stop there. It is not a counterpart: its subject is the `_meta` envelope every request carries, and this claim's subject is the `notifications` FILTER that only `subscriptions/listen` has. The suite opens listen streams and scores what comes out of them; it never sends a malformed one.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test the exits that raise before a branch is chosen a listen answered ABOVE the handler is owed no teardown callback",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test the exits that raise before a branch is chosen a listen answered ABOVE the handler is owed no teardown callback"
+   },
+   "tag": "oc:none/no-oc-scenario/listen-refused-above-handler",
+   "cg": null,
+   "search_id": "SRV09",
+   "claim_the_slot_names": "a listen with no filter is refused -32602 above the handler, and no teardown callback is owed because the handler never ran",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about the listen request's own `notifications` field being absent or ill-typed. The harness constructs its listen requests from its own fixtures and they are always well-formed.",
+   "why_this_search_is_this_claims_search": "The claim is validation of the listen request itself. SRV09's subject is that, and its near miss is the `_meta` rejection family, which shares the method and the error code and not the field.",
+   "the_search_that_found_none": "the `subscriptions/listen` REQUEST's own params being validated — a missing or ill-typed `notifications` object answered -32602 rather than opening a stream that carries nothing",
+   "the_near_miss_that_is_not_a_counterpart": "`RequestMetaInvalid` — `Rejects request with missing _meta with -32602 Invalid params`. Same method family, same error code, and a reader could stop there. It is not a counterpart: its subject is the `_meta` envelope every request carries, and this claim's subject is the `notifications` FILTER that only `subscriptions/listen` has. The suite opens listen streams and scores what comes out of them; it never sends a malformed one.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.SubscriptionsDispatchTest",
+    "test": "test T-1 wire shapes (pinned to schema/2026-07-28 examples) the graceful-close response matches the pinned example exactly",
+    "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) the graceful-close response matches the pinned example exactly"
+   },
+   "tag": "oc:none/no-oc-scenario/close-response-shape",
+   "cg": null,
+   "search_id": "SRV10",
+   "claim_the_slot_names": "the graceful-close response is the pinned shape — not `result: {}` but `resultType` and `_meta` — so a later reader cannot simplify it into a schema violation",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention a listen result, a close or a lifetime. The suite's listen probes are read for a bounded number of frames and then abandoned, so the end of a stream is never an artefact it holds.",
+   "why_this_search_is_this_claims_search": "The claim is about how a listen ENDS. SRV10's subject is that, and its near miss is the one row about how a listen BEGINS — same stream, opposite end, different message type.",
+   "the_search_that_found_none": "the `subscriptions/listen` RESULT — the response that ends a listen, its `resultType`, the id it echoes, and its ordering against the socket closing",
+   "the_near_miss_that_is_not_a_counterpart": "`ServerSendsSubscriptionAck` — `notifications/subscriptions/acknowledged is the first message on a subscriptions/listen stream`. It is the only suite row about a listen stream's framing, and it is about the stream's FIRST frame. These members are about its LAST one, and the two are different objects: the ack is a NOTIFICATION and carries no id, the close is a RESULT and carries the request's. The suite opens listen streams and never waits for one to end.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.SubscriptionsDispatchTest",
+    "test": "test T-1 wire shapes (pinned to schema/2026-07-28 examples) the id is echoed, never coerced — RequestId is string OR integer",
+    "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) the id is echoed, never coerced — RequestId is string OR integer"
+   },
+   "tag": "oc:none/no-oc-scenario/listen-id-echoed-uncoerced",
+   "cg": null,
+   "search_id": "SRV10",
+   "claim_the_slot_names": "the listen response echoes the RequestId it was given without coercing it — integer stays integer, string stays string",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention a listen result, a close or a lifetime. The suite's listen probes are read for a bounded number of frames and then abandoned, so the end of a stream is never an artefact it holds.",
+   "why_this_search_is_this_claims_search": "The claim is about how a listen ENDS. SRV10's subject is that, and its near miss is the one row about how a listen BEGINS — same stream, opposite end, different message type.",
+   "the_search_that_found_none": "the `subscriptions/listen` RESULT — the response that ends a listen, its `resultType`, the id it echoes, and its ordering against the socket closing",
+   "the_near_miss_that_is_not_a_counterpart": "`ServerSendsSubscriptionAck` — `notifications/subscriptions/acknowledged is the first message on a subscriptions/listen stream`. It is the only suite row about a listen stream's framing, and it is about the stream's FIRST frame. These members are about its LAST one, and the two are different objects: the ack is a NOTIFICATION and carries no id, the close is a RESULT and carries the request's. The suite opens listen streams and never waits for one to end.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test T-12 the close asymmetry a client depends on lifetime expiry sends the listen response, then closes",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test T-12 the close asymmetry a client depends on lifetime expiry sends the listen response, then closes"
+   },
+   "tag": "oc:none/no-oc-scenario/close-asymmetry-response-first",
+   "cg": null,
+   "search_id": "SRV10",
+   "claim_the_slot_names": "on lifetime expiry the response is written BEFORE the socket closes, so a client never loses it to the close",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention a listen result, a close or a lifetime. The suite's listen probes are read for a bounded number of frames and then abandoned, so the end of a stream is never an artefact it holds.",
+   "why_this_search_is_this_claims_search": "The claim is about how a listen ENDS. SRV10's subject is that, and its near miss is the one row about how a listen BEGINS — same stream, opposite end, different message type.",
+   "the_search_that_found_none": "the `subscriptions/listen` RESULT — the response that ends a listen, its `resultType`, the id it echoes, and its ordering against the socket closing",
+   "the_near_miss_that_is_not_a_counterpart": "`ServerSendsSubscriptionAck` — `notifications/subscriptions/acknowledged is the first message on a subscriptions/listen stream`. It is the only suite row about a listen stream's framing, and it is about the stream's FIRST frame. These members are about its LAST one, and the two are different objects: the ack is a NOTIFICATION and carries no id, the close is a RESULT and carries the request's. The suite opens listen streams and never waits for one to end.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test T-12 the close asymmetry a client depends on the close-frame decision refuses to write after a peer close",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test T-12 the close asymmetry a client depends on the close-frame decision refuses to write after a peer close"
+   },
+   "tag": "oc:none/no-oc-scenario/close-frame-decision",
+   "cg": null,
+   "search_id": "SRV10",
+   "claim_the_slot_names": "after the peer has gone the close decision writes nothing, while lifetime expiry and shutdown both write the completion response",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention a listen result, a close or a lifetime. The suite's listen probes are read for a bounded number of frames and then abandoned, so the end of a stream is never an artefact it holds.",
+   "why_this_search_is_this_claims_search": "The claim is about how a listen ENDS. SRV10's subject is that, and its near miss is the one row about how a listen BEGINS — same stream, opposite end, different message type.",
+   "the_search_that_found_none": "the `subscriptions/listen` RESULT — the response that ends a listen, its `resultType`, the id it echoes, and its ordering against the socket closing",
+   "the_near_miss_that_is_not_a_counterpart": "`ServerSendsSubscriptionAck` — `notifications/subscriptions/acknowledged is the first message on a subscriptions/listen stream`. It is the only suite row about a listen stream's framing, and it is about the stream's FIRST frame. These members are about its LAST one, and the two are different objects: the ack is a NOTIFICATION and carries no id, the close is a RESULT and carries the request's. The suite opens listen streams and never waits for one to end.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.SubscriptionsDispatchTest",
+    "test": "test T-2 the acknowledgment reports what was honoured a requested-but-refused type is absent from the ack",
+    "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-2 the acknowledgment reports what was honoured a requested-but-refused type is absent from the ack"
+   },
+   "tag": "oc:none/no-oc-scenario/ack-omits-refused-type",
+   "cg": null,
+   "search_id": "SRV11",
+   "claim_the_slot_names": "a requested type the handler refuses is ABSENT from the ack's `notifications`, not present-and-false",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about what the acknowledgement's payload reports. The suite reads the ack's method and its `_meta`; it never compares its `notifications` against what was asked for.",
+   "why_this_search_is_this_claims_search": "The claim is the honesty of the ack's payload. SRV11's subject is that, and its near miss is the pair of rows that read the ack and the stream for everything EXCEPT it.",
+   "the_search_that_found_none": "the acknowledgement's `notifications` PAYLOAD reporting the subset the server actually honoured, rather than the set the client requested",
+   "the_near_miss_that_is_not_a_counterpart": "`ServerSendsSubscriptionAck` and `ServerHonorsNotificationFilter`. Between them they score that the ack arrives FIRST and that the STREAM does not leak an unrequested type — the ack's position and the stream's behaviour. Neither reads the ack's `notifications` payload, so neither can tell an honest ack from one that promises everything and then filters. That gap is the whole subject of these three members.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.SubscriptionsDispatchTest",
+    "test": "test T-2 the acknowledgment reports what was honoured the ack is built from the same value the stream enforces",
+    "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-2 the acknowledgment reports what was honoured the ack is built from the same value the stream enforces"
+   },
+   "tag": "oc:none/no-oc-scenario/ack-equals-enforced-set",
+   "cg": null,
+   "search_id": "SRV11",
+   "claim_the_slot_names": "the set the ack PROMISES is exactly the set the stream ENFORCES, so an ack cannot over-claim",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about what the acknowledgement's payload reports. The suite reads the ack's method and its `_meta`; it never compares its `notifications` against what was asked for.",
+   "why_this_search_is_this_claims_search": "The claim is the honesty of the ack's payload. SRV11's subject is that, and its near miss is the pair of rows that read the ack and the stream for everything EXCEPT it.",
+   "the_search_that_found_none": "the acknowledgement's `notifications` PAYLOAD reporting the subset the server actually honoured, rather than the set the client requested",
+   "the_near_miss_that_is_not_a_counterpart": "`ServerSendsSubscriptionAck` and `ServerHonorsNotificationFilter`. Between them they score that the ack arrives FIRST and that the STREAM does not leak an unrequested type — the ack's position and the stream's behaviour. Neither reads the ack's `notifications` payload, so neither can tell an honest ack from one that promises everything and then filters. That gap is the whole subject of these three members.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.SubscriptionsDispatchTest",
+    "test": "test open-time authorization via the honoured subset a URI this principal may not observe is absent from the ack",
+    "register_key": "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset a URI this principal may not observe is absent from the ack"
+   },
+   "tag": "oc:none/no-oc-scenario/ack-omits-unauthorized-uri",
+   "cg": null,
+   "search_id": "SRV11",
+   "claim_the_slot_names": "a URI this principal may not observe is absent from the ack, so the wire claims nothing it would then filter",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about what the acknowledgement's payload reports. The suite reads the ack's method and its `_meta`; it never compares its `notifications` against what was asked for.",
+   "why_this_search_is_this_claims_search": "The claim is the honesty of the ack's payload. SRV11's subject is that, and its near miss is the pair of rows that read the ack and the stream for everything EXCEPT it.",
+   "the_search_that_found_none": "the acknowledgement's `notifications` PAYLOAD reporting the subset the server actually honoured, rather than the set the client requested",
+   "the_near_miss_that_is_not_a_counterpart": "`ServerSendsSubscriptionAck` and `ServerHonorsNotificationFilter`. Between them they score that the ack arrives FIRST and that the STREAM does not leak an unrequested type — the ack's position and the stream's behaviour. Neither reads the ack's `notifications` payload, so neither can tell an honest ack from one that promises everything and then filters. That gap is the whole subject of these three members.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test T-8 keep-alive comment lines an idle stream actually emits comment frames, and stays open",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test T-8 keep-alive comment lines an idle stream actually emits comment frames, and stays open"
+   },
+   "tag": "oc:none/no-oc-scenario/idle-stream-emits-comments",
+   "cg": null,
+   "search_id": "SRV12",
+   "claim_the_slot_names": "an idle stream really does emit comment frames and is still live afterwards — a notification pushed after them still arrives",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention keep-alives, comment lines or idleness. The harness reads a bounded number of DATA events off a stream and closes it; a frame that carries no data is one it discards before it could score it.",
+   "why_this_search_is_this_claims_search": "The claim is the keep-alive comment frame. SRV12's subject is that, and its near miss is the suite's only SSE-behaviour row, whose notion of `functional` cannot reach a payloadless frame.",
+   "the_search_that_found_none": "SSE keep-alive COMMENT frames — a bare `:` line emitted on an idle stream to hold it open, and distinguishable from an empty data event",
+   "the_near_miss_that_is_not_a_counterpart": "`ServerSSEStreamsFunctional` — `Multiple POST SSE streams should be functional`. A reader looking for `the SSE stream behaves` finds it. It is not a counterpart: `functional` there means the streams deliver their payloads end to end, and a keep-alive comment carries no payload by definition — it is precisely the frame a functionality check cannot see.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test T-8 keep-alive comment lines the encoder emits a bare comment line",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test T-8 keep-alive comment lines the encoder emits a bare comment line"
+   },
+   "tag": "oc:none/no-oc-scenario/sse-comment-is-a-bare-colon",
+   "cg": null,
+   "search_id": "SRV12",
+   "claim_the_slot_names": "the SSE comment is exactly a bare `:` line, and is NOT what an empty data event encodes to",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention keep-alives, comment lines or idleness. The harness reads a bounded number of DATA events off a stream and closes it; a frame that carries no data is one it discards before it could score it.",
+   "why_this_search_is_this_claims_search": "The claim is the keep-alive comment frame. SRV12's subject is that, and its near miss is the suite's only SSE-behaviour row, whose notion of `functional` cannot reach a payloadless frame.",
+   "the_search_that_found_none": "SSE keep-alive COMMENT frames — a bare `:` line emitted on an idle stream to hold it open, and distinguishable from an empty data event",
+   "the_near_miss_that_is_not_a_counterpart": "`ServerSSEStreamsFunctional` — `Multiple POST SSE streams should be functional`. A reader looking for `the SSE stream behaves` finds it. It is not a counterpart: `functional` there means the streams deliver their payloads end to end, and a keep-alive comment carries no payload by definition — it is precisely the frame a functionality check cannot see.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test the stream opens with its acknowledgment the response carries the SSE headers the spec SHOULDs",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the response carries the SSE headers the spec SHOULDs"
+   },
+   "tag": "oc:none/no-oc-scenario/sse-response-headers",
+   "cg": null,
+   "search_id": "SRV13",
+   "claim_the_slot_names": "the SSE response carries the three SHOULDed headers and carries NO `last-event-id`",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention any SSE transport header or resumability, against 45 rows that mention headers of another kind entirely.",
+   "why_this_search_is_this_claims_search": "The claim is the SSE response's own headers. SRV13's subject is that, and its near miss is the large and visible header family that a grep would find first.",
+   "the_search_that_found_none": "the HEADERS an SSE response carries — `content-type: text/event-stream`, `x-accel-buffering: no`, `cache-control: no-cache`, and the ABSENCE of `last-event-id` now that resumability is gone",
+   "the_near_miss_that_is_not_a_counterpart": "The forty-five rows carrying the word `header`, every one of them client-leg SEP-2243 rows about `Mcp-Method`, `Mcp-Name` and `Mcp-Param-*`. A reader who greps `header` finds a great many and could conclude the suite covers headers thoroughly. It covers ROUTING headers, on the client, on a POST; it carries nothing at all about the TRANSPORT headers an SSE response must set, and the `last-event-id` refute — the half that pins resumability as removed at 2026-07-28 — has no row anywhere.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StreamableHTTPStatelessTest",
+    "test": "test two-instance / no-affinity smoke (DoD) interleaving requests round-robin across two stateless instances succeeds identically",
+    "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test two-instance / no-affinity smoke (DoD) interleaving requests round-robin across two stateless instances succeeds identically"
+   },
+   "tag": "oc:none/no-oc-scenario/two-instance-round-robin",
+   "cg": null,
+   "search_id": "SRV14",
+   "claim_the_slot_names": "requests interleaved round-robin across two independent plug instances all succeed and produce identical bodies",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention an instance, affinity or a balancer. The harness connects to one endpoint, and the property these members assert is only visible when there are two.",
+   "why_this_search_is_this_claims_search": "The claim quantifies over two instances. SRV14's subject is that, and its near miss is the scenario whose name promises statelessness while measuring it one process at a time.",
+   "the_search_that_found_none": "behaviour ACROSS two independent server instances — requests round-robined between them succeeding identically, and a subscription held by one not being reachable from the other",
+   "the_near_miss_that_is_not_a_counterpart": "The `server-stateless` scenario itself — thirty rows whose whole premise is that no handshake and no session exist. A reader could take the scenario NAME for the property. It is not a counterpart: every one of those thirty rows is measured against a SINGLE server process, so they establish that one instance needs no prior state, never that two instances are interchangeable. The harness has no way to start a second one.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test T-10 the documented multi-instance boundary a change on instance B does not reach a stream held by instance A",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test T-10 the documented multi-instance boundary a change on instance B does not reach a stream held by instance A"
+   },
+   "tag": "oc:none/no-oc-scenario/no-cross-instance-delivery",
+   "cg": null,
+   "search_id": "SRV14",
+   "claim_the_slot_names": "a change raised on instance B produces no frame on a stream held by instance A, while a change raised on A still does",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention an instance, affinity or a balancer. The harness connects to one endpoint, and the property these members assert is only visible when there are two.",
+   "why_this_search_is_this_claims_search": "The claim quantifies over two instances. SRV14's subject is that, and its near miss is the scenario whose name promises statelessness while measuring it one process at a time.",
+   "the_search_that_found_none": "behaviour ACROSS two independent server instances — requests round-robined between them succeeding identically, and a subscription held by one not being reachable from the other",
+   "the_near_miss_that_is_not_a_counterpart": "The `server-stateless` scenario itself — thirty rows whose whole premise is that no handshake and no session exist. A reader could take the scenario NAME for the property. It is not a counterpart: every one of those thirty rows is measured against a SINGLE server process, so they establish that one instance needs no prior state, never that two instances are interchangeable. The harness has no way to start a second one.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.MetaTest",
+    "test": "test from_params/1 extracts the io.modelcontextprotocol/* keys",
+    "register_key": "MCP.Protocol.MetaTest/test from_params/1 extracts the io.modelcontextprotocol/* keys"
+   },
+   "tag": "oc:none/no-oc-scenario/meta-field-extraction",
+   "cg": null,
+   "search_id": "SRV15",
+   "claim_the_slot_names": "`Meta.from_params/1` takes protocolVersion, clientInfo, clientCapabilities and logLevel from their four named `_meta` keys",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about which key a server reads a `_meta` field out of. The suite asserts the envelope's presence from both ends and stops there.",
+   "why_this_search_is_this_claims_search": "The claim is the key-by-key extraction. SRV15's subject is that, and its near miss is the presence family, which a wrong extraction would satisfy.",
+   "the_search_that_found_none": "a SERVER READING the `io.modelcontextprotocol/*` keys out of a request's `_meta` — which key each field is taken from, as opposed to whether the envelope is present or valid",
+   "the_near_miss_that_is_not_a_counterpart": "`RequestMetaInvalid` and `ClientPopulatesMeta`. The first asks whether the server REJECTS a `_meta` that is missing a required key; the second whether the CLIENT PUTS the keys there. Both are about the envelope's presence, from the two ends. Neither asks which key a server reads each field out of, which is what these members assert — and an implementation that read `clientInfo` where it should read `clientCapabilities` would pass both while being wrong.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.SubscriptionsDispatchTest",
+    "test": "test T-3 MUST NOT send an unrequested notification type the URI filter reads either key style, so nothing is dropped for writing %{uri: ...}",
+    "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-3 MUST NOT send an unrequested notification type the URI filter reads either key style, so nothing is dropped for writing %{uri: ...}"
+   },
+   "tag": "oc:none/no-oc-scenario/uri-filter-key-style",
+   "cg": null,
+   "search_id": "SRV16",
+   "claim_the_slot_names": "an atom-keyed `%{uri: ...}` from a handler still produces correct string-keyed wire params, so nothing is dropped for writing the idiomatic spelling",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention `resourceSubscriptions` or URI-scoped filtering.",
+   "why_this_search_is_this_claims_search": "The claim is URI-scoped filtering and the key style the filter accepts. SRV16's subject is that, and its near miss is the TYPE filter the suite does score.",
+   "the_search_that_found_none": "a subscription filter scoped to particular resource URIs, and a frame's `params.uri` surviving an atom-keyed handler payload",
+   "the_near_miss_that_is_not_a_counterpart": "`ServerHonorsNotificationFilter` — `Server doesn't send notification types the client didn't request`. Same mechanism, one level up: it filters by TYPE (`toolsListChanged` and its siblings), never by URI. `resourceSubscriptions` is the filter key that carries URIs and it appears in no row of the suite, so the URI half of the filter is unexercised end to end.",
+   "authored_by": "MES-105 (C1c-i)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.SubscriptionsDispatchTest",
+    "test": "test open-time authorization via the honoured subset the two refusals that never reach the handler stay {:reply, ...}",
+    "register_key": "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset the two refusals that never reach the handler stay {:reply, ...}"
+   },
+   "tag": "oc:none/no-oc-scenario/refusals-above-the-handler",
+   "cg": null,
+   "search_id": "SRV17",
+   "claim_the_slot_names": "the two refusals decided above the handler stay `{:reply, ...}` and carry -32602 and -32601, a different shape from the handler-level refusal",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about where in the stack a refusal was decided. A conformance suite reads wire artefacts, and this distinction is between two paths that can produce the same one.",
+   "why_this_search_is_this_claims_search": "The claim is the dispatch-level/handler-level distinction. SRV17's subject is that, and its near miss is the suite's one pre-service refusal row, which scores the refusal's content rather than its origin.",
+   "the_search_that_found_none": "a refusal decided ABOVE the handler — one the handler never sees — being distinguishable on the wire from one the handler itself returned",
+   "the_near_miss_that_is_not_a_counterpart": "`ServerRejectsUndeclaredCapability` — `A server MUST NOT rely on capabilities the client has not declared ... the server MUST return a MissingRequiredClientCapabilityError`. It is the suite's one row about a request refused before it is served, so a reader could take it for this. It is not: what it scores is the CODE and the `requiredCapabilities` payload of one particular refusal, never WHERE in the stack a refusal was decided — which is the distinction this member draws, and one no wire artefact of a single refusal can carry.",
+   "authored_by": "MES-105 (C1c-i)"
+  }
+ ],
+ "declared_unmatched_note": "A3 §6 state 3 — members adjudicated as having NO OC counterpart among this file's declared 30. They are bucket 1 over this population. The generator asserts each tag guard-checks to state 3 (decodes as `oc:none`, does NOT resolve as an oc key) before counting it. Every one of the 34 names a REGISTERED search by `search_id`, which is a step past the client leg: 39 of its 65 rows name one and 26 carry prose the registry limb cannot reach. All 34 here are inside G23b/c/d, and the reason is simply that this ticket RAN its searches rather than inheriting them.",
+ "absence_searches": [
+  {
+   "id": "SRV01",
+   "kind": "no-oc-server-check",
+   "subject": "a SERVER validating a SEP-2243 routing header against the request body — `Mcp-Method` against the JSON-RPC `method`, and `Mcp-Name` against `params.name` (or `params.uri` on `resources/read`) — and rejecting a mismatch with -32020",
+   "pattern": "(?i)mcp-method|mcp-name|mcp-param-",
+   "positive_controls": [
+    {
+     "term": "(?i)header",
+     "hits": 3
+    },
+    {
+     "term": "(?i)error",
+     "hits": 18
+    },
+    {
+     "term": "(?i)MUST",
+     "hits": 13
+    }
+   ],
+   "near_miss": "The eleven `http-standard-headers` rows and the seventeen `http-custom-headers` rows — `ClientMcpMethodHeader_tools_call`, `ClientMcpNameHeader_tools_call`, `ClientCustomHeader_Method` and their siblings. A reader who greps `mcp-method`, finds rows and stops would take these for the counterpart. They are all CLIENT-leg, and every one of them scores whether the CLIENT SENDS the header correctly; not one asks what a SERVER does with a header that disagrees with the body it arrived on. The two are different obligations on different peers, and SEP-2243 imposes both.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 119,
+    "restrict": {
+     "field": "leg",
+     "value": "server"
+    },
+    "why": "The 119 SERVER rows. The zero being claimed is `no check on OUR leg`, not `no check anywhere` — the client leg has counterparts and they are named in the near miss — so sweeping all 175 would return them and the search would have to explain away its own hits. Narrowing the population is what makes the claim the record actually makes measurable."
+   }
+  },
+  {
+   "id": "SRV02",
+   "kind": "no-oc-check-in-this-scenario",
+   "subject": "a server REJECTING a request whose `Origin` is not localhost, and doing so before any per-request identity work has run",
+   "pattern": "(?i)\\borigin\\b|localhost|dns.?rebind",
+   "positive_controls": [
+    {
+     "term": "(?i)server",
+     "hits": 30
+    },
+    {
+     "term": "(?i)HTTP",
+     "hits": 14
+    },
+    {
+     "term": "(?i)MUST",
+     "hits": 13
+    }
+   ],
+   "near_miss": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. This is not a near miss in the usual sense: it is a REAL COUNTERPART for the rejection half of the claim, and it sits two scenarios away from this file's declared population. It is named here so that the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What neither OC row covers is the ORDERING half — that the identity factory never runs — which is an SDK property the suite has no vocabulary for.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 30,
+    "restrict": {
+     "field": "scenario",
+     "value": "server-stateless"
+    },
+    "why": "The 30 `server-stateless` rows — this file's DECLARED check population. The zero being claimed is `no counterpart among the checks this file declares`, which is what `what_unmatched_means_in_a_file_that_declares_its_own_checks` says a bucket-1 row can mean here. A counterpart in ANOTHER server scenario exists and is named in the near miss; it is a later C1c ticket's, not an absence."
+   }
+  },
+  {
+   "id": "SRV03",
+   "kind": "no-oc-scenario",
+   "subject": "an MCP endpoint REFUSING an HTTP verb it does not serve — `GET` or `DELETE` answered 405 with an `allow` header naming only `POST`",
+   "pattern": "(?i)\\b405\\b|method not allowed|\\ballow\\b header|GET and DELETE|\\bDELETE\\b",
+   "positive_controls": [
+    {
+     "term": "(?i)HTTP",
+     "hits": 56
+    },
+    {
+     "term": "(?i)404",
+     "hits": 6
+    },
+    {
+     "term": "(?i)request",
+     "hits": 63
+    }
+   ],
+   "near_miss": "`HttpServerMethodNotFound404` — `If the server does not implement the requested RPC method, it MUST respond with 404 Not Found and a JSON-RPC error with code -32601`. A reader looking for `the server refuses` finds it and could stop. It is not a counterpart: its subject is an unimplemented JSON-RPC METHOD named inside a POST body, and this claim's subject is an HTTP VERB the endpoint does not serve at all — a refusal made before any body is parsed, and carrying no JSON-RPC error because there is no JSON-RPC request to answer.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 175,
+    "restrict": null,
+    "why": "ALL 175, not the 173 in-denominator ones. A counterpart that exists but sits out of the denominator is still a counterpart the record would be wrong to deny; narrowing to 173 would make the zero easier to get and mean less."
+   }
+  },
+  {
+   "id": "SRV04",
+   "kind": "no-oc-scenario",
+   "subject": "a server whose OWN machinery fails mid-request answering a controlled -32603 whose `data` does not leak the internal cause, rather than a bare crash or a partial success",
+   "pattern": "(?i)-32603|internal error|\\bleak|redact|stack trace|crash",
+   "positive_controls": [
+    {
+     "term": "(?i)error",
+     "hits": 18
+    },
+    {
+     "term": "(?i)result",
+     "hits": 41
+    },
+    {
+     "term": "(?i)MUST",
+     "hits": 32
+    }
+   ],
+   "near_miss": "`ToolsCallError` — `Tool returns error correctly` — in the server scenario `tools-call-error`. It is the suite's only row about a server producing an error at all, and a reader could take it for this. It is not: its subject is a TOOL returning a declared error result through the protocol's own error channel, which is the server working correctly. This claim's subject is the server's own INFRASTRUCTURE failing — a collector that will not start, an identity factory that raises, a chunked response that cannot open — where there is no tool-level error to return and the only question is what the client is told instead.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 175,
+    "restrict": null,
+    "why": "ALL 175, not the 173 in-denominator ones. A counterpart that exists but sits out of the denominator is still a counterpart the record would be wrong to deny; narrowing to 173 would make the zero easier to get and mean less."
+   }
+  },
+  {
+   "id": "SRV05",
+   "kind": "no-oc-scenario",
+   "subject": "a body that is not JSON at all being answered with a JSON-RPC parse error, -32700, and HTTP 400",
+   "pattern": "(?i)-32700|parse error|malformed (body|json)|unparse",
+   "positive_controls": [
+    {
+     "term": "(?i)-32602",
+     "hits": 2
+    },
+    {
+     "term": "(?i)json",
+     "hits": 48
+    },
+    {
+     "term": "(?i)valid",
+     "hits": 65
+    }
+   ],
+   "near_miss": "`RequestMetaInvalid` and `ResourcesNotFoundErrorCode` — both -32602, Invalid params. A reader tracing `the request was bad, what code comes back` finds these. They are not counterparts: -32602 presupposes a request that PARSED and whose params were then found wanting, and this claim's subject is a body that never became a JSON-RPC request at all — the one case in which there is no `id` to answer and no `params` to be invalid.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 175,
+    "restrict": null,
+    "why": "ALL 175, not the 173 in-denominator ones. A counterpart that exists but sits out of the denominator is still a counterpart the record would be wrong to deny; narrowing to 173 would make the zero easier to get and mean less."
+   }
+  },
+  {
+   "id": "SRV06",
+   "kind": "no-oc-scenario",
+   "subject": "notification state from one request being visible to the NEXT — a request-scoped collector whose contents, or whose lifetime, cross a request boundary",
+   "pattern": "(?i)residue|leak(s|ed|age)? (across|between)|cross.?request|previous request|per.?request isolat",
+   "positive_controls": [
+    {
+     "term": "(?i)notification",
+     "hits": 6
+    },
+    {
+     "term": "(?i)request",
+     "hits": 63
+    },
+    {
+     "term": "(?i)stream",
+     "hits": 7
+    }
+   ],
+   "near_miss": "`ServerNoLogWithoutLogLevel` — `No notifications/message for requests that didn't set _meta.../logLevel` — and `ServerAcceptsMultiplePostStreams`. The first asks whether a notification should have been sent to THIS request at all, and the second whether two concurrent POSTs both work. Neither asks whether one request's notifications can turn up on another's response, which is the property these members are about; the suite's probes are sequential and independent, so it never observes the boundary.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 175,
+    "restrict": null,
+    "why": "ALL 175, not the 173 in-denominator ones. A counterpart that exists but sits out of the denominator is still a counterpart the record would be wrong to deny; narrowing to 173 would make the zero easier to get and mean less."
+   }
+  },
+  {
+   "id": "SRV07",
+   "kind": "no-oc-check-in-this-scenario",
+   "subject": "a list or read RESULT carrying the CacheableResult hints — `ttlMs` and `cacheScope`",
+   "pattern": "(?i)cache|\\bttl",
+   "positive_controls": [
+    {
+     "term": "(?i)server",
+     "hits": 30
+    },
+    {
+     "term": "(?i)_meta",
+     "hits": 10
+    },
+    {
+     "term": "(?i)HTTP",
+     "hits": 14
+    }
+   ],
+   "near_miss": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`. These are COUNTERPARTS, not near misses, and they are outside this file's declared 30. Named so the row reads as `homed elsewhere`: whichever C1c ticket declares `caching` should pick this member up rather than search for it again.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 30,
+    "restrict": {
+     "field": "scenario",
+     "value": "server-stateless"
+    },
+    "why": "The 30 `server-stateless` rows — this file's DECLARED check population. The zero being claimed is `no counterpart among the checks this file declares`, which is what `what_unmatched_means_in_a_file_that_declares_its_own_checks` says a bucket-1 row can mean here. A counterpart in ANOTHER server scenario exists and is named in the near miss; it is a later C1c ticket's, not an absence."
+   }
+  },
+  {
+   "id": "SRV08",
+   "kind": "no-oc-check-in-this-scenario",
+   "subject": "the SERVER half of the MRTR round trip — an `input_required` result carrying a `requestState` and an `inputRequests` list, the client's retry, and the completion that follows",
+   "pattern": "(?i)input.?required|requeststate|request state|inputrequests",
+   "positive_controls": [
+    {
+     "term": "(?i)_meta",
+     "hits": 10
+    },
+    {
+     "term": "(?i)server",
+     "hits": 30
+    },
+    {
+     "term": "(?i)stream",
+     "hits": 5
+    }
+   ],
+   "near_miss": "`RequestMetaInvalid` and the other `_meta` rows, which are the only `server-stateless` rows about request-scoped state at all. They are not counterparts: `_meta` is state the CLIENT supplies on every request, and `requestState` is state the SERVER mints to resume one. The real counterparts are the thirty-five `input-required-result-*` rows, which are SERVER-leg and outside this file's declared 30 — they are C1c-ii's, and this row exists so that ticket inherits the member rather than rediscovering it.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 30,
+    "restrict": {
+     "field": "scenario",
+     "value": "server-stateless"
+    },
+    "why": "The 30 `server-stateless` rows — this file's DECLARED check population. The zero being claimed is `no counterpart among the checks this file declares`, which is what `what_unmatched_means_in_a_file_that_declares_its_own_checks` says a bucket-1 row can mean here. A counterpart in ANOTHER server scenario exists and is named in the near miss; it is a later C1c ticket's, not an absence."
+   }
+  },
+  {
+   "id": "SRV09",
+   "kind": "no-oc-scenario",
+   "subject": "the `subscriptions/listen` REQUEST's own params being validated — a missing or ill-typed `notifications` object answered -32602 rather than opening a stream that carries nothing",
+   "pattern": "(?i)(missing|absent|invalid|ill.?typed).{0,40}notifications|notifications.{0,30}(required|missing|invalid)",
+   "positive_controls": [
+    {
+     "term": "(?i)notifications",
+     "hits": 5
+    },
+    {
+     "term": "(?i)-32602",
+     "hits": 2
+    },
+    {
+     "term": "(?i)valid",
+     "hits": 65
+    }
+   ],
+   "near_miss": "`RequestMetaInvalid` — `Rejects request with missing _meta with -32602 Invalid params`. Same method family, same error code, and a reader could stop there. It is not a counterpart: its subject is the `_meta` envelope every request carries, and this claim's subject is the `notifications` FILTER that only `subscriptions/listen` has. The suite opens listen streams and scores what comes out of them; it never sends a malformed one.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 175,
+    "restrict": null,
+    "why": "ALL 175, not the 173 in-denominator ones. A counterpart that exists but sits out of the denominator is still a counterpart the record would be wrong to deny; narrowing to 173 would make the zero easier to get and mean less."
+   }
+  },
+  {
+   "id": "SRV10",
+   "kind": "no-oc-scenario",
+   "subject": "the `subscriptions/listen` RESULT — the response that ends a listen, its `resultType`, the id it echoes, and its ordering against the socket closing",
+   "pattern": "(?i)listen (result|response)|close|graceful|lifetime|expir",
+   "positive_controls": [
+    {
+     "term": "(?i)subscription",
+     "hits": 4
+    },
+    {
+     "term": "(?i)result",
+     "hits": 41
+    },
+    {
+     "term": "(?i)stream",
+     "hits": 7
+    }
+   ],
+   "near_miss": "`ServerSendsSubscriptionAck` — `notifications/subscriptions/acknowledged is the first message on a subscriptions/listen stream`. It is the only suite row about a listen stream's framing, and it is about the stream's FIRST frame. These members are about its LAST one, and the two are different objects: the ack is a NOTIFICATION and carries no id, the close is a RESULT and carries the request's. The suite opens listen streams and never waits for one to end.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 175,
+    "restrict": null,
+    "why": "ALL 175, not the 173 in-denominator ones. A counterpart that exists but sits out of the denominator is still a counterpart the record would be wrong to deny; narrowing to 173 would make the zero easier to get and mean less."
+   }
+  },
+  {
+   "id": "SRV11",
+   "kind": "no-oc-scenario",
+   "subject": "the acknowledgement's `notifications` PAYLOAD reporting the subset the server actually honoured, rather than the set the client requested",
+   "pattern": "(?i)honou?red|granted subset|requested-but-refused|reports what|subset",
+   "positive_controls": [
+    {
+     "term": "(?i)notifications",
+     "hits": 5
+    },
+    {
+     "term": "(?i)subscription",
+     "hits": 4
+    },
+    {
+     "term": "(?i)stream",
+     "hits": 7
+    }
+   ],
+   "near_miss": "`ServerSendsSubscriptionAck` and `ServerHonorsNotificationFilter`. Between them they score that the ack arrives FIRST and that the STREAM does not leak an unrequested type — the ack's position and the stream's behaviour. Neither reads the ack's `notifications` payload, so neither can tell an honest ack from one that promises everything and then filters. That gap is the whole subject of these three members.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 175,
+    "restrict": null,
+    "why": "ALL 175, not the 173 in-denominator ones. A counterpart that exists but sits out of the denominator is still a counterpart the record would be wrong to deny; narrowing to 173 would make the zero easier to get and mean less."
+   }
+  },
+  {
+   "id": "SRV12",
+   "kind": "no-oc-scenario",
+   "subject": "SSE keep-alive COMMENT frames — a bare `:` line emitted on an idle stream to hold it open, and distinguishable from an empty data event",
+   "pattern": "(?i)keep.?alive|comment line|\\bcomment\\b|idle",
+   "positive_controls": [
+    {
+     "term": "(?i)stream",
+     "hits": 7
+    },
+    {
+     "term": "(?i)server",
+     "hits": 119
+    },
+    {
+     "term": "(?i)MUST",
+     "hits": 32
+    }
+   ],
+   "near_miss": "`ServerSSEStreamsFunctional` — `Multiple POST SSE streams should be functional`. A reader looking for `the SSE stream behaves` finds it. It is not a counterpart: `functional` there means the streams deliver their payloads end to end, and a keep-alive comment carries no payload by definition — it is precisely the frame a functionality check cannot see.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 175,
+    "restrict": null,
+    "why": "ALL 175, not the 173 in-denominator ones. A counterpart that exists but sits out of the denominator is still a counterpart the record would be wrong to deny; narrowing to 173 would make the zero easier to get and mean less."
+   }
+  },
+  {
+   "id": "SRV13",
+   "kind": "no-oc-scenario",
+   "subject": "the HEADERS an SSE response carries — `content-type: text/event-stream`, `x-accel-buffering: no`, `cache-control: no-cache`, and the ABSENCE of `last-event-id` now that resumability is gone",
+   "pattern": "(?i)last-event-id|text/event-stream|x-accel|cache-control|resumab|event.?stream",
+   "positive_controls": [
+    {
+     "term": "(?i)header",
+     "hits": 45
+    },
+    {
+     "term": "(?i)stream",
+     "hits": 7
+    },
+    {
+     "term": "(?i)cache",
+     "hits": 6
+    }
+   ],
+   "near_miss": "The forty-five rows carrying the word `header`, every one of them client-leg SEP-2243 rows about `Mcp-Method`, `Mcp-Name` and `Mcp-Param-*`. A reader who greps `header` finds a great many and could conclude the suite covers headers thoroughly. It covers ROUTING headers, on the client, on a POST; it carries nothing at all about the TRANSPORT headers an SSE response must set, and the `last-event-id` refute — the half that pins resumability as removed at 2026-07-28 — has no row anywhere.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 175,
+    "restrict": null,
+    "why": "ALL 175, not the 173 in-denominator ones. A counterpart that exists but sits out of the denominator is still a counterpart the record would be wrong to deny; narrowing to 173 would make the zero easier to get and mean less."
+   }
+  },
+  {
+   "id": "SRV14",
+   "kind": "no-oc-scenario",
+   "subject": "behaviour ACROSS two independent server instances — requests round-robined between them succeeding identically, and a subscription held by one not being reachable from the other",
+   "pattern": "(?i)instance|affinity|round.?robin|horizontal|load.?balanc|replica",
+   "positive_controls": [
+    {
+     "term": "(?i)server",
+     "hits": 119
+    },
+    {
+     "term": "(?i)stream",
+     "hits": 7
+    },
+    {
+     "term": "(?i)request",
+     "hits": 63
+    }
+   ],
+   "near_miss": "The `server-stateless` scenario itself — thirty rows whose whole premise is that no handshake and no session exist. A reader could take the scenario NAME for the property. It is not a counterpart: every one of those thirty rows is measured against a SINGLE server process, so they establish that one instance needs no prior state, never that two instances are interchangeable. The harness has no way to start a second one.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 175,
+    "restrict": null,
+    "why": "ALL 175, not the 173 in-denominator ones. A counterpart that exists but sits out of the denominator is still a counterpart the record would be wrong to deny; narrowing to 173 would make the zero easier to get and mean less."
+   }
+  },
+  {
+   "id": "SRV15",
+   "kind": "no-oc-scenario",
+   "subject": "a SERVER READING the `io.modelcontextprotocol/*` keys out of a request's `_meta` — which key each field is taken from, as opposed to whether the envelope is present or valid",
+   "pattern": "(?i)\\bparse|\\bdecode|\\bextract|reads? the|taken from",
+   "positive_controls": [
+    {
+     "term": "(?i)_meta",
+     "hits": 13
+    },
+    {
+     "term": "(?i)valid",
+     "hits": 65
+    },
+    {
+     "term": "(?i)request",
+     "hits": 63
+    }
+   ],
+   "near_miss": "`RequestMetaInvalid` and `ClientPopulatesMeta`. The first asks whether the server REJECTS a `_meta` that is missing a required key; the second whether the CLIENT PUTS the keys there. Both are about the envelope's presence, from the two ends. Neither asks which key a server reads each field out of, which is what these members assert — and an implementation that read `clientInfo` where it should read `clientCapabilities` would pass both while being wrong.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 175,
+    "restrict": null,
+    "why": "ALL 175, not the 173 in-denominator ones. A counterpart that exists but sits out of the denominator is still a counterpart the record would be wrong to deny; narrowing to 173 would make the zero easier to get and mean less."
+   }
+  },
+  {
+   "id": "SRV16",
+   "kind": "no-oc-scenario",
+   "subject": "a subscription filter scoped to particular resource URIs, and a frame's `params.uri` surviving an atom-keyed handler payload",
+   "pattern": "(?i)resourcesubscriptions|uri filter|per.?uri|resource subscription|params\\.uri",
+   "positive_controls": [
+    {
+     "term": "(?i)notification",
+     "hits": 6
+    },
+    {
+     "term": "(?i)resource",
+     "hits": 24
+    },
+    {
+     "term": "(?i)uri",
+     "hits": 2
+    }
+   ],
+   "near_miss": "`ServerHonorsNotificationFilter` — `Server doesn't send notification types the client didn't request`. Same mechanism, one level up: it filters by TYPE (`toolsListChanged` and its siblings), never by URI. `resourceSubscriptions` is the filter key that carries URIs and it appears in no row of the suite, so the URI half of the filter is unexercised end to end.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 175,
+    "restrict": null,
+    "why": "ALL 175, not the 173 in-denominator ones. A counterpart that exists but sits out of the denominator is still a counterpart the record would be wrong to deny; narrowing to 173 would make the zero easier to get and mean less."
+   }
+  },
+  {
+   "id": "SRV17",
+   "kind": "no-oc-scenario",
+   "subject": "a refusal decided ABOVE the handler — one the handler never sees — being distinguishable on the wire from one the handler itself returned",
+   "pattern": "(?i)above the handler|before the handler|never reaches|handler never|dispatch.?level",
+   "positive_controls": [
+    {
+     "term": "(?i)MUST",
+     "hits": 32
+    },
+    {
+     "term": "(?i)error",
+     "hits": 18
+    },
+    {
+     "term": "(?i)capabilit",
+     "hits": 12
+    }
+   ],
+   "near_miss": "`ServerRejectsUndeclaredCapability` — `A server MUST NOT rely on capabilities the client has not declared ... the server MUST return a MissingRequiredClientCapabilityError`. It is the suite's one row about a request refused before it is served, so a reader could take it for this. It is not: what it scores is the CODE and the `requiredCapabilities` payload of one particular refusal, never WHERE in the stack a refusal was decided — which is the distinction this member draws, and one no wire artefact of a single refusal can carry.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 175,
+    "restrict": null,
+    "why": "ALL 175, not the 173 in-denominator ones. A counterpart that exists but sits out of the denominator is still a counterpart the record would be wrong to deny; narrowing to 173 would make the zero easier to get and mean less."
+   }
+  }
+ ],
+ "absence_searches_note": "THE SEARCH REGISTRY — 17 entries, every one re-run at this tip against docs/conformance/in-scope-2026-07-28.json, every one returning 0, and every one carrying positive controls measured over the SAME population so the zero is a property of the population's content rather than of a sweep that never ran. The generator refuses an entry recording anything but `hits: 0`, an entry with no population, pattern, subject, near miss or positive control, an entry whose `kind` is not its rows' tag slug, an entry no row names (G23c), and a row whose copy of `subject` or `near_miss` has drifted from the entry (D4). THREE KINDS OF ZERO are used and they are not interchangeable: `no-oc-scenario` (28 rows) is swept over all 175 and means the suite has no such check ANYWHERE; `no-oc-server-check` (3 rows) is swept over the 119 SERVER rows and means the counterpart exists on the CLIENT leg only, which the near miss names; `no-oc-check-in-this-scenario` (3 rows) is swept over the declared 30 and means a REAL server counterpart exists in another scenario, named so a later C1c slice inherits the member. Sweeping all 175 for the last two would return their own counterparts as hits, and the entry would then have to explain away a zero it could not get."
+}

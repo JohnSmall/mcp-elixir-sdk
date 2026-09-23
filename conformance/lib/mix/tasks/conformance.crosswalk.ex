@@ -489,19 +489,89 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
   # more with `id:t`, a loop variable, so the literal is at an ADDRESSED span
   # the row names instead. `check_id_found_in` defaults to `evaluator_excerpt`,
   # which is C1a's behaviour unchanged, and the named span must exist.
+  #
+  # C1c-i meets a third shape, and it is the first one NO span can satisfy. The
+  # `server-stateless` RequestMetaInvalid trio emits with
+  # ``id:`sep-2575-request-meta-invalid-${e.slug}` `` — a TEMPLATE. Measured at
+  # this build: none of `sep-2575-request-meta-invalid-missing-meta`,
+  # `-missing-protocol-version` or `-missing-client-capabilities` occurs in the
+  # 809 KB dist at all, so `String.contains?` can never be satisfied for them
+  # and neither can any choice of `check_id_found_in`. The row therefore states
+  # the COMPOSITION instead, and the guard checks the composition rather than
+  # being weakened to let the row through:
+  #
+  #     "check_id_composition": {
+  #       "template": "sep-2575-request-meta-invalid-${e.slug}",
+  #       "template_found_in": "evaluator_excerpt",
+  #       "hole": "${e.slug}",
+  #       "substitution": "missing-meta",
+  #       "substitution_found_in": "context:request_meta_invalid_slug_table"
+  #     }
+  #
+  # Both halves must be VERBATIM at spans the row names, the hole must occur
+  # EXACTLY ONCE in the template (twice and the substitution is ambiguous, zero
+  # and the "composition" is a literal wearing a different name), and the
+  # substituted result must equal the check id EXACTLY. That last conjunct is
+  # what stops the degenerate composition S9-18 warns about — a row cannot
+  # cover the id with fragments it found lying around, because the template is
+  # pinned to the build and the only freedom is the one hole.
+  #
+  # `check_id_found_in` and `check_id_composition` are mutually exclusive: two
+  # answers to one question, and nothing would choose between them.
   defp id_errors(pool, check) do
     id = Enum.at(check["key"], 2)
-    where = Map.get(check, "check_id_found_in", "evaluator_excerpt")
 
+    case {Map.get(check, "check_id_found_in"), Map.get(check, "check_id_composition")} do
+      {found_in, nil} -> [id_literal_error(pool, id, found_in || "evaluator_excerpt")]
+      {nil, comp} -> id_composition_errors(pool, id, comp)
+      {_, _} -> [{:check_id_is_both_located_and_composed, id}]
+    end
+    |> Enum.reject(&is_nil/1)
+  end
+
+  defp id_literal_error(pool, id, where) do
     case Map.fetch(pool, where) do
       :error ->
-        [{:check_id_found_in_names_no_such_span, id, where}]
+        {:check_id_found_in_names_no_such_span, id, where}
 
       {:ok, src} ->
-        if String.contains?(src, id),
-          do: [],
-          else: [{:span_does_not_carry_the_check_id, id, where}]
+        unless String.contains?(src, id), do: {:span_does_not_carry_the_check_id, id, where}
     end
+  end
+
+  defp id_composition_errors(pool, id, comp) do
+    %{"template" => template, "hole" => hole, "substitution" => sub} = comp
+
+    [
+      verbatim_at(pool, comp["template_found_in"], template, {:template, id}),
+      verbatim_at(pool, comp["substitution_found_in"], sub, {:substitution, id}),
+      hole_error(template, hole, id),
+      composition_error(template, hole, sub, id)
+    ]
+  end
+
+  defp verbatim_at(pool, where, needle, {what, id}) do
+    case Map.fetch(pool, where) do
+      :error ->
+        {:composition_names_no_such_span, what, id, where}
+
+      {:ok, src} ->
+        unless String.contains?(src, needle),
+          do: {:composition_part_not_verbatim, what, id, needle, where}
+    end
+  end
+
+  defp hole_error(template, hole, id) do
+    case length(String.split(template, hole)) - 1 do
+      1 -> nil
+      n -> {:composition_hole_occurs_n_times, id, hole, n}
+    end
+  end
+
+  defp composition_error(template, hole, sub, id) do
+    composed = String.replace(template, hole, sub)
+
+    unless composed == id, do: {:composition_does_not_yield_the_check_id, id, composed}
   end
 
   defp axis_error(pool, check_id, ax) do
@@ -1745,6 +1815,25 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       absence_rows_registered: absence["rows_naming_a_registered_search"],
       per_file_members:
         Enum.map(population["files"], &{Path.basename(&1["path"]), &1["member_count"]}),
+      # ADDED BY MES-105 (C1c-i), and it is a HOLE BEING CLOSED rather than a
+      # figure being added. Each file's `check_population.selector.evaluated` is
+      # generator prose stating `N checks denoted` — derived by this run, from
+      # `length(selected)` — yet the held set carried only the UNION
+      # (`declared_checks`) and the per-file MEMBER counts, never the per-file
+      # CHECK counts. G21 therefore refused a figure the run had just computed,
+      # whenever that figure did not coincide with some other held one.
+      #
+      # It went unnoticed while one file declared checks: the client file's 54
+      # happened to equal `addressed_checks`, and the server file's 30 happened
+      # to equal `bucket_2`. Both coincidences broke on the same mutated build
+      # in `crosswalk_controls.exs composition` — one dropped edge moved
+      # `addressed_checks` to 53 and `bucket_2` to 31, and two correct,
+      # freshly-derived sentences went red at once. The remedy is to hold what
+      # the generator states, not to stop stating it.
+      per_file_declared_checks:
+        Enum.map(population["files"], fn f ->
+          {Path.basename(f["path"]), length(get_in(f, ["check_population", "checks"]) || [])}
+        end),
       # A leg this run asserts TOTALITY over, and the shape of the cover that
       # reaches it. Derived from the files' own `leg_totality` blocks, so a run
       # over files that assert no leg holds no such figure and any prose stating

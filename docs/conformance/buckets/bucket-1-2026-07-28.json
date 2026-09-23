@@ -1,12 +1,12 @@
 {
   "bucket": "1",
-  "count": 65,
+  "count": 99,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 110 declared ET-CC members and 54\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 171 members and\n116 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 3 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
-  "predicate": "Declared-population ET-CC members carrying NO edge in `cells`: the complement of `members_with_edges` over the declared population, taken through `Crosswalk.project(:bucket_1, ...)`. Universe: the 110 declared members, never all 281 members.",
+  "population_banner": "POPULATION: this projection covers 167 declared ET-CC members and 84\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 114 members and\n89 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "predicate": "Declared-population ET-CC members carrying NO edge in `cells`: the complement of `members_with_edges` over the declared population, taken through `Crosswalk.project(:bucket_1, ...)`. Universe: the 167 declared members, never all 281 members.",
   "projected_from": {
     "bucket_zero": {
       "bytes": 176409,
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 404281,
+      "bytes": 574284,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "a2ea4e8917523d08a91a553d0639e984b74f012b21970509f8489f82f3479255"
+      "sha256": "3ce08b0c1b055d28c3789b25e731852a7e7908938b112ec45d3bf12fb019a466"
     }
   },
   "revision": "2026-07-28",
@@ -733,6 +733,22 @@
       "why_this_search_is_this_claims_search": "The claim is about the CLIENT end of `server/discover` — issuing it, or reading what came back. S06's subject is that end of the call, stated as the probe plus the DiscoverResult; the four server-leg discover rows are its near miss and are the other end."
     },
     {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "`Meta.from_params/1` takes protocolVersion, clientInfo, clientCapabilities and logLevel from their four named `_meta` keys",
+      "member": {
+        "module": "MCP.Protocol.MetaTest",
+        "register_key": "MCP.Protocol.MetaTest/test from_params/1 extracts the io.modelcontextprotocol/* keys",
+        "test": "test from_params/1 extracts the io.modelcontextprotocol/* keys"
+      },
+      "search_id": "SRV15",
+      "tag": "oc:none/no-oc-scenario/meta-field-extraction",
+      "the_near_miss_that_is_not_a_counterpart": "`RequestMetaInvalid` and `ClientPopulatesMeta`. The first asks whether the server REJECTS a `_meta` that is missing a required key; the second whether the CLIENT PUTS the keys there. Both are about the envelope's presence, from the two ends. Neither asks which key a server reads each field out of, which is what these members assert — and an implementation that read `clientInfo` where it should read `clientCapabilities` would pass both while being wrong.",
+      "the_search_that_found_none": "a SERVER READING the `io.modelcontextprotocol/*` keys out of a request's `_meta` — which key each field is taken from, as opposed to whether the envelope is present or valid",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about which key a server reads a `_meta` field out of. The suite asserts the envelope's presence from both ends and stops there.",
+      "why_this_search_is_this_claims_search": "The claim is the key-by-key extraction. SRV15's subject is that, and its near miss is the presence family, which a wrong extraction would satisfy."
+    },
+    {
       "authored_by": "MES-109 (C1b-iii)",
       "cg": null,
       "claim_the_slot_names": "a `result`-bearing message decodes to a Response with the result and no error",
@@ -763,6 +779,198 @@
       "the_search_that_found_none": "a client DECODING an INBOUND JSON-RPC response — classifying a `result` message and an `error` message and building the struct the caller receives",
       "why_no_counterpart": "`no-oc-scenario` — as above; the direction is read off `o=t.filter(e=>e.origin===`implementation`)` at [325325,325367], not off the check's description.",
       "why_this_search_is_this_claims_search": "The claim is about DECODING an inbound response. S03's subject is that decode, and its near miss is the one check that validates JSON-RPC messages — resolved against the addressed bytes that scope it to the OUTBOUND direction. The member's claim and the search's subject are the same act."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "the collector drains its notifications as WIRE maps, in emission order, each carrying `jsonrpc` and none carrying an `id`",
+      "member": {
+        "module": "MCP.Server.NotificationCollectorTest",
+        "register_key": "MCP.Server.NotificationCollectorTest/test drain returns pushed notifications as wire maps, in emission order (G3)",
+        "test": "test drain returns pushed notifications as wire maps, in emission order (G3)"
+      },
+      "search_id": "SRV06",
+      "tag": "oc:none/no-oc-scenario/collector-drain-wire-maps",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerNoLogWithoutLogLevel` — `No notifications/message for requests that didn't set _meta.../logLevel` — and `ServerAcceptsMultiplePostStreams`. The first asks whether a notification should have been sent to THIS request at all, and the second whether two concurrent POSTs both work. Neither asks whether one request's notifications can turn up on another's response, which is the property these members are about; the suite's probes are sequential and independent, so it never observes the boundary.",
+      "the_search_that_found_none": "notification state from one request being visible to the NEXT — a request-scoped collector whose contents, or whose lifetime, cross a request boundary",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention residue, cross-request leakage or per-request isolation. The harness drives one request at a time and reads each response on its own, so the boundary these members assert across is one it never looks at.",
+      "why_this_search_is_this_claims_search": "The claim is about the request-scoped notification collector — its contents, its lifetime or its isolation. SRV06's subject is that boundary, and its near miss is the one suite row about notifications a request did not ask for, which is a question about scope rather than about crossing."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "an absent `notifications` object is -32602 on the wire, not a silently empty stream",
+      "member": {
+        "module": "MCP.Server.SubscriptionsDispatchTest",
+        "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) an absent notifications object is -32602, not a silently empty stream",
+        "test": "test T-1 wire shapes (pinned to schema/2026-07-28 examples) an absent notifications object is -32602, not a silently empty stream"
+      },
+      "search_id": "SRV09",
+      "tag": "oc:none/no-oc-scenario/absent-notifications--32602",
+      "the_near_miss_that_is_not_a_counterpart": "`RequestMetaInvalid` — `Rejects request with missing _meta with -32602 Invalid params`. Same method family, same error code, and a reader could stop there. It is not a counterpart: its subject is the `_meta` envelope every request carries, and this claim's subject is the `notifications` FILTER that only `subscriptions/listen` has. The suite opens listen streams and scores what comes out of them; it never sends a malformed one.",
+      "the_search_that_found_none": "the `subscriptions/listen` REQUEST's own params being validated — a missing or ill-typed `notifications` object answered -32602 rather than opening a stream that carries nothing",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about the listen request's own `notifications` field being absent or ill-typed. The harness constructs its listen requests from its own fixtures and they are always well-formed.",
+      "why_this_search_is_this_claims_search": "The claim is validation of the listen request itself. SRV09's subject is that, and its near miss is the `_meta` rejection family, which shares the method and the error code and not the field."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "`notifications: {}` is LEGAL and means subscribe to nothing, while an absent one and a non-object one are errors",
+      "member": {
+        "module": "MCP.Server.SubscriptionsDispatchTest",
+        "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) notifications is required; {} is legal and means subscribe to nothing",
+        "test": "test T-1 wire shapes (pinned to schema/2026-07-28 examples) notifications is required; {} is legal and means subscribe to nothing"
+      },
+      "search_id": "SRV09",
+      "tag": "oc:none/no-oc-scenario/empty-filter-is-legal",
+      "the_near_miss_that_is_not_a_counterpart": "`RequestMetaInvalid` — `Rejects request with missing _meta with -32602 Invalid params`. Same method family, same error code, and a reader could stop there. It is not a counterpart: its subject is the `_meta` envelope every request carries, and this claim's subject is the `notifications` FILTER that only `subscriptions/listen` has. The suite opens listen streams and scores what comes out of them; it never sends a malformed one.",
+      "the_search_that_found_none": "the `subscriptions/listen` REQUEST's own params being validated — a missing or ill-typed `notifications` object answered -32602 rather than opening a stream that carries nothing",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about the listen request's own `notifications` field being absent or ill-typed. The harness constructs its listen requests from its own fixtures and they are always well-formed.",
+      "why_this_search_is_this_claims_search": "The claim is validation of the listen request itself. SRV09's subject is that, and its near miss is the `_meta` rejection family, which shares the method and the error code and not the field."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "the graceful-close response is the pinned shape — not `result: {}` but `resultType` and `_meta` — so a later reader cannot simplify it into a schema violation",
+      "member": {
+        "module": "MCP.Server.SubscriptionsDispatchTest",
+        "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) the graceful-close response matches the pinned example exactly",
+        "test": "test T-1 wire shapes (pinned to schema/2026-07-28 examples) the graceful-close response matches the pinned example exactly"
+      },
+      "search_id": "SRV10",
+      "tag": "oc:none/no-oc-scenario/close-response-shape",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerSendsSubscriptionAck` — `notifications/subscriptions/acknowledged is the first message on a subscriptions/listen stream`. It is the only suite row about a listen stream's framing, and it is about the stream's FIRST frame. These members are about its LAST one, and the two are different objects: the ack is a NOTIFICATION and carries no id, the close is a RESULT and carries the request's. The suite opens listen streams and never waits for one to end.",
+      "the_search_that_found_none": "the `subscriptions/listen` RESULT — the response that ends a listen, its `resultType`, the id it echoes, and its ordering against the socket closing",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention a listen result, a close or a lifetime. The suite's listen probes are read for a bounded number of frames and then abandoned, so the end of a stream is never an artefact it holds.",
+      "why_this_search_is_this_claims_search": "The claim is about how a listen ENDS. SRV10's subject is that, and its near miss is the one row about how a listen BEGINS — same stream, opposite end, different message type."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "the listen response echoes the RequestId it was given without coercing it — integer stays integer, string stays string",
+      "member": {
+        "module": "MCP.Server.SubscriptionsDispatchTest",
+        "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) the id is echoed, never coerced — RequestId is string OR integer",
+        "test": "test T-1 wire shapes (pinned to schema/2026-07-28 examples) the id is echoed, never coerced — RequestId is string OR integer"
+      },
+      "search_id": "SRV10",
+      "tag": "oc:none/no-oc-scenario/listen-id-echoed-uncoerced",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerSendsSubscriptionAck` — `notifications/subscriptions/acknowledged is the first message on a subscriptions/listen stream`. It is the only suite row about a listen stream's framing, and it is about the stream's FIRST frame. These members are about its LAST one, and the two are different objects: the ack is a NOTIFICATION and carries no id, the close is a RESULT and carries the request's. The suite opens listen streams and never waits for one to end.",
+      "the_search_that_found_none": "the `subscriptions/listen` RESULT — the response that ends a listen, its `resultType`, the id it echoes, and its ordering against the socket closing",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention a listen result, a close or a lifetime. The suite's listen probes are read for a bounded number of frames and then abandoned, so the end of a stream is never an artefact it holds.",
+      "why_this_search_is_this_claims_search": "The claim is about how a listen ENDS. SRV10's subject is that, and its near miss is the one row about how a listen BEGINS — same stream, opposite end, different message type."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "the schema's own listen example parses, and the `notifications` object comes back verbatim",
+      "member": {
+        "module": "MCP.Server.SubscriptionsDispatchTest",
+        "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) the request parses as the pinned SubscriptionsListenRequest example",
+        "test": "test T-1 wire shapes (pinned to schema/2026-07-28 examples) the request parses as the pinned SubscriptionsListenRequest example"
+      },
+      "search_id": "SRV09",
+      "tag": "oc:none/no-oc-scenario/listen-request-parses",
+      "the_near_miss_that_is_not_a_counterpart": "`RequestMetaInvalid` — `Rejects request with missing _meta with -32602 Invalid params`. Same method family, same error code, and a reader could stop there. It is not a counterpart: its subject is the `_meta` envelope every request carries, and this claim's subject is the `notifications` FILTER that only `subscriptions/listen` has. The suite opens listen streams and scores what comes out of them; it never sends a malformed one.",
+      "the_search_that_found_none": "the `subscriptions/listen` REQUEST's own params being validated — a missing or ill-typed `notifications` object answered -32602 rather than opening a stream that carries nothing",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about the listen request's own `notifications` field being absent or ill-typed. The harness constructs its listen requests from its own fixtures and they are always well-formed.",
+      "why_this_search_is_this_claims_search": "The claim is validation of the listen request itself. SRV09's subject is that, and its near miss is the `_meta` rejection family, which shares the method and the error code and not the field."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "a requested type the handler refuses is ABSENT from the ack's `notifications`, not present-and-false",
+      "member": {
+        "module": "MCP.Server.SubscriptionsDispatchTest",
+        "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-2 the acknowledgment reports what was honoured a requested-but-refused type is absent from the ack",
+        "test": "test T-2 the acknowledgment reports what was honoured a requested-but-refused type is absent from the ack"
+      },
+      "search_id": "SRV11",
+      "tag": "oc:none/no-oc-scenario/ack-omits-refused-type",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerSendsSubscriptionAck` and `ServerHonorsNotificationFilter`. Between them they score that the ack arrives FIRST and that the STREAM does not leak an unrequested type — the ack's position and the stream's behaviour. Neither reads the ack's `notifications` payload, so neither can tell an honest ack from one that promises everything and then filters. That gap is the whole subject of these three members.",
+      "the_search_that_found_none": "the acknowledgement's `notifications` PAYLOAD reporting the subset the server actually honoured, rather than the set the client requested",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about what the acknowledgement's payload reports. The suite reads the ack's method and its `_meta`; it never compares its `notifications` against what was asked for.",
+      "why_this_search_is_this_claims_search": "The claim is the honesty of the ack's payload. SRV11's subject is that, and its near miss is the pair of rows that read the ack and the stream for everything EXCEPT it."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "the set the ack PROMISES is exactly the set the stream ENFORCES, so an ack cannot over-claim",
+      "member": {
+        "module": "MCP.Server.SubscriptionsDispatchTest",
+        "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-2 the acknowledgment reports what was honoured the ack is built from the same value the stream enforces",
+        "test": "test T-2 the acknowledgment reports what was honoured the ack is built from the same value the stream enforces"
+      },
+      "search_id": "SRV11",
+      "tag": "oc:none/no-oc-scenario/ack-equals-enforced-set",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerSendsSubscriptionAck` and `ServerHonorsNotificationFilter`. Between them they score that the ack arrives FIRST and that the STREAM does not leak an unrequested type — the ack's position and the stream's behaviour. Neither reads the ack's `notifications` payload, so neither can tell an honest ack from one that promises everything and then filters. That gap is the whole subject of these three members.",
+      "the_search_that_found_none": "the acknowledgement's `notifications` PAYLOAD reporting the subset the server actually honoured, rather than the set the client requested",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about what the acknowledgement's payload reports. The suite reads the ack's method and its `_meta`; it never compares its `notifications` against what was asked for.",
+      "why_this_search_is_this_claims_search": "The claim is the honesty of the ack's payload. SRV11's subject is that, and its near miss is the pair of rows that read the ack and the stream for everything EXCEPT it."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "an atom-keyed `%{uri: ...}` from a handler still produces correct string-keyed wire params, so nothing is dropped for writing the idiomatic spelling",
+      "member": {
+        "module": "MCP.Server.SubscriptionsDispatchTest",
+        "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-3 MUST NOT send an unrequested notification type the URI filter reads either key style, so nothing is dropped for writing %{uri: ...}",
+        "test": "test T-3 MUST NOT send an unrequested notification type the URI filter reads either key style, so nothing is dropped for writing %{uri: ...}"
+      },
+      "search_id": "SRV16",
+      "tag": "oc:none/no-oc-scenario/uri-filter-key-style",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerHonorsNotificationFilter` — `Server doesn't send notification types the client didn't request`. Same mechanism, one level up: it filters by TYPE (`toolsListChanged` and its siblings), never by URI. `resourceSubscriptions` is the filter key that carries URIs and it appears in no row of the suite, so the URI half of the filter is unexercised end to end.",
+      "the_search_that_found_none": "a subscription filter scoped to particular resource URIs, and a frame's `params.uri` surviving an atom-keyed handler payload",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention `resourceSubscriptions` or URI-scoped filtering.",
+      "why_this_search_is_this_claims_search": "The claim is URI-scoped filtering and the key style the filter accepts. SRV16's subject is that, and its near miss is the TYPE filter the suite does score."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "a URI this principal may not observe is absent from the ack, so the wire claims nothing it would then filter",
+      "member": {
+        "module": "MCP.Server.SubscriptionsDispatchTest",
+        "register_key": "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset a URI this principal may not observe is absent from the ack",
+        "test": "test open-time authorization via the honoured subset a URI this principal may not observe is absent from the ack"
+      },
+      "search_id": "SRV11",
+      "tag": "oc:none/no-oc-scenario/ack-omits-unauthorized-uri",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerSendsSubscriptionAck` and `ServerHonorsNotificationFilter`. Between them they score that the ack arrives FIRST and that the STREAM does not leak an unrequested type — the ack's position and the stream's behaviour. Neither reads the ack's `notifications` payload, so neither can tell an honest ack from one that promises everything and then filters. That gap is the whole subject of these three members.",
+      "the_search_that_found_none": "the acknowledgement's `notifications` PAYLOAD reporting the subset the server actually honoured, rather than the set the client requested",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about what the acknowledgement's payload reports. The suite reads the ack's method and its `_meta`; it never compares its `notifications` against what was asked for.",
+      "why_this_search_is_this_claims_search": "The claim is the honesty of the ack's payload. SRV11's subject is that, and its near miss is the pair of rows that read the ack and the stream for everything EXCEPT it."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "a handler refusing a subscription outright is reported to the client as -32603 in the wire error object",
+      "member": {
+        "module": "MCP.Server.SubscriptionsDispatchTest",
+        "register_key": "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset a handler may refuse the subscription outright",
+        "test": "test open-time authorization via the honoured subset a handler may refuse the subscription outright"
+      },
+      "search_id": "SRV04",
+      "tag": "oc:none/no-oc-scenario/handler-refusal--32603",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsCallError` — `Tool returns error correctly` — in the server scenario `tools-call-error`. It is the suite's only row about a server producing an error at all, and a reader could take it for this. It is not: its subject is a TOOL returning a declared error result through the protocol's own error channel, which is the server working correctly. This claim's subject is the server's own INFRASTRUCTURE failing — a collector that will not start, an identity factory that raises, a chunked response that cannot open — where there is no tool-level error to return and the only question is what the client is told instead.",
+      "the_search_that_found_none": "a server whose OWN machinery fails mid-request answering a controlled -32603 whose `data` does not leak the internal cause, rather than a bare crash or a partial success",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention -32603, an internal error, a leak or a redaction. The suite scores what a CONFORMING server does; it has no probe that makes a server's own machinery fail, and without one it cannot ask what a server says when it does.",
+      "why_this_search_is_this_claims_search": "The claim is containment of an internal fault. SRV04's subject is that, and the near miss is the suite's only other error row, whose subject is the opposite case — the server working correctly and reporting a tool's error."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "the two refusals decided above the handler stay `{:reply, ...}` and carry -32602 and -32601, a different shape from the handler-level refusal",
+      "member": {
+        "module": "MCP.Server.SubscriptionsDispatchTest",
+        "register_key": "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset the two refusals that never reach the handler stay {:reply, ...}",
+        "test": "test open-time authorization via the honoured subset the two refusals that never reach the handler stay {:reply, ...}"
+      },
+      "search_id": "SRV17",
+      "tag": "oc:none/no-oc-scenario/refusals-above-the-handler",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerRejectsUndeclaredCapability` — `A server MUST NOT rely on capabilities the client has not declared ... the server MUST return a MissingRequiredClientCapabilityError`. It is the suite's one row about a request refused before it is served, so a reader could take it for this. It is not: what it scores is the CODE and the `requiredCapabilities` payload of one particular refusal, never WHERE in the stack a refusal was decided — which is the distinction this member draws, and one no wire artefact of a single refusal can carry.",
+      "the_search_that_found_none": "a refusal decided ABOVE the handler — one the handler never sees — being distinguishable on the wire from one the handler itself returned",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about where in the stack a refusal was decided. A conformance suite reads wire artefacts, and this distinction is between two paths that can produce the same one.",
+      "why_this_search_is_this_claims_search": "The claim is the dispatch-level/handler-level distinction. SRV17's subject is that, and its near miss is the suite's one pre-service refusal row, which scores the refusal's content rather than its origin."
     },
     {
       "cg": "CG1",
@@ -966,14 +1174,350 @@
       "the_search_that_found_none": "a client's INCREMENTAL SSE stream parser — event boundaries found on a blank line across arbitrary chunk splits, a partial event held in a buffer until the bytes completing it arrive, and several events yielded from one chunk",
       "why_no_counterpart": "`no-oc-scenario` — the suite has no check about SSE event parsing ANYWHERE, on either leg, so the search is over all 175 manifest rows and not over a fixture.",
       "why_this_search_is_this_claims_search": "The claim is about the INCREMENTAL parser — where an event ends and what happens to bytes that arrive mid-event. S02 searched for that property specifically (chunking, buffering, partial events, delimiters) and is deliberately separate from S01: the nearest artefact is the same two SSE rows, but the reason they are not counterparts is a different reason, and sharing S01's search would have hidden that."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "a non-localhost `Origin` is answered 403 and the per-request identity factory is never invoked",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test AC7 — non-localhost origin is rejected 403; the identity factory never runs",
+        "test": "test AC7 — non-localhost origin is rejected 403; the identity factory never runs"
+      },
+      "search_id": "SRV02",
+      "tag": "oc:none/no-oc-check-in-this-scenario/AC7-origin-403",
+      "the_near_miss_that_is_not_a_counterpart": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. This is not a near miss in the usual sense: it is a REAL COUNTERPART for the rejection half of the claim, and it sits two scenarios away from this file's declared population. It is named here so that the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What neither OC row covers is the ORDERING half — that the identity factory never runs — which is an SDK property the suite has no vocabulary for.",
+      "the_search_that_found_none": "a server REJECTING a request whose `Origin` is not localhost, and doing so before any per-request identity work has run",
+      "why_no_counterpart": "`no-oc-check-in-this-scenario` — `server-stateless` carries no Origin or Host check at all (0 of 30), and the counterpart that does exist is in `dns-rebinding-protection`, outside this file's declared 30.",
+      "why_this_search_is_this_claims_search": "The claim is origin enforcement on the server. SRV02's subject is that, and its 'near miss' is in fact the counterpart — recorded as such rather than dressed as an absence."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "`GET` and `DELETE` are answered 405, and the `allow` header names only `POST`",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test GET and DELETE are not allowed (405), and allow names only POST",
+        "test": "test GET and DELETE are not allowed (405), and allow names only POST"
+      },
+      "search_id": "SRV03",
+      "tag": "oc:none/no-oc-scenario/verb-405-allow-POST",
+      "the_near_miss_that_is_not_a_counterpart": "`HttpServerMethodNotFound404` — `If the server does not implement the requested RPC method, it MUST respond with 404 Not Found and a JSON-RPC error with code -32601`. A reader looking for `the server refuses` finds it and could stop. It is not a counterpart: its subject is an unimplemented JSON-RPC METHOD named inside a POST body, and this claim's subject is an HTTP VERB the endpoint does not serve at all — a refusal made before any body is parsed, and carrying no JSON-RPC error because there is no JSON-RPC request to answer.",
+      "the_search_that_found_none": "an MCP endpoint REFUSING an HTTP verb it does not serve — `GET` or `DELETE` answered 405 with an `allow` header naming only `POST`",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention 405, method-not-allowed, an allow header or DELETE. The 2026-07-28 revision removed the GET listen stream and the DELETE session teardown, so the verbs a server must now refuse are exactly the ones the suite stopped having a reason to ask about.",
+      "why_this_search_is_this_claims_search": "The claim is about an HTTP verb refusal. SRV03's subject is that, and its near miss is the one row a reader would plausibly mistake for it."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "a notification collector that fails to start yields 500 / -32603 with no `resultType` in the body and no secret in it, while the log carries both",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test MC-6 — a collector that fails to start fails cleanly (-32603), no handler invoked",
+        "test": "test MC-6 — a collector that fails to start fails cleanly (-32603), no handler invoked"
+      },
+      "search_id": "SRV04",
+      "tag": "oc:none/no-oc-scenario/collector-start-failure",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsCallError` — `Tool returns error correctly` — in the server scenario `tools-call-error`. It is the suite's only row about a server producing an error at all, and a reader could take it for this. It is not: its subject is a TOOL returning a declared error result through the protocol's own error channel, which is the server working correctly. This claim's subject is the server's own INFRASTRUCTURE failing — a collector that will not start, an identity factory that raises, a chunked response that cannot open — where there is no tool-level error to return and the only question is what the client is told instead.",
+      "the_search_that_found_none": "a server whose OWN machinery fails mid-request answering a controlled -32603 whose `data` does not leak the internal cause, rather than a bare crash or a partial success",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention -32603, an internal error, a leak or a redaction. The suite scores what a CONFORMING server does; it has no probe that makes a server's own machinery fail, and without one it cannot ask what a server says when it does.",
+      "why_this_search_is_this_claims_search": "The claim is containment of an internal fault. SRV04's subject is that, and the near miss is the suite's only other error row, whose subject is the opposite case — the server working correctly and reporting a tool's error."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "an identity factory that raises yields 500 / -32603 and the secret it was given never reaches the response body",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test MC-6 — a factory that raises fails cleanly (-32603) with no handler invoked",
+        "test": "test MC-6 — a factory that raises fails cleanly (-32603) with no handler invoked"
+      },
+      "search_id": "SRV04",
+      "tag": "oc:none/no-oc-scenario/identity-factory-raises",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsCallError` — `Tool returns error correctly` — in the server scenario `tools-call-error`. It is the suite's only row about a server producing an error at all, and a reader could take it for this. It is not: its subject is a TOOL returning a declared error result through the protocol's own error channel, which is the server working correctly. This claim's subject is the server's own INFRASTRUCTURE failing — a collector that will not start, an identity factory that raises, a chunked response that cannot open — where there is no tool-level error to return and the only question is what the client is told instead.",
+      "the_search_that_found_none": "a server whose OWN machinery fails mid-request answering a controlled -32603 whose `data` does not leak the internal cause, rather than a bare crash or a partial success",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention -32603, an internal error, a leak or a redaction. The suite scores what a CONFORMING server does; it has no probe that makes a server's own machinery fail, and without one it cannot ask what a server says when it does.",
+      "why_this_search_is_this_claims_search": "The claim is containment of an internal fault. SRV04's subject is that, and the near miss is the suite's only other error row, whose subject is the opposite case — the server working correctly and reporting a tool's error."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "an `Mcp-Name` header that does not match `params.name` on `tools/call` is rejected -32020",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test Mcp-Name mismatch against params.name is rejected (-32020)",
+        "test": "test Mcp-Name mismatch against params.name is rejected (-32020)"
+      },
+      "search_id": "SRV01",
+      "tag": "oc:none/no-oc-server-check/McpName-vs-params-name",
+      "the_near_miss_that_is_not_a_counterpart": "The eleven `http-standard-headers` rows and the seventeen `http-custom-headers` rows — `ClientMcpMethodHeader_tools_call`, `ClientMcpNameHeader_tools_call`, `ClientCustomHeader_Method` and their siblings. A reader who greps `mcp-method`, finds rows and stops would take these for the counterpart. They are all CLIENT-leg, and every one of them scores whether the CLIENT SENDS the header correctly; not one asks what a SERVER does with a header that disagrees with the body it arrived on. The two are different obligations on different peers, and SEP-2243 imposes both.",
+      "the_search_that_found_none": "a SERVER validating a SEP-2243 routing header against the request body — `Mcp-Method` against the JSON-RPC `method`, and `Mcp-Name` against `params.name` (or `params.uri` on `resources/read`) — and rejecting a mismatch with -32020",
+      "why_no_counterpart": "`no-oc-server-check` — the suite scores SEP-2243 on the client only. Measured at this tip: 0 of the 119 server rows mention any of the three header families, while the client leg carries 28 rows that do.",
+      "why_this_search_is_this_claims_search": "The claim is a SERVER rejecting a routing header that disagrees with the body. SRV01's subject is exactly that obligation, and its near miss is the client-side half the suite does carry — which is why a grep for the header names is the wrong instrument here and a leg-scoped sweep is the right one."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "a body that is not valid JSON yields HTTP 400 and JSON-RPC -32700",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test a malformed body is a parse error → -32700",
+        "test": "test a malformed body is a parse error → -32700"
+      },
+      "search_id": "SRV05",
+      "tag": "oc:none/no-oc-scenario/malformed-body--32700",
+      "the_near_miss_that_is_not_a_counterpart": "`RequestMetaInvalid` and `ResourcesNotFoundErrorCode` — both -32602, Invalid params. A reader tracing `the request was bad, what code comes back` finds these. They are not counterparts: -32602 presupposes a request that PARSED and whose params were then found wanting, and this claim's subject is a body that never became a JSON-RPC request at all — the one case in which there is no `id` to answer and no `params` to be invalid.",
+      "the_search_that_found_none": "a body that is not JSON at all being answered with a JSON-RPC parse error, -32700, and HTTP 400",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention -32700 or a parse error. Every probe the harness sends is machine-generated valid JSON, so the suite never constructs the input this claim is about.",
+      "why_this_search_is_this_claims_search": "The claim is the parse-error path. SRV05's subject is that, and its near miss is the invalid-params family a reader would otherwise merge it with."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "after a handler raises mid-request the NEXT request's SSE body carries none of the previous request's notifications or identity, while carrying its own",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test a raising handler leaves no notification residue for the next request (SSE)",
+        "test": "test a raising handler leaves no notification residue for the next request (SSE)"
+      },
+      "search_id": "SRV06",
+      "tag": "oc:none/no-oc-scenario/no-residue-after-raise",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerNoLogWithoutLogLevel` — `No notifications/message for requests that didn't set _meta.../logLevel` — and `ServerAcceptsMultiplePostStreams`. The first asks whether a notification should have been sent to THIS request at all, and the second whether two concurrent POSTs both work. Neither asks whether one request's notifications can turn up on another's response, which is the property these members are about; the suite's probes are sequential and independent, so it never observes the boundary.",
+      "the_search_that_found_none": "notification state from one request being visible to the NEXT — a request-scoped collector whose contents, or whose lifetime, cross a request boundary",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention residue, cross-request leakage or per-request isolation. The harness drives one request at a time and reads each response on its own, so the boundary these members assert across is one it never looks at.",
+      "why_this_search_is_this_claims_search": "The claim is about the request-scoped notification collector — its contents, its lifetime or its isolation. SRV06's subject is that boundary, and its near miss is the one suite row about notifications a request did not ask for, which is a question about scope rather than about crossing."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "`tools/list` results carry `ttlMs` and `cacheScope`",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test list/read results carry caching hints (ttlMs/cacheScope)",
+        "test": "test list/read results carry caching hints (ttlMs/cacheScope)"
+      },
+      "search_id": "SRV07",
+      "tag": "oc:none/no-oc-check-in-this-scenario/CacheableResult-hints",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`. These are COUNTERPARTS, not near misses, and they are outside this file's declared 30. Named so the row reads as `homed elsewhere`: whichever C1c ticket declares `caching` should pick this member up rather than search for it again.",
+      "the_search_that_found_none": "a list or read RESULT carrying the CacheableResult hints — `ttlMs` and `cacheScope`",
+      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 30 `server-stateless` rows mention caching or ttl, while the `caching` scenario carries seven that do.",
+      "why_this_search_is_this_claims_search": "The claim is the caching hints on a list result. SRV07's subject is exactly that, and the search is scoped to the declared 30 because the claim being made is about THIS population."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "a request whose `Mcp-Method` header matches its JSON-RPC method routes normally, and one whose header disagrees is rejected -32020",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test matching Mcp-Method routes normally; a mismatch is rejected (-32020)",
+        "test": "test matching Mcp-Method routes normally; a mismatch is rejected (-32020)"
+      },
+      "search_id": "SRV01",
+      "tag": "oc:none/no-oc-server-check/McpMethod-vs-method",
+      "the_near_miss_that_is_not_a_counterpart": "The eleven `http-standard-headers` rows and the seventeen `http-custom-headers` rows — `ClientMcpMethodHeader_tools_call`, `ClientMcpNameHeader_tools_call`, `ClientCustomHeader_Method` and their siblings. A reader who greps `mcp-method`, finds rows and stops would take these for the counterpart. They are all CLIENT-leg, and every one of them scores whether the CLIENT SENDS the header correctly; not one asks what a SERVER does with a header that disagrees with the body it arrived on. The two are different obligations on different peers, and SEP-2243 imposes both.",
+      "the_search_that_found_none": "a SERVER validating a SEP-2243 routing header against the request body — `Mcp-Method` against the JSON-RPC `method`, and `Mcp-Name` against `params.name` (or `params.uri` on `resources/read`) — and rejecting a mismatch with -32020",
+      "why_no_counterpart": "`no-oc-server-check` — the suite scores SEP-2243 on the client only. Measured at this tip: 0 of the 119 server rows mention any of the three header families, while the client leg carries 28 rows that do.",
+      "why_this_search_is_this_claims_search": "The claim is a SERVER rejecting a routing header that disagrees with the body. SRV01's subject is exactly that obligation, and its near miss is the client-side half the suite does carry — which is why a grep for the header names is the wrong instrument here and a leg-scoped sweep is the right one."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "on `resources/read` the `Mcp-Name` target is `params.uri` rather than `params.name`, and a mismatch is rejected -32020",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test resources/read — Mcp-Name is validated against params.uri (mismatch → -32020)",
+        "test": "test resources/read — Mcp-Name is validated against params.uri (mismatch → -32020)"
+      },
+      "search_id": "SRV01",
+      "tag": "oc:none/no-oc-server-check/McpName-vs-params-uri",
+      "the_near_miss_that_is_not_a_counterpart": "The eleven `http-standard-headers` rows and the seventeen `http-custom-headers` rows — `ClientMcpMethodHeader_tools_call`, `ClientMcpNameHeader_tools_call`, `ClientCustomHeader_Method` and their siblings. A reader who greps `mcp-method`, finds rows and stops would take these for the counterpart. They are all CLIENT-leg, and every one of them scores whether the CLIENT SENDS the header correctly; not one asks what a SERVER does with a header that disagrees with the body it arrived on. The two are different obligations on different peers, and SEP-2243 imposes both.",
+      "the_search_that_found_none": "a SERVER validating a SEP-2243 routing header against the request body — `Mcp-Method` against the JSON-RPC `method`, and `Mcp-Name` against `params.name` (or `params.uri` on `resources/read`) — and rejecting a mismatch with -32020",
+      "why_no_counterpart": "`no-oc-server-check` — the suite scores SEP-2243 on the client only. Measured at this tip: 0 of the 119 server rows mention any of the three header families, while the client leg carries 28 rows that do.",
+      "why_this_search_is_this_claims_search": "The claim is a SERVER rejecting a routing header that disagrees with the body. SRV01's subject is exactly that obligation, and its near miss is the client-side half the suite does carry — which is why a grep for the header names is the wrong instrument here and a leg-scoped sweep is the right one."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "a `tools/call` answered `input_required` with a `requestState` is completed by a retry carrying that state back",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+        "test": "test tools/call input-required → retry with requestState → completion"
+      },
+      "search_id": "SRV08",
+      "tag": "oc:none/no-oc-check-in-this-scenario/MRTR-server-round-trip",
+      "the_near_miss_that_is_not_a_counterpart": "`RequestMetaInvalid` and the other `_meta` rows, which are the only `server-stateless` rows about request-scoped state at all. They are not counterparts: `_meta` is state the CLIENT supplies on every request, and `requestState` is state the SERVER mints to resume one. The real counterparts are the thirty-five `input-required-result-*` rows, which are SERVER-leg and outside this file's declared 30 — they are C1c-ii's, and this row exists so that ticket inherits the member rather than rediscovering it.",
+      "the_search_that_found_none": "the SERVER half of the MRTR round trip — an `input_required` result carrying a `requestState` and an `inputRequests` list, the client's retry, and the completion that follows",
+      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 30, and thirty-five rows elsewhere on the server leg.",
+      "why_this_search_is_this_claims_search": "The claim is the server's MRTR round trip. SRV08's subject is that, and its near miss is the request-state family inside the declared 30 that a reader could merge it with."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "requests interleaved round-robin across two independent plug instances all succeed and produce identical bodies",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test two-instance / no-affinity smoke (DoD) interleaving requests round-robin across two stateless instances succeeds identically",
+        "test": "test two-instance / no-affinity smoke (DoD) interleaving requests round-robin across two stateless instances succeeds identically"
+      },
+      "search_id": "SRV14",
+      "tag": "oc:none/no-oc-scenario/two-instance-round-robin",
+      "the_near_miss_that_is_not_a_counterpart": "The `server-stateless` scenario itself — thirty rows whose whole premise is that no handshake and no session exist. A reader could take the scenario NAME for the property. It is not a counterpart: every one of those thirty rows is measured against a SINGLE server process, so they establish that one instance needs no prior state, never that two instances are interchangeable. The harness has no way to start a second one.",
+      "the_search_that_found_none": "behaviour ACROSS two independent server instances — requests round-robined between them succeeding identically, and a subscription held by one not being reachable from the other",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention an instance, affinity or a balancer. The harness connects to one endpoint, and the property these members assert is only visible when there are two.",
+      "why_this_search_is_this_claims_search": "The claim quantifies over two instances. SRV14's subject is that, and its near miss is the scenario whose name promises statelessness while measuring it one process at a time."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "a subscription stream that cannot start yields 500 / -32603 with a CONTROLLED `error.data` that does not carry the internal cause",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test MC-6 a stream that cannot start fails cleanly controlled -32603, nothing streamed, and the handler is told",
+        "test": "test MC-6 a stream that cannot start fails cleanly controlled -32603, nothing streamed, and the handler is told"
+      },
+      "search_id": "SRV04",
+      "tag": "oc:none/no-oc-scenario/stream-start-failure",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsCallError` — `Tool returns error correctly` — in the server scenario `tools-call-error`. It is the suite's only row about a server producing an error at all, and a reader could take it for this. It is not: its subject is a TOOL returning a declared error result through the protocol's own error channel, which is the server working correctly. This claim's subject is the server's own INFRASTRUCTURE failing — a collector that will not start, an identity factory that raises, a chunked response that cannot open — where there is no tool-level error to return and the only question is what the client is told instead.",
+      "the_search_that_found_none": "a server whose OWN machinery fails mid-request answering a controlled -32603 whose `data` does not leak the internal cause, rather than a bare crash or a partial success",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention -32603, an internal error, a leak or a redaction. The suite scores what a CONFORMING server does; it has no probe that makes a server's own machinery fail, and without one it cannot ask what a server says when it does.",
+      "why_this_search_is_this_claims_search": "The claim is containment of an internal fault. SRV04's subject is that, and the near miss is the suite's only other error row, whose subject is the opposite case — the server working correctly and reporting a tool's error."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "a change raised on instance B produces no frame on a stream held by instance A, while a change raised on A still does",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test T-10 the documented multi-instance boundary a change on instance B does not reach a stream held by instance A",
+        "test": "test T-10 the documented multi-instance boundary a change on instance B does not reach a stream held by instance A"
+      },
+      "search_id": "SRV14",
+      "tag": "oc:none/no-oc-scenario/no-cross-instance-delivery",
+      "the_near_miss_that_is_not_a_counterpart": "The `server-stateless` scenario itself — thirty rows whose whole premise is that no handshake and no session exist. A reader could take the scenario NAME for the property. It is not a counterpart: every one of those thirty rows is measured against a SINGLE server process, so they establish that one instance needs no prior state, never that two instances are interchangeable. The harness has no way to start a second one.",
+      "the_search_that_found_none": "behaviour ACROSS two independent server instances — requests round-robined between them succeeding identically, and a subscription held by one not being reachable from the other",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention an instance, affinity or a balancer. The harness connects to one endpoint, and the property these members assert is only visible when there are two.",
+      "why_this_search_is_this_claims_search": "The claim quantifies over two instances. SRV14's subject is that, and its near miss is the scenario whose name promises statelessness while measuring it one process at a time."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "on lifetime expiry the response is written BEFORE the socket closes, so a client never loses it to the close",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test T-12 the close asymmetry a client depends on lifetime expiry sends the listen response, then closes",
+        "test": "test T-12 the close asymmetry a client depends on lifetime expiry sends the listen response, then closes"
+      },
+      "search_id": "SRV10",
+      "tag": "oc:none/no-oc-scenario/close-asymmetry-response-first",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerSendsSubscriptionAck` — `notifications/subscriptions/acknowledged is the first message on a subscriptions/listen stream`. It is the only suite row about a listen stream's framing, and it is about the stream's FIRST frame. These members are about its LAST one, and the two are different objects: the ack is a NOTIFICATION and carries no id, the close is a RESULT and carries the request's. The suite opens listen streams and never waits for one to end.",
+      "the_search_that_found_none": "the `subscriptions/listen` RESULT — the response that ends a listen, its `resultType`, the id it echoes, and its ordering against the socket closing",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention a listen result, a close or a lifetime. The suite's listen probes are read for a bounded number of frames and then abandoned, so the end of a stream is never an artefact it holds.",
+      "why_this_search_is_this_claims_search": "The claim is about how a listen ENDS. SRV10's subject is that, and its near miss is the one row about how a listen BEGINS — same stream, opposite end, different message type."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "after the peer has gone the close decision writes nothing, while lifetime expiry and shutdown both write the completion response",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test T-12 the close asymmetry a client depends on the close-frame decision refuses to write after a peer close",
+        "test": "test T-12 the close asymmetry a client depends on the close-frame decision refuses to write after a peer close"
+      },
+      "search_id": "SRV10",
+      "tag": "oc:none/no-oc-scenario/close-frame-decision",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerSendsSubscriptionAck` — `notifications/subscriptions/acknowledged is the first message on a subscriptions/listen stream`. It is the only suite row about a listen stream's framing, and it is about the stream's FIRST frame. These members are about its LAST one, and the two are different objects: the ack is a NOTIFICATION and carries no id, the close is a RESULT and carries the request's. The suite opens listen streams and never waits for one to end.",
+      "the_search_that_found_none": "the `subscriptions/listen` RESULT — the response that ends a listen, its `resultType`, the id it echoes, and its ordering against the socket closing",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention a listen result, a close or a lifetime. The suite's listen probes are read for a bounded number of frames and then abandoned, so the end of a stream is never an artefact it holds.",
+      "why_this_search_is_this_claims_search": "The claim is about how a listen ENDS. SRV10's subject is that, and its near miss is the one row about how a listen BEGINS — same stream, opposite end, different message type."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "an idle stream really does emit comment frames and is still live afterwards — a notification pushed after them still arrives",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test T-8 keep-alive comment lines an idle stream actually emits comment frames, and stays open",
+        "test": "test T-8 keep-alive comment lines an idle stream actually emits comment frames, and stays open"
+      },
+      "search_id": "SRV12",
+      "tag": "oc:none/no-oc-scenario/idle-stream-emits-comments",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerSSEStreamsFunctional` — `Multiple POST SSE streams should be functional`. A reader looking for `the SSE stream behaves` finds it. It is not a counterpart: `functional` there means the streams deliver their payloads end to end, and a keep-alive comment carries no payload by definition — it is precisely the frame a functionality check cannot see.",
+      "the_search_that_found_none": "SSE keep-alive COMMENT frames — a bare `:` line emitted on an idle stream to hold it open, and distinguishable from an empty data event",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention keep-alives, comment lines or idleness. The harness reads a bounded number of DATA events off a stream and closes it; a frame that carries no data is one it discards before it could score it.",
+      "why_this_search_is_this_claims_search": "The claim is the keep-alive comment frame. SRV12's subject is that, and its near miss is the suite's only SSE-behaviour row, whose notion of `functional` cannot reach a payloadless frame."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "the SSE comment is exactly a bare `:` line, and is NOT what an empty data event encodes to",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test T-8 keep-alive comment lines the encoder emits a bare comment line",
+        "test": "test T-8 keep-alive comment lines the encoder emits a bare comment line"
+      },
+      "search_id": "SRV12",
+      "tag": "oc:none/no-oc-scenario/sse-comment-is-a-bare-colon",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerSSEStreamsFunctional` — `Multiple POST SSE streams should be functional`. A reader looking for `the SSE stream behaves` finds it. It is not a counterpart: `functional` there means the streams deliver their payloads end to end, and a keep-alive comment carries no payload by definition — it is precisely the frame a functionality check cannot see.",
+      "the_search_that_found_none": "SSE keep-alive COMMENT frames — a bare `:` line emitted on an idle stream to hold it open, and distinguishable from an empty data event",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention keep-alives, comment lines or idleness. The harness reads a bounded number of DATA events off a stream and closes it; a frame that carries no data is one it discards before it could score it.",
+      "why_this_search_is_this_claims_search": "The claim is the keep-alive comment frame. SRV12's subject is that, and its near miss is the suite's only SSE-behaviour row, whose notion of `functional` cannot reach a payloadless frame."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "the request-scoped collector is already gone by the time a subscription stream is live, and the discard is counted in the log",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test the collector's lifetime ends strictly before the stream's the collector is gone by the time the stream is live",
+        "test": "test the collector's lifetime ends strictly before the stream's the collector is gone by the time the stream is live"
+      },
+      "search_id": "SRV06",
+      "tag": "oc:none/no-oc-scenario/collector-lifetime-ends-first",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerNoLogWithoutLogLevel` — `No notifications/message for requests that didn't set _meta.../logLevel` — and `ServerAcceptsMultiplePostStreams`. The first asks whether a notification should have been sent to THIS request at all, and the second whether two concurrent POSTs both work. Neither asks whether one request's notifications can turn up on another's response, which is the property these members are about; the suite's probes are sequential and independent, so it never observes the boundary.",
+      "the_search_that_found_none": "notification state from one request being visible to the NEXT — a request-scoped collector whose contents, or whose lifetime, cross a request boundary",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention residue, cross-request leakage or per-request isolation. The harness drives one request at a time and reads each response on its own, so the boundary these members assert across is one it never looks at.",
+      "why_this_search_is_this_claims_search": "The claim is about the request-scoped notification collector — its contents, its lifetime or its isolation. SRV06's subject is that boundary, and its near miss is the one suite row about notifications a request did not ask for, which is a question about scope rather than about crossing."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "a listen with no filter is refused -32602 above the handler, and no teardown callback is owed because the handler never ran",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test the exits that raise before a branch is chosen a listen answered ABOVE the handler is owed no teardown callback",
+        "test": "test the exits that raise before a branch is chosen a listen answered ABOVE the handler is owed no teardown callback"
+      },
+      "search_id": "SRV09",
+      "tag": "oc:none/no-oc-scenario/listen-refused-above-handler",
+      "the_near_miss_that_is_not_a_counterpart": "`RequestMetaInvalid` — `Rejects request with missing _meta with -32602 Invalid params`. Same method family, same error code, and a reader could stop there. It is not a counterpart: its subject is the `_meta` envelope every request carries, and this claim's subject is the `notifications` FILTER that only `subscriptions/listen` has. The suite opens listen streams and scores what comes out of them; it never sends a malformed one.",
+      "the_search_that_found_none": "the `subscriptions/listen` REQUEST's own params being validated — a missing or ill-typed `notifications` object answered -32602 rather than opening a stream that carries nothing",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about the listen request's own `notifications` field being absent or ill-typed. The harness constructs its listen requests from its own fixtures and they are always well-formed.",
+      "why_this_search_is_this_claims_search": "The claim is validation of the listen request itself. SRV09's subject is that, and its near miss is the `_meta` rejection family, which shares the method and the error code and not the field."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "the SSE response carries the three SHOULDed headers and carries NO `last-event-id`",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the response carries the SSE headers the spec SHOULDs",
+        "test": "test the stream opens with its acknowledgment the response carries the SSE headers the spec SHOULDs"
+      },
+      "search_id": "SRV13",
+      "tag": "oc:none/no-oc-scenario/sse-response-headers",
+      "the_near_miss_that_is_not_a_counterpart": "The forty-five rows carrying the word `header`, every one of them client-leg SEP-2243 rows about `Mcp-Method`, `Mcp-Name` and `Mcp-Param-*`. A reader who greps `header` finds a great many and could conclude the suite covers headers thoroughly. It covers ROUTING headers, on the client, on a POST; it carries nothing at all about the TRANSPORT headers an SSE response must set, and the `last-event-id` refute — the half that pins resumability as removed at 2026-07-28 — has no row anywhere.",
+      "the_search_that_found_none": "the HEADERS an SSE response carries — `content-type: text/event-stream`, `x-accel-buffering: no`, `cache-control: no-cache`, and the ABSENCE of `last-event-id` now that resumability is gone",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention any SSE transport header or resumability, against 45 rows that mention headers of another kind entirely.",
+      "why_this_search_is_this_claims_search": "The claim is the SSE response's own headers. SRV13's subject is that, and its near miss is the large and visible header family that a grep would find first."
     }
   ],
   "schema": "bucket-view/1",
   "title": "ET-CC member with no OC counterpart",
   "universe": {
-    "count": 110,
+    "count": 167,
     "name": "declared_members",
-    "of": "the 110 declared ET-CC members, never all 281 members"
+    "of": "the 167 declared ET-CC members, never all 281 members"
   },
   "what_this_is": "A PURE PROJECTION of the crosswalk named in `projected_from`, on the `predicate` above and on fields the crosswalk already stores. Nothing here re-computes a verdict, an edge shape or a bucket assignment. The rows are the crosswalk's own records verbatim, so a reader can check this view against the matrix byte for byte."
 }

@@ -864,6 +864,111 @@ defmodule MCP.Conformance.CrosswalkTest do
     end
   end
 
+  describe "select/2 — the `starts_with` test MES-105 added, and its two fail-closed limbs" do
+    # A fixture built to separate the cases the leaf has to get right, rather
+    # than one that happens to be the shipped anchor. `b` is the EXTENDING
+    # module — the case the trailing `/` exists for — and `e` carries a
+    # non-string in the field the leaf reads.
+    @prefix_rows [
+      %{"key" => "MCP.Server.DispatchTest/test one", "leg" => "server"},
+      %{"key" => "MCP.Server.DispatchTestExtra/test two", "leg" => "server"},
+      %{"key" => "MCP.Server.DispatchTest/test three", "leg" => "client"},
+      %{"key" => "MCP.Other.Test/test four", "leg" => "server"},
+      %{"key" => "e", "leg" => "server", "module" => 7}
+    ]
+    @prefix_src %{"rows" => @prefix_rows}
+
+    defp psel(node), do: Map.merge(%{"rows_at" => "rows", "key_field" => "key"}, node)
+
+    test "POSITIVE — a prefix denotes exactly the rows whose field starts with it" do
+      assert {:ok, ["MCP.Server.DispatchTest/test one", "MCP.Server.DispatchTest/test three"]} =
+               Crosswalk.select(
+                 psel(%{
+                   "any_of" => [
+                     %{
+                       "field" => "key",
+                       "test" => "starts_with",
+                       "value" => "MCP.Server.DispatchTest/"
+                     }
+                   ]
+                 }),
+                 @prefix_src
+               )
+    end
+
+    test "the trailing `/` REFUSES the extending module, and dropping it ADMITS it" do
+      with_slash = fn v ->
+        {:ok, got} =
+          Crosswalk.select(
+            psel(%{"any_of" => [%{"field" => "key", "test" => "starts_with", "value" => v}]}),
+            @prefix_src
+          )
+
+        got
+      end
+
+      strict = with_slash.("MCP.Server.DispatchTest/")
+      relaxed = with_slash.("MCP.Server.DispatchTest")
+
+      # BOTH DIRECTIONS ON THE SAME FIXTURE. A fixture that failed to separate
+      # them would show up as a green on either assertion alone.
+      refute Enum.any?(strict, &String.starts_with?(&1, "MCP.Server.DispatchTestExtra/"))
+      assert Enum.any?(relaxed, &String.starts_with?(&1, "MCP.Server.DispatchTestExtra/"))
+      assert length(relaxed) == length(strict) + 1
+    end
+
+    test "an EMPTY prefix is REFUSED — it would be true of every row" do
+      assert {:error, :selector_starts_with_prefix_is_empty} =
+               Crosswalk.select(
+                 psel(%{
+                   "any_of" => [%{"field" => "key", "test" => "starts_with", "value" => ""}]
+                 }),
+                 @prefix_src
+               )
+    end
+
+    test "a NON-STRING field value denotes nothing rather than matching or raising" do
+      assert {:ok, []} =
+               Crosswalk.select(
+                 psel(%{
+                   "any_of" => [%{"field" => "module", "test" => "starts_with", "value" => "M"}]
+                 }),
+                 @prefix_src
+               )
+    end
+
+    test "a non-string `value` is refused as an unknown test, like `equals`" do
+      assert {:error, {:unknown_selector_test, _}} =
+               Crosswalk.select(
+                 psel(%{
+                   "any_of" => [%{"field" => "key", "test" => "starts_with", "value" => 7}]
+                 }),
+                 @prefix_src
+               )
+    end
+
+    test "it composes — `leg equals server AND key starts_with` is C1c-i's own population" do
+      assert {:ok, ["MCP.Server.DispatchTest/test one"]} =
+               Crosswalk.select(
+                 psel(%{
+                   "all_of" => [
+                     %{"field" => "leg", "test" => "equals", "value" => "server"},
+                     %{
+                       "any_of" => [
+                         %{
+                           "field" => "key",
+                           "test" => "starts_with",
+                           "value" => "MCP.Server.DispatchTest/"
+                         }
+                       ]
+                     }
+                   ]
+                 }),
+                 @prefix_src
+               )
+    end
+  end
+
   describe "absence_entry_problems/3 — G23's decision logic" do
     @good %{
       "id" => "S01",
@@ -1077,7 +1182,21 @@ defmodule MCP.Conformance.CrosswalkTest do
       b2 = MapSet.new(a["buckets"]["bucket_2"]["checks"])
 
       assert outside["count"] == length(outside["checks"])
-      assert outside["count"] > 0
+
+      # THE SET, computed INDEPENDENTLY from the artefact's own two inputs. It
+      # used to be enough to assert the population was non-empty and then loop
+      # over it; MES-105 (C1c-i) emptied it — the three checks that were
+      # addressed-but-not-declared were C1a's inherited server rows, and the
+      # server file now DECLARES the scenario they land in — so the loop went
+      # vacuous and the `> 0` went red. A test that is satisfied by an empty
+      # loop is not a test, so the derivation itself is what is checked, and it
+      # is checked at every size including this one.
+      addressed = a["cells"] |> Enum.map(& &1["tag"]) |> Enum.uniq() |> MapSet.new()
+
+      assert MapSet.size(addressed) > 0
+      assert MapSet.size(declared) > 0
+      assert MapSet.new(outside["checks"]) == MapSet.difference(addressed, declared)
+      assert outside["count"] == MapSet.size(MapSet.difference(addressed, declared))
 
       for tag <- outside["checks"] do
         refute MapSet.member?(declared, tag)
@@ -1216,9 +1335,19 @@ defmodule MCP.Conformance.CrosswalkTest do
         |> Enum.reject(&is_nil/1)
         |> MapSet.new()
 
+      # The edges files are read OFF THE ARTEFACT's own population block rather
+      # than listed here. A hard-coded pair silently stopped covering the
+      # registry when MES-105 added a third file: the ids it collected were the
+      # client leg's alone, and the set comparison below then compared 19
+      # entries against 36 named ids and went red for the right reason by
+      # accident. Deriving the list means a fourth file is inside this test
+      # without anyone remembering to add it.
       entries =
-        ~w(conformance/data/crosswalk-edges-client.json conformance/data/crosswalk-edges.json)
+        a["population"]["files"]
+        |> Enum.map(& &1["path"])
         |> Enum.flat_map(&((&1 |> File.read!() |> Jason.decode!())["absence_searches"] || []))
+
+      assert length(a["population"]["files"]) > 1
 
       assert MapSet.new(entries, & &1["id"]) == named
       assert Enum.all?(entries, &(&1["hits"] == 0))
@@ -1230,14 +1359,30 @@ defmodule MCP.Conformance.CrosswalkTest do
              )
     end
 
-    test "both `oc:none` slugs are in live use, so the distinction is exercised", %{a: a} do
+    test "every `oc:none` slug in live use has a registered search behind it", %{a: a} do
       slugs =
         a["declared_unmatched"]
         |> Enum.map(&(&1["tag"] |> String.split("/") |> Enum.at(1)))
         |> Enum.frequencies()
 
-      assert Map.keys(slugs) |> Enum.sort() == ["no-oc-fixture-case", "no-oc-scenario"]
+      # DERIVED, not listed. The slug set was exactly two until MES-105 (C1c-i),
+      # which needed three kinds of zero on the server leg and could not have
+      # said so through a test asserting the pair. What is asserted is the
+      # PROPERTY that made the pair worth asserting: more than one slug is in
+      # use, none is unused, and every one has a registered search declaring it
+      # as its `kind` — so a slug cannot be invented for a row without a
+      # measurement behind it.
+      kinds =
+        a["population"]["files"]
+        |> Enum.map(& &1["path"])
+        |> Enum.flat_map(&((&1 |> File.read!() |> Jason.decode!())["absence_searches"] || []))
+        |> Enum.map(& &1["kind"])
+        |> Enum.uniq()
+        |> Enum.sort()
+
+      assert map_size(slugs) > 1
       assert Enum.all?(Map.values(slugs), &(&1 > 0))
+      assert Map.keys(slugs) |> Enum.sort() == kinds
     end
 
     test "the keying control ran BOTH directions and recorded a positive result", %{a: a} do

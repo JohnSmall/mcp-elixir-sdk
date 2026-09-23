@@ -411,8 +411,9 @@ defmodule MCP.Conformance.Crosswalk do
 
   ## The selector language — named, non-computing, and fail-closed
 
-  Leaf **tests**: `non_empty_list`, `not_null`, `is_null`, `equals` (which
-  takes a `value`). **Combinators**: `any_of`, `all_of`, `none_of`, each taking
+  Leaf **tests**: `non_empty_list`, `not_null`, `is_null`, `equals` and
+  `starts_with` (the last two take a `value`). **Combinators**: `any_of`,
+  `all_of`, `none_of`, each taking
   a non-empty list of nodes, and each node is itself a leaf or a combinator, so
   they nest.
 
@@ -428,6 +429,17 @@ defmodule MCP.Conformance.Crosswalk do
   selector test nothing calls is a guard on a dead path (S9-15). C1b-iii's own
   population — *the client members carrying no CG* — is the caller, so it
   arrives with the population that needs it and not before.
+
+  `starts_with` was **not** implemented until C1c-i, on the same ground: the
+  server leg is the population that needs it. B2b gives the client leg a `cg`
+  and a `tokens` list to cut on; on all 145 server rows `cg` is null and
+  `tokens` is empty, and `leg_reason` partitions by code path and not by OC
+  scenario — so no `equals` predicate over B2b denotes a server sub-population
+  at all. `key` is `Module/test`, so `key starts_with "<Module>/"` does, and
+  modules partition the server leg exactly (21 of them, keys unique, and with
+  the trailing `/` no module name is a prefix of another — measured). It is
+  fail-closed on an EMPTY prefix, which would otherwise be true of every row,
+  and on a non-string field value, which denotes nothing rather than matching.
 
   It is `has_key?(row, f) and get(row, f) == nil`, **not** `get(row, f) == nil`,
   and the difference is the whole of its fail-closed behaviour. Under the
@@ -544,6 +556,32 @@ defmodule MCP.Conformance.Crosswalk do
   # field indistinguishable from a null one.
   defp leaf(%{"field" => f, "test" => "equals", "value" => v}) when is_binary(v),
     do: {:ok, fn row -> Map.get(row, f) == v end}
+
+  # `starts_with` — a PREFIX of a string field, and it exists because the SERVER
+  # leg has nothing else to cut on. B2b gives the client leg a `cg` and a
+  # `tokens` list; on all 145 server rows `cg` is null and `tokens` is empty
+  # (measured), and `leg_reason` partitions by code path rather than by OC
+  # scenario, so no `equals` predicate over B2b denotes a server sub-population.
+  # The `key` is `Module/test`, so the MODULE is already in the anchor and
+  # `key starts_with "<Module>/"` names it.
+  #
+  # The alternative needed no new code — an enumeration of `key equals` leaves —
+  # and was rejected for the reason C1b-iii's `cg is_null` was chosen over one:
+  # an enumeration cannot denote a member added LATER, so a new test in one of
+  # these modules falls silently outside the population and G15a stays green
+  # over it. A prefix predicate picks it up.
+  #
+  # An EMPTY prefix is refused rather than accepted as true-of-everything. It is
+  # the same lie an empty `all_of` is, and it would silently re-declare the
+  # population as every row the other conjuncts admit. A non-string field value
+  # denotes NOTHING, which is `equals`'s own fail-closed direction: an absent
+  # field must not become a wildcard.
+  defp leaf(%{"field" => _f, "test" => "starts_with", "value" => ""}),
+    do: {:error, :selector_starts_with_prefix_is_empty}
+
+  defp leaf(%{"field" => f, "test" => "starts_with", "value" => v}) when is_binary(v),
+    do:
+      {:ok, fn row -> is_binary(Map.get(row, f)) and String.starts_with?(Map.get(row, f), v) end}
 
   defp leaf(other), do: {:error, {:unknown_selector_test, other}}
 

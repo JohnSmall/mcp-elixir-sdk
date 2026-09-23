@@ -613,7 +613,7 @@ defmodule MCP.Conformance.BucketProjectionTest do
       end
     end
 
-    test "the five empty views each carry a reason, and three distinct codes are used", %{
+    test "every empty view carries a reason, and which views are empty is PINNED", %{
       files: files
     } do
       empty =
@@ -621,14 +621,22 @@ defmodule MCP.Conformance.BucketProjectionTest do
         |> Enum.filter(&(view(files, &1)["count"] == 0))
         |> Map.new(&{&1, view(files, &1)["emptiness_reason"]["code"]})
 
-      # 2b is POPULATED from MES-104 on — the first non-vacuous bucket 2 this
-      # project has had. Four views are empty, over three codes.
-      assert empty == %{
-               "2a" => "by_adjudication",
-               "3" => "by_construction",
-               "5a" => "by_slice",
-               "6" => "by_construction"
-             }
+      # THE PROPERTY, first: an empty view without a stated reason is a zero
+      # nobody has explained, and it reads identically to a question nobody
+      # asked. This holds however many views are empty.
+      assert Enum.all?(empty, fn {_id, code} ->
+               code in ~w(by_construction by_adjudication by_slice)
+             end)
+
+      # THE PIN, second, and it moves as the legs land — which is the point of
+      # pinning it rather than asserting a count. 2b went live at MES-104 (the
+      # first non-vacuous bucket 2 this project has had). 2a and 5a went live at
+      # MES-105 (C1c-i): the server leg's first slice put 20 edges in 5a and
+      # left 16 of its 30 declared checks with no ET counterpart, so `by_slice`
+      # and `by_adjudication` are no longer the reasons anything here is empty.
+      # What remains are the two that are empty BY CONSTRUCTION — every ET
+      # verdict in the register is green, so no edge can be red on the ET side.
+      assert empty == %{"3" => "by_construction", "6" => "by_construction"}
     end
 
     test "the residual naming E2 derives its witness rather than restating it", %{files: files} do

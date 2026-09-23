@@ -1,11 +1,11 @@
 {
   "bucket": "4a",
-  "count": 2,
+  "count": 5,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 110 declared ET-CC members and 54\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 171 members and\n116 checks are not_yet_adjudicated -- a third state, distinct from\nbucket 1 -- owned by the tickets the crosswalk's own\n`outside_the_population` block names. A further 3 checks carry an edge\nwithout being declared by any file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "population_banner": "POPULATION: this projection covers 167 declared ET-CC members and 84\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 114 members and\n89 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
   "predicate": "`cells` where the stored `bucket` == \"4a\". Universe: the crosswalk's edges.",
   "projected_from": {
     "bucket_zero": {
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 404281,
+      "bytes": 574284,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "a2ea4e8917523d08a91a553d0639e984b74f012b21970509f8489f82f3479255"
+      "sha256": "3ce08b0c1b055d28c3789b25e731852a7e7908938b112ec45d3bf12fb019a466"
     }
   },
   "revision": "2026-07-28",
@@ -98,12 +98,121 @@
         "oc_status_at_accepted_run": "FAILURE",
         "oc_warning": false
       }
+    },
+    {
+      "axes": [
+        {
+          "axis": "rejection_error_code_is_invalid_params",
+          "verdict": "contradicts"
+        }
+      ],
+      "bucket": "4a",
+      "bucket_attributes": [],
+      "claim": "a tools/call carrying no _meta at all is rejected with -32022, not -32602",
+      "escalation": null,
+      "evidence": "dispatch_test.exs:101-105 — `Dispatch.dispatch(req(\"tools/call\", %{\"name\" => \"whoami\"}), ctx(\"PM\"), config())` sends params with no `_meta`, and `assert resp[\"error\"][\"code\"] == -32_022`. The OC check's `missing-meta` fixture is exactly that request shape — `{slug:`missing-meta`,...,params:{},rpcId:101}` — and its single axis requires -32602. A one-axis check with a contradicting claim is `:contradicting` whole, so this is 4a with nothing silent to soften it.",
+      "member": {
+        "module": "MCP.Server.DispatchTest",
+        "register_key": "MCP.Server.DispatchTest/test request without a protocolVersion _meta fails fast (-32022)",
+        "test": "test request without a protocolVersion _meta fails fast (-32022)"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-request-meta-invalid-missing-meta",
+        "RequestMetaInvalid",
+        "Rejects request with missing _meta with -32602 Invalid params",
+        ""
+      ],
+      "shape": "contradicting",
+      "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+      "verdicts": {
+        "et": "green",
+        "oc": "red",
+        "oc_status_at_accepted_run": "FAILURE",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "rejection_error_code_is_invalid_params",
+          "verdict": "contradicts"
+        }
+      ],
+      "bucket": "4a",
+      "bucket_attributes": [],
+      "claim": "a tools/call over real HTTP carrying no _meta is rejected with -32022, not -32602",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:83-84 — `conn = post(opts(), rpc(\"tools/call\", %{\"name\" => \"whoami\"}))` and `assert error(conn)[\"code\"] == -32_022`, driven through the real plug. The same contradiction as the `Dispatch`-level sibling, carried this time over the transport the OC probe itself uses, which removes the one reading under which the dispatch-level edge might have been an artefact of the seam it was asserted at.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test a request without a protocolVersion _meta fails fast (-32022)",
+        "test": "test a request without a protocolVersion _meta fails fast (-32022)"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-request-meta-invalid-missing-meta",
+        "RequestMetaInvalid",
+        "Rejects request with missing _meta with -32602 Invalid params",
+        ""
+      ],
+      "shape": "contradicting",
+      "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+      "verdicts": {
+        "et": "green",
+        "oc": "red",
+        "oc_status_at_accepted_run": "FAILURE",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "http_status",
+          "verdict": "contradicts"
+        },
+        {
+          "axis": "jsonrpc_error_code",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "4a",
+      "bucket_attributes": [],
+      "claim": "in JSON mode subscriptions/listen is refused with -32601 inside an HTTP 200 response",
+      "escalation": null,
+      "evidence": "subscriptions_stream_test.exs:1028-1029 — `assert response.status == 200` and `assert response.body[\"error\"][\"code\"] == -32_601`, over a real socket through `Req`. The OC axis `te.status!==404` is `fail_when_true` and requires 404; this unit asserts 200 and PASSES, so the claim contradicts it. The code axis agrees. Contradiction beats silence in `shape_from_axes/1`, so the edge is `:contradicting` and lands 4a.",
+      "member": {
+        "module": "MCP.Transport.SubscriptionsStreamTest",
+        "register_key": "MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream",
+        "test": "test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream"
+      },
+      "note": "THE SLICE'S SHARPEST FINDING, and the only edge in it that contradicts an axis it ALSO agrees with on the same check. Our SDK and the harness agree on WHICH JSON-RPC error an unimplemented method earns and disagree on the HTTP status it rides on — and this unit does not merely fail to assert 404, it asserts 200 and is green. Every other red-OC edge in this slice is silent on `http_status` because the unit never looks at it; this one looked, and wrote down the other answer.",
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-http-server-method-not-found-404",
+        "HttpServerMethodNotFound404",
+        "If the server does not implement the requested RPC method, it MUST respond with 404 Not Found and a JSON-RPC error with code -32601 (Method not found).",
+        ""
+      ],
+      "shape": "contradicting",
+      "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404",
+      "verdicts": {
+        "et": "green",
+        "oc": "red",
+        "oc_status_at_accepted_run": "FAILURE",
+        "oc_warning": false
+      }
     }
   ],
   "schema": "bucket-view/1",
   "title": "OC red, ET-CC green — contradiction",
   "universe": {
-    "count": 76,
+    "count": 106,
     "name": "edges",
     "of": "the crosswalk's `cells`"
   },

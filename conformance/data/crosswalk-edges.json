@@ -1,180 +1,98 @@
 {
-  "schema": "crosswalk-edges/1",
-  "revision": "2026-07-28",
-  "owner": "MES-97 (C1a), re-declared by MES-104 (C1b-i) to its 3 non-client rows",
-  "authored_by_hand": true,
-  "what_this_is": "The AUTHORED adjudications the crosswalk is built from — one record per (ET-CC member, claim, OC check). Judgements are data with evidence; derivations are code. `tag`, `oc_key`, `shape` and `bucket` appear NOWHERE here: the generator derives all four through MCP.Conformance.MatchKey and refuses any edge whose stored form disagrees, so a stored edge cannot lie about its own axes or address a key it does not encode.",
-  "the_population_this_file_declares": {
-    "members": 3,
-    "members_with_edges": 3,
-    "members_declared_unmatched": 0,
-    "checks_addressed": 4,
-    "rule": "The ET-CC members C1a had adjudicated — a token or a contradicts_oc record — that are NOT on the client leg: 2 server and 1 none_determinable. C1a's 18 client rows moved to crosswalk-edges-client.json under MES-104's composition ruling; these 3 stayed, unchanged, and C1c (MES-105) absorbs them whole.",
-    "selector": {
-      "what_this_is": "The EXECUTABLE half of `rule`. The generator evaluates it against the source named below and requires the result to be SET-EQUAL, in both directions, to the population this file derives. Prose only becomes a guard when something can run it.",
-      "why_it_must_name_a_file_other_than_this_one": "C1a derived its declared population by unioning the register_keys the edges file itself carried, so a dropped row did not violate the universe, it SHRANK it — measured on MES-99, both a dropped edge and a dropped declared_unmatched row built cleanly at 20 members with every set comparison still exact. A selector that read this file's own rows would be circular by another route.",
-      "source": "docs/conformance/etcc-attribution.json",
-      "source_owner": "B2b (MES-82) — the ET-CC attribution register",
-      "rows_at": "rows",
-      "key_field": "key",
-      "all_of": [
-        {
-          "any_of": [
-            {
-              "field": "tokens",
-              "test": "non_empty_list"
-            },
-            {
-              "field": "contradicts_oc",
-              "test": "not_null"
-            }
-          ]
-        },
-        {
-          "none_of": [
-            {
-              "field": "leg",
-              "test": "equals",
-              "value": "client"
-            }
-          ]
-        }
-      ],
-      "denotes": "The 3 non-client members of C1a's original 21: MCP.Server.DispatchTest and MCP.Transport.StreamableHTTPStatelessTest (server, both carrying a contradicts_oc record) and MCP.IntegrationTest (none_determinable, carrying a token).",
-      "why_none_of_and_not_an_enumeration_of_the_other_legs": "`leg` happens to take three values in B2b today, so `any_of[server, none_determinable]` would denote the same 3 rows. It would do so only while that remains true: a fourth leg value would silently drop its members out of this population, and nothing would go red. `none_of[client]` states the rule the prose states and carries no assumption about the field's range.",
-      "c1b_and_c1c_declare_their_own": "The selector is per-population and is read from this file, never hard-coded in the generator. C1c (MES-105) states the rule denoting the server leg rather than inheriting a literal 3."
-    },
-    "everything_else_is": "not_yet_adjudicated — a THIRD state, distinct from bucket 1 ('we looked, there is no counterpart') and from A3 §6 state 4 ('nobody has adjudicated this member'). 260 ET-CC members and 159 in-denominator checks are in it. C1b (MES-104, client leg) and C1c (MES-105, server leg) own them.",
-    "why_4_checks_and_not_2": "C1a's original block explained the same thing over 14 checks and the same two rows carry it here. B2b's tokens address TWO of these four; the other two — HttpServerMethodNotFound404ping and HttpServerMethodNotFound404loggingsetLevel — enter through ONE member, MCP.Transport.StreamableHTTPStatelessTest's `initialize is gone -> -32022; ping/logging.setLevel -> -32601`. This is NOT new adjudication: match-relation.md §1's cardinality table names that member by file and line and rules it yields THREE edges, and §4's worked edge record publishes the ping edge complete with its two axes and its `:partial` shape. Dropping them would leave a member the ratified rule says has three claims contributing one, which is the collapse §1 forbids.",
-    "the_fourth_check": "`tool-add-numbers` / ToolAddNumbers, addressed by MCP.IntegrationTest — the none_determinable member. It is why this residual is 3 members and 4 checks rather than 2 and 3.",
-    "no_check_population_is_declared_here": "Deliberately. These 3 rows are a residual awaiting C1c, not a leg anyone claims totality over, and declaring a check population would put the rest of `server-stateless` into bucket 2 — asserting of each sibling check that we looked and found no ET counterpart, which nobody has. A file with no declared check population contributes none to bucket 2's universe; its checks are derived from its own edges, exactly as C1a did."
-  },
-  "what_a_record_carries_and_why": {
-    "member": "MES-67's unit: module AND test name. The `register_key` is docs/conformance/etcc-row-key.md §1's key and is what joins this file to the register; it was extracted from the register, never typed.",
-    "claim": "A3 §1's atom of matching — finer than a test, coarser than an assert. A member bundling claims contributes several edges and they are never collapsed.",
-    "tag": "A3 §5's token. The generator DECODES and RESOLVES it against A1's manifest and derives the six-field oc_key from the resolution; it never accepts a key from this file.",
-    "axes": "One verdict per axis of the check's predicate, naming axes that must exist in the check's axis decomposition (A3's 13 or C1's 11). The generator refuses an axis name the decomposition does not contain — a verdict against an axis nobody extracted is a verdict about nothing.",
-    "et_verdict": "The member's own run verdict. Every member of this population is `green`: re-measured at 42e6b19 over the full suite, all 281 ET-CC members pass. So buckets 3 (green OC / red ET) and 6 (red in both) are EMPTY BY CONSTRUCTION on this data — checked, and zero, with the predicate recorded.",
-    "evidence": "File, line and the assertion, for every axis verdict. Ruling 7: an address is not evidence, the bytes at it are.",
-    "not_carried": "No `oc_key`, no `shape`, no `bucket`, no OC verdict. All four are derived — the OC verdict from A1's committed per-check `status` at the accepted run, the rest through MatchKey."
-  },
-  "how_a_silent_axis_was_decided": "Conservatively, and the rule is stated rather than applied case by case: a claim counts as covering an axis only when an assertion's SUBJECT is the behaviour that axis names. A test asserting a tool's RESULT does not cover an axis about the ARGUMENTS' wire type, and a test asserting that a capability is ABSENT does not cover an axis about the SHAPE of a present one. This is match-relation.md §6's CG5 rule — a mention is not a discharge — turned on our own side of the relation. Where it was a judgement rather than a reading, the edge's `evidence` says so in those words.",
-  "the_all_silent_case": "Four edges have EVERY axis silent. They are recorded and ESCALATED, never bucketed. A3 §2 rules that covering zero of one axis 'is no match, not a partial one'; generalised to N axes that is exactly this case, and A3 §3's table has no row for it — `shape_from_axes/1` would call it `:partial` and bucket 5 would swallow it. Dropping the edges instead would be worse: the member would then look edge-less and therefore bucket-1, asserting 'we looked and there is no counterpart' where the truth is 'there is a counterpart and our claim does not touch its predicate'. Escalation is A3 §7's own mechanism for a case the rule does not decide.",
-  "edges": [
+ "schema": "crosswalk-edges/1",
+ "revision": "2026-07-28",
+ "owner": "MES-97 (C1a), reduced twice. MES-104 (C1b-i) moved the 18 CLIENT rows to crosswalk-edges-client.json; MES-105 (C1c-i) moved the 4 SERVER edges over 2 members to crosswalk-edges-server.json. One member remains.",
+ "authored_by_hand": true,
+ "what_this_is": "The AUTHORED adjudications the crosswalk is built from — one record per (ET-CC member, claim, OC check). Judgements are data with evidence; derivations are code. `tag`, `oc_key`, `shape` and `bucket` appear NOWHERE here: the generator derives all four through MCP.Conformance.MatchKey and refuses any edge whose stored form disagrees, so a stored edge cannot lie about its own axes or address a key it does not encode.",
+ "the_population_this_file_declares": {
+  "members": 1,
+  "members_with_edges": 1,
+  "members_declared_unmatched": 0,
+  "checks_addressed": 1,
+  "rule": "The ET-CC members C1a had adjudicated — a token or a contradicts_oc record — that are on NEITHER leg. C1a's 18 client rows moved to crosswalk-edges-client.json under MES-104's composition ruling; its server rows moved to crosswalk-edges-server.json under MES-105's, which is the same ruling applied to the other leg. What is left is one member, none_determinable, and C1c-iv (MES-117) absorbs it with the rest of that class.",
+  "selector": {
+   "what_this_is": "The EXECUTABLE half of `rule`. The generator evaluates it against the source named below and requires the result to be SET-EQUAL, in both directions, to the population this file derives. Prose only becomes a guard when something can run it.",
+   "why_it_must_name_a_file_other_than_this_one": "C1a derived its declared population by unioning the register_keys the edges file itself carried, so a dropped row did not violate the universe, it SHRANK it — measured on MES-99, both a dropped edge and a dropped declared_unmatched row built cleanly at 20 members with every set comparison still exact. A selector that read this file's own rows would be circular by another route.",
+   "source": "docs/conformance/etcc-attribution.json",
+   "source_owner": "B2b (MES-82) — the ET-CC attribution register",
+   "rows_at": "rows",
+   "key_field": "key",
+   "all_of": [
     {
-      "member": {
-        "module": "MCP.IntegrationTest",
-        "test": "test tools: list, echo, add, isError, unknown",
-        "register_key": "MCP.IntegrationTest/test tools: list, echo, add, isError, unknown"
+     "any_of": [
+      {
+       "field": "tokens",
+       "test": "non_empty_list"
       },
-      "claim": "a tools/call to `add` with two numeric arguments is issued and returns their sum",
-      "tag": "oc:client/tools_call/tool-add-numbers/ToolAddNumbers",
-      "axes": [
-        {
-          "axis": "tools_call_was_made",
-          "verdict": "agrees"
-        },
-        {
-          "axis": "argument_a_is_a_number",
-          "verdict": "silent"
-        },
-        {
-          "axis": "argument_b_is_a_number",
-          "verdict": "silent"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "integration_test.exs:149-150 — `Client.call_tool(client, \"add\", %{\"a\" => 3, \"b\" => 4})` returns `\"7\"`. The call being made is asserted directly. The two type axes are NOT: the assertion is on the tool's RESULT, and a client sending `\"3\"`/`\"4\"` as JSON strings would be caught here only if this SDK's own `add` tool refused them — a property of the fixture server, not of this assertion. Silent, on the CG5 rule: a test whose subject is downstream of the requirement does not discharge it."
+      {
+       "field": "contradicts_oc",
+       "test": "not_null"
+      }
+     ]
     },
     {
-      "member": {
-        "module": "MCP.Server.DispatchTest",
-        "test": "test initialize is removed → UnsupportedProtocolVersion (-32022)",
-        "register_key": "MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)"
+     "none_of": [
+      {
+       "field": "leg",
+       "test": "equals",
+       "value": "client"
       },
-      "claim": "a removed `initialize` yields JSON-RPC error -32022",
-      "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
-      "axes": [
-        {
-          "axis": "jsonrpc_error_code",
-          "verdict": "contradicts"
-        },
-        {
-          "axis": "http_status",
-          "verdict": "silent"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "dispatch_test.exs:84 — `assert resp[\"error\"][\"code\"] == -32_022` where the check REQUIRES -32601. Driven at `Dispatch.dispatch/3`, below the transport, so there is no HTTP status for the second axis to be about.",
-      "note": "The epic's own worked 4a contradiction, at the dispatch layer."
-    },
-    {
-      "member": {
-        "module": "MCP.Transport.StreamableHTTPStatelessTest",
-        "test": "test initialize is gone → -32022; ping/logging.setLevel → -32601",
-        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601"
-      },
-      "claim": "a removed `initialize` over HTTP yields JSON-RPC error -32022",
-      "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
-      "axes": [
-        {
-          "axis": "jsonrpc_error_code",
-          "verdict": "contradicts"
-        },
-        {
-          "axis": "http_status",
-          "verdict": "silent"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "streamable_http_stateless_test.exs:89 — `assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022` where the check requires -32601. Driven through the real plug, so an HTTP status EXISTS on the response; the test does not assert it, which is what makes the status axis silent rather than agreeing.",
-      "note": "The same contradiction as the dispatch row, one layer up. A3 §1's cardinality table names this member as yielding THREE edges; this is the first."
-    },
-    {
-      "member": {
-        "module": "MCP.Transport.StreamableHTTPStatelessTest",
-        "test": "test initialize is gone → -32022; ping/logging.setLevel → -32601",
-        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601"
-      },
-      "claim": "a removed `ping` over HTTP yields JSON-RPC error -32601",
-      "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping",
-      "axes": [
-        {
-          "axis": "jsonrpc_error_code",
-          "verdict": "agrees"
-        },
-        {
-          "axis": "http_status",
-          "verdict": "silent"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "streamable_http_stateless_test.exs:90 — `assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601`, which is the code the check requires. The HTTP status is not asserted.",
-      "note": "INHERITED, NOT NEWLY ADJUDICATED: this is match-relation.md §4's worked edge record, published by A3 with these axes and this shape. A3 §1 assigns the per-claim decomposition of this member to C1; §4 then performs it. C1a records it rather than re-deciding it."
-    },
-    {
-      "member": {
-        "module": "MCP.Transport.StreamableHTTPStatelessTest",
-        "test": "test initialize is gone → -32022; ping/logging.setLevel → -32601",
-        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601"
-      },
-      "claim": "a removed `logging/setLevel` over HTTP yields JSON-RPC error -32601",
-      "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel",
-      "axes": [
-        {
-          "axis": "jsonrpc_error_code",
-          "verdict": "agrees"
-        },
-        {
-          "axis": "http_status",
-          "verdict": "silent"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "streamable_http_stateless_test.exs:91 — `assert error(post(opts(), rpc(\"logging/setLevel\", %{\"level\" => \"info\"})))[\"code\"] == -32_601`. Same shape as the ping claim, a different removed method.",
-      "note": "The third of A3 §1's three edges for this member."
+      {
+       "field": "leg",
+       "test": "equals",
+       "value": "server"
+      }
+     ]
     }
-  ],
-  "declared_unmatched": [],
-  "declared_unmatched_note": "A3 §6 state 3 — members adjudicated as having NO OC counterpart. They are bucket 1 over this population. The generator asserts each tag guard-checks to state 3 (decodes as `oc:none`, does NOT resolve as an oc key) before counting it."
+   ],
+   "denotes": "The 1 member of C1a's original 21 that is on neither leg: MCP.IntegrationTest (none_determinable, carrying a token). MEASURED at this tip, both directions — the selector denotes exactly this one key and this file derives exactly this one key, which is what G15a compares. The 2 server members that used to satisfy this predicate now fail its second conjunct.",
+   "why_none_of_and_not_an_enumeration_of_the_other_legs": "`leg` happens to take three values in B2b today, so `any_of[none_determinable]` would denote the same 1 row. It would do so only while that remains true: a fourth leg value would silently pull its members INTO this population — or, under the enumeration form, silently drop them — and nothing would go red. `none_of[client, server]` states the rule the prose states, which is `what neither adjudicated leg has taken`, and carries no assumption about the field's range. MES-105 added the `server` limb for exactly the reason MES-104 wrote the clause this way: the selector had to change when a leg was taken, and changing one leaf is the whole change.",
+   "c1b_and_c1c_declare_their_own": "The selector is per-population and is read from this file, never hard-coded in the generator. crosswalk-edges-client.json declares the client leg; crosswalk-edges-server.json declares the server slices as they land and will declare `leg: server` when C1c-iv closes it."
+  },
+  "everything_else_is": "not_yet_adjudicated — a THIRD state, distinct from bucket 1 ('we looked, there is no counterpart') and from A3 §6 state 4 ('nobody has adjudicated this member'). C1c-ii/iii/iv (MES-115/116/117) own what is left: the 86 server members outside C1c-i's eight modules, the none_determinable class, and this file's last row with it.",
+  "why_4_checks_and_not_2": "HISTORICAL — it described the 4 checks C1a's two SERVER members addressed, and those members are now in crosswalk-edges-server.json where the explanation went with them. Kept as a pointer rather than deleted, because A3 §1's cardinality ruling about MCP.Transport.StreamableHTTPStatelessTest yielding THREE edges is the reason that file carries three rows for one member, and a reader tracing the ruling would otherwise find its trail ending here.",
+  "the_fourth_check": "HISTORICAL, and now simply the only check: `tool-add-numbers` / ToolAddNumbers, addressed by MCP.IntegrationTest. With the server members moved, this residual is 1 member and 1 check.",
+  "no_check_population_is_declared_here": "Deliberately. These 3 rows are a residual awaiting C1c, not a leg anyone claims totality over, and declaring a check population would put the rest of `server-stateless` into bucket 2 — asserting of each sibling check that we looked and found no ET counterpart, which nobody has. A file with no declared check population contributes none to bucket 2's universe; its checks are derived from its own edges, exactly as C1a did.",
+  "what_moved_and_when": "C1a declared twenty-one members. MES-104 (C1b-i) took eighteen to the client file; MES-105 (C1c-i) took two more — MCP.Server.DispatchTest and MCP.Transport.StreamableHTTPStatelessTest, four edges between them, moved byte-identical — to the server file. Written in words rather than digits: the generator composes every file's `rule` and the fields around it into prose of its own, and G21 refuses an uninterpolated population figure there, which these would be."
+ },
+ "what_a_record_carries_and_why": {
+  "member": "MES-67's unit: module AND test name. The `register_key` is docs/conformance/etcc-row-key.md §1's key and is what joins this file to the register; it was extracted from the register, never typed.",
+  "claim": "A3 §1's atom of matching — finer than a test, coarser than an assert. A member bundling claims contributes several edges and they are never collapsed.",
+  "tag": "A3 §5's token. The generator DECODES and RESOLVES it against A1's manifest and derives the six-field oc_key from the resolution; it never accepts a key from this file.",
+  "axes": "One verdict per axis of the check's predicate, naming axes that must exist in the check's axis decomposition (A3's 13 or C1's 11). The generator refuses an axis name the decomposition does not contain — a verdict against an axis nobody extracted is a verdict about nothing.",
+  "et_verdict": "The member's own run verdict. Every member of this population is `green`: re-measured at 42e6b19 over the full suite, all 281 ET-CC members pass. So buckets 3 (green OC / red ET) and 6 (red in both) are EMPTY BY CONSTRUCTION on this data — checked, and zero, with the predicate recorded.",
+  "evidence": "File, line and the assertion, for every axis verdict. Ruling 7: an address is not evidence, the bytes at it are.",
+  "not_carried": "No `oc_key`, no `shape`, no `bucket`, no OC verdict. All four are derived — the OC verdict from A1's committed per-check `status` at the accepted run, the rest through MatchKey."
+ },
+ "how_a_silent_axis_was_decided": "Conservatively, and the rule is stated rather than applied case by case: a claim counts as covering an axis only when an assertion's SUBJECT is the behaviour that axis names. A test asserting a tool's RESULT does not cover an axis about the ARGUMENTS' wire type, and a test asserting that a capability is ABSENT does not cover an axis about the SHAPE of a present one. This is match-relation.md §6's CG5 rule — a mention is not a discharge — turned on our own side of the relation. Where it was a judgement rather than a reading, the edge's `evidence` says so in those words.",
+ "the_all_silent_case": "Four edges have EVERY axis silent. They are recorded and ESCALATED, never bucketed. A3 §2 rules that covering zero of one axis 'is no match, not a partial one'; generalised to N axes that is exactly this case, and A3 §3's table has no row for it — `shape_from_axes/1` would call it `:partial` and bucket 5 would swallow it. Dropping the edges instead would be worse: the member would then look edge-less and therefore bucket-1, asserting 'we looked and there is no counterpart' where the truth is 'there is a counterpart and our claim does not touch its predicate'. Escalation is A3 §7's own mechanism for a case the rule does not decide.",
+ "edges": [
+  {
+   "member": {
+    "module": "MCP.IntegrationTest",
+    "test": "test tools: list, echo, add, isError, unknown",
+    "register_key": "MCP.IntegrationTest/test tools: list, echo, add, isError, unknown"
+   },
+   "claim": "a tools/call to `add` with two numeric arguments is issued and returns their sum",
+   "tag": "oc:client/tools_call/tool-add-numbers/ToolAddNumbers",
+   "axes": [
+    {
+     "axis": "tools_call_was_made",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "argument_a_is_a_number",
+     "verdict": "silent"
+    },
+    {
+     "axis": "argument_b_is_a_number",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "integration_test.exs:149-150 — `Client.call_tool(client, \"add\", %{\"a\" => 3, \"b\" => 4})` returns `\"7\"`. The call being made is asserted directly. The two type axes are NOT: the assertion is on the tool's RESULT, and a client sending `\"3\"`/`\"4\"` as JSON strings would be caught here only if this SDK's own `add` tool refused them — a property of the fixture server, not of this assertion. Silent, on the CG5 rule: a test whose subject is downstream of the requirement does not discharge it."
+  }
+ ],
+ "declared_unmatched": [],
+ "declared_unmatched_note": "A3 §6 state 3 — members adjudicated as having NO OC counterpart. They are bucket 1 over this population. The generator asserts each tag guard-checks to state 3 (decodes as `oc:none`, does NOT resolve as an oc key) before counting it."
 }
