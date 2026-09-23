@@ -77,6 +77,7 @@ defmodule MCP.Conformance.Crosswalk do
   (ruling 5).
   """
 
+  alias MCP.Conformance.CitationVerbatim
   alias MCP.Conformance.MatchKey
 
   @combinators ~w(any_of all_of none_of)
@@ -670,6 +671,123 @@ defmodule MCP.Conformance.Crosswalk do
     |> Enum.flat_map(fn doc -> Enum.map(strings_at(doc), fn {_p, s} -> s end) end)
     |> MapSet.new()
   end
+
+  @doc """
+  **G30's windows for an edges-file record** — the ET line spans its `evidence`
+  cites, and the OC byte spans the axis row for its `tag` addresses.
+
+  This is the crosswalk-SPECIFIC half of the citation-verbatim guard.
+  `MCP.Conformance.CitationVerbatim` owns the predicate and knows nothing about
+  edges files or axis rows; this knows nothing about verbatim-ness. MES-113
+  reuses the predicate over the attribution surface by writing its own window
+  builder, not by generalising this one.
+
+  `ctx` carries the axis check rows and, when `--harness` was given, the harness
+  `build` and its squashed form (squashed ONCE, not per record — it is 800KB).
+  With no build, an OC span cannot be read: the reason goes in `:unavailable`
+  and the predicate turns an unplaced quote into a refusal that says "I could
+  not tell" rather than into a pass.
+
+  EACH SPAN IS ITS OWN WINDOW. A quote cannot be contiguous across two of them,
+  which is what stops a citation borrowing bytes from a span it also names but
+  that the quote does not sit in.
+
+  `:broad` is the same sources with their addresses thrown away — the whole
+  file, the whole build. The generator never asks for it; it exists so a control
+  can drop the WINDOWING limb and measure what that limb is worth.
+  """
+  @spec citation_windows(map(), map()) ::
+          CitationVerbatim.windows()
+  def citation_windows(record, ctx) do
+    citation_windows(record, ctx.axes, Map.get(ctx, :build), Map.get(ctx, :squashed_build))
+  end
+
+  defp citation_windows(record, axes, build, squashed_build) do
+    evidence = record["evidence"] || ""
+    et = et_windows(evidence)
+    rows = axis_rows(record["tag"], axes)
+
+    %{
+      narrow: et.narrow ++ oc_windows(rows, build),
+      broad: et.broad ++ oc_broad(rows, squashed_build),
+      unavailable: oc_unavailable(rows, build)
+    }
+  end
+
+  defp et_windows(evidence) do
+    spans = CitationVerbatim.cited_line_spans(evidence)
+
+    resolved =
+      for {file, from, to} <- spans, path = find_source(file), reduce: {[], %{}} do
+        {narrow, files} ->
+          source = Map.get_lazy(files, path, fn -> File.read!(path) end)
+
+          {[
+             {"et:#{file}:#{from}-#{to}", CitationVerbatim.line_window(source, from, to)}
+             | narrow
+           ], Map.put(files, path, source)}
+      end
+
+    {narrow, files} = resolved
+
+    %{
+      narrow: Enum.reverse(narrow),
+      broad:
+        Enum.map(files, fn {path, src} ->
+          {"et-file:#{path}", CitationVerbatim.squash(src)}
+        end)
+    }
+  end
+
+  defp find_source(basename) do
+    ["test", "lib", "conformance"]
+    |> Enum.flat_map(&Path.wildcard(Path.join([&1, "**", basename])))
+    |> List.first()
+  end
+
+  defp axis_rows(nil, _axes), do: []
+
+  defp axis_rows(tag, axes) do
+    name = tag |> String.split("/") |> List.last()
+    Enum.filter(axes, &(Enum.at(&1["key"], 3) == name))
+  end
+
+  defp oc_windows(_rows, nil), do: []
+
+  defp oc_windows(rows, build) do
+    for row <- rows, window <- oc_row_windows(row, build), do: window
+  end
+
+  defp oc_row_windows(row, build) do
+    id = Enum.at(row["key"], 3)
+
+    spans =
+      [row["emitting_byte_span"], get_in(row, ["emitting_site", "dist_byte_span"])] ++
+        Enum.map(row["context_excerpts"] || [], & &1["byte_span"])
+
+    byte_windows =
+      for [a, b] <- Enum.reject(spans, &is_nil/1),
+          do: {"oc:#{id}:#{a}-#{b}", CitationVerbatim.squash(binary_part(build, a, b - a))}
+
+    case row["evaluator_excerpt"] do
+      nil ->
+        byte_windows
+
+      x ->
+        byte_windows ++
+          [{"oc:#{id}:evaluator_excerpt", CitationVerbatim.squash(x)}]
+    end
+  end
+
+  defp oc_broad([], _squashed), do: []
+  defp oc_broad(_rows, nil), do: []
+  defp oc_broad(_rows, squashed), do: [{"oc-build", squashed}]
+
+  defp oc_unavailable([], _build), do: []
+  defp oc_unavailable(_rows, build) when is_binary(build), do: []
+
+  defp oc_unavailable(_rows, nil),
+    do: ["--harness was not given, so this row's OC byte spans could not be read"]
 
   @doc """
   Every population figure `text` states, as `{figure, the phrase it sits in}`.

@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 399832,
+      "bytes": 404281,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "e36e1469ddf92bbd9bc38d36301c46fe2f57b6b00823562b4820d553981c1b85"
+      "sha256": "a2ea4e8917523d08a91a553d0639e984b74f012b21970509f8489f82f3479255"
     }
   },
   "revision": "2026-07-28",
@@ -36,7 +36,7 @@
       "bucket_attributes": [],
       "claim": "a -32022 offering no version we support is surfaced to the caller and produces no retry at all",
       "escalation": "no_axis_contact — every axis of this check is silent. A3 §2 rules that covering zero of one axis is no match, not a partial one; generalised to 2 axes that is this edge. §3's table has no row for it, so it escalates rather than being bucketed.",
-      "evidence": "client_defects_test.exs:345-346 — asserts the error surfaces and `length(sent_messages) == 1`. There is no retry, so neither axis — both of which are predicates ON a retry — is touched.",
+      "evidence": "client_defects_test.exs:345-346 — asserts the error surfaces and `length(MockTransport.sent_messages(transport)) == 1`. There is no retry, so neither axis — both of which are predicates ON a retry — is touched.",
       "member": {
         "module": "MCP.ClientDefectsTest",
         "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 offering only versions we do not support is surfaced, never retried",
@@ -149,7 +149,7 @@
       "bucket_attributes": [],
       "claim": "an undeclared `elicitation` capability is omitted from the encoding entirely",
       "escalation": "no_axis_contact — every axis of this check is silent. A3 §2 rules that covering zero of one axis is no match, not a partial one; generalised to 1 axes that is this edge. §3's table has no row for it, so it escalates rather than being bucketed.",
-      "evidence": "capabilities_test.exs:99 — `refute Map.has_key?(decoded, \"elicitation\")`. This addresses the check's PRECONDITION (`d&&e in d`), not its axis: it asserts the branch on which the check SKIPS. A precondition is not an axis and a claim about one is neither agreement nor contradiction.",
+      "evidence": "capabilities_test.exs:100 — `refute Map.has_key?(decoded, \"elicitation\")`. This addresses the check's PRECONDITION (`d&&e in d`), not its axis: it asserts the branch on which the check SKIPS. A precondition is not an axis and a claim about one is neither agreement nor contradiction.",
       "member": {
         "module": "MCP.Protocol.CapabilitiesTest",
         "register_key": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON",
@@ -184,7 +184,7 @@
       "bucket_attributes": [],
       "claim": "a tool excluded for an invalid annotation leaves no annotations behind, so calling it anyway mirrors nothing",
       "escalation": "no_axis_contact — every axis of this check is silent. A3 §2 rules that covering zero of one axis is no match, not a partial one; generalised to 1 axes that is this edge. §3's table has no row for it, so it escalates rather than being bucketed.",
-      "evidence": "client_tool_schemas_test.exs:125-146. The member's `invalid_tool/1` helper (:55-63) builds exactly the fixture's `invalid_object_header` class — an `x-mcp-header` on a property of `\"type\" => \"object\"` — so the counterpart check is unambiguous. The single axis is SILENT: the check's subject is whether the client CALLED the tool, and this member deliberately calls it, asserting instead that the call carries no headers (`assert [] = … Keyword.get(:headers, [])`). The two are not in conflict — the call here is the TEST's choice through `Client.call_tool/3`, not the client's own selection — but the assertion's subject is the headers, not the calling.",
+      "evidence": "client_tool_schemas_test.exs:125-146. The member's `invalid_tool/1` helper (client_tool_schemas_test.exs:55-63) builds exactly the fixture's `invalid_object_header` class — an `x-mcp-header` on a property of `\"type\" => \"object\"` — so the counterpart check is unambiguous. The single axis is SILENT: the check's subject is whether the client CALLED the tool, and this member deliberately calls it, asserting instead that the call carries no headers (`assert [] = Enum.at(MockTransport.sent_opts(transport), 1) |> Keyword.get(:headers, [])`). The two are not in conflict — the call here is the TEST's choice through `Client.call_tool/3`, not the client's own selection — but the assertion's subject is the headers, not the calling.",
       "member": {
         "module": "MCP.ClientToolSchemasTest",
         "register_key": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an excluded tool leaves no annotations behind, so calling it mirrors nothing",

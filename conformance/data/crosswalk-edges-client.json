@@ -183,7 +183,7 @@
         }
       ],
       "et_verdict": "green",
-      "evidence": "client_defects_test.exs:90 — `refute Map.has_key?(retry[\"params\"], \"requestState\")` after an InputRequiredResult with the field absent. Key absence, not a nil value, which is the distinction the check's `!==undefined` test turns on."
+      "evidence": "client_defects_test.exs:90 — `refute Map.has_key?(retry[\"params\"], \"requestState\")` after an InputRequiredResult with the field absent. Key absence, not a nil value, which is the distinction the check's undefined-test turns on. DE-QUOTED (MES-112, ruling 7): that test was written here as a quoted token, and no such literal occurs in the minified build — the minifier emits the void-0 form — so it was a description of the test's sense, never a lift of its bytes."
     },
     {
       "member": {
@@ -221,7 +221,7 @@
         }
       ],
       "et_verdict": "green",
-      "evidence": "client_defects_test.exs:308 — `assert retry[\"params\"][\"_meta\"][\"io.modelcontextprotocol/protocolVersion\"] == \"2026-07-28\"`. Driven through MockTransport, which has no HTTP layer, so the header axis is not merely unasserted — it is unreachable from this member."
+      "evidence": "client_defects_test.exs:308-309 — `assert retry[\"params\"][\"_meta\"][\"io.modelcontextprotocol/protocolVersion\"] == \"2026-07-28\"`. Driven through MockTransport, which has no HTTP layer, so the header axis is not merely unasserted — it is unreachable from this member."
     },
     {
       "member": {
@@ -242,7 +242,7 @@
         }
       ],
       "et_verdict": "green",
-      "evidence": "client_defects_test.exs:345-346 — asserts the error surfaces and `length(sent_messages) == 1`. There is no retry, so neither axis — both of which are predicates ON a retry — is touched."
+      "evidence": "client_defects_test.exs:345-346 — asserts the error surfaces and `length(MockTransport.sent_messages(transport)) == 1`. There is no retry, so neither axis — both of which are predicates ON a retry — is touched."
     },
     {
       "member": {
@@ -378,7 +378,7 @@
         }
       ],
       "et_verdict": "green",
-      "evidence": "client_test.exs:152 and :154 — `meta[\"io.modelcontextprotocol/protocolVersion\"] == \"2026-07-28\"` and `is_map(meta[\"io.modelcontextprotocol/clientCapabilities\"])`. Two assertions, one per conjunct of the check's `l=a&&c`."
+      "evidence": "client_test.exs:152 and client_test.exs:154 — `meta[\"io.modelcontextprotocol/protocolVersion\"] == \"2026-07-28\"` and `is_map(meta[\"io.modelcontextprotocol/clientCapabilities\"])`. Two assertions, one per conjunct of the check's `l=a&&c`."
     },
     {
       "member": {
@@ -412,7 +412,7 @@
         }
       ],
       "et_verdict": "green",
-      "evidence": "capabilities_test.exs:97 — `assert decoded[\"roots\"][\"listChanged\"] == true`. Indexing a key out of the decoded value entails it is a non-null, non-array object, which is the whole of the check's axis."
+      "evidence": "capabilities_test.exs:98 — `assert decoded[\"roots\"][\"listChanged\"] == true`. Indexing a key out of the decoded value entails it is a non-null, non-array object, which is the whole of the check's axis."
     },
     {
       "member": {
@@ -429,7 +429,7 @@
         }
       ],
       "et_verdict": "green",
-      "evidence": "capabilities_test.exs:98 — `assert decoded[\"sampling\"] == %{}`. An empty map is a non-null, non-array object; equality with `%{}` establishes the type as well as the contents."
+      "evidence": "capabilities_test.exs:99 — `assert decoded[\"sampling\"] == %{}`. An empty map is a non-null, non-array object; equality with `%{}` establishes the type as well as the contents."
     },
     {
       "member": {
@@ -446,7 +446,7 @@
         }
       ],
       "et_verdict": "green",
-      "evidence": "capabilities_test.exs:99 — `refute Map.has_key?(decoded, \"elicitation\")`. This addresses the check's PRECONDITION (`d&&e in d`), not its axis: it asserts the branch on which the check SKIPS. A precondition is not an axis and a claim about one is neither agreement nor contradiction.",
+      "evidence": "capabilities_test.exs:100 — `refute Map.has_key?(decoded, \"elicitation\")`. This addresses the check's PRECONDITION (`d&&e in d`), not its axis: it asserts the branch on which the check SKIPS. A precondition is not an axis and a claim about one is neither agreement nor contradiction.",
       "note": "The one edge in this population whose claim lands on a precondition rather than on an axis."
     },
     {
@@ -704,7 +704,7 @@
         }
       ],
       "et_verdict": "green",
-      "evidence": "header_mirror_test.exs:355 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the `=?base64?…?=` shape AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both."
+      "evidence": "header_mirror_test.exs:355 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the encoded-word sentinel SHAPE (an elision, de-quoted per MES-112: a described form is not a lift, and `A … B` is not fragment-matched) AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both."
     },
     {
       "member": {
@@ -725,7 +725,7 @@
         }
       ],
       "et_verdict": "green",
-      "evidence": "header_mirror_test.exs:356 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the `=?base64?…?=` shape AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both."
+      "evidence": "header_mirror_test.exs:356 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the encoded-word sentinel SHAPE (an elision, de-quoted per MES-112: a described form is not a lift, and `A … B` is not fragment-matched) AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both."
     },
     {
       "member": {
@@ -746,7 +746,7 @@
         }
       ],
       "et_verdict": "green",
-      "evidence": "header_mirror_test.exs:357 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the `=?base64?…?=` shape AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both."
+      "evidence": "header_mirror_test.exs:357 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the encoded-word sentinel SHAPE (an elision, de-quoted per MES-112: a described form is not a lift, and `A … B` is not fragment-matched) AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both."
     },
     {
       "member": {
@@ -767,7 +767,7 @@
         }
       ],
       "et_verdict": "green",
-      "evidence": "header_mirror_test.exs:358 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the `=?base64?…?=` shape AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both."
+      "evidence": "header_mirror_test.exs:358 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the encoded-word sentinel SHAPE (an elision, de-quoted per MES-112: a described form is not a lift, and `A … B` is not fragment-matched) AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both."
     },
     {
       "member": {
@@ -893,7 +893,7 @@
         }
       ],
       "et_verdict": "green",
-      "evidence": "header_mirror_test.exs:415 — `assert headers[\"mcp-param-method\"] == \"test-method\"`. The fixture's own description for this parameter names the case: `tests that x-mcp-header \"Method\" produces Mcp-Param-Method (not Mcp-Method)`."
+      "evidence": "header_mirror_test.exs:415 — `assert headers[\"mcp-param-method\"] == \"test-method\"`. The fixture's own description for this parameter names the case in so many words — that an x-mcp-header of Method produces Mcp-Param-Method and not Mcp-Method. DE-QUOTED (MES-112, ruling 7), and this one is worth its sentence: those bytes ARE in the build, once, but at an offset OUTSIDE the four spans this row's axis addresses, so the backticks claimed an address this row does not name. The alternative — widening the row's spans in oc-axes-c1.json until the offset is covered — would edit C1a's artefact to make this citation pass, and is left as a note for whoever owns the axis rows rather than taken here."
     },
     {
       "member": {
@@ -945,7 +945,7 @@
         }
       ],
       "et_verdict": "green",
-      "evidence": "client_tool_schemas_test.exs:125-146. The member's `invalid_tool/1` helper (:55-63) builds exactly the fixture's `invalid_object_header` class — an `x-mcp-header` on a property of `\"type\" => \"object\"` — so the counterpart check is unambiguous. The single axis is SILENT: the check's subject is whether the client CALLED the tool, and this member deliberately calls it, asserting instead that the call carries no headers (`assert [] = … Keyword.get(:headers, [])`). The two are not in conflict — the call here is the TEST's choice through `Client.call_tool/3`, not the client's own selection — but the assertion's subject is the headers, not the calling.",
+      "evidence": "client_tool_schemas_test.exs:125-146. The member's `invalid_tool/1` helper (client_tool_schemas_test.exs:55-63) builds exactly the fixture's `invalid_object_header` class — an `x-mcp-header` on a property of `\"type\" => \"object\"` — so the counterpart check is unambiguous. The single axis is SILENT: the check's subject is whether the client CALLED the tool, and this member deliberately calls it, asserting instead that the call carries no headers (`assert [] = Enum.at(MockTransport.sent_opts(transport), 1) |> Keyword.get(:headers, [])`). The two are not in conflict — the call here is the TEST's choice through `Client.call_tool/3`, not the client's own selection — but the assertion's subject is the headers, not the calling.",
       "note": "ALL AXES SILENT. Recorded and ESCALATED, never bucketed, per this file's all-silent rule. The question for the PM is narrow and worth asking: our client excludes the tool from tools/list and drops its annotations, but does not refuse a direct `call_tool/3` on the name. Whether SEP-2243's `MUST reject (exclude) such tools` reaches that far is a requirement reading, not an adjudication this file can make."
     },
     {
@@ -963,7 +963,7 @@
         }
       ],
       "et_verdict": "green",
-      "evidence": "client_tool_schemas_test.exs:97 — `assert Enum.map(tools, & &1[\"name\"]) == [\"good\", \"plain\"]` over a listing containing `invalid_tool(\"bad\")`, which is the fixture's `invalid_object_header` class. A JUDGEMENT rather than a reading, and said so in those words: the check's subject is `this.calledTools.has(e)` — the tool was never CALLED — and this assertion's subject is that it never reached the caller to be called. The behaviour the axis names, that an invalid tool is excluded, is the subject of both; the observation point differs."
+      "evidence": "client_tool_schemas_test.exs:97 — `assert Enum.map(tools, & &1[\"name\"]) == [\"good\", \"plain\"]` over a listing containing `invalid_tool(\"bad\")` (client_tool_schemas_test.exs:92), which is the fixture's `invalid_object_header` class. A JUDGEMENT rather than a reading, and said so in those words: the check's subject is `this.calledTools.has(e)` — the tool was never CALLED — and this assertion's subject is that it never reached the caller to be called. The behaviour the axis names, that an invalid tool is excluded, is the subject of both; the observation point differs."
     },
     {
       "member": {
@@ -1157,7 +1157,7 @@
         }
       ],
       "et_verdict": "green",
-      "evidence": "routing_headers_test.exs:368 — `refute Map.has_key?(headers, \"mcp-param-verbose\")` after calling with `\"verbose\" => nil`. The check reads that exact header on its own null-fixture tool and passes on `t===void 0`."
+      "evidence": "routing_headers_test.exs:368 — `refute Map.has_key?(headers, \"mcp-param-verbose\")` after calling with `\"verbose\" => nil` (routing_headers_test.exs:360-364). The check reads that exact header on its own null-fixture tool and passes on `t===void 0`."
     },
     {
       "member": {

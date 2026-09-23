@@ -64,6 +64,14 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
   * **A claim-level unmatched record against a member that carries no edge** —
     that member is state 3 whole and belongs in `declared_unmatched`, where
     bucket 1 counts it.
+  * **A quoted byte-string in a record's `evidence` that is not verbatim at an
+    address the evidence itself names** — G30. Ruling 7 is "an address AND the
+    bytes at it"; every sweep before this one established only the first half.
+    Two limbs: WINDOWING compares against the CITED span and so catches a
+    right-bytes/wrong-line citation, CONTIGUITY compares as one substring and so
+    catches a quote spliced from two real but non-adjacent lines. A bare `:N`
+    continuation is refused as a form, and an elision is refused rather than
+    fragment-matched.
   * **A population figure in this generator's own prose that the run did not
     derive** — G21. CR-1 (MES-104) interpolated every figure in the PROJECTOR
     and guarded it; this generator's statements were left as literals, and one
@@ -124,7 +132,7 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
 
   use Mix.Task
 
-  alias MCP.Conformance.{Argv, Crosswalk, Locator, MatchKey}
+  alias MCP.Conformance.{Argv, CitationVerbatim, Crosswalk, Locator, MatchKey}
 
   @switches [
     edges: [:string, :keep],
@@ -204,6 +212,13 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     keying = keying!(in_denominator)
     absence = absence_searches!(edges_docs)
 
+    citations =
+      citation_verbatim!(
+        edges_docs,
+        c1_axes["checks"] ++ a3_axes["checks"],
+        Keyword.get(opts, :harness)
+      )
+
     buckets = buckets!(cells, population)
     claim_level = claim_level!(edges_docs, cells)
 
@@ -233,6 +248,7 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       "cross_source_agreement" => agreement,
       "population" => population,
       "absence_search_guard" => absence,
+      "citation_verbatim_guard" => citations,
       "keying_control" => keying,
       "axis_provenance" => axis_bytes,
       "axis_span_provenance" => span_provenance,
@@ -897,6 +913,135 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
             )
         end
     end
+  end
+
+  # --- G30 — every quoted byte-string is verbatim at an address it names ------
+  #
+  # Ruling 7 is "an address AND the bytes at it". Every sweep before this one
+  # established the address half; MES-108 and MES-109 ran the byte half by hand
+  # over their OWN rows, each caught defects a careful read had passed, and each
+  # said in terms that the general guard was MES-112's. This is it, INSIDE the
+  # generator, where a bad citation cannot be committed because the artefact
+  # cannot be regenerated over it.
+  #
+  # THE RECORD POPULATION IS READ OFF THE FILE'S SHAPE, not off a list of
+  # collection names kept here. Every top-level list of objects is a record
+  # collection, so a collection added by a later ticket is inside the guard
+  # without anyone remembering to add it — the same reasoning G21 uses for its
+  # universe. A record carrying no `evidence` is VISITED and contributes
+  # nothing, and the two counts are reported side by side so the gap between
+  # them is on the face of the artefact rather than in this comment.
+  #
+  # THE WINDOWS ARE THE INSTRUMENT. ET is the cited line span in the repo; OC is
+  # the byte spans the axis row FOR THIS EDGE'S TAG addresses — not "somewhere
+  # in 800KB", because a quote only findable by searching the whole build is a
+  # quote with no address, which is the thing ruling 7 forbids. Each span is its
+  # OWN window, so a quote cannot be contiguous across two of them.
+  #
+  # WITHOUT `--harness` the OC spans cannot be read, and a quote the ET window
+  # does not place is then UNDETERMINABLE rather than wrong. That is a refusal,
+  # not a pass: MES-56's rule is that a silent skip reads absence as
+  # satisfaction. It costs nothing in practice — the committed artefact's own
+  # generation line passes `--harness`.
+  defp citation_verbatim!(edges_docs, axis_rows, harness_path) do
+    build = if harness_path, do: File.read!(harness_path)
+    squashed_build = if build, do: CitationVerbatim.squash(build)
+    records = Enum.flat_map(edges_docs, fn {path, doc} -> records_of(path, doc) end)
+
+    ctx = %{axes: axis_rows, build: build, squashed_build: squashed_build}
+    result = CitationVerbatim.audit(records, &Crosswalk.citation_windows(&1, ctx))
+
+    refuse_unless(result["defects"] == [], """
+    G30 — #{length(result["defects"])} quoted byte-string(s) in `evidence` are not verbatim at an
+    address the evidence names. Ruling 7 is an address AND the bytes at it, and every one of these
+    has the address without the bytes:
+    #{Enum.map_join(result["defects"], "\n", &("      " <> defect_line(&1)))}
+      The remedies, and there is no fourth: RE-ADDRESS it (the bytes are right and the line is
+      wrong), RE-LIFT it (write the bytes that are actually there), or DE-QUOTE it (a described
+      shape or an absent token is not a lift, so it does not wear backticks). An elision is
+      refused outright — fragment-matching `A … B` is the composed-quote hole re-opened.
+    """)
+
+    citation_verbatim_report(result)
+  end
+
+  # Every top-level list of objects, in the order the file writes them.
+  defp records_of(path, doc) do
+    for {key, value} <- doc,
+        is_list(value),
+        Enum.all?(value, &is_map/1),
+        value != [],
+        record <- value,
+        do: Map.merge(record, %{"__file" => Path.basename(path), "__collection" => key})
+  end
+
+  defp defect_line(d) do
+    "#{d["kind"]} — #{inspect(d["detail"])}\n        in: #{d["row"]}" <>
+      "\n        windows: #{Enum.join(d["windows_addressed"], ", ")}" <>
+      case d["windows_unavailable"] do
+        [] -> ""
+        why -> "\n        UNAVAILABLE: #{Enum.join(why, "; ")}"
+      end
+  end
+
+  # Every figure here is interpolated from the audit, and the prose deliberately
+  # counts RECORDS and QUOTES rather than members or checks: G21's scan reads
+  # digits followed by `member(s)`/`check(s)`, and a block that is not part of
+  # the population vocabulary cannot be mistaken for a population claim.
+  defp citation_verbatim_report(result) do
+    # `matched_in` names every window that placed a quote, which is a hundred
+    # keys that move whenever a cited line moves. The artefact carries the
+    # SUMMARY — derived from that map, never counted twice — and the controls
+    # take the full map from `audit/3`, where it is worth having.
+    by_side =
+      result["matched_in"]
+      |> Enum.group_by(fn {label, _} -> label |> String.split(":") |> hd() end, &elem(&1, 1))
+      |> Map.new(fn {side, counts} -> {side, Enum.sum(counts)} end)
+
+    result
+    |> Map.delete("matched_in")
+    |> Map.merge(%{
+      "guard" => "G30",
+      "quotes_placed_by_window_kind" => by_side,
+      "distinct_windows_that_placed_a_quote" => map_size(result["matched_in"]),
+      "what_was_checked" =>
+        "Every SOURCE-SHAPED backtick span in `evidence` — one carrying `=`, `(`, `[`, `!==` " <>
+          "or `===` — occurs VERBATIM and CONTIGUOUS, modulo runs of whitespace, inside a " <>
+          "window the evidence itself ADDRESSES: the cited `file.exs:N[-M]` span in the repo, " <>
+          "or a byte span the axis row for this edge's tag names in the harness build. Two " <>
+          "limbs: WINDOWING (the comparison is against the cited span, never the whole " <>
+          "artefact) catches a right-bytes/wrong-line citation; CONTIGUITY (one squashed " <>
+          "string, substring containment) catches a quote spliced from lines that are real " <>
+          "and non-adjacent. A bare `:N` continuation is refused as a FORM — it has no " <>
+          "syntactic referent and resolving it by proximity is guessing. An elision inside a " <>
+          "source-shaped span is refused rather than fragment-matched, because matching " <>
+          "`A … B`'s halves green-lights a quote whose parts sit arbitrarily far apart, which " <>
+          "is the composed-quote hole this guard exists to close.",
+      "reach" =>
+        "`quotes_compared` equals `quotes_counted`, and that attests exactly one thing: NO " <>
+          "QUOTE FAILED TO PLACE. It is NOT an independent recount, and by itself it is not " <>
+          "evidence of reach. Both figures come out of ONE traversal in `audit/3` — " <>
+          "`quotes_counted` is the length of the quote list that traversal built and " <>
+          "`quotes_compared` counts the members of that same list which matched — so the " <>
+          "equality is another spelling of `no quote-level defect`, and a sweep that read " <>
+          "NOTHING satisfies it at 0 == 0, as does one reading a field that does not exist. " <>
+          "What bears on reach here is the MAGNITUDE and never the equality: " <>
+          "`quotes_compared` quotes placed, over `records_with_evidence` records, over " <>
+          "`records_visited` visited. The independent recount — the span regex walked a " <>
+          "SECOND time over the same records by code that is not `audit/3` — and the " <>
+          "`counted > 0` that stops an empty population passing both live in " <>
+          "`conformance/controls/citation_verbatim_controls.exs`, not in this artefact. The " <>
+          "record population is every top-level list of objects in each edges file, so a " <>
+          "collection a later ticket adds is inside the guard without being named here.",
+      "what_it_does_not_establish" =>
+        "That a quote SUPPORTS the verdict it is filed under — that is a judgement and A3 " <>
+          "§7's residual, and no refusal reaches it. That a backticked PROSE phrase is " <>
+          "accurate: only source-shaped spans are compared, so an inaccurate paraphrase in " <>
+          "backticks passes, and the ruling's remedy is to de-quote prose rather than to " <>
+          "widen the shape test until English fails it. That a quoted byte-string in a field " <>
+          "OTHER than `evidence` is verbatim — the gap between `records_visited` and " <>
+          "`records_with_evidence` is exactly that population, reported rather than implied."
+    })
   end
 
   defp file_population!({path, doc}, etcc, attribution, sites, rows, axes, paths) do
@@ -2015,6 +2160,11 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
 
       absence searches  #{a["absence_search_guard"]["rows_checked"]} bucket-1 rows, all naming a search (G23a, leg-wide, no exceptions);
                         #{a["absence_search_guard"]["rows_naming_a_registered_search"]} of them name one of #{a["absence_search_guard"]["entries"]} registry entries re-run by the controls (G23b/c/d)
+
+      citations         #{a["citation_verbatim_guard"]["quotes_compared"]} quoted byte-strings compared verbatim at an address their own evidence names
+                        (G30, of #{a["citation_verbatim_guard"]["quotes_counted"]} counted over #{a["citation_verbatim_guard"]["records_with_evidence"]} of #{a["citation_verbatim_guard"]["records_visited"]} records).
+                        ONE traversal, so the equality attests that no quote failed to place, NOT reach;
+                        the independent recount and `counted > 0` are in the control. See `reach`.
 
       cross-source      #{a["cross_source_agreement"]["compared"]} checks compared against A5's bucket-0 artefact, #{length(a["cross_source_agreement"]["disagreements"])} disagreements (G16)
 

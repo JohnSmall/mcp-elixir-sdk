@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 399832,
+      "bytes": 404281,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "e36e1469ddf92bbd9bc38d36301c46fe2f57b6b00823562b4820d553981c1b85"
+      "sha256": "a2ea4e8917523d08a91a553d0639e984b74f012b21970509f8489f82f3479255"
     }
   },
   "revision": "2026-07-28",
@@ -71,7 +71,7 @@
       "bucket_attributes": [],
       "claim": "when the server sent no requestState, the retry carries no requestState KEY",
       "escalation": null,
-      "evidence": "client_defects_test.exs:90 — `refute Map.has_key?(retry[\"params\"], \"requestState\")` after an InputRequiredResult with the field absent. Key absence, not a nil value, which is the distinction the check's `!==undefined` test turns on.",
+      "evidence": "client_defects_test.exs:90 — `refute Map.has_key?(retry[\"params\"], \"requestState\")` after an InputRequiredResult with the field absent. Key absence, not a nil value, which is the distinction the check's undefined-test turns on. DE-QUOTED (MES-112, ruling 7): that test was written here as a quoted token, and no such literal occurs in the minified build — the minifier emits the void-0 form — so it was a description of the test's sense, never a lift of its bytes.",
       "member": {
         "module": "MCP.ClientDefectsTest",
         "register_key": "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an absent server requestState produces a retry with NO requestState key",
@@ -147,7 +147,7 @@
       ],
       "claim": "the retry's `_meta` protocolVersion is the version the server offered",
       "escalation": null,
-      "evidence": "client_defects_test.exs:308 — `assert retry[\"params\"][\"_meta\"][\"io.modelcontextprotocol/protocolVersion\"] == \"2026-07-28\"`. Driven through MockTransport, which has no HTTP layer, so the header axis is not merely unasserted — it is unreachable from this member.",
+      "evidence": "client_defects_test.exs:308-309 — `assert retry[\"params\"][\"_meta\"][\"io.modelcontextprotocol/protocolVersion\"] == \"2026-07-28\"`. Driven through MockTransport, which has no HTTP layer, so the header axis is not merely unasserted — it is unreachable from this member.",
       "member": {
         "module": "MCP.ClientDefectsTest",
         "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 naming a version we support is retried exactly once",
@@ -330,7 +330,7 @@
       "bucket_attributes": [],
       "claim": "every request's `_meta` carries both protocolVersion and clientCapabilities",
       "escalation": null,
-      "evidence": "client_test.exs:152 and :154 — `meta[\"io.modelcontextprotocol/protocolVersion\"] == \"2026-07-28\"` and `is_map(meta[\"io.modelcontextprotocol/clientCapabilities\"])`. Two assertions, one per conjunct of the check's `l=a&&c`.",
+      "evidence": "client_test.exs:152 and client_test.exs:154 — `meta[\"io.modelcontextprotocol/protocolVersion\"] == \"2026-07-28\"` and `is_map(meta[\"io.modelcontextprotocol/clientCapabilities\"])`. Two assertions, one per conjunct of the check's `l=a&&c`.",
       "member": {
         "module": "MCP.ClientTest",
         "register_key": "MCP.ClientTest/test per-request _meta every request carries protocolVersion + client identity/capabilities",
@@ -400,7 +400,7 @@
       "bucket_attributes": [],
       "claim": "the encoded `roots` capability is a JSON object",
       "escalation": null,
-      "evidence": "capabilities_test.exs:97 — `assert decoded[\"roots\"][\"listChanged\"] == true`. Indexing a key out of the decoded value entails it is a non-null, non-array object, which is the whole of the check's axis.",
+      "evidence": "capabilities_test.exs:98 — `assert decoded[\"roots\"][\"listChanged\"] == true`. Indexing a key out of the decoded value entails it is a non-null, non-array object, which is the whole of the check's axis.",
       "member": {
         "module": "MCP.Protocol.CapabilitiesTest",
         "register_key": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON",
@@ -435,7 +435,7 @@
       "bucket_attributes": [],
       "claim": "the encoded `sampling` capability is a JSON object",
       "escalation": null,
-      "evidence": "capabilities_test.exs:98 — `assert decoded[\"sampling\"] == %{}`. An empty map is a non-null, non-array object; equality with `%{}` establishes the type as well as the contents.",
+      "evidence": "capabilities_test.exs:99 — `assert decoded[\"sampling\"] == %{}`. An empty map is a non-null, non-array object; equality with `%{}` establishes the type as well as the contents.",
       "member": {
         "module": "MCP.Protocol.CapabilitiesTest",
         "register_key": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON",
@@ -932,7 +932,7 @@
       "bucket_attributes": [],
       "claim": "the NonAscii argument is mirrored as its exact Base64 sentinel",
       "escalation": null,
-      "evidence": "header_mirror_test.exs:355 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the `=?base64?…?=` shape AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both.",
+      "evidence": "header_mirror_test.exs:355 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the encoded-word sentinel SHAPE (an elision, de-quoted per MES-112: a described form is not a lift, and `A … B` is not fragment-matched) AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both.",
       "member": {
         "module": "MCP.Protocol.HeaderMirrorTest",
         "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
@@ -971,7 +971,7 @@
       "bucket_attributes": [],
       "claim": "the Whitespace argument is mirrored as its exact Base64 sentinel",
       "escalation": null,
-      "evidence": "header_mirror_test.exs:356 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the `=?base64?…?=` shape AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both.",
+      "evidence": "header_mirror_test.exs:356 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the encoded-word sentinel SHAPE (an elision, de-quoted per MES-112: a described form is not a lift, and `A … B` is not fragment-matched) AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both.",
       "member": {
         "module": "MCP.Protocol.HeaderMirrorTest",
         "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
@@ -1010,7 +1010,7 @@
       "bucket_attributes": [],
       "claim": "the LeadingSpace argument is mirrored as its exact Base64 sentinel",
       "escalation": null,
-      "evidence": "header_mirror_test.exs:357 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the `=?base64?…?=` shape AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both.",
+      "evidence": "header_mirror_test.exs:357 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the encoded-word sentinel SHAPE (an elision, de-quoted per MES-112: a described form is not a lift, and `A … B` is not fragment-matched) AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both.",
       "member": {
         "module": "MCP.Protocol.HeaderMirrorTest",
         "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
@@ -1049,7 +1049,7 @@
       "bucket_attributes": [],
       "claim": "the TrailingSpace argument is mirrored as its exact Base64 sentinel",
       "escalation": null,
-      "evidence": "header_mirror_test.exs:358 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the `=?base64?…?=` shape AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both.",
+      "evidence": "header_mirror_test.exs:358 — an equality against the sentinel for this one header. Exact equality with the encoding of the fixture's own value discharges the value axis: `Ka` takes the `Ga(t)` branch, requires the encoded-word sentinel SHAPE (an elision, de-quoted per MES-112: a described form is not a lift, and `A … B` is not fragment-matched) AND requires the decoded payload to equal the body value, and an equality with the correct sentinel entails both.",
       "member": {
         "module": "MCP.Protocol.HeaderMirrorTest",
         "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
@@ -1289,7 +1289,7 @@
       "bucket_attributes": [],
       "claim": "the `Method` annotation produces an Mcp-Param-Method header carrying the argument",
       "escalation": null,
-      "evidence": "header_mirror_test.exs:415 — `assert headers[\"mcp-param-method\"] == \"test-method\"`. The fixture's own description for this parameter names the case: `tests that x-mcp-header \"Method\" produces Mcp-Param-Method (not Mcp-Method)`.",
+      "evidence": "header_mirror_test.exs:415 — `assert headers[\"mcp-param-method\"] == \"test-method\"`. The fixture's own description for this parameter names the case in so many words — that an x-mcp-header of Method produces Mcp-Param-Method and not Mcp-Method. DE-QUOTED (MES-112, ruling 7), and this one is worth its sentence: those bytes ARE in the build, once, but at an offset OUTSIDE the four spans this row's axis addresses, so the backticks claimed an address this row does not name. The alternative — widening the row's spans in oc-axes-c1.json until the offset is covered — would edit C1a's artefact to make this citation pass, and is left as a note for whoever owns the axis rows rather than taken here.",
       "member": {
         "module": "MCP.Protocol.HeaderMirrorTest",
         "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method",
@@ -1394,7 +1394,7 @@
       "bucket_attributes": [],
       "claim": "a tool whose x-mcp-header sits on an object-typed property is dropped from tools/list",
       "escalation": null,
-      "evidence": "client_tool_schemas_test.exs:97 — `assert Enum.map(tools, & &1[\"name\"]) == [\"good\", \"plain\"]` over a listing containing `invalid_tool(\"bad\")`, which is the fixture's `invalid_object_header` class. A JUDGEMENT rather than a reading, and said so in those words: the check's subject is `this.calledTools.has(e)` — the tool was never CALLED — and this assertion's subject is that it never reached the caller to be called. The behaviour the axis names, that an invalid tool is excluded, is the subject of both; the observation point differs.",
+      "evidence": "client_tool_schemas_test.exs:97 — `assert Enum.map(tools, & &1[\"name\"]) == [\"good\", \"plain\"]` over a listing containing `invalid_tool(\"bad\")` (client_tool_schemas_test.exs:92), which is the fixture's `invalid_object_header` class. A JUDGEMENT rather than a reading, and said so in those words: the check's subject is `this.calledTools.has(e)` — the tool was never CALLED — and this assertion's subject is that it never reached the caller to be called. The behaviour the axis names, that an invalid tool is excluded, is the subject of both; the observation point differs.",
       "member": {
         "module": "MCP.ClientToolSchemasTest",
         "register_key": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept",
@@ -1768,7 +1768,7 @@
       "bucket_attributes": [],
       "claim": "on a real HTTP request, a null-valued annotated argument produces no header",
       "escalation": null,
-      "evidence": "routing_headers_test.exs:368 — `refute Map.has_key?(headers, \"mcp-param-verbose\")` after calling with `\"verbose\" => nil`. The check reads that exact header on its own null-fixture tool and passes on `t===void 0`.",
+      "evidence": "routing_headers_test.exs:368 — `refute Map.has_key?(headers, \"mcp-param-verbose\")` after calling with `\"verbose\" => nil` (routing_headers_test.exs:360-364). The check reads that exact header on its own null-fixture tool and passes on `t===void 0`.",
       "member": {
         "module": "MCP.Transport.RoutingHeadersTest",
         "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client a null argument omits its header",

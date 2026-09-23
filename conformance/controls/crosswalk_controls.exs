@@ -2349,16 +2349,28 @@ defmodule CrosswalkControls do
       ruling 7 defects that a careful read would have passed: the first is a plausible
       paraphrase of two real lines, and that is the kind a human eye is worst at.
 
-      It is NOT MES-112. MES-112 is the guard INSIDE the generator, over every row of
-      every edges file, where a bad citation cannot be committed at all. Run over the
-      inherited C1a and C1b-i rows this same audit reports 18 quotes it cannot place:
-      8 with a stale ADDRESS (content present 1-5 lines away, or line-wrapped across the
-      cited line), 5 deliberate ellipsis paraphrases, 3 prose descriptions quoted as if
-      they were source, and 2 bare continuations. None is a wrong FACT; all are
-      addresses that have drifted or were never exact. They are C1a's and C1b-i's rows
-      and re-addressing them is not MES-108's to do, so they are REPORTED and left —
-      which is also why this mode scopes itself to MES-108's rows and says so, rather
-      than going red on work it is not adjudicating.
+      It is NOT MES-112, AND MES-112 HAS SINCE LANDED. MES-112 is G30, the guard INSIDE
+      the generator, over every row of every edges file, where a bad citation cannot be
+      committed at all — `MCP.Conformance.CitationVerbatim`, with its own controls in
+      `conformance/controls/citation_verbatim_controls.exs`.
+
+      WHAT THIS PARAGRAPH USED TO SAY, and why it no longer does. It reported that over
+      the inherited C1a and C1b-i rows this same audit found 18 quotes it could not
+      place — 8 stale addresses, 5 ellipsis paraphrases, 3 prose descriptions quoted as
+      if source, 2 bare continuations — and that re-addressing them was not MES-108's to
+      do, so they were REPORTED and left. MES-112 fixed all 18 (8 re-addressed, 2 bares
+      written out in full, 2 re-lifted, 6 de-quoted; the classification moved because
+      G30 separates an elision from a wrong address, and because one `prose` case turned
+      out to be real bytes OUTSIDE the row's addressed spans). So the number is now zero
+      and the sentence is kept as history rather than as a live count.
+
+      THIS MODE STILL SCOPES ITSELF TO MES-108'S AND MES-109'S ROWS, and that is no
+      longer a way of not going red on other people's work — G30 now quantifies over
+      every row, so nothing is left unadjudicated by scope. What it remains is a SECOND,
+      INDEPENDENT implementation of the same comparison over the rows those tickets
+      authored: written before G30 and not sharing its code, so it corroborates rather
+      than restates. If the two ever disagree, one of them is wrong and that is worth
+      knowing.
     """)
   end
 
