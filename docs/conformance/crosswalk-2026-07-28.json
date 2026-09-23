@@ -1,25 +1,25 @@
 {
   "absence_search_guard": {
-    "distinct_searches_those_rows_name": 38,
-    "entries": 38,
-    "leg_wide_limb": "G23a ran over ALL 102 declared-unmatched rows in this run, with no exception list, and requires a non-empty `the_search_that_found_none` on each.",
+    "distinct_searches_those_rows_name": 43,
+    "entries": 43,
+    "leg_wide_limb": "G23a ran over ALL 112 declared-unmatched rows in this run, with no exception list, and requires a non-empty `the_search_that_found_none` on each.",
     "registry_limb_reach": "G23b/c/d reach the rows carrying a `search_id`. The rows without one carry a PROSE search that was run and recorded but not registered in a re-runnable form; back-filling a registry entry for a search this run did not re-measure would be inventing the measurement, which is the defect the field exists to prevent. Stated as a bound, not papered over.",
-    "rows_checked": 102,
-    "rows_naming_a_registered_search": 76,
+    "rows_checked": 112,
+    "rows_naming_a_registered_search": 86,
     "what_a_green_here_is_not": "Evidence that any search was well-chosen. G23 checks that a search is NAMED, RUNNABLE and REACHED its population. Whether the population was the right one to look in, and whether the member's claim is really what the search looked for, are judgements — they are carried on the row in `why_this_search_is_this_claims_search` so a reader can disagree with them, and no refusal can reach them."
   },
   "arithmetic": {
-    "bucketed": 108,
-    "edges": 122,
+    "bucketed": 122,
+    "edges": 136,
     "equation": "edges = bucketed + escalated",
     "escalated": 14,
-    "members": 172,
-    "members_declared_unmatched": 102,
+    "members": 188,
+    "members_declared_unmatched": 112,
     "members_equation": "population members = members with >=1 edge + members declared unmatched",
-    "members_with_edges": 70
+    "members_with_edges": 76
   },
   "axis_provenance": {
-    "axes_checked": 205,
+    "axes_checked": 312,
     "harness_checked": true,
     "harness_dist_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
     "harness_read_from": "/tmp/conf11/node_modules/@modelcontextprotocol/conformance/dist/index.js",
@@ -27,9 +27,9 @@
   },
   "axis_span_provenance": {
     "checked_against": "docs/conformance/oc-emitting-sites-2026-07-28.json",
-    "locator_row": 103,
+    "locator_row": 144,
     "locator_row_rejected": 4,
-    "rows": 107,
+    "rows": 148,
     "what_this_does_not_establish": "That a rejected row's span is the RIGHT one. It establishes that the row is not claiming the locator's authority for a span the locator did not give it. The bytes at the span are checked separately, and only when --harness is given.",
     "what_was_checked": "For every `locator_row` row, the committed `emitting_byte_span` is one the locator names for that row's key. For every `locator_row_rejected` row, the locator's own `rung_pin_level` is NOT `row`, the span used is NOT one the locator names, and a reason is recorded. An unknown provenance value is refused."
   },
@@ -40,7 +40,7 @@
       "owner": "A5 = MES-70, docs/conformance/bucket-0-2026-07-28.json"
     },
     "bucket_1": {
-      "count": 102,
+      "count": 112,
       "members": [
         "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
         "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
@@ -93,6 +93,10 @@
         "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector no header carries a raw CR or LF — injection is closed by construction",
         "MCP.Protocol.Messages.DiscoverTest/test from_map/1 round-trips the schema shape",
         "MCP.Protocol.MetaTest/test from_params/1 extracts the io.modelcontextprotocol/* keys",
+        "MCP.Protocol.Types.ContentTest/test ResourceLink round-trips through JSON",
+        "MCP.Protocol.Types.ToolTest/test JSON encoding omits nil fields",
+        "MCP.Protocol.Types.ToolTest/test inputSchema keywords beyond `type` are carried verbatim, including `not` and `$anchor`",
+        "MCP.Protocol.Types.ToolTest/test outputSchema is carried verbatim, and false is not an absence an absent outputSchema is still absent",
         "MCP.ProtocolTest/test decode/1 decodes a success response",
         "MCP.ProtocolTest/test decode/1 decodes an error response",
         "MCP.Server.NotificationCollectorTest/test drain returns pushed notifications as wire maps, in emission order (G3)",
@@ -107,6 +111,12 @@
         "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset a URI this principal may not observe is absent from the ack",
         "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset a handler may refuse the subscription outright",
         "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset the two refusals that never reach the handler stay {:reply, ...}",
+        "MCP.Server.ToolOrderTest/test BOUND — sorting is per RESPONSE; a paginated listing is not made deterministic",
+        "MCP.Server.ToolOrderTest/test CONTROL-1 — :tool_order = :handler keeps a curated non-alphabetical order verbatim",
+        "MCP.Server.ToolOrderTest/test CONTROL-2 (discriminates nothing) — an already-deterministic handler is unaffected",
+        "MCP.Server.ToolOrderTest/test SUBJECT — one instance answers in the same order on every request",
+        "MCP.Server.ToolOrderTest/test SUBJECT — the default order is by name, and the tool SET is untouched",
+        "MCP.Server.ToolOrderTest/test SUBJECT — two instances holding the same tool set answer in the same order",
         "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a NOTIFICATION carries it too — the spec says all requests, not all responses-bearing ones",
         "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a message with no method carries no routing headers",
         "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client with no prior tools/list, nothing is mirrored and the client says so",
@@ -146,7 +156,7 @@
         "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the response carries the SSE headers the spec SHOULDs"
       ],
       "rule": "an ET-CC member of the declared population with NO edge — A3 §6 state 3",
-      "universe": "the 172 declared members, never all 281"
+      "universe": "the 188 declared members, never all 281"
     },
     "bucket_2": {
       "checks": [
@@ -164,6 +174,8 @@
         "oc:client/sep-2322-client-request-state/sep-2322-client-jsonrpc-id-different/MRTRClientJsonRpcIdDifferent",
         "oc:client/sep-2322-client-request-state/sep-2322-client-parallel-isolation/MRTRClientParallelIsolation",
         "oc:client/sep-2322-client-request-state/sep-2322-default-result-type-complete/DefaultResultTypeComplete",
+        "oc:server/completion-complete/completion-complete/CompletionComplete",
+        "oc:server/completion-complete/wire-schema-valid/WireSchemaValid",
         "oc:server/input-required-result-basic-elicitation/sep-2322-elicitation-complete/InputRequiredResultElicitationComplete",
         "oc:server/input-required-result-basic-elicitation/sep-2322-elicitation-incomplete/InputRequiredResultElicitationIncomplete",
         "oc:server/input-required-result-basic-elicitation/wire-schema-valid/WireSchemaValid",
@@ -194,6 +206,25 @@
         "oc:server/input-required-result-validate-input/sep-2322-error-on-protocol-error/ErrorOnProtocolError",
         "oc:server/input-required-result-validate-input/sep-2322-validate-input-responses/ValidateInputResponses",
         "oc:server/input-required-result-validate-input/wire-schema-valid/WireSchemaValid",
+        "oc:server/prompts-get-embedded-resource/wire-schema-valid/WireSchemaValid",
+        "oc:server/prompts-get-simple/prompts-get-simple/PromptsGetSimple",
+        "oc:server/prompts-get-simple/wire-schema-valid/WireSchemaValid",
+        "oc:server/prompts-get-with-args/prompts-get-with-args/PromptsGetWithArgs",
+        "oc:server/prompts-get-with-args/wire-schema-valid/WireSchemaValid",
+        "oc:server/prompts-get-with-image/wire-schema-valid/WireSchemaValid",
+        "oc:server/prompts-list/prompts-list/PromptsList",
+        "oc:server/prompts-list/wire-schema-valid/WireSchemaValid",
+        "oc:server/resources-list/wire-schema-valid/WireSchemaValid",
+        "oc:server/resources-read-binary/resources-read-binary/ResourcesReadBinary",
+        "oc:server/resources-read-binary/wire-schema-valid/WireSchemaValid",
+        "oc:server/resources-read-text/resources-read-text/ResourcesReadText",
+        "oc:server/resources-read-text/wire-schema-valid/WireSchemaValid",
+        "oc:server/resources-templates-read/resources-templates-read/ResourcesTemplateRead",
+        "oc:server/resources-templates-read/wire-schema-valid/WireSchemaValid",
+        "oc:server/sep-2164-resource-not-found/sep-2164-data-uri/ResourcesNotFoundDataUri",
+        "oc:server/sep-2164-resource-not-found/sep-2164-error-code/ResourcesNotFoundErrorCode",
+        "oc:server/sep-2164-resource-not-found/sep-2164-no-empty-contents/ResourcesNotFoundNoEmptyContents",
+        "oc:server/sep-2164-resource-not-found/wire-schema-valid/WireSchemaValid",
         "oc:server/server-stateless/sep-2575-http-server-header-mismatch-400/HttpServerHeaderMismatch400",
         "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities",
         "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-meta",
@@ -209,16 +240,24 @@
         "oc:server/server-stateless/sep-2575-server-no-log-without-loglevel/ServerNoLogWithoutLogLevel",
         "oc:server/server-stateless/sep-2575-server-rejects-undeclared-capability/ServerRejectsUndeclaredCapability",
         "oc:server/server-stateless/sep-2575-server-sends-prompts-list-changed-on-subscription/ServerSendsPromptsListChangedOnSubscription",
-        "oc:server/server-stateless/sep-2575-server-sends-tools-list-changed-on-subscription/ServerSendsToolsListChangedOnSubscription"
+        "oc:server/server-stateless/sep-2575-server-sends-tools-list-changed-on-subscription/ServerSendsToolsListChangedOnSubscription",
+        "oc:server/tools-call-audio/wire-schema-valid/WireSchemaValid",
+        "oc:server/tools-call-error/tools-call-error/ToolsCallError",
+        "oc:server/tools-call-error/wire-schema-valid/WireSchemaValid",
+        "oc:server/tools-call-mixed-content/wire-schema-valid/WireSchemaValid",
+        "oc:server/tools-call-with-progress/tools-call-with-progress/ToolsCallWithProgress",
+        "oc:server/tools-call-with-progress/wire-schema-valid/WireSchemaValid",
+        "oc:server/tools-list/tools-name-format/ToolsNameFormat",
+        "oc:server/tools-list/wire-schema-valid/WireSchemaValid"
       ],
-      "count": 60,
+      "count": 89,
       "declared": true,
-      "result": "60 of the 120 declared checks carry no edge from any ET-CC member of the declared member population",
+      "result": "89 of the 161 declared checks carry no edge from any ET-CC member of the declared member population",
       "rule": "a check in a DECLARED check population that carries no edge",
-      "universe": "the 120 declared checks, never all 173",
+      "universe": "the 161 declared checks, never all 173",
       "why_not_the_rest_of_the_173": "The in-denominator checks outside every declared check population are NOT bucket 2. Bucket 2 is 'we adjudicated and found no ET counterpart'; those were not adjudicated."
     },
-    "bucket_5_partial_sub_count": 25,
+    "bucket_5_partial_sub_count": 36,
     "empty_by_construction": {
       "bucket_3": "green OC / red ET — 0",
       "bucket_6": "red in both — 0",
@@ -228,7 +267,7 @@
     "from_edges": {
       "4a": 5,
       "4b": 6,
-      "5": 97
+      "5": 111
     }
   },
   "cells": [
@@ -4982,6 +5021,682 @@
     {
       "axes": [
         {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_is_a_json_array",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_is_not_empty",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_text",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_text_block_carries_a_text_field",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a TextContent encodes to the wire with the discriminator `text` synthesised by the encoder, and with its text carried",
+      "escalation": null,
+      "evidence": "content_test.exs:42 — `decoded[\"type\"] == \"text\"` — and content_test.exs:43 — `decoded[\"text\"] == \"test\"`. The struct is built at content_test.exs:38 with no type field given, so the discriminator is SYNTHESISED on encode rather than echoed from the input, which is what makes this a claim about the SDK rather than about the fixture. Those two assertions are the check's two content-block axes: the harness selects a block whose type is the wire literal `text` and then requires that block's text field to be non-empty. The three silent axes are about the tools/call RESULT's `content` member — that it is present, that it is a JSON array, and that it is not empty. A unit that encodes ONE content block and decodes it back never constructs a result, so it neither agrees nor disagrees with any of them: it is silent by the GRAIN of the claim and not by a reading of it. Read per MEMBER rather than per edge, those three axes are covered by `MCP.Server.DispatchTest`'s tools/call rows, which are C1c-i's.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test TextContent round-trips through JSON",
+        "test": "test TextContent round-trips through JSON"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "tools-call-simple-text",
+        "tools-call-simple-text",
+        "ToolsCallSimpleText",
+        "Tool returns simple text content",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_carries_at_least_two_blocks",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_text",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "a_content_block_has_type_image",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_resource",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a TextContent encodes to the wire with the discriminator `text` synthesised by the encoder",
+      "escalation": null,
+      "evidence": "content_test.exs:42 — `decoded[\"type\"] == \"text\"`. This check's text axis is the same observation its `simple-text` sibling makes, which is why the same claim reaches both: the harness runs one generic `some` over the content array per type. The two image and resource axes are OTHER content types' and are reached by this member's siblings in the same module, so per MEMBER the module covers three of this check's five axes and per EDGE each covers one.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test TextContent round-trips through JSON",
+        "test": "test TextContent round-trips through JSON"
+      },
+      "note": "WHY THIS IS THREE EDGES FROM THREE MEMBERS AND NOT ONE. `ToolsCallMixedContent` has one axis per content type, and `MCP.Protocol.Types.ContentTest` has one member per content type, so the natural join is three edges each agreeing with a different axis and silent on the others. Filing one edge from one member would have reported four silences where the module in fact answers three of them.",
+      "oc_key": [
+        "server",
+        "tools-call-mixed-content",
+        "tools-call-mixed-content",
+        "ToolsCallMixedContent",
+        "Tool returns multiple content types",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-mixed-content/tools-call-mixed-content/ToolsCallMixedContent",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "no_schema_violation_in_a_message_the_implementation_sent",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the wire object a TextContent encodes to carries exactly the members the pinned schema's TextContent definition requires, and no unset optional ones",
+      "escalation": null,
+      "evidence": "content_test.exs:42 — `decoded[\"type\"] == \"text\"` — content_test.exs:43 — `decoded[\"text\"] == \"test\"` — and the two refutes at content_test.exs:44 and content_test.exs:45. The 2026-07-28 schema's TextContent definition requires exactly text and type, at build bytes 310112-310171, so the two asserts are exactly the required set and the two refutes are on members the same definition types optional. The address and the required list are recorded in this ticket's `the_schema_question_this_slice_asked_and_the_answer_it_got` on the axis file.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test TextContent round-trips through JSON",
+        "test": "test TextContent round-trips through JSON"
+      },
+      "note": "AGREEMENT AT A COARSER GRAIN THAN THE AXIS, AND THE RESIDUAL IS STATED RATHER THAN BURIED. The axis quantifies over every JSON-RPC MESSAGE the implementation sent in the scenario; this unit encodes one CONTENT BLOCK in isolation and runs no validator. So it is evidence FOR the axis — a necessary condition of a message carrying that block validating — and not a proof of it. A reader who thinks the grain matters should read this as silent, and the difference is stated so that they can, which is the precedent C1c-ii set on `IgnoreUnexpectedParams`.\nONE EDGE, NOT NINETEEN. The reading holds against all nineteen `WireSchemaValid` rows this slice declares, because all nineteen are one generic validator at one span. Nineteen edges would be one fact counted nineteen times — C1c-ii's rule, applied to an agreement rather than to a contradiction. The row chosen is the scenario whose fixture content is of this member's type.",
+      "oc_key": [
+        "server",
+        "tools-call-simple-text",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/tools-call-simple-text/wire-schema-valid/WireSchemaValid",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_image",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_image_block_carries_a_data_field",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_image_block_carries_a_mime_type_field",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "an ImageContent encodes to the wire with the discriminator `image`, its base64 data, and its media type under the camelCase key `mimeType`",
+      "escalation": null,
+      "evidence": "content_test.exs:65 — `decoded[\"type\"] == \"image\"` — content_test.exs:66 — `decoded[\"data\"] == \"abc\"` — and content_test.exs:67 — `decoded[\"mimeType\"] == \"image/jpeg\"`. Three of this check's four axes, and the mimeType one is the load-bearing one: the struct is built at content_test.exs:61 with `mime_type`, snake_case, so the camelCase key on the wire is the encoder's work. The silent axis is about the tools/call result's `content` member, which a unit encoding one block does not construct.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test ImageContent round-trips through JSON",
+        "test": "test ImageContent round-trips through JSON"
+      },
+      "note": "THIS CHECK HAS NO ARRAY-TYPE OR EMPTINESS AXIS, unlike its `simple-text` and `audio` siblings — the harness's own asymmetry, recorded on the axis row. So this edge has one silence where the sibling edges have three, and the difference is the CHECK's shape rather than this member's coverage.",
+      "oc_key": [
+        "server",
+        "tools-call-image",
+        "tools-call-image",
+        "ToolsCallImage",
+        "Tool returns image content",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-image/tools-call-image/ToolsCallImage",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_carries_at_least_two_blocks",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_text",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_image",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "a_content_block_has_type_resource",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "an ImageContent encodes to the wire with the discriminator `image`",
+      "escalation": null,
+      "evidence": "content_test.exs:65 — `decoded[\"type\"] == \"image\"`. The image limb of this check's three content-type axes; its text and resource limbs are this member's two siblings'.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test ImageContent round-trips through JSON",
+        "test": "test ImageContent round-trips through JSON"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "tools-call-mixed-content",
+        "tools-call-mixed-content",
+        "ToolsCallMixedContent",
+        "Tool returns multiple content types",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-mixed-content/tools-call-mixed-content/ToolsCallMixedContent",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_messages_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "some_message_carries_an_image_block_with_data_and_mime_type",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "an ImageContent encodes to the wire with the discriminator `image` AND both its data and camelCase `mimeType` present",
+      "escalation": null,
+      "evidence": "content_test.exs:65 — `decoded[\"type\"] == \"image\"` — content_test.exs:66 — `decoded[\"data\"] == \"abc\"` — and content_test.exs:67 — `decoded[\"mimeType\"] == \"image/jpeg\"`. This check's second axis is a single conjunction of exactly those three field tests inside one `some`, so all three of this unit's assertions land on ONE axis rather than three. The silent axis is about the prompts/get result carrying a messages member, which this unit does not construct.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test ImageContent round-trips through JSON",
+        "test": "test ImageContent round-trips through JSON"
+      },
+      "note": "THE STRONGEST AGREEMENT IN THE SLICE, AND ITS STRENGTH IS THE CHECK'S WEAKNESS. The axis is one conjunction, so a server returning an image block without `mimeType` fails it with the message `No image content found in prompt` — which names the wrong thing. This unit asserts each conjunct separately and would say which one broke. That is the ET side being finer-grained than the OC side, which is the opposite of the usual direction and worth recording as such.",
+      "oc_key": [
+        "server",
+        "prompts-get-with-image",
+        "prompts-get-with-image",
+        "PromptsGetWithImage",
+        "Get prompt with image content",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/prompts-get-with-image/prompts-get-with-image/PromptsGetWithImage",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "no_schema_violation_in_a_message_the_implementation_sent",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the wire object an ImageContent encodes to carries exactly the members the pinned schema's ImageContent definition requires",
+      "escalation": null,
+      "evidence": "content_test.exs:65, content_test.exs:66 and content_test.exs:67 assert `decoded[\"type\"] == \"image\"`, `decoded[\"data\"] == \"abc\"` and `decoded[\"mimeType\"] == \"image/jpeg\"`. The 2026-07-28 schema's ImageContent definition requires data, mimeType and type, at build bytes 248500-248571 — all three, and this unit asserts all three.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test ImageContent round-trips through JSON",
+        "test": "test ImageContent round-trips through JSON"
+      },
+      "note": "SAME GRAIN RESIDUAL AND SAME ONE-EDGE-NOT-NINETEEN RULE as the TextContent row; not restated. What IS particular here: this is one of only three content members whose assertions cover its definition's whole required set, which is why only three of the five carry a `WireSchemaValid` edge at all. The other two are named in the AudioContent edge's note.",
+      "oc_key": [
+        "server",
+        "tools-call-image",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/tools-call-image/wire-schema-valid/WireSchemaValid",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_is_a_json_array",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_is_not_empty",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_audio",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_audio_block_carries_a_data_field",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_audio_block_carries_a_mime_type_field",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_audio_mime_type_is_exactly_audio_wav",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "an AudioContent encodes to the wire with the discriminator `audio` and its media type under the camelCase key `mimeType`",
+      "escalation": null,
+      "evidence": "content_test.exs:87 — `decoded[\"type\"] == \"audio\"` — and content_test.exs:88 — `decoded[\"mimeType\"] == \"audio/mp3\"`. Two of this check's seven axes. The three silent axes are about the tools/call RESULT's `content` member — that it is present, that it is a JSON array, and that it is not empty. A unit that encodes ONE content block and decodes it back never constructs a result, so it neither agrees nor disagrees with any of them: it is silent by the GRAIN of the claim and not by a reading of it. Read per MEMBER rather than per edge, those three axes are covered by `MCP.Server.DispatchTest`'s tools/call rows, which are C1c-i's.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test AudioContent round-trips through JSON",
+        "test": "test AudioContent round-trips through JSON"
+      },
+      "note": "TWO SILENCES HERE ARE FINDINGS RATHER THAN ARITHMETIC, AND THEY POINT IN OPPOSITE DIRECTIONS.\n(1) `the_audio_block_carries_a_data_field` is silent because THIS UNIT DOES NOT ASSERT `data`, while its ImageContent sibling twenty-two lines earlier does. The encoded value carries it — the struct is built at content_test.exs:83 with a data field — so nothing on the wire violates the schema's AudioContent definition, which requires data, mimeType and type, at build bytes 220057-220128. But the unit would not notice if `data` stopped being emitted. That is a gap in OUR TEST, found by putting the pinned schema to the member, and it is why this member carries no `WireSchemaValid` edge where TextContent and ImageContent do.\n(2) `the_audio_mime_type_is_exactly_audio_wav` is silent AND NOT `contradicts`, and the distinction is worth being explicit about because the surfaces look like they disagree: the check requires the media type to be the literal `audio/wav`, and this unit round-trips `audio/mp3`. They are not the same subject. The check scores which media type the server's own `test_audio_content` tool returns — a FIXTURE agreement, as the axis row records, with no spec rule behind it. The unit scores whether the encoder carries whatever media type it is handed. Both are true at once, and the unit is in fact a demonstration that the SDK would faithfully emit a value that fails the check. Recorded as silent on that ground and not on a preference for silence.",
+      "oc_key": [
+        "server",
+        "tools-call-audio",
+        "tools-call-audio",
+        "ToolsCallAudio",
+        "Tool returns audio content",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-audio/tools-call-audio/ToolsCallAudio",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_is_a_json_array",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_is_not_empty",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_resource",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_resource_block_carries_a_nested_resource_object",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_nested_resource_carries_a_uri",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_nested_resource_carries_a_mime_type",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_nested_resource_carries_text_or_blob",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "an EmbeddedResource encodes to the wire with the discriminator `resource` and a NESTED resource object carrying its uri and text",
+      "escalation": null,
+      "evidence": "content_test.exs:120 — `decoded[\"type\"] == \"resource\"` — content_test.exs:121 — `decoded[\"resource\"][\"uri\"] == \"file:///a.txt\"` — and content_test.exs:122 — `decoded[\"resource\"][\"text\"] == \"hello\"`. Four of this check's eight axes, and the two nested reads are what carry the NESTING axis: asserting `decoded[\"resource\"][\"uri\"]` at all requires the resource to be a nested object rather than flattened, so that axis and the uri axis are one observation read at two grains and not an inference. The discriminator is the wire literal `resource` and not `embedded_resource`, which is the axis row's own note. The three silent axes are about the tools/call RESULT's `content` member — that it is present, that it is a JSON array, and that it is not empty. A unit that encodes ONE content block and decodes it back never constructs a result, so it neither agrees nor disagrees with any of them: it is silent by the GRAIN of the claim and not by a reading of it. Read per MEMBER rather than per edge, those three axes are covered by `MCP.Server.DispatchTest`'s tools/call rows, which are C1c-i's.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test EmbeddedResource round-trips through JSON",
+        "test": "test EmbeddedResource round-trips through JSON"
+      },
+      "note": "`the_nested_resource_carries_a_mime_type` IS SILENT AND IT IS THE SLICE'S SECOND TEST-SIDE GAP. The check requires the nested resource to carry a camelCase `mimeType`; this unit builds a ResourceContents at content_test.exs:114 with only uri and text and asserts only those two. The schema does NOT require it — the TextResourceContents definition requires only text and uri, at build bytes 310556-310624 — so the silence is honest rather than a violation, and the check is stricter than the schema here. Both facts are worth having: the OC check asks for more than the spec does, and our unit asks for less than the OC check does.",
+      "oc_key": [
+        "server",
+        "tools-call-embedded-resource",
+        "tools-call-embedded-resource",
+        "ToolsCallEmbeddedResource",
+        "Tool returns embedded resource content",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-embedded-resource/tools-call-embedded-resource/ToolsCallEmbeddedResource",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_carries_at_least_two_blocks",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_text",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_image",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_resource",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "an EmbeddedResource encodes to the wire with the discriminator `resource`",
+      "escalation": null,
+      "evidence": "content_test.exs:120 — `decoded[\"type\"] == \"resource\"`. The resource limb of this check's three content-type axes; its text and image limbs are this member's two siblings'.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test EmbeddedResource round-trips through JSON",
+        "test": "test EmbeddedResource round-trips through JSON"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "tools-call-mixed-content",
+        "tools-call-mixed-content",
+        "ToolsCallMixedContent",
+        "Tool returns multiple content types",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-mixed-content/tools-call-mixed-content/ToolsCallMixedContent",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_messages_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "some_message_carries_an_embedded_resource",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "an EmbeddedResource encodes to the wire with the discriminator `resource` and a nested resource object",
+      "escalation": null,
+      "evidence": "content_test.exs:120 — `decoded[\"type\"] == \"resource\"` — and content_test.exs:121 — `decoded[\"resource\"][\"uri\"] == \"file:///a.txt\"`. This check's axis is a DISJUNCTION — a block whose type is the wire literal `resource`, OR a block carrying a resource member under any discriminator — and this unit satisfies both limbs, so the agreement does not depend on which limb the harness's own fixture takes.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test EmbeddedResource round-trips through JSON",
+        "test": "test EmbeddedResource round-trips through JSON"
+      },
+      "note": "THE AXIS IS WEAKER THAN ITS `tools-call` COUNTERPART AND THE EDGE IS STRONGER FOR IT. Because the axis is a disjunction over the discriminator, it does not actually pin the wire spelling; this unit does. So the ET side establishes the thing the OC side was trying to establish and did not. Recorded because a bucket-5 agreement between a strong claim and a weak check is not the same result as an agreement between two strong ones, and the buckets do not distinguish them.",
+      "oc_key": [
+        "server",
+        "prompts-get-embedded-resource",
+        "prompts-get-embedded-resource",
+        "PromptsGetEmbeddedResource",
+        "Get prompt with embedded resource",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/prompts-get-embedded-resource/prompts-get-embedded-resource/PromptsGetEmbeddedResource",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "no_schema_violation_in_a_message_the_implementation_sent",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the wire object an EmbeddedResource encodes to carries the members the pinned schema's EmbeddedResource definition requires, nested value included",
+      "escalation": null,
+      "evidence": "content_test.exs:120, content_test.exs:121 and content_test.exs:122 assert `decoded[\"type\"] == \"resource\"`, `decoded[\"resource\"][\"uri\"] == \"file:///a.txt\"` and `decoded[\"resource\"][\"text\"] == \"hello\"`. The 2026-07-28 schema's EmbeddedResource definition is requires resource and type, at build bytes 242778-242845, and the nested value must match an disjunction over TextResourceContents / BlobResourceContents, of which the first requires text and uri, at build bytes 310556-310624. This unit asserts the outer pair and both members of the inner one, so the whole required set including the nesting.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test EmbeddedResource round-trips through JSON",
+        "test": "test EmbeddedResource round-trips through JSON"
+      },
+      "note": "SAME GRAIN RESIDUAL AND SAME ONE-EDGE-NOT-NINETEEN RULE as the TextContent row; not restated.",
+      "oc_key": [
+        "server",
+        "tools-call-embedded-resource",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/tools-call-embedded-resource/wire-schema-valid/WireSchemaValid",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_tools_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "tools_is_a_json_array",
+          "verdict": "silent"
+        },
+        {
+          "axis": "every_tool_has_a_name",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_tool_has_a_description",
+          "verdict": "silent"
+        },
+        {
+          "axis": "every_tool_has_an_input_schema",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a Tool encodes to the wire with its name and with its input schema under the camelCase key `inputSchema`, and the snake_case form does not appear",
+      "escalation": null,
+      "evidence": "tool_test.exs:79 — `decoded[\"name\"] == \"get_weather\"` — tool_test.exs:80 — `decoded[\"inputSchema\"][\"type\"] == \"object\"` — and tool_test.exs:81 — `refute Map.has_key?(decoded, \"input_schema\")`. The inputSchema axis is the sharp one: the struct field is `input_schema` and the refute at tool_test.exs:81 is what makes the camelCase key on the wire a property of the encoder rather than of the fixture. The two silent axes are about the tools/list RESULT's `tools` member; the description axis is silent because this unit asserts nothing about `description`, which the fixture at tool_test.exs:9 does carry — so the silence is the unit's choice of assertions, not an absence in the data.",
+      "member": {
+        "module": "MCP.Protocol.Types.ToolTest",
+        "register_key": "MCP.Protocol.Types.ToolTest/test JSON encoding round-trips through JSON with camelCase keys",
+        "test": "test JSON encoding round-trips through JSON with camelCase keys"
+      },
+      "note": "WHAT THIS EDGE DOES NOT REACH, SAID HERE BECAUSE THE AXIS NAME INVITES THE MISREADING. `every_tool_has_an_input_schema` is a TRUTHINESS test — the harness does `e.inputSchema||...` and never looks inside — so this edge establishes that the key is spelled right and present, and nothing about what survives inside it. The member that DOES claim the contents survive is this module's keyword-preservation unit, and it is bucket 1 under SRV23 rather than a second edge onto this row, because the axis it would need does not exist on the server leg at all.",
+      "oc_key": [
+        "server",
+        "tools-list",
+        "tools-list",
+        "ToolsList",
+        "Server lists available tools with valid structure",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-list/tools-list/ToolsList",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_resources_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "resources_is_a_json_array",
+          "verdict": "silent"
+        },
+        {
+          "axis": "every_resource_has_a_uri",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_resource_has_a_name",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a Resource encodes to the wire with its uri and with its media type under the camelCase key `mimeType`, and the snake_case form does not appear",
+      "escalation": null,
+      "evidence": "resource_test.exs:50 — `decoded[\"uri\"] == \"file:///project/readme.md\"` — resource_test.exs:51 — `decoded[\"mimeType\"] == \"text/markdown\"` — and resource_test.exs:52 — `refute Map.has_key?(decoded, \"mime_type\")`. One of this check's four axes agrees. The name axis is silent because this unit does not assert `name`, though the fixture at resource_test.exs:8 carries it.",
+      "member": {
+        "module": "MCP.Protocol.Types.ResourceTest",
+        "register_key": "MCP.Protocol.Types.ResourceTest/test JSON encoding round-trips with camelCase keys",
+        "test": "test JSON encoding round-trips with camelCase keys"
+      },
+      "note": "THE STRONGEST HALF OF THIS CLAIM REACHES NO AXIS AT ALL, and that is the result worth recording. The camelCase `mimeType` assertion plus its refute at resource_test.exs:52 is the substance of the member, and `ResourcesList` HAS NO mimeType AXIS — the harness reads only `uri` and `name` per row, which the axis row records. `mimeType` IS an axis on `resources-read-text` and `resources-read-binary`, but those score `contents[0]`, a TextResourceContents / BlobResourceContents, which is a different schema definition from the Resource this member encodes. So the claim is not homed elsewhere; the suite simply does not check camelCase on a list row. Recorded here rather than as a bucket-1 search because the member DOES carry an edge on its uri half — a member cannot be in both places (G15a), so the partial coverage has to be visible on the edge.",
+      "oc_key": [
+        "server",
+        "resources-list",
+        "resources-list",
+        "ResourcesList",
+        "Server lists available resources with valid structure",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/resources-list/resources-list/ResourcesList",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
           "axis": "tools_call_was_made",
           "verdict": "agrees"
         },
@@ -5027,21 +5742,21 @@
   ],
   "citation_verbatim_guard": {
     "defects": [],
-    "distinct_windows_that_placed_a_quote": 147,
+    "distinct_windows_that_placed_a_quote": 163,
     "guard": "G30",
     "limbs": [
       "windowing",
       "contiguity"
     ],
-    "quotes_compared": 238,
-    "quotes_counted": 238,
+    "quotes_compared": 271,
+    "quotes_counted": 271,
     "quotes_placed_by_window_kind": {
-      "et": 185,
+      "et": 218,
       "oc": 53
     },
     "reach": "`quotes_compared` equals `quotes_counted`, and that attests exactly one thing: NO QUOTE FAILED TO PLACE. It is NOT an independent recount, and by itself it is not evidence of reach. Both figures come out of ONE traversal in `audit/3` — `quotes_counted` is the length of the quote list that traversal built and `quotes_compared` counts the members of that same list which matched — so the equality is another spelling of `no quote-level defect`, and a sweep that read NOTHING satisfies it at 0 == 0, as does one reading a field that does not exist. What bears on reach here is the MAGNITUDE and never the equality: `quotes_compared` quotes placed, over `records_with_evidence` records, over `records_visited` visited. The independent recount — the span regex walked a SECOND time over the same records by code that is not `audit/3` — and the `counted > 0` that stops an empty population passing both live in `conformance/controls/citation_verbatim_controls.exs`, not in this artefact. The record population is every top-level list of objects in each edges file, so a collection a later ticket adds is inside the guard without being named here.",
-    "records_visited": 267,
-    "records_with_evidence": 122,
+    "records_visited": 296,
+    "records_with_evidence": 136,
     "what_it_does_not_establish": "That a quote SUPPORTS the verdict it is filed under — that is a judgement and A3 §7's residual, and no refusal reaches it. That a backticked PROSE phrase is accurate: only source-shaped spans are compared, so an inaccurate paraphrase in backticks passes, and the ruling's remedy is to de-quote prose rather than to widen the shape test until English fails it. That a quoted byte-string in a field OTHER than `evidence` is verbatim — the gap between `records_visited` and `records_with_evidence` is exactly that population, reported rather than implied.",
     "what_was_checked": "Every SOURCE-SHAPED backtick span in `evidence` — one carrying `=`, `(`, `[`, `!==` or `===` — occurs VERBATIM and CONTIGUOUS, modulo runs of whitespace, inside a window the evidence itself ADDRESSES: the cited `file.exs:N[-M]` span in the repo, or a byte span the axis row for this edge's tag names in the harness build. Two limbs: WINDOWING (the comparison is against the cited span, never the whole artefact) catches a right-bytes/wrong-line citation; CONTIGUITY (one squashed string, substring containment) catches a quote spliced from lines that are real and non-adjacent. A bare `:N` continuation is refused as a FORM — it has no syntactic referent and resolving it by proximity is guessing. An elision inside a source-shaped span is refused rather than fragment-matched, because matching `A … B`'s halves green-lights a quote whose parts sit arbitrarily far apart, which is the composed-quote hole this guard exists to close."
   },
@@ -5110,7 +5825,7 @@
           "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
           "test": "test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh"
         },
-        "owner": "unowned — and the search was run over ALL 175, not only the declared 66, so this is not a deferral to a later C1c slice.",
+        "owner": "unowned — and the search was run over ALL 175, not only the declared 107, so this is not a deferral to a later C1c slice.",
         "the_search_that_found_none": "All 36 checks of the `input-required-result-*` family were read: not one scores WHOSE request a retry is. The family's checks take the SHAPE of the MRTR exchange as their subject — resultType, inputRequests, requestState, completion, tampering, extra keys — and every one of them runs as a single anonymous client. `RejectTamperedState` is the nearest and is about INTEGRITY of the token, not about the principal the retry arrives under: a correctly-signed token replayed by a different caller passes it. Widened to all 175 with the pattern `(?i)\\bidentity\\b|\\bprincipal\\b|authenticat|impersonat` — 0 hits, over a population whose positive controls (`(?i)server` 119, `(?i)error` 18, `(?i)MUST` 32) show the sweep reached it.",
         "why_it_is_recorded_here_and_not_in_bucket_1": "The member DOES carry edges — five of them — so it is not A3 §6 state 3 whole, and bucket 1 would hide it from the member equation. A3 §6's state 3 is a property of a MEMBER and there is no bucket for a claim, so none is invented."
       }
@@ -6294,7 +7009,7 @@
       },
       "search_id": "SRV07",
       "tag": "oc:none/no-oc-check-in-this-scenario/CacheableResult-hints",
-      "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`. These are COUNTERPARTS, not near misses, and they are outside this file's declared 66. Named so the row reads as `homed elsewhere`: whichever C1c ticket declares `caching` should pick this member up rather than search for it again.",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`. These are COUNTERPARTS, not near misses, and they are outside this file's declared 107. Named so the row reads as `homed elsewhere`: whichever C1c ticket declares `caching` should pick this member up rather than search for it again.",
       "the_search_that_found_none": "a list or read RESULT carrying the CacheableResult hints — `ttlMs` and `cacheScope`",
       "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 30 `server-stateless` rows mention caching or ttl, while the `caching` scenario carries seven that do.",
       "why_this_search_is_this_claims_search": "The claim is the caching hints on a list result. SRV07's subject is exactly that, and the search is scoped to the declared 30 because the claim being made is about THIS population."
@@ -6615,9 +7330,9 @@
       },
       "search_id": "SRV18",
       "tag": "oc:none/no-oc-check-in-this-scenario/origin-rejected-403",
-      "the_near_miss_that_is_not_a_counterpart": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. These are REAL COUNTERPARTS for the rejection this member asserts, and they sit outside this file's declared 66. Named so the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What NEITHER OC row covers is the 403 STATUS this unit pins as the acceptance parity: the OC rows say `rejects`, and nothing in them names a code.",
+      "the_near_miss_that_is_not_a_counterpart": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. These are REAL COUNTERPARTS for the rejection this member asserts, and they sit outside this file's declared 107. Named so the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What NEITHER OC row covers is the 403 STATUS this unit pins as the acceptance parity: the OC rows say `rejects`, and nothing in them names a code.",
       "the_search_that_found_none": "a server REJECTING a request whose `Origin` is not localhost, and answering it with HTTP 403 — the status, not merely the refusal",
-      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 66, and two real counterparts in the SERVER scenario `dns-rebinding-protection`.",
+      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 107, and two real counterparts in the SERVER scenario `dns-rebinding-protection`.",
       "why_this_search_is_this_claims_search": "The claim is a server refusing a non-localhost `Origin`. SRV18's subject is that refusal AND the status it carries, which is the half of the claim the OC counterparts do not reach — so the pattern sweeps the origin vocabulary and the near miss names what it would have found in another scenario."
     },
     {
@@ -6666,10 +7381,170 @@
       },
       "search_id": "SRV20",
       "tag": "oc:none/no-oc-check-in-this-scenario/default-caching-policy",
-      "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`, and all outside this file's declared 66. They are COUNTERPARTS and not near misses: `TtlNonNegative` in particular is about the very field this member pins. Named so the row reads as `homed elsewhere` — whichever C1c ticket declares `caching` should pick this member up rather than search for it again. What no OC row asks is what the DEFAULT is when a deployment configures nothing, which is the whole of this member's claim.",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`, and all outside this file's declared 107. They are COUNTERPARTS and not near misses: `TtlNonNegative` in particular is about the very field this member pins. Named so the row reads as `homed elsewhere` — whichever C1c ticket declares `caching` should pick this member up rather than search for it again. What no OC row asks is what the DEFAULT is when a deployment configures nothing, which is the whole of this member's claim.",
       "the_search_that_found_none": "the DEFAULT caching policy a deployment that configures nothing gets — `ttlMs` 0 and a `cacheScope`, i.e. no-store",
-      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 66, and seven real counterparts in the SERVER scenario `caching`.",
+      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 107, and seven real counterparts in the SERVER scenario `caching`.",
       "why_this_search_is_this_claims_search": "The claim is about the CacheableResult hint fields on a list result. SRV20's subject is those fields at their DEFAULT, and its pattern sweeps the caching vocabulary; the near miss names the seven `caching` rows so the zero reads as `declared elsewhere` rather than as `nothing exists`."
+    },
+    {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "a ResourceLink content block reaches the wire with the snake_case discriminator `resource_link` and a camelCase `mimeType`",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test ResourceLink round-trips through JSON",
+        "test": "test ResourceLink round-trips through JSON"
+      },
+      "search_id": "SRV21",
+      "tag": "oc:none/no-oc-scenario/resource-link-round-trip",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsCallEmbeddedResource` and `PromptsGetEmbeddedResource` — the suite's two other resource-bearing content checks, both declared here. They are NEAR MISSES and NOT counterparts, and the distinction is the protocol's own: an EmbeddedResource INLINES the resource contents in the result, while a ResourceLink is a REFERENCE the client must then read with `resources/read`. A check that finds an inlined resource would reject a link and vice versa. MEASURED WIDER THAN THE DECLARATION: the pattern is 0 over all 175 manifest rows and over both legs, not merely 0 over the declared 107, so this is not a deferral to another C1c slice — the suite has no ResourceLink check at all. That is a coverage finding about the OFFICIAL SUITE: `ResourceLink` is in the 2026-07-28 schema (its definition is at build bytes 293842-293989) and nothing in the conformance suite exercises it.",
+      "the_search_that_found_none": "the `resource_link` content type reaching the wire — its snake_case `type` discriminator and its camelCase `mimeType`",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no ResourceLink check at all.",
+      "why_this_search_is_this_claims_search": "The claim is about one content TYPE reaching the wire. SRV21's subject is that type and its pattern sweeps both spellings of its name; the near miss names the two resource-bearing checks that DO exist, so the zero reads as `the suite does not ask` rather than as `we did not look`."
+    },
+    {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "a Tool's unset optional fields — `annotations`, `icons`, `_meta` — are ABSENT from the encoded object rather than present as null",
+      "member": {
+        "module": "MCP.Protocol.Types.ToolTest",
+        "register_key": "MCP.Protocol.Types.ToolTest/test JSON encoding omits nil fields",
+        "test": "test JSON encoding omits nil fields"
+      },
+      "search_id": "SRV22",
+      "tag": "oc:none/no-oc-scenario/tool-optional-field-omission",
+      "the_near_miss_that_is_not_a_counterpart": "`RequestMetaClientInfoOptional` (`server-stateless`, declared here) and `ClientCustomHeaderOmitNull` (`http-custom-headers`, client leg). The first is the closest thing on this leg: it IS about an optional member being omitted, but from the `_meta` of a request the CLIENT sends, and what it scores is the server's tolerance of the omission. The second is about a client omitting a header rather than sending a null one — the right shape, the wrong direction and the wrong leg. Neither asks what a SERVER does with an optional field of an object it is encoding, which is the whole of this member's claim. MEASURED: the pattern is 0 over the declared 107 AND 0 over all 175; the sub-terms `annotation` and `icons` are independently 0 over all 175, so no row in the suite names either field.",
+      "the_search_that_found_none": "an optional field the server left unset being ABSENT from the object it encodes rather than present as null — specifically `annotations`, `icons` and `_meta` on a Tool",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175. No row in the suite names `annotations` or `icons`.",
+      "why_this_search_is_this_claims_search": "The claim is about ABSENCE on the wire. SRV22's subject is exactly that, and its pattern is deliberately wider than the claim — it also sweeps the two field names the member refutes by name."
+    },
+    {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "an inputSchema's JSON Schema 2020-12 keywords beyond `type` survive the round-trip verbatim, `not` and `$anchor` included",
+      "member": {
+        "module": "MCP.Protocol.Types.ToolTest",
+        "register_key": "MCP.Protocol.Types.ToolTest/test inputSchema keywords beyond `type` are carried verbatim, including `not` and `$anchor`",
+        "test": "test inputSchema keywords beyond `type` are carried verbatim, including `not` and `$anchor`"
+      },
+      "search_id": "SRV23",
+      "tag": "oc:none/no-oc-server-check/tool-input-schema-keyword-preservation",
+      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY `$ref` row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network `$ref`, not whether a server PRESERVES the keyword. The other near miss is on this very row's own check: `ToolsList`'s `every_tool_has_an_input_schema` axis, which is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above.",
+      "the_search_that_found_none": "JSON Schema 2020-12 keywords beyond `type` — `$defs`/`$anchor`, `$ref`, `not`, `oneOf`, `if`/`then`/`else`, `unevaluatedProperties` — surviving verbatim through a tools/list inputSchema",
+      "why_no_counterpart": "`no-oc-server-check` — 0 of the 107 and 0 of all 119 server rows; the one hit in 175 is CLIENT leg.",
+      "why_this_search_is_this_claims_search": "The claim is about what survives INSIDE an inputSchema. SRV23's pattern sweeps the 2020-12 keyword vocabulary the member asserts; the near miss names both the client-leg `$ref` row and this module's own `ToolsList` axis, which is a truthiness test and cannot see inside."
+    },
+    {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "a Tool with no outputSchema encodes with no `outputSchema` key at all",
+      "member": {
+        "module": "MCP.Protocol.Types.ToolTest",
+        "register_key": "MCP.Protocol.Types.ToolTest/test outputSchema is carried verbatim, and false is not an absence an absent outputSchema is still absent",
+        "test": "test outputSchema is carried verbatim, and false is not an absence an absent outputSchema is still absent"
+      },
+      "search_id": "SRV24",
+      "tag": "oc:none/no-oc-scenario/tool-absent-output-schema",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s `isError` axes, the only place the suite looks at the SHAPE of a tools/call result beyond its `content` array. Neither names `outputSchema` or `structuredContent`. MEASURED: 0 over all 175 manifest rows, BOTH LEGS — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED: this zero is also `MCP.Server.JsonSchema202012Test`'s, whose fifteen W-1 members make the same claim; that module is C1c-iii-b's member cut and it inherits this search rather than re-running it, the SRV08 mechanism running forward instead of backward.",
+      "the_search_that_found_none": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. SEP-2106's whole output half is unexercised.",
+      "why_this_search_is_this_claims_search": "The claim is about `outputSchema` being absent when unset. SRV24's subject is that field and its structured-content sibling, and the zero is leg-wide."
+    },
+    {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "two server instances holding the same tool set answer `tools/list` in the same order",
+      "member": {
+        "module": "MCP.Server.ToolOrderTest",
+        "register_key": "MCP.Server.ToolOrderTest/test SUBJECT — two instances holding the same tool set answer in the same order",
+        "test": "test SUBJECT — two instances holding the same tool set answer in the same order"
+      },
+      "search_id": "SRV25",
+      "tag": "oc:none/no-oc-scenario/tools-list-order-across-instances",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+      "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+      "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
+    },
+    {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "one server instance answers `tools/list` in the same order on every request",
+      "member": {
+        "module": "MCP.Server.ToolOrderTest",
+        "register_key": "MCP.Server.ToolOrderTest/test SUBJECT — one instance answers in the same order on every request",
+        "test": "test SUBJECT — one instance answers in the same order on every request"
+      },
+      "search_id": "SRV25",
+      "tag": "oc:none/no-oc-scenario/tools-list-order-across-requests",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+      "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+      "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
+    },
+    {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "the default `tools/list` order is by name, and the tool SET is untouched by the sort",
+      "member": {
+        "module": "MCP.Server.ToolOrderTest",
+        "register_key": "MCP.Server.ToolOrderTest/test SUBJECT — the default order is by name, and the tool SET is untouched",
+        "test": "test SUBJECT — the default order is by name, and the tool SET is untouched"
+      },
+      "search_id": "SRV25",
+      "tag": "oc:none/no-oc-scenario/tools-list-default-order-and-set",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+      "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+      "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
+    },
+    {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "with `:tool_order = :handler` a curated non-alphabetical order survives verbatim",
+      "member": {
+        "module": "MCP.Server.ToolOrderTest",
+        "register_key": "MCP.Server.ToolOrderTest/test CONTROL-1 — :tool_order = :handler keeps a curated non-alphabetical order verbatim",
+        "test": "test CONTROL-1 — :tool_order = :handler keeps a curated non-alphabetical order verbatim"
+      },
+      "search_id": "SRV25",
+      "tag": "oc:none/no-oc-scenario/tools-list-curated-order-escape-hatch",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+      "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+      "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
+    },
+    {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "an already-deterministic handler is unaffected by the sort (a control that discriminates nothing, and says so)",
+      "member": {
+        "module": "MCP.Server.ToolOrderTest",
+        "register_key": "MCP.Server.ToolOrderTest/test CONTROL-2 (discriminates nothing) — an already-deterministic handler is unaffected",
+        "test": "test CONTROL-2 (discriminates nothing) — an already-deterministic handler is unaffected"
+      },
+      "search_id": "SRV25",
+      "tag": "oc:none/no-oc-scenario/tools-list-order-control-vacuous",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+      "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+      "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
+    },
+    {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "the ordering guarantee is per RESPONSE: a paginated listing is NOT made deterministic across pages",
+      "member": {
+        "module": "MCP.Server.ToolOrderTest",
+        "register_key": "MCP.Server.ToolOrderTest/test BOUND — sorting is per RESPONSE; a paginated listing is not made deterministic",
+        "test": "test BOUND — sorting is per RESPONSE; a paginated listing is not made deterministic"
+      },
+      "search_id": "SRV25",
+      "tag": "oc:none/no-oc-scenario/tools-list-order-pagination-bound",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+      "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+      "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
     }
   ],
   "escalations": {
@@ -6793,7 +7668,7 @@
   },
   "owner": "MES-97 (C1a), MES-104 (C1b-i), MES-108 (C1b-ii), MES-109 (C1b-iii), MES-105 (C1c-i) and MES-115 (C1c-ii)",
   "population": {
-    "check_count": 60,
+    "check_count": 72,
     "checks": [
       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_ControlChar",
       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_CrLf",
@@ -6841,6 +7716,9 @@
       "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete",
       "oc:server/input-required-result-request-state/wire-schema-valid/WireSchemaValid",
       "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded",
+      "oc:server/prompts-get-embedded-resource/prompts-get-embedded-resource/PromptsGetEmbeddedResource",
+      "oc:server/prompts-get-with-image/prompts-get-with-image/PromptsGetWithImage",
+      "oc:server/resources-list/resources-list/ResourcesList",
       "oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers",
       "oc:server/server-stateless/sep-2575-http-server-error-jsonrpc-id/HttpServerErrorJsonrpcId",
       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
@@ -6854,7 +7732,16 @@
       "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
       "oc:server/server-stateless/sep-2575-server-sends-subscription-ack/ServerSendsSubscriptionAck",
       "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
-      "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError"
+      "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError",
+      "oc:server/tools-call-audio/tools-call-audio/ToolsCallAudio",
+      "oc:server/tools-call-embedded-resource/tools-call-embedded-resource/ToolsCallEmbeddedResource",
+      "oc:server/tools-call-embedded-resource/wire-schema-valid/WireSchemaValid",
+      "oc:server/tools-call-image/tools-call-image/ToolsCallImage",
+      "oc:server/tools-call-image/wire-schema-valid/WireSchemaValid",
+      "oc:server/tools-call-mixed-content/tools-call-mixed-content/ToolsCallMixedContent",
+      "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText",
+      "oc:server/tools-call-simple-text/wire-schema-valid/WireSchemaValid",
+      "oc:server/tools-list/tools-list/ToolsList"
     ],
     "checks_addressed_outside_the_declared_check_population": {
       "checks": [],
@@ -6865,7 +7752,7 @@
           "path": "conformance/data/crosswalk-edges-client.json"
         },
         {
-          "declares_checks": 66,
+          "declares_checks": 107,
           "path": "conformance/data/crosswalk-edges-server.json"
         },
         {
@@ -6877,7 +7764,7 @@
       "why_this_is_not_refused": "An edge addresses the check its claim is about; refusing one outside the declared check population would force a file to declare every scenario it touches, and then bucket 2 would report every UNADJUDICATED sibling as having no ET counterpart. That is the false claim the third state exists to prevent."
     },
     "declared": true,
-    "declared_check_count": 120,
+    "declared_check_count": 161,
     "declared_checks": [
       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_ControlChar",
       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_CrLf",
@@ -6933,6 +7820,8 @@
       "oc:client/sep-2322-client-request-state/sep-2322-default-result-type-complete/DefaultResultTypeComplete",
       "oc:client/tools_call/tool-add-numbers/ToolAddNumbers",
       "oc:client/tools_call/wire-schema-valid/WireSchemaValid",
+      "oc:server/completion-complete/completion-complete/CompletionComplete",
+      "oc:server/completion-complete/wire-schema-valid/WireSchemaValid",
       "oc:server/input-required-result-basic-elicitation/sep-2322-elicitation-complete/InputRequiredResultElicitationComplete",
       "oc:server/input-required-result-basic-elicitation/sep-2322-elicitation-incomplete/InputRequiredResultElicitationIncomplete",
       "oc:server/input-required-result-basic-elicitation/wire-schema-valid/WireSchemaValid",
@@ -6969,6 +7858,28 @@
       "oc:server/input-required-result-validate-input/sep-2322-error-on-protocol-error/ErrorOnProtocolError",
       "oc:server/input-required-result-validate-input/sep-2322-validate-input-responses/ValidateInputResponses",
       "oc:server/input-required-result-validate-input/wire-schema-valid/WireSchemaValid",
+      "oc:server/prompts-get-embedded-resource/prompts-get-embedded-resource/PromptsGetEmbeddedResource",
+      "oc:server/prompts-get-embedded-resource/wire-schema-valid/WireSchemaValid",
+      "oc:server/prompts-get-simple/prompts-get-simple/PromptsGetSimple",
+      "oc:server/prompts-get-simple/wire-schema-valid/WireSchemaValid",
+      "oc:server/prompts-get-with-args/prompts-get-with-args/PromptsGetWithArgs",
+      "oc:server/prompts-get-with-args/wire-schema-valid/WireSchemaValid",
+      "oc:server/prompts-get-with-image/prompts-get-with-image/PromptsGetWithImage",
+      "oc:server/prompts-get-with-image/wire-schema-valid/WireSchemaValid",
+      "oc:server/prompts-list/prompts-list/PromptsList",
+      "oc:server/prompts-list/wire-schema-valid/WireSchemaValid",
+      "oc:server/resources-list/resources-list/ResourcesList",
+      "oc:server/resources-list/wire-schema-valid/WireSchemaValid",
+      "oc:server/resources-read-binary/resources-read-binary/ResourcesReadBinary",
+      "oc:server/resources-read-binary/wire-schema-valid/WireSchemaValid",
+      "oc:server/resources-read-text/resources-read-text/ResourcesReadText",
+      "oc:server/resources-read-text/wire-schema-valid/WireSchemaValid",
+      "oc:server/resources-templates-read/resources-templates-read/ResourcesTemplateRead",
+      "oc:server/resources-templates-read/wire-schema-valid/WireSchemaValid",
+      "oc:server/sep-2164-resource-not-found/sep-2164-data-uri/ResourcesNotFoundDataUri",
+      "oc:server/sep-2164-resource-not-found/sep-2164-error-code/ResourcesNotFoundErrorCode",
+      "oc:server/sep-2164-resource-not-found/sep-2164-no-empty-contents/ResourcesNotFoundNoEmptyContents",
+      "oc:server/sep-2164-resource-not-found/wire-schema-valid/WireSchemaValid",
       "oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers",
       "oc:server/server-stateless/sep-2575-http-server-error-jsonrpc-id/HttpServerErrorJsonrpcId",
       "oc:server/server-stateless/sep-2575-http-server-header-mismatch-400/HttpServerHeaderMismatch400",
@@ -6998,7 +7909,24 @@
       "oc:server/server-stateless/sep-2575-server-sends-subscription-ack/ServerSendsSubscriptionAck",
       "oc:server/server-stateless/sep-2575-server-sends-tools-list-changed-on-subscription/ServerSendsToolsListChangedOnSubscription",
       "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
-      "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError"
+      "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError",
+      "oc:server/tools-call-audio/tools-call-audio/ToolsCallAudio",
+      "oc:server/tools-call-audio/wire-schema-valid/WireSchemaValid",
+      "oc:server/tools-call-embedded-resource/tools-call-embedded-resource/ToolsCallEmbeddedResource",
+      "oc:server/tools-call-embedded-resource/wire-schema-valid/WireSchemaValid",
+      "oc:server/tools-call-error/tools-call-error/ToolsCallError",
+      "oc:server/tools-call-error/wire-schema-valid/WireSchemaValid",
+      "oc:server/tools-call-image/tools-call-image/ToolsCallImage",
+      "oc:server/tools-call-image/wire-schema-valid/WireSchemaValid",
+      "oc:server/tools-call-mixed-content/tools-call-mixed-content/ToolsCallMixedContent",
+      "oc:server/tools-call-mixed-content/wire-schema-valid/WireSchemaValid",
+      "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText",
+      "oc:server/tools-call-simple-text/wire-schema-valid/WireSchemaValid",
+      "oc:server/tools-call-with-progress/tools-call-with-progress/ToolsCallWithProgress",
+      "oc:server/tools-call-with-progress/wire-schema-valid/WireSchemaValid",
+      "oc:server/tools-list/tools-list/ToolsList",
+      "oc:server/tools-list/tools-name-format/ToolsNameFormat",
+      "oc:server/tools-list/wire-schema-valid/WireSchemaValid"
     ],
     "files": [
       {
@@ -7431,6 +8359,8 @@
       {
         "check_population": {
           "checks": [
+            "oc:server/completion-complete/completion-complete/CompletionComplete",
+            "oc:server/completion-complete/wire-schema-valid/WireSchemaValid",
             "oc:server/input-required-result-basic-elicitation/sep-2322-elicitation-complete/InputRequiredResultElicitationComplete",
             "oc:server/input-required-result-basic-elicitation/sep-2322-elicitation-incomplete/InputRequiredResultElicitationIncomplete",
             "oc:server/input-required-result-basic-elicitation/wire-schema-valid/WireSchemaValid",
@@ -7467,6 +8397,28 @@
             "oc:server/input-required-result-validate-input/sep-2322-error-on-protocol-error/ErrorOnProtocolError",
             "oc:server/input-required-result-validate-input/sep-2322-validate-input-responses/ValidateInputResponses",
             "oc:server/input-required-result-validate-input/wire-schema-valid/WireSchemaValid",
+            "oc:server/prompts-get-embedded-resource/prompts-get-embedded-resource/PromptsGetEmbeddedResource",
+            "oc:server/prompts-get-embedded-resource/wire-schema-valid/WireSchemaValid",
+            "oc:server/prompts-get-simple/prompts-get-simple/PromptsGetSimple",
+            "oc:server/prompts-get-simple/wire-schema-valid/WireSchemaValid",
+            "oc:server/prompts-get-with-args/prompts-get-with-args/PromptsGetWithArgs",
+            "oc:server/prompts-get-with-args/wire-schema-valid/WireSchemaValid",
+            "oc:server/prompts-get-with-image/prompts-get-with-image/PromptsGetWithImage",
+            "oc:server/prompts-get-with-image/wire-schema-valid/WireSchemaValid",
+            "oc:server/prompts-list/prompts-list/PromptsList",
+            "oc:server/prompts-list/wire-schema-valid/WireSchemaValid",
+            "oc:server/resources-list/resources-list/ResourcesList",
+            "oc:server/resources-list/wire-schema-valid/WireSchemaValid",
+            "oc:server/resources-read-binary/resources-read-binary/ResourcesReadBinary",
+            "oc:server/resources-read-binary/wire-schema-valid/WireSchemaValid",
+            "oc:server/resources-read-text/resources-read-text/ResourcesReadText",
+            "oc:server/resources-read-text/wire-schema-valid/WireSchemaValid",
+            "oc:server/resources-templates-read/resources-templates-read/ResourcesTemplateRead",
+            "oc:server/resources-templates-read/wire-schema-valid/WireSchemaValid",
+            "oc:server/sep-2164-resource-not-found/sep-2164-data-uri/ResourcesNotFoundDataUri",
+            "oc:server/sep-2164-resource-not-found/sep-2164-error-code/ResourcesNotFoundErrorCode",
+            "oc:server/sep-2164-resource-not-found/sep-2164-no-empty-contents/ResourcesNotFoundNoEmptyContents",
+            "oc:server/sep-2164-resource-not-found/wire-schema-valid/WireSchemaValid",
             "oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers",
             "oc:server/server-stateless/sep-2575-http-server-error-jsonrpc-id/HttpServerErrorJsonrpcId",
             "oc:server/server-stateless/sep-2575-http-server-header-mismatch-400/HttpServerHeaderMismatch400",
@@ -7496,9 +8448,26 @@
             "oc:server/server-stateless/sep-2575-server-sends-subscription-ack/ServerSendsSubscriptionAck",
             "oc:server/server-stateless/sep-2575-server-sends-tools-list-changed-on-subscription/ServerSendsToolsListChangedOnSubscription",
             "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
-            "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError"
+            "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError",
+            "oc:server/tools-call-audio/tools-call-audio/ToolsCallAudio",
+            "oc:server/tools-call-audio/wire-schema-valid/WireSchemaValid",
+            "oc:server/tools-call-embedded-resource/tools-call-embedded-resource/ToolsCallEmbeddedResource",
+            "oc:server/tools-call-embedded-resource/wire-schema-valid/WireSchemaValid",
+            "oc:server/tools-call-error/tools-call-error/ToolsCallError",
+            "oc:server/tools-call-error/wire-schema-valid/WireSchemaValid",
+            "oc:server/tools-call-image/tools-call-image/ToolsCallImage",
+            "oc:server/tools-call-image/wire-schema-valid/WireSchemaValid",
+            "oc:server/tools-call-mixed-content/tools-call-mixed-content/ToolsCallMixedContent",
+            "oc:server/tools-call-mixed-content/wire-schema-valid/WireSchemaValid",
+            "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText",
+            "oc:server/tools-call-simple-text/wire-schema-valid/WireSchemaValid",
+            "oc:server/tools-call-with-progress/tools-call-with-progress/ToolsCallWithProgress",
+            "oc:server/tools-call-with-progress/wire-schema-valid/WireSchemaValid",
+            "oc:server/tools-list/tools-list/ToolsList",
+            "oc:server/tools-list/tools-name-format/ToolsNameFormat",
+            "oc:server/tools-list/wire-schema-valid/WireSchemaValid"
           ],
-          "rule": "EVERY in-denominator OC check in the `server-stateless` scenario — all 30, C1c-i's — AND every in-denominator check in the FOURTEEN `input-required-result-*` scenarios — all 36, C1c-ii's: the MRTR family, SEP-2322's server side. 30 + 36 = 66. This file is total over them: every one is axis-decomposed (12 by A3, 18 by C1c-i, 36 by C1c-ii), and every one either carries an edge or is reported in bucket 2 by name.",
+          "rule": "EVERY in-denominator OC check in the `server-stateless` scenario — all 30, C1c-i's — every in-denominator check in the FOURTEEN `input-required-result-*` scenarios — all 36, C1c-ii's: the MRTR family, SEP-2322's server side — AND every in-denominator check in the NINETEEN feature-endpoint scenarios, all 41, C1c-iii's: `tools-call-*` (7 scenarios) and `tools-list`, `prompts-*` (5), `resources-*` (4) and `sep-2164-resource-not-found`, and `completion-complete`. 30 + 36 + 41 = 107. This file is total over them: every one is axis-decomposed (12 by A3, 18 by C1c-i, 36 by C1c-ii, 41 by C1c-iii), and every one either carries an edge or is reported in bucket 2 by name.",
           "selector": {
             "any_of": [
               {
@@ -7575,17 +8544,113 @@
                 "field": "scenario",
                 "test": "equals",
                 "value": "input-required-result-validate-input"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "completion-complete"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "prompts-get-embedded-resource"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "prompts-get-simple"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "prompts-get-with-args"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "prompts-get-with-image"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "prompts-list"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "resources-list"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "resources-read-binary"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "resources-read-text"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "resources-templates-read"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "sep-2164-resource-not-found"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "tools-call-audio"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "tools-call-embedded-resource"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "tools-call-error"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "tools-call-image"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "tools-call-mixed-content"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "tools-call-simple-text"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "tools-call-with-progress"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "tools-list"
               }
             ],
-            "denotes": "All 66 in-denominator checks of the fifteen scenarios named: `server-stateless` 30, and the fourteen `input-required-result-*` scenarios 36 between them. FIFTEEN clauses, where C1c-i had one: the MRTR family is cut into fourteen scenarios of two to four checks each, and the selector names every one rather than matching a prefix — there is no `starts_with` over this artefact's `scenario` field and adding one would have widened the declaration to whatever a harness bump happened to name `input-required-result-*` next.",
-            "evaluated": "66 checks denoted; equal to the count this file declares, and every one of them is axis-decomposed (G19).",
+            "denotes": "All 107 in-denominator checks of the thirty-four scenarios named: `server-stateless` 30, the fourteen `input-required-result-*` scenarios 36 between them, and the nineteen feature-endpoint scenarios 41 between them. THIRTY-FOUR clauses, where C1c-i had one and C1c-ii fifteen, and every one is an equality rather than a prefix — see `why_fourteen_clauses_and_not_a_prefix`, whose reasoning C1c-iii applies unchanged to `tools-`, `prompts-` and `resources-`.",
+            "evaluated": "107 checks denoted; equal to the count this file declares, and every one of them is axis-decomposed (G19).",
             "key_field": "token",
             "rows_at": "rows",
             "source": "docs/conformance/oc-emitting-sites-2026-07-28.json",
             "source_owner": "MES-97 (C1a) — `mix conformance.locator`'s output, one row per in-denominator check",
-            "the_bound_this_leaves": "The declared CHECK population is fifteen scenarios of the suite's thirty-odd, so a bucket-1 row here means `no counterpart among these 66` and not `no counterpart anywhere` — `what_unmatched_means_in_a_file_that_declares_its_own_checks` in the client file states the rule and it is not restated. FOUR of this file's searches are scoped that way and say so in their `kind`: SRV02 and SRV18 name REAL counterparts in `dns-rebinding-protection` and SRV07 and SRV20 in `caching`, so that whichever later C1c slice declares those scenarios inherits the member instead of re-searching for it. C1c-i's SRV08 was a fifth, naming the `input-required-result-*` family; this ticket declared that family, so SRV08 is GONE and its member carries edges — the mechanism working, not failing.",
-            "what_this_is": "The check half of the declaration, and what makes bucket 2 answerable. It names the SCENARIO rather than the 30 tokens, so a check added to it by a harness bump joins the population instead of falling silently outside it.",
+            "the_bound_this_leaves": "The declared CHECK population is thirty-four scenarios of the suite's thirty-odd, so a bucket-1 row here means `no counterpart among these 107` and not `no counterpart anywhere` — `what_unmatched_means_in_a_file_that_declares_its_own_checks` in the client file states the rule and it is not restated. FOUR of this file's searches are scoped that way and say so in their `kind`: SRV02 and SRV18 name REAL counterparts in `dns-rebinding-protection` and SRV07 and SRV20 in `caching`, so that whichever later C1c slice declares those scenarios inherits the member instead of re-searching for it. C1c-i's SRV08 was a fifth, naming the `input-required-result-*` family; this ticket declared that family, so SRV08 is GONE and its member carries edges — the mechanism working, not failing.",
+            "what_this_is": "The check half of the declaration, and what makes bucket 2 answerable. It names the SCENARIO rather than the 107 tokens, so a check added to it by a harness bump joins the population instead of falling silently outside it.",
             "why_fourteen_clauses_and_not_a_prefix": "A prefix clause would be SHORTER and would declare a DIFFERENT population: every future scenario whose name begins `input-required-result-` would join this file's declared checks the moment a harness bump introduced it, and would then have to be axis-decomposed by G19 or redden a build nobody had changed. Enumerating costs fourteen lines and makes the population a decision this ticket took rather than a pattern that keeps deciding. The same reasoning is why the client file enumerates its seven.",
+            "why_the_feature_endpoint_scenarios_are_enumerated_too": "NINETEEN more equality clauses and not three `starts_with` ones. A prefix over `tools-` would be three lines instead of eight and would declare a DIFFERENT population: every future scenario a harness bump named `tools-call-something` would join this file's declared checks the moment it appeared, and would then have to be axis-decomposed by G19 or redden a build nobody had changed. The cost is real and is paid knowingly — the prefix would also have silently ADMITTED `tools-call-with-logging`, `tools-call-sampling` and `tools-call-elicitation`, three scenarios that exist in this very build and are NOT in this slice's 41. That is not a hypothetical about a future bump; it is a live mis-declaration the prefix form would have made today.",
             "why_the_locator_artefact_and_not_A1s_manifest": "A1's manifest nests its checks under scenarios and its key is a six-field LIST; the selector's `key_field` must name a STRING field and refuses anything else rather than stringifying it. The locator artefact is flat and carries a `token`. Same reason the client file gives."
           }
         },
@@ -7596,6 +8661,9 @@
           "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete",
           "oc:server/input-required-result-request-state/wire-schema-valid/WireSchemaValid",
           "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded",
+          "oc:server/prompts-get-embedded-resource/prompts-get-embedded-resource/PromptsGetEmbeddedResource",
+          "oc:server/prompts-get-with-image/prompts-get-with-image/PromptsGetWithImage",
+          "oc:server/resources-list/resources-list/ResourcesList",
           "oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers",
           "oc:server/server-stateless/sep-2575-http-server-error-jsonrpc-id/HttpServerErrorJsonrpcId",
           "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
@@ -7609,9 +8677,20 @@
           "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
           "oc:server/server-stateless/sep-2575-server-sends-subscription-ack/ServerSendsSubscriptionAck",
           "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
-          "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError"
+          "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError",
+          "oc:server/tools-call-audio/tools-call-audio/ToolsCallAudio",
+          "oc:server/tools-call-embedded-resource/tools-call-embedded-resource/ToolsCallEmbeddedResource",
+          "oc:server/tools-call-embedded-resource/wire-schema-valid/WireSchemaValid",
+          "oc:server/tools-call-image/tools-call-image/ToolsCallImage",
+          "oc:server/tools-call-image/wire-schema-valid/WireSchemaValid",
+          "oc:server/tools-call-mixed-content/tools-call-mixed-content/ToolsCallMixedContent",
+          "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText",
+          "oc:server/tools-call-simple-text/wire-schema-valid/WireSchemaValid",
+          "oc:server/tools-list/tools-list/ToolsList"
         ],
         "declared_checks": [
+          "oc:server/completion-complete/completion-complete/CompletionComplete",
+          "oc:server/completion-complete/wire-schema-valid/WireSchemaValid",
           "oc:server/input-required-result-basic-elicitation/sep-2322-elicitation-complete/InputRequiredResultElicitationComplete",
           "oc:server/input-required-result-basic-elicitation/sep-2322-elicitation-incomplete/InputRequiredResultElicitationIncomplete",
           "oc:server/input-required-result-basic-elicitation/wire-schema-valid/WireSchemaValid",
@@ -7648,6 +8727,28 @@
           "oc:server/input-required-result-validate-input/sep-2322-error-on-protocol-error/ErrorOnProtocolError",
           "oc:server/input-required-result-validate-input/sep-2322-validate-input-responses/ValidateInputResponses",
           "oc:server/input-required-result-validate-input/wire-schema-valid/WireSchemaValid",
+          "oc:server/prompts-get-embedded-resource/prompts-get-embedded-resource/PromptsGetEmbeddedResource",
+          "oc:server/prompts-get-embedded-resource/wire-schema-valid/WireSchemaValid",
+          "oc:server/prompts-get-simple/prompts-get-simple/PromptsGetSimple",
+          "oc:server/prompts-get-simple/wire-schema-valid/WireSchemaValid",
+          "oc:server/prompts-get-with-args/prompts-get-with-args/PromptsGetWithArgs",
+          "oc:server/prompts-get-with-args/wire-schema-valid/WireSchemaValid",
+          "oc:server/prompts-get-with-image/prompts-get-with-image/PromptsGetWithImage",
+          "oc:server/prompts-get-with-image/wire-schema-valid/WireSchemaValid",
+          "oc:server/prompts-list/prompts-list/PromptsList",
+          "oc:server/prompts-list/wire-schema-valid/WireSchemaValid",
+          "oc:server/resources-list/resources-list/ResourcesList",
+          "oc:server/resources-list/wire-schema-valid/WireSchemaValid",
+          "oc:server/resources-read-binary/resources-read-binary/ResourcesReadBinary",
+          "oc:server/resources-read-binary/wire-schema-valid/WireSchemaValid",
+          "oc:server/resources-read-text/resources-read-text/ResourcesReadText",
+          "oc:server/resources-read-text/wire-schema-valid/WireSchemaValid",
+          "oc:server/resources-templates-read/resources-templates-read/ResourcesTemplateRead",
+          "oc:server/resources-templates-read/wire-schema-valid/WireSchemaValid",
+          "oc:server/sep-2164-resource-not-found/sep-2164-data-uri/ResourcesNotFoundDataUri",
+          "oc:server/sep-2164-resource-not-found/sep-2164-error-code/ResourcesNotFoundErrorCode",
+          "oc:server/sep-2164-resource-not-found/sep-2164-no-empty-contents/ResourcesNotFoundNoEmptyContents",
+          "oc:server/sep-2164-resource-not-found/wire-schema-valid/WireSchemaValid",
           "oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers",
           "oc:server/server-stateless/sep-2575-http-server-error-jsonrpc-id/HttpServerErrorJsonrpcId",
           "oc:server/server-stateless/sep-2575-http-server-header-mismatch-400/HttpServerHeaderMismatch400",
@@ -7677,17 +8778,44 @@
           "oc:server/server-stateless/sep-2575-server-sends-subscription-ack/ServerSendsSubscriptionAck",
           "oc:server/server-stateless/sep-2575-server-sends-tools-list-changed-on-subscription/ServerSendsToolsListChangedOnSubscription",
           "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
-          "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError"
+          "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError",
+          "oc:server/tools-call-audio/tools-call-audio/ToolsCallAudio",
+          "oc:server/tools-call-audio/wire-schema-valid/WireSchemaValid",
+          "oc:server/tools-call-embedded-resource/tools-call-embedded-resource/ToolsCallEmbeddedResource",
+          "oc:server/tools-call-embedded-resource/wire-schema-valid/WireSchemaValid",
+          "oc:server/tools-call-error/tools-call-error/ToolsCallError",
+          "oc:server/tools-call-error/wire-schema-valid/WireSchemaValid",
+          "oc:server/tools-call-image/tools-call-image/ToolsCallImage",
+          "oc:server/tools-call-image/wire-schema-valid/WireSchemaValid",
+          "oc:server/tools-call-mixed-content/tools-call-mixed-content/ToolsCallMixedContent",
+          "oc:server/tools-call-mixed-content/wire-schema-valid/WireSchemaValid",
+          "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText",
+          "oc:server/tools-call-simple-text/wire-schema-valid/WireSchemaValid",
+          "oc:server/tools-call-with-progress/tools-call-with-progress/ToolsCallWithProgress",
+          "oc:server/tools-call-with-progress/wire-schema-valid/WireSchemaValid",
+          "oc:server/tools-list/tools-list/ToolsList",
+          "oc:server/tools-list/tools-name-format/ToolsNameFormat",
+          "oc:server/tools-list/wire-schema-valid/WireSchemaValid"
         ],
         "leg_totality": {
           "declared": false,
           "result": "NOT ASSERTED — this file declares no `leg`, so it makes no claim to hold a whole one and none is checked. Reported rather than passed: a file whose members are a slice of a leg would be claiming something false if this said `total`."
         },
-        "member_count": 64,
+        "member_count": 80,
         "members": [
           "MCP.Protocol.Messages.DiscoverTest/test to_map/1 produces the schema shape",
           "MCP.Protocol.MetaTest/test from_params/1 extracts the io.modelcontextprotocol/* keys",
           "MCP.Protocol.MetaTest/test validate_protocol_version/2 mismatched (e.g. legacy 2025-11-25) → {:error, {:unsupported, got}}",
+          "MCP.Protocol.Types.ContentTest/test AudioContent round-trips through JSON",
+          "MCP.Protocol.Types.ContentTest/test EmbeddedResource round-trips through JSON",
+          "MCP.Protocol.Types.ContentTest/test ImageContent round-trips through JSON",
+          "MCP.Protocol.Types.ContentTest/test ResourceLink round-trips through JSON",
+          "MCP.Protocol.Types.ContentTest/test TextContent round-trips through JSON",
+          "MCP.Protocol.Types.ResourceTest/test JSON encoding round-trips with camelCase keys",
+          "MCP.Protocol.Types.ToolTest/test JSON encoding omits nil fields",
+          "MCP.Protocol.Types.ToolTest/test JSON encoding round-trips through JSON with camelCase keys",
+          "MCP.Protocol.Types.ToolTest/test inputSchema keywords beyond `type` are carried verbatim, including `not` and `$anchor`",
+          "MCP.Protocol.Types.ToolTest/test outputSchema is carried verbatim, and false is not an absence an absent outputSchema is still absent",
           "MCP.Server.CapabilityHonestyTest/test a listChanged claim needs a channel to honour it on absent, not present-and-false: the key never reaches the wire",
           "MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)",
           "MCP.Server.DispatchTest/test old-shape (2025-11-25) version fails fast (-32022)",
@@ -7711,6 +8839,12 @@
           "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset a URI this principal may not observe is absent from the ack",
           "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset a handler may refuse the subscription outright",
           "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset the two refusals that never reach the handler stay {:reply, ...}",
+          "MCP.Server.ToolOrderTest/test BOUND — sorting is per RESPONSE; a paginated listing is not made deterministic",
+          "MCP.Server.ToolOrderTest/test CONTROL-1 — :tool_order = :handler keeps a curated non-alphabetical order verbatim",
+          "MCP.Server.ToolOrderTest/test CONTROL-2 (discriminates nothing) — an already-deterministic handler is unaffected",
+          "MCP.Server.ToolOrderTest/test SUBJECT — one instance answers in the same order on every request",
+          "MCP.Server.ToolOrderTest/test SUBJECT — the default order is by name, and the tool SET is untouched",
+          "MCP.Server.ToolOrderTest/test SUBJECT — two instances holding the same tool set answer in the same order",
           "MCP.Transport.StreamableHTTP.ACTest/test AC7 — non-localhost origin is rejected 403 (acceptance parity)",
           "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that raises fails cleanly (-32603); the secret never leaks",
           "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that returns a non-keyword fails cleanly (-32603)",
@@ -7750,10 +8884,10 @@
           "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the first message is notifications/subscriptions/acknowledged",
           "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the response carries the SSE headers the spec SHOULDs"
         ],
-        "members_declared_unmatched": 37,
-        "members_with_edges": 27,
+        "members_declared_unmatched": 47,
+        "members_with_edges": 33,
         "path": "conformance/data/crosswalk-edges-server.json",
-        "rule": "Every ET-CC member B2b attributes to the SERVER leg whose test lives in one of NINE modules: the STATELESS CORE — MCP.Transport.StreamableHTTPStatelessTest, MCP.Server.DispatchTest, MCP.Protocol.MetaTest, MCP.Protocol.Messages.DiscoverTest and MCP.Server.CapabilityHonestyTest — the SUBSCRIPTION family — MCP.Server.SubscriptionsDispatchTest, MCP.Transport.SubscriptionsStreamTest and MCP.Server.NotificationCollectorTest — and the ACCEPTANCE-CRITERIA module MCP.Transport.StreamableHTTP.ACTest, added by C1c-ii for its one MRTR member. NOTHING outside these nine modules is adjudicated here; the leg's other twelve modules are C1c-iii/iv's.",
+        "rule": "Every ET-CC member B2b attributes to the SERVER leg whose test lives in one of THIRTEEN modules: the STATELESS CORE — MCP.Transport.StreamableHTTPStatelessTest, MCP.Server.DispatchTest, MCP.Protocol.MetaTest, MCP.Protocol.Messages.DiscoverTest and MCP.Server.CapabilityHonestyTest — the SUBSCRIPTION family — MCP.Server.SubscriptionsDispatchTest, MCP.Transport.SubscriptionsStreamTest and MCP.Server.NotificationCollectorTest — and the ACCEPTANCE-CRITERIA module MCP.Transport.StreamableHTTP.ACTest, added by C1c-ii for its one MRTR member. and the FOUR TYPE-AND-ORDER modules added by C1c-iii for the feature endpoints — MCP.Protocol.Types.ContentTest, MCP.Protocol.Types.ToolTest, MCP.Protocol.Types.ResourceTest and MCP.Server.ToolOrderTest. NOTHING outside these thirteen modules is adjudicated here; the leg's other eight modules are C1c-iii-b's and C1c-iv's.",
         "selector": {
           "all_of": [
             {
@@ -7772,6 +8906,21 @@
                   "field": "key",
                   "test": "starts_with",
                   "value": "MCP.Protocol.MetaTest/"
+                },
+                {
+                  "field": "key",
+                  "test": "starts_with",
+                  "value": "MCP.Protocol.Types.ContentTest/"
+                },
+                {
+                  "field": "key",
+                  "test": "starts_with",
+                  "value": "MCP.Protocol.Types.ResourceTest/"
+                },
+                {
+                  "field": "key",
+                  "test": "starts_with",
+                  "value": "MCP.Protocol.Types.ToolTest/"
                 },
                 {
                   "field": "key",
@@ -7796,6 +8945,11 @@
                 {
                   "field": "key",
                   "test": "starts_with",
+                  "value": "MCP.Server.ToolOrderTest/"
+                },
+                {
+                  "field": "key",
+                  "test": "starts_with",
                   "value": "MCP.Transport.StreamableHTTP.ACTest/"
                 },
                 {
@@ -7811,13 +8965,14 @@
               ]
             }
           ],
-          "denotes": "64 ET-CC members — MCP.Transport.SubscriptionsStreamTest 17, MCP.Server.SubscriptionsDispatchTest 16, MCP.Transport.StreamableHTTPStatelessTest 16, MCP.Server.DispatchTest 5, MCP.Transport.StreamableHTTP.ACTest 5, MCP.Protocol.MetaTest 2, MCP.Protocol.Messages.DiscoverTest 1, MCP.Server.CapabilityHonestyTest 1 and MCP.Server.NotificationCollectorTest 1. What the trailing `/` does and does not buy is measured in the field of that name; it is NOT a fact about this anchor.",
-          "evaluated": "64 members denoted; set-equal to the population this file derives in both directions (G15a). The counts block was checked field by field (G15b).",
+          "denotes": "80 ET-CC members — MCP.Transport.SubscriptionsStreamTest 17, MCP.Server.SubscriptionsDispatchTest 16, MCP.Transport.StreamableHTTPStatelessTest 16, MCP.Server.ToolOrderTest 6, MCP.Server.DispatchTest 5, MCP.Transport.StreamableHTTP.ACTest 5, MCP.Protocol.Types.ContentTest 5, MCP.Protocol.Types.ToolTest 4, MCP.Protocol.MetaTest 2, MCP.Protocol.Messages.DiscoverTest 1, MCP.Server.CapabilityHonestyTest 1, MCP.Server.NotificationCollectorTest 1 and MCP.Protocol.Types.ResourceTest 1. What the trailing `/` does and does not buy is measured in the field of that name; it is NOT a fact about this anchor.",
+          "evaluated": "80 members denoted; set-equal to the population this file derives in both directions (G15a). The counts block was checked field by field (G15b).",
           "everything_else_is": "not_yet_adjudicated — NOT bucket 1, and not state 4.",
           "key_field": "key",
           "rows_at": "rows",
           "source": "docs/conformance/etcc-attribution.json",
           "source_owner": "B2b (MES-82) — the ET-CC attribution register",
+          "the_four_modules_C1c_iii_adds_and_the_one_it_deliberately_leaves": "MES-116 (C1c-iii) adds FOUR module clauses and 16 members: the three content/type round-trip modules and the tool-ordering module. It DECLARES ALL 41 feature-endpoint checks and their whole 107-axis decomposition, but deliberately leaves ONE module of the feature-endpoint family undeclared — MCP.Server.JsonSchema202012Test, 31 members, 66% of the family's member load on its own. WHY THE SEAM IS BY MODULE AND NOT BY ENDPOINT, measured at dispatch and PM-ratified on 2026-09-23: the endpoint cut (`tools-*` against `prompts + resources + completion`) SPLITS ContentTest, whose five members are content-type round-trips that straddle it — TextContent, ImageContent, AudioContent and EmbeddedResource each reach both a `tools-call-*` check and a `prompts-get-*` one — and this file's partition needs every module declared exactly once. It also does not split the load: the endpoint cut puts 41 members on one side and 1 on the other. And it damages the decomposition, which G19 requires to be whole for every declared check: nineteen of the 41 checks are ONE generic validator at ONE span, so splitting the scenarios would split a single reading across two tickets for no gain. WHAT THE DEFERRAL COSTS, stated rather than assumed: nothing in this file has to be rewritten when the sibling lands. An undeclared member is `not_yet_adjudicated`, NOT bucket 1, so no absence search is owed for it, and bucket 2 is DERIVED by the generator rather than hand-listed. What the sibling can move is named in `the_bucket_2_entries_this_slice_records_as_provisional`.",
           "the_ninth_module_and_why_only_one_of_its_five_members_is_this_slices_subject": "MES-115 (C1c-ii) adds ONE module, `MCP.Transport.StreamableHTTP.ACTest/`, and it is the whole of that ticket's member cut. MEASURED at 3166dc7: of the leg's 145 rows, exactly TWO carry a key that reaches the MRTR family at all — the stateless round-trip (already in this file, as SRV08's bucket-1 row) and ACTest's `spoof — MRTR retry with planted identity` — and ACTest is the only module holding one that was not already declared. Declaring the module is what makes an edge on that member POSSIBLE: G15a refuses an edge on a member outside the declared population, so the alternative was to leave the leg's second MRTR member to a slice that is not the MRTR ticket. The COST is stated rather than absorbed: the module's other four members (AC7 origin-403 parity, two AC8 identity-factory rows and the caching default) enter bucket 1 against checks that are not theirs, and each records a search and a `homed elsewhere` near miss so C1c-iv inherits them instead of re-searching — the SRV08 mechanism running the other way. PM-ratified on MES-115, 2026-09-23.",
           "what_this_is": "The EXECUTABLE half of `rule`. The generator evaluates it against the source named below and requires the result to be SET-EQUAL, in both directions, to the population this file derives. Prose only becomes a guard when something can run it."
         }
@@ -7882,8 +9037,8 @@
         }
       }
     ],
-    "inherited_tokens_guard": "G20 ran over the 172 declared members; 0 inherited tokens unaccounted for.",
-    "member_count": 172,
+    "inherited_tokens_guard": "G20 ran over the 188 declared members; 0 inherited tokens unaccounted for.",
+    "member_count": 188,
     "members": [
       "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
       "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
@@ -7968,6 +9123,16 @@
       "MCP.Protocol.Messages.DiscoverTest/test to_map/1 produces the schema shape",
       "MCP.Protocol.MetaTest/test from_params/1 extracts the io.modelcontextprotocol/* keys",
       "MCP.Protocol.MetaTest/test validate_protocol_version/2 mismatched (e.g. legacy 2025-11-25) → {:error, {:unsupported, got}}",
+      "MCP.Protocol.Types.ContentTest/test AudioContent round-trips through JSON",
+      "MCP.Protocol.Types.ContentTest/test EmbeddedResource round-trips through JSON",
+      "MCP.Protocol.Types.ContentTest/test ImageContent round-trips through JSON",
+      "MCP.Protocol.Types.ContentTest/test ResourceLink round-trips through JSON",
+      "MCP.Protocol.Types.ContentTest/test TextContent round-trips through JSON",
+      "MCP.Protocol.Types.ResourceTest/test JSON encoding round-trips with camelCase keys",
+      "MCP.Protocol.Types.ToolTest/test JSON encoding omits nil fields",
+      "MCP.Protocol.Types.ToolTest/test JSON encoding round-trips through JSON with camelCase keys",
+      "MCP.Protocol.Types.ToolTest/test inputSchema keywords beyond `type` are carried verbatim, including `not` and `$anchor`",
+      "MCP.Protocol.Types.ToolTest/test outputSchema is carried verbatim, and false is not an absence an absent outputSchema is still absent",
       "MCP.ProtocolTest/test decode/1 decodes a success response",
       "MCP.ProtocolTest/test decode/1 decodes an error response",
       "MCP.ProtocolTest/test encode!/1 returns JSON string",
@@ -7996,6 +9161,12 @@
       "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset a URI this principal may not observe is absent from the ack",
       "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset a handler may refuse the subscription outright",
       "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset the two refusals that never reach the handler stay {:reply, ...}",
+      "MCP.Server.ToolOrderTest/test BOUND — sorting is per RESPONSE; a paginated listing is not made deterministic",
+      "MCP.Server.ToolOrderTest/test CONTROL-1 — :tool_order = :handler keeps a curated non-alphabetical order verbatim",
+      "MCP.Server.ToolOrderTest/test CONTROL-2 (discriminates nothing) — an already-deterministic handler is unaffected",
+      "MCP.Server.ToolOrderTest/test SUBJECT — one instance answers in the same order on every request",
+      "MCP.Server.ToolOrderTest/test SUBJECT — the default order is by name, and the tool SET is untouched",
+      "MCP.Server.ToolOrderTest/test SUBJECT — two instances holding the same tool set answer in the same order",
       "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a NOTIFICATION carries it too — the spec says all requests, not all responses-bearing ones",
       "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a message with no method carries no routing headers",
       "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a request carries the body method",
@@ -8058,18 +9229,18 @@
       "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the first message is notifications/subscriptions/acknowledged",
       "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the response carries the SSE headers the spec SHOULDs"
     ],
-    "members_declared_unmatched": 102,
-    "members_with_edges": 70,
+    "members_declared_unmatched": 112,
+    "members_with_edges": 76,
     "outside_the_population": {
-      "et_cc_members": 109,
-      "in_denominator_checks": 53,
+      "et_cc_members": 93,
+      "in_denominator_checks": 12,
       "owners": "C1c-iii = MES-116 and C1c-iv = MES-117 — the rest of the server leg, and the none_determinable rows with it. The CLIENT leg is closed, and closed by refusal rather than by assertion (G22b); of the server leg, C1c-i and C1c-ii have between them declared nine of its twenty-one modules and the remaining twelve are those two tickets'. NEITHER NAMES THE PRODUCER: a field naming its own renderer as still owing the remainder is CR-1's defect (MES-104) and it recurred as CR-5 (MES-108). It recurred a THIRD time at C1c-i, which rendered this artefact while this field read `C1c = MES-105 … It is the only ticket left` and went on to say `NOT C1b-iii, which rendered this artefact` — self-naming and, in its second clause, false. Corrected at C1c-ii (MES-115) and named in its close-out rather than quietly rewritten. The sub-population figures an earlier wording carried are the register's to state, not this artefact's — this artefact holds no figure it did not derive (G21).",
       "state": "not_yet_adjudicated",
       "why_it_is_a_third_state": "Distinct from bucket 1 ('we looked and there is no counterpart') and from A3 §6 state 4 ('nobody has adjudicated this member, and the guard FAILS it'). Reporting these as bucket 1 would assert of each something false of every one.",
       "why_not_173_minus_the_declared": "A check that carries an edge has been adjudicated whether or not any file DECLARES it. 0 of the addressed checks lie outside every declared check population — the inherited C1a edges — and counting them as not_yet_adjudicated would be as wrong in one direction as counting them in bucket 2 would be in the other."
     },
-    "rule": "conformance/data/crosswalk-edges-client.json: Every ET-CC member B2b attributes to the CLIENT leg. The leg is reached as the UNION of the four ticket slices that adjudicated it — CG7 (C1b-i), CG1/CG2/CG4 (C1b-ii), NO CG AT ALL (C1b-iii), and whatever C1a had already tagged — and the union is now the whole leg: every client row in B2b carries a `cg` in {CG7, CG1, CG2, CG4} or carries none, so the four limbs are exhaustive over it. NOTHING outside the client leg is adjudicated here.  ||  conformance/data/crosswalk-edges-server.json: Every ET-CC member B2b attributes to the SERVER leg whose test lives in one of NINE modules: the STATELESS CORE — MCP.Transport.StreamableHTTPStatelessTest, MCP.Server.DispatchTest, MCP.Protocol.MetaTest, MCP.Protocol.Messages.DiscoverTest and MCP.Server.CapabilityHonestyTest — the SUBSCRIPTION family — MCP.Server.SubscriptionsDispatchTest, MCP.Transport.SubscriptionsStreamTest and MCP.Server.NotificationCollectorTest — and the ACCEPTANCE-CRITERIA module MCP.Transport.StreamableHTTP.ACTest, added by C1c-ii for its one MRTR member. NOTHING outside these nine modules is adjudicated here; the leg's other twelve modules are C1c-iii/iv's.  ||  conformance/data/crosswalk-edges.json: The ET-CC members C1a had adjudicated — a token or a contradicts_oc record — that are on NEITHER leg. C1a's 18 client rows moved to crosswalk-edges-client.json under MES-104's composition ruling; its server rows moved to crosswalk-edges-server.json under MES-105's, which is the same ruling applied to the other leg. What is left is one member, none_determinable, and C1c-iv (MES-117) absorbs it with the rest of that class.",
-    "state_4_guard": "ran over these 172 members; 0 fired. ENTAILED BY G15a AND THEREFORE UNABLE TO FIRE, and that is recorded rather than left to be read as evidence: the population is set-equal to its selector's denotation in both directions, and it is derived from the file's own rows, so every member has a row and every row has a tag. It was equally entailed in C1a, where the selector and the tagging predicate were the same predicate. What fires on an EMPTY crosswalk is the vacuum guard, not this. The completeness question that is NOT entailed is G20 — every token B2b already records against a member of this population is still carried by one of that member's rows."
+    "rule": "conformance/data/crosswalk-edges-client.json: Every ET-CC member B2b attributes to the CLIENT leg. The leg is reached as the UNION of the four ticket slices that adjudicated it — CG7 (C1b-i), CG1/CG2/CG4 (C1b-ii), NO CG AT ALL (C1b-iii), and whatever C1a had already tagged — and the union is now the whole leg: every client row in B2b carries a `cg` in {CG7, CG1, CG2, CG4} or carries none, so the four limbs are exhaustive over it. NOTHING outside the client leg is adjudicated here.  ||  conformance/data/crosswalk-edges-server.json: Every ET-CC member B2b attributes to the SERVER leg whose test lives in one of THIRTEEN modules: the STATELESS CORE — MCP.Transport.StreamableHTTPStatelessTest, MCP.Server.DispatchTest, MCP.Protocol.MetaTest, MCP.Protocol.Messages.DiscoverTest and MCP.Server.CapabilityHonestyTest — the SUBSCRIPTION family — MCP.Server.SubscriptionsDispatchTest, MCP.Transport.SubscriptionsStreamTest and MCP.Server.NotificationCollectorTest — and the ACCEPTANCE-CRITERIA module MCP.Transport.StreamableHTTP.ACTest, added by C1c-ii for its one MRTR member. and the FOUR TYPE-AND-ORDER modules added by C1c-iii for the feature endpoints — MCP.Protocol.Types.ContentTest, MCP.Protocol.Types.ToolTest, MCP.Protocol.Types.ResourceTest and MCP.Server.ToolOrderTest. NOTHING outside these thirteen modules is adjudicated here; the leg's other eight modules are C1c-iii-b's and C1c-iv's.  ||  conformance/data/crosswalk-edges.json: The ET-CC members C1a had adjudicated — a token or a contradicts_oc record — that are on NEITHER leg. C1a's 18 client rows moved to crosswalk-edges-client.json under MES-104's composition ruling; its server rows moved to crosswalk-edges-server.json under MES-105's, which is the same ruling applied to the other leg. What is left is one member, none_determinable, and C1c-iv (MES-117) absorbs it with the rest of that class.",
+    "state_4_guard": "ran over these 188 members; 0 fired. ENTAILED BY G15a AND THEREFORE UNABLE TO FIRE, and that is recorded rather than left to be read as evidence: the population is set-equal to its selector's denotation in both directions, and it is derived from the file's own rows, so every member has a row and every row has a tag. It was equally entailed in C1a, where the selector and the tagging predicate were the same predicate. What fires on an EMPTY crosswalk is the vacuum guard, not this. The completeness question that is NOT entailed is G20 — every token B2b already records against a member of this population is still carried by one of that member's rows."
   },
   "population_statement_guard": "G21 — every population figure this generator's own prose states is one this run derived. Scanned 15 authored statements against the 23 distinct figures the run holds, and pinned 8 load-bearing phrases built from those figures independently of the text. THE UNIVERSE IS THE EMITTED ARTEFACT, not a list this module declares: a string is this generator's own iff it occurs in no input document, so a statement added later is inside the guard without anyone remembering to add it. This block is written AFTER the scan and is required to carry no population claim of its own, so it is not part of what it attests. BOUNDS: a figure spelled as a word, or stated without the noun it counts, is invisible to the scan — both occur here and are handled by interpolating them, not by the scan; a literal that coincides with some other held figure survives until the population next moves, which is when CR-5's recurrence would land anyway; and prose this generator does not EMIT (the moduledoc, a branch not taken) is outside the universe by construction.",
   "residuals": [
@@ -8099,7 +9270,7 @@
     },
     {
       "id": "X5",
-      "text": "The member population is 172 across 3 edges files — 107 members from crosswalk-edges-client.json and 64 members from crosswalk-edges-server.json and 1 members from crosswalk-edges.json. Two of the checks C1a addresses enter through A3 §1's cardinality rule and §4's published worked edge, not through B2b's tokens — inherited, not newly adjudicated, and said so in the edges file. Every figure in this sentence is interpolated: all three were literals until MES-108, and two of the three were already wrong when CR-5 found them."
+      "text": "The member population is 188 across 3 edges files — 107 members from crosswalk-edges-client.json and 80 members from crosswalk-edges-server.json and 1 members from crosswalk-edges.json. Two of the checks C1a addresses enter through A3 §1's cardinality rule and §4's published worked edge, not through B2b's tokens — inherited, not newly adjudicated, and said so in the edges file. Every figure in this sentence is interpolated: all three were literals until MES-108, and two of the three were already wrong when CR-5 found them."
     },
     {
       "id": "X7",
@@ -8107,7 +9278,7 @@
     },
     {
       "id": "X8",
-      "text": "BUCKET 2 WAS EMPTY BY CONSTRUCTION UNTIL MES-104. C1a derived its check universe from the tags its own edges carried, so the complement within it was necessarily empty and its `CHECKED, AND ZERO` could not have said anything else. A file may now declare its check population from an external anchor. This run's answer is 60 of the 120 declared checks carrying no edge from any ET-CC member. A file that declares none contributes none to the universe and the artefact reports that bucket 2 was not asked, rather than reporting a zero. The answer is interpolated — this sentence froze C1b-i's at nine and went on stating it after MES-108 moved the check population (CR-5)."
+      "text": "BUCKET 2 WAS EMPTY BY CONSTRUCTION UNTIL MES-104. C1a derived its check universe from the tags its own edges carried, so the complement within it was necessarily empty and its `CHECKED, AND ZERO` could not have said anything else. A file may now declare its check population from an external anchor. This run's answer is 89 of the 161 declared checks carrying no edge from any ET-CC member. A file that declares none contributes none to the universe and the artefact reports that bucket 2 was not asked, rather than reporting a zero. The answer is interpolated — this sentence froze C1b-i's at nine and went on stating it after MES-108 moved the check population (CR-5)."
     },
     {
       "id": "X9",
@@ -8122,11 +9293,11 @@
   "schema": "crosswalk/1",
   "totality": {
     "every_declared_check_is_decomposed_and_accounted_for": {
-      "declared": 120,
+      "declared": 161,
       "equation": "declared checks = checks with an edge + bucket 2",
-      "in_bucket_2": 60,
+      "in_bucket_2": 89,
       "why_this_is_not_a_set_equality": "C1a asserted `every declared check appears` as a set equality, and it held TRIVIALLY: the declared set was derived from the tags the edges carried, so the two sides were the same list twice. Once the checks are declared from outside the file the equality is no longer expected — the checks that do NOT appear are bucket 2, which is the answer rather than a failure.",
-      "with_an_edge": 60
+      "with_an_edge": 72
     },
     "every_declared_member_appears": {
       "equal": true,
@@ -8136,11 +9307,11 @@
     "measure": "SET COMPARISON, not arithmetic — two counts agreeing is not two sets agreeing.",
     "negatives_are_enumerated_not_counted": "Bucket 1's members and bucket 2's checks are listed by name in `buckets`, and the not_yet_adjudicated remainder is counted with its owner named (A2d / ruling 4)."
   },
-  "trust_status": "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — over the declared 172-member / 120-declared-check slice and no further. Both figures are INTERPOLATED from the population this run derives, and the slice is NOT decomposed by ticket here. The pair was a literal that had to be re-typed by hand at every move of the population: it was re-typed at MES-104, the population moved again at MES-108, and it was not. That is an argument against the SHAPE and not against an author — it is CR-1 (MES-104) recurring in the one generator CR-1's remedy did not reach (CR-5, MES-108). The parenthetical was the worse half — it enumerated the slice in a way that positively excluded the members the very run rendering it had just added — so it is dropped rather than re-typed: a fresh decomposition would be a third literal, and `population.files` carries the same fact derived. G21 refuses a figure here that the run did not derive. (Standing, not proven: the attempts were made and none succeeded. `UNFALSIFIED` here previously meant `not yet attempted`.) Ruling 5 asked for the control this artefact was unfalsified against: the generator refuses on each falsification class with the mutation committed and shown firing, a drifted per-row bucket assignment is caught naming the row and the buckets it crosses, and the artefact re-derives byte-identically from a second source path. That last is a CONSISTENCY pin, not a correctness claim (ruling 9, residual X6). Nothing here establishes that an axis verdict is RIGHT (X1), and nothing outside the declared population has been falsified at all — the tickets `population.outside_the_population.owners` names own that.",
+  "trust_status": "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — over the declared 188-member / 161-declared-check slice and no further. Both figures are INTERPOLATED from the population this run derives, and the slice is NOT decomposed by ticket here. The pair was a literal that had to be re-typed by hand at every move of the population: it was re-typed at MES-104, the population moved again at MES-108, and it was not. That is an argument against the SHAPE and not against an author — it is CR-1 (MES-104) recurring in the one generator CR-1's remedy did not reach (CR-5, MES-108). The parenthetical was the worse half — it enumerated the slice in a way that positively excluded the members the very run rendering it had just added — so it is dropped rather than re-typed: a fresh decomposition would be a third literal, and `population.files` carries the same fact derived. G21 refuses a figure here that the run did not derive. (Standing, not proven: the attempts were made and none succeeded. `UNFALSIFIED` here previously meant `not yet attempted`.) Ruling 5 asked for the control this artefact was unfalsified against: the generator refuses on each falsification class with the mutation committed and shown firing, a drifted per-row bucket assignment is caught naming the row and the buckets it crosses, and the artefact re-derives byte-identically from a second source path. That last is a CONSISTENCY pin, not a correctness claim (ruling 9, residual X6). Nothing here establishes that an axis verdict is RIGHT (X1), and nothing outside the declared population has been falsified at all — the tickets `population.outside_the_population.owners` names own that.",
   "verdict_mapping": {
     "observed_statuses": {
       "FAILURE": 13,
-      "SUCCESS": 108,
+      "SUCCESS": 122,
       "WARNING": 1
     },
     "rule": "SUCCESS -> :green. FAILURE -> :red. WARNING -> :green carrying warning: true.",

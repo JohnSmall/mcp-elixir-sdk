@@ -1,12 +1,12 @@
 {
   "bucket": "1",
-  "count": 102,
+  "count": 112,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 172 declared ET-CC members and 120\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 109 members and\n53 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
-  "predicate": "Declared-population ET-CC members carrying NO edge in `cells`: the complement of `members_with_edges` over the declared population, taken through `Crosswalk.project(:bucket_1, ...)`. Universe: the 172 declared members, never all 281 members.",
+  "population_banner": "POPULATION: this projection covers 188 declared ET-CC members and 161\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 93 members and\n12 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "predicate": "Declared-population ET-CC members carrying NO edge in `cells`: the complement of `members_with_edges` over the declared population, taken through `Crosswalk.project(:bucket_1, ...)`. Universe: the 188 declared members, never all 281 members.",
   "projected_from": {
     "bucket_zero": {
       "bytes": 176409,
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 648638,
+      "bytes": 731056,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "30cea0a77bd965ff5883d3dbbec89c8c45977cf1ef8898b0b0b93cf68e664d39"
+      "sha256": "f5186f75a75d5eb96265c848dc3cb9a65e183efff4d43d78c52b796ab7f98911"
     }
   },
   "revision": "2026-07-28",
@@ -749,6 +749,70 @@
       "why_this_search_is_this_claims_search": "The claim is the key-by-key extraction. SRV15's subject is that, and its near miss is the presence family, which a wrong extraction would satisfy."
     },
     {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "a ResourceLink content block reaches the wire with the snake_case discriminator `resource_link` and a camelCase `mimeType`",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test ResourceLink round-trips through JSON",
+        "test": "test ResourceLink round-trips through JSON"
+      },
+      "search_id": "SRV21",
+      "tag": "oc:none/no-oc-scenario/resource-link-round-trip",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsCallEmbeddedResource` and `PromptsGetEmbeddedResource` — the suite's two other resource-bearing content checks, both declared here. They are NEAR MISSES and NOT counterparts, and the distinction is the protocol's own: an EmbeddedResource INLINES the resource contents in the result, while a ResourceLink is a REFERENCE the client must then read with `resources/read`. A check that finds an inlined resource would reject a link and vice versa. MEASURED WIDER THAN THE DECLARATION: the pattern is 0 over all 175 manifest rows and over both legs, not merely 0 over the declared 107, so this is not a deferral to another C1c slice — the suite has no ResourceLink check at all. That is a coverage finding about the OFFICIAL SUITE: `ResourceLink` is in the 2026-07-28 schema (its definition is at build bytes 293842-293989) and nothing in the conformance suite exercises it.",
+      "the_search_that_found_none": "the `resource_link` content type reaching the wire — its snake_case `type` discriminator and its camelCase `mimeType`",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no ResourceLink check at all.",
+      "why_this_search_is_this_claims_search": "The claim is about one content TYPE reaching the wire. SRV21's subject is that type and its pattern sweeps both spellings of its name; the near miss names the two resource-bearing checks that DO exist, so the zero reads as `the suite does not ask` rather than as `we did not look`."
+    },
+    {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "a Tool's unset optional fields — `annotations`, `icons`, `_meta` — are ABSENT from the encoded object rather than present as null",
+      "member": {
+        "module": "MCP.Protocol.Types.ToolTest",
+        "register_key": "MCP.Protocol.Types.ToolTest/test JSON encoding omits nil fields",
+        "test": "test JSON encoding omits nil fields"
+      },
+      "search_id": "SRV22",
+      "tag": "oc:none/no-oc-scenario/tool-optional-field-omission",
+      "the_near_miss_that_is_not_a_counterpart": "`RequestMetaClientInfoOptional` (`server-stateless`, declared here) and `ClientCustomHeaderOmitNull` (`http-custom-headers`, client leg). The first is the closest thing on this leg: it IS about an optional member being omitted, but from the `_meta` of a request the CLIENT sends, and what it scores is the server's tolerance of the omission. The second is about a client omitting a header rather than sending a null one — the right shape, the wrong direction and the wrong leg. Neither asks what a SERVER does with an optional field of an object it is encoding, which is the whole of this member's claim. MEASURED: the pattern is 0 over the declared 107 AND 0 over all 175; the sub-terms `annotation` and `icons` are independently 0 over all 175, so no row in the suite names either field.",
+      "the_search_that_found_none": "an optional field the server left unset being ABSENT from the object it encodes rather than present as null — specifically `annotations`, `icons` and `_meta` on a Tool",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175. No row in the suite names `annotations` or `icons`.",
+      "why_this_search_is_this_claims_search": "The claim is about ABSENCE on the wire. SRV22's subject is exactly that, and its pattern is deliberately wider than the claim — it also sweeps the two field names the member refutes by name."
+    },
+    {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "an inputSchema's JSON Schema 2020-12 keywords beyond `type` survive the round-trip verbatim, `not` and `$anchor` included",
+      "member": {
+        "module": "MCP.Protocol.Types.ToolTest",
+        "register_key": "MCP.Protocol.Types.ToolTest/test inputSchema keywords beyond `type` are carried verbatim, including `not` and `$anchor`",
+        "test": "test inputSchema keywords beyond `type` are carried verbatim, including `not` and `$anchor`"
+      },
+      "search_id": "SRV23",
+      "tag": "oc:none/no-oc-server-check/tool-input-schema-keyword-preservation",
+      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY `$ref` row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network `$ref`, not whether a server PRESERVES the keyword. The other near miss is on this very row's own check: `ToolsList`'s `every_tool_has_an_input_schema` axis, which is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above.",
+      "the_search_that_found_none": "JSON Schema 2020-12 keywords beyond `type` — `$defs`/`$anchor`, `$ref`, `not`, `oneOf`, `if`/`then`/`else`, `unevaluatedProperties` — surviving verbatim through a tools/list inputSchema",
+      "why_no_counterpart": "`no-oc-server-check` — 0 of the 107 and 0 of all 119 server rows; the one hit in 175 is CLIENT leg.",
+      "why_this_search_is_this_claims_search": "The claim is about what survives INSIDE an inputSchema. SRV23's pattern sweeps the 2020-12 keyword vocabulary the member asserts; the near miss names both the client-leg `$ref` row and this module's own `ToolsList` axis, which is a truthiness test and cannot see inside."
+    },
+    {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "a Tool with no outputSchema encodes with no `outputSchema` key at all",
+      "member": {
+        "module": "MCP.Protocol.Types.ToolTest",
+        "register_key": "MCP.Protocol.Types.ToolTest/test outputSchema is carried verbatim, and false is not an absence an absent outputSchema is still absent",
+        "test": "test outputSchema is carried verbatim, and false is not an absence an absent outputSchema is still absent"
+      },
+      "search_id": "SRV24",
+      "tag": "oc:none/no-oc-scenario/tool-absent-output-schema",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s `isError` axes, the only place the suite looks at the SHAPE of a tools/call result beyond its `content` array. Neither names `outputSchema` or `structuredContent`. MEASURED: 0 over all 175 manifest rows, BOTH LEGS — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED: this zero is also `MCP.Server.JsonSchema202012Test`'s, whose fifteen W-1 members make the same claim; that module is C1c-iii-b's member cut and it inherits this search rather than re-running it, the SRV08 mechanism running forward instead of backward.",
+      "the_search_that_found_none": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. SEP-2106's whole output half is unexercised.",
+      "why_this_search_is_this_claims_search": "The claim is about `outputSchema` being absent when unset. SRV24's subject is that field and its structured-content sibling, and the zero is leg-wide."
+    },
+    {
       "authored_by": "MES-109 (C1b-iii)",
       "cg": null,
       "claim_the_slot_names": "a `result`-bearing message decodes to a Response with the result and no error",
@@ -973,6 +1037,102 @@
       "why_this_search_is_this_claims_search": "The claim is the dispatch-level/handler-level distinction. SRV17's subject is that, and its near miss is the suite's one pre-service refusal row, which scores the refusal's content rather than its origin."
     },
     {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "the ordering guarantee is per RESPONSE: a paginated listing is NOT made deterministic across pages",
+      "member": {
+        "module": "MCP.Server.ToolOrderTest",
+        "register_key": "MCP.Server.ToolOrderTest/test BOUND — sorting is per RESPONSE; a paginated listing is not made deterministic",
+        "test": "test BOUND — sorting is per RESPONSE; a paginated listing is not made deterministic"
+      },
+      "search_id": "SRV25",
+      "tag": "oc:none/no-oc-scenario/tools-list-order-pagination-bound",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+      "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+      "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
+    },
+    {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "with `:tool_order = :handler` a curated non-alphabetical order survives verbatim",
+      "member": {
+        "module": "MCP.Server.ToolOrderTest",
+        "register_key": "MCP.Server.ToolOrderTest/test CONTROL-1 — :tool_order = :handler keeps a curated non-alphabetical order verbatim",
+        "test": "test CONTROL-1 — :tool_order = :handler keeps a curated non-alphabetical order verbatim"
+      },
+      "search_id": "SRV25",
+      "tag": "oc:none/no-oc-scenario/tools-list-curated-order-escape-hatch",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+      "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+      "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
+    },
+    {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "an already-deterministic handler is unaffected by the sort (a control that discriminates nothing, and says so)",
+      "member": {
+        "module": "MCP.Server.ToolOrderTest",
+        "register_key": "MCP.Server.ToolOrderTest/test CONTROL-2 (discriminates nothing) — an already-deterministic handler is unaffected",
+        "test": "test CONTROL-2 (discriminates nothing) — an already-deterministic handler is unaffected"
+      },
+      "search_id": "SRV25",
+      "tag": "oc:none/no-oc-scenario/tools-list-order-control-vacuous",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+      "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+      "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
+    },
+    {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "one server instance answers `tools/list` in the same order on every request",
+      "member": {
+        "module": "MCP.Server.ToolOrderTest",
+        "register_key": "MCP.Server.ToolOrderTest/test SUBJECT — one instance answers in the same order on every request",
+        "test": "test SUBJECT — one instance answers in the same order on every request"
+      },
+      "search_id": "SRV25",
+      "tag": "oc:none/no-oc-scenario/tools-list-order-across-requests",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+      "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+      "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
+    },
+    {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "the default `tools/list` order is by name, and the tool SET is untouched by the sort",
+      "member": {
+        "module": "MCP.Server.ToolOrderTest",
+        "register_key": "MCP.Server.ToolOrderTest/test SUBJECT — the default order is by name, and the tool SET is untouched",
+        "test": "test SUBJECT — the default order is by name, and the tool SET is untouched"
+      },
+      "search_id": "SRV25",
+      "tag": "oc:none/no-oc-scenario/tools-list-default-order-and-set",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+      "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+      "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
+    },
+    {
+      "authored_by": "MES-116 (C1c-iii)",
+      "cg": null,
+      "claim_the_slot_names": "two server instances holding the same tool set answer `tools/list` in the same order",
+      "member": {
+        "module": "MCP.Server.ToolOrderTest",
+        "register_key": "MCP.Server.ToolOrderTest/test SUBJECT — two instances holding the same tool set answer in the same order",
+        "test": "test SUBJECT — two instances holding the same tool set answer in the same order"
+      },
+      "search_id": "SRV25",
+      "tag": "oc:none/no-oc-scenario/tools-list-order-across-instances",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+      "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+      "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
+    },
+    {
       "cg": "CG1",
       "claim_the_slot_names": "a notification — a message with no id — carries `Mcp-Method` like any other POST",
       "member": {
@@ -1187,9 +1347,9 @@
       },
       "search_id": "SRV18",
       "tag": "oc:none/no-oc-check-in-this-scenario/origin-rejected-403",
-      "the_near_miss_that_is_not_a_counterpart": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. These are REAL COUNTERPARTS for the rejection this member asserts, and they sit outside this file's declared 66. Named so the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What NEITHER OC row covers is the 403 STATUS this unit pins as the acceptance parity: the OC rows say `rejects`, and nothing in them names a code.",
+      "the_near_miss_that_is_not_a_counterpart": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. These are REAL COUNTERPARTS for the rejection this member asserts, and they sit outside this file's declared 107. Named so the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What NEITHER OC row covers is the 403 STATUS this unit pins as the acceptance parity: the OC rows say `rejects`, and nothing in them names a code.",
       "the_search_that_found_none": "a server REJECTING a request whose `Origin` is not localhost, and answering it with HTTP 403 — the status, not merely the refusal",
-      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 66, and two real counterparts in the SERVER scenario `dns-rebinding-protection`.",
+      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 107, and two real counterparts in the SERVER scenario `dns-rebinding-protection`.",
       "why_this_search_is_this_claims_search": "The claim is a server refusing a non-localhost `Origin`. SRV18's subject is that refusal AND the status it carries, which is the half of the claim the OC counterparts do not reach — so the pattern sweeps the origin vocabulary and the near miss names what it would have found in another scenario."
     },
     {
@@ -1238,9 +1398,9 @@
       },
       "search_id": "SRV20",
       "tag": "oc:none/no-oc-check-in-this-scenario/default-caching-policy",
-      "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`, and all outside this file's declared 66. They are COUNTERPARTS and not near misses: `TtlNonNegative` in particular is about the very field this member pins. Named so the row reads as `homed elsewhere` — whichever C1c ticket declares `caching` should pick this member up rather than search for it again. What no OC row asks is what the DEFAULT is when a deployment configures nothing, which is the whole of this member's claim.",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`, and all outside this file's declared 107. They are COUNTERPARTS and not near misses: `TtlNonNegative` in particular is about the very field this member pins. Named so the row reads as `homed elsewhere` — whichever C1c ticket declares `caching` should pick this member up rather than search for it again. What no OC row asks is what the DEFAULT is when a deployment configures nothing, which is the whole of this member's claim.",
       "the_search_that_found_none": "the DEFAULT caching policy a deployment that configures nothing gets — `ttlMs` 0 and a `cacheScope`, i.e. no-store",
-      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 66, and seven real counterparts in the SERVER scenario `caching`.",
+      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 107, and seven real counterparts in the SERVER scenario `caching`.",
       "why_this_search_is_this_claims_search": "The claim is about the CacheableResult hint fields on a list result. SRV20's subject is those fields at their DEFAULT, and its pattern sweeps the caching vocabulary; the near miss names the seven `caching` rows so the zero reads as `declared elsewhere` rather than as `nothing exists`."
     },
     {
@@ -1366,7 +1526,7 @@
       },
       "search_id": "SRV07",
       "tag": "oc:none/no-oc-check-in-this-scenario/CacheableResult-hints",
-      "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`. These are COUNTERPARTS, not near misses, and they are outside this file's declared 66. Named so the row reads as `homed elsewhere`: whichever C1c ticket declares `caching` should pick this member up rather than search for it again.",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`. These are COUNTERPARTS, not near misses, and they are outside this file's declared 107. Named so the row reads as `homed elsewhere`: whichever C1c ticket declares `caching` should pick this member up rather than search for it again.",
       "the_search_that_found_none": "a list or read RESULT carrying the CacheableResult hints — `ttlMs` and `cacheScope`",
       "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 30 `server-stateless` rows mention caching or ttl, while the `caching` scenario carries seven that do.",
       "why_this_search_is_this_claims_search": "The claim is the caching hints on a list result. SRV07's subject is exactly that, and the search is scoped to the declared 30 because the claim being made is about THIS population."
@@ -1567,9 +1727,9 @@
   "schema": "bucket-view/1",
   "title": "ET-CC member with no OC counterpart",
   "universe": {
-    "count": 172,
+    "count": 188,
     "name": "declared_members",
-    "of": "the 172 declared ET-CC members, never all 281 members"
+    "of": "the 188 declared ET-CC members, never all 281 members"
   },
   "what_this_is": "A PURE PROJECTION of the crosswalk named in `projected_from`, on the `predicate` above and on fields the crosswalk already stores. Nothing here re-computes a verdict, an edge shape or a bucket assignment. The rows are the crosswalk's own records verbatim, so a reader can check this view against the matrix byte for byte."
 }

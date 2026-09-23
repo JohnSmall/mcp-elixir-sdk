@@ -1,22 +1,22 @@
 {
  "schema": "crosswalk-edges/1",
  "revision": "2026-07-28",
- "owner": "MES-105 (C1c-i) and MES-115 (C1c-ii). C1a's (MES-97) 4 edges over 2 server members were MOVED here unchanged by C1c-i.",
+ "owner": "MES-105 (C1c-i), MES-115 (C1c-ii) and MES-116 (C1c-iii). C1a's (MES-97) 4 edges over 2 server members were MOVED here unchanged by C1c-i.",
  "authored_by_hand": true,
  "what_this_is": "The AUTHORED adjudications for the SERVER leg — one record per (ET-CC member, claim, OC check). Judgements are data with evidence; derivations are code. `oc_key`, `shape` and `bucket` appear NOWHERE here: the generator derives them through MCP.Conformance.MatchKey and refuses any edge whose stored tag does not re-encode from the key it resolves to. It mirrors `crosswalk-edges-client.json` field for field, and where it does NOT the difference is stated on the field rather than left to be noticed.",
- "why_this_file_declares_no_leg_yet": "`leg` and `the_sub_populations_this_file_records` are DELIBERATELY ABSENT, and they are both-or-neither. Declaring `leg: server` is what turns G22b on — the generator then evaluates `all_of[{leg equals server}]` fresh against B2b and refuses the build unless EVERY server ET-CC member has a row here. This file holds 64 of the leg's 145, so declaring the leg would correctly RED the build. `leg_totality!` therefore reports NOT ASSERTED, which is the honest state of a partial leg and not a gap: the assertion becomes available exactly when C1c-iv closes the leg, and until then nothing here claims a totality it does not have. Note what this costs — G22b is the guard that would catch a MEMBER SILENTLY MISSING from the leg, and it cannot fire on this file. What still bites is G15a, which compares this file's derived population against its own selector's denotation in both directions; that catches a member missing from THIS SLICE, and it is strictly weaker than the leg-wide check.",
- "what_C1c_i_establishes_for_C1c_ii_iii_and_iv": "This is the FIRST server-leg ticket and three things it settles are inherited rather than re-decided. (1) THE FILE: one edges file for the whole server leg, this one, appended to by each later slice — not one per ticket, which would split the leg by the accident of which member was adjudicated first. (2) THE MEMBER SELECTOR: `all_of[{leg equals server}, any_of[{key starts_with \"<Module>/\"} ...]]`, evaluated against B2b. The server rows carry no `cg` and no `tokens` — measured, all 145 — and `leg_reason` partitions by code path rather than by OC scenario, so no `equals` predicate over the anchor denotes a server sub-population at all; the module does, and modules partition the leg exactly (21 of them, keys unique, no prefix collision with the trailing `/`). A later slice adds its modules to the `any_of` and changes nothing else. (3) THE AXIS-EXTRACTION METHOD, which is written out in `oc-axes-c1.json`'s own `scope.how_the_18_were_cut` rather than here, because that is where its inputs live. C1c-ii INHERITED all three without amendment and the fact is recorded here rather than argued again: it appended to this file rather than opening a second, it added ONE module clause to the `any_of` and changed nothing else about the member selector's shape, and it cut its 36 axis rows by the method `oc-axes-c1.json`'s `how_the_18_were_cut` states. The one thing it did NOT inherit is the check selector's single clause: the MRTR family is fourteen scenarios, so the `any_of` went from one clause to fifteen, and `why_fourteen_clauses_and_not_a_prefix` says why that is enumeration and not a prefix test.",
- "why_the_leg_conjunct_is_load_bearing": "`all_of[{leg equals server}, any_of[...]]` — and the first conjunct is not belt-and-braces. MEASURED at this tip, and RE-MEASURED by C1c-ii over the NINE prefixes the `any_of` now holds: two rows outside the server leg carry a key with one of them — the ninth prefix, `MCP.Transport.StreamableHTTP.ACTest/`, adds none, so the figure is unchanged and was re-derived rather than carried over — `MCP.Protocol.Messages.DiscoverTest/test from_map/1 round-trips the schema shape` (leg `client`) and `MCP.Transport.SubscriptionsStreamTest/test T-8 keep-alive comment lines our parser ignores` (leg `none_determinable`). Drop the `leg` conjunct and both join this population, which would adjudicate a client member inside the server file and put a none_determinable row where C1c-iv is owed it. Recorded because a conjunct that removes nothing is a guard entailed by its neighbour, and this one removes two.",
+ "why_this_file_declares_no_leg_yet": "`leg` and `the_sub_populations_this_file_records` are DELIBERATELY ABSENT, and they are both-or-neither. Declaring `leg: server` is what turns G22b on — the generator then evaluates `all_of[{leg equals server}]` fresh against B2b and refuses the build unless EVERY server ET-CC member has a row here. This file holds 80 of the leg's 145, so declaring the leg would correctly RED the build. `leg_totality!` therefore reports NOT ASSERTED, which is the honest state of a partial leg and not a gap: the assertion becomes available exactly when C1c-iv closes the leg, and until then nothing here claims a totality it does not have. Note what this costs — G22b is the guard that would catch a MEMBER SILENTLY MISSING from the leg, and it cannot fire on this file. What still bites is G15a, which compares this file's derived population against its own selector's denotation in both directions; that catches a member missing from THIS SLICE, and it is strictly weaker than the leg-wide check.",
+ "what_C1c_i_establishes_for_C1c_ii_iii_and_iv": "This is the FIRST server-leg ticket and three things it settles are inherited rather than re-decided. (1) THE FILE: one edges file for the whole server leg, this one, appended to by each later slice — not one per ticket, which would split the leg by the accident of which member was adjudicated first. (2) THE MEMBER SELECTOR: `all_of[{leg equals server}, any_of[{key starts_with \"<Module>/\"} ...]]`, evaluated against B2b. The server rows carry no `cg` and no `tokens` — measured, all 145 — and `leg_reason` partitions by code path rather than by OC scenario, so no `equals` predicate over the anchor denotes a server sub-population at all; the module does, and modules partition the leg exactly (21 of them, keys unique, no prefix collision with the trailing `/`). A later slice adds its modules to the `any_of` and changes nothing else. (3) THE AXIS-EXTRACTION METHOD, which is written out in `oc-axes-c1.json`'s own `scope.how_the_18_were_cut` rather than here, because that is where its inputs live. C1c-ii INHERITED all three without amendment and the fact is recorded here rather than argued again: it appended to this file rather than opening a second, it added ONE module clause to the `any_of` and changed nothing else about the member selector's shape, and it cut its 36 axis rows by the method `oc-axes-c1.json`'s `how_the_18_were_cut` states. The one thing it did NOT inherit is the check selector's single clause: the MRTR family is fourteen scenarios, so the `any_of` went from one clause to fifteen, and `why_fourteen_clauses_and_not_a_prefix` says why that is enumeration and not a prefix test. C1c-iii inherited all three the same way — it appended to this file, it added FOUR module clauses to the `any_of` and changed nothing else about the member selector's shape, and it cut its 41 axis rows by the same method. It extended the check selector from fifteen clauses to thirty-four on the same enumerate-never-prefix ground, and measured what the prefix form would have cost today rather than only in future: a `starts_with` over `tools-` admits `tools-call-with-logging`, `tools-call-sampling` and `tools-call-elicitation`, three scenarios in this very build that are NOT in its 41.",
+ "why_the_leg_conjunct_is_load_bearing": "`all_of[{leg equals server}, any_of[...]]` — and the first conjunct is not belt-and-braces. MEASURED at this tip, RE-MEASURED by C1c-ii over NINE prefixes and RE-MEASURED AGAIN by C1c-iii over the THIRTEEN the `any_of` now holds: 82 rows carry a key with one of the thirteen prefixes on ANY leg, and exactly TWO of them are outside the server leg — `MCP.Protocol.Messages.DiscoverTest/test from_map/1 round-trips the schema shape` (leg `client`) and `MCP.Transport.SubscriptionsStreamTest/test T-8 keep-alive comment lines our parser ignores` (leg `none_determinable`) — leaving the 80 this file declares. The four modules C1c-iii adds contribute none, so the figure is unchanged for the second time running and was RE-DERIVED on both occasions rather than carried: a conjunct whose removal is measured once and asserted thereafter is a conjunct nobody is checking. Drop it and both rows join this population, which would adjudicate a client member inside the server file and put a none_determinable row where C1c-iv is owed it. Recorded because a conjunct that removes nothing is a guard entailed by its neighbour, and this one removes two.",
  "the_population_this_file_declares": {
-  "members": 64,
-  "members_with_edges": 27,
-  "members_declared_unmatched": 37,
-  "checks_addressed": 20,
-  "rule": "Every ET-CC member B2b attributes to the SERVER leg whose test lives in one of NINE modules: the STATELESS CORE — MCP.Transport.StreamableHTTPStatelessTest, MCP.Server.DispatchTest, MCP.Protocol.MetaTest, MCP.Protocol.Messages.DiscoverTest and MCP.Server.CapabilityHonestyTest — the SUBSCRIPTION family — MCP.Server.SubscriptionsDispatchTest, MCP.Transport.SubscriptionsStreamTest and MCP.Server.NotificationCollectorTest — and the ACCEPTANCE-CRITERIA module MCP.Transport.StreamableHTTP.ACTest, added by C1c-ii for its one MRTR member. NOTHING outside these nine modules is adjudicated here; the leg's other twelve modules are C1c-iii/iv's.",
-  "how_the_leg_closes": "As a PARTITION and not as a cover. The nine modules declared here hold 64 of the leg's 145 members and the other twelve hold the remaining 81; 64 + 81 = 145, with no module in both halves because a module prefix denotes disjoint key sets. That is why C1c-iv can turn G22b on by ADDING clauses rather than by reconciling overlaps — and why `the_sub_populations_this_file_records`, when it is finally written, will be a partition rather than the COVER the client file had to declare (its four slices overlap in 18 members). Stated here rather than in `rule` because the generator composes every file's `rule` into one string and G21 then reads that composition as its own prose, so an arithmetic sentence there is refused as an uninterpolated population figure — correctly: it is a figure about a population this run does not derive.",
+  "members": 80,
+  "members_with_edges": 33,
+  "members_declared_unmatched": 47,
+  "checks_addressed": 32,
+  "rule": "Every ET-CC member B2b attributes to the SERVER leg whose test lives in one of THIRTEEN modules: the STATELESS CORE — MCP.Transport.StreamableHTTPStatelessTest, MCP.Server.DispatchTest, MCP.Protocol.MetaTest, MCP.Protocol.Messages.DiscoverTest and MCP.Server.CapabilityHonestyTest — the SUBSCRIPTION family — MCP.Server.SubscriptionsDispatchTest, MCP.Transport.SubscriptionsStreamTest and MCP.Server.NotificationCollectorTest — and the ACCEPTANCE-CRITERIA module MCP.Transport.StreamableHTTP.ACTest, added by C1c-ii for its one MRTR member. and the FOUR TYPE-AND-ORDER modules added by C1c-iii for the feature endpoints — MCP.Protocol.Types.ContentTest, MCP.Protocol.Types.ToolTest, MCP.Protocol.Types.ResourceTest and MCP.Server.ToolOrderTest. NOTHING outside these thirteen modules is adjudicated here; the leg's other eight modules are C1c-iii-b's and C1c-iv's.",
+  "how_the_leg_closes": "As a PARTITION and not as a cover. The thirteen modules declared here hold 80 of the leg's 145 members and the other eight hold the remaining 65; 80 + 65 = 145, with no module in both halves because a module prefix denotes disjoint key sets. That is why C1c-iv can turn G22b on by ADDING clauses rather than by reconciling overlaps — and why `the_sub_populations_this_file_records`, when it is finally written, will be a partition rather than the COVER the client file had to declare (its four slices overlap in 18 members). Stated here rather than in `rule` because the generator composes every file's `rule` into one string and G21 then reads that composition as its own prose, so an arithmetic sentence there is refused as an uninterpolated population figure — correctly: it is a figure about a population this run does not derive.",
   "why_the_cut_is_by_MODULE_and_not_by_SCENARIO": "The dispatch asked for `leg=server AND the server-stateless scenario` and that predicate is NOT EXECUTABLE over the anchor: B2b's rows carry cg, cg_basis, contradicts_oc, key, leg, leg_reason and tokens — no scenario field — and `selected!/4` hard-refuses a member selector whose source is not the attribution file. `cg` is null on all 145 server rows and `tokens` is empty on all 145, so neither discriminates; `leg_reason` has ten values and partitions by CODE PATH (59 and 39 on the two dispatch/plug ones), which is not the same cut as the OC scenario. The MODULE is already in the anchor — `key` is `Module/test` — so a prefix predicate over `key` denotes the slice, and PM-ratified on 2026-09-23 it is the pattern the rest of the leg follows. The CHECK half of the declaration is still by scenario, because the locator artefact does carry one.",
-  "what_the_trailing_slash_buys_and_what_it_does_not": "Each prefix ends in `/`, and the reason is PROSPECTIVE rather than live — stated that way because the first draft of this field claimed otherwise and the control measured it out. The claim was that without the slash `MCP.Transport.StreamableHTTP` would name both MCP.Transport.StreamableHTTPStatelessTest and MCP.Transport.StreamableHTTP.ACTest. That string is not one of the prefixes this selector uses: the leaves carry FULL module names, and over all 21 server modules — over all 30 in B2b — NOT ONE is a plain string-prefix of another. `mix run conformance/controls/crosswalk_controls.exs selectors` strips the slash from every leaf and measures the population unchanged, so on the shipped anchor the slash removes NOTHING. What it buys is a bound against a module ADDED LATER whose name EXTENDS one of these eight — `...DispatchTestExtra` and the like. That case has no live instance, so the control CONSTRUCTS one: a synthetic server row in an extending module, refused by the slashed selector and admitted by the slashless one, on the same fixture and in both directions. The slash is therefore kept as a discipline whose value is future, and NOT as a fact about this anchor.",
-  "why_a_prefix_predicate_and_not_an_enumeration": "An enumeration of `key equals` leaves needs no new code and was rejected for the reason C1b-iii's `cg is_null` was chosen over one: an enumeration CANNOT DENOTE A MEMBER ADDED LATER. A new test in one of these eight modules would fall silently outside the population, and G15a — which compares the derived population against the selector's denotation — would stay green over the omission, because the omission would be in the universe as well as in the file. The prefix predicate picks the new member up and G15a then reds naming it as `missing`. The cost is one new selector leaf, and the leaf's caller is the population it was added for, so it is not S9-15's guard on a dead path.",
+  "what_the_trailing_slash_buys_and_what_it_does_not": "Each prefix ends in `/`, and the reason is PROSPECTIVE rather than live — stated that way because the first draft of this field claimed otherwise and the control measured it out. The claim was that without the slash `MCP.Transport.StreamableHTTP` would name both MCP.Transport.StreamableHTTPStatelessTest and MCP.Transport.StreamableHTTP.ACTest. That string is not one of the prefixes this selector uses: the leaves carry FULL module names, and over all 21 server modules — over all 30 in B2b — NOT ONE is a plain string-prefix of another. `mix run conformance/controls/crosswalk_controls.exs selectors` strips the slash from every leaf and measures the population unchanged, so on the shipped anchor the slash removes NOTHING. What it buys is a bound against a module ADDED LATER whose name EXTENDS one of these thirteen — `...DispatchTestExtra` and the like. That case has no live instance, so the control CONSTRUCTS one: a synthetic server row in an extending module, refused by the slashed selector and admitted by the slashless one, on the same fixture and in both directions. The slash is therefore kept as a discipline whose value is future, and NOT as a fact about this anchor.",
+  "why_a_prefix_predicate_and_not_an_enumeration": "An enumeration of `key equals` leaves needs no new code and was rejected for the reason C1b-iii's `cg is_null` was chosen over one: an enumeration CANNOT DENOTE A MEMBER ADDED LATER. A new test in one of these thirteen modules would fall silently outside the population, and G15a — which compares the derived population against the selector's denotation — would stay green over the omission, because the omission would be in the universe as well as in the file. The prefix predicate picks the new member up and G15a then reds naming it as `missing`. The cost is one new selector leaf, and the leaf's caller is the population it was added for, so it is not S9-15's guard on a dead path.",
   "selector": {
    "what_this_is": "The EXECUTABLE half of `rule`. The generator evaluates it against the source named below and requires the result to be SET-EQUAL, in both directions, to the population this file derives. Prose only becomes a guard when something can run it.",
    "source": "docs/conformance/etcc-attribution.json",
@@ -44,6 +44,21 @@
       {
        "field": "key",
        "test": "starts_with",
+       "value": "MCP.Protocol.Types.ContentTest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.Protocol.Types.ResourceTest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.Protocol.Types.ToolTest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
        "value": "MCP.Server.CapabilityHonestyTest/"
       },
       {
@@ -64,6 +79,11 @@
       {
        "field": "key",
        "test": "starts_with",
+       "value": "MCP.Server.ToolOrderTest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
        "value": "MCP.Transport.StreamableHTTP.ACTest/"
       },
       {
@@ -79,16 +99,17 @@
      ]
     }
    ],
-   "denotes": "64 ET-CC members — MCP.Transport.SubscriptionsStreamTest 17, MCP.Server.SubscriptionsDispatchTest 16, MCP.Transport.StreamableHTTPStatelessTest 16, MCP.Server.DispatchTest 5, MCP.Transport.StreamableHTTP.ACTest 5, MCP.Protocol.MetaTest 2, MCP.Protocol.Messages.DiscoverTest 1, MCP.Server.CapabilityHonestyTest 1 and MCP.Server.NotificationCollectorTest 1. What the trailing `/` does and does not buy is measured in the field of that name; it is NOT a fact about this anchor.",
+   "denotes": "80 ET-CC members — MCP.Transport.SubscriptionsStreamTest 17, MCP.Server.SubscriptionsDispatchTest 16, MCP.Transport.StreamableHTTPStatelessTest 16, MCP.Server.ToolOrderTest 6, MCP.Server.DispatchTest 5, MCP.Transport.StreamableHTTP.ACTest 5, MCP.Protocol.Types.ContentTest 5, MCP.Protocol.Types.ToolTest 4, MCP.Protocol.MetaTest 2, MCP.Protocol.Messages.DiscoverTest 1, MCP.Server.CapabilityHonestyTest 1, MCP.Server.NotificationCollectorTest 1 and MCP.Protocol.Types.ResourceTest 1. What the trailing `/` does and does not buy is measured in the field of that name; it is NOT a fact about this anchor.",
    "everything_else_is": "not_yet_adjudicated — NOT bucket 1, and not state 4.",
-   "the_ninth_module_and_why_only_one_of_its_five_members_is_this_slices_subject": "MES-115 (C1c-ii) adds ONE module, `MCP.Transport.StreamableHTTP.ACTest/`, and it is the whole of that ticket's member cut. MEASURED at 3166dc7: of the leg's 145 rows, exactly TWO carry a key that reaches the MRTR family at all — the stateless round-trip (already in this file, as SRV08's bucket-1 row) and ACTest's `spoof — MRTR retry with planted identity` — and ACTest is the only module holding one that was not already declared. Declaring the module is what makes an edge on that member POSSIBLE: G15a refuses an edge on a member outside the declared population, so the alternative was to leave the leg's second MRTR member to a slice that is not the MRTR ticket. The COST is stated rather than absorbed: the module's other four members (AC7 origin-403 parity, two AC8 identity-factory rows and the caching default) enter bucket 1 against checks that are not theirs, and each records a search and a `homed elsewhere` near miss so C1c-iv inherits them instead of re-searching — the SRV08 mechanism running the other way. PM-ratified on MES-115, 2026-09-23."
+   "the_ninth_module_and_why_only_one_of_its_five_members_is_this_slices_subject": "MES-115 (C1c-ii) adds ONE module, `MCP.Transport.StreamableHTTP.ACTest/`, and it is the whole of that ticket's member cut. MEASURED at 3166dc7: of the leg's 145 rows, exactly TWO carry a key that reaches the MRTR family at all — the stateless round-trip (already in this file, as SRV08's bucket-1 row) and ACTest's `spoof — MRTR retry with planted identity` — and ACTest is the only module holding one that was not already declared. Declaring the module is what makes an edge on that member POSSIBLE: G15a refuses an edge on a member outside the declared population, so the alternative was to leave the leg's second MRTR member to a slice that is not the MRTR ticket. The COST is stated rather than absorbed: the module's other four members (AC7 origin-403 parity, two AC8 identity-factory rows and the caching default) enter bucket 1 against checks that are not theirs, and each records a search and a `homed elsewhere` near miss so C1c-iv inherits them instead of re-searching — the SRV08 mechanism running the other way. PM-ratified on MES-115, 2026-09-23.",
+   "the_four_modules_C1c_iii_adds_and_the_one_it_deliberately_leaves": "MES-116 (C1c-iii) adds FOUR module clauses and 16 members: the three content/type round-trip modules and the tool-ordering module. It DECLARES ALL 41 feature-endpoint checks and their whole 107-axis decomposition, but deliberately leaves ONE module of the feature-endpoint family undeclared — MCP.Server.JsonSchema202012Test, 31 members, 66% of the family's member load on its own. WHY THE SEAM IS BY MODULE AND NOT BY ENDPOINT, measured at dispatch and PM-ratified on 2026-09-23: the endpoint cut (`tools-*` against `prompts + resources + completion`) SPLITS ContentTest, whose five members are content-type round-trips that straddle it — TextContent, ImageContent, AudioContent and EmbeddedResource each reach both a `tools-call-*` check and a `prompts-get-*` one — and this file's partition needs every module declared exactly once. It also does not split the load: the endpoint cut puts 41 members on one side and 1 on the other. And it damages the decomposition, which G19 requires to be whole for every declared check: nineteen of the 41 checks are ONE generic validator at ONE span, so splitting the scenarios would split a single reading across two tickets for no gain. WHAT THE DEFERRAL COSTS, stated rather than assumed: nothing in this file has to be rewritten when the sibling lands. An undeclared member is `not_yet_adjudicated`, NOT bucket 1, so no absence search is owed for it, and bucket 2 is DERIVED by the generator rather than hand-listed. What the sibling can move is named in `the_bucket_2_entries_this_slice_records_as_provisional`."
   }
  },
  "the_check_population_this_file_declares": {
-  "checks": 66,
-  "rule": "EVERY in-denominator OC check in the `server-stateless` scenario — all 30, C1c-i's — AND every in-denominator check in the FOURTEEN `input-required-result-*` scenarios — all 36, C1c-ii's: the MRTR family, SEP-2322's server side. 30 + 36 = 66. This file is total over them: every one is axis-decomposed (12 by A3, 18 by C1c-i, 36 by C1c-ii), and every one either carries an edge or is reported in bucket 2 by name.",
+  "checks": 107,
+  "rule": "EVERY in-denominator OC check in the `server-stateless` scenario — all 30, C1c-i's — every in-denominator check in the FOURTEEN `input-required-result-*` scenarios — all 36, C1c-ii's: the MRTR family, SEP-2322's server side — AND every in-denominator check in the NINETEEN feature-endpoint scenarios, all 41, C1c-iii's: `tools-call-*` (7 scenarios) and `tools-list`, `prompts-*` (5), `resources-*` (4) and `sep-2164-resource-not-found`, and `completion-complete`. 30 + 36 + 41 = 107. This file is total over them: every one is axis-decomposed (12 by A3, 18 by C1c-i, 36 by C1c-ii, 41 by C1c-iii), and every one either carries an edge or is reported in bucket 2 by name.",
   "selector": {
-   "what_this_is": "The check half of the declaration, and what makes bucket 2 answerable. It names the SCENARIO rather than the 30 tokens, so a check added to it by a harness bump joins the population instead of falling silently outside it.",
+   "what_this_is": "The check half of the declaration, and what makes bucket 2 answerable. It names the SCENARIO rather than the 107 tokens, so a check added to it by a harness bump joins the population instead of falling silently outside it.",
    "source": "docs/conformance/oc-emitting-sites-2026-07-28.json",
    "source_owner": "MES-97 (C1a) — `mix conformance.locator`'s output, one row per in-denominator check",
    "rows_at": "rows",
@@ -168,12 +189,108 @@
      "field": "scenario",
      "test": "equals",
      "value": "input-required-result-validate-input"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "completion-complete"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "prompts-get-embedded-resource"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "prompts-get-simple"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "prompts-get-with-args"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "prompts-get-with-image"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "prompts-list"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "resources-list"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "resources-read-binary"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "resources-read-text"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "resources-templates-read"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "sep-2164-resource-not-found"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "tools-call-audio"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "tools-call-embedded-resource"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "tools-call-error"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "tools-call-image"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "tools-call-mixed-content"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "tools-call-simple-text"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "tools-call-with-progress"
+    },
+    {
+     "field": "scenario",
+     "test": "equals",
+     "value": "tools-list"
     }
    ],
-   "denotes": "All 66 in-denominator checks of the fifteen scenarios named: `server-stateless` 30, and the fourteen `input-required-result-*` scenarios 36 between them. FIFTEEN clauses, where C1c-i had one: the MRTR family is cut into fourteen scenarios of two to four checks each, and the selector names every one rather than matching a prefix — there is no `starts_with` over this artefact's `scenario` field and adding one would have widened the declaration to whatever a harness bump happened to name `input-required-result-*` next.",
+   "denotes": "All 107 in-denominator checks of the thirty-four scenarios named: `server-stateless` 30, the fourteen `input-required-result-*` scenarios 36 between them, and the nineteen feature-endpoint scenarios 41 between them. THIRTY-FOUR clauses, where C1c-i had one and C1c-ii fifteen, and every one is an equality rather than a prefix — see `why_fourteen_clauses_and_not_a_prefix`, whose reasoning C1c-iii applies unchanged to `tools-`, `prompts-` and `resources-`.",
    "why_the_locator_artefact_and_not_A1s_manifest": "A1's manifest nests its checks under scenarios and its key is a six-field LIST; the selector's `key_field` must name a STRING field and refuses anything else rather than stringifying it. The locator artefact is flat and carries a `token`. Same reason the client file gives.",
-   "the_bound_this_leaves": "The declared CHECK population is fifteen scenarios of the suite's thirty-odd, so a bucket-1 row here means `no counterpart among these 66` and not `no counterpart anywhere` — `what_unmatched_means_in_a_file_that_declares_its_own_checks` in the client file states the rule and it is not restated. FOUR of this file's searches are scoped that way and say so in their `kind`: SRV02 and SRV18 name REAL counterparts in `dns-rebinding-protection` and SRV07 and SRV20 in `caching`, so that whichever later C1c slice declares those scenarios inherits the member instead of re-searching for it. C1c-i's SRV08 was a fifth, naming the `input-required-result-*` family; this ticket declared that family, so SRV08 is GONE and its member carries edges — the mechanism working, not failing.",
-   "why_fourteen_clauses_and_not_a_prefix": "A prefix clause would be SHORTER and would declare a DIFFERENT population: every future scenario whose name begins `input-required-result-` would join this file's declared checks the moment a harness bump introduced it, and would then have to be axis-decomposed by G19 or redden a build nobody had changed. Enumerating costs fourteen lines and makes the population a decision this ticket took rather than a pattern that keeps deciding. The same reasoning is why the client file enumerates its seven."
+   "the_bound_this_leaves": "The declared CHECK population is thirty-four scenarios of the suite's thirty-odd, so a bucket-1 row here means `no counterpart among these 107` and not `no counterpart anywhere` — `what_unmatched_means_in_a_file_that_declares_its_own_checks` in the client file states the rule and it is not restated. FOUR of this file's searches are scoped that way and say so in their `kind`: SRV02 and SRV18 name REAL counterparts in `dns-rebinding-protection` and SRV07 and SRV20 in `caching`, so that whichever later C1c slice declares those scenarios inherits the member instead of re-searching for it. C1c-i's SRV08 was a fifth, naming the `input-required-result-*` family; this ticket declared that family, so SRV08 is GONE and its member carries edges — the mechanism working, not failing.",
+   "why_fourteen_clauses_and_not_a_prefix": "A prefix clause would be SHORTER and would declare a DIFFERENT population: every future scenario whose name begins `input-required-result-` would join this file's declared checks the moment a harness bump introduced it, and would then have to be axis-decomposed by G19 or redden a build nobody had changed. Enumerating costs fourteen lines and makes the population a decision this ticket took rather than a pattern that keeps deciding. The same reasoning is why the client file enumerates its seven.",
+   "why_the_feature_endpoint_scenarios_are_enumerated_too": "NINETEEN more equality clauses and not three `starts_with` ones. A prefix over `tools-` would be three lines instead of eight and would declare a DIFFERENT population: every future scenario a harness bump named `tools-call-something` would join this file's declared checks the moment it appeared, and would then have to be axis-decomposed by G19 or redden a build nobody had changed. The cost is real and is paid knowingly — the prefix would also have silently ADMITTED `tools-call-with-logging`, `tools-call-sampling` and `tools-call-elicitation`, three scenarios that exist in this very build and are NOT in this slice's 41. That is not a hypothetical about a future bump; it is a live mis-declaration the prefix form would have made today."
   }
  },
  "what_a_record_carries_and_why": {
@@ -181,7 +298,7 @@
   "claim": "ONE claim within the member (A3 §1). A member making several contributes several edges and they are never collapsed.",
   "tag": "the OC check's token, re-derived and required to equal the stored one.",
   "axes": "one verdict per axis of the check's decomposition — `agrees`, `contradicts` or `silent`. The set must be the decomposition's WHOLE set.",
-  "et_verdict": "green on every record here: all 59 members are green at the accepted run, which is why buckets 3 and 6 are empty by construction.",
+  "et_verdict": "green on every record here: all 80 members are green at the accepted run, which is why buckets 3 and 6 are empty by construction.",
   "evidence": "the ET assertion, cited by line span, and the OC conjunct it meets. Every quoted byte-string is verbatim at an address the evidence itself names (G30).",
   "not_carried": "`oc_key`, `shape`, `bucket` — all three are derived by the generator and refused if stored.",
   "note": "used where a record needs something said about it that is not its evidence — an escalation, a measured surprise, a bound.",
@@ -192,7 +309,7 @@
  "the_all_silent_case": "THREE edges have EVERY axis silent. They are recorded and ESCALATED as `no_axis_contact`, never bucketed — A3 §2 rules that covering zero of one axis is no match rather than a partial one, generalised to N axes is exactly this, and A3 §3's table has no row for it. The client file has four of these and the rule is the same. What differs is that TWO of the three here are against a check that is RED at the accepted run (`ServerUnsupportedVersionError`), so the silence is not harmless: it is the precise reason our green tells us nothing about why the harness failed us. Each of the three says on its own record what the near-agreement was and where it stopped.",
  "the_contradicting_edges": "SIX edges carry a `contradicts` verdict. FIVE are C1c-i's and are unchanged: the `initialize` pair (inherited from C1a) answering -32022 where the suite requires -32601; the `RequestMetaInvalid` pair answering -32022 where -32602 is required; and `subscriptions/listen` in JSON mode asserting HTTP 200 where the check's `http_status` axis requires 404 while AGREEING with the same check's `jsonrpc_error_code` axis. All five are 4a — red OC, green ET — and none escalates, because `(red, green, :contradicting)` is a row the ratified table has.\n\nTHE SIXTH IS C1c-ii's AND IT IS A DIFFERENT ANIMAL: it is the crosswalk's first contradiction against a GREEN check, and the first against `WireSchemaValid` on either leg. `MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion` asserts `is_list(first[\"inputRequests\"])`, and the pinned schema's `InputRequests` is `type: object`. So our unit asserts, and passes on, a message that the check's own predicate would count as a violation — while the check is SUCCESS at the accepted run, because the harness ran against `conformance/server_handler.ex`, which sends a map and says in its own moduledoc that the SDK's `@spec` disagrees with the wire type. A contradiction against a GREEN check is NOT A BUCKET AT ALL, and that was measured rather than predicted: `MatchKey.bucket/3` sends `(:green, :green, :contradicting)` to `{:escalate, :inconsistent_verdict_pair}` (match_key.ex:554), so the edge leaves the bucket arithmetic entirely and lands in `escalations`. That is the right home for it — BOTH SIDES PASSED and they disagree, which is an inconsistency in the evidence rather than a verdict about the implementation — and it is the SERVER leg's first instance of that escalation (the client leg has three, all against `ClientMcpNameHeader_tools_call`). It is also why this finding is invisible to anyone reading bucket counts alone, and why it is written out here.",
  "why_contradicts_and_not_silent": "`how_a_silent_axis_was_decided` is conservative about claiming COVERAGE — a claim covers an axis only when an assertion's SUBJECT is the behaviour that axis names. It is NOT a rule for suppressing disagreement, and reading it that way would make it a rule for hiding exactly what a crosswalk exists to find. The client file states this and it is cited rather than restated; what is new here is that it now decides FIVE edges instead of three, and that on this leg the two readings give visibly different answers. Each of the five carries its own `why_contradicts_and_not_silent` where the judgement is not obvious from the evidence. C1c-ii's single contradiction is where the two readings come apart most sharply, and the edge carries its own `why_contradicts_and_not_silent` for it. The conservative reading would say the unit is `silent` on schema validity because it asserts a VALUE and not a VALIDATION. That reading is available and it is wrong: the axis quantifies over every message the implementation sent, the unit asserts the content of one such message, and the content it asserts is one the axis's predicate rejects. There is no grain at which the two are about different things — and the whole point of `how_a_silent_axis_was_decided` being about COVERAGE is that it must not become a way of not noticing this.",
- "what_the_red_OC_population_did_and_did_not_exercise": "This is the first slice with a substantial red-OC population — 17 FAILURE and 13 SUCCESS among the declared checks, against 54 of 54 SUCCESS across the whole client leg — so it is the first at which buckets 4a and 4b are reachable on real data. Both are: 5 edges land 4a and 6 land 4b, out of 13 edges against a red check. A3 §3's THIRD combination, `(red, green, :full) -> :divergent_despite_agreement`, is STILL NOT LIVE, and that is a MEASUREMENT rather than an oversight. For it to fire, an edge would have to agree with EVERY axis of a red check. Every red check reached here either has a single axis our claims contradict (the RequestMetaInvalid family — we answer -32022 where -32602 is required) or has an `http_status` axis no unit of ours asserts: 8 of the 13 red-OC edges are silent on exactly that axis. The one unit that DOES assert a status asserts the wrong one, which is a contradiction and not an agreement. So the combination is unreachable from this slice's claims, and saying so is worth more than manufacturing an edge to reach it. The escalation is nonetheless EXERCISED on real server-stateless data by `conformance/controls/crosswalk_falsification_controls.exs escalations`, which takes a real 4b edge from this file, mutates its silent `http_status` axis to `agrees` in memory and requires the escalation to fire, then mutates the OC verdict to green on the same edge and requires it to STOP firing and bucket as 5. Both directions, because a rule that fires on everything is not discriminating and a control that only shows it firing cannot tell the difference.\n\nC1c-ii ADDS NO RED-OC EDGE AT ALL, and the reason is a measurement rather than a choice. Of the 36 checks it declares, TWO are red at the accepted run and both are in one scenario: `InputRequiredResultNonToolIncomplete` (FAILURE) and that scenario's own `WireSchemaValid` (FAILURE). Both are about `prompts/get` returning an InputRequiredResult, and BOTH of this slice's members drive `tools/call` only — our SDK's `prompts/get` handler has no `{:input_required, …}` clause, which `conformance/server_handler.ex` records as a known limitation. So the family's red population is not merely unreached: there is no unit of ours that could reach it. A3 §3's `(red, green, :full)` — `divergent_despite_agreement` — is therefore STILL not live, and for a THIRD distinct reason: C1c-i's red checks were reached and contradicted, C1c-i's others had an `http_status` axis nobody asserts, and here the red checks are never exercised. Reporting the measured zero is worth more than manufacturing an edge to reach it, and the escalation machinery is exercised on real data by `crosswalk_falsification_controls.exs escalations` regardless.\n\nBUT THE DISTANCE TO IT HAS CHANGED, and that is worth recording because C1c-i called it unreachable. FIVE of this slice's edges are shape `:full` — they agree with every axis of their check — and all five sit on GREEN checks, so `(red, green, :full)` is ONE OC VERDICT away rather than out of reach: MEASURED by `crosswalk_falsification_controls.exs warning_mapping`, patching `IgnoreUnexpectedParams` from WARNING to FAILURE makes its `:full` edge escalate as `divergent_despite_agreement` on the spot. That is a mutation and not a finding — the committed data still has no live instance — but `unreachable from this slice's claims` would now be the wrong description of why.",
+ "what_the_red_OC_population_did_and_did_not_exercise": "This is the first slice with a substantial red-OC population — 17 FAILURE and 13 SUCCESS among the declared checks, against 54 of 54 SUCCESS across the whole client leg — so it is the first at which buckets 4a and 4b are reachable on real data. Both are: 5 edges land 4a and 6 land 4b, out of 13 edges against a red check. A3 §3's THIRD combination, `(red, green, :full) -> :divergent_despite_agreement`, is STILL NOT LIVE, and that is a MEASUREMENT rather than an oversight. For it to fire, an edge would have to agree with EVERY axis of a red check. Every red check reached here either has a single axis our claims contradict (the RequestMetaInvalid family — we answer -32022 where -32602 is required) or has an `http_status` axis no unit of ours asserts: 8 of the 13 red-OC edges are silent on exactly that axis. The one unit that DOES assert a status asserts the wrong one, which is a contradiction and not an agreement. So the combination is unreachable from this slice's claims, and saying so is worth more than manufacturing an edge to reach it. The escalation is nonetheless EXERCISED on real server-stateless data by `conformance/controls/crosswalk_falsification_controls.exs escalations`, which takes a real 4b edge from this file, mutates its silent `http_status` axis to `agrees` in memory and requires the escalation to fire, then mutates the OC verdict to green on the same edge and requires it to STOP firing and bucket as 5. Both directions, because a rule that fires on everything is not discriminating and a control that only shows it firing cannot tell the difference.\n\nC1c-ii ADDS NO RED-OC EDGE AT ALL, and the reason is a measurement rather than a choice. Of the 36 checks it declares, TWO are red at the accepted run and both are in one scenario: `InputRequiredResultNonToolIncomplete` (FAILURE) and that scenario's own `WireSchemaValid` (FAILURE). Both are about `prompts/get` returning an InputRequiredResult, and BOTH of this slice's members drive `tools/call` only — our SDK's `prompts/get` handler has no `{:input_required, …}` clause, which `conformance/server_handler.ex` records as a known limitation. So the family's red population is not merely unreached: there is no unit of ours that could reach it. A3 §3's `(red, green, :full)` — `divergent_despite_agreement` — is therefore STILL not live, and for a THIRD distinct reason: C1c-i's red checks were reached and contradicted, C1c-i's others had an `http_status` axis nobody asserts, and here the red checks are never exercised. Reporting the measured zero is worth more than manufacturing an edge to reach it, and the escalation machinery is exercised on real data by `crosswalk_falsification_controls.exs escalations` regardless.\n\nBUT THE DISTANCE TO IT HAS CHANGED, and that is worth recording because C1c-i called it unreachable. FIVE of this slice's edges are shape `:full` — they agree with every axis of their check — and all five sit on GREEN checks, so `(red, green, :full)` is ONE OC VERDICT away rather than out of reach: MEASURED by `crosswalk_falsification_controls.exs warning_mapping`, patching `IgnoreUnexpectedParams` from WARNING to FAILURE makes its `:full` edge escalate as `divergent_despite_agreement` on the spot. That is a mutation and not a finding — the committed data still has no live instance — but `unreachable from this slice's claims` would now be the wrong description of why.\n\nC1c-iii ADDS NOTHING TO 4a OR 4b, AND THE MEASUREMENT BEHIND THAT IS LEG-WIDE RATHER THAN SLICE-LOCAL — see `the_red_oc_population_of_the_server_leg_is_now_closed`.",
  "edges": [
   {
    "member": {
@@ -1388,6 +1505,433 @@
    "evidence": "streamable_http_ac_test.exs:256 — `\"inputResponses\" => [%{\"name\" => \"x\", \"identity\" => \"PM-SPOOF\"}]` — and streamable_http_ac_test.exs:263 — `assert result(final)[\"resultType\"] == \"complete\"`. The recognised field is `\"name\"`; `\"identity\"` is not part of any InputResponse this server asked for. The call completes, so the unrecognised field was ignored rather than rejected. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference.",
    "note": "THE FIRST LIVE FIRING OF D2's WARNING MAPPING, anywhere in the crosswalk — `IgnoreUnexpectedParams` is WARNING at the accepted run, and until this slice declared it the mapping fired on zero rows and was unit-tested rather than demonstrated.\nAND THE RESIDUAL THAT COMES WITH IT, because the agreement is not exact. The harness puts its unrecognised information at the TOP level of `inputResponses` — two whole extra ENTRIES, `unknown_extra_key` and `another_unexpected`, beside the real answer. This unit puts it INSIDE the one entry, as an extra field of the response object. Both are `unrecognised information in `inputResponses`` and the requirement the check quotes is `Servers SHOULD ignore information they do not recognize`, which does not distinguish the two depths — so this is recorded as agreement. A reader who thinks the depth matters should disagree here, and the disagreement is stated rather than buried so that they can.",
    "authored_by": "MES-115 (C1c-ii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Types.ContentTest",
+    "test": "test TextContent round-trips through JSON",
+    "register_key": "MCP.Protocol.Types.ContentTest/test TextContent round-trips through JSON"
+   },
+   "claim": "a TextContent encodes to the wire with the discriminator `text` synthesised by the encoder, and with its text carried",
+   "tag": "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_content_member",
+     "verdict": "silent"
+    },
+    {
+     "axis": "content_is_a_json_array",
+     "verdict": "silent"
+    },
+    {
+     "axis": "content_is_not_empty",
+     "verdict": "silent"
+    },
+    {
+     "axis": "a_content_block_has_type_text",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "the_text_block_carries_a_text_field",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "content_test.exs:42 — `decoded[\"type\"] == \"text\"` — and content_test.exs:43 — `decoded[\"text\"] == \"test\"`. The struct is built at content_test.exs:38 with no type field given, so the discriminator is SYNTHESISED on encode rather than echoed from the input, which is what makes this a claim about the SDK rather than about the fixture. Those two assertions are the check's two content-block axes: the harness selects a block whose type is the wire literal `text` and then requires that block's text field to be non-empty. The three silent axes are about the tools/call RESULT's `content` member — that it is present, that it is a JSON array, and that it is not empty. A unit that encodes ONE content block and decodes it back never constructs a result, so it neither agrees nor disagrees with any of them: it is silent by the GRAIN of the claim and not by a reading of it. Read per MEMBER rather than per edge, those three axes are covered by `MCP.Server.DispatchTest`'s tools/call rows, which are C1c-i's.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Types.ContentTest",
+    "test": "test TextContent round-trips through JSON",
+    "register_key": "MCP.Protocol.Types.ContentTest/test TextContent round-trips through JSON"
+   },
+   "claim": "a TextContent encodes to the wire with the discriminator `text` synthesised by the encoder",
+   "tag": "oc:server/tools-call-mixed-content/tools-call-mixed-content/ToolsCallMixedContent",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_content_member",
+     "verdict": "silent"
+    },
+    {
+     "axis": "content_carries_at_least_two_blocks",
+     "verdict": "silent"
+    },
+    {
+     "axis": "a_content_block_has_type_text",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "a_content_block_has_type_image",
+     "verdict": "silent"
+    },
+    {
+     "axis": "a_content_block_has_type_resource",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "content_test.exs:42 — `decoded[\"type\"] == \"text\"`. This check's text axis is the same observation its `simple-text` sibling makes, which is why the same claim reaches both: the harness runs one generic `some` over the content array per type. The two image and resource axes are OTHER content types' and are reached by this member's siblings in the same module, so per MEMBER the module covers three of this check's five axes and per EDGE each covers one.",
+   "note": "WHY THIS IS THREE EDGES FROM THREE MEMBERS AND NOT ONE. `ToolsCallMixedContent` has one axis per content type, and `MCP.Protocol.Types.ContentTest` has one member per content type, so the natural join is three edges each agreeing with a different axis and silent on the others. Filing one edge from one member would have reported four silences where the module in fact answers three of them.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Types.ContentTest",
+    "test": "test TextContent round-trips through JSON",
+    "register_key": "MCP.Protocol.Types.ContentTest/test TextContent round-trips through JSON"
+   },
+   "claim": "the wire object a TextContent encodes to carries exactly the members the pinned schema's TextContent definition requires, and no unset optional ones",
+   "tag": "oc:server/tools-call-simple-text/wire-schema-valid/WireSchemaValid",
+   "axes": [
+    {
+     "axis": "no_schema_violation_in_a_message_the_implementation_sent",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "content_test.exs:42 — `decoded[\"type\"] == \"text\"` — content_test.exs:43 — `decoded[\"text\"] == \"test\"` — and the two refutes at content_test.exs:44 and content_test.exs:45. The 2026-07-28 schema's TextContent definition requires exactly text and type, at build bytes 310112-310171, so the two asserts are exactly the required set and the two refutes are on members the same definition types optional. The address and the required list are recorded in this ticket's `the_schema_question_this_slice_asked_and_the_answer_it_got` on the axis file.",
+   "note": "AGREEMENT AT A COARSER GRAIN THAN THE AXIS, AND THE RESIDUAL IS STATED RATHER THAN BURIED. The axis quantifies over every JSON-RPC MESSAGE the implementation sent in the scenario; this unit encodes one CONTENT BLOCK in isolation and runs no validator. So it is evidence FOR the axis — a necessary condition of a message carrying that block validating — and not a proof of it. A reader who thinks the grain matters should read this as silent, and the difference is stated so that they can, which is the precedent C1c-ii set on `IgnoreUnexpectedParams`.\nONE EDGE, NOT NINETEEN. The reading holds against all nineteen `WireSchemaValid` rows this slice declares, because all nineteen are one generic validator at one span. Nineteen edges would be one fact counted nineteen times — C1c-ii's rule, applied to an agreement rather than to a contradiction. The row chosen is the scenario whose fixture content is of this member's type.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Types.ContentTest",
+    "test": "test ImageContent round-trips through JSON",
+    "register_key": "MCP.Protocol.Types.ContentTest/test ImageContent round-trips through JSON"
+   },
+   "claim": "an ImageContent encodes to the wire with the discriminator `image`, its base64 data, and its media type under the camelCase key `mimeType`",
+   "tag": "oc:server/tools-call-image/tools-call-image/ToolsCallImage",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_content_member",
+     "verdict": "silent"
+    },
+    {
+     "axis": "a_content_block_has_type_image",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "the_image_block_carries_a_data_field",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "the_image_block_carries_a_mime_type_field",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "content_test.exs:65 — `decoded[\"type\"] == \"image\"` — content_test.exs:66 — `decoded[\"data\"] == \"abc\"` — and content_test.exs:67 — `decoded[\"mimeType\"] == \"image/jpeg\"`. Three of this check's four axes, and the mimeType one is the load-bearing one: the struct is built at content_test.exs:61 with `mime_type`, snake_case, so the camelCase key on the wire is the encoder's work. The silent axis is about the tools/call result's `content` member, which a unit encoding one block does not construct.",
+   "note": "THIS CHECK HAS NO ARRAY-TYPE OR EMPTINESS AXIS, unlike its `simple-text` and `audio` siblings — the harness's own asymmetry, recorded on the axis row. So this edge has one silence where the sibling edges have three, and the difference is the CHECK's shape rather than this member's coverage.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Types.ContentTest",
+    "test": "test ImageContent round-trips through JSON",
+    "register_key": "MCP.Protocol.Types.ContentTest/test ImageContent round-trips through JSON"
+   },
+   "claim": "an ImageContent encodes to the wire with the discriminator `image`",
+   "tag": "oc:server/tools-call-mixed-content/tools-call-mixed-content/ToolsCallMixedContent",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_content_member",
+     "verdict": "silent"
+    },
+    {
+     "axis": "content_carries_at_least_two_blocks",
+     "verdict": "silent"
+    },
+    {
+     "axis": "a_content_block_has_type_text",
+     "verdict": "silent"
+    },
+    {
+     "axis": "a_content_block_has_type_image",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "a_content_block_has_type_resource",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "content_test.exs:65 — `decoded[\"type\"] == \"image\"`. The image limb of this check's three content-type axes; its text and resource limbs are this member's two siblings'.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Types.ContentTest",
+    "test": "test ImageContent round-trips through JSON",
+    "register_key": "MCP.Protocol.Types.ContentTest/test ImageContent round-trips through JSON"
+   },
+   "claim": "an ImageContent encodes to the wire with the discriminator `image` AND both its data and camelCase `mimeType` present",
+   "tag": "oc:server/prompts-get-with-image/prompts-get-with-image/PromptsGetWithImage",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_messages_member",
+     "verdict": "silent"
+    },
+    {
+     "axis": "some_message_carries_an_image_block_with_data_and_mime_type",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "content_test.exs:65 — `decoded[\"type\"] == \"image\"` — content_test.exs:66 — `decoded[\"data\"] == \"abc\"` — and content_test.exs:67 — `decoded[\"mimeType\"] == \"image/jpeg\"`. This check's second axis is a single conjunction of exactly those three field tests inside one `some`, so all three of this unit's assertions land on ONE axis rather than three. The silent axis is about the prompts/get result carrying a messages member, which this unit does not construct.",
+   "note": "THE STRONGEST AGREEMENT IN THE SLICE, AND ITS STRENGTH IS THE CHECK'S WEAKNESS. The axis is one conjunction, so a server returning an image block without `mimeType` fails it with the message `No image content found in prompt` — which names the wrong thing. This unit asserts each conjunct separately and would say which one broke. That is the ET side being finer-grained than the OC side, which is the opposite of the usual direction and worth recording as such.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Types.ContentTest",
+    "test": "test ImageContent round-trips through JSON",
+    "register_key": "MCP.Protocol.Types.ContentTest/test ImageContent round-trips through JSON"
+   },
+   "claim": "the wire object an ImageContent encodes to carries exactly the members the pinned schema's ImageContent definition requires",
+   "tag": "oc:server/tools-call-image/wire-schema-valid/WireSchemaValid",
+   "axes": [
+    {
+     "axis": "no_schema_violation_in_a_message_the_implementation_sent",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "content_test.exs:65, content_test.exs:66 and content_test.exs:67 assert `decoded[\"type\"] == \"image\"`, `decoded[\"data\"] == \"abc\"` and `decoded[\"mimeType\"] == \"image/jpeg\"`. The 2026-07-28 schema's ImageContent definition requires data, mimeType and type, at build bytes 248500-248571 — all three, and this unit asserts all three.",
+   "note": "SAME GRAIN RESIDUAL AND SAME ONE-EDGE-NOT-NINETEEN RULE as the TextContent row; not restated. What IS particular here: this is one of only three content members whose assertions cover its definition's whole required set, which is why only three of the five carry a `WireSchemaValid` edge at all. The other two are named in the AudioContent edge's note.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Types.ContentTest",
+    "test": "test AudioContent round-trips through JSON",
+    "register_key": "MCP.Protocol.Types.ContentTest/test AudioContent round-trips through JSON"
+   },
+   "claim": "an AudioContent encodes to the wire with the discriminator `audio` and its media type under the camelCase key `mimeType`",
+   "tag": "oc:server/tools-call-audio/tools-call-audio/ToolsCallAudio",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_content_member",
+     "verdict": "silent"
+    },
+    {
+     "axis": "content_is_a_json_array",
+     "verdict": "silent"
+    },
+    {
+     "axis": "content_is_not_empty",
+     "verdict": "silent"
+    },
+    {
+     "axis": "a_content_block_has_type_audio",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "the_audio_block_carries_a_data_field",
+     "verdict": "silent"
+    },
+    {
+     "axis": "the_audio_block_carries_a_mime_type_field",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "the_audio_mime_type_is_exactly_audio_wav",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "content_test.exs:87 — `decoded[\"type\"] == \"audio\"` — and content_test.exs:88 — `decoded[\"mimeType\"] == \"audio/mp3\"`. Two of this check's seven axes. The three silent axes are about the tools/call RESULT's `content` member — that it is present, that it is a JSON array, and that it is not empty. A unit that encodes ONE content block and decodes it back never constructs a result, so it neither agrees nor disagrees with any of them: it is silent by the GRAIN of the claim and not by a reading of it. Read per MEMBER rather than per edge, those three axes are covered by `MCP.Server.DispatchTest`'s tools/call rows, which are C1c-i's.",
+   "note": "TWO SILENCES HERE ARE FINDINGS RATHER THAN ARITHMETIC, AND THEY POINT IN OPPOSITE DIRECTIONS.\n(1) `the_audio_block_carries_a_data_field` is silent because THIS UNIT DOES NOT ASSERT `data`, while its ImageContent sibling twenty-two lines earlier does. The encoded value carries it — the struct is built at content_test.exs:83 with a data field — so nothing on the wire violates the schema's AudioContent definition, which requires data, mimeType and type, at build bytes 220057-220128. But the unit would not notice if `data` stopped being emitted. That is a gap in OUR TEST, found by putting the pinned schema to the member, and it is why this member carries no `WireSchemaValid` edge where TextContent and ImageContent do.\n(2) `the_audio_mime_type_is_exactly_audio_wav` is silent AND NOT `contradicts`, and the distinction is worth being explicit about because the surfaces look like they disagree: the check requires the media type to be the literal `audio/wav`, and this unit round-trips `audio/mp3`. They are not the same subject. The check scores which media type the server's own `test_audio_content` tool returns — a FIXTURE agreement, as the axis row records, with no spec rule behind it. The unit scores whether the encoder carries whatever media type it is handed. Both are true at once, and the unit is in fact a demonstration that the SDK would faithfully emit a value that fails the check. Recorded as silent on that ground and not on a preference for silence.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Types.ContentTest",
+    "test": "test EmbeddedResource round-trips through JSON",
+    "register_key": "MCP.Protocol.Types.ContentTest/test EmbeddedResource round-trips through JSON"
+   },
+   "claim": "an EmbeddedResource encodes to the wire with the discriminator `resource` and a NESTED resource object carrying its uri and text",
+   "tag": "oc:server/tools-call-embedded-resource/tools-call-embedded-resource/ToolsCallEmbeddedResource",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_content_member",
+     "verdict": "silent"
+    },
+    {
+     "axis": "content_is_a_json_array",
+     "verdict": "silent"
+    },
+    {
+     "axis": "content_is_not_empty",
+     "verdict": "silent"
+    },
+    {
+     "axis": "a_content_block_has_type_resource",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "the_resource_block_carries_a_nested_resource_object",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "the_nested_resource_carries_a_uri",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "the_nested_resource_carries_a_mime_type",
+     "verdict": "silent"
+    },
+    {
+     "axis": "the_nested_resource_carries_text_or_blob",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "content_test.exs:120 — `decoded[\"type\"] == \"resource\"` — content_test.exs:121 — `decoded[\"resource\"][\"uri\"] == \"file:///a.txt\"` — and content_test.exs:122 — `decoded[\"resource\"][\"text\"] == \"hello\"`. Four of this check's eight axes, and the two nested reads are what carry the NESTING axis: asserting `decoded[\"resource\"][\"uri\"]` at all requires the resource to be a nested object rather than flattened, so that axis and the uri axis are one observation read at two grains and not an inference. The discriminator is the wire literal `resource` and not `embedded_resource`, which is the axis row's own note. The three silent axes are about the tools/call RESULT's `content` member — that it is present, that it is a JSON array, and that it is not empty. A unit that encodes ONE content block and decodes it back never constructs a result, so it neither agrees nor disagrees with any of them: it is silent by the GRAIN of the claim and not by a reading of it. Read per MEMBER rather than per edge, those three axes are covered by `MCP.Server.DispatchTest`'s tools/call rows, which are C1c-i's.",
+   "note": "`the_nested_resource_carries_a_mime_type` IS SILENT AND IT IS THE SLICE'S SECOND TEST-SIDE GAP. The check requires the nested resource to carry a camelCase `mimeType`; this unit builds a ResourceContents at content_test.exs:114 with only uri and text and asserts only those two. The schema does NOT require it — the TextResourceContents definition requires only text and uri, at build bytes 310556-310624 — so the silence is honest rather than a violation, and the check is stricter than the schema here. Both facts are worth having: the OC check asks for more than the spec does, and our unit asks for less than the OC check does.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Types.ContentTest",
+    "test": "test EmbeddedResource round-trips through JSON",
+    "register_key": "MCP.Protocol.Types.ContentTest/test EmbeddedResource round-trips through JSON"
+   },
+   "claim": "an EmbeddedResource encodes to the wire with the discriminator `resource`",
+   "tag": "oc:server/tools-call-mixed-content/tools-call-mixed-content/ToolsCallMixedContent",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_content_member",
+     "verdict": "silent"
+    },
+    {
+     "axis": "content_carries_at_least_two_blocks",
+     "verdict": "silent"
+    },
+    {
+     "axis": "a_content_block_has_type_text",
+     "verdict": "silent"
+    },
+    {
+     "axis": "a_content_block_has_type_image",
+     "verdict": "silent"
+    },
+    {
+     "axis": "a_content_block_has_type_resource",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "content_test.exs:120 — `decoded[\"type\"] == \"resource\"`. The resource limb of this check's three content-type axes; its text and image limbs are this member's two siblings'.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Types.ContentTest",
+    "test": "test EmbeddedResource round-trips through JSON",
+    "register_key": "MCP.Protocol.Types.ContentTest/test EmbeddedResource round-trips through JSON"
+   },
+   "claim": "an EmbeddedResource encodes to the wire with the discriminator `resource` and a nested resource object",
+   "tag": "oc:server/prompts-get-embedded-resource/prompts-get-embedded-resource/PromptsGetEmbeddedResource",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_messages_member",
+     "verdict": "silent"
+    },
+    {
+     "axis": "some_message_carries_an_embedded_resource",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "content_test.exs:120 — `decoded[\"type\"] == \"resource\"` — and content_test.exs:121 — `decoded[\"resource\"][\"uri\"] == \"file:///a.txt\"`. This check's axis is a DISJUNCTION — a block whose type is the wire literal `resource`, OR a block carrying a resource member under any discriminator — and this unit satisfies both limbs, so the agreement does not depend on which limb the harness's own fixture takes.",
+   "note": "THE AXIS IS WEAKER THAN ITS `tools-call` COUNTERPART AND THE EDGE IS STRONGER FOR IT. Because the axis is a disjunction over the discriminator, it does not actually pin the wire spelling; this unit does. So the ET side establishes the thing the OC side was trying to establish and did not. Recorded because a bucket-5 agreement between a strong claim and a weak check is not the same result as an agreement between two strong ones, and the buckets do not distinguish them.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Types.ContentTest",
+    "test": "test EmbeddedResource round-trips through JSON",
+    "register_key": "MCP.Protocol.Types.ContentTest/test EmbeddedResource round-trips through JSON"
+   },
+   "claim": "the wire object an EmbeddedResource encodes to carries the members the pinned schema's EmbeddedResource definition requires, nested value included",
+   "tag": "oc:server/tools-call-embedded-resource/wire-schema-valid/WireSchemaValid",
+   "axes": [
+    {
+     "axis": "no_schema_violation_in_a_message_the_implementation_sent",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "content_test.exs:120, content_test.exs:121 and content_test.exs:122 assert `decoded[\"type\"] == \"resource\"`, `decoded[\"resource\"][\"uri\"] == \"file:///a.txt\"` and `decoded[\"resource\"][\"text\"] == \"hello\"`. The 2026-07-28 schema's EmbeddedResource definition is requires resource and type, at build bytes 242778-242845, and the nested value must match an disjunction over TextResourceContents / BlobResourceContents, of which the first requires text and uri, at build bytes 310556-310624. This unit asserts the outer pair and both members of the inner one, so the whole required set including the nesting.",
+   "note": "SAME GRAIN RESIDUAL AND SAME ONE-EDGE-NOT-NINETEEN RULE as the TextContent row; not restated.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Types.ToolTest",
+    "test": "test JSON encoding round-trips through JSON with camelCase keys",
+    "register_key": "MCP.Protocol.Types.ToolTest/test JSON encoding round-trips through JSON with camelCase keys"
+   },
+   "claim": "a Tool encodes to the wire with its name and with its input schema under the camelCase key `inputSchema`, and the snake_case form does not appear",
+   "tag": "oc:server/tools-list/tools-list/ToolsList",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_tools_member",
+     "verdict": "silent"
+    },
+    {
+     "axis": "tools_is_a_json_array",
+     "verdict": "silent"
+    },
+    {
+     "axis": "every_tool_has_a_name",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "every_tool_has_a_description",
+     "verdict": "silent"
+    },
+    {
+     "axis": "every_tool_has_an_input_schema",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "tool_test.exs:79 — `decoded[\"name\"] == \"get_weather\"` — tool_test.exs:80 — `decoded[\"inputSchema\"][\"type\"] == \"object\"` — and tool_test.exs:81 — `refute Map.has_key?(decoded, \"input_schema\")`. The inputSchema axis is the sharp one: the struct field is `input_schema` and the refute at tool_test.exs:81 is what makes the camelCase key on the wire a property of the encoder rather than of the fixture. The two silent axes are about the tools/list RESULT's `tools` member; the description axis is silent because this unit asserts nothing about `description`, which the fixture at tool_test.exs:9 does carry — so the silence is the unit's choice of assertions, not an absence in the data.",
+   "note": "WHAT THIS EDGE DOES NOT REACH, SAID HERE BECAUSE THE AXIS NAME INVITES THE MISREADING. `every_tool_has_an_input_schema` is a TRUTHINESS test — the harness does `e.inputSchema||...` and never looks inside — so this edge establishes that the key is spelled right and present, and nothing about what survives inside it. The member that DOES claim the contents survive is this module's keyword-preservation unit, and it is bucket 1 under SRV23 rather than a second edge onto this row, because the axis it would need does not exist on the server leg at all.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Types.ResourceTest",
+    "test": "test JSON encoding round-trips with camelCase keys",
+    "register_key": "MCP.Protocol.Types.ResourceTest/test JSON encoding round-trips with camelCase keys"
+   },
+   "claim": "a Resource encodes to the wire with its uri and with its media type under the camelCase key `mimeType`, and the snake_case form does not appear",
+   "tag": "oc:server/resources-list/resources-list/ResourcesList",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_resources_member",
+     "verdict": "silent"
+    },
+    {
+     "axis": "resources_is_a_json_array",
+     "verdict": "silent"
+    },
+    {
+     "axis": "every_resource_has_a_uri",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "every_resource_has_a_name",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "resource_test.exs:50 — `decoded[\"uri\"] == \"file:///project/readme.md\"` — resource_test.exs:51 — `decoded[\"mimeType\"] == \"text/markdown\"` — and resource_test.exs:52 — `refute Map.has_key?(decoded, \"mime_type\")`. One of this check's four axes agrees. The name axis is silent because this unit does not assert `name`, though the fixture at resource_test.exs:8 carries it.",
+   "note": "THE STRONGEST HALF OF THIS CLAIM REACHES NO AXIS AT ALL, and that is the result worth recording. The camelCase `mimeType` assertion plus its refute at resource_test.exs:52 is the substance of the member, and `ResourcesList` HAS NO mimeType AXIS — the harness reads only `uri` and `name` per row, which the axis row records. `mimeType` IS an axis on `resources-read-text` and `resources-read-binary`, but those score `contents[0]`, a TextResourceContents / BlobResourceContents, which is a different schema definition from the Resource this member encodes. So the claim is not homed elsewhere; the suite simply does not check camelCase on a list row. Recorded here rather than as a bucket-1 search because the member DOES carry an edge on its uri half — a member cannot be in both places (G15a), so the partial coverage has to be visible on the edge.",
+   "authored_by": "MES-116 (C1c-iii)"
   }
  ],
  "declared_unmatched": [
@@ -1612,7 +2156,7 @@
    "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 30 `server-stateless` rows mention caching or ttl, while the `caching` scenario carries seven that do.",
    "why_this_search_is_this_claims_search": "The claim is the caching hints on a list result. SRV07's subject is exactly that, and the search is scoped to the declared 30 because the claim being made is about THIS population.",
    "the_search_that_found_none": "a list or read RESULT carrying the CacheableResult hints — `ttlMs` and `cacheScope`",
-   "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`. These are COUNTERPARTS, not near misses, and they are outside this file's declared 66. Named so the row reads as `homed elsewhere`: whichever C1c ticket declares `caching` should pick this member up rather than search for it again.",
+   "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`. These are COUNTERPARTS, not near misses, and they are outside this file's declared 107. Named so the row reads as `homed elsewhere`: whichever C1c ticket declares `caching` should pick this member up rather than search for it again.",
    "authored_by": "MES-105 (C1c-i)"
   },
   {
@@ -1929,10 +2473,10 @@
    "cg": null,
    "search_id": "SRV18",
    "claim_the_slot_names": "a request whose `Origin` is not localhost is rejected with HTTP 403, and the rejection happens before any per-request identity work runs",
-   "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 66, and two real counterparts in the SERVER scenario `dns-rebinding-protection`.",
+   "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 107, and two real counterparts in the SERVER scenario `dns-rebinding-protection`.",
    "why_this_search_is_this_claims_search": "The claim is a server refusing a non-localhost `Origin`. SRV18's subject is that refusal AND the status it carries, which is the half of the claim the OC counterparts do not reach — so the pattern sweeps the origin vocabulary and the near miss names what it would have found in another scenario.",
    "the_search_that_found_none": "a server REJECTING a request whose `Origin` is not localhost, and answering it with HTTP 403 — the status, not merely the refusal",
-   "the_near_miss_that_is_not_a_counterpart": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. These are REAL COUNTERPARTS for the rejection this member asserts, and they sit outside this file's declared 66. Named so the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What NEITHER OC row covers is the 403 STATUS this unit pins as the acceptance parity: the OC rows say `rejects`, and nothing in them names a code.",
+   "the_near_miss_that_is_not_a_counterpart": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. These are REAL COUNTERPARTS for the rejection this member asserts, and they sit outside this file's declared 107. Named so the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What NEITHER OC row covers is the 403 STATUS this unit pins as the acceptance parity: the OC rows say `rejects`, and nothing in them names a code.",
    "homed_elsewhere": "C1c-iv (MES-117). This member is in C1c-ii's DECLARED MEMBER population but its counterpart is in a check population C1c-ii does not declare, so it is bucket 1 HERE and an edge THERE. Recorded in the shape C1c-i used for SRV08 — the search, the near miss naming the real counterpart, and the ticket — so the slice that declares that scenario inherits the member instead of re-searching for it. SRV08 is what that record looked like from the other side, and this ticket discharged it.",
    "authored_by": "MES-115 (C1c-ii)"
   },
@@ -1980,15 +2524,175 @@
    "cg": null,
    "search_id": "SRV20",
    "claim_the_slot_names": "a deployment that configures no caching policy gets no-store — `ttlMs` 0 and `cacheScope` `public` — on a `tools/list` result",
-   "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 66, and seven real counterparts in the SERVER scenario `caching`.",
+   "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 107, and seven real counterparts in the SERVER scenario `caching`.",
    "why_this_search_is_this_claims_search": "The claim is about the CacheableResult hint fields on a list result. SRV20's subject is those fields at their DEFAULT, and its pattern sweeps the caching vocabulary; the near miss names the seven `caching` rows so the zero reads as `declared elsewhere` rather than as `nothing exists`.",
    "the_search_that_found_none": "the DEFAULT caching policy a deployment that configures nothing gets — `ttlMs` 0 and a `cacheScope`, i.e. no-store",
-   "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`, and all outside this file's declared 66. They are COUNTERPARTS and not near misses: `TtlNonNegative` in particular is about the very field this member pins. Named so the row reads as `homed elsewhere` — whichever C1c ticket declares `caching` should pick this member up rather than search for it again. What no OC row asks is what the DEFAULT is when a deployment configures nothing, which is the whole of this member's claim.",
+   "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`, and all outside this file's declared 107. They are COUNTERPARTS and not near misses: `TtlNonNegative` in particular is about the very field this member pins. Named so the row reads as `homed elsewhere` — whichever C1c ticket declares `caching` should pick this member up rather than search for it again. What no OC row asks is what the DEFAULT is when a deployment configures nothing, which is the whole of this member's claim.",
    "homed_elsewhere": "C1c-iv (MES-117). This member is in C1c-ii's DECLARED MEMBER population but its counterpart is in a check population C1c-ii does not declare, so it is bucket 1 HERE and an edge THERE. Recorded in the shape C1c-i used for SRV08 — the search, the near miss naming the real counterpart, and the ticket — so the slice that declares that scenario inherits the member instead of re-searching for it. SRV08 is what that record looked like from the other side, and this ticket discharged it.",
    "authored_by": "MES-115 (C1c-ii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Types.ContentTest",
+    "test": "test ResourceLink round-trips through JSON",
+    "register_key": "MCP.Protocol.Types.ContentTest/test ResourceLink round-trips through JSON"
+   },
+   "tag": "oc:none/no-oc-scenario/resource-link-round-trip",
+   "cg": null,
+   "search_id": "SRV21",
+   "claim_the_slot_names": "a ResourceLink content block reaches the wire with the snake_case discriminator `resource_link` and a camelCase `mimeType`",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no ResourceLink check at all.",
+   "why_this_search_is_this_claims_search": "The claim is about one content TYPE reaching the wire. SRV21's subject is that type and its pattern sweeps both spellings of its name; the near miss names the two resource-bearing checks that DO exist, so the zero reads as `the suite does not ask` rather than as `we did not look`.",
+   "the_search_that_found_none": "the `resource_link` content type reaching the wire — its snake_case `type` discriminator and its camelCase `mimeType`",
+   "the_near_miss_that_is_not_a_counterpart": "`ToolsCallEmbeddedResource` and `PromptsGetEmbeddedResource` — the suite's two other resource-bearing content checks, both declared here. They are NEAR MISSES and NOT counterparts, and the distinction is the protocol's own: an EmbeddedResource INLINES the resource contents in the result, while a ResourceLink is a REFERENCE the client must then read with `resources/read`. A check that finds an inlined resource would reject a link and vice versa. MEASURED WIDER THAN THE DECLARATION: the pattern is 0 over all 175 manifest rows and over both legs, not merely 0 over the declared 107, so this is not a deferral to another C1c slice — the suite has no ResourceLink check at all. That is a coverage finding about the OFFICIAL SUITE: `ResourceLink` is in the 2026-07-28 schema (its definition is at build bytes 293842-293989) and nothing in the conformance suite exercises it.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Types.ToolTest",
+    "test": "test JSON encoding omits nil fields",
+    "register_key": "MCP.Protocol.Types.ToolTest/test JSON encoding omits nil fields"
+   },
+   "tag": "oc:none/no-oc-scenario/tool-optional-field-omission",
+   "cg": null,
+   "search_id": "SRV22",
+   "claim_the_slot_names": "a Tool's unset optional fields — `annotations`, `icons`, `_meta` — are ABSENT from the encoded object rather than present as null",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175. No row in the suite names `annotations` or `icons`.",
+   "why_this_search_is_this_claims_search": "The claim is about ABSENCE on the wire. SRV22's subject is exactly that, and its pattern is deliberately wider than the claim — it also sweeps the two field names the member refutes by name.",
+   "the_search_that_found_none": "an optional field the server left unset being ABSENT from the object it encodes rather than present as null — specifically `annotations`, `icons` and `_meta` on a Tool",
+   "the_near_miss_that_is_not_a_counterpart": "`RequestMetaClientInfoOptional` (`server-stateless`, declared here) and `ClientCustomHeaderOmitNull` (`http-custom-headers`, client leg). The first is the closest thing on this leg: it IS about an optional member being omitted, but from the `_meta` of a request the CLIENT sends, and what it scores is the server's tolerance of the omission. The second is about a client omitting a header rather than sending a null one — the right shape, the wrong direction and the wrong leg. Neither asks what a SERVER does with an optional field of an object it is encoding, which is the whole of this member's claim. MEASURED: the pattern is 0 over the declared 107 AND 0 over all 175; the sub-terms `annotation` and `icons` are independently 0 over all 175, so no row in the suite names either field.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Types.ToolTest",
+    "test": "test inputSchema keywords beyond `type` are carried verbatim, including `not` and `$anchor`",
+    "register_key": "MCP.Protocol.Types.ToolTest/test inputSchema keywords beyond `type` are carried verbatim, including `not` and `$anchor`"
+   },
+   "tag": "oc:none/no-oc-server-check/tool-input-schema-keyword-preservation",
+   "cg": null,
+   "search_id": "SRV23",
+   "claim_the_slot_names": "an inputSchema's JSON Schema 2020-12 keywords beyond `type` survive the round-trip verbatim, `not` and `$anchor` included",
+   "why_no_counterpart": "`no-oc-server-check` — 0 of the 107 and 0 of all 119 server rows; the one hit in 175 is CLIENT leg.",
+   "why_this_search_is_this_claims_search": "The claim is about what survives INSIDE an inputSchema. SRV23's pattern sweeps the 2020-12 keyword vocabulary the member asserts; the near miss names both the client-leg `$ref` row and this module's own `ToolsList` axis, which is a truthiness test and cannot see inside.",
+   "the_search_that_found_none": "JSON Schema 2020-12 keywords beyond `type` — `$defs`/`$anchor`, `$ref`, `not`, `oneOf`, `if`/`then`/`else`, `unevaluatedProperties` — surviving verbatim through a tools/list inputSchema",
+   "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY `$ref` row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network `$ref`, not whether a server PRESERVES the keyword. The other near miss is on this very row's own check: `ToolsList`'s `every_tool_has_an_input_schema` axis, which is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.Types.ToolTest",
+    "test": "test outputSchema is carried verbatim, and false is not an absence an absent outputSchema is still absent",
+    "register_key": "MCP.Protocol.Types.ToolTest/test outputSchema is carried verbatim, and false is not an absence an absent outputSchema is still absent"
+   },
+   "tag": "oc:none/no-oc-scenario/tool-absent-output-schema",
+   "cg": null,
+   "search_id": "SRV24",
+   "claim_the_slot_names": "a Tool with no outputSchema encodes with no `outputSchema` key at all",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. SEP-2106's whole output half is unexercised.",
+   "why_this_search_is_this_claims_search": "The claim is about `outputSchema` being absent when unset. SRV24's subject is that field and its structured-content sibling, and the zero is leg-wide.",
+   "the_search_that_found_none": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
+   "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s `isError` axes, the only place the suite looks at the SHAPE of a tools/call result beyond its `content` array. Neither names `outputSchema` or `structuredContent`. MEASURED: 0 over all 175 manifest rows, BOTH LEGS — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED: this zero is also `MCP.Server.JsonSchema202012Test`'s, whose fifteen W-1 members make the same claim; that module is C1c-iii-b's member cut and it inherits this search rather than re-running it, the SRV08 mechanism running forward instead of backward.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.ToolOrderTest",
+    "test": "test SUBJECT — two instances holding the same tool set answer in the same order",
+    "register_key": "MCP.Server.ToolOrderTest/test SUBJECT — two instances holding the same tool set answer in the same order"
+   },
+   "tag": "oc:none/no-oc-scenario/tools-list-order-across-instances",
+   "cg": null,
+   "search_id": "SRV25",
+   "claim_the_slot_names": "two server instances holding the same tool set answer `tools/list` in the same order",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+   "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect.",
+   "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+   "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.ToolOrderTest",
+    "test": "test SUBJECT — one instance answers in the same order on every request",
+    "register_key": "MCP.Server.ToolOrderTest/test SUBJECT — one instance answers in the same order on every request"
+   },
+   "tag": "oc:none/no-oc-scenario/tools-list-order-across-requests",
+   "cg": null,
+   "search_id": "SRV25",
+   "claim_the_slot_names": "one server instance answers `tools/list` in the same order on every request",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+   "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect.",
+   "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+   "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.ToolOrderTest",
+    "test": "test SUBJECT — the default order is by name, and the tool SET is untouched",
+    "register_key": "MCP.Server.ToolOrderTest/test SUBJECT — the default order is by name, and the tool SET is untouched"
+   },
+   "tag": "oc:none/no-oc-scenario/tools-list-default-order-and-set",
+   "cg": null,
+   "search_id": "SRV25",
+   "claim_the_slot_names": "the default `tools/list` order is by name, and the tool SET is untouched by the sort",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+   "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect.",
+   "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+   "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.ToolOrderTest",
+    "test": "test CONTROL-1 — :tool_order = :handler keeps a curated non-alphabetical order verbatim",
+    "register_key": "MCP.Server.ToolOrderTest/test CONTROL-1 — :tool_order = :handler keeps a curated non-alphabetical order verbatim"
+   },
+   "tag": "oc:none/no-oc-scenario/tools-list-curated-order-escape-hatch",
+   "cg": null,
+   "search_id": "SRV25",
+   "claim_the_slot_names": "with `:tool_order = :handler` a curated non-alphabetical order survives verbatim",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+   "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect.",
+   "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+   "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.ToolOrderTest",
+    "test": "test CONTROL-2 (discriminates nothing) — an already-deterministic handler is unaffected",
+    "register_key": "MCP.Server.ToolOrderTest/test CONTROL-2 (discriminates nothing) — an already-deterministic handler is unaffected"
+   },
+   "tag": "oc:none/no-oc-scenario/tools-list-order-control-vacuous",
+   "cg": null,
+   "search_id": "SRV25",
+   "claim_the_slot_names": "an already-deterministic handler is unaffected by the sort (a control that discriminates nothing, and says so)",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+   "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect.",
+   "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+   "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "member": {
+    "module": "MCP.Server.ToolOrderTest",
+    "test": "test BOUND — sorting is per RESPONSE; a paginated listing is not made deterministic",
+    "register_key": "MCP.Server.ToolOrderTest/test BOUND — sorting is per RESPONSE; a paginated listing is not made deterministic"
+   },
+   "tag": "oc:none/no-oc-scenario/tools-list-order-pagination-bound",
+   "cg": null,
+   "search_id": "SRV25",
+   "claim_the_slot_names": "the ordering guarantee is per RESPONSE: a paginated listing is NOT made deterministic across pages",
+   "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+   "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect.",
+   "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+   "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+   "authored_by": "MES-116 (C1c-iii)"
   }
  ],
- "declared_unmatched_note": "A3 §6 state 3 — members adjudicated as having NO OC counterpart among this file's declared 66. They are bucket 1 over this population. The generator asserts each tag guard-checks to state 3 (decodes as `oc:none`, does NOT resolve as an oc key) before counting it. Every one of the 37 names a REGISTERED search by `search_id`, which is a step past the client leg: 39 of its 65 rows name one and 26 carry prose the registry limb cannot reach. All 37 here are inside G23b/c/d, and the reason is simply that this file's tickets RAN their searches rather than inheriting them.\n\nONE ROW LEFT THIS BLOCK AT C1c-ii AND FOUR JOINED IT. The leaver is the stateless MRTR round trip, which C1c-i filed here under SRV08 precisely so that the ticket declaring the `input-required-result-*` family would inherit it; that ticket declared it, so the member now carries five edges and SRV08 is deleted with it (G23c refuses an orphan entry). The joiners are the four non-MRTR members of `MCP.Transport.StreamableHTTP.ACTest`, whose module C1c-ii had to declare to adjudicate its one MRTR member at all — the same mechanism running the other way, and each of the four records the search, the near miss and the ticket that should pick it up.",
+ "declared_unmatched_note": "A3 §6 state 3 — members adjudicated as having NO OC counterpart among this file's declared 107. They are bucket 1 over this population. The generator asserts each tag guard-checks to state 3 (decodes as `oc:none`, does NOT resolve as an oc key) before counting it. Every one of the 47 names a REGISTERED search by `search_id`, which is a step past the client leg: 39 of its 65 rows name one and 26 carry prose the registry limb cannot reach. All 47 here are inside G23b/c/d, and the reason is simply that this file's tickets RAN their searches rather than inheriting them.\n\nONE ROW LEFT THIS BLOCK AT C1c-ii AND FOUR JOINED IT. The leaver is the stateless MRTR round trip, which C1c-i filed here under SRV08 precisely so that the ticket declaring the `input-required-result-*` family would inherit it; that ticket declared it, so the member now carries five edges and SRV08 is deleted with it (G23c refuses an orphan entry). The joiners are the four non-MRTR members of `MCP.Transport.StreamableHTTP.ACTest`, whose module C1c-ii had to declare to adjudicate its one MRTR member at all — the same mechanism running the other way, and each of the four records the search, the near miss and the ticket that should pick it up.\n\nTEN MORE JOINED AT C1c-iii, over five searches rather than ten, and the compression is a fact about the members rather than a shortcut. SIX of the ten are `MCP.Server.ToolOrderTest`'s whole ordering family — SUBJECT, CONTROL and BOUND arms of ONE measurement of ONE property — and they share SRV25 because they make one claim between them; six identical entries would be the D4 defect, one fact with six homes. The other four are one content type with no counterpart anywhere in the suite (`ResourceLink`, SRV21) and three separate claims of `MCP.Protocol.Types.ToolTest` (SRV22, SRV23, SRV24), which do NOT share a search because they are three different claims that happen to live in one module. The cut is by CLAIM and not by module in both directions.",
  "absence_searches": [
   {
    "id": "SRV01",
@@ -2032,7 +2736,7 @@
    "positive_controls": [
     {
      "term": "(?i)server",
-     "hits": 66
+     "hits": 107
     },
     {
      "term": "(?i)InputRequiredResult",
@@ -2050,11 +2754,11 @@
     "artefact": "docs/conformance/in-scope-2026-07-28.json",
     "rows_at": "scenarios[].checks[]",
     "fields": "leg | scenario | check_id | name | description | discriminator, joined",
-    "rows": 66,
+    "rows": 107,
     "restrict": {
      "field": "scenario",
      "values": [
-      "server-stateless",
+      "completion-complete",
       "input-required-result-basic-elicitation",
       "input-required-result-basic-list-roots",
       "input-required-result-basic-sampling",
@@ -2068,11 +2772,31 @@
       "input-required-result-result-type",
       "input-required-result-tampered-state",
       "input-required-result-unsupported-methods",
-      "input-required-result-validate-input"
+      "input-required-result-validate-input",
+      "prompts-get-embedded-resource",
+      "prompts-get-simple",
+      "prompts-get-with-args",
+      "prompts-get-with-image",
+      "prompts-list",
+      "resources-list",
+      "resources-read-binary",
+      "resources-read-text",
+      "resources-templates-read",
+      "sep-2164-resource-not-found",
+      "server-stateless",
+      "tools-call-audio",
+      "tools-call-embedded-resource",
+      "tools-call-error",
+      "tools-call-image",
+      "tools-call-mixed-content",
+      "tools-call-simple-text",
+      "tools-call-with-progress",
+      "tools-list"
      ]
     },
-    "why": "The 66 rows of this file's fifteen DECLARED scenarios — `server-stateless` and the fourteen `input-required-result-*` ones. The zero being claimed is `no counterpart among the checks this file declares`, which is what `what_unmatched_means_in_a_file_that_declares_its_own_checks` says a bucket-1 row can mean here. A counterpart in ANOTHER server scenario exists and is named in the near miss; it is a later C1c ticket's, not an absence. WIDENED BY MES-115 (C1c-ii), PM-ratified 2026-09-23. It was scoped to the 30 `server-stateless` rows because that was the whole of this file's declared check population when C1c-i wrote it; C1c-ii grew that population to 66, and a `no-oc-check-in-this-scenario` zero has to be measured over the population its own claim quantifies over. Re-measured over the 66: still 0, so no hit was hidden by the narrower sweep, and every positive control was re-measured too rather than carried over."
-   }
+    "why": "The 107 rows of this file's thirty-four DECLARED scenarios. The zero being claimed is `no counterpart among the checks this file declares`, which is what `what_unmatched_means_in_a_file_that_declares_its_own_checks` says a bucket-1 row can mean here. Each entry's near miss states the WIDER measurement — over all 119 server rows and all 175 — so a reader can see whether the zero is a deferral to another C1c slice or a fact about the whole suite. For all five of C1c-iii's entries it is the latter but one, and that one says so."
+   },
+   "re_measured_by": "MES-116 (C1c-iii) widened the declared check population from 66 to 107, so this entry's population, its zero and every positive control were RE-RUN rather than carried. The zero held. Of the three controls only the population-wide one moved, and it moved by exactly the 41 rows added; the discriminating controls are unchanged, which is what says the 41 new rows are not about this entry's subject."
   },
   {
    "id": "SRV03",
@@ -2206,7 +2930,7 @@
    "positive_controls": [
     {
      "term": "(?i)server",
-     "hits": 66
+     "hits": 107
     },
     {
      "term": "(?i)InputRequiredResult",
@@ -2217,18 +2941,18 @@
      "hits": 10
     }
    ],
-   "near_miss": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`. These are COUNTERPARTS, not near misses, and they are outside this file's declared 66. Named so the row reads as `homed elsewhere`: whichever C1c ticket declares `caching` should pick this member up rather than search for it again.",
+   "near_miss": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`. These are COUNTERPARTS, not near misses, and they are outside this file's declared 107. Named so the row reads as `homed elsewhere`: whichever C1c ticket declares `caching` should pick this member up rather than search for it again.",
    "hits": 0,
    "population": {
     "kind": "manifest_rows",
     "artefact": "docs/conformance/in-scope-2026-07-28.json",
     "rows_at": "scenarios[].checks[]",
     "fields": "leg | scenario | check_id | name | description | discriminator, joined",
-    "rows": 66,
+    "rows": 107,
     "restrict": {
      "field": "scenario",
      "values": [
-      "server-stateless",
+      "completion-complete",
       "input-required-result-basic-elicitation",
       "input-required-result-basic-list-roots",
       "input-required-result-basic-sampling",
@@ -2242,11 +2966,31 @@
       "input-required-result-result-type",
       "input-required-result-tampered-state",
       "input-required-result-unsupported-methods",
-      "input-required-result-validate-input"
+      "input-required-result-validate-input",
+      "prompts-get-embedded-resource",
+      "prompts-get-simple",
+      "prompts-get-with-args",
+      "prompts-get-with-image",
+      "prompts-list",
+      "resources-list",
+      "resources-read-binary",
+      "resources-read-text",
+      "resources-templates-read",
+      "sep-2164-resource-not-found",
+      "server-stateless",
+      "tools-call-audio",
+      "tools-call-embedded-resource",
+      "tools-call-error",
+      "tools-call-image",
+      "tools-call-mixed-content",
+      "tools-call-simple-text",
+      "tools-call-with-progress",
+      "tools-list"
      ]
     },
-    "why": "The 66 rows of this file's fifteen DECLARED scenarios — `server-stateless` and the fourteen `input-required-result-*` ones. The zero being claimed is `no counterpart among the checks this file declares`, which is what `what_unmatched_means_in_a_file_that_declares_its_own_checks` says a bucket-1 row can mean here. A counterpart in ANOTHER server scenario exists and is named in the near miss; it is a later C1c ticket's, not an absence. WIDENED BY MES-115 (C1c-ii), PM-ratified 2026-09-23. It was scoped to the 30 `server-stateless` rows because that was the whole of this file's declared check population when C1c-i wrote it; C1c-ii grew that population to 66, and a `no-oc-check-in-this-scenario` zero has to be measured over the population its own claim quantifies over. Re-measured over the 66: still 0, so no hit was hidden by the narrower sweep, and every positive control was re-measured too rather than carried over."
-   }
+    "why": "The 107 rows of this file's thirty-four DECLARED scenarios. The zero being claimed is `no counterpart among the checks this file declares`, which is what `what_unmatched_means_in_a_file_that_declares_its_own_checks` says a bucket-1 row can mean here. Each entry's near miss states the WIDER measurement — over all 119 server rows and all 175 — so a reader can see whether the zero is a deferral to another C1c slice or a fact about the whole suite. For all five of C1c-iii's entries it is the latter but one, and that one says so."
+   },
+   "re_measured_by": "MES-116 (C1c-iii) widened the declared check population from 66 to 107, so this entry's population, its zero and every positive control were RE-RUN rather than carried. The zero held. Of the three controls only the population-wide one moved, and it moved by exactly the 41 rows added; the discriminating controls are unchanged, which is what says the 41 new rows are not about this entry's subject."
   },
   {
    "id": "SRV09",
@@ -2535,7 +3279,7 @@
    "positive_controls": [
     {
      "term": "(?i)server",
-     "hits": 66
+     "hits": 107
     },
     {
      "term": "(?i)InputRequiredResult",
@@ -2546,18 +3290,18 @@
      "hits": 14
     }
    ],
-   "near_miss": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. These are REAL COUNTERPARTS for the rejection this member asserts, and they sit outside this file's declared 66. Named so the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What NEITHER OC row covers is the 403 STATUS this unit pins as the acceptance parity: the OC rows say `rejects`, and nothing in them names a code.",
+   "near_miss": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. These are REAL COUNTERPARTS for the rejection this member asserts, and they sit outside this file's declared 107. Named so the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What NEITHER OC row covers is the 403 STATUS this unit pins as the acceptance parity: the OC rows say `rejects`, and nothing in them names a code.",
    "hits": 0,
    "population": {
     "kind": "manifest_rows",
     "artefact": "docs/conformance/in-scope-2026-07-28.json",
     "rows_at": "scenarios[].checks[]",
     "fields": "leg | scenario | check_id | name | description | discriminator, joined",
-    "rows": 66,
+    "rows": 107,
     "restrict": {
      "field": "scenario",
      "values": [
-      "server-stateless",
+      "completion-complete",
       "input-required-result-basic-elicitation",
       "input-required-result-basic-list-roots",
       "input-required-result-basic-sampling",
@@ -2571,11 +3315,31 @@
       "input-required-result-result-type",
       "input-required-result-tampered-state",
       "input-required-result-unsupported-methods",
-      "input-required-result-validate-input"
+      "input-required-result-validate-input",
+      "prompts-get-embedded-resource",
+      "prompts-get-simple",
+      "prompts-get-with-args",
+      "prompts-get-with-image",
+      "prompts-list",
+      "resources-list",
+      "resources-read-binary",
+      "resources-read-text",
+      "resources-templates-read",
+      "sep-2164-resource-not-found",
+      "server-stateless",
+      "tools-call-audio",
+      "tools-call-embedded-resource",
+      "tools-call-error",
+      "tools-call-image",
+      "tools-call-mixed-content",
+      "tools-call-simple-text",
+      "tools-call-with-progress",
+      "tools-list"
      ]
     },
-    "why": "The 66 rows of this file's fifteen DECLARED scenarios — `server-stateless` and the fourteen `input-required-result-*` ones. The zero being claimed is `no counterpart among the checks this file declares`, which is what `what_unmatched_means_in_a_file_that_declares_its_own_checks` says a bucket-1 row can mean here. A counterpart in ANOTHER server scenario exists and is named in the near miss; it is a later C1c ticket's, not an absence."
-   }
+    "why": "The 107 rows of this file's thirty-four DECLARED scenarios. The zero being claimed is `no counterpart among the checks this file declares`, which is what `what_unmatched_means_in_a_file_that_declares_its_own_checks` says a bucket-1 row can mean here. Each entry's near miss states the WIDER measurement — over all 119 server rows and all 175 — so a reader can see whether the zero is a deferral to another C1c slice or a fact about the whole suite. For all five of C1c-iii's entries it is the latter but one, and that one says so."
+   },
+   "re_measured_by": "MES-116 (C1c-iii) widened the declared check population from 66 to 107, so this entry's population, its zero and every positive control were RE-RUN rather than carried. The zero held. Of the three controls only the population-wide one moved, and it moved by exactly the 41 rows added; the discriminating controls are unchanged, which is what says the 41 new rows are not about this entry's subject."
   },
   {
    "id": "SRV19",
@@ -2604,7 +3368,7 @@
     "rows_at": "scenarios[].checks[]",
     "fields": "leg | scenario | check_id | name | description | discriminator, joined",
     "rows": 175,
-    "why": "ALL 175. The zero being claimed is `no such check ANYWHERE`, not `none on our leg` and not `none among the 66` — so the population is the whole manifest and the sweep is given every chance to find a hit. A narrower population would have made this zero easier than the claim it carries."
+    "why": "ALL 175. The zero being claimed is `no such check ANYWHERE`, not `none on our leg` and not `none among the 107` — so the population is the whole manifest and the sweep is given every chance to find a hit. A narrower population would have made this zero easier than the claim it carries."
    }
   },
   {
@@ -2615,7 +3379,7 @@
    "positive_controls": [
     {
      "term": "(?i)server",
-     "hits": 66
+     "hits": 107
     },
     {
      "term": "(?i)result",
@@ -2626,18 +3390,18 @@
      "hits": 13
     }
    ],
-   "near_miss": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`, and all outside this file's declared 66. They are COUNTERPARTS and not near misses: `TtlNonNegative` in particular is about the very field this member pins. Named so the row reads as `homed elsewhere` — whichever C1c ticket declares `caching` should pick this member up rather than search for it again. What no OC row asks is what the DEFAULT is when a deployment configures nothing, which is the whole of this member's claim.",
+   "near_miss": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`, and all outside this file's declared 107. They are COUNTERPARTS and not near misses: `TtlNonNegative` in particular is about the very field this member pins. Named so the row reads as `homed elsewhere` — whichever C1c ticket declares `caching` should pick this member up rather than search for it again. What no OC row asks is what the DEFAULT is when a deployment configures nothing, which is the whole of this member's claim.",
    "hits": 0,
    "population": {
     "kind": "manifest_rows",
     "artefact": "docs/conformance/in-scope-2026-07-28.json",
     "rows_at": "scenarios[].checks[]",
     "fields": "leg | scenario | check_id | name | description | discriminator, joined",
-    "rows": 66,
+    "rows": 107,
     "restrict": {
      "field": "scenario",
      "values": [
-      "server-stateless",
+      "completion-complete",
       "input-required-result-basic-elicitation",
       "input-required-result-basic-list-roots",
       "input-required-result-basic-sampling",
@@ -2651,14 +3415,384 @@
       "input-required-result-result-type",
       "input-required-result-tampered-state",
       "input-required-result-unsupported-methods",
-      "input-required-result-validate-input"
+      "input-required-result-validate-input",
+      "prompts-get-embedded-resource",
+      "prompts-get-simple",
+      "prompts-get-with-args",
+      "prompts-get-with-image",
+      "prompts-list",
+      "resources-list",
+      "resources-read-binary",
+      "resources-read-text",
+      "resources-templates-read",
+      "sep-2164-resource-not-found",
+      "server-stateless",
+      "tools-call-audio",
+      "tools-call-embedded-resource",
+      "tools-call-error",
+      "tools-call-image",
+      "tools-call-mixed-content",
+      "tools-call-simple-text",
+      "tools-call-with-progress",
+      "tools-list"
      ]
     },
-    "why": "The 66 rows of this file's fifteen DECLARED scenarios — `server-stateless` and the fourteen `input-required-result-*` ones. The zero being claimed is `no counterpart among the checks this file declares`, which is what `what_unmatched_means_in_a_file_that_declares_its_own_checks` says a bucket-1 row can mean here. A counterpart in ANOTHER server scenario exists and is named in the near miss; it is a later C1c ticket's, not an absence."
-   }
+    "why": "The 107 rows of this file's thirty-four DECLARED scenarios. The zero being claimed is `no counterpart among the checks this file declares`, which is what `what_unmatched_means_in_a_file_that_declares_its_own_checks` says a bucket-1 row can mean here. Each entry's near miss states the WIDER measurement — over all 119 server rows and all 175 — so a reader can see whether the zero is a deferral to another C1c slice or a fact about the whole suite. For all five of C1c-iii's entries it is the latter but one, and that one says so."
+   },
+   "re_measured_by": "MES-116 (C1c-iii) widened the declared check population from 66 to 107, so this entry's population, its zero and every positive control were RE-RUN rather than carried. The zero held. Of the three controls only the population-wide one moved, and it moved by exactly the 41 rows added; the discriminating controls are unchanged, which is what says the 41 new rows are not about this entry's subject."
+  },
+  {
+   "id": "SRV21",
+   "kind": "no-oc-scenario",
+   "subject": "the `resource_link` content type reaching the wire — its snake_case `type` discriminator and its camelCase `mimeType`",
+   "pattern": "(?i)resource_?link",
+   "positive_controls": [
+    {
+     "term": "(?i)server",
+     "hits": 107
+    },
+    {
+     "term": "(?i)content",
+     "hits": 8
+    },
+    {
+     "term": "(?i)resource",
+     "hits": 18
+    }
+   ],
+   "near_miss": "`ToolsCallEmbeddedResource` and `PromptsGetEmbeddedResource` — the suite's two other resource-bearing content checks, both declared here. They are NEAR MISSES and NOT counterparts, and the distinction is the protocol's own: an EmbeddedResource INLINES the resource contents in the result, while a ResourceLink is a REFERENCE the client must then read with `resources/read`. A check that finds an inlined resource would reject a link and vice versa. MEASURED WIDER THAN THE DECLARATION: the pattern is 0 over all 175 manifest rows and over both legs, not merely 0 over the declared 107, so this is not a deferral to another C1c slice — the suite has no ResourceLink check at all. That is a coverage finding about the OFFICIAL SUITE: `ResourceLink` is in the 2026-07-28 schema (its definition is at build bytes 293842-293989) and nothing in the conformance suite exercises it.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 107,
+    "restrict": {
+     "field": "scenario",
+     "values": [
+      "completion-complete",
+      "input-required-result-basic-elicitation",
+      "input-required-result-basic-list-roots",
+      "input-required-result-basic-sampling",
+      "input-required-result-capability-check",
+      "input-required-result-ignore-extra-params",
+      "input-required-result-missing-input-response",
+      "input-required-result-multi-round",
+      "input-required-result-multiple-input-requests",
+      "input-required-result-non-tool-request",
+      "input-required-result-request-state",
+      "input-required-result-result-type",
+      "input-required-result-tampered-state",
+      "input-required-result-unsupported-methods",
+      "input-required-result-validate-input",
+      "prompts-get-embedded-resource",
+      "prompts-get-simple",
+      "prompts-get-with-args",
+      "prompts-get-with-image",
+      "prompts-list",
+      "resources-list",
+      "resources-read-binary",
+      "resources-read-text",
+      "resources-templates-read",
+      "sep-2164-resource-not-found",
+      "server-stateless",
+      "tools-call-audio",
+      "tools-call-embedded-resource",
+      "tools-call-error",
+      "tools-call-image",
+      "tools-call-mixed-content",
+      "tools-call-simple-text",
+      "tools-call-with-progress",
+      "tools-list"
+     ]
+    },
+    "why": "The 107 rows of this file's thirty-four DECLARED scenarios. The zero being claimed is `no counterpart among the checks this file declares`, which is what `what_unmatched_means_in_a_file_that_declares_its_own_checks` says a bucket-1 row can mean here. Each entry's near miss states the WIDER measurement — over all 119 server rows and all 175 — so a reader can see whether the zero is a deferral to another C1c slice or a fact about the whole suite. For all five of C1c-iii's entries it is the latter but one, and that one says so."
+   },
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "id": "SRV22",
+   "kind": "no-oc-scenario",
+   "subject": "an optional field the server left unset being ABSENT from the object it encodes rather than present as null — specifically `annotations`, `icons` and `_meta` on a Tool",
+   "pattern": "(?i)optional[^|]*(absent|omit|null)|(absent|omit|null)[^|]*optional|annotation|\\bicons?\\b",
+   "positive_controls": [
+    {
+     "term": "(?i)server",
+     "hits": 107
+    },
+    {
+     "term": "(?i)tool",
+     "hits": 20
+    },
+    {
+     "term": "(?i)MUST",
+     "hits": 13
+    }
+   ],
+   "near_miss": "`RequestMetaClientInfoOptional` (`server-stateless`, declared here) and `ClientCustomHeaderOmitNull` (`http-custom-headers`, client leg). The first is the closest thing on this leg: it IS about an optional member being omitted, but from the `_meta` of a request the CLIENT sends, and what it scores is the server's tolerance of the omission. The second is about a client omitting a header rather than sending a null one — the right shape, the wrong direction and the wrong leg. Neither asks what a SERVER does with an optional field of an object it is encoding, which is the whole of this member's claim. MEASURED: the pattern is 0 over the declared 107 AND 0 over all 175; the sub-terms `annotation` and `icons` are independently 0 over all 175, so no row in the suite names either field.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 107,
+    "restrict": {
+     "field": "scenario",
+     "values": [
+      "completion-complete",
+      "input-required-result-basic-elicitation",
+      "input-required-result-basic-list-roots",
+      "input-required-result-basic-sampling",
+      "input-required-result-capability-check",
+      "input-required-result-ignore-extra-params",
+      "input-required-result-missing-input-response",
+      "input-required-result-multi-round",
+      "input-required-result-multiple-input-requests",
+      "input-required-result-non-tool-request",
+      "input-required-result-request-state",
+      "input-required-result-result-type",
+      "input-required-result-tampered-state",
+      "input-required-result-unsupported-methods",
+      "input-required-result-validate-input",
+      "prompts-get-embedded-resource",
+      "prompts-get-simple",
+      "prompts-get-with-args",
+      "prompts-get-with-image",
+      "prompts-list",
+      "resources-list",
+      "resources-read-binary",
+      "resources-read-text",
+      "resources-templates-read",
+      "sep-2164-resource-not-found",
+      "server-stateless",
+      "tools-call-audio",
+      "tools-call-embedded-resource",
+      "tools-call-error",
+      "tools-call-image",
+      "tools-call-mixed-content",
+      "tools-call-simple-text",
+      "tools-call-with-progress",
+      "tools-list"
+     ]
+    },
+    "why": "The 107 rows of this file's thirty-four DECLARED scenarios. The zero being claimed is `no counterpart among the checks this file declares`, which is what `what_unmatched_means_in_a_file_that_declares_its_own_checks` says a bucket-1 row can mean here. Each entry's near miss states the WIDER measurement — over all 119 server rows and all 175 — so a reader can see whether the zero is a deferral to another C1c slice or a fact about the whole suite. For all five of C1c-iii's entries it is the latter but one, and that one says so."
+   },
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "id": "SRV23",
+   "kind": "no-oc-server-check",
+   "subject": "JSON Schema 2020-12 keywords beyond `type` — `$defs`/`$anchor`, `$ref`, `not`, `oneOf`, `if`/`then`/`else`, `unevaluatedProperties` — surviving verbatim through a tools/list inputSchema",
+   "pattern": "(?i)\\$defs|\\$anchor|\\$ref|oneOf|anyOf|unevaluated|keyword|2020-12",
+   "positive_controls": [
+    {
+     "term": "(?i)server",
+     "hits": 107
+    },
+    {
+     "term": "(?i)tool",
+     "hits": 20
+    },
+    {
+     "term": "(?i)result",
+     "hits": 39
+    }
+   ],
+   "near_miss": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY `$ref` row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network `$ref`, not whether a server PRESERVES the keyword. The other near miss is on this very row's own check: `ToolsList`'s `every_tool_has_an_input_schema` axis, which is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 107,
+    "restrict": {
+     "field": "scenario",
+     "values": [
+      "completion-complete",
+      "input-required-result-basic-elicitation",
+      "input-required-result-basic-list-roots",
+      "input-required-result-basic-sampling",
+      "input-required-result-capability-check",
+      "input-required-result-ignore-extra-params",
+      "input-required-result-missing-input-response",
+      "input-required-result-multi-round",
+      "input-required-result-multiple-input-requests",
+      "input-required-result-non-tool-request",
+      "input-required-result-request-state",
+      "input-required-result-result-type",
+      "input-required-result-tampered-state",
+      "input-required-result-unsupported-methods",
+      "input-required-result-validate-input",
+      "prompts-get-embedded-resource",
+      "prompts-get-simple",
+      "prompts-get-with-args",
+      "prompts-get-with-image",
+      "prompts-list",
+      "resources-list",
+      "resources-read-binary",
+      "resources-read-text",
+      "resources-templates-read",
+      "sep-2164-resource-not-found",
+      "server-stateless",
+      "tools-call-audio",
+      "tools-call-embedded-resource",
+      "tools-call-error",
+      "tools-call-image",
+      "tools-call-mixed-content",
+      "tools-call-simple-text",
+      "tools-call-with-progress",
+      "tools-list"
+     ]
+    },
+    "why": "The 107 rows of this file's thirty-four DECLARED scenarios. The zero being claimed is `no counterpart among the checks this file declares`, which is what `what_unmatched_means_in_a_file_that_declares_its_own_checks` says a bucket-1 row can mean here. Each entry's near miss states the WIDER measurement — over all 119 server rows and all 175 — so a reader can see whether the zero is a deferral to another C1c slice or a fact about the whole suite. For all five of C1c-iii's entries it is the latter but one, and that one says so."
+   },
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "id": "SRV24",
+   "kind": "no-oc-scenario",
+   "subject": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
+   "pattern": "(?i)outputschema|structuredcontent",
+   "positive_controls": [
+    {
+     "term": "(?i)server",
+     "hits": 107
+    },
+    {
+     "term": "(?i)tool",
+     "hits": 20
+    },
+    {
+     "term": "(?i)result",
+     "hits": 39
+    }
+   ],
+   "near_miss": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s `isError` axes, the only place the suite looks at the SHAPE of a tools/call result beyond its `content` array. Neither names `outputSchema` or `structuredContent`. MEASURED: 0 over all 175 manifest rows, BOTH LEGS — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED: this zero is also `MCP.Server.JsonSchema202012Test`'s, whose fifteen W-1 members make the same claim; that module is C1c-iii-b's member cut and it inherits this search rather than re-running it, the SRV08 mechanism running forward instead of backward.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 107,
+    "restrict": {
+     "field": "scenario",
+     "values": [
+      "completion-complete",
+      "input-required-result-basic-elicitation",
+      "input-required-result-basic-list-roots",
+      "input-required-result-basic-sampling",
+      "input-required-result-capability-check",
+      "input-required-result-ignore-extra-params",
+      "input-required-result-missing-input-response",
+      "input-required-result-multi-round",
+      "input-required-result-multiple-input-requests",
+      "input-required-result-non-tool-request",
+      "input-required-result-request-state",
+      "input-required-result-result-type",
+      "input-required-result-tampered-state",
+      "input-required-result-unsupported-methods",
+      "input-required-result-validate-input",
+      "prompts-get-embedded-resource",
+      "prompts-get-simple",
+      "prompts-get-with-args",
+      "prompts-get-with-image",
+      "prompts-list",
+      "resources-list",
+      "resources-read-binary",
+      "resources-read-text",
+      "resources-templates-read",
+      "sep-2164-resource-not-found",
+      "server-stateless",
+      "tools-call-audio",
+      "tools-call-embedded-resource",
+      "tools-call-error",
+      "tools-call-image",
+      "tools-call-mixed-content",
+      "tools-call-simple-text",
+      "tools-call-with-progress",
+      "tools-list"
+     ]
+    },
+    "why": "The 107 rows of this file's thirty-four DECLARED scenarios. The zero being claimed is `no counterpart among the checks this file declares`, which is what `what_unmatched_means_in_a_file_that_declares_its_own_checks` says a bucket-1 row can mean here. Each entry's near miss states the WIDER measurement — over all 119 server rows and all 175 — so a reader can see whether the zero is a deferral to another C1c slice or a fact about the whole suite. For all five of C1c-iii's entries it is the latter but one, and that one says so."
+   },
+   "authored_by": "MES-116 (C1c-iii)"
+  },
+  {
+   "id": "SRV25",
+   "kind": "no-oc-scenario",
+   "subject": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
+   "pattern": "(?i)order|sort|determinis|stable|sequence",
+   "positive_controls": [
+    {
+     "term": "(?i)server",
+     "hits": 107
+    },
+    {
+     "term": "(?i)tool",
+     "hits": 20
+    },
+    {
+     "term": "(?i)result",
+     "hits": 39
+    }
+   ],
+   "near_miss": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 107,
+    "restrict": {
+     "field": "scenario",
+     "values": [
+      "completion-complete",
+      "input-required-result-basic-elicitation",
+      "input-required-result-basic-list-roots",
+      "input-required-result-basic-sampling",
+      "input-required-result-capability-check",
+      "input-required-result-ignore-extra-params",
+      "input-required-result-missing-input-response",
+      "input-required-result-multi-round",
+      "input-required-result-multiple-input-requests",
+      "input-required-result-non-tool-request",
+      "input-required-result-request-state",
+      "input-required-result-result-type",
+      "input-required-result-tampered-state",
+      "input-required-result-unsupported-methods",
+      "input-required-result-validate-input",
+      "prompts-get-embedded-resource",
+      "prompts-get-simple",
+      "prompts-get-with-args",
+      "prompts-get-with-image",
+      "prompts-list",
+      "resources-list",
+      "resources-read-binary",
+      "resources-read-text",
+      "resources-templates-read",
+      "sep-2164-resource-not-found",
+      "server-stateless",
+      "tools-call-audio",
+      "tools-call-embedded-resource",
+      "tools-call-error",
+      "tools-call-image",
+      "tools-call-mixed-content",
+      "tools-call-simple-text",
+      "tools-call-with-progress",
+      "tools-list"
+     ]
+    },
+    "why": "The 107 rows of this file's thirty-four DECLARED scenarios. The zero being claimed is `no counterpart among the checks this file declares`, which is what `what_unmatched_means_in_a_file_that_declares_its_own_checks` says a bucket-1 row can mean here. Each entry's near miss states the WIDER measurement — over all 119 server rows and all 175 — so a reader can see whether the zero is a deferral to another C1c slice or a fact about the whole suite. For all five of C1c-iii's entries it is the latter but one, and that one says so."
+   },
+   "authored_by": "MES-116 (C1c-iii)"
   }
  ],
- "absence_searches_note": "THE SEARCH REGISTRY — 19 entries, every one re-run at this tip against docs/conformance/in-scope-2026-07-28.json, every one returning 0, and every one carrying positive controls measured over the SAME population so the zero is a property of the population's content rather than of a sweep that never ran. The generator refuses an entry recording anything but `hits: 0`, an entry with no population, pattern, subject, near miss or positive control, an entry whose `kind` is not its rows' tag slug, an entry no row names (G23c), and a row whose copy of `subject` or `near_miss` has drifted from the entry (D4). THREE KINDS OF ZERO are used and they are not interchangeable: `no-oc-scenario` (30 rows) is swept over all 175 and means the suite has no such check ANYWHERE; `no-oc-server-check` (3 rows) is swept over the 119 SERVER rows and means the counterpart exists on the CLIENT leg only, which the near miss names; `no-oc-check-in-this-scenario` (4 rows) is swept over the checks this file DECLARES and means a REAL server counterpart exists in another scenario, named so a later C1c slice inherits the member. Sweeping all 175 for the last two would return their own counterparts as hits, and the entry would then have to explain away a zero it could not get.\n\nTWO ENTRIES WERE WIDENED BY C1c-ii AND THAT IS AN EDIT TO ANOTHER TICKET'S COMMITTED MEASUREMENT, so it is recorded rather than done quietly. SRV02 and SRV07 are `no-oc-check-in-this-scenario` searches, whose population is BY DEFINITION the checks this file declares; C1c-ii took that population from 30 to 66, so a zero still measured over 30 would have been measured over less than half of what its own row's claim quantifies over. Both were re-run over the 66 and both returned 0 — so no hit was hidden by the narrower sweep — and every recorded positive-control figure was RE-MEASURED rather than carried across, which the control enforces (it asserts recorded == measured). PM-ratified on MES-115, 2026-09-23. The `restrict` form is `{field, values}`, a LIST, added for exactly this: the declared population is fifteen scenarios and a single `{field, value}` cannot name it.",
+ "absence_searches_note": "THE SEARCH REGISTRY — 24 entries, every one re-run at this tip against docs/conformance/in-scope-2026-07-28.json, every one returning 0, and every one carrying positive controls measured over the SAME population so the zero is a property of the population's content rather than of a sweep that never ran. The generator refuses an entry recording anything but `hits: 0`, an entry with no population, pattern, subject, near miss or positive control, an entry whose `kind` is not its rows' tag slug, an entry no row names (G23c), and a row whose copy of `subject` or `near_miss` has drifted from the entry (D4). THREE KINDS OF ZERO are used and they are not interchangeable: `no-oc-scenario` (39 rows) is swept over all 175 and means the suite has no such check ANYWHERE; `no-oc-server-check` (4 rows) is swept over the 119 SERVER rows and means the counterpart exists on the CLIENT leg only, which the near miss names; `no-oc-check-in-this-scenario` (4 rows) is swept over the checks this file DECLARES and means a REAL server counterpart exists in another scenario, named so a later C1c slice inherits the member. Sweeping all 175 for the last two would return their own counterparts as hits, and the entry would then have to explain away a zero it could not get.\n\nTWO ENTRIES WERE WIDENED BY C1c-ii AND THAT IS AN EDIT TO ANOTHER TICKET'S COMMITTED MEASUREMENT, so it is recorded rather than done quietly. SRV02 and SRV07 are `no-oc-check-in-this-scenario` searches, whose population is BY DEFINITION the checks this file declares; C1c-ii took that population from 30 to 66, so a zero still measured over 30 would have been measured over less than half of what its own row's claim quantifies over. Both were re-run over the 66 and both returned 0 — so no hit was hidden by the narrower sweep — and every recorded positive-control figure was RE-MEASURED rather than carried across, which the control enforces (it asserts recorded == measured). PM-ratified on MES-115, 2026-09-23. The `restrict` form is `{field, values}`, a LIST, added for exactly this: the declared population is thirty-four scenarios and a single `{field, value}` cannot name it.\n\nFOUR ENTRIES WERE RE-MEASURED BY C1c-iii AND FIVE WERE ADDED. The re-measured four are SRV02, SRV07, SRV18 and SRV20 — every `no-oc-check-in-this-scenario` entry in the file — whose population is BY DEFINITION the checks this file declares, and C1c-iii took that from 66 to 107. All four were RE-RUN rather than carried: every zero held, and of each entry's three positive controls only the population-wide one moved, by exactly the 41 rows added (66 -> 107). The discriminating controls — `MUST` 13, `_meta` 10, `HTTP` 14, `InputRequiredResult` 17, `result` 39 — are unchanged, and THAT is the informative part: it says the 41 new rows are not about those entries' subjects, which is what makes the widened zero mean the same thing the narrow one did. A NOTE ON THE `(?i)server` CONTROL, since it now reads 107 of 107. It matches every row because the population's joined field list BEGINS with the leg, so on a server-scoped population it is total by construction. That is exactly its job — it shows the sweep reached every row — but it cannot discriminate, and an entry resting on it alone would be resting on nothing. Every entry in this file carries at least one control that is neither 0 nor the population size.",
  "claims_without_an_edge": [
   {
    "member": {
@@ -2668,7 +3802,7 @@
    },
    "claim": "the identity the completion reports is the RETRY request's re-resolved identity — neither the first request's, nor the one planted inside `inputResponses` (streamable_http_ac_test.exs:264 — `assert tool_text(final) == \"REVIEWER\"`, where the first call ran as `PM` and the planted value was `PM-SPOOF`)",
    "disposition": "no counterpart in this file's declared check population",
-   "owner": "unowned — and the search was run over ALL 175, not only the declared 66, so this is not a deferral to a later C1c slice.",
+   "owner": "unowned — and the search was run over ALL 175, not only the declared 107, so this is not a deferral to a later C1c slice.",
    "the_search_that_found_none": "All 36 checks of the `input-required-result-*` family were read: not one scores WHOSE request a retry is. The family's checks take the SHAPE of the MRTR exchange as their subject — resultType, inputRequests, requestState, completion, tampering, extra keys — and every one of them runs as a single anonymous client. `RejectTamperedState` is the nearest and is about INTEGRITY of the token, not about the principal the retry arrives under: a correctly-signed token replayed by a different caller passes it. Widened to all 175 with the pattern `(?i)\\bidentity\\b|\\bprincipal\\b|authenticat|impersonat` — 0 hits, over a population whose positive controls (`(?i)server` 119, `(?i)error` 18, `(?i)MUST` 32) show the sweep reached it.",
    "why_it_is_recorded_here_and_not_in_bucket_1": "The member DOES carry edges — five of them — so it is not A3 §6 state 3 whole, and bucket 1 would hide it from the member equation. A3 §6's state 3 is a property of a MEMBER and there is no bucket for a claim, so none is invented.",
    "authored_by": "MES-115 (C1c-ii)"
@@ -2676,5 +3810,10 @@
  ],
  "claims_without_an_edge_note": "ONE row, and it is the SERVER leg's first. A3's state 3 is a property of a MEMBER — a member is either edge-bearing or declared unmatched, and the generator's bucket-1 reconciliation requires exactly that — so a member that matches on some claims and not on others has nowhere to put the unmatched ones. C1b-i found five of these and escalated them; whether A3 §6 should gain a claim-level state 3 is MES-110's and not this file's. What is new here is the SHAPE of the gap: the client leg's rows were claims whose counterpart lived in another declared population, and this one has no counterpart anywhere in the suite. The MRTR family scores the exchange and never asks who is on the other end of it, which is exactly the question the SDK's identity rule (`ToolContext.identity` comes from the authenticated transport pipeline and NEVER from model-controlled params) exists to answer. Recorded as a coverage finding about the SUITE rather than about us.",
  "the_first_live_warning_in_the_crosswalk": "MEASURED ON THIS SLICE, and it is a first for the whole artefact rather than for this file. `IgnoreUnexpectedParams` is WARNING at the accepted run. There are exactly TWO in-denominator WARNING checks in the 173, both SERVER-leg, and this is one of them — which is why D2's WARNING mapping (`WARNING -> :green carrying warning: true`) had NO LIVE INSTANCE anywhere before this ticket: the crosswalk's population simply never contained a WARNING check. `ACTest`'s MRTR spoof retry carries an edge against it, so the mapping now fires on real data, and the generator's `verdict_mapping.warning_rows_in_this_population` is DERIVED and moves on its own. WHAT THIS DOES NOT ESTABLISH: that the mapping is RIGHT. Exercised is not correct — a mapping that labelled every non-red check `warning` would fire here too. That gap is closed by a control and not by this field: `crosswalk_falsification_controls.exs warning_mapping` takes the real `IgnoreUnexpectedParams` cell, requires it to land where WARNING maps it, and then mutates the OC verdict away from WARNING on the same cell and requires the row to move OUT. Both directions, because a label every non-red row gets is not a mapping.",
- "the_inherited_figure_this_ticket_closed_and_why_it_is_named": "SRV08's near miss said `the thirty-five `input-required-result-*` rows`. MEASURED at 3166dc7 it is THIRTY-SIX — in A1's manifest and in MES-97's locator output independently, 22 substantive checks over 14 scenarios plus 14 `WireSchemaValid` rows. The wrong figure occurred three times in this file and propagated into `crosswalk-2026-07-28.json` and the bucket-1 view, and it was wrong AT ITS OWN COMMIT rather than having gone stale. It CLOSES as a side effect of the re-home — SRV08 and its row are deleted by this ticket, and the string goes with them. Named here because a wrong figure that vanishes silently reads as never having been there, and the next reader of the diff should be able to tell a correction from a deletion."
+ "the_inherited_figure_this_ticket_closed_and_why_it_is_named": "SRV08's near miss said `the thirty-five `input-required-result-*` rows`. MEASURED at 3166dc7 it is THIRTY-SIX — in A1's manifest and in MES-97's locator output independently, 22 substantive checks over 14 scenarios plus 14 `WireSchemaValid` rows. The wrong figure occurred three times in this file and propagated into `crosswalk-2026-07-28.json` and the bucket-1 view, and it was wrong AT ITS OWN COMMIT rather than having gone stale. It CLOSES as a side effect of the re-home — SRV08 and its row are deleted by this ticket, and the string goes with them. Named here because a wrong figure that vanishes silently reads as never having been there, and the next reader of the diff should be able to tell a correction from a deletion.\n\nC1c-iii CLOSED A SECOND ONE, and it lives on the AXIS file rather than here because that is where the field was: `why_fourteen_rows_share_one_site` carried a count in its NAME and in its body, and C1c-iii's nineteen `WireSchemaValid` rows falsify both. It was TRUE AT ITS OWN COMMIT, which is the same shape as SRV08's thirty-five and is why both are named rather than rewritten. The record is `oc-axes-c1.json`'s `the_inherited_figure_this_ticket_closed_and_why_it_is_named`, and the leg-wide tally that replaces it is checked by a control rather than asserted.",
+ "the_red_oc_population_of_the_server_leg_is_now_closed": "MEASURED ON MES-116 OVER THE WHOLE LEG, NOT OVER ITS OWN SLICE, AND IT IS THE KIND OF CLOSURE THE CROSSWALK EXISTS TO ESTABLISH. The server leg's 119 in-denominator checks are 98 SUCCESS / 19 FAILURE / 2 WARNING. ALL NINETEEN FAILURES ARE ALREADY INSIDE THE DECLARED POPULATION — seventeen in `server-stateless` (C1c-i's) and two in `input-required-result-non-tool-request` (C1c-ii's). C1c-iii's 41 are 40 SUCCESS and 1 WARNING with no FAILURE at all, and the twelve checks left for C1c-iv (`caching` 8, `dns-rebinding-protection` 2, `server-sse-multiple-streams` 2) are all SUCCESS. SO: buckets 4a and 4b are CLOSED for the server leg as of C1c-ii. No remaining slice can contribute to either, and that is a fact about the SUITE's verdicts rather than about how hard anyone looked. C1c-iv and the D group inherit it as measured and should not re-derive it; what they should do is re-run the leg-wide status census if the accepted run is ever replaced, because this closure is a function of that run and of nothing else.",
+ "the_escalation_is_now_a_bound_and_C1c_iv_owns_the_last_chance": "A3 §3's third combination — `(red, green, :full) -> :divergent_despite_agreement` — needs an edge that agrees with EVERY axis of a RED check. C1c-ii measured it to be one OC verdict away (five `:full` edges, all on green checks) and its `warning_mapping` control reaches it under mutation. C1c-iii does not make it live and could not have: its 41 checks contain no FAILURE, so no edge of its fourteen can reach a red one. Reported, not manufactured. WHAT HAS CHANGED IS THE SHAPE OF WHAT REMAINS, and it is now a BOUND rather than an absence. Because every red check on the leg is ALREADY DECLARED (see `the_red_oc_population_of_the_server_leg_is_now_closed`), no future slice can bring a red check WITH it. The ONLY way the combination can go live on the server leg is an edge from a NEWLY-DECLARED MEMBER onto one of the nineteen already-declared red checks. C1c-iii's sixteen members are content-type and tool-shape round-trips and tool-ordering arms; none reaches any of the nineteen, which are the `server-stateless` request-metadata family and the two non-tool MRTR rows. SO C1c-iv's 65 members ARE THE LAST CHANCE on this leg, and C1c-iv should treat it as a question to MEASURE rather than a box to leave unticked: either an edge of its own reaches one of the nineteen and agrees with all its axes, or the combination is ruled out for the server leg and the crosswalk says so with the whole leg declared. Written here so C1c-iv inherits the question rather than rediscovering it.",
+ "the_second_warning_row_and_what_it_measured": "C1c-iii DECLARES the server leg's OTHER WARNING check — `ResourcesNotFoundDataUri` in `sep-2164-resource-not-found`, a SHOULD whose failing arm is WARNING rather than FAILURE. It is WARNING at the accepted run because our server returns a JSON-RPC error for a missing resource but does not put the requested URI in the error's `data`, which is a real coverage result about this SDK. THE COUNT WAS MEASURED AND NOT ASSUMED, and it did not move: `verdict_mapping.warning_rows_in_this_population` is still 1. That field counts CROSSWALK CELLS, and a cell exists only where an EDGE does; this row carries no edge, so it is in bucket 2 and contributes no cell. The prediction made at plan time was that it would stay at 1 and the reason given was this one — recorded because a prediction that is checked is worth more than one that is right. THE SEARCH BEHIND THE ZERO EDGE, AND THE PLAN'S FIGURE FOR IT WAS WRONG. The plan said `sep-2164` occurs in 0 of the 281 ET-CC members. RE-RUN AT THIS TIP IT IS 1: `MCP.IntegrationTest/test resources: list, read, unknown, templates` names SEP-2164 and asserts the error code for a missing resource. That member is about the CODE and not about the `data` field, so this WARNING row's zero survives the correction — the probe that matters, for a claim that a resource-not-found error's `data.uri` carries the requested URI, returns three hits of which none is a counterpart: two `MCP.Protocol.ErrorTest` rows about decoding an error's `data` in general (client leg) and one `MCP.Transport.SubscriptionsStreamTest` row about a stream that cannot start. The figure is corrected here rather than quietly restated, because the plan's version was the one a reader would otherwise inherit. What the correction DID turn up is the next field.",
+ "the_counterpart_this_slice_found_that_no_leg_scoped_file_can_declare": "THE SHARPEST THING IN THIS SLICE, AND IT WAS FOUND BY RE-RUNNING A FIGURE THE PLAN GOT WRONG. `ResourcesNotFoundErrorCode` — SEP-2164's SHOULD that a `resources/read` for a non-existent resource answers with error code -32602 rather than the retired -32002 — IS bucket 2 in this crosswalk, and it is bucket 2 while a real ET-CC counterpart exists in the suite. MEASURED over all 281 ET-CC members: exactly ONE makes the claim. `MCP.IntegrationTest/test resources: list, read, unknown, templates` asserts, at integration_test.exs lines 162-171, the error code for a missing resource and says in its own register evidence that it is the SEP-2164 code and not the retired one. It drives a real client against a real server over `MCP.Test.BridgeTransport`, so the value crossed the boundary as an encoded message. WHY IT CANNOT BE DECLARED HERE, AND NOT BY THIS SLICE'S CHOICE: B2b attributes it to leg `none_determinable`, on the stated ground that an end-to-end test constrains the PAIR rather than one side — a mutation on either leg reddens it. This file's member selector opens `all_of[{leg equals server}, ...]`, and the client file's opens with the client conjunct, so a `none_determinable` member is outside BOTH by construction. There are TWENTY-NINE such members in the 281. SO THE BUCKET-2 ENTRY IS HONEST BUT IT IS NOT THE WHOLE TRUTH: it says `no ET-CC member of the DECLARED MEMBER POPULATION claims this`, which is exactly what bucket 2 is defined to say, and a reader could reasonably take it to mean the SDK does not test this. It does. Recorded here so that reader cannot. THIS IS NOT THIS TICKET'S TO FIX. Whether `none_determinable` members should be declarable — by a third population, by a `leg in [server, none_determinable]` conjunct, or by re-attributing the member — is a question about A3's leg model and about G17's one-member-one-home rule, and it belongs with the D group. What this slice owes is the measurement and the naming, and that is what this field is. C1c-iv should expect more of these: the twenty-nine are concentrated in `MCP.IntegrationTest` and the end-to-end suites, which is where whole-endpoint behaviour is asserted.",
+ "the_bucket_2_entries_this_slice_records_as_provisional": "C1c-iii declares all 41 feature-endpoint checks but only sixteen of the family's 47 members, so some of its bucket-2 entries are bucket 2 only until the sibling slice lands. Bucket 2 is DERIVED by the generator rather than hand-listed, so nothing here has to be rewritten when it does — what is owed is honesty about WHICH entries are provisional, and it was measured rather than promised. MEASURED ACROSS ALL 145 SERVER MEMBERS: TEN name `tools/list` in their register text — `MCP.Server.JsonSchema202012Test` 6, `MCP.Server.ToolOrderTest` 2, `MCP.Transport.StreamableHTTPStatelessTest` 1 and `MCP.Server.ExtensionsNegotiationTest` 1. (The plan said EIGHT and omitted the `ToolOrderTest` pair; re-run at this tip it is ten, and the two it missed are this slice's OWN members, which is the kind of omission a carried figure hides.) Of the ten: two are already declared here and adjudicated, one is C1c-iv's, and SIX are the sibling's. SO THE CHECKS THE SIBLING COULD MOVE OUT OF BUCKET 2 ARE ABOUT THREE: `ToolsCallError` (via the `isError` claims of the sibling's R-3 and F-10 families), and `ToolsList`'s `every_tool_has_an_input_schema` axis if the keyword-preservation verdict lands there rather than on a search. AND THE TWO THAT ARE ALREADY HERE ARE WORTH A LINE, because they name `tools/list` and are STILL bucket 1. `MCP.Server.ToolOrderTest`'s two matching rows drive a real `tools/list` and their responses would satisfy every axis of `ToolsList`; what they CLAIM is a determinism property that no OC check scores, which is SRV25's zero. Naming an endpoint is not making a claim about it, and the cut here is by claim. This is the SRV07/SRV20 `homed elsewhere` mechanism run over BUCKET 2 instead of bucket 1, and it is written as a named list rather than as `some entries may move` for the same reason those two are: a reader should be able to check it, and a later slice should be able to inherit it."
 }

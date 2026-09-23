@@ -1,11 +1,11 @@
 {
   "bucket": "5a",
-  "count": 35,
+  "count": 49,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 172 declared ET-CC members and 120\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 109 members and\n53 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "population_banner": "POPULATION: this projection covers 188 declared ET-CC members and 161\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 93 members and\n12 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
   "predicate": "`cells` where the stored `bucket` == \"5\" AND the stored `oc_key[0]` == \"server\". Universe: the crosswalk's edges.",
   "projected_from": {
     "bucket_zero": {
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 648638,
+      "bytes": 731056,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "30cea0a77bd965ff5883d3dbbec89c8c45977cf1ef8898b0b0b93cf68e664d39"
+      "sha256": "f5186f75a75d5eb96265c848dc3cb9a65e183efff4d43d78c52b796ab7f98911"
     }
   },
   "revision": "2026-07-28",
@@ -1497,12 +1497,688 @@
         "oc_status_at_accepted_run": "WARNING",
         "oc_warning": true
       }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_is_a_json_array",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_is_not_empty",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_text",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_text_block_carries_a_text_field",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a TextContent encodes to the wire with the discriminator `text` synthesised by the encoder, and with its text carried",
+      "escalation": null,
+      "evidence": "content_test.exs:42 — `decoded[\"type\"] == \"text\"` — and content_test.exs:43 — `decoded[\"text\"] == \"test\"`. The struct is built at content_test.exs:38 with no type field given, so the discriminator is SYNTHESISED on encode rather than echoed from the input, which is what makes this a claim about the SDK rather than about the fixture. Those two assertions are the check's two content-block axes: the harness selects a block whose type is the wire literal `text` and then requires that block's text field to be non-empty. The three silent axes are about the tools/call RESULT's `content` member — that it is present, that it is a JSON array, and that it is not empty. A unit that encodes ONE content block and decodes it back never constructs a result, so it neither agrees nor disagrees with any of them: it is silent by the GRAIN of the claim and not by a reading of it. Read per MEMBER rather than per edge, those three axes are covered by `MCP.Server.DispatchTest`'s tools/call rows, which are C1c-i's.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test TextContent round-trips through JSON",
+        "test": "test TextContent round-trips through JSON"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "tools-call-simple-text",
+        "tools-call-simple-text",
+        "ToolsCallSimpleText",
+        "Tool returns simple text content",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_carries_at_least_two_blocks",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_text",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "a_content_block_has_type_image",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_resource",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a TextContent encodes to the wire with the discriminator `text` synthesised by the encoder",
+      "escalation": null,
+      "evidence": "content_test.exs:42 — `decoded[\"type\"] == \"text\"`. This check's text axis is the same observation its `simple-text` sibling makes, which is why the same claim reaches both: the harness runs one generic `some` over the content array per type. The two image and resource axes are OTHER content types' and are reached by this member's siblings in the same module, so per MEMBER the module covers three of this check's five axes and per EDGE each covers one.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test TextContent round-trips through JSON",
+        "test": "test TextContent round-trips through JSON"
+      },
+      "note": "WHY THIS IS THREE EDGES FROM THREE MEMBERS AND NOT ONE. `ToolsCallMixedContent` has one axis per content type, and `MCP.Protocol.Types.ContentTest` has one member per content type, so the natural join is three edges each agreeing with a different axis and silent on the others. Filing one edge from one member would have reported four silences where the module in fact answers three of them.",
+      "oc_key": [
+        "server",
+        "tools-call-mixed-content",
+        "tools-call-mixed-content",
+        "ToolsCallMixedContent",
+        "Tool returns multiple content types",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-mixed-content/tools-call-mixed-content/ToolsCallMixedContent",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "no_schema_violation_in_a_message_the_implementation_sent",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the wire object a TextContent encodes to carries exactly the members the pinned schema's TextContent definition requires, and no unset optional ones",
+      "escalation": null,
+      "evidence": "content_test.exs:42 — `decoded[\"type\"] == \"text\"` — content_test.exs:43 — `decoded[\"text\"] == \"test\"` — and the two refutes at content_test.exs:44 and content_test.exs:45. The 2026-07-28 schema's TextContent definition requires exactly text and type, at build bytes 310112-310171, so the two asserts are exactly the required set and the two refutes are on members the same definition types optional. The address and the required list are recorded in this ticket's `the_schema_question_this_slice_asked_and_the_answer_it_got` on the axis file.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test TextContent round-trips through JSON",
+        "test": "test TextContent round-trips through JSON"
+      },
+      "note": "AGREEMENT AT A COARSER GRAIN THAN THE AXIS, AND THE RESIDUAL IS STATED RATHER THAN BURIED. The axis quantifies over every JSON-RPC MESSAGE the implementation sent in the scenario; this unit encodes one CONTENT BLOCK in isolation and runs no validator. So it is evidence FOR the axis — a necessary condition of a message carrying that block validating — and not a proof of it. A reader who thinks the grain matters should read this as silent, and the difference is stated so that they can, which is the precedent C1c-ii set on `IgnoreUnexpectedParams`.\nONE EDGE, NOT NINETEEN. The reading holds against all nineteen `WireSchemaValid` rows this slice declares, because all nineteen are one generic validator at one span. Nineteen edges would be one fact counted nineteen times — C1c-ii's rule, applied to an agreement rather than to a contradiction. The row chosen is the scenario whose fixture content is of this member's type.",
+      "oc_key": [
+        "server",
+        "tools-call-simple-text",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/tools-call-simple-text/wire-schema-valid/WireSchemaValid",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_image",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_image_block_carries_a_data_field",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_image_block_carries_a_mime_type_field",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "an ImageContent encodes to the wire with the discriminator `image`, its base64 data, and its media type under the camelCase key `mimeType`",
+      "escalation": null,
+      "evidence": "content_test.exs:65 — `decoded[\"type\"] == \"image\"` — content_test.exs:66 — `decoded[\"data\"] == \"abc\"` — and content_test.exs:67 — `decoded[\"mimeType\"] == \"image/jpeg\"`. Three of this check's four axes, and the mimeType one is the load-bearing one: the struct is built at content_test.exs:61 with `mime_type`, snake_case, so the camelCase key on the wire is the encoder's work. The silent axis is about the tools/call result's `content` member, which a unit encoding one block does not construct.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test ImageContent round-trips through JSON",
+        "test": "test ImageContent round-trips through JSON"
+      },
+      "note": "THIS CHECK HAS NO ARRAY-TYPE OR EMPTINESS AXIS, unlike its `simple-text` and `audio` siblings — the harness's own asymmetry, recorded on the axis row. So this edge has one silence where the sibling edges have three, and the difference is the CHECK's shape rather than this member's coverage.",
+      "oc_key": [
+        "server",
+        "tools-call-image",
+        "tools-call-image",
+        "ToolsCallImage",
+        "Tool returns image content",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-image/tools-call-image/ToolsCallImage",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_carries_at_least_two_blocks",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_text",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_image",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "a_content_block_has_type_resource",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "an ImageContent encodes to the wire with the discriminator `image`",
+      "escalation": null,
+      "evidence": "content_test.exs:65 — `decoded[\"type\"] == \"image\"`. The image limb of this check's three content-type axes; its text and resource limbs are this member's two siblings'.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test ImageContent round-trips through JSON",
+        "test": "test ImageContent round-trips through JSON"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "tools-call-mixed-content",
+        "tools-call-mixed-content",
+        "ToolsCallMixedContent",
+        "Tool returns multiple content types",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-mixed-content/tools-call-mixed-content/ToolsCallMixedContent",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_messages_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "some_message_carries_an_image_block_with_data_and_mime_type",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "an ImageContent encodes to the wire with the discriminator `image` AND both its data and camelCase `mimeType` present",
+      "escalation": null,
+      "evidence": "content_test.exs:65 — `decoded[\"type\"] == \"image\"` — content_test.exs:66 — `decoded[\"data\"] == \"abc\"` — and content_test.exs:67 — `decoded[\"mimeType\"] == \"image/jpeg\"`. This check's second axis is a single conjunction of exactly those three field tests inside one `some`, so all three of this unit's assertions land on ONE axis rather than three. The silent axis is about the prompts/get result carrying a messages member, which this unit does not construct.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test ImageContent round-trips through JSON",
+        "test": "test ImageContent round-trips through JSON"
+      },
+      "note": "THE STRONGEST AGREEMENT IN THE SLICE, AND ITS STRENGTH IS THE CHECK'S WEAKNESS. The axis is one conjunction, so a server returning an image block without `mimeType` fails it with the message `No image content found in prompt` — which names the wrong thing. This unit asserts each conjunct separately and would say which one broke. That is the ET side being finer-grained than the OC side, which is the opposite of the usual direction and worth recording as such.",
+      "oc_key": [
+        "server",
+        "prompts-get-with-image",
+        "prompts-get-with-image",
+        "PromptsGetWithImage",
+        "Get prompt with image content",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/prompts-get-with-image/prompts-get-with-image/PromptsGetWithImage",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "no_schema_violation_in_a_message_the_implementation_sent",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the wire object an ImageContent encodes to carries exactly the members the pinned schema's ImageContent definition requires",
+      "escalation": null,
+      "evidence": "content_test.exs:65, content_test.exs:66 and content_test.exs:67 assert `decoded[\"type\"] == \"image\"`, `decoded[\"data\"] == \"abc\"` and `decoded[\"mimeType\"] == \"image/jpeg\"`. The 2026-07-28 schema's ImageContent definition requires data, mimeType and type, at build bytes 248500-248571 — all three, and this unit asserts all three.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test ImageContent round-trips through JSON",
+        "test": "test ImageContent round-trips through JSON"
+      },
+      "note": "SAME GRAIN RESIDUAL AND SAME ONE-EDGE-NOT-NINETEEN RULE as the TextContent row; not restated. What IS particular here: this is one of only three content members whose assertions cover its definition's whole required set, which is why only three of the five carry a `WireSchemaValid` edge at all. The other two are named in the AudioContent edge's note.",
+      "oc_key": [
+        "server",
+        "tools-call-image",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/tools-call-image/wire-schema-valid/WireSchemaValid",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_is_a_json_array",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_is_not_empty",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_audio",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_audio_block_carries_a_data_field",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_audio_block_carries_a_mime_type_field",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_audio_mime_type_is_exactly_audio_wav",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "an AudioContent encodes to the wire with the discriminator `audio` and its media type under the camelCase key `mimeType`",
+      "escalation": null,
+      "evidence": "content_test.exs:87 — `decoded[\"type\"] == \"audio\"` — and content_test.exs:88 — `decoded[\"mimeType\"] == \"audio/mp3\"`. Two of this check's seven axes. The three silent axes are about the tools/call RESULT's `content` member — that it is present, that it is a JSON array, and that it is not empty. A unit that encodes ONE content block and decodes it back never constructs a result, so it neither agrees nor disagrees with any of them: it is silent by the GRAIN of the claim and not by a reading of it. Read per MEMBER rather than per edge, those three axes are covered by `MCP.Server.DispatchTest`'s tools/call rows, which are C1c-i's.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test AudioContent round-trips through JSON",
+        "test": "test AudioContent round-trips through JSON"
+      },
+      "note": "TWO SILENCES HERE ARE FINDINGS RATHER THAN ARITHMETIC, AND THEY POINT IN OPPOSITE DIRECTIONS.\n(1) `the_audio_block_carries_a_data_field` is silent because THIS UNIT DOES NOT ASSERT `data`, while its ImageContent sibling twenty-two lines earlier does. The encoded value carries it — the struct is built at content_test.exs:83 with a data field — so nothing on the wire violates the schema's AudioContent definition, which requires data, mimeType and type, at build bytes 220057-220128. But the unit would not notice if `data` stopped being emitted. That is a gap in OUR TEST, found by putting the pinned schema to the member, and it is why this member carries no `WireSchemaValid` edge where TextContent and ImageContent do.\n(2) `the_audio_mime_type_is_exactly_audio_wav` is silent AND NOT `contradicts`, and the distinction is worth being explicit about because the surfaces look like they disagree: the check requires the media type to be the literal `audio/wav`, and this unit round-trips `audio/mp3`. They are not the same subject. The check scores which media type the server's own `test_audio_content` tool returns — a FIXTURE agreement, as the axis row records, with no spec rule behind it. The unit scores whether the encoder carries whatever media type it is handed. Both are true at once, and the unit is in fact a demonstration that the SDK would faithfully emit a value that fails the check. Recorded as silent on that ground and not on a preference for silence.",
+      "oc_key": [
+        "server",
+        "tools-call-audio",
+        "tools-call-audio",
+        "ToolsCallAudio",
+        "Tool returns audio content",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-audio/tools-call-audio/ToolsCallAudio",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_is_a_json_array",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_is_not_empty",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_resource",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_resource_block_carries_a_nested_resource_object",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_nested_resource_carries_a_uri",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_nested_resource_carries_a_mime_type",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_nested_resource_carries_text_or_blob",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "an EmbeddedResource encodes to the wire with the discriminator `resource` and a NESTED resource object carrying its uri and text",
+      "escalation": null,
+      "evidence": "content_test.exs:120 — `decoded[\"type\"] == \"resource\"` — content_test.exs:121 — `decoded[\"resource\"][\"uri\"] == \"file:///a.txt\"` — and content_test.exs:122 — `decoded[\"resource\"][\"text\"] == \"hello\"`. Four of this check's eight axes, and the two nested reads are what carry the NESTING axis: asserting `decoded[\"resource\"][\"uri\"]` at all requires the resource to be a nested object rather than flattened, so that axis and the uri axis are one observation read at two grains and not an inference. The discriminator is the wire literal `resource` and not `embedded_resource`, which is the axis row's own note. The three silent axes are about the tools/call RESULT's `content` member — that it is present, that it is a JSON array, and that it is not empty. A unit that encodes ONE content block and decodes it back never constructs a result, so it neither agrees nor disagrees with any of them: it is silent by the GRAIN of the claim and not by a reading of it. Read per MEMBER rather than per edge, those three axes are covered by `MCP.Server.DispatchTest`'s tools/call rows, which are C1c-i's.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test EmbeddedResource round-trips through JSON",
+        "test": "test EmbeddedResource round-trips through JSON"
+      },
+      "note": "`the_nested_resource_carries_a_mime_type` IS SILENT AND IT IS THE SLICE'S SECOND TEST-SIDE GAP. The check requires the nested resource to carry a camelCase `mimeType`; this unit builds a ResourceContents at content_test.exs:114 with only uri and text and asserts only those two. The schema does NOT require it — the TextResourceContents definition requires only text and uri, at build bytes 310556-310624 — so the silence is honest rather than a violation, and the check is stricter than the schema here. Both facts are worth having: the OC check asks for more than the spec does, and our unit asks for less than the OC check does.",
+      "oc_key": [
+        "server",
+        "tools-call-embedded-resource",
+        "tools-call-embedded-resource",
+        "ToolsCallEmbeddedResource",
+        "Tool returns embedded resource content",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-embedded-resource/tools-call-embedded-resource/ToolsCallEmbeddedResource",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_carries_at_least_two_blocks",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_text",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_image",
+          "verdict": "silent"
+        },
+        {
+          "axis": "a_content_block_has_type_resource",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "an EmbeddedResource encodes to the wire with the discriminator `resource`",
+      "escalation": null,
+      "evidence": "content_test.exs:120 — `decoded[\"type\"] == \"resource\"`. The resource limb of this check's three content-type axes; its text and image limbs are this member's two siblings'.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test EmbeddedResource round-trips through JSON",
+        "test": "test EmbeddedResource round-trips through JSON"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "tools-call-mixed-content",
+        "tools-call-mixed-content",
+        "ToolsCallMixedContent",
+        "Tool returns multiple content types",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-mixed-content/tools-call-mixed-content/ToolsCallMixedContent",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_messages_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "some_message_carries_an_embedded_resource",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "an EmbeddedResource encodes to the wire with the discriminator `resource` and a nested resource object",
+      "escalation": null,
+      "evidence": "content_test.exs:120 — `decoded[\"type\"] == \"resource\"` — and content_test.exs:121 — `decoded[\"resource\"][\"uri\"] == \"file:///a.txt\"`. This check's axis is a DISJUNCTION — a block whose type is the wire literal `resource`, OR a block carrying a resource member under any discriminator — and this unit satisfies both limbs, so the agreement does not depend on which limb the harness's own fixture takes.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test EmbeddedResource round-trips through JSON",
+        "test": "test EmbeddedResource round-trips through JSON"
+      },
+      "note": "THE AXIS IS WEAKER THAN ITS `tools-call` COUNTERPART AND THE EDGE IS STRONGER FOR IT. Because the axis is a disjunction over the discriminator, it does not actually pin the wire spelling; this unit does. So the ET side establishes the thing the OC side was trying to establish and did not. Recorded because a bucket-5 agreement between a strong claim and a weak check is not the same result as an agreement between two strong ones, and the buckets do not distinguish them.",
+      "oc_key": [
+        "server",
+        "prompts-get-embedded-resource",
+        "prompts-get-embedded-resource",
+        "PromptsGetEmbeddedResource",
+        "Get prompt with embedded resource",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/prompts-get-embedded-resource/prompts-get-embedded-resource/PromptsGetEmbeddedResource",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "no_schema_violation_in_a_message_the_implementation_sent",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the wire object an EmbeddedResource encodes to carries the members the pinned schema's EmbeddedResource definition requires, nested value included",
+      "escalation": null,
+      "evidence": "content_test.exs:120, content_test.exs:121 and content_test.exs:122 assert `decoded[\"type\"] == \"resource\"`, `decoded[\"resource\"][\"uri\"] == \"file:///a.txt\"` and `decoded[\"resource\"][\"text\"] == \"hello\"`. The 2026-07-28 schema's EmbeddedResource definition is requires resource and type, at build bytes 242778-242845, and the nested value must match an disjunction over TextResourceContents / BlobResourceContents, of which the first requires text and uri, at build bytes 310556-310624. This unit asserts the outer pair and both members of the inner one, so the whole required set including the nesting.",
+      "member": {
+        "module": "MCP.Protocol.Types.ContentTest",
+        "register_key": "MCP.Protocol.Types.ContentTest/test EmbeddedResource round-trips through JSON",
+        "test": "test EmbeddedResource round-trips through JSON"
+      },
+      "note": "SAME GRAIN RESIDUAL AND SAME ONE-EDGE-NOT-NINETEEN RULE as the TextContent row; not restated.",
+      "oc_key": [
+        "server",
+        "tools-call-embedded-resource",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/tools-call-embedded-resource/wire-schema-valid/WireSchemaValid",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_tools_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "tools_is_a_json_array",
+          "verdict": "silent"
+        },
+        {
+          "axis": "every_tool_has_a_name",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_tool_has_a_description",
+          "verdict": "silent"
+        },
+        {
+          "axis": "every_tool_has_an_input_schema",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a Tool encodes to the wire with its name and with its input schema under the camelCase key `inputSchema`, and the snake_case form does not appear",
+      "escalation": null,
+      "evidence": "tool_test.exs:79 — `decoded[\"name\"] == \"get_weather\"` — tool_test.exs:80 — `decoded[\"inputSchema\"][\"type\"] == \"object\"` — and tool_test.exs:81 — `refute Map.has_key?(decoded, \"input_schema\")`. The inputSchema axis is the sharp one: the struct field is `input_schema` and the refute at tool_test.exs:81 is what makes the camelCase key on the wire a property of the encoder rather than of the fixture. The two silent axes are about the tools/list RESULT's `tools` member; the description axis is silent because this unit asserts nothing about `description`, which the fixture at tool_test.exs:9 does carry — so the silence is the unit's choice of assertions, not an absence in the data.",
+      "member": {
+        "module": "MCP.Protocol.Types.ToolTest",
+        "register_key": "MCP.Protocol.Types.ToolTest/test JSON encoding round-trips through JSON with camelCase keys",
+        "test": "test JSON encoding round-trips through JSON with camelCase keys"
+      },
+      "note": "WHAT THIS EDGE DOES NOT REACH, SAID HERE BECAUSE THE AXIS NAME INVITES THE MISREADING. `every_tool_has_an_input_schema` is a TRUTHINESS test — the harness does `e.inputSchema||...` and never looks inside — so this edge establishes that the key is spelled right and present, and nothing about what survives inside it. The member that DOES claim the contents survive is this module's keyword-preservation unit, and it is bucket 1 under SRV23 rather than a second edge onto this row, because the axis it would need does not exist on the server leg at all.",
+      "oc_key": [
+        "server",
+        "tools-list",
+        "tools-list",
+        "ToolsList",
+        "Server lists available tools with valid structure",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-list/tools-list/ToolsList",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_resources_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "resources_is_a_json_array",
+          "verdict": "silent"
+        },
+        {
+          "axis": "every_resource_has_a_uri",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_resource_has_a_name",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a Resource encodes to the wire with its uri and with its media type under the camelCase key `mimeType`, and the snake_case form does not appear",
+      "escalation": null,
+      "evidence": "resource_test.exs:50 — `decoded[\"uri\"] == \"file:///project/readme.md\"` — resource_test.exs:51 — `decoded[\"mimeType\"] == \"text/markdown\"` — and resource_test.exs:52 — `refute Map.has_key?(decoded, \"mime_type\")`. One of this check's four axes agrees. The name axis is silent because this unit does not assert `name`, though the fixture at resource_test.exs:8 carries it.",
+      "member": {
+        "module": "MCP.Protocol.Types.ResourceTest",
+        "register_key": "MCP.Protocol.Types.ResourceTest/test JSON encoding round-trips with camelCase keys",
+        "test": "test JSON encoding round-trips with camelCase keys"
+      },
+      "note": "THE STRONGEST HALF OF THIS CLAIM REACHES NO AXIS AT ALL, and that is the result worth recording. The camelCase `mimeType` assertion plus its refute at resource_test.exs:52 is the substance of the member, and `ResourcesList` HAS NO mimeType AXIS — the harness reads only `uri` and `name` per row, which the axis row records. `mimeType` IS an axis on `resources-read-text` and `resources-read-binary`, but those score `contents[0]`, a TextResourceContents / BlobResourceContents, which is a different schema definition from the Resource this member encodes. So the claim is not homed elsewhere; the suite simply does not check camelCase on a list row. Recorded here rather than as a bucket-1 search because the member DOES carry an edge on its uri half — a member cannot be in both places (G15a), so the partial coverage has to be visible on the edge.",
+      "oc_key": [
+        "server",
+        "resources-list",
+        "resources-list",
+        "ResourcesList",
+        "Server lists available resources with valid structure",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/resources-list/resources-list/ResourcesList",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
     }
   ],
   "schema": "bucket-view/1",
   "title": "green in both — server",
   "universe": {
-    "count": 122,
+    "count": 136,
     "name": "edges",
     "of": "the crosswalk's `cells`"
   },

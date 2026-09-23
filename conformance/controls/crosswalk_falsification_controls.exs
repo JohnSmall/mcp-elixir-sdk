@@ -90,6 +90,27 @@ defmodule CrosswalkFalsificationControls do
 
   @c1a_controls "conformance/controls/crosswalk_controls.exs"
 
+  # THE MODE LIST IS THE ONE SOURCE, and it exists because the banner had already
+  # gone stale: `all` ran SIX modes and printed "ALL FIVE MODES GREEN", and the
+  # usage string omitted `warning_mapping` entirely — both wrong since MES-115
+  # added that mode. A count written beside a list it does not come from is the
+  # stale-banner defect, so the count is DERIVED and the usage string is BUILT.
+  #
+  # TWO LISTS AND NOT ONE, because they are genuinely different sets. `wrong_reason`
+  # is reachable by name and is deliberately NOT in `all`: it is the mode that shows
+  # a refusal happening for the WRONG reason, and running it inside `all` would
+  # change what `all` means beyond the banner fix. It is named in usage as
+  # by-name-only so the derived string cannot imply `all` runs it.
+  @all_modes [
+    "refusals",
+    "drift",
+    "escalations",
+    "warning_mapping",
+    "second_source",
+    "exit_status"
+  ]
+  @by_name_only ["wrong_reason"]
+
   def run(["refusals"]), do: refusals()
   def run(["wrong_reason"]), do: wrong_reason()
   def run(["drift"]), do: drift()
@@ -98,19 +119,21 @@ defmodule CrosswalkFalsificationControls do
   def run(["second_source"]), do: second_source()
   def run(["exit_status"]), do: exit_status()
 
+  # `all` dispatches back through `run/1` by NAME rather than holding function
+  # references, so the list is load-bearing in both directions: a mode added to
+  # it with no matching `run([name])` clause falls to the usage clause and halts
+  # 2 instead of being silently skipped.
   def run(["all"]) do
-    refusals()
-    drift()
-    escalations()
-    warning_mapping()
-    second_source()
-    exit_status()
-    IO.puts("\n== ALL FIVE MODES GREEN ==\n")
+    Enum.each(@all_modes, &run([&1]))
+    IO.puts("\n== ALL #{length(@all_modes)} MODES GREEN ==\n")
   end
 
   def run(_) do
     IO.puts(
-      "usage: refusals | drift | escalations | second_source | exit_status | wrong_reason | all"
+      "usage: " <>
+        Enum.join(@all_modes ++ ["all"], " | ") <>
+        "\n       (by name only, not run by `all`: " <>
+        Enum.join(@by_name_only, ", ") <> ")"
     )
 
     System.halt(2)
@@ -1105,6 +1128,57 @@ defmodule CrosswalkFalsificationControls do
     )
 
     halt_unless(fires)
+
+    # LIMB 1b (MES-116) — THE COUNT DID NOT MOVE AND THE POPULATION DID, and a
+    # figure that stays put for a reason nobody states is indistinguishable from
+    # one nothing is watching.
+    #
+    # C1c-iii declared the server leg's OTHER WARNING check,
+    # `sep-2164-resource-not-found / ResourcesNotFoundDataUri`, so the DECLARED
+    # population now holds two WARNING checks where it held one. The CELL count
+    # is still 1, because `warning_rows_in_this_population` counts cells and a
+    # cell exists only where an EDGE does — the new row carries none and is in
+    # bucket 2. This limb asserts that explanation rather than restating the
+    # unchanged number: the two figures must DIFFER, and every declared WARNING
+    # check without a cell must be one bucket 2 reports.
+    # The statuses come from A1's manifest, NOT from the crosswalk's own cells:
+    # a check with no cell has no status in the crosswalk, and those are exactly
+    # the ones this limb is about.
+    warning_tags =
+      read(@manifest)["scenarios"]
+      |> Enum.flat_map(& &1["checks"])
+      |> Enum.filter(&(&1["status"] == "WARNING"))
+      |> Enum.map(fn c ->
+        [leg, scenario, id, name | _] = c["key"]
+        "oc:#{leg}/#{scenario}/#{id}/#{name}"
+      end)
+      |> MapSet.new()
+
+    declared_warnings =
+      Enum.filter(committed["population"]["declared_checks"], &MapSet.member?(warning_tags, &1))
+
+    celled = Enum.map(target, & &1["tag"]) |> MapSet.new()
+    uncelled = Enum.reject(declared_warnings, &MapSet.member?(celled, &1))
+    bucket_2 = MapSet.new(committed["buckets"]["bucket_2"]["checks"] || [])
+
+    IO.puts(
+      "  LIMB 1b  declared WARNING checks #{length(declared_warnings)}, " <>
+        "of which #{length(target)} carry a cell and #{length(uncelled)} do not"
+    )
+
+    for t <- uncelled, do: IO.puts("    no cell, expected in bucket 2: #{t}")
+
+    accounted =
+      length(declared_warnings) > length(target) and
+        Enum.all?(uncelled, &MapSet.member?(bucket_2, &1))
+
+    verdict(
+      "the declared WARNING checks OUTNUMBER the warning cells, and every one without a " <>
+        "cell is in bucket 2 — so the count holding at #{length(target)} is bucket 2 and not a stalled figure",
+      accounted
+    )
+
+    halt_unless(accounted)
 
     # LIMB 2 — patched to FAILURE. The flag goes off and the row leaves 5.
     red = rebuild_with_oc_status(name, "FAILURE")

@@ -43,6 +43,10 @@ defmodule CrosswalkControls do
   @edges "conformance/data/crosswalk-edges.json"
   @all_edges [@client_edges, @server_edges, @edges]
   @c1_axes "conformance/data/oc-axes-c1.json"
+  # The single emitting site every `WireSchemaValid` row in `@c1_axes` is
+  # decomposed at, and the field holding the leg-wide tally over it (MES-116).
+  @wsv_site [325_368, 325_721]
+  @wsv_tally_key "the_leg_wide_wire_schema_valid_tally_and_how_it_is_checked"
   @a3_axes "docs/conformance/oc-axes-2026-07-28.json"
   @manifest "docs/conformance/in-scope-2026-07-28.json"
   @denominator "docs/conformance/bucket-0-2026-07-28.json"
@@ -51,6 +55,63 @@ defmodule CrosswalkControls do
   @crosswalk_out "docs/conformance/crosswalk-2026-07-28.json"
   @locator_out "docs/conformance/oc-emitting-sites-2026-07-28.json"
   @sites @locator_out
+
+  # HAND-WRITTEN, and deliberately not derived — see the two `selectors`
+  # expectations that use them. Both are compared set-wise against the committed
+  # file's own selector, so they are pins rather than copies: they go red when
+  # the file moves and the file goes red when they do.
+  @server_member_modules [
+    "MCP.Protocol.Messages.DiscoverTest/",
+    "MCP.Protocol.MetaTest/",
+    "MCP.Protocol.Types.ContentTest/",
+    "MCP.Protocol.Types.ResourceTest/",
+    "MCP.Protocol.Types.ToolTest/",
+    "MCP.Server.CapabilityHonestyTest/",
+    "MCP.Server.DispatchTest/",
+    "MCP.Server.NotificationCollectorTest/",
+    "MCP.Server.SubscriptionsDispatchTest/",
+    "MCP.Server.ToolOrderTest/",
+    "MCP.Transport.StreamableHTTP.ACTest/",
+    "MCP.Transport.StreamableHTTPStatelessTest/",
+    "MCP.Transport.SubscriptionsStreamTest/"
+  ]
+
+  @server_check_scenarios [
+    "server-stateless",
+    "input-required-result-basic-elicitation",
+    "input-required-result-basic-list-roots",
+    "input-required-result-basic-sampling",
+    "input-required-result-capability-check",
+    "input-required-result-ignore-extra-params",
+    "input-required-result-missing-input-response",
+    "input-required-result-multi-round",
+    "input-required-result-multiple-input-requests",
+    "input-required-result-non-tool-request",
+    "input-required-result-request-state",
+    "input-required-result-result-type",
+    "input-required-result-tampered-state",
+    "input-required-result-unsupported-methods",
+    "input-required-result-validate-input",
+    "completion-complete",
+    "prompts-get-embedded-resource",
+    "prompts-get-simple",
+    "prompts-get-with-args",
+    "prompts-get-with-image",
+    "prompts-list",
+    "resources-list",
+    "resources-read-binary",
+    "resources-read-text",
+    "resources-templates-read",
+    "sep-2164-resource-not-found",
+    "tools-call-audio",
+    "tools-call-embedded-resource",
+    "tools-call-error",
+    "tools-call-image",
+    "tools-call-mixed-content",
+    "tools-call-simple-text",
+    "tools-call-with-progress",
+    "tools-list"
+  ]
 
   def run(["noop"]), do: noop()
   def run(["keying"]), do: keying()
@@ -64,6 +125,7 @@ defmodule CrosswalkControls do
   def run(["totality"]), do: totality()
   def run(["citations"]), do: citations()
   def run(["statements"]), do: statements()
+  def run(["wsv_tally"]), do: wsv_tally()
 
   def run(["all"]) do
     noop()
@@ -78,11 +140,12 @@ defmodule CrosswalkControls do
     totality()
     citations()
     statements()
+    wsv_tally()
   end
 
   def run(_) do
     IO.puts(
-      "usage: noop | keying | locator | pins | guards | vacuum | selectors | composition | absence | totality | citations | statements | all"
+      "usage: noop | keying | locator | pins | guards | vacuum | selectors | composition | absence | totality | citations | statements | wsv_tally | all"
     )
 
     System.halt(2)
@@ -773,40 +836,34 @@ defmodule CrosswalkControls do
       # MES-105 (C1c-i). The expectation is computed with `String.starts_with?`
       # over the same rows, which is a DIFFERENT route to the same set than
       # `select/2` takes — the point of every entry in this list.
+      #
+      # MES-116 (C1c-iii) took the module list from NINE to THIRTEEN and made it
+      # HAND-WRITTEN here. It used to be read out of the file's own selector by
+      # `server_modules/1`, which meant the route differed but the LIST did not:
+      # a module added to the file arrived in the expectation with it, so the
+      # entry could not notice a wrongly-widened member population. That is the
+      # objection C1c-ii recorded against doing the same thing for the CHECKS,
+      # and it applies here for the same reason. `@server_member_modules` is
+      # compared set-wise against the file's own list just below, so the two can
+      # no longer drift in EITHER direction: a module added to the file without
+      # being added here goes red, and so does the reverse.
       {"the server file's members", server["the_population_this_file_declares"]["selector"], src,
        rows
        |> Enum.filter(fn r ->
          r["leg"] == "server" and
-           Enum.any?(server_modules(server), &String.starts_with?(r["key"], &1))
+           Enum.any?(@server_member_modules, &String.starts_with?(r["key"], &1))
        end)
        |> Enum.map(& &1["key"])},
-      # MES-115 (C1c-ii) took this population from ONE scenario to FIFTEEN. The
-      # list is written out HERE rather than read from the file's own selector,
-      # which is the whole point of this expectation: reading it from the file
-      # would make the comparison the file against itself. It is the same shape
-      # the client entry below has carried since C1b-iii.
+      # MES-115 (C1c-ii) took this population from ONE scenario to FIFTEEN and
+      # MES-116 (C1c-iii) to THIRTY-FOUR. The list is written out HERE rather
+      # than read from the file's own selector, which is the whole point of this
+      # expectation: reading it from the file would make the comparison the file
+      # against itself. It is the same shape the client entry below has carried
+      # since C1b-iii.
       {"the server file's CHECKS", server["the_check_population_this_file_declares"]["selector"],
        sites,
        sites["rows"]
-       |> Enum.filter(
-         &(&1["scenario"] in [
-             "server-stateless",
-             "input-required-result-basic-elicitation",
-             "input-required-result-basic-list-roots",
-             "input-required-result-basic-sampling",
-             "input-required-result-capability-check",
-             "input-required-result-ignore-extra-params",
-             "input-required-result-missing-input-response",
-             "input-required-result-multi-round",
-             "input-required-result-multiple-input-requests",
-             "input-required-result-non-tool-request",
-             "input-required-result-request-state",
-             "input-required-result-result-type",
-             "input-required-result-tampered-state",
-             "input-required-result-unsupported-methods",
-             "input-required-result-validate-input"
-           ])
-       )
+       |> Enum.filter(&(&1["scenario"] in @server_check_scenarios))
        |> Enum.map(& &1["token"])},
       {"the client file's CHECKS", client["the_check_population_this_file_declares"]["selector"],
        sites,
@@ -838,6 +895,28 @@ defmodule CrosswalkControls do
         c.equal
       )
 
+      halt_unless(c.equal)
+    end
+
+    # THE PIN THAT MAKES THE TWO HAND-WRITTEN LISTS ABOVE PINS RATHER THAN COPIES.
+    # Without it a hand-written list is a second home for the file's own fact (D4)
+    # that drifts in silence: the expectations would still be set-equal to a
+    # population computed from the STALE list and the entry would go on passing.
+    # Compared as SETS in both directions, so a dropped clause and an added one
+    # are equally loud.
+    for {label, mine, theirs} <- [
+          {"the server file's member modules", @server_member_modules, server_modules(server)},
+          {"the server file's check scenarios", @server_check_scenarios,
+           server["the_check_population_this_file_declares"]["selector"]["any_of"]
+           |> Enum.map(& &1["value"])}
+        ] do
+      c = Crosswalk.set_compare(mine, theirs)
+
+      IO.puts(
+        "    #{String.pad_trailing(label, 30)} #{String.pad_leading(to_string(length(theirs)), 3)} in the file, #{length(mine)} pinned here"
+      )
+
+      verdict("PIN — #{label}: the control's list is set-equal to the file's own", c.equal)
       halt_unless(c.equal)
     end
 
@@ -1135,7 +1214,7 @@ defmodule CrosswalkControls do
 
     verdict(
       "on THIS anchor the slash removes NOTHING — #{length(collisions)} of B2b's modules " <>
-        "extend one of these eight names, so the earlier claim that it was load-bearing " <>
+        "extend one of these #{length(server_modules(server))} names, so the earlier claim that it was load-bearing " <>
         "HERE was wrong and is corrected in the file",
       length(slashless_live) == length(server_members) and collisions == []
     )
@@ -3230,6 +3309,126 @@ defmodule CrosswalkControls do
     halt_unless(File.exists?(back))
     File.rm(back)
   end
+
+  # --- wsv_tally: the tally that replaced a count in a field NAME (MES-116) ---
+  #
+  # `oc-axes-c1.json` carried `why_fourteen_rows_share_one_site` on each of
+  # C1c-ii's fourteen `WireSchemaValid` rows. The name and the body both held a
+  # count, both were TRUE AT THEIR OWN COMMIT, and C1c-iii's nineteen further
+  # rows falsified both. The field is now count-free and the tally lives in one
+  # place, `the_leg_wide_wire_schema_valid_tally_and_how_it_is_checked`.
+  #
+  # A tally in a hand-authored JSON is the same defect one level along unless
+  # something re-derives it, so this mode does. RECORDED == MEASURED, and not
+  # merely `recorded > 0`: a non-zero assertion passes over any wrong number,
+  # which is exactly how the figure it replaced survived a whole slice.
+  #
+  # The two figures come from DIFFERENT artefacts on purpose — one from this
+  # file's own rows, one from A1's manifest — because the gap between them is
+  # the claim ("one row still undecomposed, and it is C1c-iv's"). A single
+  # `N decomposed` would be satisfied by a file that had decomposed the wrong N.
+  defp wsv_tally do
+    header("WSV TALLY — the leg-wide WireSchemaValid figures, re-derived (MES-116)")
+
+    axes = read(@c1_axes)
+    manifest = read(@manifest)
+
+    {agrees?, rows} = wsv_tally_agreement(axes, manifest)
+
+    [{_, _, measured_rows}, {_, _, measured_manifest}, _] = rows
+
+    IO.puts("    rows at #{inspect(@wsv_site)} in #{@c1_axes}:  #{measured_rows}")
+    IO.puts("    WireSchemaValid rows in A1's manifest:      #{measured_manifest}")
+
+    for {field, recorded, measured} <- rows do
+      verdict(
+        "RECORDED == MEASURED — #{field}: recorded #{inspect(recorded)}, measured #{measured}",
+        wsv_figure_agrees?(recorded, measured)
+      )
+    end
+
+    halt_unless(agrees?)
+
+    # THE MUTATIONS RE-DRIVE `wsv_tally_agreement/2` OVER A MUTATED DOCUMENT AND
+    # REQUIRE IT TO RETURN FALSE. They used to compare the mutated value against
+    # the measurement inline, which reduces to `n + 1 != n` — true for every
+    # possible state of the artefacts, so the mutation passed over the very
+    # defect it is named for and a WEAKENED comparison sailed through it
+    # (measured by CODE_REVIEWER on MES-116, two probes, both exit 0).
+    #
+    # The comparison now lives in ONE named place, `wsv_figure_agrees?/2`, and
+    # the mutations call the same code path the positive control does. Weaken
+    # that one function to the `recorded > 0` form the comment below rejects and
+    # BOTH mutations go red, because the mutated document then still "agrees".
+    #
+    # In memory, nothing on disk (S8-14): a seat death mid-run cannot leave the
+    # shared clone carrying a wrong tally.
+
+    # (1) THE RECORDED SIDE MOVES and the artefacts do not.
+    mutated = put_in(axes, [@wsv_tally_key, "rows_decomposed_at_the_one_site"], measured_rows + 1)
+    {mutated_agrees?, _} = wsv_tally_agreement(mutated, manifest)
+
+    verdict(
+      "MUTATION — recorded tally #{measured_rows + 1} against a measured #{measured_rows}: " <>
+        "the comparison RE-DRIVEN over the mutated document returns FALSE",
+      mutated_agrees? == false
+    )
+
+    halt_unless(mutated_agrees? == false)
+
+    # (2) THE MEASURED SIDE MOVES and the recorded tally does not — precisely
+    # what MES-116's nineteen rows did to C1c-ii's field, so it is the case this
+    # mode exists for.
+    extra = %{
+      "emitting_byte_span" => @wsv_site,
+      "key" => ["server", "fixture", "x", "WireSchemaValid", "", ""]
+    }
+
+    grown = Map.update!(axes, "checks", &[extra | &1])
+    {grown_agrees?, grown_rows} = wsv_tally_agreement(grown, manifest)
+    [{_, grown_recorded, grown_measured}, _, _] = grown_rows
+
+    verdict(
+      "MUTATION — one more row at the site (#{grown_recorded} recorded vs #{grown_measured} " <>
+        "measured): the comparison RE-DRIVEN over the grown document returns FALSE",
+      grown_agrees? == false
+    )
+
+    halt_unless(grown_agrees? == false)
+  end
+
+  # THE COMPARISON, lifted out of the loop and NAMED so that a mutation can
+  # re-drive it and so that weakening it is a change in ONE place. Both sides
+  # are read out of the documents it is handed, so a mutation of EITHER side
+  # changes its answer — which is what makes the mutations falsifiable.
+  defp wsv_tally_agreement(axes, manifest) do
+    tally = axes[@wsv_tally_key]
+
+    measured_rows = axes["checks"] |> Enum.count(&(&1["emitting_byte_span"] == @wsv_site))
+
+    measured_manifest =
+      manifest["scenarios"]
+      |> Enum.flat_map(& &1["checks"])
+      |> Enum.count(&(&1["name"] == "WireSchemaValid"))
+
+    rows = [
+      {"rows_decomposed_at_the_one_site", tally["rows_decomposed_at_the_one_site"],
+       measured_rows},
+      {"in_denominator_wire_schema_valid_rows_in_A1s_manifest",
+       tally["in_denominator_wire_schema_valid_rows_in_A1s_manifest"], measured_manifest},
+      {"remaining_undecomposed", tally["remaining_undecomposed"],
+       measured_manifest - measured_rows}
+    ]
+
+    {Enum.all?(rows, fn {_field, recorded, measured} ->
+       wsv_figure_agrees?(recorded, measured)
+     end), rows}
+  end
+
+  # RECORDED == MEASURED, and not merely `recorded > 0`: a non-zero assertion
+  # passes over any wrong number, which is exactly how the figure this tally
+  # replaced survived a whole slice. Weakening this one function is the probe.
+  defp wsv_figure_agrees?(recorded, measured), do: recorded == measured
 
   defp verdict(label, true), do: IO.puts("  ok    #{label}")
   defp verdict(label, false), do: IO.puts("  FAIL  #{label}")
