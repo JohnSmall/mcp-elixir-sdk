@@ -780,10 +780,33 @@ defmodule CrosswalkControls do
            Enum.any?(server_modules(server), &String.starts_with?(r["key"], &1))
        end)
        |> Enum.map(& &1["key"])},
+      # MES-115 (C1c-ii) took this population from ONE scenario to FIFTEEN. The
+      # list is written out HERE rather than read from the file's own selector,
+      # which is the whole point of this expectation: reading it from the file
+      # would make the comparison the file against itself. It is the same shape
+      # the client entry below has carried since C1b-iii.
       {"the server file's CHECKS", server["the_check_population_this_file_declares"]["selector"],
        sites,
        sites["rows"]
-       |> Enum.filter(&(&1["scenario"] == "server-stateless"))
+       |> Enum.filter(
+         &(&1["scenario"] in [
+             "server-stateless",
+             "input-required-result-basic-elicitation",
+             "input-required-result-basic-list-roots",
+             "input-required-result-basic-sampling",
+             "input-required-result-capability-check",
+             "input-required-result-ignore-extra-params",
+             "input-required-result-missing-input-response",
+             "input-required-result-multi-round",
+             "input-required-result-multiple-input-requests",
+             "input-required-result-non-tool-request",
+             "input-required-result-request-state",
+             "input-required-result-result-type",
+             "input-required-result-tampered-state",
+             "input-required-result-unsupported-methods",
+             "input-required-result-validate-input"
+           ])
+       )
        |> Enum.map(& &1["token"])},
       {"the client file's CHECKS", client["the_check_population_this_file_declares"]["selector"],
        sites,
@@ -1963,8 +1986,14 @@ defmodule CrosswalkControls do
 
       verdict("#{e["id"]}: names a near miss", is_binary(e["near_miss"]) and e["near_miss"] != "")
       halt_unless(is_binary(e["near_miss"]) and e["near_miss"] != "")
+
+      # The LIST form's D4 guard, on every entry that uses it.
+      restrict_values!(path, e)
+
       IO.puts("    (#{path})\n")
     end
+
+    restrict_values_mutation(entries, rows)
 
     # THE KINDS, counted rather than named. There were two when this was written
     # and MES-105 added three more; a control that asserted "exactly two" would
@@ -2074,16 +2103,162 @@ defmodule CrosswalkControls do
   # that agrees with a label while restricting to something else, and an entry
   # naming a field the rows do not carry restricts to NOTHING — which then fails
   # the row-count check above rather than passing with an easy zero.
+  #
+  # MES-115 (C1c-ii) adds the LIST form, `{field, values}`. It exists because the
+  # server file's declared check population stopped being one scenario: C1c-ii
+  # declares fifteen (`server-stateless` plus the fourteen MRTR ones), and a
+  # `no-oc-check-in-this-scenario` zero has to be swept over the population its
+  # own row's claim quantifies over. A single `{field, value}` cannot name that
+  # set, and the alternative — leaving SRV02 and SRV07 measured over 30 of 66 —
+  # is a zero that is easier than the claim it carries.
+  #
+  # AND IT IS NOT A SECOND COPY OF THE SCENARIO LIST (D4). `restrict_values!/2`
+  # below requires the `values` set to EQUAL the file's own check-selector
+  # scenario set, read from the file the entry lives in. So the list cannot
+  # drift from the declaration it is supposed to track: widen the selector
+  # without widening the search and the control halts; widen the search without
+  # widening the selector and it halts too.
+  # THE MUTATION for the list form, and it has to show BOTH failure directions —
+  # a guard that only ever fires one way is half a guard. Nothing is written to
+  # disk: the entry and the file are mutated IN MEMORY (S8-14), so a seat death
+  # mid-run cannot leave the tree changed.
+  #
+  # It also carries its own POSITIVE limb. Without one, a run in which NO entry
+  # used the list form would print two green mutation lines about a predicate
+  # that never ran (S9-15's vacuum), so the number of list-form entries is
+  # asserted to be non-zero first.
+  defp restrict_values_mutation(entries, rows) do
+    users =
+      Enum.filter(entries, fn {_p, e} ->
+        match?(%{"field" => "scenario", "values" => _}, get_in(e, ["population", "restrict"]))
+      end)
+
+    verdict(
+      "the LIST restrict form is USED — #{length(users)} entries, so the D4 guard above ran " <>
+        "over something (without this a run with none would print greens for a predicate that " <>
+        "never fired)",
+      users != []
+    )
+
+    halt_unless(users != [])
+
+    {path, e} = hd(users)
+    vs = get_in(e, ["population", "restrict", "values"])
+
+    # (a) the list DROPS a scenario the selector declares.
+    short = put_in(e, ["population", "restrict", "values"], tl(vs))
+    dropped = restrict_values_fires?(path, short)
+
+    # (b) the list ADDS one the selector does not declare.
+    long = put_in(e, ["population", "restrict", "values"], ["not-a-scenario" | vs])
+    added = restrict_values_fires?(path, long)
+
+    # (c) and the unmutated entry does NOT fire — the control's positive limb.
+    clean = restrict_values_fires?(path, e)
+
+    IO.puts(
+      "    mutation on #{e["id"]}: drop a value -> #{fired(dropped)}, " <>
+        "add one -> #{fired(added)}, unmutated -> #{fired(clean)}"
+    )
+
+    verdict(
+      "the D4 guard fires BOTH ways and is quiet on the real entry — a list that has drifted " <>
+        "from the selector is caught whichever direction it drifted",
+      dropped and added and not clean
+    )
+
+    halt_unless(dropped and added and not clean)
+
+    # AND the mutation has to MOVE the population it sweeps, or the guard could
+    # be right for a reason that has nothing to do with the rows.
+    n_clean = length(restrict(e, rows))
+    n_short = length(restrict(short, rows))
+
+    verdict(
+      "and the dropped value really does shrink the swept population (#{n_clean} -> #{n_short})",
+      n_short < n_clean
+    )
+
+    halt_unless(n_short < n_clean)
+  end
+
+  defp fired(true), do: "FIRED"
+  defp fired(false), do: "quiet"
+
+  # `restrict_values!/2` halts, which is what it is for; to OBSERVE it we need
+  # it to return instead. The predicate is re-expressed here rather than the
+  # guard being weakened to return a boolean: a guard that can be asked "would
+  # you fire?" is a guard with two code paths, and the control would then attest
+  # the one nothing depends on.
+  defp restrict_values_fires?(path, e) do
+    declared =
+      read(path)
+      |> get_in(["the_check_population_this_file_declares", "selector", "any_of"])
+      |> Kernel.||([])
+      |> Enum.filter(&(&1["field"] == "scenario" and &1["test"] == "equals"))
+      |> Enum.map(& &1["value"])
+      |> Enum.sort()
+
+    vs = get_in(e, ["population", "restrict", "values"])
+    not (Enum.sort(vs) == declared and declared != [])
+  end
+
   defp restrict(e, rows) do
     case get_in(e, ["population", "restrict"]) do
-      nil -> rows
-      %{"field" => f, "value" => v} -> Enum.filter(rows, &(Map.get(&1, f) == v))
-      other -> halt_with("#{e["id"]}: unknown population restrict #{inspect(other)}")
+      nil ->
+        rows
+
+      %{"field" => f, "value" => v} ->
+        Enum.filter(rows, &(Map.get(&1, f) == v))
+
+      %{"field" => f, "values" => vs} when is_list(vs) ->
+        Enum.filter(rows, &(Map.get(&1, f) in vs))
+
+      other ->
+        halt_with("#{e["id"]}: unknown population restrict #{inspect(other)}")
     end
   end
 
   defp restrict_label(nil), do: ""
   defp restrict_label(%{"field" => f, "value" => v}), do: " where #{f} = #{v}"
+
+  defp restrict_label(%{"field" => f, "values" => vs}),
+    do: " where #{f} in {#{length(vs)} values}"
+
+  # THE D4 GUARD ON THE LIST FORM. A `values` list is a population declaration,
+  # and this file already holds one: the check selector's `any_of`. Two copies
+  # of one fact is the defect D4 names, so the copies are required to be the
+  # SAME SET rather than merely to look alike — read out of the same document,
+  # compared as sets, in both directions.
+  #
+  # Scoped to the entries that USE the list form. An entry with no `restrict`,
+  # or with the scalar form, declares no scenario set and there is nothing to
+  # compare it against; saying so is the alternative to a vacuous pass.
+  defp restrict_values!(path, e) do
+    case get_in(e, ["population", "restrict"]) do
+      %{"field" => "scenario", "values" => vs} ->
+        declared =
+          read(path)
+          |> get_in(["the_check_population_this_file_declares", "selector", "any_of"])
+          |> Kernel.||([])
+          |> Enum.filter(&(&1["field"] == "scenario" and &1["test"] == "equals"))
+          |> Enum.map(& &1["value"])
+          |> Enum.sort()
+
+        same = Enum.sort(vs) == declared and declared != []
+
+        verdict(
+          "#{e["id"]}: the `values` list IS the file's own check-selector scenario set — " <>
+            "#{length(vs)} values, compared as a set in both directions (D4)",
+          same
+        )
+
+        halt_unless(same)
+
+      _ ->
+        :ok
+    end
+  end
 
   defp halt_with(msg) do
     IO.puts("  " <> msg)

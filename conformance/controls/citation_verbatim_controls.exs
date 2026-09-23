@@ -33,6 +33,16 @@ defmodule CitationVerbatimControls do
   @harness "/tmp/conf11/node_modules/@modelcontextprotocol/conformance/dist/index.js"
 
   @client_edges "conformance/data/crosswalk-edges-client.json"
+  # MES-105 (C1c-i) opened the SERVER-leg edges file and wired it into
+  # `crosswalk_controls.exs` and `crosswalk_falsification_controls.exs` — and not
+  # into this one, which went on holding two paths. MEASURED at 3166dc7 before
+  # the fix: this control visited 160 records and compared 131 quotes while the
+  # generator's own G30 compared 210 over 106 of 245 records. Every server-leg
+  # citation was OUTSIDE the control, and the `end-to-end` mode drove the task
+  # over a SMALLER crosswalk than the committed one. That is not a red; it is a
+  # quieter green, which is the harder thing to notice. Closed by MES-115
+  # (C1c-ii), the ticket that does this leg's heavy citation-lifting.
+  @server_edges "conformance/data/crosswalk-edges-server.json"
   @edges "conformance/data/crosswalk-edges.json"
   @c1_axes "conformance/data/oc-axes-c1.json"
   @a3_axes "docs/conformance/oc-axes-2026-07-28.json"
@@ -80,7 +90,7 @@ defmodule CitationVerbatimControls do
     for d <- r["defects"],
         do: IO.puts("    #{d["kind"]} — #{inspect(d["detail"])}  (#{d["row"]})")
 
-    verdict("0 defects over both edges files", r["defects"] == [])
+    verdict("0 defects over all three edges files", r["defects"] == [])
     halt_unless(r["defects"] == [])
 
     IO.puts("""
@@ -118,7 +128,7 @@ defmodule CitationVerbatimControls do
       "  records with evidence: sweep says #{r["records_with_evidence"]}, recount says #{with_evidence}"
     )
 
-    IO.puts("  visited #{r["records_visited"]} of #{length(records)} records in the two files")
+    IO.puts("  visited #{r["records_visited"]} of #{length(records)} records in the three files")
 
     checks = [
       {"every quote the records carry was compared — #{r["quotes_compared"]} of #{counted}",
@@ -384,6 +394,8 @@ defmodule CitationVerbatimControls do
       "--edges",
       edges_path,
       "--edges",
+      @server_edges,
+      "--edges",
       @edges,
       "--manifest",
       @manifest,
@@ -415,7 +427,7 @@ defmodule CitationVerbatimControls do
   # task itself calls. A control that re-implemented it would attest a copy.
 
   defp records do
-    for path <- [@client_edges, @edges],
+    for path <- [@client_edges, @server_edges, @edges],
         doc = read(path),
         {key, value} <- doc,
         is_list(value),

@@ -3,6 +3,7 @@
 #     mix run conformance/controls/crosswalk_falsification_controls.exs refusals
 #     mix run conformance/controls/crosswalk_falsification_controls.exs drift
 #     mix run conformance/controls/crosswalk_falsification_controls.exs second_source
+#     mix run conformance/controls/crosswalk_falsification_controls.exs warning_mapping
 #     mix run conformance/controls/crosswalk_falsification_controls.exs exit_status
 #     mix run conformance/controls/crosswalk_falsification_controls.exs all
 #
@@ -93,6 +94,7 @@ defmodule CrosswalkFalsificationControls do
   def run(["wrong_reason"]), do: wrong_reason()
   def run(["drift"]), do: drift()
   def run(["escalations"]), do: escalations()
+  def run(["warning_mapping"]), do: warning_mapping()
   def run(["second_source"]), do: second_source()
   def run(["exit_status"]), do: exit_status()
 
@@ -100,6 +102,7 @@ defmodule CrosswalkFalsificationControls do
     refusals()
     drift()
     escalations()
+    warning_mapping()
     second_source()
     exit_status()
     IO.puts("\n== ALL FIVE MODES GREEN ==\n")
@@ -519,19 +522,40 @@ defmodule CrosswalkFalsificationControls do
 
     for c <- contradicting, do: IO.puts("    #{c["tag"]}")
 
+    # THE PIN MOVED FROM 3 TO 4 AT MES-115, and it moved by GOING RED first —
+    # which is the pin working. C1c-ii adjudicated the crosswalk's first
+    # contradiction against a GREEN check (`WireSchemaValid` in
+    # `input-required-result-request-state`: our unit asserts `inputRequests` is
+    # a JSON array where the pinned schema's `InputRequests` is an object), and
+    # `(green, green, :contradicting)` escalates rather than bucketing. So the
+    # population this pin counts GREW, this control refused, and the figure was
+    # re-derived rather than re-typed from a guess. Raising it silently would
+    # have been the one thing the pin exists to prevent.
     verdict(
-      "exactly 3 — C1b-ii's finding, and it cannot shrink without this going red",
-      length(contradicting) == 3
+      "exactly 4 — C1b-ii's three plus C1c-ii's, and it cannot shrink without this going red",
+      length(contradicting) == 4
     )
 
-    halt_unless(length(contradicting) == 3)
+    halt_unless(length(contradicting) == 4)
 
     {softened, where3} =
       mutate_one(
         docs,
         committed,
+        # RE-CUT AT MES-115, because the population grew and the old predicate
+        # stopped denoting one row. It was `escalated and FIRST axis
+        # contradicts`, which C1c-ii's new escalated row also satisfies — its
+        # single axis is both its first and its last, so it matches the sentinel
+        # pair's property too. The `length > 1` conjunct is what separates them,
+        # and it is not arbitrary: the distinction this mutation rests on is
+        # WHICH axis of a MULTI-axis check was softened, and a one-axis check
+        # has no such distinction to make. Uniqueness is asserted by
+        # `mutate_one/5`, so a later ticket adding a second two-axis
+        # first-contradicting escalated row goes red here rather than re-aiming
+        # the mutation in silence.
         fn cell, edge ->
-          cell == "escalated" and hd(edge["axes"])["verdict"] == "contradicts"
+          cell == "escalated" and length(edge["axes"]) > 1 and
+            hd(edge["axes"])["verdict"] == "contradicts"
         end,
         fn edge ->
           update_in(edge, ["axes", Access.at(0), "verdict"], fn "contradicts" -> "agrees" end)
@@ -1009,6 +1033,238 @@ defmodule CrosswalkFalsificationControls do
     for m <- moved do
       IO.puts("    MOVED  #{m.from} -> #{m.to}   #{m.claim}")
       IO.puts("           #{m.tag}")
+    end
+  end
+
+  # === warning_mapping — D2's WARNING rule, on its FIRST live instance ========
+  #
+  # ADDED BY MES-115 (C1c-ii), PM-directed. D2 maps `WARNING -> :green carrying
+  # warning: true`. Until this ticket the mapping fired on ZERO cells — both of
+  # the suite's in-denominator WARNING checks were outside every declared
+  # population — so it was implemented and unit-tested rather than demonstrated,
+  # and `verdict_mapping` said so in a hand-written field. C1c-ii declares the
+  # `input-required-result-*` family and with it `IgnoreUnexpectedParams`, which
+  # is WARNING at the accepted run, and an edge lands on it.
+  #
+  # A FIRST LIVE FIRING IS WHERE A WRONG MAPPING HIDES, which is why re-deriving
+  # the count was not enough. Three limbs, and the third is the one that makes
+  # the other two mean anything:
+  #
+  #   1. IT FIRES — the real cell carries `oc_warning`, its OC verdict is green,
+  #      and it buckets where a green-OC/green-ET/:full edge buckets. And the
+  #      generator's own derived count equals the number of cells this control
+  #      counts, so `warning_rows_in_this_population` is a measurement.
+  #   2. AWAY FROM WARNING, DOWNWARD — patch the check's status to FAILURE in
+  #      both committed status artefacts and the flag must go off AND the row
+  #      must leave bucket 5. This is the limb the PM asked for.
+  #   3. AWAY FROM WARNING, SIDEWAYS — patch it to SUCCESS. The flag must STILL
+  #      go off while the bucket STAYS 5. Limb 2 alone cannot tell D2's mapping
+  #      from `warning: true on everything that is not red`, because under that
+  #      rule limb 2 passes unchanged. Limb 3 is what separates them, and it is
+  #      the reason "exercised" and "right" are different claims.
+  defp warning_mapping do
+    header("WARNING MAPPING — D2 on its first live instance (MES-115)")
+
+    require_harness!()
+    committed = read(@crosswalk_out)
+
+    target =
+      Enum.filter(committed["cells"], &(&1["verdicts"]["oc_status_at_accepted_run"] == "WARNING"))
+
+    IO.puts("  cells whose OC status is WARNING at the accepted run: #{length(target)}")
+    for c <- target, do: IO.puts("    #{c["tag"]}")
+
+    verdict(
+      "exactly one, so the mutations below cannot silently re-aim",
+      length(target) == 1
+    )
+
+    halt_unless(length(target) == 1)
+
+    [cell] = target
+    name = Enum.at(cell["oc_key"], 3)
+    slot = {cell["member"]["register_key"], cell["claim"], cell["tag"]}
+
+    # LIMB 1 — it fires, and the artefact's own figure is the measurement.
+    derived = committed["verdict_mapping"]["warning_rows_in_this_population"]
+
+    fires =
+      cell["verdicts"]["oc_warning"] == true and cell["verdicts"]["oc"] == "green" and
+        cell["bucket"] == "5" and derived == length(target)
+
+    IO.puts(
+      "  LIMB 1  oc_warning #{inspect(cell["verdicts"]["oc_warning"])}, " <>
+        "oc #{inspect(cell["verdicts"]["oc"])}, bucket #{inspect(cell["bucket"])}; " <>
+        "the artefact's own derived count #{derived}"
+    )
+
+    verdict(
+      "the WARNING row lands where D2 maps it — green, flagged, bucket 5 — and " <>
+        "`warning_rows_in_this_population` is that count and not a literal",
+      fires
+    )
+
+    halt_unless(fires)
+
+    # LIMB 2 — patched to FAILURE. The flag goes off and the row leaves 5.
+    red = rebuild_with_oc_status(name, "FAILURE")
+    red_cell = find_cell(red, slot)
+
+    IO.puts(
+      "  LIMB 2  status FAILURE -> oc_warning #{inspect(red_cell["verdicts"]["oc_warning"])}, " <>
+        "oc #{inspect(red_cell["verdicts"]["oc"])}, bucket #{inspect(red_cell["bucket"])}"
+    )
+
+    out2 =
+      red_cell["verdicts"]["oc_warning"] == false and red_cell["verdicts"]["oc"] == "red" and
+        red_cell["bucket"] != "5"
+
+    verdict(
+      "mutated AWAY from WARNING and DOWN: the flag goes off and the row leaves bucket 5 — " <>
+        "the flag is not something every row carries",
+      out2
+    )
+
+    halt_unless(out2)
+
+    # AND WHERE IT WENT, because `bucket: nil` is not self-explanatory and the
+    # answer is a measurement worth having. This edge agrees with EVERY axis of
+    # its check, so its shape is `:full`; `(red, green, :full)` has no row in A3
+    # §3's table and escalates as `divergent_despite_agreement`. That is the
+    # combination C1c-i recorded as unreachable from the server leg's claims.
+    # It is STILL not live on the committed data — this is a mutated OC verdict,
+    # not a finding — but the reason it is not live has changed: it is now ONE
+    # OC verdict away rather than out of reach, because this slice is the first
+    # to produce an edge that agrees with every axis of a check.
+    named = escalation_reason_at(red, slot)
+    IO.puts("  LIMB 2  it escalated as: #{String.slice(named, 0, 90)}")
+
+    verdict(
+      "and it left bucket 5 by ESCALATING as divergent_despite_agreement — a `:full` edge " <>
+        "over a red check, which is the combination the server leg had not reached",
+      String.contains?(named, "divergent_despite_agreement")
+    )
+
+    halt_unless(String.contains?(named, "divergent_despite_agreement"))
+
+    # LIMB 3 — patched to SUCCESS. The flag goes off; the bucket does not move.
+    green = rebuild_with_oc_status(name, "SUCCESS")
+    green_cell = find_cell(green, slot)
+
+    IO.puts(
+      "  LIMB 3  status SUCCESS -> oc_warning #{inspect(green_cell["verdicts"]["oc_warning"])}, " <>
+        "oc #{inspect(green_cell["verdicts"]["oc"])}, bucket #{inspect(green_cell["bucket"])}"
+    )
+
+    out3 =
+      green_cell["verdicts"]["oc_warning"] == false and green_cell["verdicts"]["oc"] == "green" and
+        green_cell["bucket"] == "5"
+
+    verdict(
+      "mutated AWAY from WARNING but SIDEWAYS: the flag goes off while the bucket stays 5 — " <>
+        "so the flag tracks WARNING and not merely `not red`",
+      out3
+    )
+
+    halt_unless(out3)
+
+    # RESTORED. Nothing was written to the committed artefacts; the patched
+    # manifests were temp copies. Re-read and re-assert limb 1.
+    restored = read(@crosswalk_out)
+
+    still =
+      Enum.count(restored["cells"], &(&1["verdicts"]["oc_warning"] == true)) == length(target)
+
+    verdict(
+      "RESTORED — the committed artefact still carries #{length(target)} flagged cell(s)",
+      still
+    )
+
+    halt_unless(still)
+
+    IO.puts("""
+
+      WHAT THIS MODE DOES NOT ESTABLISH. That WARNING SHOULD map to green. That is D2,
+      a PM ruling taken on a measurement about the harness's reducers, and no control
+      here re-opens it. What this shows is narrower and is what was missing: the rule
+      is now exercised by real data, the count the artefact prints is derived from that
+      data, and the flag discriminates WARNING from both of the other two statuses.
+    """)
+  end
+
+  # The escalation reason recorded for a slot in an ALREADY-BUILT artefact.
+  # `escalation_reason/2` takes edges docs and rebuilds; this takes the artefact
+  # the caller has, so a mutation is not run twice to be read once.
+  defp escalation_reason_at(artefact, {m, c, t}) do
+    case Enum.filter(artefact["escalations"]["rows"], fn r ->
+           r["claim"] == c and r["tag"] == t and
+             String.contains?(r["member"], m |> String.split("/") |> hd())
+         end) do
+      [row] ->
+        row["escalation"]
+
+      other ->
+        IO.puts("  THE ESCALATED SLOT RESOLVES TO #{length(other)} ROWS")
+        System.halt(1)
+    end
+  end
+
+  # Rebuilds the whole crosswalk with ONE check's status patched in BOTH
+  # committed status artefacts — the manifest and A5's bucket-0 file, which G16
+  # requires to agree, so patching one alone would refuse the build for drift
+  # rather than exercise the mapping. Temp copies throughout; the committed
+  # artefacts are never written to (S8-14).
+  defp rebuild_with_oc_status(name, status) do
+    manifest = read(@manifest)
+    denominator = read(@denominator)
+
+    patched_manifest =
+      update_in(manifest["scenarios"], fn scenarios ->
+        Enum.map(scenarios, fn s ->
+          update_in(s["checks"], fn cs ->
+            Enum.map(
+              cs,
+              &if(Enum.at(&1["key"], 3) == name, do: Map.put(&1, "status", status), else: &1)
+            )
+          end)
+        end)
+      end)
+
+    patched_denominator =
+      update_in(denominator["checks"], fn cs ->
+        Enum.map(
+          cs,
+          &if(Enum.at(&1["key"], 3) == name, do: Map.put(&1, "status", status), else: &1)
+        )
+      end)
+
+    flipped = count_status(patched_manifest, manifest)
+    halt_unless(flipped > 0)
+
+    mpath = write_tmp("warning-manifest", patched_manifest)
+    dpath = write_tmp("warning-denominator", patched_denominator)
+    out = tmp("warning-#{String.downcase(status)}")
+
+    try do
+      crosswalk(out, manifest: mpath, denominator: dpath)
+      read(out)
+    after
+      Enum.each([mpath, dpath, out], &File.rm/1)
+    end
+  end
+
+  # The cell at a (member, claim, tag) slot, and it MUST be there: a mutation
+  # whose row vanished would otherwise read as a row that moved.
+  defp find_cell(artefact, {m, c, t} = slot) do
+    case Enum.filter(artefact["cells"], fn cell ->
+           {cell["member"]["register_key"], cell["claim"], cell["tag"]} == {m, c, t}
+         end) do
+      [cell] ->
+        cell
+
+      other ->
+        IO.puts("  THE MUTATED SLOT RESOLVES TO #{length(other)} CELLS — #{inspect(slot)}")
+        System.halt(1)
     end
   end
 

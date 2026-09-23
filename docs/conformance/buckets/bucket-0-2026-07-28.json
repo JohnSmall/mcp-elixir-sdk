@@ -5,7 +5,7 @@
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 167 declared ET-CC members and 84\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 114 members and\n89 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "population_banner": "POPULATION: this projection covers 172 declared ET-CC members and 120\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 109 members and\n53 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
   "predicate": "CITATION, not a projection. The in-scope OC checks A5 (MES-70) classified `matchable: false` in `docs/conformance/bucket-0-2026-07-28.json`. Universe: the 175 checks of A1's manifest. They were removed from the denominator BEFORE the join — the crosswalk is built against 173 checks — so they appear in no cell and cannot be filtered out of one.",
   "projected_from": {
     "bucket_zero": {
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 574284,
+      "bytes": 648638,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "3ce08b0c1b055d28c3789b25e731852a7e7908938b112ec45d3bf12fb019a466"
+      "sha256": "30cea0a77bd965ff5883d3dbbec89c8c45977cf1ef8898b0b0b93cf68e664d39"
     }
   },
   "revision": "2026-07-28",

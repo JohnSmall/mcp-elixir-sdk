@@ -721,6 +721,20 @@ defmodule MCP.Conformance.CrosswalkTest do
       held =
         Enum.reduce(a["population"]["files"], held, &MapSet.put(&2, &1["member_count"]))
 
+      # MES-115: the per-file DECLARED-CHECK counts. The generator has held
+      # these since C1c-i (`figures/7`'s `per_file_declared_checks`, which
+      # records why); this reconstruction never did, and passed anyway because
+      # the client file's 54 coincided with `length(population.checks)` and the
+      # server file's 30 with `bucket_2`. C1c-ii moved both — checks-with-edges
+      # to 60 and bucket 2 to 60 — and two correct, freshly-derived sentences
+      # went red at once. Derived from the artefact, never written down, so this
+      # moves with the population instead of pinning today's.
+      held =
+        a["population"]["files"]
+        |> Enum.reduce(held, fn f, acc ->
+          MapSet.put(acc, length(get_in(f, ["check_population", "checks"]) || []))
+        end)
+
       # MES-109: the leg-totality figures. Taken from the files' own
       # `leg_totality` blocks and NOT hard-coded, so this reconstruction moves
       # with the artefact rather than pinning today's leg — a hand-written 107
@@ -746,10 +760,17 @@ defmodule MCP.Conformance.CrosswalkTest do
           ])
         )
 
+      # MES-115: `crosswalk-edges-server.json` WAS MISSING from this list. C1c-i
+      # opened that file and wired it into two control suites; this unit's copy
+      # of the generator's input set was a third place and was not updated. The
+      # omission is fail-SAFE in direction — a missing input makes MORE strings
+      # count as this generator's own, never fewer — but it is still the wrong
+      # set, and it made the unit refuse a figure the edges file itself states.
       inputs =
         Crosswalk.string_set(
           Enum.map(
             ~w(conformance/data/crosswalk-edges-client.json
+               conformance/data/crosswalk-edges-server.json
                conformance/data/crosswalk-edges.json
                conformance/data/oc-axes-c1.json
                docs/conformance/oc-axes-2026-07-28.json
@@ -1393,11 +1414,40 @@ defmodule MCP.Conformance.CrosswalkTest do
       assert k["measure"] =~ "ROWS LOST"
     end
 
-    test "the WARNING mapping fires on zero rows here, and the artefact says so", %{a: a} do
+    # REWRITTEN AT MES-115. It used to assert `warning_rows_in_this_population ==
+    # 0` and that the artefact's prose said "ZERO rows". Both were true for four
+    # tickets and stopped being true the moment C1c-ii declared
+    # `IgnoreUnexpectedParams` — one of the suite's only two in-denominator
+    # WARNING checks — and landed an edge on it. A unit pinning today's count is
+    # the same defect as prose pinning it, one layer down, so what is asserted
+    # now is the INVARIANT: the count is the number of WARNING-status cells,
+    # whatever that number is, and the prose the generator derives agrees with
+    # which side of zero it falls. That the mapping is EXERCISED rather than
+    # merely implemented is shown by
+    # `crosswalk_falsification_controls.exs warning_mapping`, which also shows
+    # it discriminating; this unit only pins the arithmetic.
+    test "the WARNING count is DERIVED from the cells, and the prose agrees with it", %{a: a} do
       v = a["verdict_mapping"]
-      assert v["warning_rows_in_this_population"] == 0
-      assert Enum.all?(a["cells"], &(&1["verdicts"]["oc_warning"] == false))
-      assert v["warning_is_untested_by_live_data_here"] =~ "ZERO rows"
+      flagged = Enum.filter(a["cells"], & &1["verdicts"]["oc_warning"])
+
+      assert v["warning_rows_in_this_population"] == length(flagged)
+
+      # and the flag is the STATUS, not a synonym for "not red"
+      for cell <- a["cells"] do
+        assert cell["verdicts"]["oc_warning"] ==
+                 (cell["verdicts"]["oc_status_at_accepted_run"] == "WARNING")
+      end
+
+      # every flagged cell is mapped GREEN — that is the whole of D2
+      assert Enum.all?(flagged, &(&1["verdicts"]["oc"] == "green"))
+
+      if flagged == [] do
+        assert v["warning_live_data"] =~ "NOT EXERCISED"
+      else
+        assert v["warning_live_data"] =~ "EXERCISED on #{length(flagged)} cell"
+        assert v["warning_live_data"] =~ "WHAT THAT DOES NOT ESTABLISH"
+      end
+
       assert v["warning_residual"] =~ "CLIENT-leg"
     end
 

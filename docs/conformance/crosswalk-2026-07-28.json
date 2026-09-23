@@ -1,25 +1,25 @@
 {
   "absence_search_guard": {
-    "distinct_searches_those_rows_name": 36,
-    "entries": 36,
-    "leg_wide_limb": "G23a ran over ALL 99 declared-unmatched rows in this run, with no exception list, and requires a non-empty `the_search_that_found_none` on each.",
+    "distinct_searches_those_rows_name": 38,
+    "entries": 38,
+    "leg_wide_limb": "G23a ran over ALL 102 declared-unmatched rows in this run, with no exception list, and requires a non-empty `the_search_that_found_none` on each.",
     "registry_limb_reach": "G23b/c/d reach the rows carrying a `search_id`. The rows without one carry a PROSE search that was run and recorded but not registered in a re-runnable form; back-filling a registry entry for a search this run did not re-measure would be inventing the measurement, which is the defect the field exists to prevent. Stated as a bound, not papered over.",
-    "rows_checked": 99,
-    "rows_naming_a_registered_search": 73,
+    "rows_checked": 102,
+    "rows_naming_a_registered_search": 76,
     "what_a_green_here_is_not": "Evidence that any search was well-chosen. G23 checks that a search is NAMED, RUNNABLE and REACHED its population. Whether the population was the right one to look in, and whether the member's claim is really what the search looked for, are judgements — they are carried on the row in `why_this_search_is_this_claims_search` so a reader can disagree with them, and no refusal can reach them."
   },
   "arithmetic": {
-    "bucketed": 93,
-    "edges": 106,
+    "bucketed": 108,
+    "edges": 122,
     "equation": "edges = bucketed + escalated",
-    "escalated": 13,
-    "members": 167,
-    "members_declared_unmatched": 99,
+    "escalated": 14,
+    "members": 172,
+    "members_declared_unmatched": 102,
     "members_equation": "population members = members with >=1 edge + members declared unmatched",
-    "members_with_edges": 68
+    "members_with_edges": 70
   },
   "axis_provenance": {
-    "axes_checked": 108,
+    "axes_checked": 205,
     "harness_checked": true,
     "harness_dist_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
     "harness_read_from": "/tmp/conf11/node_modules/@modelcontextprotocol/conformance/dist/index.js",
@@ -27,9 +27,9 @@
   },
   "axis_span_provenance": {
     "checked_against": "docs/conformance/oc-emitting-sites-2026-07-28.json",
-    "locator_row": 67,
+    "locator_row": 103,
     "locator_row_rejected": 4,
-    "rows": 71,
+    "rows": 107,
     "what_this_does_not_establish": "That a rejected row's span is the RIGHT one. It establishes that the row is not claiming the locator's authority for a span the locator did not give it. The bytes at the span are checked separately, and only when --harness is given.",
     "what_was_checked": "For every `locator_row` row, the committed `emitting_byte_span` is one the locator names for that row's key. For every `locator_row_rejected` row, the locator's own `rung_pin_level` is NOT `row`, the span used is NOT one the locator names, and a reason is recorded. An unknown provenance value is refused."
   },
@@ -40,7 +40,7 @@
       "owner": "A5 = MES-70, docs/conformance/bucket-0-2026-07-28.json"
     },
     "bucket_1": {
-      "count": 99,
+      "count": 102,
       "members": [
         "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
         "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
@@ -120,6 +120,10 @@
         "MCP.Transport.SSETest/test stream parser buffers incomplete events",
         "MCP.Transport.SSETest/test stream parser handles multiple chunks",
         "MCP.Transport.SSETest/test stream parser parses complete events",
+        "MCP.Transport.StreamableHTTP.ACTest/test AC7 — non-localhost origin is rejected 403 (acceptance parity)",
+        "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that raises fails cleanly (-32603); the secret never leaks",
+        "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that returns a non-keyword fails cleanly (-32603)",
+        "MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)",
         "MCP.Transport.StreamableHTTPStatelessTest/test AC7 — non-localhost origin is rejected 403; the identity factory never runs",
         "MCP.Transport.StreamableHTTPStatelessTest/test GET and DELETE are not allowed (405), and allow names only POST",
         "MCP.Transport.StreamableHTTPStatelessTest/test MC-6 — a collector that fails to start fails cleanly (-32603), no handler invoked",
@@ -130,7 +134,6 @@
         "MCP.Transport.StreamableHTTPStatelessTest/test list/read results carry caching hints (ttlMs/cacheScope)",
         "MCP.Transport.StreamableHTTPStatelessTest/test matching Mcp-Method routes normally; a mismatch is rejected (-32020)",
         "MCP.Transport.StreamableHTTPStatelessTest/test resources/read — Mcp-Name is validated against params.uri (mismatch → -32020)",
-        "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
         "MCP.Transport.StreamableHTTPStatelessTest/test two-instance / no-affinity smoke (DoD) interleaving requests round-robin across two stateless instances succeeds identically",
         "MCP.Transport.SubscriptionsStreamTest/test MC-6 a stream that cannot start fails cleanly controlled -32603, nothing streamed, and the handler is told",
         "MCP.Transport.SubscriptionsStreamTest/test T-10 the documented multi-instance boundary a change on instance B does not reach a stream held by instance A",
@@ -143,7 +146,7 @@
         "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the response carries the SSE headers the spec SHOULDs"
       ],
       "rule": "an ET-CC member of the declared population with NO edge — A3 §6 state 3",
-      "universe": "the 167 declared members, never all 281"
+      "universe": "the 172 declared members, never all 281"
     },
     "bucket_2": {
       "checks": [
@@ -161,6 +164,36 @@
         "oc:client/sep-2322-client-request-state/sep-2322-client-jsonrpc-id-different/MRTRClientJsonRpcIdDifferent",
         "oc:client/sep-2322-client-request-state/sep-2322-client-parallel-isolation/MRTRClientParallelIsolation",
         "oc:client/sep-2322-client-request-state/sep-2322-default-result-type-complete/DefaultResultTypeComplete",
+        "oc:server/input-required-result-basic-elicitation/sep-2322-elicitation-complete/InputRequiredResultElicitationComplete",
+        "oc:server/input-required-result-basic-elicitation/sep-2322-elicitation-incomplete/InputRequiredResultElicitationIncomplete",
+        "oc:server/input-required-result-basic-elicitation/wire-schema-valid/WireSchemaValid",
+        "oc:server/input-required-result-basic-list-roots/sep-2322-list-roots-complete/InputRequiredResultListRootsComplete",
+        "oc:server/input-required-result-basic-list-roots/sep-2322-list-roots-incomplete/InputRequiredResultListRootsIncomplete",
+        "oc:server/input-required-result-basic-list-roots/wire-schema-valid/WireSchemaValid",
+        "oc:server/input-required-result-basic-sampling/sep-2322-sampling-complete/InputRequiredResultSamplingComplete",
+        "oc:server/input-required-result-basic-sampling/sep-2322-sampling-incomplete/InputRequiredResultSamplingIncomplete",
+        "oc:server/input-required-result-basic-sampling/wire-schema-valid/WireSchemaValid",
+        "oc:server/input-required-result-capability-check/sep-2322-respect-client-capabilities/RespectClientCapabilities",
+        "oc:server/input-required-result-capability-check/wire-schema-valid/WireSchemaValid",
+        "oc:server/input-required-result-ignore-extra-params/wire-schema-valid/WireSchemaValid",
+        "oc:server/input-required-result-missing-input-response/sep-2322-missing-response-rerequests/InputRequiredResultMissingResponseRerequests",
+        "oc:server/input-required-result-missing-input-response/wire-schema-valid/WireSchemaValid",
+        "oc:server/input-required-result-multi-round/sep-2322-multi-round-r2/InputRequiredResultMultiRoundR2",
+        "oc:server/input-required-result-multi-round/sep-2322-multi-round-r3/InputRequiredResultMultiRoundR3",
+        "oc:server/input-required-result-multi-round/wire-schema-valid/WireSchemaValid",
+        "oc:server/input-required-result-multiple-input-requests/sep-2322-multiple-inputs-complete/InputRequiredResultMultipleInputsComplete",
+        "oc:server/input-required-result-multiple-input-requests/sep-2322-multiple-inputs-incomplete/InputRequiredResultMultipleInputsIncomplete",
+        "oc:server/input-required-result-multiple-input-requests/wire-schema-valid/WireSchemaValid",
+        "oc:server/input-required-result-non-tool-request/sep-2322-non-tool-incomplete/InputRequiredResultNonToolIncomplete",
+        "oc:server/input-required-result-non-tool-request/wire-schema-valid/WireSchemaValid",
+        "oc:server/input-required-result-result-type/wire-schema-valid/WireSchemaValid",
+        "oc:server/input-required-result-tampered-state/sep-2322-reject-tampered-state/RejectTamperedState",
+        "oc:server/input-required-result-tampered-state/wire-schema-valid/WireSchemaValid",
+        "oc:server/input-required-result-unsupported-methods/sep-2322-not-on-unsupported-requests/NotOnUnsupportedRequests",
+        "oc:server/input-required-result-unsupported-methods/wire-schema-valid/WireSchemaValid",
+        "oc:server/input-required-result-validate-input/sep-2322-error-on-protocol-error/ErrorOnProtocolError",
+        "oc:server/input-required-result-validate-input/sep-2322-validate-input-responses/ValidateInputResponses",
+        "oc:server/input-required-result-validate-input/wire-schema-valid/WireSchemaValid",
         "oc:server/server-stateless/sep-2575-http-server-header-mismatch-400/HttpServerHeaderMismatch400",
         "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities",
         "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-meta",
@@ -178,14 +211,14 @@
         "oc:server/server-stateless/sep-2575-server-sends-prompts-list-changed-on-subscription/ServerSendsPromptsListChangedOnSubscription",
         "oc:server/server-stateless/sep-2575-server-sends-tools-list-changed-on-subscription/ServerSendsToolsListChangedOnSubscription"
       ],
-      "count": 30,
+      "count": 60,
       "declared": true,
-      "result": "30 of the 84 declared checks carry no edge from any ET-CC member of the declared member population",
+      "result": "60 of the 120 declared checks carry no edge from any ET-CC member of the declared member population",
       "rule": "a check in a DECLARED check population that carries no edge",
-      "universe": "the 84 declared checks, never all 173",
+      "universe": "the 120 declared checks, never all 173",
       "why_not_the_rest_of_the_173": "The in-denominator checks outside every declared check population are NOT bucket 2. Bucket 2 is 'we adjudicated and found no ET counterpart'; those were not adjudicated."
     },
-    "bucket_5_partial_sub_count": 15,
+    "bucket_5_partial_sub_count": 25,
     "empty_by_construction": {
       "bucket_3": "green OC / red ET — 0",
       "bucket_6": "red in both — 0",
@@ -195,7 +228,7 @@
     "from_edges": {
       "4a": 5,
       "4b": 6,
-      "5": 82
+      "5": 97
     }
   },
   "cells": [
@@ -4181,6 +4214,774 @@
     {
       "axes": [
         {
+          "axis": "the_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_response_carries_a_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_carries_a_result_type_field_at_all",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_type_is_input_required",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a `tools/call` whose inputs have not yet been supplied is answered with a RESULT whose `resultType` is `input_required`",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:246 — `assert first[\"resultType\"] == \"input_required\"`, over a real HTTP POST through `MCP.Transport.StreamableHTTP.Plug`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold. The first two axes are therefore covered by the SAME observation read at a coarser grain, not inferred from an unobserved behaviour — which is why they are `agrees` and not `silent`. The third axis is `` `resultType`in r `` — PRESENCE — and the fourth is the VALUE; an equality assertion against `\"input_required\"` cannot hold unless the key is there, so it covers both.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+        "test": "test tools/call input-required → retry with requestState → completion"
+      },
+      "note": "FULL agreement on a four-axis check, which is rare on this leg. It is not a coincidence: `ResultTypeIncluded` is the only check in the family whose whole subject is the `resultType` marker, and that marker is what this unit's first assertion is about.",
+      "oc_key": [
+        "server",
+        "input-required-result-result-type",
+        "sep-2322-result-type-included",
+        "ResultTypeIncluded",
+        "Server includes resultType field in InputRequiredResult response",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_first_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_response_carries_an_input_required_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_input_required_result_carries_a_request_state",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_request_state_is_a_string",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_input_required_result_carries_input_requests",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a `tools/call` whose inputs have not yet been supplied is answered with a RESULT whose `resultType` is `input_required`",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:246 — `assert first[\"resultType\"] == \"input_required\"`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold. The first two axes are therefore covered by the SAME observation read at a coarser grain, not inferred from an unobserved behaviour — which is why they are `agrees` and not `silent`. The last three axes are about `requestState` and `inputRequests`, which THIS claim says nothing about; the member's other two claims do, and carry their own edges against the same check rather than being collapsed into this one (A3 §1).",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+        "test": "test tools/call input-required → retry with requestState → completion"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "input-required-result-request-state",
+        "sep-2322-request-state-incomplete",
+        "InputRequiredResultRequestStateIncomplete",
+        "Server returns InputRequiredResult with both inputRequests and requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "round_1_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "round_1_returns_an_input_required_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "round_1_carries_input_requests",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_carries_a_request_state",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a `tools/call` whose inputs have not yet been supplied is answered with a RESULT whose `resultType` is `input_required`",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:246 — `assert first[\"resultType\"] == \"input_required\"`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold. The first two axes are therefore covered by the SAME observation read at a coarser grain, not inferred from an unobserved behaviour — which is why they are `agrees` and not `silent`.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+        "test": "test tools/call input-required → retry with requestState → completion"
+      },
+      "note": "WHY A MULTI-ROUND CHECK TAKES AN EDGE FROM A SINGLE-ROUND UNIT. `InputRequiredResultMultiRoundR1` scores ROUND ONE only, and its predicate is the generic round-1 shape — `!e.error&&r&&R(r)&&r.inputRequests&&r.requestState` — with nothing in it about a second round. The harness scores that shape TWICE, once here and once as `InputRequiredResultRequestStateIncomplete`, and this file records both rather than picking one: reporting R1 in bucket 2 would say the suite has no ET counterpart for the round-1 shape, and it has this one. The scenario's TOOL fixture is not the subject; the behaviour is.",
+      "oc_key": [
+        "server",
+        "input-required-result-multi-round",
+        "sep-2322-multi-round-r1",
+        "InputRequiredResultMultiRoundR1",
+        "Round 1: Server returns InputRequiredResult with requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-multi-round/sep-2322-multi-round-r1/InputRequiredResultMultiRoundR1",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_first_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_response_carries_an_input_required_result",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_input_required_result_carries_a_request_state",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_request_state_is_a_string",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_input_required_result_carries_input_requests",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "that InputRequiredResult carries a `requestState` continuation token, and it is the string the server minted",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:247 — `assert first[\"requestState\"] == \"rs-token-1\"`. Equality against a STRING LITERAL covers both the presence axis (`r.requestState||push`) and the type axis `the_request_state_is_a_string`: a `requestState` that were absent, or a number, could not equal `\"rs-token-1\"`. The check scores those two separately — an absent token pushes onto BOTH — and this one assertion is about both.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+        "test": "test tools/call input-required → retry with requestState → completion"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "input-required-result-request-state",
+        "sep-2322-request-state-incomplete",
+        "InputRequiredResultRequestStateIncomplete",
+        "Server returns InputRequiredResult with both inputRequests and requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "round_1_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_returns_an_input_required_result",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_carries_input_requests",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_carries_a_request_state",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "that InputRequiredResult carries a `requestState` continuation token, and it is the string the server minted",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:247 — `assert first[\"requestState\"] == \"rs-token-1\"`, which is the round-1 `requestState` the R1 conjunct `r.requestState&&(i=!0)` tests for.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+        "test": "test tools/call input-required → retry with requestState → completion"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "input-required-result-multi-round",
+        "sep-2322-multi-round-r1",
+        "InputRequiredResultMultiRoundR1",
+        "Round 1: Server returns InputRequiredResult with requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-multi-round/sep-2322-multi-round-r1/InputRequiredResultMultiRoundR1",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_first_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_response_carries_an_input_required_result",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_input_required_result_carries_a_request_state",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_request_state_is_a_string",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_input_required_result_carries_input_requests",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "that InputRequiredResult carries `inputRequests`, and the SDK puts that value on the wire as a JSON ARRAY",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:248 — `assert is_list(first[\"inputRequests\"])`. The axis is `r.inputRequests||push` — PRESENCE and nothing more, which the axis row states in as many words (`PRESENCE ONLY: this scenario never indexes into it, so nothing here scores its SHAPE`). A list is truthy, so the claim agrees with this axis.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+        "test": "test tools/call input-required → retry with requestState → completion"
+      },
+      "note": "AGREES ON PRESENCE WHILE THE SHAPE DIVERGES, and the two are kept apart deliberately. This unit asserts the value is a JSON ARRAY; the schema's `InputRequests` is `type: object`. That divergence is real and it is adjudicated — but against `WireSchemaValid`, which is the check whose subject is schema validity, not against this one, whose predicate is a truthiness test that an array satisfies. Recording it as a contradiction HERE would be reading this axis as saying more than it says.",
+      "oc_key": [
+        "server",
+        "input-required-result-request-state",
+        "sep-2322-request-state-incomplete",
+        "InputRequiredResultRequestStateIncomplete",
+        "Server returns InputRequiredResult with both inputRequests and requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "round_1_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_returns_an_input_required_result",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_carries_input_requests",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "round_1_carries_a_request_state",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "that InputRequiredResult carries `inputRequests`, and the SDK puts that value on the wire as a JSON ARRAY",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:248 — `assert is_list(first[\"inputRequests\"])`. The R1 conjunct is `r.inputRequests&&`, a truthiness test, which a non-empty list satisfies.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+        "test": "test tools/call input-required → retry with requestState → completion"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "input-required-result-multi-round",
+        "sep-2322-multi-round-r1",
+        "InputRequiredResultMultiRoundR1",
+        "Round 1: Server returns InputRequiredResult with requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-multi-round/sep-2322-multi-round-r1/InputRequiredResultMultiRoundR1",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "no_schema_violation_in_a_message_the_implementation_sent",
+          "verdict": "contradicts"
+        }
+      ],
+      "bucket": null,
+      "bucket_attributes": [],
+      "claim": "that InputRequiredResult carries `inputRequests`, and the SDK puts that value on the wire as a JSON ARRAY",
+      "escalation": ":inconsistent_verdict_pair — match-relation.md §3",
+      "evidence": "streamable_http_stateless_test.exs:248 — `assert is_list(first[\"inputRequests\"])`, where `first` is the decoded body of a real HTTP response our `MCP.Transport.StreamableHTTP.Plug` produced (streamable_http_stateless_test.exs:245 — `first = post(opts(), rpc(\"tools/call\", with_meta(%{\"name\" => \"needs_input\"}))) |> result()`). The axis filters the validator's violation list by `origin`, keeping only violations attributed to the implementation: every message OUR side put on the wire must validate against the pinned spec schema. The binding definition is addressed on the axis row as `input_requests_schema_definition`, and it declares `InputRequests` an object type whose `additionalProperties` reference `InputRequest`. A JSON ARRAY is not an object, so the message this assertion is about is one the axis's predicate rejects, and the unit asserts it and PASSES.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+        "test": "test tools/call input-required → retry with requestState → completion"
+      },
+      "note": "THE FIRST ET CLAIM IN THE CROSSWALK TO CONTRADICT `WireSchemaValid`, and three things about it have to be said or it will be misread.\n(1) WHY THE CHECK IS GREEN AT THE ACCEPTED RUN. The harness ran against `conformance/server_handler.ex`, which sends a MAP — the file says so itself: ``MRTR.input_required/2` is spec'd `list() | nil` while the wire type `InputRequests` is a JSON object keyed by input name. This file sends a map, per the schema.` So the conformance adapter and this unit disagree with EACH OTHER about the SDK's own wire shape, and the accepted run only ever saw the adapter.\n(2) WHY IT IS THE SDK'S PROPERTY AND NOT THE FIXTURE'S. `MCP.Protocol.Messages.MRTR.input_required/2` is `@spec input_required(list() | nil, binary() | nil)` and puts the value through untouched. The list is what the SDK's own type says to pass; a handler that follows the spec is contradicting the spec of the function it calls.\n(3) WHICH OF THE FOURTEEN `WireSchemaValid` ROWS. The contradiction holds against ALL FOURTEEN of the family's `WireSchemaValid` rows, because all fourteen are one generic validator and the offending message would be the same in every scenario. ONE edge is filed, against the `input-required-result-request-state` row, because that is the scenario whose flow this unit mirrors — a `requestState` round trip. Fourteen edges would be one finding counted fourteen times and would inflate every figure this file reports; recording the scope here is the alternative to both.",
+      "oc_key": [
+        "server",
+        "input-required-result-request-state",
+        "wire-schema-valid",
+        "WireSchemaValid",
+        "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+        ""
+      ],
+      "shape": "contradicting",
+      "tag": "oc:server/input-required-result-request-state/wire-schema-valid/WireSchemaValid",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_retry_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_retry_response_carries_a_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_retry_result_is_a_complete_result",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a retry carrying the server's `requestState` back together with `inputResponses` is answered with a COMPLETE result whose content reflects the supplied input",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:254-255 builds the retry — `\"requestState\" => first[\"requestState\"],` and `\"inputResponses\" => [%{\"name\" => \"Ada\"}]` — and streamable_http_stateless_test.exs:259-260 asserts the outcome: `assert final[\"resultType\"] == \"complete\"` and `assert hd(final[\"content\"])[\"text\"] == \"hello Ada\"`. The check's three axes are no-error, result-present and `z(a)` (the result is COMPLETE); asserting the final `resultType` is `complete` is `z`'s own test written the other way round, and the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold. The first two axes are therefore covered by the SAME observation read at a coarser grain, not inferred from an unobserved behaviour — which is why they are `agrees` and not `silent`.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+        "test": "test tools/call input-required → retry with requestState → completion"
+      },
+      "note": "THE ONE EDGE IN THIS SLICE THAT SCORES THE ROUND TRIP AS A WHOLE. `InputRequiredResultRequestStateComplete` is the family's only check whose subject is the SERVER ACCEPTING THE STATE IT MINTED — the harness sends `requestState:r.requestState` unconditionally here, where the other scenarios spread it only if present. The second assertion (`hello Ada`) goes further than the check does: it scores that the supplied INPUT reached the tool, which no axis of this check is about.",
+      "oc_key": [
+        "server",
+        "input-required-result-request-state",
+        "sep-2322-request-state-complete",
+        "InputRequiredResultRequestStateComplete",
+        "Server validates echoed requestState and returns complete result",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/input-required-result-request-state/sep-2322-request-state-complete/InputRequiredResultRequestStateComplete",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_response_carries_a_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_carries_a_result_type_field_at_all",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_type_is_input_required",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a `tools/call` whose inputs have not yet been supplied is answered with a RESULT whose `resultType` is `input_required`",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:248 — `assert result(first)[\"resultType\"] == \"input_required\"`, over a real HTTP POST at streamable_http_ac_test.exs:247 — `first = post(url, \"tools/call\", with_meta(%{\"name\" => \"needs_input_id\"}), role: \"PM\")`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference. Equality against `\"input_required\"` covers both the presence axis and the value axis.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+        "test": "test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh"
+      },
+      "note": "The SECOND member to agree fully with this check, and the agreement is independent: this one drives the AUTHENTICATED plug pipeline with a role, where the stateless unit drives the plain one. Two units, one behaviour, two routes to it — recorded because a reader counting edges could otherwise read it as one finding double-counted.",
+      "oc_key": [
+        "server",
+        "input-required-result-result-type",
+        "sep-2322-result-type-included",
+        "ResultTypeIncluded",
+        "Server includes resultType field in InputRequiredResult response",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_first_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_response_carries_an_input_required_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_input_required_result_carries_a_request_state",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_request_state_is_a_string",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_input_required_result_carries_input_requests",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a `tools/call` whose inputs have not yet been supplied is answered with a RESULT whose `resultType` is `input_required`",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:248 — `assert result(first)[\"resultType\"] == \"input_required\"`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference. This claim says nothing about `requestState` or `inputRequests`; the member's next claim covers the first of them.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+        "test": "test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "input-required-result-request-state",
+        "sep-2322-request-state-incomplete",
+        "InputRequiredResultRequestStateIncomplete",
+        "Server returns InputRequiredResult with both inputRequests and requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "round_1_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "round_1_returns_an_input_required_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "round_1_carries_input_requests",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_carries_a_request_state",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a `tools/call` whose inputs have not yet been supplied is answered with a RESULT whose `resultType` is `input_required`",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:248 — `assert result(first)[\"resultType\"] == \"input_required\"`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+        "test": "test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "input-required-result-multi-round",
+        "sep-2322-multi-round-r1",
+        "InputRequiredResultMultiRoundR1",
+        "Round 1: Server returns InputRequiredResult with requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-multi-round/sep-2322-multi-round-r1/InputRequiredResultMultiRoundR1",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_first_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_response_carries_an_input_required_result",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_input_required_result_carries_a_request_state",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_request_state_is_a_string",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_input_required_result_carries_input_requests",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "that InputRequiredResult carries a `requestState`, and it is the string token the server minted",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:249 — `assert result(first)[\"requestState\"] == \"rs-token-id\"`. Equality against a string literal covers presence and type both: an absent or non-string `requestState` could not equal `\"rs-token-id\"`.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+        "test": "test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "input-required-result-request-state",
+        "sep-2322-request-state-incomplete",
+        "InputRequiredResultRequestStateIncomplete",
+        "Server returns InputRequiredResult with both inputRequests and requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "round_1_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_returns_an_input_required_result",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_carries_input_requests",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_carries_a_request_state",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "that InputRequiredResult carries a `requestState`, and it is the string token the server minted",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:249 — `assert result(first)[\"requestState\"] == \"rs-token-id\"`, which is what R1's last conjunct `r.requestState&&(i=!0)` tests for.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+        "test": "test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "input-required-result-multi-round",
+        "sep-2322-multi-round-r1",
+        "InputRequiredResultMultiRoundR1",
+        "Round 1: Server returns InputRequiredResult with requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-multi-round/sep-2322-multi-round-r1/InputRequiredResultMultiRoundR1",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_retry_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_retry_response_carries_a_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_retry_result_is_a_complete_result",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a retry echoing the server's own `requestState` back is answered with a COMPLETE result",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:262-263 — `final = post(url, \"tools/call\", retry_params, role: \"REVIEWER\")` and `assert result(final)[\"resultType\"] == \"complete\"`, where `retry_params` echoes the minted token at streamable_http_ac_test.exs:255 — `\"requestState\" => result(first)[\"requestState\"],`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference. Asserting the final `resultType` is `complete` is `z(a)`'s test written the other way round.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+        "test": "test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh"
+      },
+      "note": "A SHARPER INSTANCE THAN THE STATELESS ONE, in the one respect the check does not score. The retry here arrives under a DIFFERENT authenticated principal from the first request, and the server still accepts the state it minted. The check's axes are about acceptance and completion only, so the extra strength is recorded here rather than claimed as agreement with something.",
+      "oc_key": [
+        "server",
+        "input-required-result-request-state",
+        "sep-2322-request-state-complete",
+        "InputRequiredResultRequestStateComplete",
+        "Server validates echoed requestState and returns complete result",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/input-required-result-request-state/sep-2322-request-state-complete/InputRequiredResultRequestStateComplete",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "extra_input_response_keys_do_not_cause_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_response_carries_a_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_recognised_input_response_still_completes_the_call",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the retry's `inputResponses` entry carries an unrecognised extra field alongside the recognised one, and the call still completes",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:256 — `\"inputResponses\" => [%{\"name\" => \"x\", \"identity\" => \"PM-SPOOF\"}]` — and streamable_http_ac_test.exs:263 — `assert result(final)[\"resultType\"] == \"complete\"`. The recognised field is `\"name\"`; `\"identity\"` is not part of any InputResponse this server asked for. The call completes, so the unrecognised field was ignored rather than rejected. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+        "test": "test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh"
+      },
+      "note": "THE FIRST LIVE FIRING OF D2's WARNING MAPPING, anywhere in the crosswalk — `IgnoreUnexpectedParams` is WARNING at the accepted run, and until this slice declared it the mapping fired on zero rows and was unit-tested rather than demonstrated.\nAND THE RESIDUAL THAT COMES WITH IT, because the agreement is not exact. The harness puts its unrecognised information at the TOP level of `inputResponses` — two whole extra ENTRIES, `unknown_extra_key` and `another_unexpected`, beside the real answer. This unit puts it INSIDE the one entry, as an extra field of the response object. Both are `unrecognised information in `inputResponses`` and the requirement the check quotes is `Servers SHOULD ignore information they do not recognize`, which does not distinguish the two depths — so this is recorded as agreement. A reader who thinks the depth matters should disagree here, and the disagreement is stated rather than buried so that they can.",
+      "oc_key": [
+        "server",
+        "input-required-result-ignore-extra-params",
+        "sep-2322-ignore-unexpected-params",
+        "IgnoreUnexpectedParams",
+        "Server ignores extra unrecognized keys in inputResponses",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/input-required-result-ignore-extra-params/sep-2322-ignore-unexpected-params/IgnoreUnexpectedParams",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "WARNING",
+        "oc_warning": true
+      }
+    },
+    {
+      "axes": [
+        {
           "axis": "tools_call_was_made",
           "verdict": "agrees"
         },
@@ -4226,26 +5027,26 @@
   ],
   "citation_verbatim_guard": {
     "defects": [],
-    "distinct_windows_that_placed_a_quote": 132,
+    "distinct_windows_that_placed_a_quote": 147,
     "guard": "G30",
     "limbs": [
       "windowing",
       "contiguity"
     ],
-    "quotes_compared": 210,
-    "quotes_counted": 210,
+    "quotes_compared": 238,
+    "quotes_counted": 238,
     "quotes_placed_by_window_kind": {
-      "et": 161,
-      "oc": 49
+      "et": 185,
+      "oc": 53
     },
     "reach": "`quotes_compared` equals `quotes_counted`, and that attests exactly one thing: NO QUOTE FAILED TO PLACE. It is NOT an independent recount, and by itself it is not evidence of reach. Both figures come out of ONE traversal in `audit/3` — `quotes_counted` is the length of the quote list that traversal built and `quotes_compared` counts the members of that same list which matched — so the equality is another spelling of `no quote-level defect`, and a sweep that read NOTHING satisfies it at 0 == 0, as does one reading a field that does not exist. What bears on reach here is the MAGNITUDE and never the equality: `quotes_compared` quotes placed, over `records_with_evidence` records, over `records_visited` visited. The independent recount — the span regex walked a SECOND time over the same records by code that is not `audit/3` — and the `counted > 0` that stops an empty population passing both live in `conformance/controls/citation_verbatim_controls.exs`, not in this artefact. The record population is every top-level list of objects in each edges file, so a collection a later ticket adds is inside the guard without being named here.",
-    "records_visited": 245,
-    "records_with_evidence": 106,
+    "records_visited": 267,
+    "records_with_evidence": 122,
     "what_it_does_not_establish": "That a quote SUPPORTS the verdict it is filed under — that is a judgement and A3 §7's residual, and no refusal reaches it. That a backticked PROSE phrase is accurate: only source-shaped spans are compared, so an inaccurate paraphrase in backticks passes, and the ruling's remedy is to de-quote prose rather than to widen the shape test until English fails it. That a quoted byte-string in a field OTHER than `evidence` is verbatim — the gap between `records_visited` and `records_with_evidence` is exactly that population, reported rather than implied.",
     "what_was_checked": "Every SOURCE-SHAPED backtick span in `evidence` — one carrying `=`, `(`, `[`, `!==` or `===` — occurs VERBATIM and CONTIGUOUS, modulo runs of whitespace, inside a window the evidence itself ADDRESSES: the cited `file.exs:N[-M]` span in the repo, or a byte span the axis row for this edge's tag names in the harness build. Two limbs: WINDOWING (the comparison is against the cited span, never the whole artefact) catches a right-bytes/wrong-line citation; CONTIGUITY (one squashed string, substring containment) catches a quote spliced from lines that are real and non-adjacent. A bare `:N` continuation is refused as a FORM — it has no syntactic referent and resolving it by proximity is guessing. An elision inside a source-shaped span is refused rather than fragment-matched, because matching `A … B`'s halves green-lights a quote whose parts sit arbitrarily far apart, which is the composed-quote hole this guard exists to close."
   },
   "claim_level_unmatched": {
-    "count": 4,
+    "count": 5,
     "routed_to": "the PM, per case — match-relation.md §7. Whether A3 §6 should gain a claim-level state 3 is a ruling, not an adjudication an edges file can make.",
     "rows": [
       {
@@ -4298,6 +5099,20 @@
         "owner": "unowned — ESCALATED to MES-110 (A3 §6 claim-level state 3). NEW case, found by C1b-ii.",
         "the_search_that_found_none": "All 10 of this file's declared checks were read. The three `ClientMcpNameHeader_*` checks exist only for `tools/call`, `resources/read` and `prompts/get`: the addressed `dispatch_site` excerpt shows `handlePost` calling `checkMcpNameHeader` on those three branches and on no other, so there is no check whose subject is the header's ABSENCE on a non-name-bearing method. The six `ClientMcpMethodHeader_*` checks have the Mcp-METHOD header as their subject. Widened to all 175: `/Mcp-Name/i` over the whole row returns exactly 3, and they ARE the three declared rows — there is no fourth check anywhere in the suite, on either leg, whose subject is that header.",
         "why_it_is_recorded_here": "This is the A3 §6 claim-level-state gap MES-110 was raised for, found again by C1b-ii and NOT force-bucketed. The member is edge-bearing — its other claim carries a full edge to `ClientMcpMethodHeader_tools_list` — so it cannot go in `declared_unmatched` without making it both edge-bearing and bucket 1; and dropping this claim would report the member as fully matched, which is the failure C1b-i's `claims_without_an_edge_note` describes. No bucket is invented for it."
+      },
+      {
+        "authored_by": "MES-115 (C1c-ii)",
+        "claim": "the identity the completion reports is the RETRY request's re-resolved identity — neither the first request's, nor the one planted inside `inputResponses` (streamable_http_ac_test.exs:264 — `assert tool_text(final) == \"REVIEWER\"`, where the first call ran as `PM` and the planted value was `PM-SPOOF`)",
+        "disposition": "no counterpart in this file's declared check population",
+        "from": "conformance/data/crosswalk-edges-server.json",
+        "member": {
+          "module": "MCP.Transport.StreamableHTTP.ACTest",
+          "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+          "test": "test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh"
+        },
+        "owner": "unowned — and the search was run over ALL 175, not only the declared 66, so this is not a deferral to a later C1c slice.",
+        "the_search_that_found_none": "All 36 checks of the `input-required-result-*` family were read: not one scores WHOSE request a retry is. The family's checks take the SHAPE of the MRTR exchange as their subject — resultType, inputRequests, requestState, completion, tampering, extra keys — and every one of them runs as a single anonymous client. `RejectTamperedState` is the nearest and is about INTEGRITY of the token, not about the principal the retry arrives under: a correctly-signed token replayed by a different caller passes it. Widened to all 175 with the pattern `(?i)\\bidentity\\b|\\bprincipal\\b|authenticat|impersonat` — 0 hits, over a population whose positive controls (`(?i)server` 119, `(?i)error` 18, `(?i)MUST` 32) show the sweep reached it.",
+        "why_it_is_recorded_here_and_not_in_bucket_1": "The member DOES carry edges — five of them — so it is not A3 §6 state 3 whole, and bucket 1 would hide it from the member equation. A3 §6's state 3 is a property of a MEMBER and there is no bucket for a claim, so none is invented."
       }
     ],
     "what_this_is": "A claim within an EDGE-BEARING member that has no counterpart in its file's declared check population. A3 §6's state 3 is a property of a member, so there is no bucket for this and none is invented."
@@ -5319,7 +6134,7 @@
       },
       "search_id": "SRV02",
       "tag": "oc:none/no-oc-check-in-this-scenario/AC7-origin-403",
-      "the_near_miss_that_is_not_a_counterpart": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. This is not a near miss in the usual sense: it is a REAL COUNTERPART for the rejection half of the claim, and it sits two scenarios away from this file's declared population. It is named here so that the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What neither OC row covers is the ORDERING half — that the identity factory never runs — which is an SDK property the suite has no vocabulary for.",
+      "the_near_miss_that_is_not_a_counterpart": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. This is not a near miss in the usual sense: it is a REAL COUNTERPART for the rejection half of the claim, and it sits outside this file's declared population. It is named here so that the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What neither OC row covers is the ORDERING half — that the identity factory never runs — which is an SDK property the suite has no vocabulary for.",
       "the_search_that_found_none": "a server REJECTING a request whose `Origin` is not localhost, and doing so before any per-request identity work has run",
       "why_no_counterpart": "`no-oc-check-in-this-scenario` — `server-stateless` carries no Origin or Host check at all (0 of 30), and the counterpart that does exist is in `dns-rebinding-protection`, outside this file's declared 30.",
       "why_this_search_is_this_claims_search": "The claim is origin enforcement on the server. SRV02's subject is that, and its 'near miss' is in fact the counterpart — recorded as such rather than dressed as an absence."
@@ -5479,26 +6294,10 @@
       },
       "search_id": "SRV07",
       "tag": "oc:none/no-oc-check-in-this-scenario/CacheableResult-hints",
-      "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`. These are COUNTERPARTS, not near misses, and they are outside this file's declared 30. Named so the row reads as `homed elsewhere`: whichever C1c ticket declares `caching` should pick this member up rather than search for it again.",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`. These are COUNTERPARTS, not near misses, and they are outside this file's declared 66. Named so the row reads as `homed elsewhere`: whichever C1c ticket declares `caching` should pick this member up rather than search for it again.",
       "the_search_that_found_none": "a list or read RESULT carrying the CacheableResult hints — `ttlMs` and `cacheScope`",
       "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 30 `server-stateless` rows mention caching or ttl, while the `caching` scenario carries seven that do.",
       "why_this_search_is_this_claims_search": "The claim is the caching hints on a list result. SRV07's subject is exactly that, and the search is scoped to the declared 30 because the claim being made is about THIS population."
-    },
-    {
-      "authored_by": "MES-105 (C1c-i)",
-      "cg": null,
-      "claim_the_slot_names": "a `tools/call` answered `input_required` with a `requestState` is completed by a retry carrying that state back",
-      "member": {
-        "module": "MCP.Transport.StreamableHTTPStatelessTest",
-        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
-        "test": "test tools/call input-required → retry with requestState → completion"
-      },
-      "search_id": "SRV08",
-      "tag": "oc:none/no-oc-check-in-this-scenario/MRTR-server-round-trip",
-      "the_near_miss_that_is_not_a_counterpart": "`RequestMetaInvalid` and the other `_meta` rows, which are the only `server-stateless` rows about request-scoped state at all. They are not counterparts: `_meta` is state the CLIENT supplies on every request, and `requestState` is state the SERVER mints to resume one. The real counterparts are the thirty-five `input-required-result-*` rows, which are SERVER-leg and outside this file's declared 30 — they are C1c-ii's, and this row exists so that ticket inherits the member rather than rediscovering it.",
-      "the_search_that_found_none": "the SERVER half of the MRTR round trip — an `input_required` result carrying a `requestState` and an `inputRequests` list, the client's retry, and the completion that follows",
-      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 30, and thirty-five rows elsewhere on the server leg.",
-      "why_this_search_is_this_claims_search": "The claim is the server's MRTR round trip. SRV08's subject is that, and its near miss is the request-state family inside the declared 30 that a reader could merge it with."
     },
     {
       "authored_by": "MES-105 (C1c-i)",
@@ -5803,10 +6602,78 @@
       "the_search_that_found_none": "a refusal decided ABOVE the handler — one the handler never sees — being distinguishable on the wire from one the handler itself returned",
       "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows are about where in the stack a refusal was decided. A conformance suite reads wire artefacts, and this distinction is between two paths that can produce the same one.",
       "why_this_search_is_this_claims_search": "The claim is the dispatch-level/handler-level distinction. SRV17's subject is that, and its near miss is the suite's one pre-service refusal row, which scores the refusal's content rather than its origin."
+    },
+    {
+      "authored_by": "MES-115 (C1c-ii)",
+      "cg": null,
+      "claim_the_slot_names": "a request whose `Origin` is not localhost is rejected with HTTP 403, and the rejection happens before any per-request identity work runs",
+      "homed_elsewhere": "C1c-iv (MES-117). This member is in C1c-ii's DECLARED MEMBER population but its counterpart is in a check population C1c-ii does not declare, so it is bucket 1 HERE and an edge THERE. Recorded in the shape C1c-i used for SRV08 — the search, the near miss naming the real counterpart, and the ticket — so the slice that declares that scenario inherits the member instead of re-searching for it. SRV08 is what that record looked like from the other side, and this ticket discharged it.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test AC7 — non-localhost origin is rejected 403 (acceptance parity)",
+        "test": "test AC7 — non-localhost origin is rejected 403 (acceptance parity)"
+      },
+      "search_id": "SRV18",
+      "tag": "oc:none/no-oc-check-in-this-scenario/origin-rejected-403",
+      "the_near_miss_that_is_not_a_counterpart": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. These are REAL COUNTERPARTS for the rejection this member asserts, and they sit outside this file's declared 66. Named so the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What NEITHER OC row covers is the 403 STATUS this unit pins as the acceptance parity: the OC rows say `rejects`, and nothing in them names a code.",
+      "the_search_that_found_none": "a server REJECTING a request whose `Origin` is not localhost, and answering it with HTTP 403 — the status, not merely the refusal",
+      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 66, and two real counterparts in the SERVER scenario `dns-rebinding-protection`.",
+      "why_this_search_is_this_claims_search": "The claim is a server refusing a non-localhost `Origin`. SRV18's subject is that refusal AND the status it carries, which is the half of the claim the OC counterparts do not reach — so the pattern sweeps the origin vocabulary and the near miss names what it would have found in another scenario."
+    },
+    {
+      "authored_by": "MES-115 (C1c-ii)",
+      "cg": null,
+      "claim_the_slot_names": "a per-request identity factory that RAISES is contained: the request is answered -32603 and the raised reason never reaches the client",
+      "homed_elsewhere": "NOBODY. Unlike the other three ACTest rows this one is not `homed elsewhere`: the search sweeps all 175 and the suite has no check on this obligation at any scenario. It is an absence of the suite's, not a deferral of ours, and it stays bucket 1 however the rest of the leg is declared.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that raises fails cleanly (-32603); the secret never leaks",
+        "test": "test AC8 — a factory that raises fails cleanly (-32603); the secret never leaks"
+      },
+      "search_id": "SRV19",
+      "tag": "oc:none/no-oc-scenario/identity-factory-raises",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsCallError` (`Tool returns error correctly`, scenario `tools-call-error`) and `HttpServerErrorJsonrpcId` (`All error responses carry the request JSON-RPC id`, scenario `server-stateless`). Both are about a server REPORTING an error well, and a reader who greps for `error`, finds them and stops would take them for the counterpart. Neither is: `ToolsCallError` scores a TOOL's own declared failure being reported as a result, and `HttpServerErrorJsonrpcId` scores an envelope field. Neither asks what happens when the server's own per-request IDENTITY machinery fails — whether the request is contained at all, with what code, and whether the internal reason reaches the caller. That is an SDK-deployment obligation the suite has no vocabulary for: the conformance harness supplies no identity pipeline to break.",
+      "the_search_that_found_none": "a server CONTAINING a failure of its own per-request identity factory — the request fails with -32603 rather than crashing the connection, and the internal reason never reaches the client",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175. The conformance harness supplies no identity pipeline, so there is nothing for it to break and nothing for it to score.",
+      "why_this_search_is_this_claims_search": "The claim is about the server's own identity machinery failing. SRV19's subject is exactly that containment, and its pattern sweeps the identity vocabulary AND the error-code vocabulary, so a check phrased either way would have been found."
+    },
+    {
+      "authored_by": "MES-115 (C1c-ii)",
+      "cg": null,
+      "claim_the_slot_names": "a per-request identity factory that returns a value of the wrong SHAPE is contained the same way a raising one is — -32603, nothing internal on the wire",
+      "homed_elsewhere": "NOBODY. Unlike the other three ACTest rows this one is not `homed elsewhere`: the search sweeps all 175 and the suite has no check on this obligation at any scenario. It is an absence of the suite's, not a deferral of ours, and it stays bucket 1 however the rest of the leg is declared.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that returns a non-keyword fails cleanly (-32603)",
+        "test": "test AC8 — a factory that returns a non-keyword fails cleanly (-32603)"
+      },
+      "search_id": "SRV19",
+      "tag": "oc:none/no-oc-scenario/identity-factory-wrong-shape",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsCallError` (`Tool returns error correctly`, scenario `tools-call-error`) and `HttpServerErrorJsonrpcId` (`All error responses carry the request JSON-RPC id`, scenario `server-stateless`). Both are about a server REPORTING an error well, and a reader who greps for `error`, finds them and stops would take them for the counterpart. Neither is: `ToolsCallError` scores a TOOL's own declared failure being reported as a result, and `HttpServerErrorJsonrpcId` scores an envelope field. Neither asks what happens when the server's own per-request IDENTITY machinery fails — whether the request is contained at all, with what code, and whether the internal reason reaches the caller. That is an SDK-deployment obligation the suite has no vocabulary for: the conformance harness supplies no identity pipeline to break.",
+      "the_search_that_found_none": "a server CONTAINING a failure of its own per-request identity factory — the request fails with -32603 rather than crashing the connection, and the internal reason never reaches the client",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175, the same zero as its sibling row and for the same reason.",
+      "why_this_search_is_this_claims_search": "Two members, one requirement (containment of an identity-factory failure) and two failure modes of it, so one search serves both and each row copies it. Registering a second identical entry would have made one measurement look like two."
+    },
+    {
+      "authored_by": "MES-115 (C1c-ii)",
+      "cg": null,
+      "claim_the_slot_names": "a deployment that configures no caching policy gets no-store — `ttlMs` 0 and `cacheScope` `public` — on a `tools/list` result",
+      "homed_elsewhere": "C1c-iv (MES-117). This member is in C1c-ii's DECLARED MEMBER population but its counterpart is in a check population C1c-ii does not declare, so it is bucket 1 HERE and an edge THERE. Recorded in the shape C1c-i used for SRV08 — the search, the near miss naming the real counterpart, and the ticket — so the slice that declares that scenario inherits the member instead of re-searching for it. SRV08 is what that record looked like from the other side, and this ticket discharged it.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)",
+        "test": "test default caching policy is no-store (ttlMs 0)"
+      },
+      "search_id": "SRV20",
+      "tag": "oc:none/no-oc-check-in-this-scenario/default-caching-policy",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`, and all outside this file's declared 66. They are COUNTERPARTS and not near misses: `TtlNonNegative` in particular is about the very field this member pins. Named so the row reads as `homed elsewhere` — whichever C1c ticket declares `caching` should pick this member up rather than search for it again. What no OC row asks is what the DEFAULT is when a deployment configures nothing, which is the whole of this member's claim.",
+      "the_search_that_found_none": "the DEFAULT caching policy a deployment that configures nothing gets — `ttlMs` 0 and a `cacheScope`, i.e. no-store",
+      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 66, and seven real counterparts in the SERVER scenario `caching`.",
+      "why_this_search_is_this_claims_search": "The claim is about the CacheableResult hint fields on a list result. SRV20's subject is those fields at their DEFAULT, and its pattern sweeps the caching vocabulary; the near miss names the seven `caching` rows so the zero reads as `declared elsewhere` rather than as `nothing exists`."
     }
   ],
   "escalations": {
-    "count": 13,
+    "count": 14,
     "routed_to": "the PM, per case — match-relation.md §7. An escalation is NOT a bucket and is never counted as one.",
     "rows": [
       {
@@ -5899,6 +6766,13 @@
         "member": "MCP.Server.CapabilityHonestyTest / test a listChanged claim needs a channel to honour it on absent, not present-and-false: the key never reaches the wire",
         "shape": "partial",
         "tag": "oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers"
+      },
+      {
+        "claim": "that InputRequiredResult carries `inputRequests`, and the SDK puts that value on the wire as a JSON ARRAY",
+        "escalation": ":inconsistent_verdict_pair — match-relation.md §3",
+        "member": "MCP.Transport.StreamableHTTPStatelessTest / test tools/call input-required → retry with requestState → completion",
+        "shape": "contradicting",
+        "tag": "oc:server/input-required-result-request-state/wire-schema-valid/WireSchemaValid"
       }
     ]
   },
@@ -5917,9 +6791,9 @@
     "what_the_crosswalk_is_keyed_on": "A3's token for the address and A1's six-field key for the join. The token carries five fields; `description` cannot live in a test name, so reversibility is THROUGH A1's manifest, not lexical.",
     "what_the_two_directions_establish": "POSITIVE: the obvious keyings DO merge rows on this population, so the hazard is real here and not merely quoted from A1. NEGATIVE: A1's six-field key merges none. Either direction alone is vacuous — a control that only ran the second would pass over a crosswalk keyed on `id`."
   },
-  "owner": "MES-97 (C1a), MES-104 (C1b-i), MES-108 (C1b-ii) and MES-109 (C1b-iii)",
+  "owner": "MES-97 (C1a), MES-104 (C1b-i), MES-108 (C1b-ii), MES-109 (C1b-iii), MES-105 (C1c-i) and MES-115 (C1c-ii)",
   "population": {
-    "check_count": 54,
+    "check_count": 60,
     "checks": [
       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_ControlChar",
       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_CrLf",
@@ -5961,6 +6835,12 @@
       "oc:client/sep-2322-client-request-state/sep-2322-client-request-state-echoed/MRTRClientRequestStateEchoed",
       "oc:client/tools_call/tool-add-numbers/ToolAddNumbers",
       "oc:client/tools_call/wire-schema-valid/WireSchemaValid",
+      "oc:server/input-required-result-ignore-extra-params/sep-2322-ignore-unexpected-params/IgnoreUnexpectedParams",
+      "oc:server/input-required-result-multi-round/sep-2322-multi-round-r1/InputRequiredResultMultiRoundR1",
+      "oc:server/input-required-result-request-state/sep-2322-request-state-complete/InputRequiredResultRequestStateComplete",
+      "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete",
+      "oc:server/input-required-result-request-state/wire-schema-valid/WireSchemaValid",
+      "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded",
       "oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers",
       "oc:server/server-stateless/sep-2575-http-server-error-jsonrpc-id/HttpServerErrorJsonrpcId",
       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
@@ -5985,7 +6865,7 @@
           "path": "conformance/data/crosswalk-edges-client.json"
         },
         {
-          "declares_checks": 30,
+          "declares_checks": 66,
           "path": "conformance/data/crosswalk-edges-server.json"
         },
         {
@@ -5997,7 +6877,7 @@
       "why_this_is_not_refused": "An edge addresses the check its claim is about; refusing one outside the declared check population would force a file to declare every scenario it touches, and then bucket 2 would report every UNADJUDICATED sibling as having no ET counterpart. That is the false claim the third state exists to prevent."
     },
     "declared": true,
-    "declared_check_count": 84,
+    "declared_check_count": 120,
     "declared_checks": [
       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_ControlChar",
       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_CrLf",
@@ -6053,6 +6933,42 @@
       "oc:client/sep-2322-client-request-state/sep-2322-default-result-type-complete/DefaultResultTypeComplete",
       "oc:client/tools_call/tool-add-numbers/ToolAddNumbers",
       "oc:client/tools_call/wire-schema-valid/WireSchemaValid",
+      "oc:server/input-required-result-basic-elicitation/sep-2322-elicitation-complete/InputRequiredResultElicitationComplete",
+      "oc:server/input-required-result-basic-elicitation/sep-2322-elicitation-incomplete/InputRequiredResultElicitationIncomplete",
+      "oc:server/input-required-result-basic-elicitation/wire-schema-valid/WireSchemaValid",
+      "oc:server/input-required-result-basic-list-roots/sep-2322-list-roots-complete/InputRequiredResultListRootsComplete",
+      "oc:server/input-required-result-basic-list-roots/sep-2322-list-roots-incomplete/InputRequiredResultListRootsIncomplete",
+      "oc:server/input-required-result-basic-list-roots/wire-schema-valid/WireSchemaValid",
+      "oc:server/input-required-result-basic-sampling/sep-2322-sampling-complete/InputRequiredResultSamplingComplete",
+      "oc:server/input-required-result-basic-sampling/sep-2322-sampling-incomplete/InputRequiredResultSamplingIncomplete",
+      "oc:server/input-required-result-basic-sampling/wire-schema-valid/WireSchemaValid",
+      "oc:server/input-required-result-capability-check/sep-2322-respect-client-capabilities/RespectClientCapabilities",
+      "oc:server/input-required-result-capability-check/wire-schema-valid/WireSchemaValid",
+      "oc:server/input-required-result-ignore-extra-params/sep-2322-ignore-unexpected-params/IgnoreUnexpectedParams",
+      "oc:server/input-required-result-ignore-extra-params/wire-schema-valid/WireSchemaValid",
+      "oc:server/input-required-result-missing-input-response/sep-2322-missing-response-rerequests/InputRequiredResultMissingResponseRerequests",
+      "oc:server/input-required-result-missing-input-response/wire-schema-valid/WireSchemaValid",
+      "oc:server/input-required-result-multi-round/sep-2322-multi-round-r1/InputRequiredResultMultiRoundR1",
+      "oc:server/input-required-result-multi-round/sep-2322-multi-round-r2/InputRequiredResultMultiRoundR2",
+      "oc:server/input-required-result-multi-round/sep-2322-multi-round-r3/InputRequiredResultMultiRoundR3",
+      "oc:server/input-required-result-multi-round/wire-schema-valid/WireSchemaValid",
+      "oc:server/input-required-result-multiple-input-requests/sep-2322-multiple-inputs-complete/InputRequiredResultMultipleInputsComplete",
+      "oc:server/input-required-result-multiple-input-requests/sep-2322-multiple-inputs-incomplete/InputRequiredResultMultipleInputsIncomplete",
+      "oc:server/input-required-result-multiple-input-requests/wire-schema-valid/WireSchemaValid",
+      "oc:server/input-required-result-non-tool-request/sep-2322-non-tool-incomplete/InputRequiredResultNonToolIncomplete",
+      "oc:server/input-required-result-non-tool-request/wire-schema-valid/WireSchemaValid",
+      "oc:server/input-required-result-request-state/sep-2322-request-state-complete/InputRequiredResultRequestStateComplete",
+      "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete",
+      "oc:server/input-required-result-request-state/wire-schema-valid/WireSchemaValid",
+      "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded",
+      "oc:server/input-required-result-result-type/wire-schema-valid/WireSchemaValid",
+      "oc:server/input-required-result-tampered-state/sep-2322-reject-tampered-state/RejectTamperedState",
+      "oc:server/input-required-result-tampered-state/wire-schema-valid/WireSchemaValid",
+      "oc:server/input-required-result-unsupported-methods/sep-2322-not-on-unsupported-requests/NotOnUnsupportedRequests",
+      "oc:server/input-required-result-unsupported-methods/wire-schema-valid/WireSchemaValid",
+      "oc:server/input-required-result-validate-input/sep-2322-error-on-protocol-error/ErrorOnProtocolError",
+      "oc:server/input-required-result-validate-input/sep-2322-validate-input-responses/ValidateInputResponses",
+      "oc:server/input-required-result-validate-input/wire-schema-valid/WireSchemaValid",
       "oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers",
       "oc:server/server-stateless/sep-2575-http-server-error-jsonrpc-id/HttpServerErrorJsonrpcId",
       "oc:server/server-stateless/sep-2575-http-server-header-mismatch-400/HttpServerHeaderMismatch400",
@@ -6515,6 +7431,42 @@
       {
         "check_population": {
           "checks": [
+            "oc:server/input-required-result-basic-elicitation/sep-2322-elicitation-complete/InputRequiredResultElicitationComplete",
+            "oc:server/input-required-result-basic-elicitation/sep-2322-elicitation-incomplete/InputRequiredResultElicitationIncomplete",
+            "oc:server/input-required-result-basic-elicitation/wire-schema-valid/WireSchemaValid",
+            "oc:server/input-required-result-basic-list-roots/sep-2322-list-roots-complete/InputRequiredResultListRootsComplete",
+            "oc:server/input-required-result-basic-list-roots/sep-2322-list-roots-incomplete/InputRequiredResultListRootsIncomplete",
+            "oc:server/input-required-result-basic-list-roots/wire-schema-valid/WireSchemaValid",
+            "oc:server/input-required-result-basic-sampling/sep-2322-sampling-complete/InputRequiredResultSamplingComplete",
+            "oc:server/input-required-result-basic-sampling/sep-2322-sampling-incomplete/InputRequiredResultSamplingIncomplete",
+            "oc:server/input-required-result-basic-sampling/wire-schema-valid/WireSchemaValid",
+            "oc:server/input-required-result-capability-check/sep-2322-respect-client-capabilities/RespectClientCapabilities",
+            "oc:server/input-required-result-capability-check/wire-schema-valid/WireSchemaValid",
+            "oc:server/input-required-result-ignore-extra-params/sep-2322-ignore-unexpected-params/IgnoreUnexpectedParams",
+            "oc:server/input-required-result-ignore-extra-params/wire-schema-valid/WireSchemaValid",
+            "oc:server/input-required-result-missing-input-response/sep-2322-missing-response-rerequests/InputRequiredResultMissingResponseRerequests",
+            "oc:server/input-required-result-missing-input-response/wire-schema-valid/WireSchemaValid",
+            "oc:server/input-required-result-multi-round/sep-2322-multi-round-r1/InputRequiredResultMultiRoundR1",
+            "oc:server/input-required-result-multi-round/sep-2322-multi-round-r2/InputRequiredResultMultiRoundR2",
+            "oc:server/input-required-result-multi-round/sep-2322-multi-round-r3/InputRequiredResultMultiRoundR3",
+            "oc:server/input-required-result-multi-round/wire-schema-valid/WireSchemaValid",
+            "oc:server/input-required-result-multiple-input-requests/sep-2322-multiple-inputs-complete/InputRequiredResultMultipleInputsComplete",
+            "oc:server/input-required-result-multiple-input-requests/sep-2322-multiple-inputs-incomplete/InputRequiredResultMultipleInputsIncomplete",
+            "oc:server/input-required-result-multiple-input-requests/wire-schema-valid/WireSchemaValid",
+            "oc:server/input-required-result-non-tool-request/sep-2322-non-tool-incomplete/InputRequiredResultNonToolIncomplete",
+            "oc:server/input-required-result-non-tool-request/wire-schema-valid/WireSchemaValid",
+            "oc:server/input-required-result-request-state/sep-2322-request-state-complete/InputRequiredResultRequestStateComplete",
+            "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete",
+            "oc:server/input-required-result-request-state/wire-schema-valid/WireSchemaValid",
+            "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded",
+            "oc:server/input-required-result-result-type/wire-schema-valid/WireSchemaValid",
+            "oc:server/input-required-result-tampered-state/sep-2322-reject-tampered-state/RejectTamperedState",
+            "oc:server/input-required-result-tampered-state/wire-schema-valid/WireSchemaValid",
+            "oc:server/input-required-result-unsupported-methods/sep-2322-not-on-unsupported-requests/NotOnUnsupportedRequests",
+            "oc:server/input-required-result-unsupported-methods/wire-schema-valid/WireSchemaValid",
+            "oc:server/input-required-result-validate-input/sep-2322-error-on-protocol-error/ErrorOnProtocolError",
+            "oc:server/input-required-result-validate-input/sep-2322-validate-input-responses/ValidateInputResponses",
+            "oc:server/input-required-result-validate-input/wire-schema-valid/WireSchemaValid",
             "oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers",
             "oc:server/server-stateless/sep-2575-http-server-error-jsonrpc-id/HttpServerErrorJsonrpcId",
             "oc:server/server-stateless/sep-2575-http-server-header-mismatch-400/HttpServerHeaderMismatch400",
@@ -6546,27 +7498,104 @@
             "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
             "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError"
           ],
-          "rule": "EVERY in-denominator OC check in the `server-stateless` scenario — all 30, the largest single scenario in the suite and the stateless-core boundary this revision turns on. This file is total over them: every one is axis-decomposed (12 by A3, 18 by C1c-i), and every one either carries an edge or is reported in bucket 2 by name.",
+          "rule": "EVERY in-denominator OC check in the `server-stateless` scenario — all 30, C1c-i's — AND every in-denominator check in the FOURTEEN `input-required-result-*` scenarios — all 36, C1c-ii's: the MRTR family, SEP-2322's server side. 30 + 36 = 66. This file is total over them: every one is axis-decomposed (12 by A3, 18 by C1c-i, 36 by C1c-ii), and every one either carries an edge or is reported in bucket 2 by name.",
           "selector": {
             "any_of": [
               {
                 "field": "scenario",
                 "test": "equals",
                 "value": "server-stateless"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "input-required-result-basic-elicitation"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "input-required-result-basic-list-roots"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "input-required-result-basic-sampling"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "input-required-result-capability-check"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "input-required-result-ignore-extra-params"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "input-required-result-missing-input-response"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "input-required-result-multi-round"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "input-required-result-multiple-input-requests"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "input-required-result-non-tool-request"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "input-required-result-request-state"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "input-required-result-result-type"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "input-required-result-tampered-state"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "input-required-result-unsupported-methods"
+              },
+              {
+                "field": "scenario",
+                "test": "equals",
+                "value": "input-required-result-validate-input"
               }
             ],
-            "denotes": "All 30 in-denominator `server-stateless` checks. ONE clause, where the client file needed seven: the client leg is spread over seven scenarios and this slice is exactly one, which is the whole reason the ticket was cut on scenario seams.",
-            "evaluated": "30 checks denoted; equal to the count this file declares, and every one of them is axis-decomposed (G19).",
+            "denotes": "All 66 in-denominator checks of the fifteen scenarios named: `server-stateless` 30, and the fourteen `input-required-result-*` scenarios 36 between them. FIFTEEN clauses, where C1c-i had one: the MRTR family is cut into fourteen scenarios of two to four checks each, and the selector names every one rather than matching a prefix — there is no `starts_with` over this artefact's `scenario` field and adding one would have widened the declaration to whatever a harness bump happened to name `input-required-result-*` next.",
+            "evaluated": "66 checks denoted; equal to the count this file declares, and every one of them is axis-decomposed (G19).",
             "key_field": "token",
             "rows_at": "rows",
             "source": "docs/conformance/oc-emitting-sites-2026-07-28.json",
             "source_owner": "MES-97 (C1a) — `mix conformance.locator`'s output, one row per in-denominator check",
-            "the_bound_this_leaves": "The declared CHECK population is one scenario, so a bucket-1 row here means `no counterpart among these 30` and not `no counterpart anywhere` — `what_unmatched_means_in_a_file_that_declares_its_own_checks` in the client file states the rule and it is not restated. Three of this file's 17 searches are scoped that way and say so in their `kind`: SRV02, SRV07 and SRV08 name REAL counterparts in `dns-rebinding-protection`, `caching` and the `input-required-result-*` family, so that whichever later C1c slice declares those scenarios inherits the member instead of re-searching for it.",
+            "the_bound_this_leaves": "The declared CHECK population is fifteen scenarios of the suite's thirty-odd, so a bucket-1 row here means `no counterpart among these 66` and not `no counterpart anywhere` — `what_unmatched_means_in_a_file_that_declares_its_own_checks` in the client file states the rule and it is not restated. FOUR of this file's searches are scoped that way and say so in their `kind`: SRV02 and SRV18 name REAL counterparts in `dns-rebinding-protection` and SRV07 and SRV20 in `caching`, so that whichever later C1c slice declares those scenarios inherits the member instead of re-searching for it. C1c-i's SRV08 was a fifth, naming the `input-required-result-*` family; this ticket declared that family, so SRV08 is GONE and its member carries edges — the mechanism working, not failing.",
             "what_this_is": "The check half of the declaration, and what makes bucket 2 answerable. It names the SCENARIO rather than the 30 tokens, so a check added to it by a harness bump joins the population instead of falling silently outside it.",
+            "why_fourteen_clauses_and_not_a_prefix": "A prefix clause would be SHORTER and would declare a DIFFERENT population: every future scenario whose name begins `input-required-result-` would join this file's declared checks the moment a harness bump introduced it, and would then have to be axis-decomposed by G19 or redden a build nobody had changed. Enumerating costs fourteen lines and makes the population a decision this ticket took rather than a pattern that keeps deciding. The same reasoning is why the client file enumerates its seven.",
             "why_the_locator_artefact_and_not_A1s_manifest": "A1's manifest nests its checks under scenarios and its key is a six-field LIST; the selector's `key_field` must name a STRING field and refuses anything else rather than stringifying it. The locator artefact is flat and carries a `token`. Same reason the client file gives."
           }
         },
         "checks_addressed": [
+          "oc:server/input-required-result-ignore-extra-params/sep-2322-ignore-unexpected-params/IgnoreUnexpectedParams",
+          "oc:server/input-required-result-multi-round/sep-2322-multi-round-r1/InputRequiredResultMultiRoundR1",
+          "oc:server/input-required-result-request-state/sep-2322-request-state-complete/InputRequiredResultRequestStateComplete",
+          "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete",
+          "oc:server/input-required-result-request-state/wire-schema-valid/WireSchemaValid",
+          "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded",
           "oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers",
           "oc:server/server-stateless/sep-2575-http-server-error-jsonrpc-id/HttpServerErrorJsonrpcId",
           "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
@@ -6583,6 +7612,42 @@
           "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError"
         ],
         "declared_checks": [
+          "oc:server/input-required-result-basic-elicitation/sep-2322-elicitation-complete/InputRequiredResultElicitationComplete",
+          "oc:server/input-required-result-basic-elicitation/sep-2322-elicitation-incomplete/InputRequiredResultElicitationIncomplete",
+          "oc:server/input-required-result-basic-elicitation/wire-schema-valid/WireSchemaValid",
+          "oc:server/input-required-result-basic-list-roots/sep-2322-list-roots-complete/InputRequiredResultListRootsComplete",
+          "oc:server/input-required-result-basic-list-roots/sep-2322-list-roots-incomplete/InputRequiredResultListRootsIncomplete",
+          "oc:server/input-required-result-basic-list-roots/wire-schema-valid/WireSchemaValid",
+          "oc:server/input-required-result-basic-sampling/sep-2322-sampling-complete/InputRequiredResultSamplingComplete",
+          "oc:server/input-required-result-basic-sampling/sep-2322-sampling-incomplete/InputRequiredResultSamplingIncomplete",
+          "oc:server/input-required-result-basic-sampling/wire-schema-valid/WireSchemaValid",
+          "oc:server/input-required-result-capability-check/sep-2322-respect-client-capabilities/RespectClientCapabilities",
+          "oc:server/input-required-result-capability-check/wire-schema-valid/WireSchemaValid",
+          "oc:server/input-required-result-ignore-extra-params/sep-2322-ignore-unexpected-params/IgnoreUnexpectedParams",
+          "oc:server/input-required-result-ignore-extra-params/wire-schema-valid/WireSchemaValid",
+          "oc:server/input-required-result-missing-input-response/sep-2322-missing-response-rerequests/InputRequiredResultMissingResponseRerequests",
+          "oc:server/input-required-result-missing-input-response/wire-schema-valid/WireSchemaValid",
+          "oc:server/input-required-result-multi-round/sep-2322-multi-round-r1/InputRequiredResultMultiRoundR1",
+          "oc:server/input-required-result-multi-round/sep-2322-multi-round-r2/InputRequiredResultMultiRoundR2",
+          "oc:server/input-required-result-multi-round/sep-2322-multi-round-r3/InputRequiredResultMultiRoundR3",
+          "oc:server/input-required-result-multi-round/wire-schema-valid/WireSchemaValid",
+          "oc:server/input-required-result-multiple-input-requests/sep-2322-multiple-inputs-complete/InputRequiredResultMultipleInputsComplete",
+          "oc:server/input-required-result-multiple-input-requests/sep-2322-multiple-inputs-incomplete/InputRequiredResultMultipleInputsIncomplete",
+          "oc:server/input-required-result-multiple-input-requests/wire-schema-valid/WireSchemaValid",
+          "oc:server/input-required-result-non-tool-request/sep-2322-non-tool-incomplete/InputRequiredResultNonToolIncomplete",
+          "oc:server/input-required-result-non-tool-request/wire-schema-valid/WireSchemaValid",
+          "oc:server/input-required-result-request-state/sep-2322-request-state-complete/InputRequiredResultRequestStateComplete",
+          "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete",
+          "oc:server/input-required-result-request-state/wire-schema-valid/WireSchemaValid",
+          "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded",
+          "oc:server/input-required-result-result-type/wire-schema-valid/WireSchemaValid",
+          "oc:server/input-required-result-tampered-state/sep-2322-reject-tampered-state/RejectTamperedState",
+          "oc:server/input-required-result-tampered-state/wire-schema-valid/WireSchemaValid",
+          "oc:server/input-required-result-unsupported-methods/sep-2322-not-on-unsupported-requests/NotOnUnsupportedRequests",
+          "oc:server/input-required-result-unsupported-methods/wire-schema-valid/WireSchemaValid",
+          "oc:server/input-required-result-validate-input/sep-2322-error-on-protocol-error/ErrorOnProtocolError",
+          "oc:server/input-required-result-validate-input/sep-2322-validate-input-responses/ValidateInputResponses",
+          "oc:server/input-required-result-validate-input/wire-schema-valid/WireSchemaValid",
           "oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers",
           "oc:server/server-stateless/sep-2575-http-server-error-jsonrpc-id/HttpServerErrorJsonrpcId",
           "oc:server/server-stateless/sep-2575-http-server-header-mismatch-400/HttpServerHeaderMismatch400",
@@ -6618,7 +7683,7 @@
           "declared": false,
           "result": "NOT ASSERTED — this file declares no `leg`, so it makes no claim to hold a whole one and none is checked. Reported rather than passed: a file whose members are a slice of a leg would be claiming something false if this said `total`."
         },
-        "member_count": 59,
+        "member_count": 64,
         "members": [
           "MCP.Protocol.Messages.DiscoverTest/test to_map/1 produces the schema shape",
           "MCP.Protocol.MetaTest/test from_params/1 extracts the io.modelcontextprotocol/* keys",
@@ -6646,6 +7711,11 @@
           "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset a URI this principal may not observe is absent from the ack",
           "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset a handler may refuse the subscription outright",
           "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset the two refusals that never reach the handler stay {:reply, ...}",
+          "MCP.Transport.StreamableHTTP.ACTest/test AC7 — non-localhost origin is rejected 403 (acceptance parity)",
+          "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that raises fails cleanly (-32603); the secret never leaks",
+          "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that returns a non-keyword fails cleanly (-32603)",
+          "MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)",
+          "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
           "MCP.Transport.StreamableHTTPStatelessTest/test AC7 — non-localhost origin is rejected 403; the identity factory never runs",
           "MCP.Transport.StreamableHTTPStatelessTest/test GET and DELETE are not allowed (405), and allow names only POST",
           "MCP.Transport.StreamableHTTPStatelessTest/test MC-6 — a collector that fails to start fails cleanly (-32603), no handler invoked",
@@ -6680,10 +7750,10 @@
           "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the first message is notifications/subscriptions/acknowledged",
           "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the response carries the SSE headers the spec SHOULDs"
         ],
-        "members_declared_unmatched": 34,
-        "members_with_edges": 25,
+        "members_declared_unmatched": 37,
+        "members_with_edges": 27,
         "path": "conformance/data/crosswalk-edges-server.json",
-        "rule": "Every ET-CC member B2b attributes to the SERVER leg whose test lives in one of EIGHT modules: the STATELESS CORE — MCP.Transport.StreamableHTTPStatelessTest, MCP.Server.DispatchTest, MCP.Protocol.MetaTest, MCP.Protocol.Messages.DiscoverTest and MCP.Server.CapabilityHonestyTest — and the SUBSCRIPTION family — MCP.Server.SubscriptionsDispatchTest, MCP.Transport.SubscriptionsStreamTest and MCP.Server.NotificationCollectorTest. NOTHING outside these eight modules is adjudicated here; the leg's other thirteen modules are C1c-ii/iii/iv's.",
+        "rule": "Every ET-CC member B2b attributes to the SERVER leg whose test lives in one of NINE modules: the STATELESS CORE — MCP.Transport.StreamableHTTPStatelessTest, MCP.Server.DispatchTest, MCP.Protocol.MetaTest, MCP.Protocol.Messages.DiscoverTest and MCP.Server.CapabilityHonestyTest — the SUBSCRIPTION family — MCP.Server.SubscriptionsDispatchTest, MCP.Transport.SubscriptionsStreamTest and MCP.Server.NotificationCollectorTest — and the ACCEPTANCE-CRITERIA module MCP.Transport.StreamableHTTP.ACTest, added by C1c-ii for its one MRTR member. NOTHING outside these nine modules is adjudicated here; the leg's other twelve modules are C1c-iii/iv's.",
         "selector": {
           "all_of": [
             {
@@ -6726,6 +7796,11 @@
                 {
                   "field": "key",
                   "test": "starts_with",
+                  "value": "MCP.Transport.StreamableHTTP.ACTest/"
+                },
+                {
+                  "field": "key",
+                  "test": "starts_with",
                   "value": "MCP.Transport.StreamableHTTPStatelessTest/"
                 },
                 {
@@ -6736,13 +7811,14 @@
               ]
             }
           ],
-          "denotes": "59 ET-CC members — MCP.Transport.SubscriptionsStreamTest 17, MCP.Server.SubscriptionsDispatchTest 16, MCP.Transport.StreamableHTTPStatelessTest 16, MCP.Server.DispatchTest 5, MCP.Protocol.MetaTest 2, MCP.Protocol.Messages.DiscoverTest 1, MCP.Server.CapabilityHonestyTest 1 and MCP.Server.NotificationCollectorTest 1. What the trailing `/` does and does not buy is measured in the field of that name; it is NOT a fact about this anchor.",
-          "evaluated": "59 members denoted; set-equal to the population this file derives in both directions (G15a). The counts block was checked field by field (G15b).",
+          "denotes": "64 ET-CC members — MCP.Transport.SubscriptionsStreamTest 17, MCP.Server.SubscriptionsDispatchTest 16, MCP.Transport.StreamableHTTPStatelessTest 16, MCP.Server.DispatchTest 5, MCP.Transport.StreamableHTTP.ACTest 5, MCP.Protocol.MetaTest 2, MCP.Protocol.Messages.DiscoverTest 1, MCP.Server.CapabilityHonestyTest 1 and MCP.Server.NotificationCollectorTest 1. What the trailing `/` does and does not buy is measured in the field of that name; it is NOT a fact about this anchor.",
+          "evaluated": "64 members denoted; set-equal to the population this file derives in both directions (G15a). The counts block was checked field by field (G15b).",
           "everything_else_is": "not_yet_adjudicated — NOT bucket 1, and not state 4.",
           "key_field": "key",
           "rows_at": "rows",
           "source": "docs/conformance/etcc-attribution.json",
           "source_owner": "B2b (MES-82) — the ET-CC attribution register",
+          "the_ninth_module_and_why_only_one_of_its_five_members_is_this_slices_subject": "MES-115 (C1c-ii) adds ONE module, `MCP.Transport.StreamableHTTP.ACTest/`, and it is the whole of that ticket's member cut. MEASURED at 3166dc7: of the leg's 145 rows, exactly TWO carry a key that reaches the MRTR family at all — the stateless round-trip (already in this file, as SRV08's bucket-1 row) and ACTest's `spoof — MRTR retry with planted identity` — and ACTest is the only module holding one that was not already declared. Declaring the module is what makes an edge on that member POSSIBLE: G15a refuses an edge on a member outside the declared population, so the alternative was to leave the leg's second MRTR member to a slice that is not the MRTR ticket. The COST is stated rather than absorbed: the module's other four members (AC7 origin-403 parity, two AC8 identity-factory rows and the caching default) enter bucket 1 against checks that are not theirs, and each records a search and a `homed elsewhere` near miss so C1c-iv inherits them instead of re-searching — the SRV08 mechanism running the other way. PM-ratified on MES-115, 2026-09-23.",
           "what_this_is": "The EXECUTABLE half of `rule`. The generator evaluates it against the source named below and requires the result to be SET-EQUAL, in both directions, to the population this file derives. Prose only becomes a guard when something can run it."
         }
       },
@@ -6806,8 +7882,8 @@
         }
       }
     ],
-    "inherited_tokens_guard": "G20 ran over the 167 declared members; 0 inherited tokens unaccounted for.",
-    "member_count": 167,
+    "inherited_tokens_guard": "G20 ran over the 172 declared members; 0 inherited tokens unaccounted for.",
+    "member_count": 172,
     "members": [
       "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
       "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
@@ -6943,6 +8019,11 @@
       "MCP.Transport.SSETest/test stream parser buffers incomplete events",
       "MCP.Transport.SSETest/test stream parser handles multiple chunks",
       "MCP.Transport.SSETest/test stream parser parses complete events",
+      "MCP.Transport.StreamableHTTP.ACTest/test AC7 — non-localhost origin is rejected 403 (acceptance parity)",
+      "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that raises fails cleanly (-32603); the secret never leaks",
+      "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that returns a non-keyword fails cleanly (-32603)",
+      "MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)",
+      "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
       "MCP.Transport.StreamableHTTPStatelessTest/test AC7 — non-localhost origin is rejected 403; the identity factory never runs",
       "MCP.Transport.StreamableHTTPStatelessTest/test GET and DELETE are not allowed (405), and allow names only POST",
       "MCP.Transport.StreamableHTTPStatelessTest/test MC-6 — a collector that fails to start fails cleanly (-32603), no handler invoked",
@@ -6977,20 +8058,20 @@
       "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the first message is notifications/subscriptions/acknowledged",
       "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the response carries the SSE headers the spec SHOULDs"
     ],
-    "members_declared_unmatched": 99,
-    "members_with_edges": 68,
+    "members_declared_unmatched": 102,
+    "members_with_edges": 70,
     "outside_the_population": {
-      "et_cc_members": 114,
-      "in_denominator_checks": 89,
-      "owners": "C1c = MES-105 — the server leg, and the none_determinable rows with it. It is the only ticket left: the CLIENT leg is closed, and closed by refusal rather than by assertion (G22b). NOT C1b-iii, which rendered this artefact — a field naming its own producer as still owing the remainder is CR-1's defect (MES-104), it recurred as CR-5 (MES-108), and this is the first render at which the previous wording would have been not merely self-naming but FALSE. The sub-population figures an earlier wording carried are the register's to state, not this artefact's — this artefact holds no figure it did not derive (G21).",
+      "et_cc_members": 109,
+      "in_denominator_checks": 53,
+      "owners": "C1c-iii = MES-116 and C1c-iv = MES-117 — the rest of the server leg, and the none_determinable rows with it. The CLIENT leg is closed, and closed by refusal rather than by assertion (G22b); of the server leg, C1c-i and C1c-ii have between them declared nine of its twenty-one modules and the remaining twelve are those two tickets'. NEITHER NAMES THE PRODUCER: a field naming its own renderer as still owing the remainder is CR-1's defect (MES-104) and it recurred as CR-5 (MES-108). It recurred a THIRD time at C1c-i, which rendered this artefact while this field read `C1c = MES-105 … It is the only ticket left` and went on to say `NOT C1b-iii, which rendered this artefact` — self-naming and, in its second clause, false. Corrected at C1c-ii (MES-115) and named in its close-out rather than quietly rewritten. The sub-population figures an earlier wording carried are the register's to state, not this artefact's — this artefact holds no figure it did not derive (G21).",
       "state": "not_yet_adjudicated",
       "why_it_is_a_third_state": "Distinct from bucket 1 ('we looked and there is no counterpart') and from A3 §6 state 4 ('nobody has adjudicated this member, and the guard FAILS it'). Reporting these as bucket 1 would assert of each something false of every one.",
       "why_not_173_minus_the_declared": "A check that carries an edge has been adjudicated whether or not any file DECLARES it. 0 of the addressed checks lie outside every declared check population — the inherited C1a edges — and counting them as not_yet_adjudicated would be as wrong in one direction as counting them in bucket 2 would be in the other."
     },
-    "rule": "conformance/data/crosswalk-edges-client.json: Every ET-CC member B2b attributes to the CLIENT leg. The leg is reached as the UNION of the four ticket slices that adjudicated it — CG7 (C1b-i), CG1/CG2/CG4 (C1b-ii), NO CG AT ALL (C1b-iii), and whatever C1a had already tagged — and the union is now the whole leg: every client row in B2b carries a `cg` in {CG7, CG1, CG2, CG4} or carries none, so the four limbs are exhaustive over it. NOTHING outside the client leg is adjudicated here.  ||  conformance/data/crosswalk-edges-server.json: Every ET-CC member B2b attributes to the SERVER leg whose test lives in one of EIGHT modules: the STATELESS CORE — MCP.Transport.StreamableHTTPStatelessTest, MCP.Server.DispatchTest, MCP.Protocol.MetaTest, MCP.Protocol.Messages.DiscoverTest and MCP.Server.CapabilityHonestyTest — and the SUBSCRIPTION family — MCP.Server.SubscriptionsDispatchTest, MCP.Transport.SubscriptionsStreamTest and MCP.Server.NotificationCollectorTest. NOTHING outside these eight modules is adjudicated here; the leg's other thirteen modules are C1c-ii/iii/iv's.  ||  conformance/data/crosswalk-edges.json: The ET-CC members C1a had adjudicated — a token or a contradicts_oc record — that are on NEITHER leg. C1a's 18 client rows moved to crosswalk-edges-client.json under MES-104's composition ruling; its server rows moved to crosswalk-edges-server.json under MES-105's, which is the same ruling applied to the other leg. What is left is one member, none_determinable, and C1c-iv (MES-117) absorbs it with the rest of that class.",
-    "state_4_guard": "ran over these 167 members; 0 fired. ENTAILED BY G15a AND THEREFORE UNABLE TO FIRE, and that is recorded rather than left to be read as evidence: the population is set-equal to its selector's denotation in both directions, and it is derived from the file's own rows, so every member has a row and every row has a tag. It was equally entailed in C1a, where the selector and the tagging predicate were the same predicate. What fires on an EMPTY crosswalk is the vacuum guard, not this. The completeness question that is NOT entailed is G20 — every token B2b already records against a member of this population is still carried by one of that member's rows."
+    "rule": "conformance/data/crosswalk-edges-client.json: Every ET-CC member B2b attributes to the CLIENT leg. The leg is reached as the UNION of the four ticket slices that adjudicated it — CG7 (C1b-i), CG1/CG2/CG4 (C1b-ii), NO CG AT ALL (C1b-iii), and whatever C1a had already tagged — and the union is now the whole leg: every client row in B2b carries a `cg` in {CG7, CG1, CG2, CG4} or carries none, so the four limbs are exhaustive over it. NOTHING outside the client leg is adjudicated here.  ||  conformance/data/crosswalk-edges-server.json: Every ET-CC member B2b attributes to the SERVER leg whose test lives in one of NINE modules: the STATELESS CORE — MCP.Transport.StreamableHTTPStatelessTest, MCP.Server.DispatchTest, MCP.Protocol.MetaTest, MCP.Protocol.Messages.DiscoverTest and MCP.Server.CapabilityHonestyTest — the SUBSCRIPTION family — MCP.Server.SubscriptionsDispatchTest, MCP.Transport.SubscriptionsStreamTest and MCP.Server.NotificationCollectorTest — and the ACCEPTANCE-CRITERIA module MCP.Transport.StreamableHTTP.ACTest, added by C1c-ii for its one MRTR member. NOTHING outside these nine modules is adjudicated here; the leg's other twelve modules are C1c-iii/iv's.  ||  conformance/data/crosswalk-edges.json: The ET-CC members C1a had adjudicated — a token or a contradicts_oc record — that are on NEITHER leg. C1a's 18 client rows moved to crosswalk-edges-client.json under MES-104's composition ruling; its server rows moved to crosswalk-edges-server.json under MES-105's, which is the same ruling applied to the other leg. What is left is one member, none_determinable, and C1c-iv (MES-117) absorbs it with the rest of that class.",
+    "state_4_guard": "ran over these 172 members; 0 fired. ENTAILED BY G15a AND THEREFORE UNABLE TO FIRE, and that is recorded rather than left to be read as evidence: the population is set-equal to its selector's denotation in both directions, and it is derived from the file's own rows, so every member has a row and every row has a tag. It was equally entailed in C1a, where the selector and the tagging predicate were the same predicate. What fires on an EMPTY crosswalk is the vacuum guard, not this. The completeness question that is NOT entailed is G20 — every token B2b already records against a member of this population is still carried by one of that member's rows."
   },
-  "population_statement_guard": "G21 — every population figure this generator's own prose states is one this run derived. Scanned 15 authored statements against the 21 distinct figures the run holds, and pinned 8 load-bearing phrases built from those figures independently of the text. THE UNIVERSE IS THE EMITTED ARTEFACT, not a list this module declares: a string is this generator's own iff it occurs in no input document, so a statement added later is inside the guard without anyone remembering to add it. This block is written AFTER the scan and is required to carry no population claim of its own, so it is not part of what it attests. BOUNDS: a figure spelled as a word, or stated without the noun it counts, is invisible to the scan — both occur here and are handled by interpolating them, not by the scan; a literal that coincides with some other held figure survives until the population next moves, which is when CR-5's recurrence would land anyway; and prose this generator does not EMIT (the moduledoc, a branch not taken) is outside the universe by construction.",
+  "population_statement_guard": "G21 — every population figure this generator's own prose states is one this run derived. Scanned 15 authored statements against the 23 distinct figures the run holds, and pinned 8 load-bearing phrases built from those figures independently of the text. THE UNIVERSE IS THE EMITTED ARTEFACT, not a list this module declares: a string is this generator's own iff it occurs in no input document, so a statement added later is inside the guard without anyone remembering to add it. This block is written AFTER the scan and is required to carry no population claim of its own, so it is not part of what it attests. BOUNDS: a figure spelled as a word, or stated without the noun it counts, is invisible to the scan — both occur here and are handled by interpolating them, not by the scan; a literal that coincides with some other held figure survives until the population next moves, which is when CR-5's recurrence would land anyway; and prose this generator does not EMIT (the moduledoc, a branch not taken) is outside the universe by construction.",
   "residuals": [
     {
       "id": "X10",
@@ -7018,7 +8099,7 @@
     },
     {
       "id": "X5",
-      "text": "The member population is 167 across 3 edges files — 107 members from crosswalk-edges-client.json and 59 members from crosswalk-edges-server.json and 1 members from crosswalk-edges.json. Two of the checks C1a addresses enter through A3 §1's cardinality rule and §4's published worked edge, not through B2b's tokens — inherited, not newly adjudicated, and said so in the edges file. Every figure in this sentence is interpolated: all three were literals until MES-108, and two of the three were already wrong when CR-5 found them."
+      "text": "The member population is 172 across 3 edges files — 107 members from crosswalk-edges-client.json and 64 members from crosswalk-edges-server.json and 1 members from crosswalk-edges.json. Two of the checks C1a addresses enter through A3 §1's cardinality rule and §4's published worked edge, not through B2b's tokens — inherited, not newly adjudicated, and said so in the edges file. Every figure in this sentence is interpolated: all three were literals until MES-108, and two of the three were already wrong when CR-5 found them."
     },
     {
       "id": "X7",
@@ -7026,11 +8107,11 @@
     },
     {
       "id": "X8",
-      "text": "BUCKET 2 WAS EMPTY BY CONSTRUCTION UNTIL MES-104. C1a derived its check universe from the tags its own edges carried, so the complement within it was necessarily empty and its `CHECKED, AND ZERO` could not have said anything else. A file may now declare its check population from an external anchor. This run's answer is 30 of the 84 declared checks carrying no edge from any ET-CC member. A file that declares none contributes none to the universe and the artefact reports that bucket 2 was not asked, rather than reporting a zero. The answer is interpolated — this sentence froze C1b-i's at nine and went on stating it after MES-108 moved the check population (CR-5)."
+      "text": "BUCKET 2 WAS EMPTY BY CONSTRUCTION UNTIL MES-104. C1a derived its check universe from the tags its own edges carried, so the complement within it was necessarily empty and its `CHECKED, AND ZERO` could not have said anything else. A file may now declare its check population from an external anchor. This run's answer is 60 of the 120 declared checks carrying no edge from any ET-CC member. A file that declares none contributes none to the universe and the artefact reports that bucket 2 was not asked, rather than reporting a zero. The answer is interpolated — this sentence froze C1b-i's at nine and went on stating it after MES-108 moved the check population (CR-5)."
     },
     {
       "id": "X9",
-      "text": "A CLAIM-LEVEL STATE 3 HAS NO BUCKET. A3 §6's state 3 is a property of a MEMBER, and the bucket-1 reconciliation requires a member to be edge-bearing or declared unmatched, never both — so a member matching on some claims and not on others has nowhere to record the unmatched ones. C1b-i found five; MES-108 resolved two of them into real edges and found one more. This run carries 4 of them in `claim_level_unmatched`, each with the search that found none, and ESCALATED — the figure interpolated, because it was written as a word and so would not have moved (CR-5). Whether A3 §6 should gain a claim-level state is the PM's."
+      "text": "A CLAIM-LEVEL STATE 3 HAS NO BUCKET. A3 §6's state 3 is a property of a MEMBER, and the bucket-1 reconciliation requires a member to be edge-bearing or declared unmatched, never both — so a member matching on some claims and not on others has nowhere to record the unmatched ones. C1b-i found five; MES-108 resolved two of them into real edges and found one more. This run carries 5 of them in `claim_level_unmatched`, each with the search that found none, and ESCALATED — the figure interpolated, because it was written as a word and so would not have moved (CR-5). Whether A3 §6 should gain a claim-level state is the PM's."
     },
     {
       "id": "X11",
@@ -7041,11 +8122,11 @@
   "schema": "crosswalk/1",
   "totality": {
     "every_declared_check_is_decomposed_and_accounted_for": {
-      "declared": 84,
+      "declared": 120,
       "equation": "declared checks = checks with an edge + bucket 2",
-      "in_bucket_2": 30,
+      "in_bucket_2": 60,
       "why_this_is_not_a_set_equality": "C1a asserted `every declared check appears` as a set equality, and it held TRIVIALLY: the declared set was derived from the tags the edges carried, so the two sides were the same list twice. Once the checks are declared from outside the file the equality is no longer expected — the checks that do NOT appear are bucket 2, which is the answer rather than a failure.",
-      "with_an_edge": 54
+      "with_an_edge": 60
     },
     "every_declared_member_appears": {
       "equal": true,
@@ -7055,17 +8136,18 @@
     "measure": "SET COMPARISON, not arithmetic — two counts agreeing is not two sets agreeing.",
     "negatives_are_enumerated_not_counted": "Bucket 1's members and bucket 2's checks are listed by name in `buckets`, and the not_yet_adjudicated remainder is counted with its owner named (A2d / ruling 4)."
   },
-  "trust_status": "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — over the declared 167-member / 84-declared-check slice and no further. Both figures are INTERPOLATED from the population this run derives, and the slice is NOT decomposed by ticket here. The pair was a literal that had to be re-typed by hand at every move of the population: it was re-typed at MES-104, the population moved again at MES-108, and it was not. That is an argument against the SHAPE and not against an author — it is CR-1 (MES-104) recurring in the one generator CR-1's remedy did not reach (CR-5, MES-108). The parenthetical was the worse half — it enumerated the slice in a way that positively excluded the members the very run rendering it had just added — so it is dropped rather than re-typed: a fresh decomposition would be a third literal, and `population.files` carries the same fact derived. G21 refuses a figure here that the run did not derive. (Standing, not proven: the attempts were made and none succeeded. `UNFALSIFIED` here previously meant `not yet attempted`.) Ruling 5 asked for the control this artefact was unfalsified against: the generator refuses on each falsification class with the mutation committed and shown firing, a drifted per-row bucket assignment is caught naming the row and the buckets it crosses, and the artefact re-derives byte-identically from a second source path. That last is a CONSISTENCY pin, not a correctness claim (ruling 9, residual X6). Nothing here establishes that an axis verdict is RIGHT (X1), and nothing outside the declared population has been falsified at all — the tickets `population.outside_the_population.owners` names own that.",
+  "trust_status": "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — over the declared 172-member / 120-declared-check slice and no further. Both figures are INTERPOLATED from the population this run derives, and the slice is NOT decomposed by ticket here. The pair was a literal that had to be re-typed by hand at every move of the population: it was re-typed at MES-104, the population moved again at MES-108, and it was not. That is an argument against the SHAPE and not against an author — it is CR-1 (MES-104) recurring in the one generator CR-1's remedy did not reach (CR-5, MES-108). The parenthetical was the worse half — it enumerated the slice in a way that positively excluded the members the very run rendering it had just added — so it is dropped rather than re-typed: a fresh decomposition would be a third literal, and `population.files` carries the same fact derived. G21 refuses a figure here that the run did not derive. (Standing, not proven: the attempts were made and none succeeded. `UNFALSIFIED` here previously meant `not yet attempted`.) Ruling 5 asked for the control this artefact was unfalsified against: the generator refuses on each falsification class with the mutation committed and shown firing, a drifted per-row bucket assignment is caught naming the row and the buckets it crosses, and the artefact re-derives byte-identically from a second source path. That last is a CONSISTENCY pin, not a correctness claim (ruling 9, residual X6). Nothing here establishes that an axis verdict is RIGHT (X1), and nothing outside the declared population has been falsified at all — the tickets `population.outside_the_population.owners` names own that.",
   "verdict_mapping": {
     "observed_statuses": {
       "FAILURE": 13,
-      "SUCCESS": 93
+      "SUCCESS": 108,
+      "WARNING": 1
     },
     "rule": "SUCCESS -> :green. FAILURE -> :red. WARNING -> :green carrying warning: true.",
     "warning_basis": "PM-ratified D2, measured not chosen: WARNING is leg-dependent — the client-leg reducer fails it, `requirements_exit` and the server-leg reducer ignore it — and BOTH in-denominator WARNING checks are on the server leg, where the reducer that would disagree does not apply.",
-    "warning_is_untested_by_live_data_here": "The mapping fires on ZERO rows of C1a's population — both WARNING checks are outside it. It is implemented and unit-tested (test/conformance/crosswalk_test.exs) rather than demonstrated, and that is said here because a rule with no live instance reads as exercised when it is not.",
+    "warning_live_data": "EXERCISED on 1 cell(s) of this run's population — the mapping fires on real data and is no longer unit-tested only. WHAT THAT DOES NOT ESTABLISH: that it is RIGHT. A mapping that labelled every non-red check `warning` would fire here exactly as readily, so `exercised` and `correct` are different claims and only the first is made by this count. The second is the business of `conformance/controls/crosswalk_falsification_controls.exs warning_mapping`, which requires the real WARNING cell to land where the mapping sends it AND requires it to move OUT when the OC verdict is mutated away from WARNING.",
     "warning_residual": "A future CLIENT-leg WARNING needs its own ruling. The mapping must not be extended to cover one silently.",
-    "warning_rows_in_this_population": 0
+    "warning_rows_in_this_population": 1
   },
   "what_this_is": "The single matrix the ten buckets are PROJECTIONS of. C2 renders it, C3 falsifies it, D adjudicates its cells. It decides what no bucket MEANS."
 }

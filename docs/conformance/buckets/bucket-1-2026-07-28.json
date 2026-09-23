@@ -1,12 +1,12 @@
 {
   "bucket": "1",
-  "count": 99,
+  "count": 102,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 167 declared ET-CC members and 84\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 114 members and\n89 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
-  "predicate": "Declared-population ET-CC members carrying NO edge in `cells`: the complement of `members_with_edges` over the declared population, taken through `Crosswalk.project(:bucket_1, ...)`. Universe: the 167 declared members, never all 281 members.",
+  "population_banner": "POPULATION: this projection covers 172 declared ET-CC members and 120\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 109 members and\n53 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "predicate": "Declared-population ET-CC members carrying NO edge in `cells`: the complement of `members_with_edges` over the declared population, taken through `Crosswalk.project(:bucket_1, ...)`. Universe: the 172 declared members, never all 281 members.",
   "projected_from": {
     "bucket_zero": {
       "bytes": 176409,
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 574284,
+      "bytes": 648638,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "3ce08b0c1b055d28c3789b25e731852a7e7908938b112ec45d3bf12fb019a466"
+      "sha256": "30cea0a77bd965ff5883d3dbbec89c8c45977cf1ef8898b0b0b93cf68e664d39"
     }
   },
   "revision": "2026-07-28",
@@ -1176,6 +1176,74 @@
       "why_this_search_is_this_claims_search": "The claim is about the INCREMENTAL parser — where an event ends and what happens to bytes that arrive mid-event. S02 searched for that property specifically (chunking, buffering, partial events, delimiters) and is deliberately separate from S01: the nearest artefact is the same two SSE rows, but the reason they are not counterparts is a different reason, and sharing S01's search would have hidden that."
     },
     {
+      "authored_by": "MES-115 (C1c-ii)",
+      "cg": null,
+      "claim_the_slot_names": "a request whose `Origin` is not localhost is rejected with HTTP 403, and the rejection happens before any per-request identity work runs",
+      "homed_elsewhere": "C1c-iv (MES-117). This member is in C1c-ii's DECLARED MEMBER population but its counterpart is in a check population C1c-ii does not declare, so it is bucket 1 HERE and an edge THERE. Recorded in the shape C1c-i used for SRV08 — the search, the near miss naming the real counterpart, and the ticket — so the slice that declares that scenario inherits the member instead of re-searching for it. SRV08 is what that record looked like from the other side, and this ticket discharged it.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test AC7 — non-localhost origin is rejected 403 (acceptance parity)",
+        "test": "test AC7 — non-localhost origin is rejected 403 (acceptance parity)"
+      },
+      "search_id": "SRV18",
+      "tag": "oc:none/no-oc-check-in-this-scenario/origin-rejected-403",
+      "the_near_miss_that_is_not_a_counterpart": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. These are REAL COUNTERPARTS for the rejection this member asserts, and they sit outside this file's declared 66. Named so the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What NEITHER OC row covers is the 403 STATUS this unit pins as the acceptance parity: the OC rows say `rejects`, and nothing in them names a code.",
+      "the_search_that_found_none": "a server REJECTING a request whose `Origin` is not localhost, and answering it with HTTP 403 — the status, not merely the refusal",
+      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 66, and two real counterparts in the SERVER scenario `dns-rebinding-protection`.",
+      "why_this_search_is_this_claims_search": "The claim is a server refusing a non-localhost `Origin`. SRV18's subject is that refusal AND the status it carries, which is the half of the claim the OC counterparts do not reach — so the pattern sweeps the origin vocabulary and the near miss names what it would have found in another scenario."
+    },
+    {
+      "authored_by": "MES-115 (C1c-ii)",
+      "cg": null,
+      "claim_the_slot_names": "a per-request identity factory that RAISES is contained: the request is answered -32603 and the raised reason never reaches the client",
+      "homed_elsewhere": "NOBODY. Unlike the other three ACTest rows this one is not `homed elsewhere`: the search sweeps all 175 and the suite has no check on this obligation at any scenario. It is an absence of the suite's, not a deferral of ours, and it stays bucket 1 however the rest of the leg is declared.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that raises fails cleanly (-32603); the secret never leaks",
+        "test": "test AC8 — a factory that raises fails cleanly (-32603); the secret never leaks"
+      },
+      "search_id": "SRV19",
+      "tag": "oc:none/no-oc-scenario/identity-factory-raises",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsCallError` (`Tool returns error correctly`, scenario `tools-call-error`) and `HttpServerErrorJsonrpcId` (`All error responses carry the request JSON-RPC id`, scenario `server-stateless`). Both are about a server REPORTING an error well, and a reader who greps for `error`, finds them and stops would take them for the counterpart. Neither is: `ToolsCallError` scores a TOOL's own declared failure being reported as a result, and `HttpServerErrorJsonrpcId` scores an envelope field. Neither asks what happens when the server's own per-request IDENTITY machinery fails — whether the request is contained at all, with what code, and whether the internal reason reaches the caller. That is an SDK-deployment obligation the suite has no vocabulary for: the conformance harness supplies no identity pipeline to break.",
+      "the_search_that_found_none": "a server CONTAINING a failure of its own per-request identity factory — the request fails with -32603 rather than crashing the connection, and the internal reason never reaches the client",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175. The conformance harness supplies no identity pipeline, so there is nothing for it to break and nothing for it to score.",
+      "why_this_search_is_this_claims_search": "The claim is about the server's own identity machinery failing. SRV19's subject is exactly that containment, and its pattern sweeps the identity vocabulary AND the error-code vocabulary, so a check phrased either way would have been found."
+    },
+    {
+      "authored_by": "MES-115 (C1c-ii)",
+      "cg": null,
+      "claim_the_slot_names": "a per-request identity factory that returns a value of the wrong SHAPE is contained the same way a raising one is — -32603, nothing internal on the wire",
+      "homed_elsewhere": "NOBODY. Unlike the other three ACTest rows this one is not `homed elsewhere`: the search sweeps all 175 and the suite has no check on this obligation at any scenario. It is an absence of the suite's, not a deferral of ours, and it stays bucket 1 however the rest of the leg is declared.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that returns a non-keyword fails cleanly (-32603)",
+        "test": "test AC8 — a factory that returns a non-keyword fails cleanly (-32603)"
+      },
+      "search_id": "SRV19",
+      "tag": "oc:none/no-oc-scenario/identity-factory-wrong-shape",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsCallError` (`Tool returns error correctly`, scenario `tools-call-error`) and `HttpServerErrorJsonrpcId` (`All error responses carry the request JSON-RPC id`, scenario `server-stateless`). Both are about a server REPORTING an error well, and a reader who greps for `error`, finds them and stops would take them for the counterpart. Neither is: `ToolsCallError` scores a TOOL's own declared failure being reported as a result, and `HttpServerErrorJsonrpcId` scores an envelope field. Neither asks what happens when the server's own per-request IDENTITY machinery fails — whether the request is contained at all, with what code, and whether the internal reason reaches the caller. That is an SDK-deployment obligation the suite has no vocabulary for: the conformance harness supplies no identity pipeline to break.",
+      "the_search_that_found_none": "a server CONTAINING a failure of its own per-request identity factory — the request fails with -32603 rather than crashing the connection, and the internal reason never reaches the client",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175, the same zero as its sibling row and for the same reason.",
+      "why_this_search_is_this_claims_search": "Two members, one requirement (containment of an identity-factory failure) and two failure modes of it, so one search serves both and each row copies it. Registering a second identical entry would have made one measurement look like two."
+    },
+    {
+      "authored_by": "MES-115 (C1c-ii)",
+      "cg": null,
+      "claim_the_slot_names": "a deployment that configures no caching policy gets no-store — `ttlMs` 0 and `cacheScope` `public` — on a `tools/list` result",
+      "homed_elsewhere": "C1c-iv (MES-117). This member is in C1c-ii's DECLARED MEMBER population but its counterpart is in a check population C1c-ii does not declare, so it is bucket 1 HERE and an edge THERE. Recorded in the shape C1c-i used for SRV08 — the search, the near miss naming the real counterpart, and the ticket — so the slice that declares that scenario inherits the member instead of re-searching for it. SRV08 is what that record looked like from the other side, and this ticket discharged it.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)",
+        "test": "test default caching policy is no-store (ttlMs 0)"
+      },
+      "search_id": "SRV20",
+      "tag": "oc:none/no-oc-check-in-this-scenario/default-caching-policy",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`, and all outside this file's declared 66. They are COUNTERPARTS and not near misses: `TtlNonNegative` in particular is about the very field this member pins. Named so the row reads as `homed elsewhere` — whichever C1c ticket declares `caching` should pick this member up rather than search for it again. What no OC row asks is what the DEFAULT is when a deployment configures nothing, which is the whole of this member's claim.",
+      "the_search_that_found_none": "the DEFAULT caching policy a deployment that configures nothing gets — `ttlMs` 0 and a `cacheScope`, i.e. no-store",
+      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 66, and seven real counterparts in the SERVER scenario `caching`.",
+      "why_this_search_is_this_claims_search": "The claim is about the CacheableResult hint fields on a list result. SRV20's subject is those fields at their DEFAULT, and its pattern sweeps the caching vocabulary; the near miss names the seven `caching` rows so the zero reads as `declared elsewhere` rather than as `nothing exists`."
+    },
+    {
       "authored_by": "MES-105 (C1c-i)",
       "cg": null,
       "claim_the_slot_names": "a non-localhost `Origin` is answered 403 and the per-request identity factory is never invoked",
@@ -1186,7 +1254,7 @@
       },
       "search_id": "SRV02",
       "tag": "oc:none/no-oc-check-in-this-scenario/AC7-origin-403",
-      "the_near_miss_that_is_not_a_counterpart": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. This is not a near miss in the usual sense: it is a REAL COUNTERPART for the rejection half of the claim, and it sits two scenarios away from this file's declared population. It is named here so that the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What neither OC row covers is the ORDERING half — that the identity factory never runs — which is an SDK property the suite has no vocabulary for.",
+      "the_near_miss_that_is_not_a_counterpart": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. This is not a near miss in the usual sense: it is a REAL COUNTERPART for the rejection half of the claim, and it sits outside this file's declared population. It is named here so that the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What neither OC row covers is the ORDERING half — that the identity factory never runs — which is an SDK property the suite has no vocabulary for.",
       "the_search_that_found_none": "a server REJECTING a request whose `Origin` is not localhost, and doing so before any per-request identity work has run",
       "why_no_counterpart": "`no-oc-check-in-this-scenario` — `server-stateless` carries no Origin or Host check at all (0 of 30), and the counterpart that does exist is in `dns-rebinding-protection`, outside this file's declared 30.",
       "why_this_search_is_this_claims_search": "The claim is origin enforcement on the server. SRV02's subject is that, and its 'near miss' is in fact the counterpart — recorded as such rather than dressed as an absence."
@@ -1298,7 +1366,7 @@
       },
       "search_id": "SRV07",
       "tag": "oc:none/no-oc-check-in-this-scenario/CacheableResult-hints",
-      "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`. These are COUNTERPARTS, not near misses, and they are outside this file's declared 30. Named so the row reads as `homed elsewhere`: whichever C1c ticket declares `caching` should pick this member up rather than search for it again.",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`. These are COUNTERPARTS, not near misses, and they are outside this file's declared 66. Named so the row reads as `homed elsewhere`: whichever C1c ticket declares `caching` should pick this member up rather than search for it again.",
       "the_search_that_found_none": "a list or read RESULT carrying the CacheableResult hints — `ttlMs` and `cacheScope`",
       "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 30 `server-stateless` rows mention caching or ttl, while the `caching` scenario carries seven that do.",
       "why_this_search_is_this_claims_search": "The claim is the caching hints on a list result. SRV07's subject is exactly that, and the search is scoped to the declared 30 because the claim being made is about THIS population."
@@ -1334,22 +1402,6 @@
       "the_search_that_found_none": "a SERVER validating a SEP-2243 routing header against the request body — `Mcp-Method` against the JSON-RPC `method`, and `Mcp-Name` against `params.name` (or `params.uri` on `resources/read`) — and rejecting a mismatch with -32020",
       "why_no_counterpart": "`no-oc-server-check` — the suite scores SEP-2243 on the client only. Measured at this tip: 0 of the 119 server rows mention any of the three header families, while the client leg carries 28 rows that do.",
       "why_this_search_is_this_claims_search": "The claim is a SERVER rejecting a routing header that disagrees with the body. SRV01's subject is exactly that obligation, and its near miss is the client-side half the suite does carry — which is why a grep for the header names is the wrong instrument here and a leg-scoped sweep is the right one."
-    },
-    {
-      "authored_by": "MES-105 (C1c-i)",
-      "cg": null,
-      "claim_the_slot_names": "a `tools/call` answered `input_required` with a `requestState` is completed by a retry carrying that state back",
-      "member": {
-        "module": "MCP.Transport.StreamableHTTPStatelessTest",
-        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
-        "test": "test tools/call input-required → retry with requestState → completion"
-      },
-      "search_id": "SRV08",
-      "tag": "oc:none/no-oc-check-in-this-scenario/MRTR-server-round-trip",
-      "the_near_miss_that_is_not_a_counterpart": "`RequestMetaInvalid` and the other `_meta` rows, which are the only `server-stateless` rows about request-scoped state at all. They are not counterparts: `_meta` is state the CLIENT supplies on every request, and `requestState` is state the SERVER mints to resume one. The real counterparts are the thirty-five `input-required-result-*` rows, which are SERVER-leg and outside this file's declared 30 — they are C1c-ii's, and this row exists so that ticket inherits the member rather than rediscovering it.",
-      "the_search_that_found_none": "the SERVER half of the MRTR round trip — an `input_required` result carrying a `requestState` and an `inputRequests` list, the client's retry, and the completion that follows",
-      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 30, and thirty-five rows elsewhere on the server leg.",
-      "why_this_search_is_this_claims_search": "The claim is the server's MRTR round trip. SRV08's subject is that, and its near miss is the request-state family inside the declared 30 that a reader could merge it with."
     },
     {
       "authored_by": "MES-105 (C1c-i)",
@@ -1515,9 +1567,9 @@
   "schema": "bucket-view/1",
   "title": "ET-CC member with no OC counterpart",
   "universe": {
-    "count": 167,
+    "count": 172,
     "name": "declared_members",
-    "of": "the 167 declared ET-CC members, never all 281 members"
+    "of": "the 172 declared ET-CC members, never all 281 members"
   },
   "what_this_is": "A PURE PROJECTION of the crosswalk named in `projected_from`, on the `predicate` above and on fields the crosswalk already stores. Nothing here re-computes a verdict, an edge shape or a bucket assignment. The rows are the crosswalk's own records verbatim, so a reader can check this view against the matrix byte for byte."
 }

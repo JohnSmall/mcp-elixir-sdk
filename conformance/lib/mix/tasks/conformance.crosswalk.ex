@@ -240,7 +240,9 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       "schema" => "crosswalk/1",
       "revision" => @revision,
       "generated_by" => "mix conformance.crosswalk",
-      "owner" => "MES-97 (C1a), MES-104 (C1b-i), MES-108 (C1b-ii) and MES-109 (C1b-iii)",
+      "owner" =>
+        "MES-97 (C1a), MES-104 (C1b-i), MES-108 (C1b-ii), MES-109 (C1b-iii), MES-105 (C1c-i) " <>
+          "and MES-115 (C1c-ii)",
       "what_this_is" =>
         "The single matrix the ten buckets are PROJECTIONS of. C2 renders it, C3 falsifies it, " <>
           "D adjudicates its cells. It decides what no bucket MEANS.",
@@ -810,14 +812,19 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
             "state 4 ('nobody has adjudicated this member, and the guard FAILS it'). Reporting " <>
             "these as bucket 1 would assert of each something false of every one.",
         "owners" =>
-          "C1c = MES-105 — the server leg, and the none_determinable rows with it. It is the " <>
-            "only ticket left: the CLIENT leg is closed, and closed by refusal rather than by " <>
-            "assertion (G22b). NOT C1b-iii, which rendered this artefact — a field naming its " <>
-            "own producer as still owing the remainder is CR-1's defect (MES-104), it recurred " <>
-            "as CR-5 (MES-108), and this is the first render at which the previous wording " <>
-            "would have been not merely self-naming but FALSE. The sub-population figures an " <>
-            "earlier wording carried are the register's to state, not this artefact's — this " <>
-            "artefact holds no figure it did not derive (G21)."
+          "C1c-iii = MES-116 and C1c-iv = MES-117 — the rest of the server leg, and the " <>
+            "none_determinable rows with it. The CLIENT leg is closed, and closed by refusal " <>
+            "rather than by assertion (G22b); of the server leg, C1c-i and C1c-ii have between " <>
+            "them declared nine of its twenty-one modules and the remaining twelve are those " <>
+            "two tickets'. NEITHER NAMES THE PRODUCER: a field naming its own renderer as " <>
+            "still owing the remainder is CR-1's defect (MES-104) and it recurred as CR-5 " <>
+            "(MES-108). It recurred a THIRD time at C1c-i, which rendered this artefact while " <>
+            "this field read `C1c = MES-105 … It is the only ticket left` and went on to say " <>
+            "`NOT C1b-iii, which rendered this artefact` — self-naming and, in its second " <>
+            "clause, false. Corrected at C1c-ii (MES-115) and named in its close-out rather " <>
+            "than quietly rewritten. The sub-population figures an earlier wording carried are " <>
+            "the register's to state, not this artefact's — this artefact holds no figure it " <>
+            "did not derive (G21)."
       }
     }
   end
@@ -1583,14 +1590,45 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
         "A future CLIENT-leg WARNING needs its own ruling. The mapping must not be extended to " <>
           "cover one silently.",
       "warning_rows_in_this_population" => Enum.count(cells, & &1["verdicts"]["oc_warning"]),
-      "warning_is_untested_by_live_data_here" =>
-        "The mapping fires on ZERO rows of C1a's population — both WARNING checks are outside " <>
-          "it. It is implemented and unit-tested (test/conformance/crosswalk_test.exs) rather " <>
-          "than demonstrated, and that is said here because a rule with no live instance reads " <>
-          "as exercised when it is not.",
+      "warning_live_data" => warning_live_data(cells),
       "observed_statuses" =>
         Enum.frequencies_by(cells, & &1["verdicts"]["oc_status_at_accepted_run"])
     }
+  end
+
+  # `warning_is_untested_by_live_data_here` was a LITERAL that said the mapping
+  # fires on zero rows and is unit-tested rather than demonstrated. It was true
+  # for four tickets and stopped being true at MES-115, which declared the
+  # `input-required-result-*` family and with it `IgnoreUnexpectedParams` — one
+  # of the suite's only two in-denominator WARNING checks. A field asserting "no
+  # live instance" over a population that has one is the stale-banner defect
+  # (S9's generated-artefact-banner finding), so it is DERIVED from the same
+  # count the field above reports rather than re-typed.
+  #
+  # Three states, and the middle one is the one a literal could not express: the
+  # check may be outside the declared population altogether, or declared and
+  # carrying no edge (so still not exercised, but for a different reason), or
+  # actually reached by an edge.
+  defp warning_live_data(cells) do
+    n = Enum.count(cells, & &1["verdicts"]["oc_warning"])
+
+    case n do
+      0 ->
+        "NOT EXERCISED. The mapping fires on ZERO cells of this run's population. It is " <>
+          "implemented and unit-tested (test/conformance/crosswalk_test.exs) rather than " <>
+          "demonstrated, and that is said here because a rule with no live instance reads as " <>
+          "exercised when it is not."
+
+      _ ->
+        "EXERCISED on #{n} cell(s) of this run's population — the mapping fires on real data " <>
+          "and is no longer unit-tested only. WHAT THAT DOES NOT ESTABLISH: that it is RIGHT. " <>
+          "A mapping that labelled every non-red check `warning` would fire here exactly as " <>
+          "readily, so `exercised` and `correct` are different claims and only the first is " <>
+          "made by this count. The second is the business of " <>
+          "`conformance/controls/crosswalk_falsification_controls.exs warning_mapping`, which " <>
+          "requires the real WARNING cell to land where the mapping sends it AND requires it " <>
+          "to move OUT when the OC verdict is mutated away from WARNING."
+    end
   end
 
   # Buckets 1 and 2 go THROUGH `Crosswalk.project/2` rather than being recomputed

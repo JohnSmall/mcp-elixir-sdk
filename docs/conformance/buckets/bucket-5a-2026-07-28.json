@@ -1,11 +1,11 @@
 {
   "bucket": "5a",
-  "count": 20,
+  "count": 35,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 167 declared ET-CC members and 84\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 114 members and\n89 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "population_banner": "POPULATION: this projection covers 172 declared ET-CC members and 120\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 109 members and\n53 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
   "predicate": "`cells` where the stored `bucket` == \"5\" AND the stored `oc_key[0]` == \"server\". Universe: the crosswalk's edges.",
   "projected_from": {
     "bucket_zero": {
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 574284,
+      "bytes": 648638,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "3ce08b0c1b055d28c3789b25e731852a7e7908938b112ec45d3bf12fb019a466"
+      "sha256": "30cea0a77bd965ff5883d3dbbec89c8c45977cf1ef8898b0b0b93cf68e664d39"
     }
   },
   "revision": "2026-07-28",
@@ -764,12 +764,745 @@
         "oc_status_at_accepted_run": "SUCCESS",
         "oc_warning": false
       }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_response_carries_a_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_carries_a_result_type_field_at_all",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_type_is_input_required",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a `tools/call` whose inputs have not yet been supplied is answered with a RESULT whose `resultType` is `input_required`",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:246 — `assert first[\"resultType\"] == \"input_required\"`, over a real HTTP POST through `MCP.Transport.StreamableHTTP.Plug`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold. The first two axes are therefore covered by the SAME observation read at a coarser grain, not inferred from an unobserved behaviour — which is why they are `agrees` and not `silent`. The third axis is `` `resultType`in r `` — PRESENCE — and the fourth is the VALUE; an equality assertion against `\"input_required\"` cannot hold unless the key is there, so it covers both.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+        "test": "test tools/call input-required → retry with requestState → completion"
+      },
+      "note": "FULL agreement on a four-axis check, which is rare on this leg. It is not a coincidence: `ResultTypeIncluded` is the only check in the family whose whole subject is the `resultType` marker, and that marker is what this unit's first assertion is about.",
+      "oc_key": [
+        "server",
+        "input-required-result-result-type",
+        "sep-2322-result-type-included",
+        "ResultTypeIncluded",
+        "Server includes resultType field in InputRequiredResult response",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_first_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_response_carries_an_input_required_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_input_required_result_carries_a_request_state",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_request_state_is_a_string",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_input_required_result_carries_input_requests",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a `tools/call` whose inputs have not yet been supplied is answered with a RESULT whose `resultType` is `input_required`",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:246 — `assert first[\"resultType\"] == \"input_required\"`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold. The first two axes are therefore covered by the SAME observation read at a coarser grain, not inferred from an unobserved behaviour — which is why they are `agrees` and not `silent`. The last three axes are about `requestState` and `inputRequests`, which THIS claim says nothing about; the member's other two claims do, and carry their own edges against the same check rather than being collapsed into this one (A3 §1).",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+        "test": "test tools/call input-required → retry with requestState → completion"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "input-required-result-request-state",
+        "sep-2322-request-state-incomplete",
+        "InputRequiredResultRequestStateIncomplete",
+        "Server returns InputRequiredResult with both inputRequests and requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "round_1_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "round_1_returns_an_input_required_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "round_1_carries_input_requests",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_carries_a_request_state",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a `tools/call` whose inputs have not yet been supplied is answered with a RESULT whose `resultType` is `input_required`",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:246 — `assert first[\"resultType\"] == \"input_required\"`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold. The first two axes are therefore covered by the SAME observation read at a coarser grain, not inferred from an unobserved behaviour — which is why they are `agrees` and not `silent`.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+        "test": "test tools/call input-required → retry with requestState → completion"
+      },
+      "note": "WHY A MULTI-ROUND CHECK TAKES AN EDGE FROM A SINGLE-ROUND UNIT. `InputRequiredResultMultiRoundR1` scores ROUND ONE only, and its predicate is the generic round-1 shape — `!e.error&&r&&R(r)&&r.inputRequests&&r.requestState` — with nothing in it about a second round. The harness scores that shape TWICE, once here and once as `InputRequiredResultRequestStateIncomplete`, and this file records both rather than picking one: reporting R1 in bucket 2 would say the suite has no ET counterpart for the round-1 shape, and it has this one. The scenario's TOOL fixture is not the subject; the behaviour is.",
+      "oc_key": [
+        "server",
+        "input-required-result-multi-round",
+        "sep-2322-multi-round-r1",
+        "InputRequiredResultMultiRoundR1",
+        "Round 1: Server returns InputRequiredResult with requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-multi-round/sep-2322-multi-round-r1/InputRequiredResultMultiRoundR1",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_first_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_response_carries_an_input_required_result",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_input_required_result_carries_a_request_state",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_request_state_is_a_string",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_input_required_result_carries_input_requests",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "that InputRequiredResult carries a `requestState` continuation token, and it is the string the server minted",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:247 — `assert first[\"requestState\"] == \"rs-token-1\"`. Equality against a STRING LITERAL covers both the presence axis (`r.requestState||push`) and the type axis `the_request_state_is_a_string`: a `requestState` that were absent, or a number, could not equal `\"rs-token-1\"`. The check scores those two separately — an absent token pushes onto BOTH — and this one assertion is about both.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+        "test": "test tools/call input-required → retry with requestState → completion"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "input-required-result-request-state",
+        "sep-2322-request-state-incomplete",
+        "InputRequiredResultRequestStateIncomplete",
+        "Server returns InputRequiredResult with both inputRequests and requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "round_1_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_returns_an_input_required_result",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_carries_input_requests",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_carries_a_request_state",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "that InputRequiredResult carries a `requestState` continuation token, and it is the string the server minted",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:247 — `assert first[\"requestState\"] == \"rs-token-1\"`, which is the round-1 `requestState` the R1 conjunct `r.requestState&&(i=!0)` tests for.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+        "test": "test tools/call input-required → retry with requestState → completion"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "input-required-result-multi-round",
+        "sep-2322-multi-round-r1",
+        "InputRequiredResultMultiRoundR1",
+        "Round 1: Server returns InputRequiredResult with requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-multi-round/sep-2322-multi-round-r1/InputRequiredResultMultiRoundR1",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_first_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_response_carries_an_input_required_result",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_input_required_result_carries_a_request_state",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_request_state_is_a_string",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_input_required_result_carries_input_requests",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "that InputRequiredResult carries `inputRequests`, and the SDK puts that value on the wire as a JSON ARRAY",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:248 — `assert is_list(first[\"inputRequests\"])`. The axis is `r.inputRequests||push` — PRESENCE and nothing more, which the axis row states in as many words (`PRESENCE ONLY: this scenario never indexes into it, so nothing here scores its SHAPE`). A list is truthy, so the claim agrees with this axis.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+        "test": "test tools/call input-required → retry with requestState → completion"
+      },
+      "note": "AGREES ON PRESENCE WHILE THE SHAPE DIVERGES, and the two are kept apart deliberately. This unit asserts the value is a JSON ARRAY; the schema's `InputRequests` is `type: object`. That divergence is real and it is adjudicated — but against `WireSchemaValid`, which is the check whose subject is schema validity, not against this one, whose predicate is a truthiness test that an array satisfies. Recording it as a contradiction HERE would be reading this axis as saying more than it says.",
+      "oc_key": [
+        "server",
+        "input-required-result-request-state",
+        "sep-2322-request-state-incomplete",
+        "InputRequiredResultRequestStateIncomplete",
+        "Server returns InputRequiredResult with both inputRequests and requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "round_1_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_returns_an_input_required_result",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_carries_input_requests",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "round_1_carries_a_request_state",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "that InputRequiredResult carries `inputRequests`, and the SDK puts that value on the wire as a JSON ARRAY",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:248 — `assert is_list(first[\"inputRequests\"])`. The R1 conjunct is `r.inputRequests&&`, a truthiness test, which a non-empty list satisfies.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+        "test": "test tools/call input-required → retry with requestState → completion"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "input-required-result-multi-round",
+        "sep-2322-multi-round-r1",
+        "InputRequiredResultMultiRoundR1",
+        "Round 1: Server returns InputRequiredResult with requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-multi-round/sep-2322-multi-round-r1/InputRequiredResultMultiRoundR1",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_retry_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_retry_response_carries_a_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_retry_result_is_a_complete_result",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a retry carrying the server's `requestState` back together with `inputResponses` is answered with a COMPLETE result whose content reflects the supplied input",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:254-255 builds the retry — `\"requestState\" => first[\"requestState\"],` and `\"inputResponses\" => [%{\"name\" => \"Ada\"}]` — and streamable_http_stateless_test.exs:259-260 asserts the outcome: `assert final[\"resultType\"] == \"complete\"` and `assert hd(final[\"content\"])[\"text\"] == \"hello Ada\"`. The check's three axes are no-error, result-present and `z(a)` (the result is COMPLETE); asserting the final `resultType` is `complete` is `z`'s own test written the other way round, and the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold. The first two axes are therefore covered by the SAME observation read at a coarser grain, not inferred from an unobserved behaviour — which is why they are `agrees` and not `silent`.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+        "test": "test tools/call input-required → retry with requestState → completion"
+      },
+      "note": "THE ONE EDGE IN THIS SLICE THAT SCORES THE ROUND TRIP AS A WHOLE. `InputRequiredResultRequestStateComplete` is the family's only check whose subject is the SERVER ACCEPTING THE STATE IT MINTED — the harness sends `requestState:r.requestState` unconditionally here, where the other scenarios spread it only if present. The second assertion (`hello Ada`) goes further than the check does: it scores that the supplied INPUT reached the tool, which no axis of this check is about.",
+      "oc_key": [
+        "server",
+        "input-required-result-request-state",
+        "sep-2322-request-state-complete",
+        "InputRequiredResultRequestStateComplete",
+        "Server validates echoed requestState and returns complete result",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/input-required-result-request-state/sep-2322-request-state-complete/InputRequiredResultRequestStateComplete",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_response_carries_a_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_carries_a_result_type_field_at_all",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_type_is_input_required",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a `tools/call` whose inputs have not yet been supplied is answered with a RESULT whose `resultType` is `input_required`",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:248 — `assert result(first)[\"resultType\"] == \"input_required\"`, over a real HTTP POST at streamable_http_ac_test.exs:247 — `first = post(url, \"tools/call\", with_meta(%{\"name\" => \"needs_input_id\"}), role: \"PM\")`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference. Equality against `\"input_required\"` covers both the presence axis and the value axis.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+        "test": "test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh"
+      },
+      "note": "The SECOND member to agree fully with this check, and the agreement is independent: this one drives the AUTHENTICATED plug pipeline with a role, where the stateless unit drives the plain one. Two units, one behaviour, two routes to it — recorded because a reader counting edges could otherwise read it as one finding double-counted.",
+      "oc_key": [
+        "server",
+        "input-required-result-result-type",
+        "sep-2322-result-type-included",
+        "ResultTypeIncluded",
+        "Server includes resultType field in InputRequiredResult response",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_first_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_response_carries_an_input_required_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_input_required_result_carries_a_request_state",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_request_state_is_a_string",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_input_required_result_carries_input_requests",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a `tools/call` whose inputs have not yet been supplied is answered with a RESULT whose `resultType` is `input_required`",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:248 — `assert result(first)[\"resultType\"] == \"input_required\"`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference. This claim says nothing about `requestState` or `inputRequests`; the member's next claim covers the first of them.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+        "test": "test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "input-required-result-request-state",
+        "sep-2322-request-state-incomplete",
+        "InputRequiredResultRequestStateIncomplete",
+        "Server returns InputRequiredResult with both inputRequests and requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "round_1_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "round_1_returns_an_input_required_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "round_1_carries_input_requests",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_carries_a_request_state",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a `tools/call` whose inputs have not yet been supplied is answered with a RESULT whose `resultType` is `input_required`",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:248 — `assert result(first)[\"resultType\"] == \"input_required\"`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+        "test": "test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "input-required-result-multi-round",
+        "sep-2322-multi-round-r1",
+        "InputRequiredResultMultiRoundR1",
+        "Round 1: Server returns InputRequiredResult with requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-multi-round/sep-2322-multi-round-r1/InputRequiredResultMultiRoundR1",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_first_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_response_carries_an_input_required_result",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_input_required_result_carries_a_request_state",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_request_state_is_a_string",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_input_required_result_carries_input_requests",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "that InputRequiredResult carries a `requestState`, and it is the string token the server minted",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:249 — `assert result(first)[\"requestState\"] == \"rs-token-id\"`. Equality against a string literal covers presence and type both: an absent or non-string `requestState` could not equal `\"rs-token-id\"`.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+        "test": "test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "input-required-result-request-state",
+        "sep-2322-request-state-incomplete",
+        "InputRequiredResultRequestStateIncomplete",
+        "Server returns InputRequiredResult with both inputRequests and requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "round_1_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_returns_an_input_required_result",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_carries_input_requests",
+          "verdict": "silent"
+        },
+        {
+          "axis": "round_1_carries_a_request_state",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "that InputRequiredResult carries a `requestState`, and it is the string token the server minted",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:249 — `assert result(first)[\"requestState\"] == \"rs-token-id\"`, which is what R1's last conjunct `r.requestState&&(i=!0)` tests for.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+        "test": "test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "input-required-result-multi-round",
+        "sep-2322-multi-round-r1",
+        "InputRequiredResultMultiRoundR1",
+        "Round 1: Server returns InputRequiredResult with requestState",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-multi-round/sep-2322-multi-round-r1/InputRequiredResultMultiRoundR1",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_retry_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_retry_response_carries_a_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_retry_result_is_a_complete_result",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a retry echoing the server's own `requestState` back is answered with a COMPLETE result",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:262-263 — `final = post(url, \"tools/call\", retry_params, role: \"REVIEWER\")` and `assert result(final)[\"resultType\"] == \"complete\"`, where `retry_params` echoes the minted token at streamable_http_ac_test.exs:255 — `\"requestState\" => result(first)[\"requestState\"],`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference. Asserting the final `resultType` is `complete` is `z(a)`'s test written the other way round.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+        "test": "test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh"
+      },
+      "note": "A SHARPER INSTANCE THAN THE STATELESS ONE, in the one respect the check does not score. The retry here arrives under a DIFFERENT authenticated principal from the first request, and the server still accepts the state it minted. The check's axes are about acceptance and completion only, so the extra strength is recorded here rather than claimed as agreement with something.",
+      "oc_key": [
+        "server",
+        "input-required-result-request-state",
+        "sep-2322-request-state-complete",
+        "InputRequiredResultRequestStateComplete",
+        "Server validates echoed requestState and returns complete result",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/input-required-result-request-state/sep-2322-request-state-complete/InputRequiredResultRequestStateComplete",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "extra_input_response_keys_do_not_cause_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_response_carries_a_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_recognised_input_response_still_completes_the_call",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "the retry's `inputResponses` entry carries an unrecognised extra field alongside the recognised one, and the call still completes",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:256 — `\"inputResponses\" => [%{\"name\" => \"x\", \"identity\" => \"PM-SPOOF\"}]` — and streamable_http_ac_test.exs:263 — `assert result(final)[\"resultType\"] == \"complete\"`. The recognised field is `\"name\"`; `\"identity\"` is not part of any InputResponse this server asked for. The call completes, so the unrecognised field was ignored rather than rejected. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+        "test": "test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh"
+      },
+      "note": "THE FIRST LIVE FIRING OF D2's WARNING MAPPING, anywhere in the crosswalk — `IgnoreUnexpectedParams` is WARNING at the accepted run, and until this slice declared it the mapping fired on zero rows and was unit-tested rather than demonstrated.\nAND THE RESIDUAL THAT COMES WITH IT, because the agreement is not exact. The harness puts its unrecognised information at the TOP level of `inputResponses` — two whole extra ENTRIES, `unknown_extra_key` and `another_unexpected`, beside the real answer. This unit puts it INSIDE the one entry, as an extra field of the response object. Both are `unrecognised information in `inputResponses`` and the requirement the check quotes is `Servers SHOULD ignore information they do not recognize`, which does not distinguish the two depths — so this is recorded as agreement. A reader who thinks the depth matters should disagree here, and the disagreement is stated rather than buried so that they can.",
+      "oc_key": [
+        "server",
+        "input-required-result-ignore-extra-params",
+        "sep-2322-ignore-unexpected-params",
+        "IgnoreUnexpectedParams",
+        "Server ignores extra unrecognized keys in inputResponses",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/input-required-result-ignore-extra-params/sep-2322-ignore-unexpected-params/IgnoreUnexpectedParams",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "WARNING",
+        "oc_warning": true
+      }
     }
   ],
   "schema": "bucket-view/1",
   "title": "green in both — server",
   "universe": {
-    "count": 106,
+    "count": 122,
     "name": "edges",
     "of": "the crosswalk's `cells`"
   },
