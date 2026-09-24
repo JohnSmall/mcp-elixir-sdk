@@ -17,9 +17,39 @@ defmodule MCP.Conformance.ETCCAttributionTest do
   Every other instrument for this register is a control script for exactly this
   reason (`conformance/controls/etcc_attribution_controls.exs`). AC5 asks for a
   test in gate 5, so this one file is the deliberate exception.
+
+  ## MES-113 — the PROSE joins the exception, and why it had to
+
+  This file guarded the artefact and nothing guarded the prose ABOUT it, so
+  `etcc_attribution_controls.exs figures` — the only instrument over
+  `etcc-attribution.md` — was red on `main` from 2026-08-24 to 2026-09-24 and
+  no gate or sweep saw it. It is a `mix run` script: gate 5 does not reach it
+  and the end-of-sprint sweep set is dependency / boundary-liveness /
+  publication. A control nothing runs is a control whose red nobody sees.
+
+  So the enumeration predicate is driven from HERE as well, over the committed
+  artefacts. The cost is two file reads, a JSON parse and a set compare —
+  neither the gate-6 cadence argument (network-dependent, side-effecting) nor
+  the boundary-sweep one (25–30 minutes) transfers, and the rot is caused at
+  TICKET granularity: MES-84 inserted `@tag :etcc` lines and moved 738
+  citations, which a sprint-boundary check would catch up to a sprint late and
+  land on whoever ran the sweep. Guard 29 — the same rot class on the sibling
+  document — is already in gate 5 as `etcc_citations_test.exs`; this closes the
+  gap rather than opening an exception.
+
+  **The tax, stated because it is real and recurring:** a future ticket that
+  inserts a line above a cited ET-CC test now goes RED here and must re-address
+  the prose. That is the price of addressing units by LINE at all, and its
+  retirement — guard 29's row-key scheme, extended to this document — is
+  MES-125, not this file.
+
+  The control keeps the fixtures and the mutation mode
+  (`etcc_attribution_controls.exs mutation`), which is the ratified split:
+  control script for fixtures and mutation, gate-5 test for decision logic.
   """
   use ExUnit.Case, async: true
 
+  alias MCP.Conformance.AttributionCitations
   alias MCP.Conformance.ETCCAttribution
 
   @register "docs/conformance/etcc-register.json"
@@ -201,6 +231,124 @@ defmodule MCP.Conformance.ETCCAttributionTest do
       assert row, "dispatch_test's `initialize` member is missing from the enriched register"
       assert row["leg"] == "server"
       assert row["contradicts_oc"]["check"] =~ "404-initialize"
+    end
+  end
+
+  describe "MES-113 — per-item enumeration of the prose, in gate 5" do
+    setup do
+      %{prose: File.read!(ETCCAttribution.paths().prose)}
+    end
+
+    test "every counted member is cited at its own address in its own section", ctx do
+      report = AttributionCitations.audit(ctx.prose, ctx.register, ctx.enriched)
+
+      uncited = for p <- report.populations, p.missing != [], do: {p.label, p.missing}
+
+      assert uncited == [], """
+      A counted population has members cited nowhere in the section that
+      enumerates it, so the count has no per-item backing (epic ruling 4):
+
+        #{inspect(uncited, pretty: true)}
+      """
+    end
+
+    test "an enumerating section cites NOTHING but its own members", ctx do
+      report = AttributionCitations.audit(ctx.prose, ctx.register, ctx.enriched)
+
+      extra = for s <- report.sections, s.extra != [], do: {s.section, s.extra}
+
+      assert extra == [], """
+      A section that enumerates a population cites an address that is not one of
+      its members and is not declared in `non_member_citations/0`. A containment
+      check cannot report this, which is how a citation that had drifted onto
+      ANOTHER live member's address read true for a month:
+
+        #{inspect(extra, pretty: true)}
+      """
+    end
+
+    test "the unresolvable bare `:NN` residual has not grown", ctx do
+      report = AttributionCitations.audit(ctx.prose, ctx.register, ctx.enriched)
+
+      assert report.unresolvable == report.unresolvable_recorded, """
+      A bare `:NN` whose paragraph names no `.exs` cannot be resolved by the
+      reader, and 37 of the 40 that existed were stale when MES-113 measured
+      them. This is a RATCHET and not a check: it does not say the recorded
+      #{report.unresolvable_recorded} are correct, only that a new one cannot
+      arrive unnoticed. Found #{report.unresolvable}.
+      """
+    end
+
+    test "a `:NN` after a non-`.exs` filename is that file's, and binds nothing" do
+      # The superseded reader recognised only `.exs` names, so `connection.ex:3`
+      # became a bare `:3` bound to the paragraph's `stdio_test.exs` — crediting
+      # a citation nobody wrote, in a population the check then reported on.
+      prose = "para\n\n`stdio_test.exs:28,50` and `connection.ex:3` names it\n"
+
+      tokens = AttributionCitations.tokens(prose)
+
+      assert Enum.filter(tokens, &(&1.kind == :exs)) |> Enum.map(& &1.line) == [28, 50]
+      assert Enum.filter(tokens, &(&1.kind == :other)) |> Enum.map(& &1.line) == [3]
+      refute Enum.any?(tokens, &(&1.kind == :exs and &1.line == 3))
+    end
+
+    test "a comma-run continuation still belongs to its paragraph's file" do
+      # The narrow refusal above must not take the form §2.4 and §3.3 are
+      # written in with it — refusing that would red the document rather than
+      # check it.
+      tokens = AttributionCitations.tokens("`header_mirror_test.exs:31`, `:133,205`\n")
+
+      assert Enum.map(tokens, &{&1.kind, &1.file, &1.line}) == [
+               {:exs, "header_mirror_test.exs", 31},
+               {:exs, "header_mirror_test.exs", 133},
+               {:exs, "header_mirror_test.exs", 205}
+             ]
+    end
+
+    test "a bare run reaches no further than its own paragraph" do
+      tokens = AttributionCitations.tokens("`header_mirror_test.exs:31`\n\n`:133`\n")
+
+      assert Enum.map(tokens, &{&1.kind, &1.line}) == [{:exs, 31}, {:unresolvable, 133}]
+    end
+
+    test "every non-member citation carries a section and a reason" do
+      for {{section, {file, line}}, reason} <- AttributionCitations.non_member_citations() do
+        assert section =~ ~r/\A§\d/, "#{inspect(section)} is not a section anchor"
+        assert String.ends_with?(file, ".exs")
+        assert is_integer(line) and line > 0
+        assert is_binary(reason) and reason != "", "#{section} #{file}:#{line} has no reason"
+      end
+    end
+
+    test "an allowed address is allowed in ITS section only — the key is the occurrence", ctx do
+      # MES-94's review falsified the first cut of guard 29's limb B by keying
+      # on citation text alone: a live citation appended anywhere returned ok,
+      # because the string was grandfathered somewhere else. That grandfathers
+      # the STRING, not the occurrence. This drives the real audit to show the
+      # same address is refused one section over.
+      {{allowed_section, {file, line}}, _} =
+        AttributionCitations.non_member_citations() |> Enum.sort() |> hd()
+
+      other = Enum.find(["§2.4", "§3.3"], &(&1 != allowed_section))
+
+      moved =
+        String.replace(
+          ctx.prose,
+          "### #{other} ",
+          "### #{other} `#{file}:#{line}` ",
+          global: false
+        )
+
+      refute moved == ctx.prose, "the fixture did not reach #{other}'s heading"
+
+      report = AttributionCitations.audit(moved, ctx.register, ctx.enriched)
+
+      assert {other, [{file, line}]} in for(
+               s <- report.sections,
+               s.extra != [],
+               do: {s.section, s.extra}
+             ),
+             "#{file}:#{line} is grandfathered in #{allowed_section} and must NOT be in #{other}"
     end
   end
 

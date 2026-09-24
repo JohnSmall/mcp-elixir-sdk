@@ -65,13 +65,15 @@ defmodule MCP.Conformance.ETCCAttribution do
   @register "docs/conformance/etcc-register.json"
   @authored "conformance/data/etcc-attribution.json"
   @enriched "docs/conformance/etcc-attribution.json"
+  @prose "docs/conformance/etcc-attribution.md"
 
   @legs ~w(server client none_determinable)
   @cgs ~w(CG1 CG2 CG3 CG4 CG5 CG6 CG7)
   @authored_fields ~w(key leg leg_reason cg cg_basis tokens contradicts_oc)
 
   @doc "Paths, so a control script and the build script cannot drift apart."
-  def paths, do: %{register: @register, authored: @authored, enriched: @enriched}
+  def paths,
+    do: %{register: @register, authored: @authored, enriched: @enriched, prose: @prose}
 
   @doc "The leg vocabulary, so a consumer never has to guess at the third value."
   def legs, do: @legs

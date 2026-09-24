@@ -18,13 +18,28 @@ correlation is demoted** from evidence about the authoring to a display of how
 coarse a module-level proxy is, and the proxy rule is now implemented as a control
 instead of only described.
 
+**CITATION RE-RESOLUTION — MES-113, 2026-09-24. No criterion moved; line numbers
+did.** `18df3a6` (MES-84) inserted an `@tag :etcc` line above each ET-CC test and
+re-addressed 75 of this file's citations, leaving the rest at MES-82's numbering —
+so the document carried two numberings at once, sometimes in one sentence. **86
+citation occurrences over 60 distinct addresses** were re-resolved here, each by
+the address it was AUTHORED to name: through the row key where the authored
+address was a register row (`address@128dee4` → key → `address@tip`, which is
+reorder-proof), and otherwise by searching the tip for the bytes that stood at
+that line at `128dee4` — MES-84's own stated invariant, applied as a search
+rather than assumed. **Every `leg`, `cg`, `token` and `contradicts_oc` value is
+untouched**, and so is every argument: only the addresses moved, back onto the
+lines they were written for. The enumeration check that should have caught this
+is strengthened in the same ticket — §7(7).
+
 | | |
 | --- | --- |
 | `conformance/data/etcc-attribution.json` | **the one authored source** — 281 rows, `key` + six attributes, nothing else |
 | `conformance/lib/mcp/conformance/etcc_attribution.ex` | the builder; joins B2a's register by key, fail-closed |
+| `conformance/lib/mcp/conformance/attribution_citations.ex` | MES-113's enumeration predicate over THIS file's prose — shared by the control and gate 5 |
 | `docs/conformance/etcc-attribution.json` | the derived enriched register |
-| `conformance/controls/etcc_attribution_controls.exs` | 16 guards each seen to refuse, plus `strip-boundary`, `sweep`, `reproduce`, `proxy`, `figures` |
-| `test/conformance/etcc_attribution_test.exs` | AC5's cross-file test, in gate 5 |
+| `conformance/controls/etcc_attribution_controls.exs` | 16 guards each seen to refuse, plus `strip-boundary`, `sweep`, `reproduce`, `proxy`, `figures`, `mutation` |
+| `test/conformance/etcc_attribution_test.exs` | AC5's cross-file test **and MES-113's prose enumeration**, in gate 5 |
 
 ---
 
@@ -281,14 +296,14 @@ because a reader must not read "47 candidates" as "47 doubtful rows".
 neutralised to the identity function:
 
     decode_value/1 -> identity      994 tests, 6 failures
-      header_mirror_test.exs:367, :425
-      routing_headers_test.exs:206, :239
-      self_compatibility_test.exs:97, :167
+      header_mirror_test.exs:367, :438
+      routing_headers_test.exs:206, :248
+      self_compatibility_test.exs:97, :173
 
     encode_value/1 -> identity      994 tests, 11 failures
-      header_mirror_test.exs:31 (x3 of its 4 doctests), :348, :380, :425
-      routing_headers_test.exs:206, :239, :307
-      self_compatibility_test.exs:97, :167
+      header_mirror_test.exs:31 (x3 of its 4 doctests), :354, :389, :438
+      routing_headers_test.exs:206, :248, :318
+      self_compatibility_test.exs:97, :173
 
 `decode_value/1 -> identity` reproduces the reviewer's six exactly, which is the
 cross-seat check on the instrument itself.
@@ -299,12 +314,12 @@ one definite on each leg:
 
 | assertion | falsified by | not falsified by | leg |
 | --- | --- | --- | --- |
-| `:100 assert String.starts_with?(header, "=?base64?")` | `encode_value` mutation — fails **at :100** | any server mutation: `header` is computed before the post, and the recorder never reaches our server | **client-definite** |
-| `:109 assert conn.status == 200` | `decode_value` mutation — fails **at :109** | the `encode_value` mutation — **measured**: with `:100` replaced by `_ = header`, the client mutation leaves `self_compatibility_test.exs:97` GREEN and only `self_compatibility_test.exs:173` reddens | **server-definite** |
+| `:101 assert String.starts_with?(header, "=?base64?")` | `encode_value` mutation — fails **at :101** | any server mutation: `header` is computed before the post, and the recorder never reaches our server | **client-definite** |
+| `:110 assert conn.status == 200` | `decode_value` mutation — fails **at :110** | the `encode_value` mutation — **measured**: with `:101` replaced by `_ = header`, the client mutation leaves `self_compatibility_test.exs:97` GREEN and only `self_compatibility_test.exs:173` reddens | **server-definite** |
 
 The second row's negative half is a **measurement, not a reachability argument**:
-ExUnit aborts at the first failure, so the only way to see whether `:109` survives
-a client mutation is to remove `:100` and re-run. It survives. **Two definite legs
+ExUnit aborts at the first failure, so the only way to see whether `:110` survives
+a client mutation is to remove `:101` and re-run. It survives. **Two definite legs
 → `none_determinable`**, per the rule's gap resolution in §2 above.
 
 **The rows that do NOT move, with the reason each stays.**
@@ -314,7 +329,7 @@ a client mutation is to remove `:100` and re-run. It survives. **Two definite le
   `refute headers["mcp-name"] =~ "\r"` and `refute Map.has_key?(headers, "x-injected")`)
   which no server mutation can reach, because the far end is `CapturePlug`. Their
   decode call is **not** server-definite, and this is measured rather than argued:
-  the `decode_value` mutation fails `routing_headers_test.exs:206` at **:216** and `routing_headers_test.exs:248` at **:252**
+  the `decode_value` mutation fails `routing_headers_test.exs:206` at **:223** and `routing_headers_test.exs:248` at **:261**
   — the decode assertions — and the `encode_value` mutation reddens the same two
   members. **The same assertion falsified from both sides is not definite for
   either.** That is the second limb: the decode consumes our own encoder's output.
@@ -330,7 +345,7 @@ a client mutation is to remove `:100` and re-run. It survives. **Two definite le
   Its `headers` come from `HeaderMirror.headers_for/2` in the `describe`'s own
   `setup`, so the decode is applied to our own encoder's output. Single assertion,
   falsified from either side, neither leg definite.
-* **`self_compatibility_test.exs:116`, `:128`, `:140`, `:155` stay `server`** — they name `encode_value`
+* **`self_compatibility_test.exs:116`, `:131`, `:144`, `:160` stay `server`** — they name `encode_value`
   but assert nothing about its output, and the `encode_value` mutation **does not
   redden them**, which is the negative half measured rather than argued.
 * **`header_mirror_test.exs:450` stays `server`** — `decode_value` applied to two literals, and the
@@ -370,11 +385,11 @@ over `ClientCapabilities` **and** `ServerCapabilities`);
 `protocol/header_mirror_test.exs:438` (an `encode_value` literal **and** a
 `decode_value` literal — moved here from class 2 in correction round 1, where it
 was miscalled a round-trip); `transport/self_compatibility_test.exs:97` (the
-client-produced sentinel at `:100` **and** our server's 200 at `:109` — the one
+client-produced sentinel at `:101` **and** our server's 200 at `:110` — the one
 row the ratified rule re-attributed, §2.3).
 
 **(4) A public API with no `lib/` call site on either leg — 7.**
-`protocol/extensions_test.exs:35` (×2 doctests), `:386,391,405,423,435`. All
+`protocol/extensions_test.exs:35` (×2 doctests), `:387,393,408,427,440`. All
 assert `Extensions.from_meta/1`, whose only appearances in `lib/` are its own
 definition and doc examples. A mutation changes what a **consumer's handler**
 sees, not what either of our implementations puts on or takes off the wire.
@@ -432,10 +447,18 @@ refuses a row with no basis: silence must not encode a decision.
 **The sweep was measured before it was proposed, on a set whose true answer A4
 had published.** Over the 12 rows `cg-reconciliation.md` §3 names as CG1's and
 CG7's end-to-end discharge, a SEP-number sweep over `spec_anchor` returns **7 of
-12** — `:199, :222, :239, :342, :359` anchor to `streamable-http.mdx` line ranges
+12** — `:206, :230, :248, :354, :372` anchor to `streamable-http.mdx` line ranges
 without naming the SEP. A **42% under-count, every loss in the "none"
 direction**. Re-run at the delivered tip by
 `etcc_attribution_controls.exs sweep`, which reproduces 7 of 12 exactly.
+
+**That control's own 12 rows are addressed by ROW KEY, and MES-113 is why.** They
+were twelve line numbers at MES-82's numbering; MES-84 moved every one, so
+`row["line"] in [...]` matched **nothing** and the control printed *"finds: 0"*
+directly under the paragraph above — for a month, without failing, because
+nothing asserted the 7. It asserts it now, and a key cannot drift. **An
+instrument that reports a figure it does not check is the S7-47 class**, and this
+one was inside the very control set this file cites as its evidence.
 
 A check that can only fail toward the conclusion it is testing is not a check. So
 the sweep is **disqualified as the method** and demoted to a control that can only
@@ -463,7 +486,7 @@ sentinel claim asserted end to end).
 
 **CG2 — 14** (A4: 4 units, of which 2 are ET-CC). `client_conformance_test.exs:186,235`;
 `client_test.exs:488,500,512,528,556,583,616,644,672`;
-`capabilities_test.exs:140,151` (client) and `:181` (`none_determinable`).
+`capabilities_test.exs:140,151` (client) and `:191` (`none_determinable`).
 
 **CG3 — 0.** No ET-CC member. Not implemented; owned by MES-38. Agrees with A4.
 
@@ -477,8 +500,8 @@ exclusion rather than re-deciding it, and agreeing with it.
 **CG6 — 0.** No ET-CC member. Owned by MES-32. Agrees with A4.
 
 **CG7 — 31** (A4 named 3 discharge sites). `header_mirror_test.exs:31` (×4
-doctests), `:133,205,327,332,340,348,374,380,392,399,410,457,463` (client) and
-`:360,425` (`none_determinable`); `routing_headers_test.exs:318,354,372`;
+doctests), `:134,207,330,336,345,354,382,389,402,410,422,472,479` (client) and
+`:367,438` (`none_determinable`); `routing_headers_test.exs:318,354,372`;
 `client_tool_schemas_test.exs:83,125,156,178,235,279,389,427,455`.
 
 **CG7 was 35 in round 1. Four rows left on review finding F2 — see §4.5**, which
@@ -548,11 +571,11 @@ and the reason for the difference is named.
 
 | | A4 says | this file says | reading |
 | --- | --- | --- | --- |
-| **D1** | CG2 discharge = **4 ET-CC units**, `client_conformance_test.exs:186,211,219,235` | **2** of those are ET-CC (`:184`, `:232`); `:209` and `:217` are **ET-OUT** on gate 2. And the member set is **14**, not 4 | one defect with D2 — see below |
-| **D2** | CG7's bucket-1 constraints = **9 ET-CC units**, `header_mirror_test.exs:113,120,134,157,169,195,207,224,233` | only `:133` and `:205` are ET-CC; the other **seven are ET-ADJ**. And CG7's member set is **31** (35 before §4.5's correction) | same defect |
-| **D3** | CG7's W6 exclusion unit is `client_tool_schemas_test.exs:81` | **no row at 81.** `81` is the `describe` line; the `test` declaration is **82**, and 82 is ET-CC | S7-23, cross-referenced |
+| **D1** | CG2 discharge = **4 ET-CC units**, `client_conformance_test.exs:186,211,219,235` | **2** of those are ET-CC (`:186`, `:235`); `:211` and `:219` are **ET-OUT** on gate 2. And the member set is **14**, not 4 | one defect with D2 — see below |
+| **D2** | CG7's bucket-1 constraints = **9 ET-CC units**, `header_mirror_test.exs:113,120,134,157,169,195,207,224,233` | only `:134` and `:207` are ET-CC; the other **seven are ET-ADJ**. And CG7's member set is **31** (35 before §4.5's correction) | same defect |
+| **D3** | CG7's W6 exclusion unit is `client_tool_schemas_test.exs:81` | **no row at 81.** `81` is the `describe` line; the `test` declaration is **83**, and 83 is ET-CC | S7-23, cross-referenced |
 | **D4** | `conformance_request_state_test.exs` is "an obvious candidate" for the unclaimed MRTR five; B2b's sweep decides it | that file has **12 in-scope units, every one ET-OUT** — zero members. **But the sweep finds carriers elsewhere:** `client_defects_test.exs:70,110,143` and `client_test.exs:270` match two of the five | **overturns this file's own pre-measured answer** — see §4.2 |
-| **D5** | CG5's mentioning-not-discharging witness is `discover_test.exs:37` (A4 §3) and `:47` (`match-relation.md` §6) | **NOT a disagreement.** Both are right: `35` is the `test` declaration (the register's key) and `47` is the `cache_scope` assertion. See §4.4 — this ticket's own plan got this one wrong | S7-23, cross-referenced |
+| **D5** | CG5's mentioning-not-discharging witness is `discover_test.exs:37` (A4 §3) and `:49` (`match-relation.md` §6) | **NOT a disagreement.** Both are right: `37` is the `test` declaration (the register's key) and `49` is the `cache_scope` assertion. See §4.4 — this ticket's own plan got this one wrong | S7-23, cross-referenced |
 | **D6** | CG7's gap is *mirror designated parameters / encode unsafe values / exclude invalidly-annotated tools* | round 1 assigned CG7 to **4 rows none of those three limbs reaches**, on a *purposive* basis. **Overturns this file's own round-1 count: CG7 35 → 31** | §4.5 — the second self-overturn, and the only one a reviewer found rather than this ticket |
 
 ### §4.1 D1 and D2 are ONE defect, and naming it is worth more than the rows
@@ -586,7 +609,7 @@ finds carriers in two files A4 never had cause to look at:
 
 * `MRTRClientNoStateOmitted` — *"If InputRequiredResult does not contain
   requestState, client MUST NOT include one in the retry"* — is asserted verbatim
-  by `client_defects_test.exs:70` and `:108`
+  by `client_defects_test.exs:70` and `:110`
   (`refute Map.has_key?(retry["params"], "requestState")`).
 * `MRTRClientRequestStateEchoed` — *"Client MUST echo back the exact value of
   requestState when retrying"* — by `client_defects_test.exs:143` and
@@ -622,7 +645,10 @@ them is wrong at this tip — the `cache_scope` assertion is at **48**, not 47"*
 
 **Run literally at the delivered tip, that is false.** `discover_test.exs:49` is
 `assert result.cache_scope == "public"`, exactly as `match-relation.md` §6 cites
-it; there is no assertion at 48 (`:48` is `assert result.server_info.name`).
+it; the plan's address is one assertion too far — the line it names is
+`assert result.server_info.name`, at `:50`. (The plan's `47`/`48` are the
+numbering of the day: MES-84's `@tag :etcc` insertions moved both, and MES-113
+re-addressed this paragraph to the tip.)
 
 So D5 is **not** an AC3 disagreement at all. A4 §3 cites the `test` declaration
 line (35, which is the register's key under `etcc-row-key.md` §1); §6 cites the
@@ -667,24 +693,24 @@ rows against all three, citing the row's own assertion:
 
 | row | its own assertion | (i) mirror | (ii) encode | (iii) exclude |
 | --- | --- | --- | --- | --- |
-| `:320` | `:339 {:error, %Error{code: -32_020}}`, `:341 length(sent) == 3` | no | no | no |
-| `:345` | `:363 {:error, %Error{code: -32_020}}` | no | no | no |
-| `:367` | `:373 {:error, %Error{code: -32_020}}`, `:374 length(sent) == 1` | no | no | no |
-| `:399` | `:404 {:error, {:malformed_result, nil}}`, `:408 Process.alive?(client)` | no | no | no |
+| `:327` | `:346 {:error, %Error{code: -32_020}}`, `:348 length(sent) == 3` | no | no | no |
+| `:353` | `:371 {:error, %Error{code: -32_020}}` | no | no | no |
+| `:376` | `:382 {:error, %Error{code: -32_020}}`, `:383 length(sent) == 1` | no | no | no |
+| `:410` | `:415 {:error, {:malformed_result, nil}}`, `:419 Process.alive?(client)` | no | no | no |
 
-`:320`, `:345` and `:367` are the client's **-32020 recovery policy** — refresh
-once, retry once, then surface, and not off the `tools/call` path. `:399` is
+`:327`, `:353` and `:376` are the client's **-32020 recovery policy** — refresh
+once, retry once, then surface, and not off the `tools/call` path. `:410` is
 **malformed-`tools/list` robustness**. The gap says nothing about recovering from
 a peer's rejection or about surviving a malformed result. **So the four leave, and
 CG7 goes 35 → 31.**
 
 **The discriminator is in the file itself, which is why this is not a judgement
-call.** `:399` and `:415` sit in the same `describe` and make the same kind of
-claim — yet `:415` asserts
+call.** `:410` and `:427` sit in the same `describe` and make the same kind of
+claim — yet `:427` asserts
 `headers_for_call(client, transport, "t") == [{"mcp-param-region", "us-west1"}]`
-at `:431`, which *is* limb (i), and `:399` asserts nothing about a header. `:415`
-stays; `:399` goes. The nine that stay each cite a `Mcp-Param-*`/`:headers`
-assertion of their own, or (`:82`, `:123`) the exclusion.
+at `:443`, which *is* limb (i), and `:410` asserts nothing about a header. `:427`
+stays; `:410` goes. The nine that stay each cite a `Mcp-Param-*`/`:headers`
+assertion of their own, or (`:83`, `:125`) the exclusion.
 
 **Where the four went.** `cg: none` with a per-row basis naming the gap check, and
 `tokens: []` — the second question was asked and answered too: none of the 15
@@ -735,7 +761,7 @@ The member-side sweep finds the same claim one layer down, at
 
 **Checked against the false-positive guard rather than accepted on the words.**
 A4's claim is *"a server declaring NO extensions yields nil, not an invented
-map"*. `:133` asserts exactly that at the decoder — and it is **the decoder our
+map"*. `:140` asserts exactly that at the decoder — and it is **the decoder our
 client runs** (`client.ex:539` → `Discover.Result.from_map/1` →
 `ServerCapabilities.from_map/1`), so it is the same required behaviour on the same
 leg, not a look-alike. Its leg is `client`, consistently.
@@ -830,7 +856,7 @@ row by name, so the one row most likely to be lost cannot be lost silently.
    call site at `messages/initialize.ex:72`, inside
    `MCP.Protocol.Messages.Initialize` — a module nothing in `lib/` references under
    stateless core. The four members attributed `client` on that decoder —
-   `capabilities_test.exs:8`, `:26`, `:36` and `:133`, the last being §5.1's
+   `capabilities_test.exs:8`, `:28`, `:39` and `:140`, the last being §5.1's
    `CG2-absent-yields-nil` carrier — rest on a **reachability** claim,
    *"reached only by our client"*,
    which **holds as written at this tip** and which **reviving `Initialize` would
@@ -857,6 +883,24 @@ row by name, so the one row most likely to be lost cannot be lost silently.
    bound on S7-24's own remedy, not an instance of S7-24** — recorded as
    **S7-29**.
 
+   **MES-113 rebuilt the enumeration half of that column, and the two holes it
+   had are worth more than the addresses they hid.** It asserted
+   `members ⊆ cited(WHOLE FILE)`, and both halves of that leaked. **Whole-file**,
+   so a stale §3.3 citation was masked whenever the same row was cited correctly
+   elsewhere: §3.3's `header_mirror_test.exs` citations were stale at **15 of its
+   16** addresses and the check reported **9**, because §2.4 and §5 cite five of
+   the remaining six rows correctly. **One-directional**, so a cited address that
+   is not a member was never reported — which is the sixteenth: the citation
+   written `header_mirror_test.exs:410` was authored for the row now at 422 and
+   had drifted onto the address the row it separately cites had moved to, so
+   membership found it and passed. It is now **section-scoped** and a **set
+   equality**,
+   and `etcc_attribution_controls.exs mutation` shows each strengthening against
+   the predicate it replaced, on the same fixture. It also runs in **gate 5**
+   (`test/conformance/etcc_attribution_test.exs`): the control was a `mix run`
+   script no gate and no end-of-sprint sweep reached, so its red sat unseen from
+   2026-08-24 to 2026-09-24.
+
 8. **This file adds tests under `test/conformance/`.** They are out of scope by
    gate 1, so the next regeneration of `docs/conformance/etcc-exunit-rows.json`
    will see 992 + the tests in
@@ -864,3 +908,30 @@ row by name, so the one row most likely to be lost cannot be lost silently.
    ticket regenerates it, so the committed 992 and B2a's 579/413 split are
    unmoved — stated so a reader can tell expected movement from a finding
    (`etcc-row-key.md` §5.1).
+
+9. **The enumeration does NOT reach a bare `:NN` whose paragraph names no
+   `.exs`, and there are 40 of them.** §2.3's mutation table, §3.2's sweep
+   quote, §4.5's gap table and §5.1 each open a paragraph with a run of bare
+   addresses, and the reader cannot bind those to a file without guessing —
+   which is the phantom `stdio_test.exs` line-3 citation in the other direction,
+   manufactured by the superseded reader out of §2.4's `connection.ex:3`. **37 of the
+   40 were stale when MES-113 measured them**, and no limb of the check could
+   have seen any of them; they are re-resolved there by hand. The standing
+   guard is a **ratchet only**: the count is recorded, so a 41st cannot arrive
+   unnoticed. None of the 40 is in §2.4 or §3.3, so no enumeration verdict
+   rests on one.
+
+10. **Guard 30 (`CitationVerbatim`) does not cover this surface, and the
+    measurement rather than the claim.** MES-112's predicate compares a quoted
+    byte-string against the window its evidence addresses, and only backtick
+    spans carrying `=`, `(`, `[`, `!==` or `===` count as lifts. Run over this
+    whole file it visits **159 paragraphs**, counts **21** source-shaped spans
+    and **compares exactly one** — §4.4's `assert result.cache_scope ==
+    "public"` at `discover_test.exs:49`, which MATCHES. The other 20 are not
+    byte defects: they are assertion bodies quoted against a *declaration-line*
+    window, arithmetic like `56 + 225 = 281`, and the §2.3/§4.5 table form that
+    puts the address inside the quote span. It also refuses **72** bare
+    continuations by design (bound 9). **So G30 contributes one comparison
+    here**; this file's rot is address staleness with no bytes to compare, which
+    is a different predicate, and claiming one covers both would be the AC7
+    error.

@@ -6,6 +6,7 @@
 #     mix run conformance/controls/etcc_attribution_controls.exs reproduce
 #     mix run conformance/controls/etcc_attribution_controls.exs proxy
 #     mix run conformance/controls/etcc_attribution_controls.exs figures
+#     mix run conformance/controls/etcc_attribution_controls.exs mutation
 #
 # WHY A SCRIPT AND NOT AN ExUnit TEST — the same reason B2a gives: a test file
 # under `test/mcp/` would add members to the population this register attributes,
@@ -25,6 +26,7 @@
 # WHOLE build, and asserts the output is byte-identical.
 
 defmodule ETCCAttributionControls do
+  alias MCP.Conformance.AttributionCitations
   alias MCP.Conformance.ETCCAttribution
 
   @paths ETCCAttribution.paths()
@@ -35,9 +37,10 @@ defmodule ETCCAttributionControls do
   def run(["reproduce"]), do: reproduce()
   def run(["proxy"]), do: proxy()
   def run(["figures"]), do: figures()
+  def run(["mutation"]), do: mutation()
 
   def run(_) do
-    IO.puts("usage: guards | strip-boundary | sweep | reproduce | proxy | figures")
+    IO.puts("usage: guards | strip-boundary | sweep | reproduce | proxy | figures | mutation")
     System.halt(2)
   end
 
@@ -199,18 +202,36 @@ defmodule ETCCAttributionControls do
       ranges without naming the SEP. 42% under-count, every loss toward "none".
     """)
 
+    # KEYED ON THE ROW KEY, NOT THE LINE, and MES-113 is why. This list was
+    # twelve LINE numbers at MES-82's numbering; MES-84's `@tag :etcc`
+    # insertions moved every one of them, so `row["line"] in [...]` matched
+    # NOTHING and this printed "finds: 0" under a paragraph saying 7 — for a
+    # month, without failing, because nothing asserted the 7. A key cannot
+    # drift, and the assertion below means a future divergence is loud.
+    discharge_keys = discharge_rows()
+
     cg1_cg7 =
-      for {key, row} <- by_key,
-          row["file"] == "test/mcp/transport/routing_headers_test.exs",
-          row["line"] in [89, 108, 122, 133, 161, 180, 199, 222, 239, 307, 342, 359],
-          row["label"] == "ET-CC",
-          do: {row["line"], String.contains?(row["spec_anchor"] || "", "2243"), key}
+      for key <- discharge_keys do
+        row = Map.get(by_key, key) || raise("discharge row key no longer in the register: #{key}")
+        {row["line"], String.contains?(row["spec_anchor"] || "", "2243"), key}
+      end
 
     found = Enum.count(cg1_cg7, fn {_l, hit, _k} -> hit end)
-    IO.puts("  of the 12 discharge rows, the SEP sweep finds: #{found}")
+    IO.puts("  of the #{length(cg1_cg7)} discharge rows, the SEP sweep finds: #{found}")
 
     for {line, hit, _} <- Enum.sort(cg1_cg7) do
       IO.puts("    #{if hit, do: "hit ", else: "MISS"} routing_headers_test.exs:#{line}")
+    end
+
+    if {length(cg1_cg7), found} != {12, 7} do
+      IO.puts("""
+
+        BROKEN CONTROL: §3.2 states 7 of 12, and this run measured #{found} of #{length(cg1_cg7)}.
+        A sweep whose own under-count figure has drifted cannot be cited as the
+        measurement that disqualified it. Re-read §3.2 before changing either.
+      """)
+
+      System.halt(1)
     end
 
     IO.puts("\n  Sweep hits the ENUMERATION recorded as cg: none — each re-read by hand:")
@@ -250,6 +271,28 @@ defmodule ETCCAttributionControls do
     end
   end
 
+  # The 12 rows `cg-reconciliation.md` §3 names as CG1's and CG7's end-to-end
+  # discharge, addressed by `etcc-row-key.md` §1's key.
+  defp discharge_rows do
+    prefix = "MCP.Transport.RoutingHeadersTest/test "
+
+    [
+      "T-CG1a — Mcp-Method on every POST a request carries the body method",
+      "T-CG1a — Mcp-Method on every POST a NOTIFICATION carries it too — the spec says all requests, not all responses-bearing ones",
+      "T-CG1a — Mcp-Method on every POST a message with no method carries no routing headers",
+      "T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri",
+      "T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name",
+      "T-CG1b — Mcp-Name for the three name-bearing methods a tools/call whose params carry no name emits no Mcp-Name rather than an empty one",
+      "T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a non-ASCII tool name is encoded, and decodes back to the body value",
+      "T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a resource URI with a space is encoded",
+      "T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a name that would inject a header is neutralised",
+      "T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+      "T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client a null argument omits its header",
+      "T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client with no prior tools/list, nothing is mirrored and the client says so"
+    ]
+    |> Enum.map(&(prefix <> &1))
+  end
+
   defp hits(by_key, attributed, term) do
     for {key, row} <- by_key,
         row["label"] == "ET-CC",
@@ -274,7 +317,7 @@ defmodule ETCCAttributionControls do
     enriched = read(@paths.enriched)
     totals = Map.fetch!(enriched, "totals")
     rows = Map.fetch!(enriched, "rows")
-    prose = File.read!("docs/conformance/etcc-attribution.md")
+    prose = File.read!(@paths.prose)
 
     by_leg = Map.fetch!(totals, "by_leg")
     by_cg = Map.fetch!(totals, "by_cg")
@@ -323,7 +366,7 @@ defmodule ETCCAttributionControls do
       real finding), and it is the enumeration check below that carries weight.
     """)
 
-    enumeration_check(rows, prose)
+    enumeration_check(prose)
 
     if missing != [] do
       IO.puts("\n  FIGURES MISSING FROM THE PROSE: #{inspect(Enum.reverse(missing))}")
@@ -331,85 +374,276 @@ defmodule ETCCAttributionControls do
     end
   end
 
-  # Every member of every population must be CITED at its own address in the
-  # prose (epic ruling 4: a count is backed by per-item enumeration). "In the
-  # population and not cited" must be empty for each.
-  defp enumeration_check(rows, prose) do
+  # Epic ruling 4: a count is backed by per-item enumeration. The predicate is
+  # `MCP.Conformance.AttributionCitations`, shared with
+  # `test/conformance/etcc_attribution_test.exs` so the gate and this control
+  # cannot drift apart — MES-113's S9-15 wiring.
+  #
+  # It is SECTION-SCOPED and BIDIRECTIONAL, and both halves were measured as
+  # holes before they were closed. Whole-file scoping masked five of
+  # `header_mirror_test.exs`'s nine §3.3 defects behind correct citations of the
+  # same rows in §2.4 and §5; one-directionality hid every DEAD address,
+  # including the one authored for the row at `:422` that had drifted onto
+  # another live member's `:410`. `mutation` shows both, on fixtures.
+  defp enumeration_check(prose) do
     register = read(@paths.register)
-    by_key = Map.new(Map.fetch!(register, "rows"), &{&1["key"], &1})
-    cited = cited_addresses(prose)
+    enriched = read(@paths.enriched)
+    report = AttributionCitations.audit(prose, register, enriched)
 
-    populations =
-      [{"leg: none_determinable", fn r -> r["leg"] == "none_determinable" end}] ++
-        for cg <- ~w(CG1 CG2 CG4 CG7) do
-          {"cg: #{cg}", fn r -> r["cg"] == cg end}
-        end
+    IO.puts("  PER-ITEM ENUMERATION — section-scoped, and an EQUALITY not a containment\n")
 
-    IO.puts("  PER-ITEM ENUMERATION — every member of each population cited at its own address\n")
+    for p <- report.populations do
+      IO.puts(
+        "    #{String.pad_trailing(p.label, 24)} #{MapSet.size(p.members)} distinct address(es) " <>
+          "enumerated in #{p.section}, not cited there: " <>
+          "#{if p.missing == [], do: "none", else: inspect(p.missing)}"
+      )
+    end
 
-    bad =
-      for {label, pred} <- populations, reduce: [] do
-        acc ->
-          members =
-            rows
-            |> Enum.filter(pred)
-            |> Enum.map(fn r ->
-              row = Map.fetch!(by_key, r["key"])
-              {Path.basename(row["file"]), row["line"]}
-            end)
-            |> Enum.uniq()
+    IO.puts("")
 
-          absent = Enum.reject(members, &MapSet.member?(cited, &1))
+    for sec <- report.sections do
+      IO.puts(
+        "    #{String.pad_trailing(sec.section, 24)} cites #{MapSet.size(sec.cited)}, enumerates " <>
+          "#{MapSet.size(sec.enumerated)}, cited-but-not-a-member: " <>
+          "#{if sec.extra == [], do: "none", else: inspect(sec.extra)}"
+      )
+    end
 
-          IO.puts(
-            "    #{String.pad_trailing(label, 24)} #{length(members)} distinct address(es), " <>
-              "not cited: #{if absent == [], do: "none", else: inspect(absent)}"
-          )
+    IO.puts(
+      "\n    bare `:NN` with no `.exs` in paragraph scope: #{report.unresolvable} " <>
+        "(recorded #{report.unresolvable_recorded}) — the RESIDUAL, ratcheted, not checked"
+    )
 
-          if absent == [], do: acc, else: [{label, absent} | acc]
-      end
+    unless report.ok? do
+      IO.puts("""
 
-    if bad != [] do
-      IO.puts("\n  ENUMERATION INCOMPLETE — a counted member is not cited: #{inspect(bad)}")
+        ENUMERATION INCOMPLETE. A member not cited in its own enumerating section
+        is a count with no per-item backing; a cited address that is not a member
+        is a citation that has drifted off its row. Both are findings, and the
+        second is the one the superseded containment check could not report.
+      """)
+
       System.halt(1)
     end
   end
 
-  # Reads the prose the way a reader does: inside one paragraph, a bare
-  # `:NNN,NNN,…` run belongs to the most recent `*.exs` named in that paragraph,
-  # and a run after a filename belongs to that file. The prose spells every file
-  # basename out for this reason — a two-letter shorthand would make a bare
-  # `:NNN` ambiguous, and an ambiguity here credits a citation that was never
-  # written, which is the one direction this check must not fail in.
-  defp cited_addresses(prose) do
+  defp all_tokens(rows), do: Enum.flat_map(rows, & &1["tokens"])
+
+  # --- A6: the mutation mode -------------------------------------------------
+
+  # A check that has never been seen to fail is a promise. This mutates the
+  # ENUMERATION's inputs — never the tree — and requires the named cases to go
+  # red; and for the two STRENGTHENINGS MES-113 made, it runs the SUPERSEDED
+  # predicate beside the new one ON THE SAME FIXTURE, so what the change buys is
+  # measured rather than claimed.
+  #
+  #   P  — the delivered tip is GREEN. Without it a check red on everything
+  #        would "catch" every mutation below vacuously.
+  #   M1 — a member's address moved in a register copy: that member is then
+  #        cited nowhere, and the enumeration limb must still fire.
+  #   M2 — the ONE-DIRECTIONAL hole: a DEAD address added to §3.3. Red under
+  #        equality; GREEN under the superseded `members ⊆ cited`.
+  #   M3 — the WHOLE-FILE MASK: §3.3's citation of a member that §5 also cites,
+  #        broken. Red under section scoping; GREEN under the superseded
+  #        whole-file cited set.
+  #   M4 — the reader's CROSS-FILE REFUSAL: a `.ex` address inside §3.3. Inert
+  #        now; the superseded reader credits it as a §3.3 citation of the
+  #        paragraph's `.exs` — which is how `stdio_test.exs:3`, a citation
+  #        nobody wrote, entered the population the check reported on.
+  defp mutation do
+    header("MUTATION — the enumeration check, shown able to fail, and the delta it buys")
+
+    register = read(@paths.register)
+    enriched = read(@paths.enriched)
+    prose = File.read!(@paths.prose)
+
+    green?(
+      "P  positive control — the delivered document and artefacts",
+      AttributionCitations.audit(prose, register, enriched)
+    )
+
+    # M1 — admit one more member to CG7 in a copy of the enriched artefact. Its
+    # address is then counted and cited nowhere, which is the defect the
+    # enumeration limb exists for, and NOTHING else changes: the row leaves
+    # `cg: none`, which no section enumerates.
+    recruit = hd(Enum.filter(Map.fetch!(enriched, "rows"), &is_nil(&1["cg"])))
+
+    grown =
+      Map.put(
+        enriched,
+        "rows",
+        Enum.map(Map.fetch!(enriched, "rows"), fn r ->
+          if r["key"] == recruit["key"], do: Map.put(r, "cg", "CG7"), else: r
+        end)
+      )
+
+    red?(
+      "M1 one more member counted in CG7 — it is cited nowhere in §3.3",
+      AttributionCitations.audit(prose, register, grown),
+      :missing
+    )
+
+    # M2 — the one-directional hole. `:399` is where MES-82 addressed the row
+    # that now lives at `:410`; re-adding it leaves every member still cited.
+    m2 =
+      replace_once(
+        prose,
+        "`:134,207,330,336,345,354,382,389,402,410,",
+        "`:134,207,330,336,345,354,382,389,399,402,410,"
+      )
+
+    red?(
+      "M2 a DEAD address restored in §3.3 — equality reports it",
+      AttributionCitations.audit(m2, register, enriched),
+      :extra
+    )
+
+    superseded("M2", m2, register, enriched)
+
+    # M3 — the whole-file mask. `header_mirror_test.exs:134` is cited in §3.3
+    # AND in §5.1's token table, so breaking §3.3's copy alone is exactly the
+    # shape that hid five of the nine CG7 defects.
+    m3 = replace_once(prose, "`:134,207,330,", "`:1134,207,330,")
+
+    red?(
+      "M3 §3.3's copy of a member §5.1 also cites, broken",
+      AttributionCitations.audit(m3, register, enriched),
+      :both
+    )
+
+    superseded("M3", m3, register, enriched)
+
+    # M4 — the cross-file bind.
+    m4 =
+      replace_once(
+        prose,
+        "`routing_headers_test.exs:318,354,372`",
+        "`routing_headers_test.exs:318,354,372` (`header_mirror.ex:12`)"
+      )
+
+    green?(
+      "M4 a `.ex` address inside §3.3 — refused, so it credits nothing",
+      AttributionCitations.audit(m4, register, enriched)
+    )
+
+    # The superseded reader binds the bare `:12` to the paragraph's current
+    # `.exs`, so bytes reading `header_mirror.ex:12` are credited as a §3.3
+    # citation of `routing_headers_test.exs` — the `stdio_test.exs:3` shape
+    # exactly, manufactured from `connection.ex:3`.
+    old = superseded_cited(m4)
+    credited? = MapSet.member?(old, {"routing_headers_test.exs", 12})
+
+    IO.puts(
+      "          superseded reader credits routing_headers_test.exs:12 from bytes " <>
+        "reading `header_mirror.ex:12`: #{credited?}"
+    )
+
+    unless credited? do
+      IO.puts("          BROKEN CONTROL: M4 does not exhibit the bind it exists to show.")
+      System.halt(1)
+    end
+
+    IO.puts("\n  5 of 5 mutation cases behaved as recorded.")
+  end
+
+  defp green?(label, report) do
+    if report.ok? do
+      IO.puts("  ok      #{label}")
+    else
+      IO.puts("  RED     #{label}\n          #{inspect(failures(report))}")
+      System.halt(1)
+    end
+  end
+
+  defp red?(label, report, expect) do
+    missing? = Enum.any?(report.populations, &(&1.missing != []))
+    extra? = Enum.any?(report.sections, &(&1.extra != []))
+
+    got =
+      cond do
+        missing? and extra? -> :both
+        missing? -> :missing
+        extra? -> :extra
+        true -> :green
+      end
+
+    if got == expect do
+      IO.puts("  red     #{label}\n          #{inspect(failures(report))}")
+    else
+      IO.puts("  DID NOT REFUSE AS RECORDED  #{label} — expected #{expect}, got #{got}")
+      System.halt(1)
+    end
+  end
+
+  # The two predicates MES-113 superseded, run for comparison ONLY, so the
+  # strengthening is a measured delta and not an assertion about itself.
+  defp superseded(label, prose, register, enriched) do
+    by_key = Map.new(Map.fetch!(register, "rows"), &{&1["key"], &1})
+    cited = superseded_cited(prose)
+
+    absent =
+      for p <- AttributionCitations.populations(),
+          addr <- AttributionCitations.member_addresses(enriched, by_key, p),
+          not MapSet.member?(cited, addr),
+          do: {p.label, addr}
+
+    verdict = if absent == [], do: "GREEN", else: "red (#{length(absent)} uncited)"
+    IO.puts("          superseded `members ⊆ cited(WHOLE FILE)` on the same fixture: #{verdict}")
+
+    if absent != [] do
+      IO.puts("          #{label}: the superseded check ALSO fails here, so this case")
+      IO.puts("          measures no delta. Re-read it before trusting the pair.")
+      System.halt(1)
+    end
+  end
+
+  # The pre-MES-113 reader, verbatim in behaviour: only `.exs` filenames are
+  # recognised, so a bare `:NN` after ANY other filename binds to the
+  # paragraph's current `.exs`.
+  defp superseded_cited(prose) do
     prose
     |> String.split(~r/\n\s*\n/)
-    |> Enum.flat_map(&paragraph_addresses/1)
+    |> Enum.flat_map(&superseded_paragraph/1)
     |> MapSet.new()
   end
 
-  defp paragraph_addresses(par) do
+  defp superseded_paragraph(par) do
     ~r/(?:([A-Za-z0-9_]+\.exs))?:(\d+(?:\s*,\s*\d+)*)/
     |> Regex.scan(par)
     |> Enum.reduce({nil, []}, fn
-      [_, "", lines], {current, acc} -> {current, emit(current, lines, acc)}
-      [_, file, lines], {_current, acc} -> {file, emit(file, lines, acc)}
+      [_, "", lines], {current, acc} -> {current, superseded_emit(current, lines, acc)}
+      [_, file, lines], {_current, acc} -> {file, superseded_emit(file, lines, acc)}
       [_, file], {_current, acc} -> {file, acc}
       _, state -> state
     end)
     |> elem(1)
   end
 
-  defp emit(nil, _lines, acc), do: acc
+  defp superseded_emit(nil, _lines, acc), do: acc
 
-  defp emit(file, lines, acc) do
+  defp superseded_emit(file, lines, acc) do
     lines
     |> String.split(",")
     |> Enum.map(&String.to_integer(String.trim(&1)))
     |> Enum.reduce(acc, &[{file, &1} | &2])
   end
 
-  defp all_tokens(rows), do: Enum.flat_map(rows, & &1["tokens"])
+  defp failures(report) do
+    %{
+      missing: for(p <- report.populations, p.missing != [], do: {p.label, p.missing}),
+      extra: for(s <- report.sections, s.extra != [], do: {s.section, s.extra})
+    }
+  end
+
+  defp replace_once(text, from, to) do
+    unless String.contains?(text, from) do
+      IO.puts("  BROKEN CONTROL: the fixture anchor #{inspect(from)} is not in the prose.")
+      System.halt(1)
+    end
+
+    String.replace(text, from, to, global: false)
+  end
 
   # --- the boundary proxy, IMPLEMENTED rather than asserted ------------------
 
