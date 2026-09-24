@@ -1,11 +1,11 @@
 {
   "bucket": "5a",
-  "count": 58,
+  "count": 68,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 219 declared ET-CC members and 161\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 62 members and\n12 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "population_banner": "POPULATION: this projection covers 253 declared ET-CC members and 173\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 28 members and\n0 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
   "predicate": "`cells` where the stored `bucket` == \"5\" AND the stored `oc_key[0]` == \"server\". Universe: the crosswalk's edges.",
   "projected_from": {
     "bucket_zero": {
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 839754,
+      "bytes": 972841,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "30a7a2dd43ada26e6d214e7545e8c5b4170f551909f961b45efa1bc28a471469"
+      "sha256": "159e6e7c40478bb82dc1a6275907a7f4da2d181c2a564366f125638f72343d0f"
     }
   },
   "revision": "2026-07-28",
@@ -2197,7 +2197,7 @@
         "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value the extras map also carries isError, and false does not become absent",
         "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value the extras map also carries isError, and false does not become absent"
       },
-      "note": "THE SECOND ASSERTION IS SHARPER THAN THE AXIS AND THE SUITE HAS NO PLACE FOR IT. json_schema_2020_12_test.exs:238 pins that a FALSE is_error does not become an ABSENT isError — the absent-versus-false distinction SEP-2106 makes on the output side. `ToolsCallError` has no axis about a NON-error result at all: its whole subject is a tool that reported one. So the refute is covered by no axis of this check and by no other check in the declared population, and NO REGISTERED SEARCH CARRIES IT, and that is stated rather than borrowed: SRV24's subject is `outputSchema` and `structuredContent`, not `isError`, so this refute is not one of the thirteen zeros that entry records. It is recorded on this edge because the member is edge-bearing and therefore cannot appear in `declared_unmatched` at all — the same placement the W-4 member's claim gets, and the same residual, named in `the_w4_claim_and_the_registry_no_claim_level_row_can_reach`. The F-10 legacy-boolean edge makes the identical observation from the other slot-3 shape and points here rather than repeating it.",
+      "note": "THE SECOND ASSERTION IS SHARPER THAN THE AXIS AND THE SUITE HAS NO PLACE FOR IT. json_schema_2020_12_test.exs:238 pins that a FALSE is_error does not become an ABSENT isError — the absent-versus-false distinction SEP-2106 makes on the output side. `ToolsCallError` has no axis about a NON-error result at all: its whole subject is a tool that reported one. So the refute is covered by no axis of this check and by no other check in the declared population, and NO REGISTERED SEARCH CARRIES IT, and that is stated rather than borrowed: SRV24's subject is `outputSchema` and `structuredContent`, not `isError`, so this refute is not one of the thirteen zeros that entry records. It is recorded on this edge because the member is edge-bearing and therefore cannot appear in `declared_unmatched` at all — THE SAME RESIDUAL AS THE W-4 MEMBER'S CLAIM, AND NOT THE SAME PLACEMENT — this clause said `the same placement` and that was wrong, corrected here on MES-119's FINDING 2. Three uncovered sub-claims on this leg, three different homes: W-4's claim got a structured `claims_without_an_edge` row, THIS refute got edge-prose only, and the `:244` case got SRV24's zero. What the three share is the RESIDUAL — a sub-claim inside an edge-bearing member that no axis of any declared check reaches — and what they do not share is where the file puts it. MES-119's FINDING 2 MOVES NO FIGURE — the correction is to this clause's prose and to nothing else, and `claim_level_unmatched` would read 6 with it made or unmade. It reads SEVEN at this tip for an unrelated reason belonging to this same slice: C1c-iv added a `claims_without_an_edge` row for `MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)`, whose `it is the DEFAULT` claim no caching axis can reach. Two changes in one commit, one figure, and they are separated here so the 6 → 7 is not read as this correction's doing. The file has NO CRITERION for choosing among the three placements, which is why one member's sub-claim can end up in any of them; supplying that criterion is MES-110's gap and is not invented here. The residual itself is named in `the_w4_claim_and_the_registry_no_claim_level_row_can_reach`. The F-10 legacy-boolean edge makes the identical observation from the other slot-3 shape and points here rather than repeating it.",
       "oc_key": [
         "server",
         "tools-call-error",
@@ -2580,12 +2580,422 @@
         "oc_status_at_accepted_run": "SUCCESS",
         "oc_warning": false
       }
+    },
+    {
+      "axes": [
+        {
+          "axis": "a_non_localhost_host_or_origin_is_rejected_with_4xx",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a request whose `Origin` is not localhost is answered HTTP 403",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:146 — `    assert conn.status == 403` on a request carrying `origin: http://evil.example`. The check's single axis is `e.statusCode>=400&&e.statusCode<500`, a half-open BAND rather than a status: 403 is inside it, so the unit's stricter assertion entails the axis and the verdict is `agrees`.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test AC7 — non-localhost origin is rejected 403; the identity factory never runs",
+        "test": "test AC7 — non-localhost origin is rejected 403; the identity factory never runs"
+      },
+      "note": "TWO THINGS THIS EDGE DOES NOT CARRY, and they run in opposite directions. (a) The unit is STRICTER than the check: it pins 403 where the axis admits any 4xx, so our green is stronger than the OC's and the OC would stay green on a 429. (b) The unit sets `origin` ONLY, while the harness sends `Host` AND `Origin` together — so neither side can separate the two headers, and a server validating just one passes both. The member's second assertion is a separate claim and has its own row.",
+      "oc_key": [
+        "server",
+        "dns-rebinding-protection",
+        "localhost-host-rebinding-rejected",
+        "DNSRebindingRejected",
+        "Server rejects requests with non-localhost Host/Origin headers",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/dns-rebinding-protection/localhost-host-rebinding-rejected/DNSRebindingRejected",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "a_non_localhost_host_or_origin_is_rejected_with_4xx",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a request whose `Origin` is not localhost is rejected with HTTP 403 over real HTTP",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:178 — `    assert resp.status == 403` against a server started for real over HTTP, where its sibling in `MCP.Transport.StreamableHTTPStatelessTest` drives the plug directly. 403 is inside the axis's `e.statusCode>=400&&e.statusCode<500` band.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test AC7 — non-localhost origin is rejected 403 (acceptance parity)",
+        "test": "test AC7 — non-localhost origin is rejected 403 (acceptance parity)"
+      },
+      "note": "THE PARITY ROW. It asserts the same status as the stateless member's first claim and is a distinct member because it exercises a distinct PATH — a real Bandit server rather than `Plug.Test`. The OC check cannot tell them apart: it sees one server over one socket, so on the OC side the two members are the same evidence twice. That redundancy is visible only from this file and is the sort of thing the crosswalk is for.",
+      "oc_key": [
+        "server",
+        "dns-rebinding-protection",
+        "localhost-host-rebinding-rejected",
+        "DNSRebindingRejected",
+        "Server rejects requests with non-localhost Host/Origin headers",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/dns-rebinding-protection/localhost-host-rebinding-rejected/DNSRebindingRejected",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_ttl_ms",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_carries_cache_scope",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a `tools/list` result carries `ttlMs` and its value is 0",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:77 — `    assert r[\"ttlMs\"] == 0` on the `tools/list` result bound at streamable_http_stateless_test.exs:76.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test list/read results carry caching hints (ttlMs/cacheScope)",
+        "test": "test list/read results carry caching hints (ttlMs/cacheScope)"
+      },
+      "note": "The check's two axes are `in` tests on the decoded result and this claim is about one of the two members, so the other axis is silent on it and is covered by this member's OTHER claim, which has its own row. Counted per MEMBER rather than per edge, `ToolsListCachingHints` has both axes covered.",
+      "oc_key": [
+        "server",
+        "caching",
+        "sep-2549-tools-list-caching-hints",
+        "ToolsListCachingHints",
+        "tools/list response includes ttlMs and cacheScope caching hints",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/caching/sep-2549-tools-list-caching-hints/ToolsListCachingHints",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "at_least_one_endpoint_returned_a_ttl_ms",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_ttl_ms_is_a_number",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_ttl_ms_is_an_integer",
+          "verdict": "silent"
+        },
+        {
+          "axis": "every_ttl_ms_is_non_negative",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a `tools/list` result carries `ttlMs` and its value is 0",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:77 — `    assert r[\"ttlMs\"] == 0` on the `tools/list` result bound at streamable_http_stateless_test.exs:76.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test list/read results carry caching hints (ttlMs/cacheScope)",
+        "test": "test list/read results carry caching hints (ttlMs/cacheScope)"
+      },
+      "note": "SILENT ON INTEGER-NESS, AND THAT IS A MEASUREMENT OF ELIXIR'S `==`, NOT A JUDGEMENT. `assert r[\"ttlMs\"] == 0` passes when the decoded value is the FLOAT `0.0`, because `0.0 == 0` is true in Elixir; `===` is the operator that would separate them and the unit does not use it. So the claim entails `is a number` and `is >= 0` and does NOT entail `is an integer`, which is the one of the four axes the OC check would red on a `0.0` and our suite would not. A real hole in our coverage, found by decomposing the check rather than by reading it.",
+      "oc_key": [
+        "server",
+        "caching",
+        "sep-2549-ttl-non-negative",
+        "TtlNonNegative",
+        "All ttlMs values are non-negative integers",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/caching/sep-2549-ttl-non-negative/TtlNonNegative",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_ttl_ms",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_result_carries_cache_scope",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a `tools/list` result carries `cacheScope` and its value is `public`",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:78 — `    assert r[\"cacheScope\"] == \"public\"` on the same result.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test list/read results carry caching hints (ttlMs/cacheScope)",
+        "test": "test list/read results carry caching hints (ttlMs/cacheScope)"
+      },
+      "note": "The `cacheScope` half of the pair; the `ttlMs` axis is this member's other claim's and is silent here.",
+      "oc_key": [
+        "server",
+        "caching",
+        "sep-2549-tools-list-caching-hints",
+        "ToolsListCachingHints",
+        "tools/list response includes ttlMs and cacheScope caching hints",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/caching/sep-2549-tools-list-caching-hints/ToolsListCachingHints",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "at_least_one_endpoint_returned_a_cache_scope",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_cache_scope_is_public_or_private",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a `tools/list` result carries `cacheScope` and its value is `public`",
+      "escalation": null,
+      "evidence": "streamable_http_stateless_test.exs:78 — `    assert r[\"cacheScope\"] == \"public\"` on the same result.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test list/read results carry caching hints (ttlMs/cacheScope)",
+        "test": "test list/read results carry caching hints (ttlMs/cacheScope)"
+      },
+      "note": "BOTH AXES AGREE AND THE CHECK IS STILL WIDER THAN THE CLAIM. `CacheScopeValid` quantifies over every endpoint that answered in the scenario — `tools/list`, `prompts/list`, `resources/list`, `resources/templates/list` and `resources/read` — and this claim is about one of them. A `cacheScope` of `\"banana\"` on `resources/read` reds the OC check and leaves this unit green. Agreement on the axes is not coverage of the check, and on a scenario-wide check the two come apart visibly.",
+      "oc_key": [
+        "server",
+        "caching",
+        "sep-2549-cache-scope-valid",
+        "CacheScopeValid",
+        "All cacheScope values are \"public\" or \"private\"",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/caching/sep-2549-cache-scope-valid/CacheScopeValid",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_ttl_ms",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_carries_cache_scope",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a `tools/list` result carries `ttlMs` and its value is 0",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:273 — `    assert r[\"ttlMs\"] == 0` on the `tools/list` result bound at streamable_http_ac_test.exs:272, against a server started with no `cache_defaults` configured.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)",
+        "test": "test default caching policy is no-store (ttlMs 0)"
+      },
+      "note": "The check's two axes are `in` tests on the decoded result and this claim is about one of the two members, so the other axis is silent on it and is covered by this member's OTHER claim, which has its own row. Counted per MEMBER rather than per edge, `ToolsListCachingHints` has both axes covered.",
+      "oc_key": [
+        "server",
+        "caching",
+        "sep-2549-tools-list-caching-hints",
+        "ToolsListCachingHints",
+        "tools/list response includes ttlMs and cacheScope caching hints",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/caching/sep-2549-tools-list-caching-hints/ToolsListCachingHints",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "at_least_one_endpoint_returned_a_ttl_ms",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_ttl_ms_is_a_number",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_ttl_ms_is_an_integer",
+          "verdict": "silent"
+        },
+        {
+          "axis": "every_ttl_ms_is_non_negative",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a `tools/list` result carries `ttlMs` and its value is 0",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:273 — `    assert r[\"ttlMs\"] == 0` on the `tools/list` result bound at streamable_http_ac_test.exs:272, against a server started with no `cache_defaults` configured.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)",
+        "test": "test default caching policy is no-store (ttlMs 0)"
+      },
+      "note": "SILENT ON INTEGER-NESS, AND THAT IS A MEASUREMENT OF ELIXIR'S `==`, NOT A JUDGEMENT. `assert r[\"ttlMs\"] == 0` passes when the decoded value is the FLOAT `0.0`, because `0.0 == 0` is true in Elixir; `===` is the operator that would separate them and the unit does not use it. So the claim entails `is a number` and `is >= 0` and does NOT entail `is an integer`, which is the one of the four axes the OC check would red on a `0.0` and our suite would not. A real hole in our coverage, found by decomposing the check rather than by reading it.",
+      "oc_key": [
+        "server",
+        "caching",
+        "sep-2549-ttl-non-negative",
+        "TtlNonNegative",
+        "All ttlMs values are non-negative integers",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/caching/sep-2549-ttl-non-negative/TtlNonNegative",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_ttl_ms",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_result_carries_cache_scope",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a `tools/list` result carries `cacheScope` and its value is `public`",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:274 — `    assert r[\"cacheScope\"] == \"public\"` on the same result.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)",
+        "test": "test default caching policy is no-store (ttlMs 0)"
+      },
+      "note": "The `cacheScope` half of the pair; the `ttlMs` axis is this member's other claim's and is silent here.",
+      "oc_key": [
+        "server",
+        "caching",
+        "sep-2549-tools-list-caching-hints",
+        "ToolsListCachingHints",
+        "tools/list response includes ttlMs and cacheScope caching hints",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/caching/sep-2549-tools-list-caching-hints/ToolsListCachingHints",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "at_least_one_endpoint_returned_a_cache_scope",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_cache_scope_is_public_or_private",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a `tools/list` result carries `cacheScope` and its value is `public`",
+      "escalation": null,
+      "evidence": "streamable_http_ac_test.exs:274 — `    assert r[\"cacheScope\"] == \"public\"` on the same result.",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)",
+        "test": "test default caching policy is no-store (ttlMs 0)"
+      },
+      "note": "The same scenario-wide bound as this file's other `CacheScopeValid` edge. What is additionally uncovered here is the word DEFAULT: this member's point is that a deployment configuring NOTHING gets these values, and no OC check asks what is configured — the harness sees one server in one configuration and cannot tell a default from a setting. That residual is recorded in `claims_without_an_edge` rather than absorbed into an axis verdict.",
+      "oc_key": [
+        "server",
+        "caching",
+        "sep-2549-cache-scope-valid",
+        "CacheScopeValid",
+        "All cacheScope values are \"public\" or \"private\"",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/caching/sep-2549-cache-scope-valid/CacheScopeValid",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
     }
   ],
   "schema": "bucket-view/1",
   "title": "green in both — server",
   "universe": {
-    "count": 145,
+    "count": 156,
     "name": "edges",
     "of": "the crosswalk's `cells`"
   },

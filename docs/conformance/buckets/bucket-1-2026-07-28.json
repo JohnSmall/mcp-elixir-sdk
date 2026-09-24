@@ -1,12 +1,12 @@
 {
   "bucket": "1",
-  "count": 135,
+  "count": 165,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 219 declared ET-CC members and 161\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 62 members and\n12 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
-  "predicate": "Declared-population ET-CC members carrying NO edge in `cells`: the complement of `members_with_edges` over the declared population, taken through `Crosswalk.project(:bucket_1, ...)`. Universe: the 219 declared members, never all 281 members.",
+  "population_banner": "POPULATION: this projection covers 253 declared ET-CC members and 173\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 28 members and\n0 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "predicate": "Declared-population ET-CC members carrying NO edge in `cells`: the complement of `members_with_edges` over the declared population, taken through `Crosswalk.project(:bucket_1, ...)`. Universe: the 253 declared members, never all 281 members.",
   "projected_from": {
     "bucket_zero": {
       "bytes": 176409,
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 839754,
+      "bytes": 972841,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "30a7a2dd43ada26e6d214e7545e8c5b4170f551909f961b45efa1bc28a471469"
+      "sha256": "159e6e7c40478bb82dc1a6275907a7f4da2d181c2a564366f125638f72343d0f"
     }
   },
   "revision": "2026-07-28",
@@ -583,6 +583,22 @@
       "why_this_search_is_this_claims_search": "The claim is about reading the SERVER's capabilities map. S05's subject is that read, and its near miss is the three client-capability checks this file already matches — same word, opposite direction, which is precisely why the member needs the search rather than the word."
     },
     {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "encoding a `ServerCapabilities` keeps `extensions` and `experimental` under separate keys — declaring one leaves the other absent from the wire object",
+      "member": {
+        "module": "MCP.Protocol.CapabilitiesTest",
+        "register_key": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T6 — ServerCapabilities encode keeps the two apart",
+        "test": "test extensions vs experimental — the 2x2 (T6-T9) T6 — ServerCapabilities encode keeps the two apart"
+      },
+      "search_id": "SRV29",
+      "tag": "oc:none/no-oc-scenario/extensions-vs-experimental-encoding",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers` and `ServerDeclaresPromptsInDiscover` — the two rows that score what `server/discover` advertises, and the rows a reader looking for `does the suite check what we advertise` finds first. They are not counterparts: both range over the NAMED capabilities the schema fixes — `tools`, `prompts`, `resources` — and score them against whether the corresponding handler answers. `extensions` is an OPEN map whose keys the schema does not constrain, so there is no handler for a check to hold an extension against, and neither row reads the key at all. The second near miss is `ServerRejectsUndeclaredCapability` and `MissingCapabilityHttp400`, whose `-32021` a reader may take for the extensions error: their subject is a CLIENT CAPABILITY the client did not declare and the server needed, the opposite direction from a client offering a server an extension it does not support. MEASURED: the strings `extension` and `experimental` do not occur in any of the 175 rows, in any of the six key fields.",
+      "the_search_that_found_none": "the `extensions` capability — a server ADVERTISING one under `capabilities.extensions`, a client OFFERING one the server does not support, and the rule that keeps `extensions` and `experimental` apart as two separate capability keys",
+      "why_no_counterpart": "`no-oc-scenario` — the suite scores no `extensions` obligation at all. MEASURED over all 175 manifest rows and both legs: zero. The two `-32021` rows a reader might reach for are about an undeclared CLIENT CAPABILITY, which is the other direction.",
+      "why_this_search_is_this_claims_search": "The claim is about the `extensions` capability, and SRV29's subject is exactly that capability — advertisement, a client's offer, and the `extensions`/`experimental` separation. It is the right instrument and a grep for `-32021` would be the wrong one: that code IS in the suite, twice, and both rows are about a CLIENT CAPABILITY the server required and the client omitted, the opposite direction from anything here."
+    },
+    {
       "cg": "CG2",
       "field_added_by": "MES-108 (C1b-ii), 2026-09-21. These three records came from C1a and predate the `the_search_that_found_none` field. C1b-i rightly REFUSED to backfill a search nobody had run — a field invented after the fact is worse than an absent one. C1b-ii ran it, over the same population and at this tip, so the field is now ADDED rather than invented. The ADJUDICATION is untouched: these three were `declared_unmatched` before and are `declared_unmatched` now, with the same tags and the same members. What changed is that the record says what was read. Three rows sitting silent in a block where ten speak is a difference a reader would have to explain, and the explanation would have been 'nobody looked', which is no longer true.",
       "member": {
@@ -607,6 +623,22 @@
       "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
       "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
       "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "a `ServerCapabilities` may carry `extensions` and `experimental` at once, each reaching the wire under its own key",
+      "member": {
+        "module": "MCP.Protocol.CapabilitiesTest",
+        "register_key": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) both may be carried at once, each under its own key",
+        "test": "test extensions vs experimental — the 2x2 (T6-T9) both may be carried at once, each under its own key"
+      },
+      "search_id": "SRV29",
+      "tag": "oc:none/no-oc-scenario/extensions-and-experimental-carried-together",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers` and `ServerDeclaresPromptsInDiscover` — the two rows that score what `server/discover` advertises, and the rows a reader looking for `does the suite check what we advertise` finds first. They are not counterparts: both range over the NAMED capabilities the schema fixes — `tools`, `prompts`, `resources` — and score them against whether the corresponding handler answers. `extensions` is an OPEN map whose keys the schema does not constrain, so there is no handler for a check to hold an extension against, and neither row reads the key at all. The second near miss is `ServerRejectsUndeclaredCapability` and `MissingCapabilityHttp400`, whose `-32021` a reader may take for the extensions error: their subject is a CLIENT CAPABILITY the client did not declare and the server needed, the opposite direction from a client offering a server an extension it does not support. MEASURED: the strings `extension` and `experimental` do not occur in any of the 175 rows, in any of the six key fields.",
+      "the_search_that_found_none": "the `extensions` capability — a server ADVERTISING one under `capabilities.extensions`, a client OFFERING one the server does not support, and the rule that keeps `extensions` and `experimental` apart as two separate capability keys",
+      "why_no_counterpart": "`no-oc-scenario` — the suite scores no `extensions` obligation at all. MEASURED over all 175 manifest rows and both legs: zero. The two `-32021` rows a reader might reach for are about an undeclared CLIENT CAPABILITY, which is the other direction.",
+      "why_this_search_is_this_claims_search": "The claim is about the `extensions` capability, and SRV29's subject is exactly that capability — advertisement, a client's offer, and the `extensions`/`experimental` separation. It is the right instrument and a grep for `-32021` would be the wrong one: that code IS in the suite, twice, and both rows are about a CLIENT CAPABILITY the server required and the client omitted, the opposite direction from anything here."
     },
     {
       "authored_by": "MES-109 (C1b-iii)",
@@ -695,6 +727,22 @@
       "why_no_counterpart": "A robustness claim about our own encoder's input, not about the wire. The OC harness cannot construct the case because it observes the client rather than driving its API."
     },
     {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "`HeaderMirror.decode_value/1` returns a plain header value unchanged, and returns a sentinel-shaped value whose Base64 payload is malformed unchanged rather than raising",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule decode leaves a plain value alone and survives a malformed sentinel",
+        "test": "test value encoding — omission and the sentinel's ambiguity rule decode leaves a plain value alone and survives a malformed sentinel"
+      },
+      "search_id": "SRV01",
+      "tag": "oc:none/no-oc-server-check/sentinel-decode-server-side",
+      "the_near_miss_that_is_not_a_counterpart": "The eleven `http-standard-headers` rows and the seventeen `http-custom-headers` rows — `ClientMcpMethodHeader_tools_call`, `ClientMcpNameHeader_tools_call`, `ClientCustomHeader_Method` and their siblings. A reader who greps `mcp-method`, finds rows and stops would take these for the counterpart. They are all CLIENT-leg, and every one of them scores whether the CLIENT SENDS the header correctly; not one asks what a SERVER does with a header that disagrees with the body it arrived on. The two are different obligations on different peers, and SEP-2243 imposes both.",
+      "the_search_that_found_none": "a SERVER validating a SEP-2243 routing header against the request body — `Mcp-Method` against the JSON-RPC `method`, and `Mcp-Name` against `params.name` (or `params.uri` on `resources/read`) — and rejecting a mismatch with -32020",
+      "why_no_counterpart": "`no-oc-server-check` — the suite scores SEP-2243 on the client only. Measured at this tip: 0 of the 119 server rows mention any of the three header families, while the client leg carries 28 rows that do.",
+      "why_this_search_is_this_claims_search": "The claim is the server-side DECODE of a SEP-2243 routing-header value — the step the validation SRV01 searched for is defined in terms of: the spec requires the server to decode the sentinel before comparing, so a unit on that decode is a unit on the first half of that validation. SRV01's pattern and its 119-server-row population are therefore this claim's instrument, and the answer it returned — zero rows on our leg mentioning any of the three header families — covers the decode step as squarely as it covers the comparison."
+    },
+    {
       "cg": "CG7",
       "member": {
         "module": "MCP.Protocol.HeaderMirrorTest",
@@ -759,9 +807,9 @@
       },
       "search_id": "SRV21",
       "tag": "oc:none/no-oc-scenario/resource-link-round-trip",
-      "the_near_miss_that_is_not_a_counterpart": "`ToolsCallEmbeddedResource` and `PromptsGetEmbeddedResource` — the suite's two other resource-bearing content checks, both declared here. They are NEAR MISSES and NOT counterparts, and the distinction is the protocol's own: an EmbeddedResource INLINES the resource contents in the result, while a ResourceLink is a REFERENCE the client must then read with `resources/read`. A check that finds an inlined resource would reject a link and vice versa. MEASURED WIDER THAN THE DECLARATION: the pattern is 0 over all 175 manifest rows and over both legs, not merely 0 over the declared 107, so this is not a deferral to another C1c slice — the suite has no ResourceLink check at all. That is a coverage finding about the OFFICIAL SUITE: `ResourceLink` is in the 2026-07-28 schema (its definition is at build bytes 293842-293989) and nothing in the conformance suite exercises it.",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsCallEmbeddedResource` and `PromptsGetEmbeddedResource` — the suite's two other resource-bearing content checks, both declared here. They are NEAR MISSES and NOT counterparts, and the distinction is the protocol's own: an EmbeddedResource INLINES the resource contents in the result, while a ResourceLink is a REFERENCE the client must then read with `resources/read`. A check that finds an inlined resource would reject a link and vice versa. MEASURED WIDER THAN THE DECLARATION: the pattern is 0 over all 175 manifest rows and over both legs, not merely 0 over the declared 119, so this is not a deferral to another C1c slice — the suite has no ResourceLink check at all. That is a coverage finding about the OFFICIAL SUITE: `ResourceLink` is in the 2026-07-28 schema (its definition is at build bytes 293842-293989) and nothing in the conformance suite exercises it.",
       "the_search_that_found_none": "the `resource_link` content type reaching the wire — its snake_case `type` discriminator and its camelCase `mimeType`",
-      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no ResourceLink check at all.",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 119, and 0 of all 175 on either leg. The suite has no ResourceLink check at all.",
       "why_this_search_is_this_claims_search": "The claim is about one content TYPE reaching the wire. SRV21's subject is that type and its pattern sweeps both spellings of its name; the near miss names the two resource-bearing checks that DO exist, so the zero reads as `the suite does not ask` rather than as `we did not look`."
     },
     {
@@ -775,9 +823,9 @@
       },
       "search_id": "SRV22",
       "tag": "oc:none/no-oc-scenario/tool-optional-field-omission",
-      "the_near_miss_that_is_not_a_counterpart": "`RequestMetaClientInfoOptional` (`server-stateless`, declared here) and `ClientCustomHeaderOmitNull` (`http-custom-headers`, client leg). The first is the closest thing on this leg: it IS about an optional member being omitted, but from the `_meta` of a request the CLIENT sends, and what it scores is the server's tolerance of the omission. The second is about a client omitting a header rather than sending a null one — the right shape, the wrong direction and the wrong leg. Neither asks what a SERVER does with an optional field of an object it is encoding, which is the whole of this member's claim. MEASURED: the pattern is 0 over the declared 107 AND 0 over all 175; the sub-terms `annotation` and `icons` are independently 0 over all 175, so no row in the suite names either field.",
+      "the_near_miss_that_is_not_a_counterpart": "`RequestMetaClientInfoOptional` (`server-stateless`, declared here) and `ClientCustomHeaderOmitNull` (`http-custom-headers`, client leg). The first is the closest thing on this leg: it IS about an optional member being omitted, but from the `_meta` of a request the CLIENT sends, and what it scores is the server's tolerance of the omission. The second is about a client omitting a header rather than sending a null one — the right shape, the wrong direction and the wrong leg. Neither asks what a SERVER does with an optional field of an object it is encoding, which is the whole of this member's claim. MEASURED: the pattern is 0 over the declared 119 AND 0 over all 175; the sub-terms `annotation` and `icons` are independently 0 over all 175, so no row in the suite names either field.",
       "the_search_that_found_none": "an optional field the server left unset being ABSENT from the object it encodes rather than present as null — specifically `annotations`, `icons` and `_meta` on a Tool",
-      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175. No row in the suite names `annotations` or `icons`.",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 119, and 0 of all 175. No row in the suite names `annotations` or `icons`.",
       "why_this_search_is_this_claims_search": "The claim is about ABSENCE on the wire. SRV22's subject is exactly that, and its pattern is deliberately wider than the claim — it also sweeps the two field names the member refutes by name."
     },
     {
@@ -791,9 +839,9 @@
       },
       "search_id": "SRV23",
       "tag": "oc:none/no-oc-server-check/tool-input-schema-keyword-preservation",
-      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
+      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 119, which since C1c-iv-a IS all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
       "the_search_that_found_none": "JSON Schema 2020-12 keywords beyond `type` — `$defs`/`$anchor`, `$ref`, `not`, `oneOf`, `if`/`then`/`else`, `unevaluatedProperties` — surviving verbatim through a tools/list inputSchema",
-      "why_no_counterpart": "`no-oc-server-check` — 0 of the 107 and 0 of all 119 server rows; the one hit in 175 is CLIENT leg.",
+      "why_no_counterpart": "`no-oc-server-check` — 0 of the 119 — the declared population and the server leg are now the same 119 rows; the one hit in 175 is CLIENT leg.",
       "why_this_search_is_this_claims_search": "The claim is about what survives INSIDE an inputSchema. SRV23's pattern sweeps the 2020-12 keyword vocabulary the member asserts; the near miss names both the client-leg `$ref` row and this module's own `ToolsList` axis, which is a truthiness test and cannot see inside."
     },
     {
@@ -809,8 +857,40 @@
       "tag": "oc:none/no-oc-scenario/tool-absent-output-schema",
       "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s isError axes, the only place the suite looks at the SHAPE of a tools/call result beyond its content array. Neither names outputSchema or structuredContent. MEASURED over all 175 manifest rows, BOTH LEGS: 0, and 0 on each sub-term independently — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED, AND THE FIGURE MES-116 WROTE HERE WAS TOO BIG. C1c-iii wrote that `MCP.Server.JsonSchema202012Test`'s FIFTEEN W-1 members make the same claim and would inherit this search. Adjudicated member by member on MES-119 it is THIRTEEN: two of the fifteen carry edges — the extras-map isError member and the pre-SEP-2106 member — so they are not bucket 1 and cannot rest on this or any other search. The thirteen that do rest on it are this entry's rows.",
       "the_search_that_found_none": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
-      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. SEP-2106's whole output half is unexercised.",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 119, and 0 of all 175 on either leg. SEP-2106's whole output half is unexercised.",
       "why_this_search_is_this_claims_search": "The claim is about `outputSchema` being absent when unset. SRV24's subject is that field and its structured-content sibling, and the zero is leg-wide."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "`Protocol.decode/1` turns an inbound JSON-RPC request into a typed `Request` carrying its id, method and params",
+      "member": {
+        "module": "MCP.ProtocolTest",
+        "register_key": "MCP.ProtocolTest/test decode/1 decodes a request",
+        "test": "test decode/1 decodes a request"
+      },
+      "search_id": "SRV31",
+      "tag": "oc:none/no-oc-scenario/decode-request",
+      "the_near_miss_that_is_not_a_counterpart": "`HttpServerErrorJsonrpcId` — `All error responses carry the request JSON-RPC id` — the only row in the 175 that scores an id at all, and the one a reader who greps `id` and stops would take for the counterpart. It is not one, and the direction is what settles it: it reads the id on the RESPONSE the server EMITS and asks whether it equals the one that arrived. That is an echo, and an echo passes whether or not the type survived, because the harness compares the id it sent with the id it got back and both are whatever JSON round-tripped. Nothing anywhere scores the server's DECODE of an inbound message as such — which is unsurprising, since a decode that failed would surface as some other check's failure and never as its own.",
+      "the_search_that_found_none": "DECODING an inbound JSON-RPC message into a typed request — that it is recognised as a request at all, and that the `id`'s JSON TYPE survives, a string id staying a string rather than being coerced",
+      "why_no_counterpart": "`no-oc-scenario` — nothing in the suite scores a server's decode of an inbound message. MEASURED over all 175: zero. The one id row scores an echo on the way out.",
+      "why_this_search_is_this_claims_search": "The claim is about `Protocol.decode/1` turning inbound JSON into a typed request. SRV31's subject is that decode, and the search is leg-wide rather than a grep for `id` because the one row that does mention an id — `HttpServerErrorJsonrpcId` — is about the id on a response the server emits, which is the near miss the entry names."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "`Protocol.decode/1` preserves a STRING JSON-RPC id as a string rather than coercing it",
+      "member": {
+        "module": "MCP.ProtocolTest",
+        "register_key": "MCP.ProtocolTest/test decode/1 decodes a request with string id",
+        "test": "test decode/1 decodes a request with string id"
+      },
+      "search_id": "SRV31",
+      "tag": "oc:none/no-oc-scenario/decode-request-string-id",
+      "the_near_miss_that_is_not_a_counterpart": "`HttpServerErrorJsonrpcId` — `All error responses carry the request JSON-RPC id` — the only row in the 175 that scores an id at all, and the one a reader who greps `id` and stops would take for the counterpart. It is not one, and the direction is what settles it: it reads the id on the RESPONSE the server EMITS and asks whether it equals the one that arrived. That is an echo, and an echo passes whether or not the type survived, because the harness compares the id it sent with the id it got back and both are whatever JSON round-tripped. Nothing anywhere scores the server's DECODE of an inbound message as such — which is unsurprising, since a decode that failed would surface as some other check's failure and never as its own.",
+      "the_search_that_found_none": "DECODING an inbound JSON-RPC message into a typed request — that it is recognised as a request at all, and that the `id`'s JSON TYPE survives, a string id staying a string rather than being coerced",
+      "why_no_counterpart": "`no-oc-scenario` — nothing in the suite scores a server's decode of an inbound message. MEASURED over all 175: zero. The one id row scores an echo on the way out.",
+      "why_this_search_is_this_claims_search": "The claim is about `Protocol.decode/1` turning inbound JSON into a typed request. SRV31's subject is that decode, and the search is leg-wide rather than a grep for `id` because the one row that does mention an id — `HttpServerErrorJsonrpcId` — is about the id on a response the server emits, which is the near miss the entry names."
     },
     {
       "authored_by": "MES-109 (C1b-iii)",
@@ -843,6 +923,262 @@
       "the_search_that_found_none": "a client DECODING an INBOUND JSON-RPC response — classifying a `result` message and an `error` message and building the struct the caller receives",
       "why_no_counterpart": "`no-oc-scenario` — as above; the direction is read off `o=t.filter(e=>e.origin===`implementation`)` at [325325,325367], not off the check's description.",
       "why_this_search_is_this_claims_search": "The claim is about DECODING an inbound response. S03's subject is that decode, and its near miss is the one check that validates JSON-RPC messages — resolved against the addressed bytes that scope it to the OUTBOUND direction. The member's claim and the search's subject are the same act."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "a `tools/call` carrying an unsupported `extensions` declaration returns a result identical to the same call without one",
+      "member": {
+        "module": "MCP.Server.ExtensionsNegotiationTest",
+        "register_key": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) T10 — the result is identical to the same call without extensions",
+        "test": "test a client offering unsupported extensions (T10, T11) T10 — the result is identical to the same call without extensions"
+      },
+      "search_id": "SRV29",
+      "tag": "oc:none/no-oc-scenario/extensions-offer-result-identical",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers` and `ServerDeclaresPromptsInDiscover` — the two rows that score what `server/discover` advertises, and the rows a reader looking for `does the suite check what we advertise` finds first. They are not counterparts: both range over the NAMED capabilities the schema fixes — `tools`, `prompts`, `resources` — and score them against whether the corresponding handler answers. `extensions` is an OPEN map whose keys the schema does not constrain, so there is no handler for a check to hold an extension against, and neither row reads the key at all. The second near miss is `ServerRejectsUndeclaredCapability` and `MissingCapabilityHttp400`, whose `-32021` a reader may take for the extensions error: their subject is a CLIENT CAPABILITY the client did not declare and the server needed, the opposite direction from a client offering a server an extension it does not support. MEASURED: the strings `extension` and `experimental` do not occur in any of the 175 rows, in any of the six key fields.",
+      "the_search_that_found_none": "the `extensions` capability — a server ADVERTISING one under `capabilities.extensions`, a client OFFERING one the server does not support, and the rule that keeps `extensions` and `experimental` apart as two separate capability keys",
+      "why_no_counterpart": "`no-oc-scenario` — the suite scores no `extensions` obligation at all. MEASURED over all 175 manifest rows and both legs: zero. The two `-32021` rows a reader might reach for are about an undeclared CLIENT CAPABILITY, which is the other direction.",
+      "why_this_search_is_this_claims_search": "The claim is about the `extensions` capability, and SRV29's subject is exactly that capability — advertisement, a client's offer, and the `extensions`/`experimental` separation. It is the right instrument and a grep for `-32021` would be the wrong one: that code IS in the suite, twice, and both rows are about a CLIENT CAPABILITY the server required and the client omitted, the opposite direction from anything here."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "a `tools/call` carrying an unsupported `extensions` declaration succeeds — no error object, and specifically no -32021",
+      "member": {
+        "module": "MCP.Server.ExtensionsNegotiationTest",
+        "register_key": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) T10 — tools/call succeeds normally; no error, no -32021",
+        "test": "test a client offering unsupported extensions (T10, T11) T10 — tools/call succeeds normally; no error, no -32021"
+      },
+      "search_id": "SRV29",
+      "tag": "oc:none/no-oc-scenario/extensions-offer-no-error",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers` and `ServerDeclaresPromptsInDiscover` — the two rows that score what `server/discover` advertises, and the rows a reader looking for `does the suite check what we advertise` finds first. They are not counterparts: both range over the NAMED capabilities the schema fixes — `tools`, `prompts`, `resources` — and score them against whether the corresponding handler answers. `extensions` is an OPEN map whose keys the schema does not constrain, so there is no handler for a check to hold an extension against, and neither row reads the key at all. The second near miss is `ServerRejectsUndeclaredCapability` and `MissingCapabilityHttp400`, whose `-32021` a reader may take for the extensions error: their subject is a CLIENT CAPABILITY the client did not declare and the server needed, the opposite direction from a client offering a server an extension it does not support. MEASURED: the strings `extension` and `experimental` do not occur in any of the 175 rows, in any of the six key fields.",
+      "the_search_that_found_none": "the `extensions` capability — a server ADVERTISING one under `capabilities.extensions`, a client OFFERING one the server does not support, and the rule that keeps `extensions` and `experimental` apart as two separate capability keys",
+      "why_no_counterpart": "`no-oc-scenario` — the suite scores no `extensions` obligation at all. MEASURED over all 175 manifest rows and both legs: zero. The two `-32021` rows a reader might reach for are about an undeclared CLIENT CAPABILITY, which is the other direction.",
+      "why_this_search_is_this_claims_search": "The claim is about the `extensions` capability, and SRV29's subject is exactly that capability — advertisement, a client's offer, and the `extensions`/`experimental` separation. It is the right instrument and a grep for `-32021` would be the wrong one: that code IS in the suite, twice, and both rows are about a CLIENT CAPABILITY the server required and the client omitted, the opposite direction from anything here."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "`resources/list` and `prompts/list` are unaffected by an unsupported `extensions` declaration on the request",
+      "member": {
+        "module": "MCP.Server.ExtensionsNegotiationTest",
+        "register_key": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) T11 — resources/list and prompts/list are unaffected",
+        "test": "test a client offering unsupported extensions (T10, T11) T11 — resources/list and prompts/list are unaffected"
+      },
+      "search_id": "SRV29",
+      "tag": "oc:none/no-oc-scenario/extensions-offer-list-endpoints-unaffected",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers` and `ServerDeclaresPromptsInDiscover` — the two rows that score what `server/discover` advertises, and the rows a reader looking for `does the suite check what we advertise` finds first. They are not counterparts: both range over the NAMED capabilities the schema fixes — `tools`, `prompts`, `resources` — and score them against whether the corresponding handler answers. `extensions` is an OPEN map whose keys the schema does not constrain, so there is no handler for a check to hold an extension against, and neither row reads the key at all. The second near miss is `ServerRejectsUndeclaredCapability` and `MissingCapabilityHttp400`, whose `-32021` a reader may take for the extensions error: their subject is a CLIENT CAPABILITY the client did not declare and the server needed, the opposite direction from a client offering a server an extension it does not support. MEASURED: the strings `extension` and `experimental` do not occur in any of the 175 rows, in any of the six key fields.",
+      "the_search_that_found_none": "the `extensions` capability — a server ADVERTISING one under `capabilities.extensions`, a client OFFERING one the server does not support, and the rule that keeps `extensions` and `experimental` apart as two separate capability keys",
+      "why_no_counterpart": "`no-oc-scenario` — the suite scores no `extensions` obligation at all. MEASURED over all 175 manifest rows and both legs: zero. The two `-32021` rows a reader might reach for are about an undeclared CLIENT CAPABILITY, which is the other direction.",
+      "why_this_search_is_this_claims_search": "The claim is about the `extensions` capability, and SRV29's subject is exactly that capability — advertisement, a client's offer, and the `extensions`/`experimental` separation. It is the right instrument and a grep for `-32021` would be the wrong one: that code IS in the suite, twice, and both rows are about a CLIENT CAPABILITY the server required and the client omitted, the opposite direction from anything here."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "`server/discover` is unaffected by an unsupported `extensions` declaration, and still advertises no extensions of its own",
+      "member": {
+        "module": "MCP.Server.ExtensionsNegotiationTest",
+        "register_key": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) T11 — server/discover is unaffected, and still advertises nothing",
+        "test": "test a client offering unsupported extensions (T10, T11) T11 — server/discover is unaffected, and still advertises nothing"
+      },
+      "search_id": "SRV29",
+      "tag": "oc:none/no-oc-scenario/extensions-offer-discover-unaffected",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers` and `ServerDeclaresPromptsInDiscover` — the two rows that score what `server/discover` advertises, and the rows a reader looking for `does the suite check what we advertise` finds first. They are not counterparts: both range over the NAMED capabilities the schema fixes — `tools`, `prompts`, `resources` — and score them against whether the corresponding handler answers. `extensions` is an OPEN map whose keys the schema does not constrain, so there is no handler for a check to hold an extension against, and neither row reads the key at all. The second near miss is `ServerRejectsUndeclaredCapability` and `MissingCapabilityHttp400`, whose `-32021` a reader may take for the extensions error: their subject is a CLIENT CAPABILITY the client did not declare and the server needed, the opposite direction from a client offering a server an extension it does not support. MEASURED: the strings `extension` and `experimental` do not occur in any of the 175 rows, in any of the six key fields.",
+      "the_search_that_found_none": "the `extensions` capability — a server ADVERTISING one under `capabilities.extensions`, a client OFFERING one the server does not support, and the rule that keeps `extensions` and `experimental` apart as two separate capability keys",
+      "why_no_counterpart": "`no-oc-scenario` — the suite scores no `extensions` obligation at all. MEASURED over all 175 manifest rows and both legs: zero. The two `-32021` rows a reader might reach for are about an undeclared CLIENT CAPABILITY, which is the other direction.",
+      "why_this_search_is_this_claims_search": "The claim is about the `extensions` capability, and SRV29's subject is exactly that capability — advertisement, a client's offer, and the `extensions`/`experimental` separation. It is the right instrument and a grep for `-32021` would be the wrong one: that code IS in the suite, twice, and both rows are about a CLIENT CAPABILITY the server required and the client omitted, the opposite direction from anything here."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "`tools/list` is unaffected by an unsupported `extensions` declaration on the request",
+      "member": {
+        "module": "MCP.Server.ExtensionsNegotiationTest",
+        "register_key": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) T11 — tools/list is unaffected",
+        "test": "test a client offering unsupported extensions (T10, T11) T11 — tools/list is unaffected"
+      },
+      "search_id": "SRV29",
+      "tag": "oc:none/no-oc-scenario/extensions-offer-tools-list-unaffected",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers` and `ServerDeclaresPromptsInDiscover` — the two rows that score what `server/discover` advertises, and the rows a reader looking for `does the suite check what we advertise` finds first. They are not counterparts: both range over the NAMED capabilities the schema fixes — `tools`, `prompts`, `resources` — and score them against whether the corresponding handler answers. `extensions` is an OPEN map whose keys the schema does not constrain, so there is no handler for a check to hold an extension against, and neither row reads the key at all. The second near miss is `ServerRejectsUndeclaredCapability` and `MissingCapabilityHttp400`, whose `-32021` a reader may take for the extensions error: their subject is a CLIENT CAPABILITY the client did not declare and the server needed, the opposite direction from a client offering a server an extension it does not support. MEASURED: the strings `extension` and `experimental` do not occur in any of the 175 rows, in any of the six key fields.",
+      "the_search_that_found_none": "the `extensions` capability — a server ADVERTISING one under `capabilities.extensions`, a client OFFERING one the server does not support, and the rule that keeps `extensions` and `experimental` apart as two separate capability keys",
+      "why_no_counterpart": "`no-oc-scenario` — the suite scores no `extensions` obligation at all. MEASURED over all 175 manifest rows and both legs: zero. The two `-32021` rows a reader might reach for are about an undeclared CLIENT CAPABILITY, which is the other direction.",
+      "why_this_search_is_this_claims_search": "The claim is about the `extensions` capability, and SRV29's subject is exactly that capability — advertisement, a client's offer, and the `extensions`/`experimental` separation. It is the right instrument and a grep for `-32021` would be the wrong one: that code IS in the suite, twice, and both rows are about a CLIENT CAPABILITY the server required and the client omitted, the opposite direction from anything here."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "a malformed or non-object `extensions` declaration on a request breaks nothing",
+      "member": {
+        "module": "MCP.Server.ExtensionsNegotiationTest",
+        "register_key": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) a malformed or non-object extensions declaration still breaks nothing",
+        "test": "test a client offering unsupported extensions (T10, T11) a malformed or non-object extensions declaration still breaks nothing"
+      },
+      "search_id": "SRV29",
+      "tag": "oc:none/no-oc-scenario/extensions-offer-malformed-declaration",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers` and `ServerDeclaresPromptsInDiscover` — the two rows that score what `server/discover` advertises, and the rows a reader looking for `does the suite check what we advertise` finds first. They are not counterparts: both range over the NAMED capabilities the schema fixes — `tools`, `prompts`, `resources` — and score them against whether the corresponding handler answers. `extensions` is an OPEN map whose keys the schema does not constrain, so there is no handler for a check to hold an extension against, and neither row reads the key at all. The second near miss is `ServerRejectsUndeclaredCapability` and `MissingCapabilityHttp400`, whose `-32021` a reader may take for the extensions error: their subject is a CLIENT CAPABILITY the client did not declare and the server needed, the opposite direction from a client offering a server an extension it does not support. MEASURED: the strings `extension` and `experimental` do not occur in any of the 175 rows, in any of the six key fields.",
+      "the_search_that_found_none": "the `extensions` capability — a server ADVERTISING one under `capabilities.extensions`, a client OFFERING one the server does not support, and the rule that keeps `extensions` and `experimental` apart as two separate capability keys",
+      "why_no_counterpart": "`no-oc-scenario` — the suite scores no `extensions` obligation at all. MEASURED over all 175 manifest rows and both legs: zero. The two `-32021` rows a reader might reach for are about an undeclared CLIENT CAPABILITY, which is the other direction.",
+      "why_this_search_is_this_claims_search": "The claim is about the `extensions` capability, and SRV29's subject is exactly that capability — advertisement, a client's offer, and the `extensions`/`experimental` separation. It is the right instrument and a grep for `-32021` would be the wrong one: that code IS in the suite, twice, and both rows are about a CLIENT CAPABILITY the server required and the client omitted, the opposite direction from anything here."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "a non-object `:extensions` value leaves `Config.build/2` successful and produces nothing on the wire",
+      "member": {
+        "module": "MCP.Server.ExtensionsNegotiationTest",
+        "register_key": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a non-object :extensions value leaves build/2 successful and the wire silent",
+        "test": "test nothing in `:extensions` can fail later than Config.build/2 (R-2) a non-object :extensions value leaves build/2 successful and the wire silent"
+      },
+      "search_id": "SRV29",
+      "tag": "oc:none/no-oc-scenario/extensions-config-non-object-value",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers` and `ServerDeclaresPromptsInDiscover` — the two rows that score what `server/discover` advertises, and the rows a reader looking for `does the suite check what we advertise` finds first. They are not counterparts: both range over the NAMED capabilities the schema fixes — `tools`, `prompts`, `resources` — and score them against whether the corresponding handler answers. `extensions` is an OPEN map whose keys the schema does not constrain, so there is no handler for a check to hold an extension against, and neither row reads the key at all. The second near miss is `ServerRejectsUndeclaredCapability` and `MissingCapabilityHttp400`, whose `-32021` a reader may take for the extensions error: their subject is a CLIENT CAPABILITY the client did not declare and the server needed, the opposite direction from a client offering a server an extension it does not support. MEASURED: the strings `extension` and `experimental` do not occur in any of the 175 rows, in any of the six key fields.",
+      "the_search_that_found_none": "the `extensions` capability — a server ADVERTISING one under `capabilities.extensions`, a client OFFERING one the server does not support, and the rule that keeps `extensions` and `experimental` apart as two separate capability keys",
+      "why_no_counterpart": "`no-oc-scenario` — the suite scores no `extensions` obligation at all. MEASURED over all 175 manifest rows and both legs: zero. The two `-32021` rows a reader might reach for are about an undeclared CLIENT CAPABILITY, which is the other direction.",
+      "why_this_search_is_this_claims_search": "The claim is about the `extensions` capability, and SRV29's subject is exactly that capability — advertisement, a client's offer, and the `extensions`/`experimental` separation. It is the right instrument and a grep for `-32021` would be the wrong one: that code IS in the suite, twice, and both rows are about a CLIENT CAPABILITY the server required and the client omitted, the opposite direction from anything here."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "a settings value that cannot be encoded is dropped when the server is built, not raised when a request arrives",
+      "member": {
+        "module": "MCP.Server.ExtensionsNegotiationTest",
+        "register_key": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a settings value that cannot be encoded is dropped at launch, not raised at request time",
+        "test": "test nothing in `:extensions` can fail later than Config.build/2 (R-2) a settings value that cannot be encoded is dropped at launch, not raised at request time"
+      },
+      "search_id": "SRV29",
+      "tag": "oc:none/no-oc-scenario/extensions-config-unencodable-dropped",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers` and `ServerDeclaresPromptsInDiscover` — the two rows that score what `server/discover` advertises, and the rows a reader looking for `does the suite check what we advertise` finds first. They are not counterparts: both range over the NAMED capabilities the schema fixes — `tools`, `prompts`, `resources` — and score them against whether the corresponding handler answers. `extensions` is an OPEN map whose keys the schema does not constrain, so there is no handler for a check to hold an extension against, and neither row reads the key at all. The second near miss is `ServerRejectsUndeclaredCapability` and `MissingCapabilityHttp400`, whose `-32021` a reader may take for the extensions error: their subject is a CLIENT CAPABILITY the client did not declare and the server needed, the opposite direction from a client offering a server an extension it does not support. MEASURED: the strings `extension` and `experimental` do not occur in any of the 175 rows, in any of the six key fields.",
+      "the_search_that_found_none": "the `extensions` capability — a server ADVERTISING one under `capabilities.extensions`, a client OFFERING one the server does not support, and the rule that keeps `extensions` and `experimental` apart as two separate capability keys",
+      "why_no_counterpart": "`no-oc-scenario` — the suite scores no `extensions` obligation at all. MEASURED over all 175 manifest rows and both legs: zero. The two `-32021` rows a reader might reach for are about an undeclared CLIENT CAPABILITY, which is the other direction.",
+      "why_this_search_is_this_claims_search": "The claim is about the `extensions` capability, and SRV29's subject is exactly that capability — advertisement, a client's offer, and the `extensions`/`experimental` separation. It is the right instrument and a grep for `-32021` would be the wrong one: that code IS in the suite, twice, and both rows are about a CLIENT CAPABILITY the server required and the client omitted, the opposite direction from anything here."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "a settings value that encodes to a non-object is dropped and never advertised",
+      "member": {
+        "module": "MCP.Server.ExtensionsNegotiationTest",
+        "register_key": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a settings value that encodes to a non-object is dropped, never advertised",
+        "test": "test nothing in `:extensions` can fail later than Config.build/2 (R-2) a settings value that encodes to a non-object is dropped, never advertised"
+      },
+      "search_id": "SRV29",
+      "tag": "oc:none/no-oc-scenario/extensions-config-non-object-encoding-dropped",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers` and `ServerDeclaresPromptsInDiscover` — the two rows that score what `server/discover` advertises, and the rows a reader looking for `does the suite check what we advertise` finds first. They are not counterparts: both range over the NAMED capabilities the schema fixes — `tools`, `prompts`, `resources` — and score them against whether the corresponding handler answers. `extensions` is an OPEN map whose keys the schema does not constrain, so there is no handler for a check to hold an extension against, and neither row reads the key at all. The second near miss is `ServerRejectsUndeclaredCapability` and `MissingCapabilityHttp400`, whose `-32021` a reader may take for the extensions error: their subject is a CLIENT CAPABILITY the client did not declare and the server needed, the opposite direction from a client offering a server an extension it does not support. MEASURED: the strings `extension` and `experimental` do not occur in any of the 175 rows, in any of the six key fields.",
+      "the_search_that_found_none": "the `extensions` capability — a server ADVERTISING one under `capabilities.extensions`, a client OFFERING one the server does not support, and the rule that keeps `extensions` and `experimental` apart as two separate capability keys",
+      "why_no_counterpart": "`no-oc-scenario` — the suite scores no `extensions` obligation at all. MEASURED over all 175 manifest rows and both legs: zero. The two `-32021` rows a reader might reach for are about an undeclared CLIENT CAPABILITY, which is the other direction.",
+      "why_this_search_is_this_claims_search": "The claim is about the `extensions` capability, and SRV29's subject is exactly that capability — advertisement, a client's offer, and the `extensions`/`experimental` separation. It is the right instrument and a grep for `-32021` would be the wrong one: that code IS in the suite, twice, and both rows are about a CLIENT CAPABILITY the server required and the client omitted, the opposite direction from anything here."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "a valid `extensions` declaration is advertised and warns about nothing",
+      "member": {
+        "module": "MCP.Server.ExtensionsNegotiationTest",
+        "register_key": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a valid declaration is advertised and warns about nothing",
+        "test": "test nothing in `:extensions` can fail later than Config.build/2 (R-2) a valid declaration is advertised and warns about nothing"
+      },
+      "search_id": "SRV29",
+      "tag": "oc:none/no-oc-scenario/extensions-config-valid-declaration-silent",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers` and `ServerDeclaresPromptsInDiscover` — the two rows that score what `server/discover` advertises, and the rows a reader looking for `does the suite check what we advertise` finds first. They are not counterparts: both range over the NAMED capabilities the schema fixes — `tools`, `prompts`, `resources` — and score them against whether the corresponding handler answers. `extensions` is an OPEN map whose keys the schema does not constrain, so there is no handler for a check to hold an extension against, and neither row reads the key at all. The second near miss is `ServerRejectsUndeclaredCapability` and `MissingCapabilityHttp400`, whose `-32021` a reader may take for the extensions error: their subject is a CLIENT CAPABILITY the client did not declare and the server needed, the opposite direction from a client offering a server an extension it does not support. MEASURED: the strings `extension` and `experimental` do not occur in any of the 175 rows, in any of the six key fields.",
+      "the_search_that_found_none": "the `extensions` capability — a server ADVERTISING one under `capabilities.extensions`, a client OFFERING one the server does not support, and the rule that keeps `extensions` and `experimental` apart as two separate capability keys",
+      "why_no_counterpart": "`no-oc-scenario` — the suite scores no `extensions` obligation at all. MEASURED over all 175 manifest rows and both legs: zero. The two `-32021` rows a reader might reach for are about an undeclared CLIENT CAPABILITY, which is the other direction.",
+      "why_this_search_is_this_claims_search": "The claim is about the `extensions` capability, and SRV29's subject is exactly that capability — advertisement, a client's offer, and the `extensions`/`experimental` separation. It is the right instrument and a grep for `-32021` would be the wrong one: that code IS in the suite, twice, and both rows are about a CLIENT CAPABILITY the server required and the client omitted, the opposite direction from anything here."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "a handler can read the client's `extensions` declaration off `ctx.meta`",
+      "member": {
+        "module": "MCP.Server.ExtensionsNegotiationTest",
+        "register_key": "MCP.Server.ExtensionsNegotiationTest/test the handler-visible read a handler can read the client's declaration off ctx.meta",
+        "test": "test the handler-visible read a handler can read the client's declaration off ctx.meta"
+      },
+      "search_id": "SRV29",
+      "tag": "oc:none/no-oc-scenario/extensions-handler-visible-read",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers` and `ServerDeclaresPromptsInDiscover` — the two rows that score what `server/discover` advertises, and the rows a reader looking for `does the suite check what we advertise` finds first. They are not counterparts: both range over the NAMED capabilities the schema fixes — `tools`, `prompts`, `resources` — and score them against whether the corresponding handler answers. `extensions` is an OPEN map whose keys the schema does not constrain, so there is no handler for a check to hold an extension against, and neither row reads the key at all. The second near miss is `ServerRejectsUndeclaredCapability` and `MissingCapabilityHttp400`, whose `-32021` a reader may take for the extensions error: their subject is a CLIENT CAPABILITY the client did not declare and the server needed, the opposite direction from a client offering a server an extension it does not support. MEASURED: the strings `extension` and `experimental` do not occur in any of the 175 rows, in any of the six key fields.",
+      "the_search_that_found_none": "the `extensions` capability — a server ADVERTISING one under `capabilities.extensions`, a client OFFERING one the server does not support, and the rule that keeps `extensions` and `experimental` apart as two separate capability keys",
+      "why_no_counterpart": "`no-oc-scenario` — the suite scores no `extensions` obligation at all. MEASURED over all 175 manifest rows and both legs: zero. The two `-32021` rows a reader might reach for are about an undeclared CLIENT CAPABILITY, which is the other direction.",
+      "why_this_search_is_this_claims_search": "The claim is about the `extensions` capability, and SRV29's subject is exactly that capability — advertisement, a client's offer, and the `extensions`/`experimental` separation. It is the right instrument and a grep for `-32021` would be the wrong one: that code IS in the suite, twice, and both rows are about a CLIENT CAPABILITY the server required and the client omitted, the opposite direction from anything here."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "`extensions` is absent from a default `server/discover` result rather than present and empty",
+      "member": {
+        "module": "MCP.Server.ExtensionsNegotiationTest",
+        "register_key": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) T1 — `extensions` is absent from a default server/discover result",
+        "test": "test what the server advertises (T1, T2, T3) T1 — `extensions` is absent from a default server/discover result"
+      },
+      "search_id": "SRV29",
+      "tag": "oc:none/no-oc-scenario/extensions-absent-by-default",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers` and `ServerDeclaresPromptsInDiscover` — the two rows that score what `server/discover` advertises, and the rows a reader looking for `does the suite check what we advertise` finds first. They are not counterparts: both range over the NAMED capabilities the schema fixes — `tools`, `prompts`, `resources` — and score them against whether the corresponding handler answers. `extensions` is an OPEN map whose keys the schema does not constrain, so there is no handler for a check to hold an extension against, and neither row reads the key at all. The second near miss is `ServerRejectsUndeclaredCapability` and `MissingCapabilityHttp400`, whose `-32021` a reader may take for the extensions error: their subject is a CLIENT CAPABILITY the client did not declare and the server needed, the opposite direction from a client offering a server an extension it does not support. MEASURED: the strings `extension` and `experimental` do not occur in any of the 175 rows, in any of the six key fields.",
+      "the_search_that_found_none": "the `extensions` capability — a server ADVERTISING one under `capabilities.extensions`, a client OFFERING one the server does not support, and the rule that keeps `extensions` and `experimental` apart as two separate capability keys",
+      "why_no_counterpart": "`no-oc-scenario` — the suite scores no `extensions` obligation at all. MEASURED over all 175 manifest rows and both legs: zero. The two `-32021` rows a reader might reach for are about an undeclared CLIENT CAPABILITY, which is the other direction.",
+      "why_this_search_is_this_claims_search": "The claim is about the `extensions` capability, and SRV29's subject is exactly that capability — advertisement, a client's offer, and the `extensions`/`experimental` separation. It is the right instrument and a grep for `-32021` would be the wrong one: that code IS in the suite, twice, and both rows are about a CLIENT CAPABILITY the server required and the client omitted, the opposite direction from anything here."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "an empty or fully-invalid `extensions` declaration is absent from the wire rather than present as `{}`",
+      "member": {
+        "module": "MCP.Server.ExtensionsNegotiationTest",
+        "register_key": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) T2 — an empty or fully-invalid declaration is absent, not `{}`",
+        "test": "test what the server advertises (T1, T2, T3) T2 — an empty or fully-invalid declaration is absent, not `{}`"
+      },
+      "search_id": "SRV29",
+      "tag": "oc:none/no-oc-scenario/extensions-empty-declaration-absent",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers` and `ServerDeclaresPromptsInDiscover` — the two rows that score what `server/discover` advertises, and the rows a reader looking for `does the suite check what we advertise` finds first. They are not counterparts: both range over the NAMED capabilities the schema fixes — `tools`, `prompts`, `resources` — and score them against whether the corresponding handler answers. `extensions` is an OPEN map whose keys the schema does not constrain, so there is no handler for a check to hold an extension against, and neither row reads the key at all. The second near miss is `ServerRejectsUndeclaredCapability` and `MissingCapabilityHttp400`, whose `-32021` a reader may take for the extensions error: their subject is a CLIENT CAPABILITY the client did not declare and the server needed, the opposite direction from a client offering a server an extension it does not support. MEASURED: the strings `extension` and `experimental` do not occur in any of the 175 rows, in any of the six key fields.",
+      "the_search_that_found_none": "the `extensions` capability — a server ADVERTISING one under `capabilities.extensions`, a client OFFERING one the server does not support, and the rule that keeps `extensions` and `experimental` apart as two separate capability keys",
+      "why_no_counterpart": "`no-oc-scenario` — the suite scores no `extensions` obligation at all. MEASURED over all 175 manifest rows and both legs: zero. The two `-32021` rows a reader might reach for are about an undeclared CLIENT CAPABILITY, which is the other direction.",
+      "why_this_search_is_this_claims_search": "The claim is about the `extensions` capability, and SRV29's subject is exactly that capability — advertisement, a client's offer, and the `extensions`/`experimental` separation. It is the right instrument and a grep for `-32021` would be the wrong one: that code IS in the suite, twice, and both rows are about a CLIENT CAPABILITY the server required and the client omitted, the opposite direction from anything here."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "a declared extension appears verbatim under `capabilities.extensions` in `server/discover`",
+      "member": {
+        "module": "MCP.Server.ExtensionsNegotiationTest",
+        "register_key": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) T3 — a declared extension appears verbatim under capabilities.extensions",
+        "test": "test what the server advertises (T1, T2, T3) T3 — a declared extension appears verbatim under capabilities.extensions"
+      },
+      "search_id": "SRV29",
+      "tag": "oc:none/no-oc-scenario/extensions-declared-appears-verbatim",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers` and `ServerDeclaresPromptsInDiscover` — the two rows that score what `server/discover` advertises, and the rows a reader looking for `does the suite check what we advertise` finds first. They are not counterparts: both range over the NAMED capabilities the schema fixes — `tools`, `prompts`, `resources` — and score them against whether the corresponding handler answers. `extensions` is an OPEN map whose keys the schema does not constrain, so there is no handler for a check to hold an extension against, and neither row reads the key at all. The second near miss is `ServerRejectsUndeclaredCapability` and `MissingCapabilityHttp400`, whose `-32021` a reader may take for the extensions error: their subject is a CLIENT CAPABILITY the client did not declare and the server needed, the opposite direction from a client offering a server an extension it does not support. MEASURED: the strings `extension` and `experimental` do not occur in any of the 175 rows, in any of the six key fields.",
+      "the_search_that_found_none": "the `extensions` capability — a server ADVERTISING one under `capabilities.extensions`, a client OFFERING one the server does not support, and the rule that keeps `extensions` and `experimental` apart as two separate capability keys",
+      "why_no_counterpart": "`no-oc-scenario` — the suite scores no `extensions` obligation at all. MEASURED over all 175 manifest rows and both legs: zero. The two `-32021` rows a reader might reach for are about an undeclared CLIENT CAPABILITY, which is the other direction.",
+      "why_this_search_is_this_claims_search": "The claim is about the `extensions` capability, and SRV29's subject is exactly that capability — advertisement, a client's offer, and the `extensions`/`experimental` separation. It is the right instrument and a grep for `-32021` would be the wrong one: that code IS in the suite, twice, and both rows are about a CLIENT CAPABILITY the server required and the client omitted, the opposite direction from anything here."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "an invalid extension identifier is dropped from the declaration while the valid ones are kept",
+      "member": {
+        "module": "MCP.Server.ExtensionsNegotiationTest",
+        "register_key": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) an invalid identifier is dropped from the declaration, valid ones kept",
+        "test": "test what the server advertises (T1, T2, T3) an invalid identifier is dropped from the declaration, valid ones kept"
+      },
+      "search_id": "SRV29",
+      "tag": "oc:none/no-oc-scenario/extensions-invalid-identifier-dropped",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers` and `ServerDeclaresPromptsInDiscover` — the two rows that score what `server/discover` advertises, and the rows a reader looking for `does the suite check what we advertise` finds first. They are not counterparts: both range over the NAMED capabilities the schema fixes — `tools`, `prompts`, `resources` — and score them against whether the corresponding handler answers. `extensions` is an OPEN map whose keys the schema does not constrain, so there is no handler for a check to hold an extension against, and neither row reads the key at all. The second near miss is `ServerRejectsUndeclaredCapability` and `MissingCapabilityHttp400`, whose `-32021` a reader may take for the extensions error: their subject is a CLIENT CAPABILITY the client did not declare and the server needed, the opposite direction from a client offering a server an extension it does not support. MEASURED: the strings `extension` and `experimental` do not occur in any of the 175 rows, in any of the six key fields.",
+      "the_search_that_found_none": "the `extensions` capability — a server ADVERTISING one under `capabilities.extensions`, a client OFFERING one the server does not support, and the rule that keeps `extensions` and `experimental` apart as two separate capability keys",
+      "why_no_counterpart": "`no-oc-scenario` — the suite scores no `extensions` obligation at all. MEASURED over all 175 manifest rows and both legs: zero. The two `-32021` rows a reader might reach for are about an undeclared CLIENT CAPABILITY, which is the other direction.",
+      "why_this_search_is_this_claims_search": "The claim is about the `extensions` capability, and SRV29's subject is exactly that capability — advertisement, a client's offer, and the `extensions`/`experimental` separation. It is the right instrument and a grep for `-32021` would be the wrong one: that code IS in the suite, twice, and both rows are about a CLIENT CAPABILITY the server required and the client omitted, the opposite direction from anything here."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "the server's `extensions` declaration is fixed when the server is built rather than recomputed per request",
+      "member": {
+        "module": "MCP.Server.ExtensionsNegotiationTest",
+        "register_key": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) the server's declaration is fixed at build time, not per request",
+        "test": "test what the server advertises (T1, T2, T3) the server's declaration is fixed at build time, not per request"
+      },
+      "search_id": "SRV29",
+      "tag": "oc:none/no-oc-scenario/extensions-declaration-fixed-at-build",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers` and `ServerDeclaresPromptsInDiscover` — the two rows that score what `server/discover` advertises, and the rows a reader looking for `does the suite check what we advertise` finds first. They are not counterparts: both range over the NAMED capabilities the schema fixes — `tools`, `prompts`, `resources` — and score them against whether the corresponding handler answers. `extensions` is an OPEN map whose keys the schema does not constrain, so there is no handler for a check to hold an extension against, and neither row reads the key at all. The second near miss is `ServerRejectsUndeclaredCapability` and `MissingCapabilityHttp400`, whose `-32021` a reader may take for the extensions error: their subject is a CLIENT CAPABILITY the client did not declare and the server needed, the opposite direction from a client offering a server an extension it does not support. MEASURED: the strings `extension` and `experimental` do not occur in any of the 175 rows, in any of the six key fields.",
+      "the_search_that_found_none": "the `extensions` capability — a server ADVERTISING one under `capabilities.extensions`, a client OFFERING one the server does not support, and the rule that keeps `extensions` and `experimental` apart as two separate capability keys",
+      "why_no_counterpart": "`no-oc-scenario` — the suite scores no `extensions` obligation at all. MEASURED over all 175 manifest rows and both legs: zero. The two `-32021` rows a reader might reach for are about an undeclared CLIENT CAPABILITY, which is the other direction.",
+      "why_this_search_is_this_claims_search": "The claim is about the `extensions` capability, and SRV29's subject is exactly that capability — advertisement, a client's offer, and the `extensions`/`experimental` separation. It is the right instrument and a grep for `-32021` would be the wrong one: that code IS in the suite, twice, and both rows are about a CLIENT CAPABILITY the server required and the client omitted, the opposite direction from anything here."
     },
     {
       "authored_by": "MES-119 (C1c-iii-b)",
@@ -1111,9 +1447,9 @@
       },
       "search_id": "SRV23",
       "tag": "oc:none/no-oc-server-check/schema-2020-12-explicit-dialect-carried",
-      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
+      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 119, which since C1c-iv-a IS all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
       "the_search_that_found_none": "JSON Schema 2020-12 keywords beyond `type` — `$defs`/`$anchor`, `$ref`, `not`, `oneOf`, `if`/`then`/`else`, `unevaluatedProperties` — surviving verbatim through a tools/list inputSchema",
-      "why_no_counterpart": "`no-oc-server-check` — 0 of the 107 and 0 of all 119 server rows; the one hit in all 175 is the CLIENT-leg $ref row the near miss names.",
+      "why_no_counterpart": "`no-oc-server-check` — 0 of the 119 — the declared population and the server leg are now the same 119 rows; the one hit in all 175 is the CLIENT-leg $ref row the near miss names.",
       "why_this_search_is_this_claims_search": "The claim is about what survives INSIDE an inputSchema carried through a real tools/list. SRV23's pattern sweeps exactly the 2020-12 keyword vocabulary these members assert, and its near miss names both the client-leg $ref row and the truthiness axis on this module's own endpoint. All seven rows now resting on it — `MCP.Protocol.Types.ToolTest`'s encoder-level one and this module's six — make ONE claim between them, that no 2020-12 keyword is lost in transit; the SRV25 precedent, one claim, one search, N rows."
     },
     {
@@ -1127,9 +1463,9 @@
       },
       "search_id": "SRV23",
       "tag": "oc:none/no-oc-server-check/schema-2020-12-composition-keywords",
-      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
+      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 119, which since C1c-iv-a IS all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
       "the_search_that_found_none": "JSON Schema 2020-12 keywords beyond `type` — `$defs`/`$anchor`, `$ref`, `not`, `oneOf`, `if`/`then`/`else`, `unevaluatedProperties` — surviving verbatim through a tools/list inputSchema",
-      "why_no_counterpart": "`no-oc-server-check` — 0 of the 107 and 0 of all 119 server rows; the one hit in all 175 is the CLIENT-leg $ref row the near miss names.",
+      "why_no_counterpart": "`no-oc-server-check` — 0 of the 119 — the declared population and the server leg are now the same 119 rows; the one hit in all 175 is the CLIENT-leg $ref row the near miss names.",
       "why_this_search_is_this_claims_search": "The claim is about what survives INSIDE an inputSchema carried through a real tools/list. SRV23's pattern sweeps exactly the 2020-12 keyword vocabulary these members assert, and its near miss names both the client-leg $ref row and the truthiness axis on this module's own endpoint. All seven rows now resting on it — `MCP.Protocol.Types.ToolTest`'s encoder-level one and this module's six — make ONE claim between them, that no 2020-12 keyword is lost in transit; the SRV25 precedent, one claim, one search, N rows."
     },
     {
@@ -1143,9 +1479,9 @@
       },
       "search_id": "SRV23",
       "tag": "oc:none/no-oc-server-check/schema-2020-12-conditional-keywords",
-      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
+      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 119, which since C1c-iv-a IS all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
       "the_search_that_found_none": "JSON Schema 2020-12 keywords beyond `type` — `$defs`/`$anchor`, `$ref`, `not`, `oneOf`, `if`/`then`/`else`, `unevaluatedProperties` — surviving verbatim through a tools/list inputSchema",
-      "why_no_counterpart": "`no-oc-server-check` — 0 of the 107 and 0 of all 119 server rows; the one hit in all 175 is the CLIENT-leg $ref row the near miss names.",
+      "why_no_counterpart": "`no-oc-server-check` — 0 of the 119 — the declared population and the server leg are now the same 119 rows; the one hit in all 175 is the CLIENT-leg $ref row the near miss names.",
       "why_this_search_is_this_claims_search": "The claim is about what survives INSIDE an inputSchema carried through a real tools/list. SRV23's pattern sweeps exactly the 2020-12 keyword vocabulary these members assert, and its near miss names both the client-leg $ref row and the truthiness axis on this module's own endpoint. All seven rows now resting on it — `MCP.Protocol.Types.ToolTest`'s encoder-level one and this module's six — make ONE claim between them, that no 2020-12 keyword is lost in transit; the SRV25 precedent, one claim, one search, N rows."
     },
     {
@@ -1159,9 +1495,9 @@
       },
       "search_id": "SRV23",
       "tag": "oc:none/no-oc-server-check/schema-2020-12-reference-keywords",
-      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
+      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 119, which since C1c-iv-a IS all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
       "the_search_that_found_none": "JSON Schema 2020-12 keywords beyond `type` — `$defs`/`$anchor`, `$ref`, `not`, `oneOf`, `if`/`then`/`else`, `unevaluatedProperties` — surviving verbatim through a tools/list inputSchema",
-      "why_no_counterpart": "`no-oc-server-check` — 0 of the 107 and 0 of all 119 server rows; the one hit in all 175 is the CLIENT-leg $ref row the near miss names.",
+      "why_no_counterpart": "`no-oc-server-check` — 0 of the 119 — the declared population and the server leg are now the same 119 rows; the one hit in all 175 is the CLIENT-leg $ref row the near miss names.",
       "why_this_search_is_this_claims_search": "The claim is about what survives INSIDE an inputSchema carried through a real tools/list. SRV23's pattern sweeps exactly the 2020-12 keyword vocabulary these members assert, and its near miss names both the client-leg $ref row and the truthiness axis on this module's own endpoint. All seven rows now resting on it — `MCP.Protocol.Types.ToolTest`'s encoder-level one and this module's six — make ONE claim between them, that no 2020-12 keyword is lost in transit; the SRV25 precedent, one claim, one search, N rows."
     },
     {
@@ -1175,9 +1511,9 @@
       },
       "search_id": "SRV23",
       "tag": "oc:none/no-oc-server-check/schema-2020-12-whole-fixture-intact",
-      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
+      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 119, which since C1c-iv-a IS all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
       "the_search_that_found_none": "JSON Schema 2020-12 keywords beyond `type` — `$defs`/`$anchor`, `$ref`, `not`, `oneOf`, `if`/`then`/`else`, `unevaluatedProperties` — surviving verbatim through a tools/list inputSchema",
-      "why_no_counterpart": "`no-oc-server-check` — 0 of the 107 and 0 of all 119 server rows; the one hit in all 175 is the CLIENT-leg $ref row the near miss names.",
+      "why_no_counterpart": "`no-oc-server-check` — 0 of the 119 — the declared population and the server leg are now the same 119 rows; the one hit in all 175 is the CLIENT-leg $ref row the near miss names.",
       "why_this_search_is_this_claims_search": "The claim is about what survives INSIDE an inputSchema carried through a real tools/list. SRV23's pattern sweeps exactly the 2020-12 keyword vocabulary these members assert, and its near miss names both the client-leg $ref row and the truthiness axis on this module's own endpoint. All seven rows now resting on it — `MCP.Protocol.Types.ToolTest`'s encoder-level one and this module's six — make ONE claim between them, that no 2020-12 keyword is lost in transit; the SRV25 precedent, one claim, one search, N rows."
     },
     {
@@ -1191,9 +1527,9 @@
       },
       "search_id": "SRV23",
       "tag": "oc:none/no-oc-server-check/schema-2020-12-validation-keywords",
-      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
+      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 119, which since C1c-iv-a IS all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
       "the_search_that_found_none": "JSON Schema 2020-12 keywords beyond `type` — `$defs`/`$anchor`, `$ref`, `not`, `oneOf`, `if`/`then`/`else`, `unevaluatedProperties` — surviving verbatim through a tools/list inputSchema",
-      "why_no_counterpart": "`no-oc-server-check` — 0 of the 107 and 0 of all 119 server rows; the one hit in all 175 is the CLIENT-leg $ref row the near miss names.",
+      "why_no_counterpart": "`no-oc-server-check` — 0 of the 119 — the declared population and the server leg are now the same 119 rows; the one hit in all 175 is the CLIENT-leg $ref row the near miss names.",
       "why_this_search_is_this_claims_search": "The claim is about what survives INSIDE an inputSchema carried through a real tools/list. SRV23's pattern sweeps exactly the 2020-12 keyword vocabulary these members assert, and its near miss names both the client-leg $ref row and the truthiness axis on this module's own endpoint. All seven rows now resting on it — `MCP.Protocol.Types.ToolTest`'s encoder-level one and this module's six — make ONE claim between them, that no 2020-12 keyword is lost in transit; the SRV25 precedent, one claim, one search, N rows."
     },
     {
@@ -1417,7 +1753,7 @@
       "tag": "oc:none/no-oc-scenario/tools-list-order-pagination-bound",
       "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
       "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
-      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 119, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
       "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
     },
     {
@@ -1433,7 +1769,7 @@
       "tag": "oc:none/no-oc-scenario/tools-list-curated-order-escape-hatch",
       "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
       "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
-      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 119, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
       "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
     },
     {
@@ -1449,7 +1785,7 @@
       "tag": "oc:none/no-oc-scenario/tools-list-order-control-vacuous",
       "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
       "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
-      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 119, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
       "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
     },
     {
@@ -1465,7 +1801,7 @@
       "tag": "oc:none/no-oc-scenario/tools-list-order-across-requests",
       "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
       "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
-      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 119, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
       "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
     },
     {
@@ -1481,7 +1817,7 @@
       "tag": "oc:none/no-oc-scenario/tools-list-default-order-and-set",
       "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
       "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
-      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 119, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
       "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
     },
     {
@@ -1497,7 +1833,7 @@
       "tag": "oc:none/no-oc-scenario/tools-list-order-across-instances",
       "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — the same endpoint, and the closest the suite comes. These six members drive a real `tools/list` through `Dispatch.dispatch/3`, so their responses would satisfy every one of `ToolsList`'s five axes; what `ToolsList` scores is the PRESENCE of `name`, `description` and `inputSchema` on each advertised tool, quantified over whatever set is advertised. Nothing in it reads the ORDER of the `tools` array, and nothing in the suite compares two responses to each other at all — which is what a determinism claim needs. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject (it would match a `stable` or `sequence` row in any scenario). The suite has no determinism or ordering check of any kind. Named so it reads as `the suite does not ask` rather than as `we did not look`: this is the E2 fix's own subject, and the six members are the arms of one measurement — SUBJECT, MUTANT, CONTROL and BOUND — so one search answers all six.",
       "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
-      "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of the 119, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
       "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
     },
     {
@@ -1656,6 +1992,134 @@
       "why_this_search_is_this_claims_search": "The claim is about `decode_event/1` turning one event's TEXT into fields. S01's subject is that parse, spelled at field granularity — `event:`/`id:`/`data:`/`retry:`, joined data lines, comments, unknown fields, the optional space — so this member's claim is one of the constraints S01 searched for, not a neighbour of it."
     },
     {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "`SSE.encode_event/1` emits `event:`, `id:`, `retry:` and `data:` field lines for an event carrying all four, terminated by a blank line",
+      "member": {
+        "module": "MCP.Transport.SSETest",
+        "register_key": "MCP.Transport.SSETest/test encode_event/1 encodes event with all fields",
+        "test": "test encode_event/1 encodes event with all fields"
+      },
+      "search_id": "SRV30",
+      "tag": "oc:none/no-oc-scenario/sse-frame-all-fields",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerSSEStreamsFunctional` — `Multiple POST SSE streams should be functional` — and it is a near miss a reader is very likely to stop at, because the harness genuinely pipes each stream through an SSE PARSER before reading it. It is still not a counterpart, and the decomposition of that check is what settles it: the stream is scored by racing ONE `read()` against a 2 second timer, and a `null` from the timer is not recorded as an error, so a stream whose frames are malformed enough to yield nothing is counted FUNCTIONAL exactly as one that delivers a frame. The event is never decoded and its payload is never compared with the request that opened it. So the check cannot distinguish correct framing from no framing at all, and nothing else in the 175 mentions an SSE field line. The second near miss is `SRV13`'s territory — the SSE response HEADERS — which is a different absence with its own entry and is named here only so the two are not confused.",
+      "the_search_that_found_none": "the SYNTAX of an SSE frame — the `event:`, `id:`, `data:` and `retry:` field lines, the blank line that terminates a frame, and the folding of a multi-line payload into one `data:` line per line",
+      "why_no_counterpart": "`no-oc-scenario` — the suite carries SSE rows and not one of them reads a frame. MEASURED over all 175: zero mention any SSE field line, and the two rows that do open streams count a stream that yields nothing as functional.",
+      "why_this_search_is_this_claims_search": "The claim is about the BYTES of an SSE frame. SRV30's subject is that syntax, and its near miss is the reason a narrower instrument would mislead: the suite does carry SSE rows, they do run a parser, and they still cannot see framing — so a search that stopped at `is there an SSE check` would answer yes and be wrong about this claim."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "`SSE.encode_event/1` emits a `data:` line with an empty value rather than omitting it when the payload is empty",
+      "member": {
+        "module": "MCP.Transport.SSETest",
+        "register_key": "MCP.Transport.SSETest/test encode_event/1 encodes event with empty data",
+        "test": "test encode_event/1 encodes event with empty data"
+      },
+      "search_id": "SRV30",
+      "tag": "oc:none/no-oc-scenario/sse-frame-empty-data",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerSSEStreamsFunctional` — `Multiple POST SSE streams should be functional` — and it is a near miss a reader is very likely to stop at, because the harness genuinely pipes each stream through an SSE PARSER before reading it. It is still not a counterpart, and the decomposition of that check is what settles it: the stream is scored by racing ONE `read()` against a 2 second timer, and a `null` from the timer is not recorded as an error, so a stream whose frames are malformed enough to yield nothing is counted FUNCTIONAL exactly as one that delivers a frame. The event is never decoded and its payload is never compared with the request that opened it. So the check cannot distinguish correct framing from no framing at all, and nothing else in the 175 mentions an SSE field line. The second near miss is `SRV13`'s territory — the SSE response HEADERS — which is a different absence with its own entry and is named here only so the two are not confused.",
+      "the_search_that_found_none": "the SYNTAX of an SSE frame — the `event:`, `id:`, `data:` and `retry:` field lines, the blank line that terminates a frame, and the folding of a multi-line payload into one `data:` line per line",
+      "why_no_counterpart": "`no-oc-scenario` — the suite carries SSE rows and not one of them reads a frame. MEASURED over all 175: zero mention any SSE field line, and the two rows that do open streams count a stream that yields nothing as functional.",
+      "why_this_search_is_this_claims_search": "The claim is about the BYTES of an SSE frame. SRV30's subject is that syntax, and its near miss is the reason a narrower instrument would mislead: the suite does carry SSE rows, they do run a parser, and they still cannot see framing — so a search that stopped at `is there an SSE check` would answer yes and be wrong about this claim."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "`SSE.encode_event/1` emits exactly an `event:` line then a `data:` line for an event carrying both",
+      "member": {
+        "module": "MCP.Transport.SSETest",
+        "register_key": "MCP.Transport.SSETest/test encode_event/1 encodes event with event type and data",
+        "test": "test encode_event/1 encodes event with event type and data"
+      },
+      "search_id": "SRV30",
+      "tag": "oc:none/no-oc-scenario/sse-frame-event-type-and-data",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerSSEStreamsFunctional` — `Multiple POST SSE streams should be functional` — and it is a near miss a reader is very likely to stop at, because the harness genuinely pipes each stream through an SSE PARSER before reading it. It is still not a counterpart, and the decomposition of that check is what settles it: the stream is scored by racing ONE `read()` against a 2 second timer, and a `null` from the timer is not recorded as an error, so a stream whose frames are malformed enough to yield nothing is counted FUNCTIONAL exactly as one that delivers a frame. The event is never decoded and its payload is never compared with the request that opened it. So the check cannot distinguish correct framing from no framing at all, and nothing else in the 175 mentions an SSE field line. The second near miss is `SRV13`'s territory — the SSE response HEADERS — which is a different absence with its own entry and is named here only so the two are not confused.",
+      "the_search_that_found_none": "the SYNTAX of an SSE frame — the `event:`, `id:`, `data:` and `retry:` field lines, the blank line that terminates a frame, and the folding of a multi-line payload into one `data:` line per line",
+      "why_no_counterpart": "`no-oc-scenario` — the suite carries SSE rows and not one of them reads a frame. MEASURED over all 175: zero mention any SSE field line, and the two rows that do open streams count a stream that yields nothing as functional.",
+      "why_this_search_is_this_claims_search": "The claim is about the BYTES of an SSE frame. SRV30's subject is that syntax, and its near miss is the reason a narrower instrument would mislead: the suite does carry SSE rows, they do run a parser, and they still cannot see framing — so a search that stopped at `is there an SSE check` would answer yes and be wrong about this claim."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "`SSE.encode_event/1` emits exactly one `data:` line for an event carrying only a payload",
+      "member": {
+        "module": "MCP.Transport.SSETest",
+        "register_key": "MCP.Transport.SSETest/test encode_event/1 encodes event with only data",
+        "test": "test encode_event/1 encodes event with only data"
+      },
+      "search_id": "SRV30",
+      "tag": "oc:none/no-oc-scenario/sse-frame-data-only",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerSSEStreamsFunctional` — `Multiple POST SSE streams should be functional` — and it is a near miss a reader is very likely to stop at, because the harness genuinely pipes each stream through an SSE PARSER before reading it. It is still not a counterpart, and the decomposition of that check is what settles it: the stream is scored by racing ONE `read()` against a 2 second timer, and a `null` from the timer is not recorded as an error, so a stream whose frames are malformed enough to yield nothing is counted FUNCTIONAL exactly as one that delivers a frame. The event is never decoded and its payload is never compared with the request that opened it. So the check cannot distinguish correct framing from no framing at all, and nothing else in the 175 mentions an SSE field line. The second near miss is `SRV13`'s territory — the SSE response HEADERS — which is a different absence with its own entry and is named here only so the two are not confused.",
+      "the_search_that_found_none": "the SYNTAX of an SSE frame — the `event:`, `id:`, `data:` and `retry:` field lines, the blank line that terminates a frame, and the folding of a multi-line payload into one `data:` line per line",
+      "why_no_counterpart": "`no-oc-scenario` — the suite carries SSE rows and not one of them reads a frame. MEASURED over all 175: zero mention any SSE field line, and the two rows that do open streams count a stream that yields nothing as functional.",
+      "why_this_search_is_this_claims_search": "The claim is about the BYTES of an SSE frame. SRV30's subject is that syntax, and its near miss is the reason a narrower instrument would mislead: the suite does carry SSE rows, they do run a parser, and they still cannot see framing — so a search that stopped at `is there an SSE check` would answer yes and be wrong about this claim."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "`SSE.encode_event/1` folds a multi-line payload into one `data:` line per line rather than emitting an embedded newline",
+      "member": {
+        "module": "MCP.Transport.SSETest",
+        "register_key": "MCP.Transport.SSETest/test encode_event/1 encodes multi-line data as multiple data fields",
+        "test": "test encode_event/1 encodes multi-line data as multiple data fields"
+      },
+      "search_id": "SRV30",
+      "tag": "oc:none/no-oc-scenario/sse-frame-multiline-folding",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerSSEStreamsFunctional` — `Multiple POST SSE streams should be functional` — and it is a near miss a reader is very likely to stop at, because the harness genuinely pipes each stream through an SSE PARSER before reading it. It is still not a counterpart, and the decomposition of that check is what settles it: the stream is scored by racing ONE `read()` against a 2 second timer, and a `null` from the timer is not recorded as an error, so a stream whose frames are malformed enough to yield nothing is counted FUNCTIONAL exactly as one that delivers a frame. The event is never decoded and its payload is never compared with the request that opened it. So the check cannot distinguish correct framing from no framing at all, and nothing else in the 175 mentions an SSE field line. The second near miss is `SRV13`'s territory — the SSE response HEADERS — which is a different absence with its own entry and is named here only so the two are not confused.",
+      "the_search_that_found_none": "the SYNTAX of an SSE frame — the `event:`, `id:`, `data:` and `retry:` field lines, the blank line that terminates a frame, and the folding of a multi-line payload into one `data:` line per line",
+      "why_no_counterpart": "`no-oc-scenario` — the suite carries SSE rows and not one of them reads a frame. MEASURED over all 175: zero mention any SSE field line, and the two rows that do open streams count a stream that yields nothing as functional.",
+      "why_this_search_is_this_claims_search": "The claim is about the BYTES of an SSE frame. SRV30's subject is that syntax, and its near miss is the reason a narrower instrument would mislead: the suite does carry SSE rows, they do run a parser, and they still cannot see framing — so a search that stopped at `is there an SSE check` would answer yes and be wrong about this claim."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "`SSE.encode_message/2` frames a JSON-RPC message as an SSE event whose `data:` payload decodes back to that message",
+      "member": {
+        "module": "MCP.Transport.SSETest",
+        "register_key": "MCP.Transport.SSETest/test encode_message/2 encodes a JSON-RPC message as SSE event",
+        "test": "test encode_message/2 encodes a JSON-RPC message as SSE event"
+      },
+      "search_id": "SRV30",
+      "tag": "oc:none/no-oc-scenario/sse-message-frame",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerSSEStreamsFunctional` — `Multiple POST SSE streams should be functional` — and it is a near miss a reader is very likely to stop at, because the harness genuinely pipes each stream through an SSE PARSER before reading it. It is still not a counterpart, and the decomposition of that check is what settles it: the stream is scored by racing ONE `read()` against a 2 second timer, and a `null` from the timer is not recorded as an error, so a stream whose frames are malformed enough to yield nothing is counted FUNCTIONAL exactly as one that delivers a frame. The event is never decoded and its payload is never compared with the request that opened it. So the check cannot distinguish correct framing from no framing at all, and nothing else in the 175 mentions an SSE field line. The second near miss is `SRV13`'s territory — the SSE response HEADERS — which is a different absence with its own entry and is named here only so the two are not confused.",
+      "the_search_that_found_none": "the SYNTAX of an SSE frame — the `event:`, `id:`, `data:` and `retry:` field lines, the blank line that terminates a frame, and the folding of a multi-line payload into one `data:` line per line",
+      "why_no_counterpart": "`no-oc-scenario` — the suite carries SSE rows and not one of them reads a frame. MEASURED over all 175: zero mention any SSE field line, and the two rows that do open streams count a stream that yields nothing as functional.",
+      "why_this_search_is_this_claims_search": "The claim is about the BYTES of an SSE frame. SRV30's subject is that syntax, and its near miss is the reason a narrower instrument would mislead: the suite does carry SSE rows, they do run a parser, and they still cannot see framing — so a search that stopped at `is there an SSE check` would answer yes and be wrong about this claim."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "`SSE.encode_message/2` emits an `id:` line when an event id is supplied",
+      "member": {
+        "module": "MCP.Transport.SSETest",
+        "register_key": "MCP.Transport.SSETest/test encode_message/2 includes event ID when provided",
+        "test": "test encode_message/2 includes event ID when provided"
+      },
+      "search_id": "SRV30",
+      "tag": "oc:none/no-oc-scenario/sse-message-event-id",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerSSEStreamsFunctional` — `Multiple POST SSE streams should be functional` — and it is a near miss a reader is very likely to stop at, because the harness genuinely pipes each stream through an SSE PARSER before reading it. It is still not a counterpart, and the decomposition of that check is what settles it: the stream is scored by racing ONE `read()` against a 2 second timer, and a `null` from the timer is not recorded as an error, so a stream whose frames are malformed enough to yield nothing is counted FUNCTIONAL exactly as one that delivers a frame. The event is never decoded and its payload is never compared with the request that opened it. So the check cannot distinguish correct framing from no framing at all, and nothing else in the 175 mentions an SSE field line. The second near miss is `SRV13`'s territory — the SSE response HEADERS — which is a different absence with its own entry and is named here only so the two are not confused.",
+      "the_search_that_found_none": "the SYNTAX of an SSE frame — the `event:`, `id:`, `data:` and `retry:` field lines, the blank line that terminates a frame, and the folding of a multi-line payload into one `data:` line per line",
+      "why_no_counterpart": "`no-oc-scenario` — the suite carries SSE rows and not one of them reads a frame. MEASURED over all 175: zero mention any SSE field line, and the two rows that do open streams count a stream that yields nothing as functional.",
+      "why_this_search_is_this_claims_search": "The claim is about the BYTES of an SSE frame. SRV30's subject is that syntax, and its near miss is the reason a narrower instrument would mislead: the suite does carry SSE rows, they do run a parser, and they still cannot see framing — so a search that stopped at `is there an SSE check` would answer yes and be wrong about this claim."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "`SSE.encode_message/2` emits the caller's event type on the `event:` line rather than a fixed one",
+      "member": {
+        "module": "MCP.Transport.SSETest",
+        "register_key": "MCP.Transport.SSETest/test encode_message/2 uses custom event type",
+        "test": "test encode_message/2 uses custom event type"
+      },
+      "search_id": "SRV30",
+      "tag": "oc:none/no-oc-scenario/sse-message-custom-event-type",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerSSEStreamsFunctional` — `Multiple POST SSE streams should be functional` — and it is a near miss a reader is very likely to stop at, because the harness genuinely pipes each stream through an SSE PARSER before reading it. It is still not a counterpart, and the decomposition of that check is what settles it: the stream is scored by racing ONE `read()` against a 2 second timer, and a `null` from the timer is not recorded as an error, so a stream whose frames are malformed enough to yield nothing is counted FUNCTIONAL exactly as one that delivers a frame. The event is never decoded and its payload is never compared with the request that opened it. So the check cannot distinguish correct framing from no framing at all, and nothing else in the 175 mentions an SSE field line. The second near miss is `SRV13`'s territory — the SSE response HEADERS — which is a different absence with its own entry and is named here only so the two are not confused.",
+      "the_search_that_found_none": "the SYNTAX of an SSE frame — the `event:`, `id:`, `data:` and `retry:` field lines, the blank line that terminates a frame, and the folding of a multi-line payload into one `data:` line per line",
+      "why_no_counterpart": "`no-oc-scenario` — the suite carries SSE rows and not one of them reads a frame. MEASURED over all 175: zero mention any SSE field line, and the two rows that do open streams count a stream that yields nothing as functional.",
+      "why_this_search_is_this_claims_search": "The claim is about the BYTES of an SSE frame. SRV30's subject is that syntax, and its near miss is the reason a narrower instrument would mislead: the suite does carry SSE rows, they do run a parser, and they still cannot see framing — so a search that stopped at `is there an SSE check` would answer yes and be wrong about this claim."
+    },
+    {
       "authored_by": "MES-109 (C1b-iii)",
       "cg": null,
       "claim_the_slot_names": "a chunk ending mid-event yields nothing and the parser holds the bytes until the event completes",
@@ -1704,21 +2168,68 @@
       "why_this_search_is_this_claims_search": "The claim is about the INCREMENTAL parser — where an event ends and what happens to bytes that arrive mid-event. S02 searched for that property specifically (chunking, buffering, partial events, delimiters) and is deliberately separate from S01: the nearest artefact is the same two SSE rows, but the reason they are not counterparts is a different reason, and sharing S01's search would have hidden that."
     },
     {
-      "authored_by": "MES-115 (C1c-ii)",
+      "authored_by": "MES-117 (C1c-iv-a)",
       "cg": null,
-      "claim_the_slot_names": "a request whose `Origin` is not localhost is rejected with HTTP 403, and the rejection happens before any per-request identity work runs",
-      "homed_elsewhere": "C1c-iv (MES-117). This member is in C1c-ii's DECLARED MEMBER population but its counterpart is in a check population C1c-ii does not declare, so it is bucket 1 HERE and an edge THERE. Recorded in the shape C1c-i used for SRV08 — the search, the near miss naming the real counterpart, and the ticket — so the slice that declares that scenario inherits the member instead of re-searching for it. SRV08 is what that record looked like from the other side, and this ticket discharged it.",
+      "claim_the_slot_names": "a request whose plain `Mcp-Name` header disagrees with `params.name` is rejected with HTTP 400 and JSON-RPC -32020",
       "member": {
-        "module": "MCP.Transport.StreamableHTTP.ACTest",
-        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test AC7 — non-localhost origin is rejected 403 (acceptance parity)",
-        "test": "test AC7 — non-localhost origin is rejected 403 (acceptance parity)"
+        "module": "MCP.Transport.SelfCompatibilityTest",
+        "register_key": "MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: a PLAIN mismatched header is still -32020",
+        "test": "test NEGATIVE CONTROL: a PLAIN mismatched header is still -32020"
       },
-      "search_id": "SRV18",
-      "tag": "oc:none/no-oc-check-in-this-scenario/origin-rejected-403",
-      "the_near_miss_that_is_not_a_counterpart": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. These are REAL COUNTERPARTS for the rejection this member asserts, and they sit outside this file's declared 107. Named so the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What NEITHER OC row covers is the 403 STATUS this unit pins as the acceptance parity: the OC rows say `rejects`, and nothing in them names a code.",
-      "the_search_that_found_none": "a server REJECTING a request whose `Origin` is not localhost, and answering it with HTTP 403 — the status, not merely the refusal",
-      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 107, and two real counterparts in the SERVER scenario `dns-rebinding-protection`.",
-      "why_this_search_is_this_claims_search": "The claim is a server refusing a non-localhost `Origin`. SRV18's subject is that refusal AND the status it carries, which is the half of the claim the OC counterparts do not reach — so the pattern sweeps the origin vocabulary and the near miss names what it would have found in another scenario."
+      "search_id": "SRV01",
+      "tag": "oc:none/no-oc-server-check/mcp-name-plain-mismatch-32020",
+      "the_near_miss_that_is_not_a_counterpart": "The eleven `http-standard-headers` rows and the seventeen `http-custom-headers` rows — `ClientMcpMethodHeader_tools_call`, `ClientMcpNameHeader_tools_call`, `ClientCustomHeader_Method` and their siblings. A reader who greps `mcp-method`, finds rows and stops would take these for the counterpart. They are all CLIENT-leg, and every one of them scores whether the CLIENT SENDS the header correctly; not one asks what a SERVER does with a header that disagrees with the body it arrived on. The two are different obligations on different peers, and SEP-2243 imposes both.",
+      "the_search_that_found_none": "a SERVER validating a SEP-2243 routing header against the request body — `Mcp-Method` against the JSON-RPC `method`, and `Mcp-Name` against `params.name` (or `params.uri` on `resources/read`) — and rejecting a mismatch with -32020",
+      "why_no_counterpart": "`no-oc-server-check` — the suite scores SEP-2243 on the client only. Measured at this tip: 0 of the 119 server rows mention any of the three header families, while the client leg carries 28 rows that do.",
+      "why_this_search_is_this_claims_search": "The claim is a SERVER rejecting a request whose `Mcp-Name` disagrees with `params.name`, which is SRV01's subject stated in SRV01's own words. C1c-i homed THREE members making this claim under SRV01 — including `Mcp-Name mismatch against params.name is rejected (-32020)` — and these are the same claim exercised through a different fixture, so they take the same home. Giving them a different one would put two adjudications of one relation in one file."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "a request whose sentinel-encoded `Mcp-Name` header decodes to a tool the body does not name is rejected with HTTP 400 and JSON-RPC -32020",
+      "member": {
+        "module": "MCP.Transport.SelfCompatibilityTest",
+        "register_key": "MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: an encoded header naming a DIFFERENT tool is still -32020",
+        "test": "test NEGATIVE CONTROL: an encoded header naming a DIFFERENT tool is still -32020"
+      },
+      "search_id": "SRV01",
+      "tag": "oc:none/no-oc-server-check/mcp-name-encoded-mismatch-32020",
+      "the_near_miss_that_is_not_a_counterpart": "The eleven `http-standard-headers` rows and the seventeen `http-custom-headers` rows — `ClientMcpMethodHeader_tools_call`, `ClientMcpNameHeader_tools_call`, `ClientCustomHeader_Method` and their siblings. A reader who greps `mcp-method`, finds rows and stops would take these for the counterpart. They are all CLIENT-leg, and every one of them scores whether the CLIENT SENDS the header correctly; not one asks what a SERVER does with a header that disagrees with the body it arrived on. The two are different obligations on different peers, and SEP-2243 imposes both.",
+      "the_search_that_found_none": "a SERVER validating a SEP-2243 routing header against the request body — `Mcp-Method` against the JSON-RPC `method`, and `Mcp-Name` against `params.name` (or `params.uri` on `resources/read`) — and rejecting a mismatch with -32020",
+      "why_no_counterpart": "`no-oc-server-check` — the suite scores SEP-2243 on the client only. Measured at this tip: 0 of the 119 server rows mention any of the three header families, while the client leg carries 28 rows that do.",
+      "why_this_search_is_this_claims_search": "The claim is a SERVER rejecting a request whose `Mcp-Name` disagrees with `params.name`, which is SRV01's subject stated in SRV01's own words. C1c-i homed THREE members making this claim under SRV01 — including `Mcp-Name mismatch against params.name is rejected (-32020)` — and these are the same claim exercised through a different fixture, so they take the same home. Giving them a different one would put two adjudications of one relation in one file."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "a request whose plain `Mcp-Name` header matches `params.name` is not rejected — decoding leaves a plain value alone and no -32020 is raised",
+      "member": {
+        "module": "MCP.Transport.SelfCompatibilityTest",
+        "register_key": "MCP.Transport.SelfCompatibilityTest/test a plain header matching a plain name still passes — decoding leaves it alone",
+        "test": "test a plain header matching a plain name still passes — decoding leaves it alone"
+      },
+      "search_id": "SRV01",
+      "tag": "oc:none/no-oc-server-check/mcp-name-plain-match-passes",
+      "the_near_miss_that_is_not_a_counterpart": "The eleven `http-standard-headers` rows and the seventeen `http-custom-headers` rows — `ClientMcpMethodHeader_tools_call`, `ClientMcpNameHeader_tools_call`, `ClientCustomHeader_Method` and their siblings. A reader who greps `mcp-method`, finds rows and stops would take these for the counterpart. They are all CLIENT-leg, and every one of them scores whether the CLIENT SENDS the header correctly; not one asks what a SERVER does with a header that disagrees with the body it arrived on. The two are different obligations on different peers, and SEP-2243 imposes both.",
+      "the_search_that_found_none": "a SERVER validating a SEP-2243 routing header against the request body — `Mcp-Method` against the JSON-RPC `method`, and `Mcp-Name` against `params.name` (or `params.uri` on `resources/read`) — and rejecting a mismatch with -32020",
+      "why_no_counterpart": "`no-oc-server-check` — the suite scores SEP-2243 on the client only. Measured at this tip: 0 of the 119 server rows mention any of the three header families, while the client leg carries 28 rows that do.",
+      "why_this_search_is_this_claims_search": "The claim is a SERVER rejecting a request whose `Mcp-Name` disagrees with `params.name`, which is SRV01's subject stated in SRV01's own words. C1c-i homed THREE members making this claim under SRV01 — including `Mcp-Name mismatch against params.name is rejected (-32020)` — and these are the same claim exercised through a different fixture, so they take the same home. Giving them a different one would put two adjudications of one relation in one file."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "cg": null,
+      "claim_the_slot_names": "a sentinel-shaped `Mcp-Name` whose Base64 payload is malformed is compared as it stands rather than crashed on, and mismatches with HTTP 400 and -32020",
+      "member": {
+        "module": "MCP.Transport.SelfCompatibilityTest",
+        "register_key": "MCP.Transport.SelfCompatibilityTest/test a sentinel-shaped header that is not valid Base64 is compared as-is, not crashed on",
+        "test": "test a sentinel-shaped header that is not valid Base64 is compared as-is, not crashed on"
+      },
+      "search_id": "SRV01",
+      "tag": "oc:none/no-oc-server-check/mcp-name-malformed-sentinel-compared-as-is",
+      "the_near_miss_that_is_not_a_counterpart": "The eleven `http-standard-headers` rows and the seventeen `http-custom-headers` rows — `ClientMcpMethodHeader_tools_call`, `ClientMcpNameHeader_tools_call`, `ClientCustomHeader_Method` and their siblings. A reader who greps `mcp-method`, finds rows and stops would take these for the counterpart. They are all CLIENT-leg, and every one of them scores whether the CLIENT SENDS the header correctly; not one asks what a SERVER does with a header that disagrees with the body it arrived on. The two are different obligations on different peers, and SEP-2243 imposes both.",
+      "the_search_that_found_none": "a SERVER validating a SEP-2243 routing header against the request body — `Mcp-Method` against the JSON-RPC `method`, and `Mcp-Name` against `params.name` (or `params.uri` on `resources/read`) — and rejecting a mismatch with -32020",
+      "why_no_counterpart": "`no-oc-server-check` — the suite scores SEP-2243 on the client only. Measured at this tip: 0 of the 119 server rows mention any of the three header families, while the client leg carries 28 rows that do.",
+      "why_this_search_is_this_claims_search": "The claim is a SERVER rejecting a request whose `Mcp-Name` disagrees with `params.name`, which is SRV01's subject stated in SRV01's own words. C1c-i homed THREE members making this claim under SRV01 — including `Mcp-Name mismatch against params.name is rejected (-32020)` — and these are the same claim exercised through a different fixture, so they take the same home. Giving them a different one would put two adjudications of one relation in one file."
     },
     {
       "authored_by": "MES-115 (C1c-ii)",
@@ -1755,37 +2266,20 @@
       "why_this_search_is_this_claims_search": "Two members, one requirement (containment of an identity-factory failure) and two failure modes of it, so one search serves both and each row copies it. Registering a second identical entry would have made one measurement look like two."
     },
     {
-      "authored_by": "MES-115 (C1c-ii)",
+      "authored_by": "MES-117 (C1c-iv-a)",
       "cg": null,
-      "claim_the_slot_names": "a deployment that configures no caching policy gets no-store — `ttlMs` 0 and `cacheScope` `public` — on a `tools/list` result",
-      "homed_elsewhere": "C1c-iv (MES-117). This member is in C1c-ii's DECLARED MEMBER population but its counterpart is in a check population C1c-ii does not declare, so it is bucket 1 HERE and an edge THERE. Recorded in the shape C1c-i used for SRV08 — the search, the near miss naming the real counterpart, and the ticket — so the slice that declares that scenario inherits the member instead of re-searching for it. SRV08 is what that record looked like from the other side, and this ticket discharged it.",
+      "claim_the_slot_names": "a configuration that warrants the public-cache-scope warning produces exactly ONE warning line across N requests, because the diagnostic is emitted once per configuration and not per request",
       "member": {
-        "module": "MCP.Transport.StreamableHTTP.ACTest",
-        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)",
-        "test": "test default caching policy is no-store (ttlMs 0)"
+        "module": "MCP.Transport.StreamableHTTPCacheScopeWarningTest",
+        "register_key": "MCP.Transport.StreamableHTTPCacheScopeWarningTest/test AC7(c): N requests against a warned configuration produce exactly ONE line",
+        "test": "test AC7(c): N requests against a warned configuration produce exactly ONE line"
       },
-      "search_id": "SRV20",
-      "tag": "oc:none/no-oc-check-in-this-scenario/default-caching-policy",
-      "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`, and all outside this file's declared 107. They are COUNTERPARTS and not near misses: `TtlNonNegative` in particular is about the very field this member pins. Named so the row reads as `homed elsewhere` — whichever C1c ticket declares `caching` should pick this member up rather than search for it again. What no OC row asks is what the DEFAULT is when a deployment configures nothing, which is the whole of this member's claim.",
-      "the_search_that_found_none": "the DEFAULT caching policy a deployment that configures nothing gets — `ttlMs` 0 and a `cacheScope`, i.e. no-store",
-      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 107, and seven real counterparts in the SERVER scenario `caching`.",
-      "why_this_search_is_this_claims_search": "The claim is about the CacheableResult hint fields on a list result. SRV20's subject is those fields at their DEFAULT, and its pattern sweeps the caching vocabulary; the near miss names the seven `caching` rows so the zero reads as `declared elsewhere` rather than as `nothing exists`."
-    },
-    {
-      "authored_by": "MES-105 (C1c-i)",
-      "cg": null,
-      "claim_the_slot_names": "a non-localhost `Origin` is answered 403 and the per-request identity factory is never invoked",
-      "member": {
-        "module": "MCP.Transport.StreamableHTTPStatelessTest",
-        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test AC7 — non-localhost origin is rejected 403; the identity factory never runs",
-        "test": "test AC7 — non-localhost origin is rejected 403; the identity factory never runs"
-      },
-      "search_id": "SRV02",
-      "tag": "oc:none/no-oc-check-in-this-scenario/AC7-origin-403",
-      "the_near_miss_that_is_not_a_counterpart": "`DNSRebindingRejected` — `Server rejects requests with non-localhost Host/Origin headers` — and `LocalhostHostAccepted`, both in the SERVER scenario `dns-rebinding-protection`. This is not a near miss in the usual sense: it is a REAL COUNTERPART for the rejection half of the claim, and it sits outside this file's declared population. It is named here so that the row reads as `homed elsewhere` and not as `nothing exists`, and so that whichever C1c ticket declares `dns-rebinding-protection` picks the member up instead of re-searching for it. What neither OC row covers is the ORDERING half — that the identity factory never runs — which is an SDK property the suite has no vocabulary for.",
-      "the_search_that_found_none": "a server REJECTING a request whose `Origin` is not localhost, and doing so before any per-request identity work has run",
-      "why_no_counterpart": "`no-oc-check-in-this-scenario` — `server-stateless` carries no Origin or Host check at all (0 of 30), and the counterpart that does exist is in `dns-rebinding-protection`, outside this file's declared 30.",
-      "why_this_search_is_this_claims_search": "The claim is origin enforcement on the server. SRV02's subject is that, and its 'near miss' is in fact the counterpart — recorded as such rather than dressed as an absence."
+      "search_id": "SRV32",
+      "tag": "oc:none/no-oc-scenario/cache-scope-warning-once-per-configuration",
+      "the_near_miss_that_is_not_a_counterpart": "`CacheScopeValid` — `All cacheScope values are \"public\" or \"private\"` — and this is the sharpest near miss in the file, because the two are about the SAME configuration and reach OPPOSITE conclusions about it without contradicting each other. A `cacheScope` of `public` on an identity-dependent response is exactly what this member warns about, and it is exactly what `CacheScopeValid` PASSES: the check's axis is an enumeration over two string literals and has no notion of who the response was built for. So the OC scores the value's VALIDITY and the member scores the deployment's SAFETY, and a server can be green on the first while being the thing the second exists to catch. The general reason for the zero is `SRV27`'s and is not restated: the harness scores messages, and a warning crosses no wire. What is new here is that the diagnostic fires at `Plug.init/1` — once per configuration, never per request — so there is no request for a harness to attach it to even in principle.",
+      "the_search_that_found_none": "a server DIAGNOSING ITS OWN CONFIGURATION — warning, once and at configuration time rather than per request, about a deployment combination that is legal on the wire but risky in effect",
+      "why_no_counterpart": "`no-oc-scenario` — the harness scores messages and a warning crosses no wire; this one is emitted at configuration time, so there is not even a request to attach it to. MEASURED over all 175: zero.",
+      "why_this_search_is_this_claims_search": "The claim is about a warning emitted at `Plug.init/1` for a risky but legal configuration. SRV32's subject is that diagnostic, and the entry's near miss is why the obvious instrument is the wrong one: `CacheScopeValid` is about the same configuration and PASSES it, so a search that found `a caching check exists` would have answered a question this claim is not asking."
     },
     {
       "authored_by": "MES-105 (C1c-i)",
@@ -1882,22 +2376,6 @@
       "the_search_that_found_none": "notification state from one request being visible to the NEXT — a request-scoped collector whose contents, or whose lifetime, cross a request boundary",
       "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention residue, cross-request leakage or per-request isolation. The harness drives one request at a time and reads each response on its own, so the boundary these members assert across is one it never looks at.",
       "why_this_search_is_this_claims_search": "The claim is about the request-scoped notification collector — its contents, its lifetime or its isolation. SRV06's subject is that boundary, and its near miss is the one suite row about notifications a request did not ask for, which is a question about scope rather than about crossing."
-    },
-    {
-      "authored_by": "MES-105 (C1c-i)",
-      "cg": null,
-      "claim_the_slot_names": "`tools/list` results carry `ttlMs` and `cacheScope`",
-      "member": {
-        "module": "MCP.Transport.StreamableHTTPStatelessTest",
-        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test list/read results carry caching hints (ttlMs/cacheScope)",
-        "test": "test list/read results carry caching hints (ttlMs/cacheScope)"
-      },
-      "search_id": "SRV07",
-      "tag": "oc:none/no-oc-check-in-this-scenario/CacheableResult-hints",
-      "the_near_miss_that_is_not_a_counterpart": "`ToolsListCachingHints`, `PromptsListCachingHints`, `ResourcesListCachingHints`, `ResourcesTemplatesListCachingHints`, `ResourcesReadCachingHints`, `TtlNonNegative` and `CacheScopeValid` — SEVEN rows, all SERVER-leg, all in the scenario `caching`. These are COUNTERPARTS, not near misses, and they are outside this file's declared 107. Named so the row reads as `homed elsewhere`: whichever C1c ticket declares `caching` should pick this member up rather than search for it again.",
-      "the_search_that_found_none": "a list or read RESULT carrying the CacheableResult hints — `ttlMs` and `cacheScope`",
-      "why_no_counterpart": "`no-oc-check-in-this-scenario` — 0 of the 30 `server-stateless` rows mention caching or ttl, while the `caching` scenario carries seven that do.",
-      "why_this_search_is_this_claims_search": "The claim is the caching hints on a list result. SRV07's subject is exactly that, and the search is scoped to the declared 30 because the claim being made is about THIS population."
     },
     {
       "authored_by": "MES-105 (C1c-i)",
@@ -2095,9 +2573,9 @@
   "schema": "bucket-view/1",
   "title": "ET-CC member with no OC counterpart",
   "universe": {
-    "count": 219,
+    "count": 253,
     "name": "declared_members",
-    "of": "the 219 declared ET-CC members, never all 281 members"
+    "of": "the 253 declared ET-CC members, never all 281 members"
   },
   "what_this_is": "A PURE PROJECTION of the crosswalk named in `projected_from`, on the `predicate` above and on fields the crosswalk already stores. Nothing here re-computes a verdict, an edge shape or a bucket assignment. The rows are the crosswalk's own records verbatim, so a reader can check this view against the matrix byte for byte."
 }

@@ -18,19 +18,20 @@
  "polarity_rule": "`pass_when_true` — the expression being TRUE is the passing arm. `fail_when_true` — the expression being TRUE is the failing arm. Read off the branch the excerpt actually writes, never off the requirement's wording.",
  "preconditions_rule": "A list of `{guard, kind, on_failure, reads}`. A precondition is NOT an axis, and the reason is NOT the status it writes: it is that the guard reads something OTHER than a behaviour of the implementation under test — the harness's own transport, whether a diagnostic tool is listed, whether the probe was run at all — so an ET claim can neither agree with it nor contradict it, and `shape_from_axes/1` never sees one. C1a stated the rule as `its failure makes the check not evaluate (SKIPPED)`, and C1c-i measured that that is NOT what the artefacts do: A3's own server-stateless rows record `()=>n?` and `()=>S?` and `!r||!i` as preconditions whose `on_failure` is an ERROR MESSAGE, and the check goes red. Three `on_failure` shapes occur in this file and each is written as what it is — `SKIPPED` (ServerIdentifiesInResultMeta's `if(_)return{skipped:!0`, and the two `listChanged` rows' capability guards), a FAILURE naming the probe, and a WARNING carrying `details:{untestable:!0}`. The rule as C1a wrote it would have forced a dozen harness-transport guards to be recorded as AXES, and every ET claim would then have been `silent` on them — which makes every red-OC edge `:partial` and bucket 4b by construction, and would have made A3 §3's `(red, green, :full)` escalation UNREACHABLE on the first leg where it can occur. Restating the rule on its actual ground is therefore not a loosening; it is what stops the decomposition deciding an adjudication.",
  "scope": {
-  "checks_decomposed": 148,
-  "population": "The OC checks C1a's, C1b-i's, C1b-ii's, C1b-iii's, C1c-i's and C1c-ii's declared populations land an edge on OR declare, minus the ones A3 already decomposed. C1a contributed 11 (request-metadata, MRTR and tools_call); C1b-i contributes the 29 CG7 checks — `http-custom-headers` 18 + `http-invalid-tool-headers` 11 — ALL of them, including the 9 that carry no ET-CC edge, because a bucket-2 check must be decomposed before it can be shown to have no counterpart; C1b-ii contributes CG1's 9 — the in-denominator half of `http-standard-headers` — and NOT CG4's one, which A3 already holds; C1b-iii contributes 4, and only 4, because its 15 declared checks were 11 already decomposed plus these; C1c-i contributes 18 — the `server-stateless` rows A3 did not hold; C1c-ii contributes 36, the WHOLE `input-required-result-*` family, and all 36 are new: none of A3's 13 and none of the 71 already here reached any of them. C1c-iii contributes 41 — the WHOLE feature-endpoint population: `tools-call-*` (7 scenarios) 14 + `tools-list` 3 + `prompts-*` (5 scenarios) 10 + `resources-*` (4 scenarios) 8 + `sep-2164-resource-not-found` 4 + `completion-complete` 2, and all 41 are new: none of A3's 13 and none of the 107 already here reached any of them.",
+  "checks_decomposed": 160,
+  "population": "The OC checks C1a's, C1b-i's, C1b-ii's, C1b-iii's, C1c-i's and C1c-ii's declared populations land an edge on OR declare, minus the ones A3 already decomposed. C1a contributed 11 (request-metadata, MRTR and tools_call); C1b-i contributes the 29 CG7 checks — `http-custom-headers` 18 + `http-invalid-tool-headers` 11 — ALL of them, including the 9 that carry no ET-CC edge, because a bucket-2 check must be decomposed before it can be shown to have no counterpart; C1b-ii contributes CG1's 9 — the in-denominator half of `http-standard-headers` — and NOT CG4's one, which A3 already holds; C1b-iii contributes 4, and only 4, because its 15 declared checks were 11 already decomposed plus these; C1c-i contributes 18 — the `server-stateless` rows A3 did not hold; C1c-ii contributes 36, the WHOLE `input-required-result-*` family, and all 36 are new: none of A3's 13 and none of the 71 already here reached any of them. C1c-iii contributes 41 — the WHOLE feature-endpoint population: `tools-call-*` (7 scenarios) 14 + `tools-list` 3 + `prompts-*` (5 scenarios) 10 + `resources-*` (4 scenarios) 8 + `sep-2164-resource-not-found` 4 + `completion-complete` 2, and all 41 are new: none of A3's 13 and none of the 107 already here reached any of them. C1c-iv contributes the last 12 — the transport/security misc scenarios `caching` (8), `dns-rebinding-protection` (2) and `server-sse-multiple-streams` (2) — and with them the whole 173 is decomposed between A3's file and this one.",
   "the_one_A3_already_has": "sep-2575-http-server-method-not-found-404-initialize / HttpServerMethodNotFound404initialize — C1a's 12th check. Read from A3's file, NOT re-extracted here. One fact, one home.",
   "the_one_A3_already_has_for_C1b_ii": "sep-2106-no-network-ref-deref / NoNetworkRefDereference — CG4's only check, and C1b-ii's DECLARED check population contains it. A3 decomposed it (one axis, `canary_not_fetched`, with `this.toolsListed?` recorded as a precondition on evaluability), so G19 is satisfied FROM A3'S FILE and it is deliberately absent here. Copying it in would be a second home for one fact (D4), and the two copies could then disagree with nothing noticing.",
   "the_four_C1b_iii_adds": "C1b-iii declares the three remaining CLIENT scenarios — `request-metadata` (8), `sep-2322-client-request-state` (5) and `tools_call` (2) — so G19 forces every one of the 15 to be decomposed before any of them can be reported in bucket 2. Eleven already were: all 8 of request-metadata and MRTRClientNoStateOmitted / MRTRClientRequestStateEchoed / ToolAddNumbers, decomposed by C1a. The FOUR added here are the residue, and they are residual for a reason that is visible in each row: MRTRClientJsonRpcIdDifferent and MRTRClientParallelIsolation decide on an accumulator filled several hundred bytes before the push; DefaultResultTypeComplete writes both its statuses as LITERALS and decides at an `if` the locator does not name as the row's; and WireSchemaValid's verdict is a FILTER on the violation `origin`, which is what scopes it to messages the implementation SENT. How many axes each yields was read at the build, not assumed: 1, 2, 1 and 1.",
-  "not_decomposed": "12 of the 173, ALL on the server leg, and they are C1c-iv (MES-117)'s. The CLIENT leg is decomposed in full. The server leg has 119 in-denominator checks; 12 were A3's, 18 were C1c-i's, 36 were C1c-ii's and 41 are C1c-iii's, leaving 12.",
+  "not_decomposed": "ZERO of the 173 — the population is CLOSED. Re-measured at this tip by set difference rather than by subtracting from the last figure: the locator's 173 keys, less A3's 13 and this file's 160, is the empty set. The server leg's 119 in-denominator checks are 12 A3's, 18 C1c-i's, 36 C1c-ii's, 41 C1c-iii's and 12 C1c-iv's; 12 + 18 + 36 + 41 + 12 = 119. The CLIENT leg was already whole. This field used to name the 12 that remained and name C1c-iv as their owner; C1c-iv is this ticket and they are now here.",
   "the_figure_this_field_used_to_carry_was_WRONG_AT_ITS_OWN_COMMIT": "It said `The remaining 123 of the 173` and the answer at that commit was 111, not 123 — measured by regenerating the set from d5cac00's own copy of this file. The author's predicate is recoverable from the arithmetic: 173 - 49 - 1 = 123, i.e. this file's 49 rows plus the ONE A3 row the block above names by hand, forgetting A3's other TWELVE. So it was not drift and re-measuring at a later tip would not have found it; it was a subtraction over the wrong minuend from the day it was written. Recorded rather than quietly corrected, because an inherited figure that was never right is a different finding from one that went stale, and the next reader of this field should know which kind it was.",
   "the_eighteen_C1c_i_adds": "C1c-i declares the `server-stateless` scenario — 30 in-denominator checks — so G19 forces every one of the 30 to be decomposed before any of them can be reported in bucket 2. TWELVE already were, all of them A3's: the three HttpServerMetaInvalid400 discriminator rows, HttpServerUnsupportedVersion400, HttpServerHeaderMismatch400, MissingCapabilityHttp400, the five HttpServerMethodNotFound404 loop rows and HttpServerMethodNotFound404. They are CITED from A3's file and NOT re-homed here (D4, and `axis_index/1` refuses the overlap). The EIGHTEEN added here are the residue. 12 + 18 = 30, and the arithmetic is the whole of the claim: there is no thirty-first.",
   "how_the_18_were_cut": "The method, stated once here because C1c-ii/iii/iv inherit it. START at the locator's `emitting_byte_span` for the row — never at a grep. WIDEN to the enclosing balanced expression, which for these rows the locator has already done: 15 of the 18 are `rung: id_literal_pair` pinned at level `row` with a single site, and the three RequestMetaInvalid rows are `id_template_prefix` pinned at level `loop`, where one site emits three rows. READ the axes off the branch the excerpt WRITES: one axis per conjunct of the deciding test, `expr` verbatim, polarity from the arm that carries `error` rather than from the requirement's wording. Where the predicate reads a name bound OUTSIDE the excerpt, locate the binding by UNIQUE SUBSTRING search and record it as a `context_excerpt` with the reason it is needed — every context span in the 18 was located that way and each is unique in the build. NOTHING here stores bytes: the generator lifts them live under `--harness` and refuses any `expr`, `guard` or listed conjunct that is not a verbatim substring of what it lifted.",
   "what_the_18_cost_against_the_client_leg": "Lighter per row than CG7's 29, and measured rather than assumed: CG7 needed FOUR `locator_row_rejected` rows and 24 rows carrying `check_id_found_in`, because its ids are computed from argument values. All 18 here are `locator_row` — not one rejects the locator's span — and only the three RequestMetaInvalid rows need anything beyond the default id location. The 18 yield 26 axes; CG7's 29 yielded 47.",
   "the_thirty_six_C1c_ii_adds": "The MRTR / input-required-result family (SEP-2322, server side): 22 SUBSTANTIVE checks over 14 scenarios, plus 14 `WireSchemaValid` rows — one per scenario, all emitted from ONE site, and each decomposed because G19 requires a declared check to be read before it can be reported in bucket 2. Two shapes recur and both are stated on the rows rather than here: eleven checks fill an ERROR ACCUMULATOR whose emptiness is the verdict, so every axis lives in a `context_excerpt` and none at the emitting site (the C1b-ii shape); three compute a BOOLEAN FLAG from a `&&` chain instead, and the conjuncts of that chain are the axes. How many axes each yields was read at the build, not assumed: the family's 36 rows carry 97 axes and 43 preconditions between them.",
   "what_the_36_cost_against_the_18": "Measured, not assumed. C1c-i's 18 rows yielded 26 axes; C1c-ii's 36 yield 97 — 2.7 axes a row against 1.4, and the reason is visible in the shapes: `server-stateless` is mostly one- and two-axis checks decided at the emitting site, while this family decides on an error accumulator filled by a five- or nine-arm chain. The DIRECTION is the opposite of the member count: this slice is member-light (5, against C1c-i's 59) and axis-heavy. Neither figure predicts the other, which is why the ticket was sized on checks and the member count was measured rather than inferred.",
-  "what_C1c_iii_contributes_and_the_shape_it_has": "41 rows carrying 107 axes, and the 41 are NOT 41 independent readings. NINETEEN of them are `WireSchemaValid` — one per declared scenario, all at the single generic validator span [325368,325721], one axis each. The TWENTY-TWO substantive rows carry the other 88. So the axis work of this slice is 22 readings, and the row count is what A1's six-field key makes of one of them. Stated here because `41 rows` and `41 decompositions` are different quantities and the first is the one the arithmetic uses."
+  "what_C1c_iii_contributes_and_the_shape_it_has": "41 rows carrying 107 axes, and the 41 are NOT 41 independent readings. NINETEEN of them are `WireSchemaValid` — one per declared scenario, all at the single generic validator span [325368,325721], one axis each. The TWENTY-TWO substantive rows carry the other 88. So the axis work of this slice is 22 readings, and the row count is what A1's six-field key makes of one of them. Stated here because `41 rows` and `41 decompositions` are different quantities and the first is the one the arithmetic uses.",
+  "what_C1c_iv_contributes_and_why_it_is_the_slice_that_closes_the_file": "TWELVE rows carrying 21 axes, and they close the decomposition: after this slice the locator's 173 keys are exhausted between A3's file and this one. The shape is unlike every slice before it, and the reason is that these three scenarios are the only SERVER scenarios whose checks are not emitted at their own decision site.\n\nSEVEN of the twelve decide somewhere the locator does not point. The five `*CachingHints` rows are `rung: id_literal_pair` pinned at row level onto an `i(...)` CALL that names the check and the endpoint and carries no `status:` whatever: the status ternary and both predicates live in the shared `nr` builder the call returns through, addressed as `context:caching_hint_verdict`. The two DNS rows are pinned onto an OBJECT LITERAL — id, name, description, timestamp, specReferences — whose status is attached later by spread at a predicate several hundred bytes away. In all seven cases the locator's span is correct as a LOCATION and useless as an EVALUATOR, and an axis read off it alone could only have been read off the description, which `axis_source_rule` forbids. This is why the `how_the_18_were_cut` method's first step — START at the locator's span, never at a grep — is followed by a second step, and this slice is where the second step does all the work.\n\nONE of the twelve has TWO emitting sites for one check id, and the choice between them is a MEASUREMENT rather than a reading: `ServerSSEStreamsFunctional` is pushed from a `g>0` arm with a three-way ternary and from a `g===0` arm with a hard-coded `status:`INFO``, and the accepted run's 2 SUCCESS / 0 INFO is what settles which fired. The row records that reasoning on itself.\n\nTWO of the twelve carry a NON-VACUITY axis that the check's own description does not mention — `TtlNonNegative` and `CacheScopeValid` each red when NO endpoint returned the field they range over. Without that limb a server returning no caching hints at all would pass a check named `All ttlMs values are non-negative integers` by quantifying over the empty set. It is an axis because it is a predicate in the ladder, not because it is in the wording."
  },
  "checks": [
   {
@@ -10165,16 +10166,770 @@
     }
    ],
    "status_at_accepted_run": "SUCCESS"
+  },
+  {
+   "key": [
+    "server",
+    "caching",
+    "sep-2549-tools-list-caching-hints",
+    "ToolsListCachingHints",
+    "tools/list response includes ttlMs and cacheScope caching hints",
+    ""
+   ],
+   "emitting_byte_span": [
+    471767,
+    471842
+   ],
+   "emitting_span_provenance": "locator_row",
+   "context_excerpts": [
+    {
+     "label": "caching_hint_verdict",
+     "byte_span": [
+      469976,
+      470444
+     ],
+     "why": "THE VERDICT IS NOT AT THE EMITTING SITE. The locator's row is the `i(...)` CALL, which names the check and the endpoint and carries no `status:` at all; the status ternary and both of this check's predicates live in the shared `nr` builder the call returns through. Addressed rather than inferred, because an axis read off the call site alone would be read off the description (the error the axis_source_rule forbids)."
+    },
+    {
+     "label": "caching_hint_field_probe",
+     "byte_span": [
+      469851,
+      469976
+     ],
+     "why": "where `hasTtlMs` and `hasCacheScope` are COMPUTED — `in` on the decoded result, so what the axes score is the PRESENCE of the member and not its value. `tr` reads `e.ttlMs`/`e.cacheScope` into `details` as well, and nothing in this check reads them back: that is what puts the VALUE checks in `TtlNonNegative` and `CacheScopeValid` and not here."
+    },
+    {
+     "label": "caching_request_helper",
+     "byte_span": [
+      471227,
+      471759
+     ],
+     "why": "the `i` wrapper that issues the request. It holds the precondition: a JSON-RPC error or a transport failure on the endpoint pushes a FAILURE of ITS OWN with a different errorMessage and never reaches `nr`, so a red here can mean `the call failed` rather than `the hints were missing` and the two are distinguishable only by the message."
+    }
+   ],
+   "axes": [
+    {
+     "axis": "the_result_carries_ttl_ms",
+     "expr": "r.hasTtlMs||i.push(`${n} response missing ttlMs`)",
+     "expr_found_in": "context:caching_hint_verdict",
+     "polarity": "pass_when_true",
+     "polarity_reading": "`X||i.push(...)` — TRUE is the passing arm. the check's verdict is `i.length===0?`SUCCESS`:`FAILURE`` over the error accumulator `i`, so an axis PASSES when its push does not fire",
+     "requires": "the `tools/list` result carries a `ttlMs` member"
+    },
+    {
+     "axis": "the_result_carries_cache_scope",
+     "expr": "r.hasCacheScope||i.push(`${n} response missing cacheScope`)",
+     "expr_found_in": "context:caching_hint_verdict",
+     "polarity": "pass_when_true",
+     "polarity_reading": "`X||i.push(...)` — TRUE is the passing arm. the check's verdict is `i.length===0?`SUCCESS`:`FAILURE`` over the error accumulator `i`, so an axis PASSES when its push does not fire",
+     "requires": "the `tools/list` result carries a `cacheScope` member"
+    }
+   ],
+   "scope_note": "PRESENCE ONLY, AND THAT IS THE WHOLE OF IT. Both axes are `in` tests on the decoded `tools/list` result. Neither reads the VALUE: a `ttlMs` of `-1` and a `cacheScope` of `\"banana\"` both PASS this check. The values are scored once per scenario, across every endpoint at once, by `TtlNonNegative` and `CacheScopeValid` — which is why those two are not per-endpoint rows and this one is.",
+   "preconditions": [
+    {
+     "guard": "catch(n){let r=n instanceof Tt?n:void 0;",
+     "kind": "request",
+     "on_failure": "check_emitted_FAILURE_with_a_different_message",
+     "reads": "whether the `tools/list` request itself succeeded. A JSON-RPC error or a transport failure emits this check as FAILURE from the `i` wrapper, never reaching the hint predicates."
+    }
+   ],
+   "status_at_accepted_run": "SUCCESS"
+  },
+  {
+   "key": [
+    "server",
+    "caching",
+    "sep-2549-prompts-list-caching-hints",
+    "PromptsListCachingHints",
+    "prompts/list response includes ttlMs and cacheScope caching hints",
+    ""
+   ],
+   "emitting_byte_span": [
+    471849,
+    471930
+   ],
+   "emitting_span_provenance": "locator_row",
+   "context_excerpts": [
+    {
+     "label": "caching_hint_verdict",
+     "byte_span": [
+      469976,
+      470444
+     ],
+     "why": "THE VERDICT IS NOT AT THE EMITTING SITE. The locator's row is the `i(...)` CALL, which names the check and the endpoint and carries no `status:` at all; the status ternary and both of this check's predicates live in the shared `nr` builder the call returns through. Addressed rather than inferred, because an axis read off the call site alone would be read off the description (the error the axis_source_rule forbids)."
+    },
+    {
+     "label": "caching_hint_field_probe",
+     "byte_span": [
+      469851,
+      469976
+     ],
+     "why": "where `hasTtlMs` and `hasCacheScope` are COMPUTED — `in` on the decoded result, so what the axes score is the PRESENCE of the member and not its value. `tr` reads `e.ttlMs`/`e.cacheScope` into `details` as well, and nothing in this check reads them back: that is what puts the VALUE checks in `TtlNonNegative` and `CacheScopeValid` and not here."
+    },
+    {
+     "label": "caching_request_helper",
+     "byte_span": [
+      471227,
+      471759
+     ],
+     "why": "the `i` wrapper that issues the request. It holds the precondition: a JSON-RPC error or a transport failure on the endpoint pushes a FAILURE of ITS OWN with a different errorMessage and never reaches `nr`, so a red here can mean `the call failed` rather than `the hints were missing` and the two are distinguishable only by the message."
+    }
+   ],
+   "axes": [
+    {
+     "axis": "the_result_carries_ttl_ms",
+     "expr": "r.hasTtlMs||i.push(`${n} response missing ttlMs`)",
+     "expr_found_in": "context:caching_hint_verdict",
+     "polarity": "pass_when_true",
+     "polarity_reading": "`X||i.push(...)` — TRUE is the passing arm. the check's verdict is `i.length===0?`SUCCESS`:`FAILURE`` over the error accumulator `i`, so an axis PASSES when its push does not fire",
+     "requires": "the `prompts/list` result carries a `ttlMs` member"
+    },
+    {
+     "axis": "the_result_carries_cache_scope",
+     "expr": "r.hasCacheScope||i.push(`${n} response missing cacheScope`)",
+     "expr_found_in": "context:caching_hint_verdict",
+     "polarity": "pass_when_true",
+     "polarity_reading": "`X||i.push(...)` — TRUE is the passing arm. the check's verdict is `i.length===0?`SUCCESS`:`FAILURE`` over the error accumulator `i`, so an axis PASSES when its push does not fire",
+     "requires": "the `prompts/list` result carries a `cacheScope` member"
+    }
+   ],
+   "scope_note": "PRESENCE ONLY, AND THAT IS THE WHOLE OF IT. Both axes are `in` tests on the decoded `prompts/list` result. Neither reads the VALUE: a `ttlMs` of `-1` and a `cacheScope` of `\"banana\"` both PASS this check. The values are scored once per scenario, across every endpoint at once, by `TtlNonNegative` and `CacheScopeValid` — which is why those two are not per-endpoint rows and this one is.",
+   "preconditions": [
+    {
+     "guard": "catch(n){let r=n instanceof Tt?n:void 0;",
+     "kind": "request",
+     "on_failure": "check_emitted_FAILURE_with_a_different_message",
+     "reads": "whether the `prompts/list` request itself succeeded. A JSON-RPC error or a transport failure emits this check as FAILURE from the `i` wrapper, never reaching the hint predicates."
+    }
+   ],
+   "status_at_accepted_run": "SUCCESS"
+  },
+  {
+   "key": [
+    "server",
+    "caching",
+    "sep-2549-resources-list-caching-hints",
+    "ResourcesListCachingHints",
+    "resources/list response includes ttlMs and cacheScope caching hints",
+    ""
+   ],
+   "emitting_byte_span": [
+    471943,
+    472030
+   ],
+   "emitting_span_provenance": "locator_row",
+   "context_excerpts": [
+    {
+     "label": "caching_hint_verdict",
+     "byte_span": [
+      469976,
+      470444
+     ],
+     "why": "THE VERDICT IS NOT AT THE EMITTING SITE. The locator's row is the `i(...)` CALL, which names the check and the endpoint and carries no `status:` at all; the status ternary and both of this check's predicates live in the shared `nr` builder the call returns through. Addressed rather than inferred, because an axis read off the call site alone would be read off the description (the error the axis_source_rule forbids)."
+    },
+    {
+     "label": "caching_hint_field_probe",
+     "byte_span": [
+      469851,
+      469976
+     ],
+     "why": "where `hasTtlMs` and `hasCacheScope` are COMPUTED — `in` on the decoded result, so what the axes score is the PRESENCE of the member and not its value. `tr` reads `e.ttlMs`/`e.cacheScope` into `details` as well, and nothing in this check reads them back: that is what puts the VALUE checks in `TtlNonNegative` and `CacheScopeValid` and not here."
+    },
+    {
+     "label": "caching_request_helper",
+     "byte_span": [
+      471227,
+      471759
+     ],
+     "why": "the `i` wrapper that issues the request. It holds the precondition: a JSON-RPC error or a transport failure on the endpoint pushes a FAILURE of ITS OWN with a different errorMessage and never reaches `nr`, so a red here can mean `the call failed` rather than `the hints were missing` and the two are distinguishable only by the message."
+    }
+   ],
+   "axes": [
+    {
+     "axis": "the_result_carries_ttl_ms",
+     "expr": "r.hasTtlMs||i.push(`${n} response missing ttlMs`)",
+     "expr_found_in": "context:caching_hint_verdict",
+     "polarity": "pass_when_true",
+     "polarity_reading": "`X||i.push(...)` — TRUE is the passing arm. the check's verdict is `i.length===0?`SUCCESS`:`FAILURE`` over the error accumulator `i`, so an axis PASSES when its push does not fire",
+     "requires": "the `resources/list` result carries a `ttlMs` member"
+    },
+    {
+     "axis": "the_result_carries_cache_scope",
+     "expr": "r.hasCacheScope||i.push(`${n} response missing cacheScope`)",
+     "expr_found_in": "context:caching_hint_verdict",
+     "polarity": "pass_when_true",
+     "polarity_reading": "`X||i.push(...)` — TRUE is the passing arm. the check's verdict is `i.length===0?`SUCCESS`:`FAILURE`` over the error accumulator `i`, so an axis PASSES when its push does not fire",
+     "requires": "the `resources/list` result carries a `cacheScope` member"
+    }
+   ],
+   "scope_note": "PRESENCE ONLY, AND THAT IS THE WHOLE OF IT. Both axes are `in` tests on the decoded `resources/list` result. Neither reads the VALUE: a `ttlMs` of `-1` and a `cacheScope` of `\"banana\"` both PASS this check. The values are scored once per scenario, across every endpoint at once, by `TtlNonNegative` and `CacheScopeValid` — which is why those two are not per-endpoint rows and this one is.",
+   "preconditions": [
+    {
+     "guard": "catch(n){let r=n instanceof Tt?n:void 0;",
+     "kind": "request",
+     "on_failure": "check_emitted_FAILURE_with_a_different_message",
+     "reads": "whether the `resources/list` request itself succeeded. A JSON-RPC error or a transport failure emits this check as FAILURE from the `i` wrapper, never reaching the hint predicates."
+    }
+   ],
+   "status_at_accepted_run": "SUCCESS"
+  },
+  {
+   "key": [
+    "server",
+    "caching",
+    "sep-2549-resources-templates-list-caching-hints",
+    "ResourcesTemplatesListCachingHints",
+    "resources/templates/list response includes ttlMs and cacheScope caching hints",
+    ""
+   ],
+   "emitting_byte_span": [
+    472037,
+    472153
+   ],
+   "emitting_span_provenance": "locator_row",
+   "context_excerpts": [
+    {
+     "label": "caching_hint_verdict",
+     "byte_span": [
+      469976,
+      470444
+     ],
+     "why": "THE VERDICT IS NOT AT THE EMITTING SITE. The locator's row is the `i(...)` CALL, which names the check and the endpoint and carries no `status:` at all; the status ternary and both of this check's predicates live in the shared `nr` builder the call returns through. Addressed rather than inferred, because an axis read off the call site alone would be read off the description (the error the axis_source_rule forbids)."
+    },
+    {
+     "label": "caching_hint_field_probe",
+     "byte_span": [
+      469851,
+      469976
+     ],
+     "why": "where `hasTtlMs` and `hasCacheScope` are COMPUTED — `in` on the decoded result, so what the axes score is the PRESENCE of the member and not its value. `tr` reads `e.ttlMs`/`e.cacheScope` into `details` as well, and nothing in this check reads them back: that is what puts the VALUE checks in `TtlNonNegative` and `CacheScopeValid` and not here."
+    },
+    {
+     "label": "caching_request_helper",
+     "byte_span": [
+      471227,
+      471759
+     ],
+     "why": "the `i` wrapper that issues the request. It holds the precondition: a JSON-RPC error or a transport failure on the endpoint pushes a FAILURE of ITS OWN with a different errorMessage and never reaches `nr`, so a red here can mean `the call failed` rather than `the hints were missing` and the two are distinguishable only by the message."
+    }
+   ],
+   "axes": [
+    {
+     "axis": "the_result_carries_ttl_ms",
+     "expr": "r.hasTtlMs||i.push(`${n} response missing ttlMs`)",
+     "expr_found_in": "context:caching_hint_verdict",
+     "polarity": "pass_when_true",
+     "polarity_reading": "`X||i.push(...)` — TRUE is the passing arm. the check's verdict is `i.length===0?`SUCCESS`:`FAILURE`` over the error accumulator `i`, so an axis PASSES when its push does not fire",
+     "requires": "the `resources/templates/list` result carries a `ttlMs` member"
+    },
+    {
+     "axis": "the_result_carries_cache_scope",
+     "expr": "r.hasCacheScope||i.push(`${n} response missing cacheScope`)",
+     "expr_found_in": "context:caching_hint_verdict",
+     "polarity": "pass_when_true",
+     "polarity_reading": "`X||i.push(...)` — TRUE is the passing arm. the check's verdict is `i.length===0?`SUCCESS`:`FAILURE`` over the error accumulator `i`, so an axis PASSES when its push does not fire",
+     "requires": "the `resources/templates/list` result carries a `cacheScope` member"
+    }
+   ],
+   "scope_note": "PRESENCE ONLY, AND THAT IS THE WHOLE OF IT. Both axes are `in` tests on the decoded `resources/templates/list` result. Neither reads the VALUE: a `ttlMs` of `-1` and a `cacheScope` of `\"banana\"` both PASS this check. The values are scored once per scenario, across every endpoint at once, by `TtlNonNegative` and `CacheScopeValid` — which is why those two are not per-endpoint rows and this one is.",
+   "preconditions": [
+    {
+     "guard": "catch(n){let r=n instanceof Tt?n:void 0;",
+     "kind": "request",
+     "on_failure": "check_emitted_FAILURE_with_a_different_message",
+     "reads": "whether the `resources/templates/list` request itself succeeded. A JSON-RPC error or a transport failure emits this check as FAILURE from the `i` wrapper, never reaching the hint predicates."
+    }
+   ],
+   "status_at_accepted_run": "SUCCESS"
+  },
+  {
+   "key": [
+    "server",
+    "caching",
+    "sep-2549-resources-read-caching-hints",
+    "ResourcesReadCachingHints",
+    "resources/read response includes ttlMs and cacheScope caching hints",
+    ""
+   ],
+   "emitting_byte_span": [
+    472193,
+    472288
+   ],
+   "emitting_span_provenance": "locator_row",
+   "context_excerpts": [
+    {
+     "label": "caching_hint_verdict",
+     "byte_span": [
+      469976,
+      470444
+     ],
+     "why": "THE VERDICT IS NOT AT THE EMITTING SITE. The locator's row is the `i(...)` CALL, which names the check and the endpoint and carries no `status:` at all; the status ternary and both of this check's predicates live in the shared `nr` builder the call returns through. Addressed rather than inferred, because an axis read off the call site alone would be read off the description (the error the axis_source_rule forbids)."
+    },
+    {
+     "label": "caching_hint_field_probe",
+     "byte_span": [
+      469851,
+      469976
+     ],
+     "why": "where `hasTtlMs` and `hasCacheScope` are COMPUTED — `in` on the decoded result, so what the axes score is the PRESENCE of the member and not its value. `tr` reads `e.ttlMs`/`e.cacheScope` into `details` as well, and nothing in this check reads them back: that is what puts the VALUE checks in `TtlNonNegative` and `CacheScopeValid` and not here."
+    },
+    {
+     "label": "caching_request_helper",
+     "byte_span": [
+      471227,
+      471759
+     ],
+     "why": "the `i` wrapper that issues the request. It holds the precondition: a JSON-RPC error or a transport failure on the endpoint pushes a FAILURE of ITS OWN with a different errorMessage and never reaches `nr`, so a red here can mean `the call failed` rather than `the hints were missing` and the two are distinguishable only by the message."
+    },
+    {
+     "label": "resources_read_skip_guard",
+     "byte_span": [
+      472153,
+      472289
+     ],
+     "why": "THE ONLY ONE OF THE FIVE THAT MAY NOT RUN. `o` is the first uri `resources/list` returned; when it is absent the ternary takes the other arm and pushes this check as SKIPPED instead of calling `i`. Addressed because the locator gives this row TWO sites and only one of them is the emitting site of the row as it stands at the accepted run: the run recorded 0 SKIPPED in this scenario, so the `i` arm is the one that fired."
+    }
+   ],
+   "axes": [
+    {
+     "axis": "the_result_carries_ttl_ms",
+     "expr": "r.hasTtlMs||i.push(`${n} response missing ttlMs`)",
+     "expr_found_in": "context:caching_hint_verdict",
+     "polarity": "pass_when_true",
+     "polarity_reading": "`X||i.push(...)` — TRUE is the passing arm. the check's verdict is `i.length===0?`SUCCESS`:`FAILURE`` over the error accumulator `i`, so an axis PASSES when its push does not fire",
+     "requires": "the `resources/read` result carries a `ttlMs` member"
+    },
+    {
+     "axis": "the_result_carries_cache_scope",
+     "expr": "r.hasCacheScope||i.push(`${n} response missing cacheScope`)",
+     "expr_found_in": "context:caching_hint_verdict",
+     "polarity": "pass_when_true",
+     "polarity_reading": "`X||i.push(...)` — TRUE is the passing arm. the check's verdict is `i.length===0?`SUCCESS`:`FAILURE`` over the error accumulator `i`, so an axis PASSES when its push does not fire",
+     "requires": "the `resources/read` result carries a `cacheScope` member"
+    }
+   ],
+   "scope_note": "PRESENCE ONLY, AND THAT IS THE WHOLE OF IT. Both axes are `in` tests on the decoded `resources/read` result. Neither reads the VALUE: a `ttlMs` of `-1` and a `cacheScope` of `\"banana\"` both PASS this check. The values are scored once per scenario, across every endpoint at once, by `TtlNonNegative` and `CacheScopeValid` — which is why those two are not per-endpoint rows and this one is.",
+   "preconditions": [
+    {
+     "guard": "catch(n){let r=n instanceof Tt?n:void 0;",
+     "kind": "request",
+     "on_failure": "check_emitted_FAILURE_with_a_different_message",
+     "reads": "whether the `resources/read` request itself succeeded. A JSON-RPC error or a transport failure emits this check as FAILURE from the `i` wrapper, never reaching the hint predicates."
+    },
+    {
+     "guard": "o?await i(`sep-2549-resources-read-caching-hints`",
+     "kind": "observation",
+     "on_failure": "check_emitted_SKIPPED",
+     "reads": "whether `resources/list` returned at least one resource to read. MEASURED at the accepted run: the caching scenario recorded 8 SUCCESS and 0 SKIPPED, so this arm was taken and the check is a real SUCCESS rather than a vacuous one."
+    }
+   ],
+   "status_at_accepted_run": "SUCCESS"
+  },
+  {
+   "key": [
+    "server",
+    "caching",
+    "sep-2549-ttl-non-negative",
+    "TtlNonNegative",
+    "All ttlMs values are non-negative integers",
+    ""
+   ],
+   "emitting_byte_span": [
+    472979,
+    473310
+   ],
+   "emitting_span_provenance": "locator_row",
+   "context_excerpts": [
+    {
+     "label": "ttl_accumulator_predicates",
+     "byte_span": [
+      472640,
+      472979
+     ],
+     "why": "the whole accumulator ladder for this check. The emitting span carries `status:s.length===0?`SUCCESS`:`FAILURE`` and nothing that decides it; every predicate that can push onto `s` is here."
+    },
+    {
+     "label": "caching_hint_field_probe",
+     "byte_span": [
+      469851,
+      469976
+     ],
+     "why": "where the `ttlMs` this check ranges over was recorded. `n` is the per-endpoint accumulator `tr` filled, so this check quantifies over the endpoints that ANSWERED, not over the five it asked."
+    }
+   ],
+   "axes": [
+    {
+     "axis": "at_least_one_endpoint_returned_a_ttl_ms",
+     "expr": "if(c.length===0)s.push(`no endpoints returned ttlMs`)",
+     "expr_found_in": "context:ttl_accumulator_predicates",
+     "polarity": "fail_when_true",
+     "polarity_reading": "the `if` GUARD, not the loop: an empty filtered set pushes onto `s` and the verdict `s.length===0?`SUCCESS`:`FAILURE`` then reds. This is the NON-VACUITY limb and it is an axis in its own right — without it a server that returned no `ttlMs` anywhere would pass a check named `All ttlMs values are non-negative integers` by quantifying over nothing",
+     "requires": "at least one of the endpoints exercised in this scenario returned a `ttlMs` at all"
+    },
+    {
+     "axis": "every_ttl_ms_is_a_number",
+     "expr": "typeof n==`number`",
+     "expr_found_in": "context:ttl_accumulator_predicates",
+     "polarity": "pass_when_true",
+     "polarity_reading": "outermost arm of the nested ternary; the FALSE arm is `s.push(`${e}: ttlMs is ${typeof n}, expected number`)`",
+     "requires": "every `ttlMs` returned is a JSON number"
+    },
+    {
+     "axis": "every_ttl_ms_is_an_integer",
+     "expr": "Number.isInteger(n)",
+     "expr_found_in": "context:ttl_accumulator_predicates",
+     "polarity": "pass_when_true",
+     "polarity_reading": "inner ternary, reached only when the outer one passed; the FALSE arm is `s.push(`${e}: ttlMs is ${n}, expected integer`)`",
+     "requires": "every `ttlMs` returned is an integer and not a fractional number"
+    },
+    {
+     "axis": "every_ttl_ms_is_non_negative",
+     "expr": "n<0&&s.push(`${e}: ttlMs is ${n}, must be >= 0`)",
+     "expr_found_in": "context:ttl_accumulator_predicates",
+     "polarity": "fail_when_true",
+     "polarity_reading": "the innermost arm; `n<0` TRUE is what pushes, and the verdict is `s.length===0?`SUCCESS`:`FAILURE``",
+     "requires": "every `ttlMs` returned is >= 0"
+    }
+   ],
+   "scope_note": "FOUR AXES AND NOT ONE, because the ladder decides four different ways and the check's own description names only the last two. It is also SCENARIO-WIDE rather than per-endpoint: `n` is the accumulator every `i(...)` call appended to, so ONE bad `ttlMs` on ONE endpoint reds this single check and the per-endpoint rows stay green. The converse of the `*CachingHints` rows, which are per-endpoint and score presence only.",
+   "preconditions": [],
+   "status_at_accepted_run": "SUCCESS"
+  },
+  {
+   "key": [
+    "server",
+    "caching",
+    "sep-2549-cache-scope-valid",
+    "CacheScopeValid",
+    "All cacheScope values are \"public\" or \"private\"",
+    ""
+   ],
+   "emitting_byte_span": [
+    473594,
+    473942
+   ],
+   "emitting_span_provenance": "locator_row",
+   "context_excerpts": [
+    {
+     "label": "cache_scope_accumulator_predicates",
+     "byte_span": [
+      473311,
+      473587
+     ],
+     "why": "the whole accumulator ladder for this check; the emitting span carries only `status:l.length===0?`SUCCESS`:`FAILURE``"
+    },
+    {
+     "label": "caching_hint_field_probe",
+     "byte_span": [
+      469851,
+      469976
+     ],
+     "why": "where the `cacheScope` this check ranges over was recorded — the same per-endpoint accumulator `TtlNonNegative` quantifies over"
+    }
+   ],
+   "axes": [
+    {
+     "axis": "at_least_one_endpoint_returned_a_cache_scope",
+     "expr": "if(u.length===0)l.push(`no endpoints returned cacheScope`)",
+     "expr_found_in": "context:cache_scope_accumulator_predicates",
+     "polarity": "fail_when_true",
+     "polarity_reading": "the `if` GUARD: an empty filtered set pushes onto `l` and `l.length===0?`SUCCESS`:`FAILURE`` then reds. The non-vacuity limb, exactly as `TtlNonNegative` has one",
+     "requires": "at least one of the endpoints exercised in this scenario returned a `cacheScope` at all"
+    },
+    {
+     "axis": "every_cache_scope_is_public_or_private",
+     "expr": "n!==`public`&&n!==`private`",
+     "expr_found_in": "context:cache_scope_accumulator_predicates",
+     "polarity": "fail_when_true",
+     "polarity_reading": "the conjunction guarding the push; BOTH inequalities holding is what pushes onto `l`, and the verdict is `l.length===0?`SUCCESS`:`FAILURE``",
+     "requires": "every `cacheScope` returned is exactly the string `public` or the string `private`"
+    }
+   ],
+   "scope_note": "AN ENUMERATION, NOT A SCHEMA READING. The check compares against two string literals in the harness; it does not consult the pinned spec schema, so a value the schema would admit and these two literals would not is red here. Scenario-wide like `TtlNonNegative` and for the same reason — one accumulator over every endpoint that answered.",
+   "preconditions": [],
+   "status_at_accepted_run": "SUCCESS"
+  },
+  {
+   "key": [
+    "server",
+    "caching",
+    "wire-schema-valid",
+    "WireSchemaValid",
+    "Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version",
+    ""
+   ],
+   "emitting_byte_span": [
+    325368,
+    325721
+   ],
+   "emitting_span_provenance": "locator_row",
+   "context_excerpts": [
+    {
+     "label": "implementation_violation_filter",
+     "byte_span": [
+      325325,
+      325367
+     ],
+     "why": "THE PREDICATE IS THE FILTER. `o` — the accumulator the emitting site reads as `o.length===0` — is `t.filter(e=>e.origin===`implementation`)`, so what the check scores is not `were there violations` but `were there violations ATTRIBUTED TO THE IMPLEMENTATION`"
+    },
+    {
+     "label": "evaluability_gate",
+     "byte_span": [
+      325081,
+      325162
+     ],
+     "why": "holds the early `return[]` that decides whether this check is emitted at all"
+    },
+    {
+     "label": "harness_origin_sibling",
+     "byte_span": [
+      325721,
+      326015
+     ],
+     "why": "the `origin===`harness`` sibling, addressed so the SCOPE of this check is evidence and not inference: violations in messages the HARNESS sent are scored by `WireSchemaHarnessError`, never here"
+    }
+   ],
+   "axes": [
+    {
+     "axis": "no_schema_violation_in_a_message_the_implementation_sent",
+     "expr": "e.origin===`implementation`",
+     "expr_found_in": "context:implementation_violation_filter",
+     "polarity": "fail_when_true",
+     "polarity_reading": "`o=t.filter(e=>e.origin===`implementation`)` then `status:o.length===0?`SUCCESS`:`FAILURE`` — a violation whose origin is the implementation is what fails it",
+     "requires": "every JSON-RPC message OUR side put on the wire validates against the published spec schema for the negotiated version"
+    }
+   ],
+   "scope_note": "ONE DIRECTION ONLY, and that is why this row carries the `harness_origin_sibling` excerpt. The filter scopes the check to messages the IMPLEMENTATION SENT. Nothing here scores what the implementation does with a message it RECEIVED — those violations carry `origin===`harness``, go to `WireSchemaHarnessError`, and that check is a bug report about the harness rather than a score of our parsing. An ET claim about DECODING an inbound message is therefore silent on this axis by the SHAPE of the check, not by a reading of it — and C1b-iii's bucket-1 records for the inbound decoders rest on this excerpt.",
+   "preconditions": [
+    {
+     "guard": "if(n===0&&t.length===0)return[]",
+     "kind": "observation",
+     "on_failure": "check_not_emitted",
+     "reads": "whether any message was observed at all; a run that validated nothing emits no check rather than a vacuous SUCCESS"
+    }
+   ],
+   "status_at_accepted_run": "SUCCESS"
+  },
+  {
+   "key": [
+    "server",
+    "dns-rebinding-protection",
+    "localhost-host-rebinding-rejected",
+    "DNSRebindingRejected",
+    "Server rejects requests with non-localhost Host/Origin headers",
+    ""
+   ],
+   "emitting_byte_span": [
+    468011,
+    468186
+   ],
+   "emitting_span_provenance": "locator_row",
+   "context_excerpts": [
+    {
+     "label": "rebinding_rejection_predicate",
+     "byte_span": [
+      468633,
+      469146
+     ],
+     "why": "THE EMITTING SPAN CARRIES NO `status:` AT ALL. The locator's row is the `a` object LITERAL — id, name, description, timestamp, specReferences — and the status is attached later by spread (`{...a,status:`SUCCESS`}` / `{...a,status:`FAILURE`}`). The predicate that chooses between them is here, and reading the axis off the description instead would be the error `axis_source_rule` names."
+    },
+    {
+     "label": "localhost_url_precondition",
+     "byte_span": [
+      468364,
+      468633
+     ],
+     "why": "the scenario's entry guard, addressed because it FAILS RATHER THAN SKIPS: a non-localhost `serverUrl` pushes BOTH rows as FAILURE with `reason:`non-localhost-url``. So a red on this check does not by itself mean the server accepted a rebinding request — it can mean the scenario was pointed at a URL it cannot test. Distinguishable only by the errorMessage."
+    }
+   ],
+   "axes": [
+    {
+     "axis": "a_non_localhost_host_or_origin_is_rejected_with_4xx",
+     "expr": "e.statusCode>=400&&e.statusCode<500",
+     "expr_found_in": "context:rebinding_rejection_predicate",
+     "polarity": "pass_when_true",
+     "polarity_reading": "`i?r.push({...a,status:`SUCCESS`,details:o}):r.push({...a,status:`FAILURE`,errorMessage:...})` — the ternary on this conjunction, TRUE arm is SUCCESS",
+     "requires": "a request carrying `Host: evil.example.com` and `Origin: http://evil.example.com` is answered with an HTTP status in [400,500)"
+    }
+   ],
+   "scope_note": "4xx, NOT 403, AND THE BAND IS HALF-OPEN. Any 4xx passes — 400, 404 and 429 are all SUCCESS here — and a 5xx is a FAILURE even though it is also a refusal. NOTHING about the response BODY is read on this path: `body` is carried into `details` and never asserted on, so a JSON-RPC error code is not scored. Host and Origin are sent TOGETHER and cannot be separated by this check: a server that validated only one of the two passes it.",
+   "preconditions": [
+    {
+     "guard": "if(!Yn(t))",
+     "kind": "configuration",
+     "on_failure": "check_emitted_FAILURE_with_a_different_message",
+     "reads": "whether the server URL's hostname is `localhost`, `127.0.0.1`, `[::1]` or `::1`. Not a skip: both rows of the scenario are pushed as FAILURE."
+    },
+    {
+     "guard": "catch(e){r.push({...a,status:`FAILURE`,errorMessage:`Request failed",
+     "kind": "network",
+     "on_failure": "check_emitted_FAILURE_with_a_different_message",
+     "reads": "whether the rebinding request completed at all"
+    }
+   ],
+   "status_at_accepted_run": "SUCCESS"
+  },
+  {
+   "key": [
+    "server",
+    "dns-rebinding-protection",
+    "localhost-host-valid-accepted",
+    "LocalhostHostAccepted",
+    "Server accepts requests with valid localhost Host/Origin headers",
+    ""
+   ],
+   "emitting_byte_span": [
+    468189,
+    468363
+   ],
+   "emitting_span_provenance": "locator_row",
+   "context_excerpts": [
+    {
+     "label": "localhost_acceptance_predicate",
+     "byte_span": [
+      469146,
+      469634
+     ],
+     "why": "the same shape as this scenario's other row: the locator's span is the `o` object LITERAL with no `status:`, and the status is spread on at the predicate addressed here"
+    },
+    {
+     "label": "localhost_url_precondition",
+     "byte_span": [
+      468364,
+      468633
+     ],
+     "why": "the shared entry guard; it pushes THIS row as FAILURE too, so the same `red can mean unrunnable` caveat applies"
+    }
+   ],
+   "axes": [
+    {
+     "axis": "a_localhost_host_or_origin_is_accepted_with_2xx",
+     "expr": "e.statusCode>=200&&e.statusCode<300",
+     "expr_found_in": "context:localhost_acceptance_predicate",
+     "polarity": "pass_when_true",
+     "polarity_reading": "`i?r.push({...o,status:`SUCCESS`,details:a}):r.push({...o,status:`FAILURE`,errorMessage:...})` — the ternary on this conjunction, TRUE arm is SUCCESS",
+     "requires": "a request whose `Host` and `Origin` are the server's own localhost host is answered with an HTTP status in [200,300)"
+    }
+   ],
+   "scope_note": "THE NEGATIVE CONTROL OF THE PAIR, and what makes the rejection check non-vacuous: without it a server that refused EVERY request would pass `DNSRebindingRejected` outright. The `Host` it sends is `new URL(serverUrl).host` — the server's own — so this scores that validation is not over-broad, and it reads only the STATUS BAND, never the body.",
+   "preconditions": [
+    {
+     "guard": "if(!Yn(t))",
+     "kind": "configuration",
+     "on_failure": "check_emitted_FAILURE_with_a_different_message",
+     "reads": "the shared entry guard — a non-localhost `serverUrl` fails this row as well"
+    },
+    {
+     "guard": "catch(e){r.push({...o,status:`FAILURE`,errorMessage:`Request failed",
+     "kind": "network",
+     "on_failure": "check_emitted_FAILURE_with_a_different_message",
+     "reads": "whether the localhost request completed at all"
+    }
+   ],
+   "status_at_accepted_run": "SUCCESS"
+  },
+  {
+   "key": [
+    "server",
+    "server-sse-multiple-streams",
+    "server-accepts-multiple-post-streams",
+    "ServerAcceptsMultiplePostStreams",
+    "Server allows multiple concurrent POST requests (each may return SSE or JSON)",
+    ""
+   ],
+   "emitting_byte_span": [
+    441060,
+    441621
+   ],
+   "emitting_span_provenance": "locator_row",
+   "context_excerpts": [
+    {
+     "label": "multiple_post_stream_predicate",
+     "byte_span": [
+      440879,
+      441060
+     ],
+     "why": "where `p` — the whole of this check's verdict — is computed, and where the THREE concurrent `tools/list` POSTs it quantifies over are issued. The emitting span carries `status:p?`SUCCESS`:`FAILURE`` and not what `p` is."
+    }
+   ],
+   "axes": [
+    {
+     "axis": "every_concurrent_post_is_answered_ok",
+     "expr": "u.every(e=>e.ok)",
+     "expr_found_in": "context:multiple_post_stream_predicate",
+     "polarity": "pass_when_true",
+     "polarity_reading": "`status:p?`SUCCESS`:`FAILURE`` where `p` IS this expression — the whole verdict, one predicate",
+     "requires": "all three concurrently-issued `tools/list` POSTs are answered with a 2xx status (`Response.ok`)"
+    }
+   ],
+   "scope_note": "CONCURRENCY IS WHAT IS SCORED, AND CONTENT TYPE IS NOT. The three POSTs are started before any is awaited (`Promise.all` over the three pending fetches), so what fails this check is a server that serialises or refuses the second and third. `numSseStreams` is counted into `details` and never read by the predicate — `each may return SSE or JSON` is the description's own wording and the code honours it: a server answering all three with plain JSON passes. THREE, a literal, not a configured count.",
+   "preconditions": [],
+   "status_at_accepted_run": "SUCCESS"
+  },
+  {
+   "key": [
+    "server",
+    "server-sse-multiple-streams",
+    "server-sse-streams-functional",
+    "ServerSSEStreamsFunctional",
+    "Multiple POST SSE streams should be functional",
+    ""
+   ],
+   "emitting_byte_span": [
+    442238,
+    442699
+   ],
+   "emitting_span_provenance": "locator_row",
+   "context_excerpts": [
+    {
+     "label": "sse_stream_functional_predicate",
+     "byte_span": [
+      441622,
+      442280
+     ],
+     "why": "where `v` is computed — one read per stream against a 2 s timeout, a stream counting as functional when it is not in error. The emitting span carries the three-way ternary and not what feeds it. The span deliberately OVERLAPS the emitting span by the 42 bytes of the `g>0?` branch head: the arm selection is the row's own precondition and a guard has to sit wholly inside ONE of a row's spans to be checked verbatim, so a span ending at the branch would leave the precondition uncheckable."
+    },
+    {
+     "label": "sse_streams_json_sibling",
+     "byte_span": [
+      442700,
+      443119
+     ],
+     "why": "THE OTHER EMITTING SITE OF THE SAME CHECK ID. The locator gives this row TWO sites: the `g>0` arm addressed above and this `g===0` arm, which pushes the same id and name with a DIFFERENT description and a hard-coded `status:`INFO``. Addressed so the choice of emitting span is evidence rather than assertion — see `why_this_row_has_two_sites_and_which_one_fired`."
+    }
+   ],
+   "axes": [
+    {
+     "axis": "every_sse_stream_opened_is_functional",
+     "expr": "v===g",
+     "expr_found_in": "evaluator_excerpt",
+     "polarity": "pass_when_true",
+     "polarity_reading": "`status:v===g?`SUCCESS`:v>0?`WARNING`:`FAILURE`` — a THREE-way ternary, and only strict equality is SUCCESS. Partial functionality is a WARNING, which on the SERVER leg is not a failure (the harness's leg-dependent scoring), so this axis is the only one that can make the row red.",
+     "requires": "every POST that came back with `content-type: text/event-stream` yields a readable first event within 2 seconds"
+    }
+   ],
+   "scope_note": "ONE EVENT, ONE TIMEOUT, AND NOTHING ABOUT ITS CONTENT. Each stream is scored by racing a single `read()` against a 2 s timer; a `null` from the timer is NOT an error, so a stream that opens and stays silent counts as FUNCTIONAL. The event is not decoded and its payload is never compared with the `tools/list` request that opened it. The check is therefore about stream LIVENESS, not about correct SSE framing or correct results.",
+   "why_this_row_has_two_sites_and_which_one_fired": "A MEASUREMENT, NOT A PREFERENCE. `server-sse-streams-functional` is pushed from two places — the `g>0` arm with the three-way ternary, and the `g===0` arm with a hard-coded `status:`INFO`` and its own description — so the locator legitimately reports two spans and the row has to choose one. It is chosen by reading the accepted run rather than by reading the code: docs/conformance/server-2026-07-28.json records this scenario as 2 SUCCESS, 0 INFO, so the INFO arm did not fire and the emitting site is the `g>0` one. Had the run recorded an INFO this row would decompose to NO axis at all, because that arm's status is a literal with no predicate over it. G18 ACCEPTS EITHER, WHICH IS WHY THE REASONING IS WRITTEN DOWN. The guard requires a `locator_row` span to be ONE OF the spans the locator names for that row's key, so for a row with two sites it cannot adjudicate the choice between them — both would pass it. This field is the compensating record, and it names the artefact that settles the choice rather than asserting the answer. `ResourcesReadCachingHints` is the other two-site row in this slice and the same residual applies to it; its own `resources_read_skip_guard` excerpt carries the equivalent note.",
+   "preconditions": [
+    {
+     "guard": "g>0?r.push({id:`server-sse-streams-functional`",
+     "kind": "observation",
+     "on_failure": "check_emitted_INFO_from_the_other_site",
+     "reads": "whether any of the three responses carried `content-type: text/event-stream`. MEASURED at the accepted run: the scenario recorded 2 SUCCESS and 0 INFO, so this arm was taken."
+    }
+   ],
+   "status_at_accepted_run": "SUCCESS"
   }
  ],
  "emitting_span_provenance_rule": "Every row states where its `emitting_byte_span` came from, and the generator CHECKS the statement against MES-97's locator output (G18). `locator_row` — the span is one the locator names for this row's key, and the generator requires that. `locator_row_rejected` — the locator's own `rung_pin_level` for that row is NOT `row`, so it does not claim to pin the row; the span it names belongs to a sibling and is refused. The generator then requires the reverse: the pin level must not be `row`, the span used must NOT be one of the locator's, and a reason must be given. Four of C1b-i's 29 rows are rejections; C1a's 11 are all `locator_row`, and were so before this field existed. C1b-ii's 9 are all `locator_row` TOO, and each carries an `emitting_span_provenance_why` anyway — not because G18 demands one on an acceptance (it does not), but because the locator pins these rows at level CHECK and names three sites for every one of them, so G18 would accept the Name push against a Method row and vice versa. The acceptance is honest and the residual it leaves is stated on the row rather than in this rule. C1b-iii's 4 are all `locator_row`, and ONE of them — DefaultResultTypeComplete — is the same shape again and carries its own `emitting_span_provenance_why`: the locator pins it at level CHECK and names FOUR sites, two of which are not this check's pushes at all but unrelated code binding some `i`. Saying so on the row is the whole remedy available here; G18 cannot distinguish them, and pretending otherwise would be the AC7 error. C1c-ii's 36 are all `locator_row` and none is a rejection: every row in the family is pinned by the locator at level `row` (the id literal sits beside the row's own name at every site), so the choice among a row's sites is between an EVALUATOR site and a `catch`-arm site that carries the same id — and this file takes the evaluator site in all 36. That is a reading the locator does not make for it, and it is the same residual C1b-ii recorded for the header rows rather than a new one. C1c-iii's 41 are all `locator_row` and none is a rejection: the locator pins every row in the slice at level `row`. Nineteen of them are the one-site `WireSchemaValid` rows; of the other twenty-two, three have a single site and nineteen have two — the EVALUATOR site and a `catch`-arm site carrying the same id — and this file takes the evaluator site in every case, as C1c-ii did. ONE ROW BREAKS THE ORDER THAT PRECEDENT QUIETLY RELIED ON and carries its own `emitting_span_provenance_why`: for `ResourcesNotFoundErrorCode` the catch-arm site sorts FIRST ([453056,453360], the `catch` around `e.connect()` pushing this same id with a hard ``status:`FAILURE```), so taking the lowest of a row's sites — which happens to be right for all 36 of C1c-ii's and for eighteen of this slice's nineteen — would have taken the wrong span here. The site was chosen by reading which one carries a ternary status rather than by sorting. G18 cannot distinguish them, and saying so is the whole remedy available.",
  "check_id_location_rule": "C1a's 11 rows all carry their check id as a backtick literal at the emitting site, and the generator required exactly that. Fourteen of C1b-i's rows emit with `id:c` — a value COMPUTED from the argument's value and declared type — and ten more with `id:t`, a loop variable. So a row may name `check_id_found_in`: the pool entry whose bytes must carry the id literal. It defaults to `evaluator_excerpt`, which is C1a's behaviour unchanged, and the named entry must exist. This WEAKENS the guard from `the id is at the emitting site` to `the id is verbatim at an ADDRESSED span this row names`, and that is said plainly rather than left to be noticed: what it still refuses is a row whose id occurs nowhere it points at. C1b-iii adds one more user of the field — DefaultResultTypeComplete, which emits with `id:i` where `i` is bound to the literal one statement earlier, so the literal is in the guard excerpt and nowhere near either push. C1c-i meets a third shape and it is the first that NO span can satisfy. The `server-stateless` RequestMetaInvalid trio emits with ``id:`sep-2575-request-meta-invalid-${e.slug}` `` and the composed ids occur NOWHERE in the build — measured, 0 hits each for `sep-2575-request-meta-invalid-missing-meta`, `-missing-protocol-version` and `-missing-client-capabilities` in the 809 KB dist — so `check_id_found_in` cannot help whichever span it names. Such a row states `check_id_composition` instead: a `template` verbatim at a named span, a `hole` occurring EXACTLY ONCE in it, and a `substitution` verbatim at another named span, with the substituted result required to equal the check id EXACTLY. The two fields are mutually exclusive — two answers to one question, and nothing would choose between them. This is NOT a further weakening: the literal form asks `is the id at a span you name`, and the composed form asks the same question of every PART of the id, with the template pinned to the build so the only freedom is the one hole. A row cannot cover the id with fragments it found lying around (the S9-18 shape), because a degenerate cover would have to be a template that is verbatim in the dist and contains the hole, which is the emitting site itself. C1c-ii adds no new user of either field: all 36 of its rows carry the check id as a backtick literal AT the emitting site, which is C1a's original behaviour, so all 36 take the `evaluator_excerpt` default. Recorded because a family of 36 landing entirely on the oldest and strictest form is worth stating — the weakenings above are not load-bearing here.",
  "the_inherited_figure_this_ticket_closed_and_why_it_is_named": "THE FIELD `why_fourteen_rows_share_one_site` CARRIED A COUNT IN ITS NAME AND IN ITS BODY, AND THIS SLICE FALSIFIES BOTH. C1c-ii wrote it on each of its fourteen `WireSchemaValid` rows: the body opened `FOURTEEN ROWS, ONE SITE` and closed `C1b-iii's client/tools_call row is the fifteenth instance`. It was TRUE AT ITS OWN COMMIT — fourteen rows in that family, fifteen at the site leg-wide — which is the exact case where a silent rewrite would be indistinguishable from the figure never having been wrong. C1c-iii's nineteen rows make it 34 at that one site, and `the fifteenth` then implies a total that no longer holds. SO: the field is RENAMED to the count-free `why_these_rows_share_one_site` and its body says `one site, many rows` and `one fact per key` without tallying either; the leg-wide tally lives here, where a leg-wide figure belongs, and is checked rather than asserted. PM-ratified on MES-116. A COUNT IN A KEY IS THE STALE-BANNER DEFECT ONE LEVEL UP: a name has to be re-read every time the number moves, and nothing reads a name.",
  "the_leg_wide_wire_schema_valid_tally_and_how_it_is_checked": {
-  "rows_decomposed_at_the_one_site": 34,
+  "rows_decomposed_at_the_one_site": 35,
   "in_denominator_wire_schema_valid_rows_in_A1s_manifest": 35,
-  "remaining_undecomposed": 1,
-  "the_one_that_remains": "server / `caching` — C1c-iv's (MES-117). `server-stateless` has no `WireSchemaValid` row at all, which is why C1c-i contributed none.",
+  "remaining_undecomposed": 0,
+  "the_one_that_remains": "NONE — the pair has closed. C1c-iv decomposed the last one, server / `caching`, so the two figures above are now EQUAL and the gap this pair exists to show is zero. The field is kept rather than deleted because a closed gap and an unasked question print the same way when only the answer is printed: `wsv_tally` goes on re-deriving both halves at every build, and a 36th manifest row arriving from a harness bump would reopen it by making `remaining_undecomposed` 1 again. `server-stateless` still has no `WireSchemaValid` row at all, which is why C1c-i contributed none.",
   "why_this_pair_and_not_one_number": "The first is a figure about THIS FILE and the second about A1's MANIFEST, and the whole point of recording them together is that the gap is the work left. A single `N decomposed` would be true of a file that had decomposed the wrong N.",
   "how_it_is_checked": "`crosswalk_controls.exs wsv_tally` re-derives both from the artefacts — rows at [325368,325721] in this file, `name == \"WireSchemaValid\"` rows in the manifest — and requires the RECORDED figures to EQUAL the measured ones. Recorded == measured, not merely recorded > 0: a non-zero assertion passes over any wrong number. That control is why this tally can be written as a number at all; without it, it is the field it replaces."
  },

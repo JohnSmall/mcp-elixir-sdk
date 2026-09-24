@@ -1281,12 +1281,24 @@ defmodule MCP.Conformance.CrosswalkTest do
       assert p["outside_the_population"]["owners"] =~ ~r/C1c\s*=\s*MES-105/
     end
 
-    test "the client leg is declared TOTAL, and the cover's arithmetic closes", %{a: a} do
-      [f] = Enum.filter(a["population"]["files"], &get_in(&1, ["leg_totality", "declared"]))
+    # EVERY leg a file declares, not `the` one. This read `[f] = ...` until
+    # MES-117, which was indistinguishable from correct while exactly one file
+    # declared a leg and became a MatchError the moment the server leg closed.
+    # The list is asserted non-empty and its contents named, so the generalised
+    # form cannot pass vacuously over a run that declares none.
+    test "every declared leg is TOTAL, and each cover's arithmetic closes", %{a: a} do
+      fs = Enum.filter(a["population"]["files"], &get_in(&1, ["leg_totality", "declared"]))
+
+      assert Enum.map(fs, &get_in(&1, ["leg_totality", "leg"])) |> Enum.sort() ==
+               ["client", "server"]
+
+      for f <- fs, do: assert_leg_total(f)
+    end
+
+    defp assert_leg_total(f) do
       t = f["leg_totality"]
       c = t["cover_not_partition"]
 
-      assert t["leg"] == "client"
       assert t["members"] == f["member_count"]
 
       # A COVER, and the arithmetic that proves it is one rather than a
@@ -1310,15 +1322,16 @@ defmodule MCP.Conformance.CrosswalkTest do
       # The leg really is the whole leg, checked against B2b here rather than
       # taken from the artefact's own word: the generator's G22b is a refusal
       # and this is the same comparison re-taken from outside it.
-      client =
+      rows =
         "docs/conformance/etcc-attribution.json"
         |> File.read!()
         |> Jason.decode!()
         |> Map.fetch!("rows")
-        |> Enum.filter(&(&1["leg"] == "client"))
+        |> Enum.filter(&(&1["leg"] == t["leg"]))
         |> Enum.map(& &1["key"])
 
-      assert Crosswalk.set_compare(client, f["members"]).equal
+      assert rows != []
+      assert Crosswalk.set_compare(rows, f["members"]).equal
     end
 
     test "a file that declares no leg says so, rather than reporting a pass", %{a: a} do

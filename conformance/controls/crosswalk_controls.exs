@@ -47,6 +47,11 @@ defmodule CrosswalkControls do
   # decomposed at, and the field holding the leg-wide tally over it (MES-116).
   @wsv_site [325_368, 325_721]
   @wsv_tally_key "the_leg_wide_wire_schema_valid_tally_and_how_it_is_checked"
+  # MES-117 (C1c-iv-a) — the escalation sweep record and the ticket that authored
+  # this slice's bucket-1 rows. The `authored_by` value is what scopes the sweep's
+  # population to THIS slice's 34 rather than to the whole leg.
+  @sweep_key "the_divergent_despite_agreement_sweep_the_dispatch_asked_for_and_its_measured_zero"
+  @this_ticket "MES-117 (C1c-iv-a)"
   @a3_axes "docs/conformance/oc-axes-2026-07-28.json"
   @manifest "docs/conformance/in-scope-2026-07-28.json"
   @denominator "docs/conformance/bucket-0-2026-07-28.json"
@@ -61,18 +66,25 @@ defmodule CrosswalkControls do
   # file's own selector, so they are pins rather than copies: they go red when
   # the file moves and the file goes red when they do.
   @server_member_modules [
+    "MCP.Protocol.CapabilitiesTest/",
+    "MCP.Protocol.HeaderMirrorTest/",
     "MCP.Protocol.Messages.DiscoverTest/",
     "MCP.Protocol.MetaTest/",
     "MCP.Protocol.Types.ContentTest/",
     "MCP.Protocol.Types.ResourceTest/",
     "MCP.Protocol.Types.ToolTest/",
+    "MCP.ProtocolTest/",
     "MCP.Server.CapabilityHonestyTest/",
     "MCP.Server.DispatchTest/",
+    "MCP.Server.ExtensionsNegotiationTest/",
     "MCP.Server.JsonSchema202012Test/",
     "MCP.Server.NotificationCollectorTest/",
     "MCP.Server.SubscriptionsDispatchTest/",
     "MCP.Server.ToolOrderTest/",
+    "MCP.Transport.SSETest/",
+    "MCP.Transport.SelfCompatibilityTest/",
     "MCP.Transport.StreamableHTTP.ACTest/",
+    "MCP.Transport.StreamableHTTPCacheScopeWarningTest/",
     "MCP.Transport.StreamableHTTPStatelessTest/",
     "MCP.Transport.SubscriptionsStreamTest/"
   ]
@@ -111,7 +123,10 @@ defmodule CrosswalkControls do
     "tools-call-mixed-content",
     "tools-call-simple-text",
     "tools-call-with-progress",
-    "tools-list"
+    "tools-list",
+    "caching",
+    "dns-rebinding-protection",
+    "server-sse-multiple-streams"
   ]
 
   def run(["noop"]), do: noop()
@@ -127,6 +142,8 @@ defmodule CrosswalkControls do
   def run(["citations"]), do: citations()
   def run(["statements"]), do: statements()
   def run(["wsv_tally"]), do: wsv_tally()
+  def run(["sweep"]), do: sweep()
+  def run(["legpins"]), do: legpins()
 
   def run(["all"]) do
     noop()
@@ -142,14 +159,256 @@ defmodule CrosswalkControls do
     citations()
     statements()
     wsv_tally()
+    sweep()
+    legpins()
   end
 
   def run(_) do
     IO.puts(
-      "usage: noop | keying | locator | pins | guards | vacuum | selectors | composition | absence | totality | citations | statements | wsv_tally | all"
+      "usage: noop | keying | locator | pins | guards | vacuum | selectors | composition | absence | totality | citations | statements | wsv_tally | sweep | legpins | all"
     )
 
     System.halt(2)
+  end
+
+  # --- sweep: the divergent_despite_agreement sweep, re-measured -------------
+  #
+  # MES-117 (C1c-iv-a). The dispatch required the last 34 server members to be
+  # swept PER MEMBER against the leg's red checks, and the answer was ZERO. A
+  # zero is the easiest result in the world to write down without having looked,
+  # so the record is held to three measurements it cannot fake: the population
+  # it claims to have swept, the red population it claims to have swept against,
+  # and the class count in the artefact itself.
+  #
+  # THE COMPARISONS LIVE IN ONE NAMED FUNCTION, `sweep_disagreements/2`, and the
+  # mutations re-drive THAT — the wsv_tally lesson (MES-116), where a mutation
+  # compared inline reduced to `n + 1 != n` and passed over the defect it named.
+  defp sweep do
+    header("SWEEP — the divergent_despite_agreement sweep record, re-measured (MES-117)")
+
+    srv = read(@server_edges)
+    sites = read(@locator_out)
+    crosswalk = read(@crosswalk_out)
+
+    record = Map.fetch!(srv, @sweep_key)
+
+    {bad, measured} = sweep_disagreements(record, {srv, sites, crosswalk})
+
+    IO.puts("    members this slice homed, by module:")
+
+    for {m, n} <- Enum.sort(measured.by_module) do
+      IO.puts("      #{String.pad_trailing(m, 50)} #{n}")
+    end
+
+    IO.puts(
+      "    red OC rows on the server leg: #{measured.red_rows} rows / " <>
+        "#{measured.red_names} distinct names"
+    )
+
+    IO.puts("    `divergent_despite_agreement` rows in the crosswalk: #{measured.divergent}")
+
+    for {what, recorded, m} <- measured.pairs do
+      verdict(
+        "RECORDED == MEASURED — #{what}: recorded #{inspect(recorded)}, measured #{inspect(m)}",
+        recorded == m
+      )
+    end
+
+    verdict("the sweep record disagrees with the artefacts in NOTHING", bad == [])
+    halt_unless(bad == [])
+
+    # THE ROW COUNT AND THE NAME COUNT DIFFER, and the record says so. Without
+    # this the sweep could have been run over 15 checks while claiming 19 —
+    # three `HttpServerMetaInvalid400` rows and three `RequestMetaInvalid` rows
+    # share a name and are separated only by their descriptions.
+    verdict(
+      "the red population is NOT name-keyable — #{measured.red_rows} rows collapse to " <>
+        "#{measured.red_names} names, so the record has to carry both",
+      measured.red_rows != measured.red_names
+    )
+
+    halt_unless(measured.red_rows != measured.red_names)
+
+    # (1) a per-module count moved by one. In memory, nothing on disk (S8-14).
+    [{mod, n} | _] = Enum.sort(measured.by_module)
+
+    bumped =
+      update_in(record, ["per_module"], fn ms ->
+        Enum.map(ms, &if(&1["module"] == mod, do: %{&1 | "members" => n + 1}, else: &1))
+      end)
+
+    {bumped_bad, _} = sweep_disagreements(bumped, {srv, sites, crosswalk})
+
+    verdict(
+      "MUTATION — #{mod} recorded at #{n + 1} against a measured #{n}: RE-DRIVEN, the " <>
+        "comparison disagrees",
+      bumped_bad != []
+    )
+
+    halt_unless(bumped_bad != [])
+
+    # (2) A MODULE DROPPED ENTIRELY — the shape a sweep that stopped early would
+    # have. The count limb above cannot catch it: every SURVIVING row still
+    # agrees, and a check that only compared the rows present would be green
+    # over a sweep of six modules claiming seven.
+    short =
+      update_in(record, ["per_module"], fn ms -> Enum.reject(ms, &(&1["module"] == mod)) end)
+
+    {short_bad, _} = sweep_disagreements(short, {srv, sites, crosswalk})
+
+    verdict(
+      "MUTATION — #{mod} dropped from the sweep: RE-DRIVEN, the comparison disagrees " <>
+        "(a sweep that stopped early is not a sweep that found nothing)",
+      short_bad != []
+    )
+
+    halt_unless(short_bad != [])
+
+    # (3) THE CLASS ITSELF. The zero is the record's headline and it is the one
+    # figure no edit to this file can move — it is counted in the crosswalk. A
+    # planted escalation row must break the claim, or the claim is unfalsifiable
+    # prose sitting next to an artefact it never consults.
+    planted =
+      update_in(crosswalk, ["escalations", "rows"], fn rs ->
+        [
+          %{
+            "escalation" =>
+              "divergent_despite_agreement — planted by crosswalk_controls.exs sweep"
+          }
+          | rs
+        ]
+      end)
+
+    {planted_bad, _} = sweep_disagreements(record, {srv, sites, planted})
+
+    verdict(
+      "MUTATION — one `divergent_despite_agreement` row planted in the crosswalk: RE-DRIVEN, " <>
+        "the record's ZERO disagrees",
+      planted_bad != []
+    )
+
+    halt_unless(planted_bad != [])
+  end
+
+  # Every comparison the sweep record makes, in ONE place, returning the
+  # disagreements and the measurements. Both the positive control and all three
+  # mutations call it, so weakening it reddens the positive control rather than
+  # quietly passing the mutations.
+  defp sweep_disagreements(record, {srv, sites, crosswalk}) do
+    mine =
+      srv["declared_unmatched"]
+      |> Enum.filter(&(&1["authored_by"] == @this_ticket))
+      |> Enum.map(&(&1["member"]["register_key"] |> String.split("/") |> hd()))
+      |> Enum.frequencies()
+
+    red =
+      Enum.filter(
+        sites["rows"],
+        &(&1["leg"] == "server" and &1["status_at_accepted_run"] == "FAILURE")
+      )
+
+    divergent =
+      crosswalk["escalations"]["rows"]
+      |> Enum.count(&String.contains?(&1["escalation"] || "", "divergent_despite_agreement"))
+
+    recorded_modules = Map.new(record["per_module"], &{&1["module"], &1["members"]})
+    pop = record["the_red_population_swept_against"]
+
+    pairs = [
+      {"the modules swept and their member counts", recorded_modules, mine},
+      {"red OC rows on the server leg", pop["rows"], length(red)},
+      {"distinct red check names", pop["distinct_names"],
+       length(Enum.uniq(Enum.map(red, & &1["name"])))},
+      {"the red names themselves", pop["names"],
+       Enum.sort(Enum.uniq(Enum.map(red, & &1["name"])))},
+      {"`divergent_despite_agreement` rows in the crosswalk", 0, divergent}
+    ]
+
+    {Enum.reject(pairs, fn {_w, r, m} -> r == m end),
+     %{
+       by_module: mine,
+       red_rows: length(red),
+       red_names: length(Enum.uniq(Enum.map(red, & &1["name"]))),
+       divergent: divergent,
+       pairs: pairs
+     }}
+  end
+
+  # --- legpins: X10 is not unique by id, and the pin address is the pair -----
+  #
+  # MES-117. The generator emits one X10 residual per ASSERTED LEG and
+  # `required_phrases/2` used to address it by `id` alone. With one leg closed
+  # that was indistinguishable from correct; with two it pins BOTH legs' figures
+  # onto ONE leg's sentence. This mode measures the shape rather than arguing it.
+  defp legpins do
+    header("LEG PINS — one X10 per asserted leg, and the pin address is {id, leg} (MES-117)")
+
+    a = read(@crosswalk_out)
+    x10 = Enum.filter(a["residuals"], &(&1["id"] == "X10"))
+
+    IO.puts("    X10 residuals in the committed artefact: #{length(x10)}")
+
+    verdict(
+      "MORE THAN ONE X10 EXISTS — without this the whole mode is vacuous and would pass " <>
+        "over the very defect it is for",
+      length(x10) > 1
+    )
+
+    halt_unless(length(x10) > 1)
+
+    legs = Enum.map(x10, & &1["leg"])
+
+    verdict(
+      "each carries its own `leg` — #{inspect(legs)} — which is what makes {id, leg} an ADDRESS",
+      Enum.all?(legs, &is_binary/1) and length(Enum.uniq(legs)) == length(legs)
+    )
+
+    halt_unless(Enum.all?(legs, &is_binary/1) and length(Enum.uniq(legs)) == length(legs))
+
+    # THE DEFECT, MEASURED. Resolving by id alone yields ONE index for every
+    # leg, so every leg's phrase is required of the FIRST leg's text.
+    by_id = Enum.find_index(a["residuals"], &(&1["id"] == "X10"))
+
+    by_pair =
+      Map.new(legs, fn leg ->
+        {leg, Enum.find_index(a["residuals"], &(&1["id"] == "X10" and &1["leg"] == leg))}
+      end)
+
+    IO.puts("    resolved by `id` alone:  #{inspect(Enum.map(legs, fn _ -> by_id end))}")
+    IO.puts("    resolved by {id, leg}:   #{inspect(Enum.map(legs, &by_pair[&1]))}")
+
+    verdict(
+      "by id alone ALL #{length(legs)} legs resolve to index #{by_id}; by {id, leg} they resolve " <>
+        "to #{length(Enum.uniq(Map.values(by_pair)))} distinct indices",
+      length(Enum.uniq(Map.values(by_pair))) == length(legs)
+    )
+
+    halt_unless(length(Enum.uniq(Map.values(by_pair))) == length(legs))
+
+    # AND THE TWO KINDS OF FAILURE, both shown. Each leg's member figure occurs
+    # in ITS OWN text and NOT in the other's — so on this artefact the id-only
+    # form is a false RED. Where two legs happened to share a figure it would be
+    # a false GREEN instead, and that is the hazard the fix is really for: the
+    # second leg's sentence would be pinned by nothing at all.
+    for r <- x10 do
+      leg = r["leg"]
+      n = Enum.find(a["population"]["files"], &(&1["leg_totality"]["leg"] == leg))
+      members = n["leg_totality"]["members"]
+      phrase = "all #{members} of them"
+      others = Enum.reject(x10, &(&1["leg"] == leg))
+
+      verdict(
+        "#{leg}: #{inspect(phrase)} is in its OWN X10 text and in no other leg's " <>
+          "(so id-only pinning is a false RED here, and a false GREEN wherever two legs agree)",
+        String.contains?(r["text"], phrase) and
+          Enum.all?(others, &(not String.contains?(&1["text"], phrase)))
+      )
+
+      halt_unless(
+        String.contains?(r["text"], phrase) and
+          Enum.all?(others, &(not String.contains?(&1["text"], phrase)))
+      )
+    end
   end
 
   # --- noop: the control that makes every later diff mean something (S8-4) ---
@@ -1914,6 +2173,23 @@ defmodule CrosswalkControls do
     end
   end
 
+  # The server-file analogue of `build_edges/1`. A separate function rather
+  # than a parameter because the two are used side by side and a positional
+  # boolean at the call site would be the kind of thing a reader has to
+  # decode; the mutated file takes the server slot and the other two are the
+  # committed ones.
+  defp build_server_edges(doc) do
+    path = write_tmp("server-edges", doc)
+    out = tmp("mutated-server")
+
+    try do
+      run_crosswalk(out, edges: [@client_edges, path, @edges])
+    after
+      File.rm(path)
+      File.rm(out)
+    end
+  end
+
   defp put_first(doc, edge), do: update_in(doc, ["edges"], fn [_ | t] -> [edge | t] end)
 
   defp replace(doc, old, new),
@@ -2472,14 +2748,27 @@ defmodule CrosswalkControls do
     a = read(out)
     File.rm(out)
 
-    lt = Enum.find(a["population"]["files"], & &1["leg_totality"]["declared"])["leg_totality"]
+    # EVERY asserted leg, not the first one. Until MES-117 exactly one file
+    # declared a leg and `Enum.find/2` was indistinguishable from "the leg";
+    # with the server leg closed there are two, and a control that kept
+    # finding the first would have run the whole mode over the client leg
+    # again while printing greens a reader would take for the server's.
+    legs =
+      a["population"]["files"]
+      |> Enum.map(& &1["leg_totality"])
+      |> Enum.filter(& &1["declared"])
+      |> Map.new(&{&1["leg"], &1})
+
+    lt = Map.fetch!(legs, "client")
 
     IO.puts("  POSITIVE  the unmutated build succeeds at the OS exit status: #{status}")
 
-    IO.puts(
-      "            #{lt["leg"]} leg total at #{lt["members"]} members, " <>
-        "#{length(lt["slices"])} slices, #{lt["cover_not_partition"]["in_more_than_one_slice"]} in two"
-    )
+    Enum.each(legs, fn {leg, l} ->
+      IO.puts(
+        "            #{leg} leg total at #{l["members"]} members, " <>
+          "#{length(l["slices"])} slices, #{l["cover_not_partition"]["in_more_than_one_slice"]} in two"
+      )
+    end)
 
     verdict("the unmutated build exits 0", status == 0)
     halt_unless(status == 0)
@@ -2586,6 +2875,138 @@ defmodule CrosswalkControls do
     )
 
     halt_unless(length(still) == file_members and length(leg_only) != file_members)
+
+    # --- THE SERVER-LEG SEPARATION (MES-117, C1c-iv-a) ----------------------
+    #
+    # The same argument as CG9, on the other leg's selector VOCABULARY, and it
+    # has to be re-made rather than inherited: the client's union is over `cg`
+    # values and `is_null`, the server's is over 21 module-name PREFIXES, and a
+    # mutation that separates one shape says nothing about the other. The
+    # server's separating row is a B2b row on the server leg whose key is in a
+    # TWENTY-SECOND module — no `starts_with` leaf denotes it, so G15a compares
+    # 145 against 145 and passes while G22b compares 146 against 145 and
+    # refuses, naming it.
+    #
+    # THIS MUTATION IS ALSO THE STANDING ARGUMENT FOR THE PREFIX PREDICATE over
+    # an enumeration of `key equals` leaves, and the file says so: a new test
+    # in an EXISTING declared module is caught by G15a, and a new MODULE only
+    # by G22b. Neither alone reaches both, which is why both are kept.
+    srv = read(@server_edges)
+    srv_lt = Map.fetch!(legs, "server")
+
+    m22 = %{
+      "key" =>
+        "MCP.TwentySecondModuleProbeTest/test a server member B2b knows about and no prefix denotes",
+      "leg" => "server",
+      "leg_reason" => "a 22nd-module probe planted by crosswalk_controls.exs totality",
+      "cg" => nil,
+      "cg_basis" => "planted",
+      "tokens" => [],
+      "contradicts_oc" => nil
+    }
+
+    srv_mutated = update_in(src, ["rows"], &(&1 ++ [m22]))
+    srv_sel = srv["the_population_this_file_declares"]["selector"]
+    {:ok, srv_still} = Crosswalk.select(srv_sel, srv_mutated)
+    srv_members = srv_lt["members"]
+
+    IO.puts("\n  22ND MODULE  a server row in a module no `starts_with` leaf names:")
+
+    IO.puts(
+      "       G15a — the file's OWN selector over the mutated anchor: " <>
+        "#{length(srv_still)} denoted vs #{srv_members} rows in the file"
+    )
+
+    verdict(
+      "G15a is GREEN on the mutation — #{srv_members} against #{srv_members}, set-equal both ways",
+      length(srv_still) == srv_members
+    )
+
+    halt_unless(length(srv_still) == srv_members)
+
+    {:ok, srv_leg_only} =
+      Crosswalk.select(
+        %{
+          "source" => @attribution,
+          "rows_at" => "rows",
+          "key_field" => "key",
+          "all_of" => [%{"field" => "leg", "test" => "equals", "value" => "server"}]
+        },
+        srv_mutated
+      )
+
+    IO.puts(
+      "       G22b — `leg equals server` over the same mutated anchor: " <>
+        "#{length(srv_leg_only)} denoted vs #{srv_members} rows in the file"
+    )
+
+    verdict(
+      "G22b's question has a DIFFERENT answer on the same input — " <>
+        "#{length(srv_leg_only)} against #{srv_members}",
+      length(srv_leg_only) == srv_members + 1
+    )
+
+    halt_unless(length(srv_leg_only) == srv_members + 1)
+
+    # ALL THREE FILES ARE RETARGETED, not just the mutated one — and the CG9
+    # case above gets away with retargeting one only by an ORDERING ACCIDENT
+    # worth naming. `selected!/4` refuses a run whose `--attribution` is not
+    # the path the file NAMES, and it is applied per file in the order given.
+    # CG9 mutates the CLIENT file, which is first, so its G22b raises before
+    # the un-retargeted server file is ever validated. Plant on the SERVER leg
+    # and the client file is reached first, its selector still names the
+    # committed anchor, and the run dies on the substitution guard instead —
+    # which is what this control measured on its first run. Retargeting all
+    # three makes the probe independent of file order.
+    srv_attr_path = write_tmp("attribution-m22", srv_mutated)
+    srv_edges_path = write_tmp("edges-m22", retarget(srv, srv_attr_path))
+    cli_edges_path = write_tmp("client-edges-m22", retarget(client, srv_attr_path))
+    base_edges_path = write_tmp("base-edges-m22", retarget(read(@edges), srv_attr_path))
+
+    try do
+      os_refuses(
+        "G22b  a SERVER member B2b has and no edges file carries",
+        ["G22b", "is NOT total over it", m22["key"]],
+        fn out ->
+          os_crosswalk(out,
+            attribution: srv_attr_path,
+            edges: [cli_edges_path, srv_edges_path, base_edges_path]
+          )
+        end
+      )
+    after
+      Enum.each([srv_attr_path, srv_edges_path, cli_edges_path, base_edges_path], &File.rm/1)
+    end
+
+    verdict(
+      "SO G22b IS NOT ENTAILED BY G15a ON THE SERVER LEG EITHER — one input, G15a green and " <>
+        "G22b red, measured in this run over the PREFIX vocabulary and not the client's `cg` one",
+      length(srv_still) == srv_members and length(srv_leg_only) != srv_members
+    )
+
+    halt_unless(length(srv_still) == srv_members and length(srv_leg_only) != srv_members)
+
+    # The COVER limb on the server file, and it is NOT the client's limb run
+    # twice: the server cover's overlap is 2 where the client's is 18, and its
+    # entries are cut by module prefix rather than by `cg`. Dropping C1c-iv-a's
+    # entry leaves its 34 members denoted by no declared slice.
+    refuses(
+      "G22a  the SERVER cover with C1c-iv-a's slice dropped — 34 members under no declared rule",
+      "G22a — the UNION of",
+      fn ->
+        build_server_edges(
+          update_in(srv, ["the_sub_populations_this_file_records", "entries"], fn es ->
+            Enum.reject(es, &String.contains?(&1["ticket"], "C1c-iv-a"))
+          end)
+        )
+      end
+    )
+
+    refuses(
+      "G22  the SERVER leg declared with its sub-populations removed — half a claim is refused",
+      "half-declares a leg totality",
+      fn -> build_server_edges(Map.delete(srv, "the_sub_populations_this_file_records")) end
+    )
 
     # --- the cover ----------------------------------------------------------
     refuses(

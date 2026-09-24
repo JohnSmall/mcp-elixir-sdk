@@ -1932,6 +1932,22 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       "residuals.[#{Enum.find_index(artefact["residuals"], &(&1["id"] == id))}].text"
     end
 
+    # X10 IS NOT UNIQUE BY ID, and `at/1` cannot address it. One X10 is emitted
+    # per ASSERTED LEG, so the moment a second leg closes there are two rows
+    # carrying that id and `Enum.find_index/2` returns the first for both —
+    # pinning BOTH legs' phrases onto ONE leg's sentence. Measured at MES-117,
+    # the run that closed the server leg: the server's `all 145 of them` was
+    # required of the CLIENT's X10 text and the build refused a correct
+    # artefact. The false RED is the harmless half. The hazard is the other
+    # one: where two legs happen to share a member count and an overlap, both
+    # pins pass against the first row and the second leg's sentence is pinned
+    # by NOTHING — a figure free to be wrong with nothing comparing it. So the
+    # address is the pair, and `leg` is carried on the row for the purpose.
+    at_leg = fn id, leg ->
+      i = Enum.find_index(artefact["residuals"], &(&1["id"] == id and &1["leg"] == leg))
+      "residuals.[#{i}].text"
+    end
+
     [
       {"trust_status",
        "#{f.declared_members}-member / #{f.declared_checks}-declared-check slice"},
@@ -1939,7 +1955,7 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       {at.("X9"), "#{f.claim_level_unmatched} of them"},
       {"buckets.bucket_1.universe", "the #{f.declared_members} declared members"},
       {"population.state_4_guard", "these #{f.declared_members} members"}
-    ] ++ bucket_2_phrase(at, f) ++ leg_phrase(at, f)
+    ] ++ bucket_2_phrase(at, f) ++ leg_phrase(at_leg, f)
   end
 
   # Pinned only where a leg was ASSERTED, for the same reason bucket 2's pin is
@@ -1948,15 +1964,15 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
   # `at.("X10")` would resolve to a path that is not there — and an absent
   # statement IS a missing phrase, which would fire the pin over a run that was
   # right. The condition is what keeps the pin honest, not what weakens it.
-  defp leg_phrase(_at, %{legs_asserted_total: 0}), do: []
+  defp leg_phrase(_at_leg, %{legs_asserted_total: 0}), do: []
 
-  defp leg_phrase(at, f) do
+  defp leg_phrase(at_leg, f) do
     overlaps = Map.new(f.leg_overlap)
 
     Enum.flat_map(f.leg_members, fn {leg, n} ->
       [
-        {at.("X10"), "all #{n} of them"},
-        {at.("X10"), "#{Map.fetch!(overlaps, leg)} members sit in two"}
+        {at_leg.("X10", leg), "all #{n} of them"},
+        {at_leg.("X10", leg), "#{Map.fetch!(overlaps, leg)} members sit in two"}
       ]
     end)
   end
@@ -2162,6 +2178,7 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     Enum.map(f.leg_members, fn {leg, n} ->
       %{
         "id" => "X10",
+        "leg" => leg,
         "text" =>
           "THE #{String.upcase(leg)} LEG IS CLOSED, BY REFUSAL AND NOT BY ASSERTION. Every " <>
             "ET-CC member B2b puts on the #{leg} leg carries a row here — all #{n} of them — " <>
