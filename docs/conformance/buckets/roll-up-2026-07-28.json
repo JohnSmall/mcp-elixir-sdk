@@ -11,7 +11,7 @@
     },
     {
       "bucket": "1",
-      "count": 112,
+      "count": 135,
       "derivation": "projection",
       "emptiness_code": null,
       "empty": false,
@@ -20,7 +20,7 @@
     },
     {
       "bucket": "2a",
-      "count": 75,
+      "count": 74,
       "derivation": "projection",
       "emptiness_code": null,
       "empty": false,
@@ -65,7 +65,7 @@
     },
     {
       "bucket": "5a",
-      "count": 49,
+      "count": 58,
       "derivation": "projection",
       "emptiness_code": null,
       "empty": false,
@@ -105,7 +105,7 @@
       "holds": true,
       "measure": "The arithmetic is the VISIBLE half. The evidence is the set comparison in `partition`, both directions with the negatives enumerated — two counts agreeing is not two sets agreeing.",
       "of": "the crosswalk's `cells`",
-      "sum": 136,
+      "sum": 145,
       "terms": [
         {
           "count": 0,
@@ -120,7 +120,7 @@
           "term": "4b"
         },
         {
-          "count": 49,
+          "count": 58,
           "term": "5a"
         },
         {
@@ -136,25 +136,25 @@
           "term": "escalated"
         }
       ],
-      "total": 136,
+      "total": 145,
       "universe": "edges"
     },
     {
       "holds": true,
       "measure": "The arithmetic is the VISIBLE half. The evidence is the set comparison in `partition`, both directions with the negatives enumerated — two counts agreeing is not two sets agreeing.",
-      "of": "the 188 declared ET-CC members, never all 281 members",
-      "sum": 188,
+      "of": "the 219 declared ET-CC members, never all 281 members",
+      "sum": 219,
       "terms": [
         {
-          "count": 112,
+          "count": 135,
           "term": "1"
         },
         {
-          "count": 76,
+          "count": 84,
           "term": "members_with_edges"
         }
       ],
-      "total": 188,
+      "total": 219,
       "universe": "declared_members"
     },
     {
@@ -164,7 +164,7 @@
       "sum": 161,
       "terms": [
         {
-          "count": 75,
+          "count": 74,
           "term": "2a"
         },
         {
@@ -172,7 +172,7 @@
           "term": "2b"
         },
         {
-          "count": 72,
+          "count": 73,
           "term": "checks_with_edges"
         }
       ],
@@ -628,7 +628,7 @@
     },
     "who_proves_it": "E2 (the epic's exit) PROVES the partition. This ticket establishes it MECHANICALLY and reports the comparison; the distinction is deliberate and E2's result is not claimed here."
   },
-  "population_banner": "POPULATION: this projection covers 188 declared ET-CC members and 161\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 93 members and\n12 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "population_banner": "POPULATION: this projection covers 219 declared ET-CC members and 161\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 62 members and\n12 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
   "projected_from": {
     "bucket_zero": {
       "bytes": 176409,
@@ -636,15 +636,15 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 731056,
+      "bytes": 839754,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "f5186f75a75d5eb96265c848dc3cb9a65e183efff4d43d78c52b796ab7f98911"
+      "sha256": "30a7a2dd43ada26e6d214e7545e8c5b4170f551909f961b45efa1bc28a471469"
     }
   },
   "residuals": [
     {
       "id": "C2-R1",
-      "text": "POPULATION: this projection covers 188 declared ET-CC members and 161 declared in-population OC checks. That is the slice adjudicated so far, and it is NOT the whole conformance picture: the full comparison is 281 ET-CC members and 173 in-denominator OC checks, of which 93 members and 12 checks are not_yet_adjudicated -- a third state, distinct from bucket 1 -- owned by the tickets the crosswalk's own `outside_the_population` block names. A further 0 checks carry an edge without being declared by any file, so they are counted in neither.  A count of zero in this view means zero WITHIN THAT SLICE. It does not mean zero in the suite. As the declared population grows this projection re-runs and fills.  EVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected; none is written here. The [population_statement] guard refuses a population figure that is not."
+      "text": "POPULATION: this projection covers 219 declared ET-CC members and 161 declared in-population OC checks. That is the slice adjudicated so far, and it is NOT the whole conformance picture: the full comparison is 281 ET-CC members and 173 in-denominator OC checks, of which 62 members and 12 checks are not_yet_adjudicated -- a third state, distinct from bucket 1 -- owned by the tickets the crosswalk's own `outside_the_population` block names. A further 0 checks carry an edge without being declared by any file, so they are counted in neither.  A count of zero in this view means zero WITHIN THAT SLICE. It does not mean zero in the suite. As the declared population grows this projection re-runs and fills.  EVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected; none is written here. The [population_statement] guard refuses a population figure that is not."
     },
     {
       "id": "C2-R2",

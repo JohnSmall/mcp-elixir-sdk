@@ -68,6 +68,7 @@ defmodule CrosswalkControls do
     "MCP.Protocol.Types.ToolTest/",
     "MCP.Server.CapabilityHonestyTest/",
     "MCP.Server.DispatchTest/",
+    "MCP.Server.JsonSchema202012Test/",
     "MCP.Server.NotificationCollectorTest/",
     "MCP.Server.SubscriptionsDispatchTest/",
     "MCP.Server.ToolOrderTest/",
@@ -838,7 +839,11 @@ defmodule CrosswalkControls do
       # `select/2` takes — the point of every entry in this list.
       #
       # MES-116 (C1c-iii) took the module list from NINE to THIRTEEN and made it
-      # HAND-WRITTEN here. It used to be read out of the file's own selector by
+      # HAND-WRITTEN here; MES-119 (C1c-iii-b) took it to FOURTEEN with
+      # `MCP.Server.JsonSchema202012Test/`, the leg's largest module at 31
+      # members, and the pin below is what made that a RED here rather than a
+      # quieter green — the control failed on the module before the file's
+      # figures were touched. It used to be read out of the file's own selector by
       # `server_modules/1`, which meant the route differed but the LIST did not:
       # a module added to the file arrived in the expectation with it, so the
       # entry could not notice a wrongly-widened member population. That is the

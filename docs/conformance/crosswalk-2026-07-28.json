@@ -1,22 +1,22 @@
 {
   "absence_search_guard": {
-    "distinct_searches_those_rows_name": 43,
-    "entries": 43,
-    "leg_wide_limb": "G23a ran over ALL 112 declared-unmatched rows in this run, with no exception list, and requires a non-empty `the_search_that_found_none` on each.",
+    "distinct_searches_those_rows_name": 46,
+    "entries": 46,
+    "leg_wide_limb": "G23a ran over ALL 135 declared-unmatched rows in this run, with no exception list, and requires a non-empty `the_search_that_found_none` on each.",
     "registry_limb_reach": "G23b/c/d reach the rows carrying a `search_id`. The rows without one carry a PROSE search that was run and recorded but not registered in a re-runnable form; back-filling a registry entry for a search this run did not re-measure would be inventing the measurement, which is the defect the field exists to prevent. Stated as a bound, not papered over.",
-    "rows_checked": 112,
-    "rows_naming_a_registered_search": 86,
+    "rows_checked": 135,
+    "rows_naming_a_registered_search": 109,
     "what_a_green_here_is_not": "Evidence that any search was well-chosen. G23 checks that a search is NAMED, RUNNABLE and REACHED its population. Whether the population was the right one to look in, and whether the member's claim is really what the search looked for, are judgements — they are carried on the row in `why_this_search_is_this_claims_search` so a reader can disagree with them, and no refusal can reach them."
   },
   "arithmetic": {
-    "bucketed": 122,
-    "edges": 136,
+    "bucketed": 131,
+    "edges": 145,
     "equation": "edges = bucketed + escalated",
     "escalated": 14,
-    "members": 188,
-    "members_declared_unmatched": 112,
+    "members": 219,
+    "members_declared_unmatched": 135,
     "members_equation": "population members = members with >=1 edge + members declared unmatched",
-    "members_with_edges": 76
+    "members_with_edges": 84
   },
   "axis_provenance": {
     "axes_checked": 312,
@@ -40,7 +40,7 @@
       "owner": "A5 = MES-70, docs/conformance/bucket-0-2026-07-28.json"
     },
     "bucket_1": {
-      "count": 112,
+      "count": 135,
       "members": [
         "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
         "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
@@ -99,6 +99,29 @@
         "MCP.Protocol.Types.ToolTest/test outputSchema is carried verbatim, and false is not an absence an absent outputSchema is still absent",
         "MCP.ProtocolTest/test decode/1 decodes a success response",
         "MCP.ProtocolTest/test decode/1 decodes an error response",
+        "MCP.Server.JsonSchema202012Test/test C-2 — SEP-2106's TextContent fallback is noticed, not injected the content list is never modified — the SDK notices, it does not inject",
+        "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a camelCase key is named, and the call still succeeds",
+        "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a non-boolean :is_error is named, and no isError reaches the wire",
+        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value a present nil key emits JSON null — null is not absent",
+        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value an absent key omits the field entirely — absent is not null",
+        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value array survives to the wire",
+        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty array survives to the wire",
+        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty object survives to the wire",
+        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty string survives to the wire",
+        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value false survives to the wire",
+        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value float survives to the wire",
+        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value null survives to the wire",
+        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value object survives to the wire",
+        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value string survives to the wire",
+        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value true survives to the wire",
+        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value zero survives to the wire",
+        "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list an explicit non-default dialect is carried, not coerced or refused",
+        "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list composition keywords survive: allOf, anyOf",
+        "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list conditional keywords survive: if, then, else",
+        "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list reference keywords survive: $schema, $defs, $anchor, $ref",
+        "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list the whole fixture arrives intact — decoded-map equality, not bytes",
+        "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list validation keywords survive: enum, const, additionalProperties",
+        "MCP.Server.JsonSchema202012Test/test arguments reach the handler unchanged — nothing is coerced, defaulted or expanded",
         "MCP.Server.NotificationCollectorTest/test drain returns pushed notifications as wire maps, in emission order (G3)",
         "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) an absent notifications object is -32602, not a silently empty stream",
         "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) notifications is required; {} is legal and means subscribe to nothing",
@@ -156,7 +179,7 @@
         "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the response carries the SSE headers the spec SHOULDs"
       ],
       "rule": "an ET-CC member of the declared population with NO edge — A3 §6 state 3",
-      "universe": "the 188 declared members, never all 281"
+      "universe": "the 219 declared members, never all 281"
     },
     "bucket_2": {
       "checks": [
@@ -242,7 +265,6 @@
         "oc:server/server-stateless/sep-2575-server-sends-prompts-list-changed-on-subscription/ServerSendsPromptsListChangedOnSubscription",
         "oc:server/server-stateless/sep-2575-server-sends-tools-list-changed-on-subscription/ServerSendsToolsListChangedOnSubscription",
         "oc:server/tools-call-audio/wire-schema-valid/WireSchemaValid",
-        "oc:server/tools-call-error/tools-call-error/ToolsCallError",
         "oc:server/tools-call-error/wire-schema-valid/WireSchemaValid",
         "oc:server/tools-call-mixed-content/wire-schema-valid/WireSchemaValid",
         "oc:server/tools-call-with-progress/tools-call-with-progress/ToolsCallWithProgress",
@@ -250,14 +272,14 @@
         "oc:server/tools-list/tools-name-format/ToolsNameFormat",
         "oc:server/tools-list/wire-schema-valid/WireSchemaValid"
       ],
-      "count": 89,
+      "count": 88,
       "declared": true,
-      "result": "89 of the 161 declared checks carry no edge from any ET-CC member of the declared member population",
+      "result": "88 of the 161 declared checks carry no edge from any ET-CC member of the declared member population",
       "rule": "a check in a DECLARED check population that carries no edge",
       "universe": "the 161 declared checks, never all 173",
       "why_not_the_rest_of_the_173": "The in-denominator checks outside every declared check population are NOT bucket 2. Bucket 2 is 'we adjudicated and found no ET counterpart'; those were not adjudicated."
     },
-    "bucket_5_partial_sub_count": 36,
+    "bucket_5_partial_sub_count": 44,
     "empty_by_construction": {
       "bucket_3": "green OC / red ET — 0",
       "bucket_6": "red in both — 0",
@@ -267,7 +289,7 @@
     "from_edges": {
       "4a": 5,
       "4b": 6,
-      "5": 111
+      "5": 120
     }
   },
   "cells": [
@@ -5697,6 +5719,413 @@
     {
       "axes": [
         {
+          "axis": "the_error_result_sets_is_error_true",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_error_result_carries_text_in_its_first_content_block",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a handler's extras map carrying a true is_error puts isError on the wire as true, and a false one puts no isError there at all",
+      "escalation": null,
+      "evidence": "json_schema_2020_12_test.exs:237 — `assert call(\"structured\", %{\"isError\" => true, \"content\" => []})[\"isError\"] == true` — and json_schema_2020_12_test.exs:238 — `refute Map.has_key?(call(\"structured\", %{\"isError\" => false, \"content\" => []}), \"isError\")`. The first assertion is exactly the check's isError axis: that axis is an IDENTITY test against boolean true rather than a truthiness test, so a truthy non-boolean does not satisfy it, and an equality assertion against true is the same predicate. The second axis is about the error result's FIRST content block carrying a non-empty text field — the failure being DESCRIBED and not merely flagged — and this unit asserts nothing about content at all. Its result's content array is empty, but it is empty BY CONSTRUCTION: the tool is driven with an empty content list on the same line, so the handler returns exactly what the unit handed it. The axis quantifies over the content of a result from a tool that described its failure; this unit's subject is the isError flag's round trip. Silent by the GRAIN of the claim, not by a reading of it.",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value the extras map also carries isError, and false does not become absent",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value the extras map also carries isError, and false does not become absent"
+      },
+      "note": "THE SECOND ASSERTION IS SHARPER THAN THE AXIS AND THE SUITE HAS NO PLACE FOR IT. json_schema_2020_12_test.exs:238 pins that a FALSE is_error does not become an ABSENT isError — the absent-versus-false distinction SEP-2106 makes on the output side. `ToolsCallError` has no axis about a NON-error result at all: its whole subject is a tool that reported one. So the refute is covered by no axis of this check and by no other check in the declared population, and NO REGISTERED SEARCH CARRIES IT, and that is stated rather than borrowed: SRV24's subject is `outputSchema` and `structuredContent`, not `isError`, so this refute is not one of the thirteen zeros that entry records. It is recorded on this edge because the member is edge-bearing and therefore cannot appear in `declared_unmatched` at all — the same placement the W-4 member's claim gets, and the same residual, named in `the_w4_claim_and_the_registry_no_claim_level_row_can_reach`. The F-10 legacy-boolean edge makes the identical observation from the other slot-3 shape and points here rather than repeating it.",
+      "oc_key": [
+        "server",
+        "tools-call-error",
+        "tools-call-error",
+        "ToolsCallError",
+        "Tool returns error correctly",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-error/tools-call-error/ToolsCallError",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "content_is_a_json_array",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "content_is_not_empty",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "a_content_block_has_type_text",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_text_block_carries_a_text_field",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a handler returning the bare pre-SEP-2106 content list still puts exactly that list on the wire",
+      "escalation": null,
+      "evidence": "json_schema_2020_12_test.exs:243 — `assert call(\"plain\", %{})[\"content\"] == [%{\"type\" => \"text\", \"text\" => \"ok\"}]`. ONE equality against a literal one-block array covers all five axes of this check, and each for its own reason rather than by a single wave: the result carries a content member and that member is a JSON array, because an equality against a list cannot hold if the member is absent or is not a list; the array is not empty, because the literal has one element; that element carries the discriminator spelled lower-case on the wire, which is the WIRE spelling the axis names; and its text field is the non-empty string in the same literal. The handler under it is the pre-SEP-2106 clause of `MCP.Test.SchemaHandler`, which returns a bare content list and no extras map — so the agreement is about the SDK's UNCHANGED path rather than about the structured-content one this module is named for.",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value the pre-SEP-2106 return shapes still work unchanged",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value the pre-SEP-2106 return shapes still work unchanged"
+      },
+      "note": "THE ONLY FULL-AGREEMENT EDGE THIS SLICE ADDS, and it comes from the one member of the W-1 describe block whose subject is BACKWARD COMPATIBILITY rather than from any of the thirteen whose subject is the new field. That is the result worth recording: the official suite scores the shape SEP-2106 left alone and scores nothing about the shape it added. This member also asserts at json_schema_2020_12_test.exs:244 that no structuredContent key appears on that response; that half reaches no axis of this check and no check in the declared population, and it is SRV24's zero rather than a fourteenth home for it.",
+      "oc_key": [
+        "server",
+        "tools-call-simple-text",
+        "tools-call-simple-text",
+        "ToolsCallSimpleText",
+        "Tool returns simple text content",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_error_result_sets_is_error_true",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_error_result_carries_text_in_its_first_content_block",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a handler returning the pre-SEP-2106 error shape still puts isError true on the wire",
+      "escalation": null,
+      "evidence": "json_schema_2020_12_test.exs:245 — `assert call(\"plain_error\", %{})[\"isError\"] == true`. The handler clause behind `plain_error` returns the legacy four-tuple whose third element is the boolean true, and the assertion is an identity test against true, which is what this check's isError axis requires. This result DOES carry a described failure — its content is a one-block text array — but the unit does not assert it, so the description axis is silent on the unit's choice of assertions rather than on the data. That is the same silence json_schema_2020_12_test.exs:243 does NOT have for the non-error sibling, which is why the two claims of this member are two edges and not one.",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value the pre-SEP-2106 return shapes still work unchanged",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value the pre-SEP-2106 return shapes still work unchanged"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "tools-call-error",
+        "tools-call-error",
+        "ToolsCallError",
+        "Tool returns error correctly",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-error/tools-call-error/ToolsCallError",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_is_a_json_array",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_is_not_empty",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "a_content_block_has_type_text",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_text_block_carries_a_text_field",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a tools/call on the tool whose inputSchema $refs a network URI returns a result whose content array is not empty",
+      "escalation": null,
+      "evidence": "json_schema_2020_12_test.exs:184 — `assert resp[\"result\"][\"content\"] != []` — over the response to a real tools/call, beside json_schema_2020_12_test.exs:183 — `refute Map.has_key?(resp, \"error\")`. The agreement is exact rather than approximate: the axis fails exactly when the content member is present and its array is empty, and this assertion fails exactly when the content member is the empty array. Same predicate, same polarity. The four silences are the other side of the same precision. An inequality against the empty list is satisfied by an ABSENT content member as well as by a non-empty one, so it establishes nothing about presence and nothing about the member being a JSON array; and the unit never reads a block's type or its text field, so the two type-text axes have nothing of this unit's to be about.",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-4 — no $ref is ever dereferenced: a canary listener is never connected to",
+        "test": "test W-4 — no $ref is ever dereferenced: a canary listener is never connected to"
+      },
+      "note": "WHY THIS MEMBER CARRIES AN EDGE AT ALL, AND THE READING A REVIEWER MAY WANT TO CONTEST. The unit's own comment at json_schema_2020_12_test.exs:180-182 says these two lines exist so that the canary measures a non-dereference rather than a short-circuit: the author's MOTIVE is `the handler ran`, and `the content array is not empty` is the proxy chosen for it. `how_a_silent_axis_was_decided` is a rule about the ASSERTION's subject and not about the author's motive, and this assertion's predicate IS the axis's predicate — so filing the member as bucket 1 to keep its subject-claim inside the search registry would credit the suite with LESS coverage than it has, which is the error FINDING 1 was ratified against. THE COST IS STATED RATHER THAN ABSORBED. A member carrying an edge cannot also sit in `declared_unmatched` (one member, one home), so this member's SEP-2106 MUST NOT claim goes to `claims_without_an_edge`, where no registry entry and no control re-runs its zero. That residual is named in `the_w4_claim_and_the_registry_no_claim_level_row_can_reach`, not left to be noticed.",
+      "oc_key": [
+        "server",
+        "tools-call-simple-text",
+        "tools-call-simple-text",
+        "ToolsCallSimpleText",
+        "Tool returns simple text content",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_error_result_sets_is_error_true",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_error_result_carries_text_in_its_first_content_block",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "an extras STRUCT carrying a true is_error field puts isError true on the wire, exactly as a plain extras map would",
+      "escalation": null,
+      "evidence": "json_schema_2020_12_test.exs:387 — `assert result[\"isError\"] == true` — over the result of a tools/call whose slot 3 is the struct built at json_schema_2020_12_test.exs:382 — `extras = %ExtrasStruct{structured_content: [1, 2], is_error: true}`. An identity test against true, which is this check's isError axis. What makes the edge worth having rather than a duplicate of the plain-map one is the ROUTE: a struct IS a map, so dispatch reads the two fields off it, and this unit is the one that pins the read actually reaching the wire. The second axis is about the error result's FIRST content block carrying a non-empty text field — the failure being DESCRIBED and not merely flagged — and this unit asserts nothing about content at all. Its result's content array is empty, but it is empty BY CONSTRUCTION: the tool is driven with an empty content list on the same line, so the handler returns exactly what the unit handed it. The axis quantifies over the content of a result from a tool that described its failure; this unit's subject is the isError flag's round trip. Silent by the GRAIN of the claim, not by a reading of it.",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test F-9 — the struct warning describes what the code did, not the opposite a struct that DOES carry the fields has them read, and the warning says so",
+        "test": "test F-9 — the struct warning describes what the code did, not the opposite a struct that DOES carry the fields has them read, and the warning says so"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "tools-call-error",
+        "tools-call-error",
+        "ToolsCallError",
+        "Tool returns error correctly",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-error/tools-call-error/ToolsCallError",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_error_result_sets_is_error_true",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_error_result_carries_text_in_its_first_content_block",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "an extras struct carrying a true is_error beside a nil structured_content still puts isError true on the wire",
+      "escalation": null,
+      "evidence": "json_schema_2020_12_test.exs:410 — `assert result[\"isError\"] == true` — over the struct built at json_schema_2020_12_test.exs:401 — `extras = %ExtrasStruct{structured_content: nil, is_error: true}`. The same identity test as its sibling and NOT the same observation: the sibling's struct carries both fields set, this one carries a nil alongside, and the claim is that the nil neighbour does not cost the isError its place. The second axis is about the error result's FIRST content block carrying a non-empty text field — the failure being DESCRIBED and not merely flagged — and this unit asserts nothing about content at all. Its result's content array is empty, but it is empty BY CONSTRUCTION: the tool is driven with an empty content list on the same line, so the handler returns exactly what the unit handed it. The axis quantifies over the content of a result from a tool that described its failure; this unit's subject is the isError flag's round trip. Silent by the GRAIN of the claim, not by a reading of it.",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test F-9 — the struct warning describes what the code did, not the opposite a struct carrying one of the two fields names that one, and only that one",
+        "test": "test F-9 — the struct warning describes what the code did, not the opposite a struct carrying one of the two fields names that one, and only that one"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "tools-call-error",
+        "tools-call-error",
+        "ToolsCallError",
+        "Tool returns error correctly",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-error/tools-call-error/ToolsCallError",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_error_result_sets_is_error_true",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_error_result_carries_text_in_its_first_content_block",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "the pre-SEP-2106 boolean slot 3 still puts isError true on the wire when it is true",
+      "escalation": null,
+      "evidence": "json_schema_2020_12_test.exs:447 — `assert errored[\"isError\"] == true` — where the result comes from json_schema_2020_12_test.exs:444 — `{errored, error_log} = with_log(fn -> call(\"raw_extras\", %{\"extras\" => true}) end)`, a slot 3 that is the bare boolean rather than a map. An identity test against true, which is this check's isError axis. The second axis is about the error result's FIRST content block carrying a non-empty text field — the failure being DESCRIBED and not merely flagged — and this unit asserts nothing about content at all. Its result's content array is empty, but it is empty BY CONSTRUCTION: the tool is driven with an empty content list on the same line, so the handler returns exactly what the unit handed it. The axis quantifies over the content of a result from a tool that described its failure; this unit's subject is the isError flag's round trip. Silent by the GRAIN of the claim, not by a reading of it.",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named the legacy boolean slot 3 still works, in both directions, and warns about nothing",
+        "test": "test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named the legacy boolean slot 3 still works, in both directions, and warns about nothing"
+      },
+      "note": "THE OTHER DIRECTION OF THIS MEMBER REACHES NO AXIS, AND THAT IS THE COVERAGE RESULT. json_schema_2020_12_test.exs:449 pins that a FALSE boolean slot 3 leaves NO isError on the wire. `ToolsCallError` scores only the error case, and no check in the declared population asks what a successful result must NOT carry, so the false half is unmatched. It is the same absent-versus-false fact the extras-map member records at json_schema_2020_12_test.exs:238 and it is not given a second home here.",
+      "oc_key": [
+        "server",
+        "tools-call-error",
+        "tools-call-error",
+        "ToolsCallError",
+        "Tool returns error correctly",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-error/tools-call-error/ToolsCallError",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_response_carries_a_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_carries_a_result_type_field_at_all",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_type_is_input_required",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a COMPLETED tools/call result carries a resultType marker, and its value is `complete`",
+      "escalation": null,
+      "evidence": "json_schema_2020_12_test.exs:340 — `assert result[\"resultType\"] == \"complete\"` — over the result of the tools/call driven at json_schema_2020_12_test.exs:331 — `{result, log} = with_log(fn -> call(\"raw_extras\", %{\"extras\" => %URI{}}) end)`. The test's call helper returns the response's result member, so an error response yields nil and an equality against a string could not hold — which is why the no-error and result-present axes are the SAME observation read at a coarser grain rather than an inference, the reading C1c-ii's two edges on this check already use. The presence axis is the one this edge is really about: it is an IN test on the key, present whatever the value, and an equality assertion against a value cannot hold unless the key is there. THE VALUE AXIS IS SILENT AND THE TWO ANTECEDENTS ARE WHY. The axis requires the resultType of an INPUT-REQUIRED response to be the input_required marker; this unit's response is a COMPLETED tools/call and carries the complete marker, so the axis's antecedent does not hold of it and the axis is not about this case. A reader who reads the axis as unconditional would call it a contradiction, and the difference is stated here so that they can.",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a struct in slot 3 is named by its module, and nothing is raised",
+        "test": "test R-3 — an unusable extras map is named in a warning, and never raises a struct in slot 3 is named by its module, and nothing is raised"
+      },
+      "note": "THE COVERAGE RESULT BEHIND THIS EDGE IS BIGGER THAN THE EDGE. SEP-2322 puts resultType on EVERY result — `dispatch.ex:489-490` says so in terms and puts the complete marker on every one — and the official suite scores the field only inside the input-required family, on the input-required path. This unit and its F-10 sibling are the only members in the declared population that pin resultType on a COMPLETE result, and they do it incidentally, while measuring something else. Recorded once in `the_result_type_marker_the_suite_scores_on_one_path_only`.",
+      "oc_key": [
+        "server",
+        "input-required-result-result-type",
+        "sep-2322-result-type-included",
+        "ResultTypeIncluded",
+        "Server includes resultType field in InputRequiredResult response",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_response_carries_a_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_carries_a_result_type_field_at_all",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_type_is_input_required",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a completed tools/call result carries a resultType marker even when its slot 3 was dropped as unusable",
+      "escalation": null,
+      "evidence": "json_schema_2020_12_test.exs:436 — `assert result[\"resultType\"] == \"complete\"` — asserted once per shape inside the loop at json_schema_2020_12_test.exs:425 — `for extras <- [[structured_content: %{\"a\" => 1}], [], :structured_content, \"true\"] do`, so the claim is made of four slot-3 shapes and not of one. The three agreements are the same reading its R-3 sibling carries: an equality against a string cannot hold over an error response or an absent result, and it cannot hold unless the key the presence axis tests for is there. The value axis is silent for the same reason — a completed result is not the input-required response that axis quantifies over.",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named a keyword list, an empty list, an atom and a string are each named",
+        "test": "test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named a keyword list, an empty list, an atom and a string are each named"
+      },
+      "note": "THIS MEMBER ALSO ASSERTS THAT THE CONTENT ARRAY IS EMPTY, at json_schema_2020_12_test.exs:435, and that assertion is SILENT on `ToolsCallSimpleText` rather than contradicting it. The antecedents differ and both are visible in the source: the unit drives a handler that was handed no content, so the empty array is forced by the construction and what is being pinned is that an unusable slot 3 does not disturb it; the axis quantifies over the content of a result from a tool that RETURNED content. The reasoning is the one PM-ratified for the whole `content == []` family on MES-119 and it is written out in `the_empty_content_assertions_and_why_every_one_of_them_is_silent`.",
+      "oc_key": [
+        "server",
+        "input-required-result-result-type",
+        "sep-2322-result-type-included",
+        "ResultTypeIncluded",
+        "Server includes resultType field in InputRequiredResult response",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
           "axis": "tools_call_was_made",
           "verdict": "agrees"
         },
@@ -5742,26 +6171,26 @@
   ],
   "citation_verbatim_guard": {
     "defects": [],
-    "distinct_windows_that_placed_a_quote": 163,
+    "distinct_windows_that_placed_a_quote": 179,
     "guard": "G30",
     "limbs": [
       "windowing",
       "contiguity"
     ],
-    "quotes_compared": 271,
-    "quotes_counted": 271,
+    "quotes_compared": 287,
+    "quotes_counted": 287,
     "quotes_placed_by_window_kind": {
-      "et": 218,
+      "et": 234,
       "oc": 53
     },
     "reach": "`quotes_compared` equals `quotes_counted`, and that attests exactly one thing: NO QUOTE FAILED TO PLACE. It is NOT an independent recount, and by itself it is not evidence of reach. Both figures come out of ONE traversal in `audit/3` — `quotes_counted` is the length of the quote list that traversal built and `quotes_compared` counts the members of that same list which matched — so the equality is another spelling of `no quote-level defect`, and a sweep that read NOTHING satisfies it at 0 == 0, as does one reading a field that does not exist. What bears on reach here is the MAGNITUDE and never the equality: `quotes_compared` quotes placed, over `records_with_evidence` records, over `records_visited` visited. The independent recount — the span regex walked a SECOND time over the same records by code that is not `audit/3` — and the `counted > 0` that stops an empty population passing both live in `conformance/controls/citation_verbatim_controls.exs`, not in this artefact. The record population is every top-level list of objects in each edges file, so a collection a later ticket adds is inside the guard without being named here.",
-    "records_visited": 296,
-    "records_with_evidence": 136,
+    "records_visited": 332,
+    "records_with_evidence": 145,
     "what_it_does_not_establish": "That a quote SUPPORTS the verdict it is filed under — that is a judgement and A3 §7's residual, and no refusal reaches it. That a backticked PROSE phrase is accurate: only source-shaped spans are compared, so an inaccurate paraphrase in backticks passes, and the ruling's remedy is to de-quote prose rather than to widen the shape test until English fails it. That a quoted byte-string in a field OTHER than `evidence` is verbatim — the gap between `records_visited` and `records_with_evidence` is exactly that population, reported rather than implied.",
     "what_was_checked": "Every SOURCE-SHAPED backtick span in `evidence` — one carrying `=`, `(`, `[`, `!==` or `===` — occurs VERBATIM and CONTIGUOUS, modulo runs of whitespace, inside a window the evidence itself ADDRESSES: the cited `file.exs:N[-M]` span in the repo, or a byte span the axis row for this edge's tag names in the harness build. Two limbs: WINDOWING (the comparison is against the cited span, never the whole artefact) catches a right-bytes/wrong-line citation; CONTIGUITY (one squashed string, substring containment) catches a quote spliced from lines that are real and non-adjacent. A bare `:N` continuation is refused as a FORM — it has no syntactic referent and resolving it by proximity is guessing. An elision inside a source-shaped span is refused rather than fragment-matched, because matching `A … B`'s halves green-lights a quote whose parts sit arbitrarily far apart, which is the composed-quote hole this guard exists to close."
   },
   "claim_level_unmatched": {
-    "count": 5,
+    "count": 6,
     "routed_to": "the PM, per case — match-relation.md §7. Whether A3 §6 should gain a claim-level state 3 is a ruling, not an adjudication an edges file can make.",
     "rows": [
       {
@@ -5828,6 +6257,21 @@
         "owner": "unowned — and the search was run over ALL 175, not only the declared 107, so this is not a deferral to a later C1c slice.",
         "the_search_that_found_none": "All 36 checks of the `input-required-result-*` family were read: not one scores WHOSE request a retry is. The family's checks take the SHAPE of the MRTR exchange as their subject — resultType, inputRequests, requestState, completion, tampering, extra keys — and every one of them runs as a single anonymous client. `RejectTamperedState` is the nearest and is about INTEGRITY of the token, not about the principal the retry arrives under: a correctly-signed token replayed by a different caller passes it. Widened to all 175 with the pattern `(?i)\\bidentity\\b|\\bprincipal\\b|authenticat|impersonat` — 0 hits, over a population whose positive controls (`(?i)server` 119, `(?i)error` 18, `(?i)MUST` 32) show the sweep reached it.",
         "why_it_is_recorded_here_and_not_in_bucket_1": "The member DOES carry edges — five of them — so it is not A3 §6 state 3 whole, and bucket 1 would hide it from the member equation. A3 §6's state 3 is a property of a MEMBER and there is no bucket for a claim, so none is invented."
+      },
+      {
+        "authored_by": "MES-119 (C1c-iii-b)",
+        "claim": "a $ref in a tool inputSchema that resolves to a network URI is never dereferenced by this SERVER — measured against a live TCP listener the test owns, on both the tools/list and the tools/call paths, and required to time out",
+        "disposition": "no counterpart in this file's declared check population, and none declarable in any server-leg file",
+        "from": "conformance/data/crosswalk-edges-server.json",
+        "member": {
+          "module": "MCP.Server.JsonSchema202012Test",
+          "register_key": "MCP.Server.JsonSchema202012Test/test W-4 — no $ref is ever dereferenced: a canary listener is never connected to",
+          "test": "test W-4 — no $ref is ever dereferenced: a canary listener is never connected to"
+        },
+        "owner": "unowned — the search was run over ALL 175, not only the declared 107, so this is not a deferral to a later C1c slice. The real counterpart is CLIENT leg and is named below.",
+        "the_near_miss_that_is_a_real_counterpart_on_the_other_leg": "`NoNetworkRefDereference` — `Client did not dereference the network-URI $ref in the tool inputSchema`. It is a REAL counterpart to the obligation and a real non-counterpart to this claim: SEP-2106's Security Implications binds both peers, and this row scores the CLIENT half. It cannot be declared in this file because this file's member selector opens with a leg equality on `server`; it is not in the client edges file's declared check population either, which is that file's to say. Named so the row reads as `the suite asks the other peer` and not as `nothing exists`.",
+        "the_search_that_found_none": "A SERVER declining to dereference a network-URI $ref in a tool inputSchema. MEASURED over all 175 manifest rows: `(?i)\\$ref` 1, `(?i)dereferenc` 1 and `(?i)network` 1 are the SAME single row — `client | json-schema-ref-no-deref | sep-2106-no-network-ref-deref | NoNetworkRefDereference` — and 0 of the 119 server rows on all three. `(?i)canary` 0 of 175 and `(?i)fetch|http-uri|remote` 0 of 175. The positive controls over the same population and the same machinery are `(?i)server` 119, `(?i)tool` 39 and `(?i)result` 41, so the sweep reached the rows.",
+        "why_it_is_recorded_here_and_not_in_bucket_1": "The member DOES carry an edge — its success control at json_schema_2020_12_test.exs:184 asserts a non-empty content array, which is `ToolsCallSimpleText`'s `content_is_not_empty` predicate at its own polarity — so it is not A3 §6 state 3 whole, and bucket 1 would hide it from the member equation. A3 §6's state 3 is a property of a MEMBER and there is no bucket for a claim, so none is invented. The cost of that placement is that no registered search carries this zero and no control re-runs it; it is stated in `the_w4_claim_and_the_registry_no_claim_level_row_can_reach`."
       }
     ],
     "what_this_is": "A claim within an EDGE-BEARING member that has no counterpart in its file's declared check population. A3 §6's state 3 is a property of a member, so there is no bucket for this and none is invented."
@@ -7429,7 +7873,7 @@
       },
       "search_id": "SRV23",
       "tag": "oc:none/no-oc-server-check/tool-input-schema-keyword-preservation",
-      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY `$ref` row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network `$ref`, not whether a server PRESERVES the keyword. The other near miss is on this very row's own check: `ToolsList`'s `every_tool_has_an_input_schema` axis, which is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above.",
+      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
       "the_search_that_found_none": "JSON Schema 2020-12 keywords beyond `type` — `$defs`/`$anchor`, `$ref`, `not`, `oneOf`, `if`/`then`/`else`, `unevaluatedProperties` — surviving verbatim through a tools/list inputSchema",
       "why_no_counterpart": "`no-oc-server-check` — 0 of the 107 and 0 of all 119 server rows; the one hit in 175 is CLIENT leg.",
       "why_this_search_is_this_claims_search": "The claim is about what survives INSIDE an inputSchema. SRV23's pattern sweeps the 2020-12 keyword vocabulary the member asserts; the near miss names both the client-leg `$ref` row and this module's own `ToolsList` axis, which is a truthiness test and cannot see inside."
@@ -7445,7 +7889,7 @@
       },
       "search_id": "SRV24",
       "tag": "oc:none/no-oc-scenario/tool-absent-output-schema",
-      "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s `isError` axes, the only place the suite looks at the SHAPE of a tools/call result beyond its `content` array. Neither names `outputSchema` or `structuredContent`. MEASURED: 0 over all 175 manifest rows, BOTH LEGS — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED: this zero is also `MCP.Server.JsonSchema202012Test`'s, whose fifteen W-1 members make the same claim; that module is C1c-iii-b's member cut and it inherits this search rather than re-running it, the SRV08 mechanism running forward instead of backward.",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s isError axes, the only place the suite looks at the SHAPE of a tools/call result beyond its content array. Neither names outputSchema or structuredContent. MEASURED over all 175 manifest rows, BOTH LEGS: 0, and 0 on each sub-term independently — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED, AND THE FIGURE MES-116 WROTE HERE WAS TOO BIG. C1c-iii wrote that `MCP.Server.JsonSchema202012Test`'s FIFTEEN W-1 members make the same claim and would inherit this search. Adjudicated member by member on MES-119 it is THIRTEEN: two of the fifteen carry edges — the extras-map isError member and the pre-SEP-2106 member — so they are not bucket 1 and cannot rest on this or any other search. The thirteen that do rest on it are this entry's rows.",
       "the_search_that_found_none": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
       "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. SEP-2106's whole output half is unexercised.",
       "why_this_search_is_this_claims_search": "The claim is about `outputSchema` being absent when unset. SRV24's subject is that field and its structured-content sibling, and the zero is leg-wide."
@@ -7545,6 +7989,374 @@
       "the_search_that_found_none": "a DETERMINISTIC ordering of tools/list results — the same order across successive requests to one instance, and across two instances holding the same tool set",
       "why_no_counterpart": "`no-oc-scenario` — 0 of the 107, and 0 of all 175 on either leg. The suite has no determinism or ordering check.",
       "why_this_search_is_this_claims_search": "All six members are arms of ONE measurement — SUBJECT, MUTANT, CONTROL and BOUND — of one property: a deterministic tools/list order. SRV25 sweeps the ordering vocabulary; one search answers all six because they make one claim between them, and six identical entries would be the D4 defect."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "a handler emitting the boolean `false` as structuredContent puts exactly that value on the wire",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value false survives to the wire",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value false survives to the wire"
+      },
+      "search_id": "SRV24",
+      "tag": "oc:none/no-oc-scenario/structured-content-false-survives",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s isError axes, the only place the suite looks at the SHAPE of a tools/call result beyond its content array. Neither names outputSchema or structuredContent. MEASURED over all 175 manifest rows, BOTH LEGS: 0, and 0 on each sub-term independently — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED, AND THE FIGURE MES-116 WROTE HERE WAS TOO BIG. C1c-iii wrote that `MCP.Server.JsonSchema202012Test`'s FIFTEEN W-1 members make the same claim and would inherit this search. Adjudicated member by member on MES-119 it is THIRTEEN: two of the fifteen carry edges — the extras-map isError member and the pre-SEP-2106 member — so they are not bucket 1 and cannot rest on this or any other search. The thirteen that do rest on it are this entry's rows.",
+      "the_search_that_found_none": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 manifest rows on either leg, and 0 on each sub-term independently. SEP-2106's whole output half is unexercised by the suite.",
+      "why_this_search_is_this_claims_search": "The claim is about `structuredContent` reaching the wire, which is precisely SRV24's subject, and the zero is leg-wide rather than a deferral. Thirteen of this module's fifteen W-1 members make ONE claim between them — that the field carries any JSON value unaltered, and that absent and null stay apart — so one search answers all thirteen and thirteen identical entries would be the D4 defect. The other two W-1 members are NOT here: they carry edges, and a member cannot be in both places."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "a handler emitting the boolean `true` as structuredContent puts exactly that value on the wire",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value true survives to the wire",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value true survives to the wire"
+      },
+      "search_id": "SRV24",
+      "tag": "oc:none/no-oc-scenario/structured-content-true-survives",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s isError axes, the only place the suite looks at the SHAPE of a tools/call result beyond its content array. Neither names outputSchema or structuredContent. MEASURED over all 175 manifest rows, BOTH LEGS: 0, and 0 on each sub-term independently — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED, AND THE FIGURE MES-116 WROTE HERE WAS TOO BIG. C1c-iii wrote that `MCP.Server.JsonSchema202012Test`'s FIFTEEN W-1 members make the same claim and would inherit this search. Adjudicated member by member on MES-119 it is THIRTEEN: two of the fifteen carry edges — the extras-map isError member and the pre-SEP-2106 member — so they are not bucket 1 and cannot rest on this or any other search. The thirteen that do rest on it are this entry's rows.",
+      "the_search_that_found_none": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 manifest rows on either leg, and 0 on each sub-term independently. SEP-2106's whole output half is unexercised by the suite.",
+      "why_this_search_is_this_claims_search": "The claim is about `structuredContent` reaching the wire, which is precisely SRV24's subject, and the zero is leg-wide rather than a deferral. Thirteen of this module's fifteen W-1 members make ONE claim between them — that the field carries any JSON value unaltered, and that absent and null stay apart — so one search answers all thirteen and thirteen identical entries would be the D4 defect. The other two W-1 members are NOT here: they carry edges, and a member cannot be in both places."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "a handler emitting the number zero as structuredContent puts exactly that value on the wire",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value zero survives to the wire",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value zero survives to the wire"
+      },
+      "search_id": "SRV24",
+      "tag": "oc:none/no-oc-scenario/structured-content-zero-survives",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s isError axes, the only place the suite looks at the SHAPE of a tools/call result beyond its content array. Neither names outputSchema or structuredContent. MEASURED over all 175 manifest rows, BOTH LEGS: 0, and 0 on each sub-term independently — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED, AND THE FIGURE MES-116 WROTE HERE WAS TOO BIG. C1c-iii wrote that `MCP.Server.JsonSchema202012Test`'s FIFTEEN W-1 members make the same claim and would inherit this search. Adjudicated member by member on MES-119 it is THIRTEEN: two of the fifteen carry edges — the extras-map isError member and the pre-SEP-2106 member — so they are not bucket 1 and cannot rest on this or any other search. The thirteen that do rest on it are this entry's rows.",
+      "the_search_that_found_none": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 manifest rows on either leg, and 0 on each sub-term independently. SEP-2106's whole output half is unexercised by the suite.",
+      "why_this_search_is_this_claims_search": "The claim is about `structuredContent` reaching the wire, which is precisely SRV24's subject, and the zero is leg-wide rather than a deferral. Thirteen of this module's fifteen W-1 members make ONE claim between them — that the field carries any JSON value unaltered, and that absent and null stay apart — so one search answers all thirteen and thirteen identical entries would be the D4 defect. The other two W-1 members are NOT here: they carry edges, and a member cannot be in both places."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "a handler emitting a float as structuredContent puts exactly that value on the wire",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value float survives to the wire",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value float survives to the wire"
+      },
+      "search_id": "SRV24",
+      "tag": "oc:none/no-oc-scenario/structured-content-float-survives",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s isError axes, the only place the suite looks at the SHAPE of a tools/call result beyond its content array. Neither names outputSchema or structuredContent. MEASURED over all 175 manifest rows, BOTH LEGS: 0, and 0 on each sub-term independently — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED, AND THE FIGURE MES-116 WROTE HERE WAS TOO BIG. C1c-iii wrote that `MCP.Server.JsonSchema202012Test`'s FIFTEEN W-1 members make the same claim and would inherit this search. Adjudicated member by member on MES-119 it is THIRTEEN: two of the fifteen carry edges — the extras-map isError member and the pre-SEP-2106 member — so they are not bucket 1 and cannot rest on this or any other search. The thirteen that do rest on it are this entry's rows.",
+      "the_search_that_found_none": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 manifest rows on either leg, and 0 on each sub-term independently. SEP-2106's whole output half is unexercised by the suite.",
+      "why_this_search_is_this_claims_search": "The claim is about `structuredContent` reaching the wire, which is precisely SRV24's subject, and the zero is leg-wide rather than a deferral. Thirteen of this module's fifteen W-1 members make ONE claim between them — that the field carries any JSON value unaltered, and that absent and null stay apart — so one search answers all thirteen and thirteen identical entries would be the D4 defect. The other two W-1 members are NOT here: they carry edges, and a member cannot be in both places."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "a handler emitting the empty string as structuredContent puts exactly that value on the wire",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty string survives to the wire",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value empty string survives to the wire"
+      },
+      "search_id": "SRV24",
+      "tag": "oc:none/no-oc-scenario/structured-content-empty-string-survives",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s isError axes, the only place the suite looks at the SHAPE of a tools/call result beyond its content array. Neither names outputSchema or structuredContent. MEASURED over all 175 manifest rows, BOTH LEGS: 0, and 0 on each sub-term independently — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED, AND THE FIGURE MES-116 WROTE HERE WAS TOO BIG. C1c-iii wrote that `MCP.Server.JsonSchema202012Test`'s FIFTEEN W-1 members make the same claim and would inherit this search. Adjudicated member by member on MES-119 it is THIRTEEN: two of the fifteen carry edges — the extras-map isError member and the pre-SEP-2106 member — so they are not bucket 1 and cannot rest on this or any other search. The thirteen that do rest on it are this entry's rows.",
+      "the_search_that_found_none": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 manifest rows on either leg, and 0 on each sub-term independently. SEP-2106's whole output half is unexercised by the suite.",
+      "why_this_search_is_this_claims_search": "The claim is about `structuredContent` reaching the wire, which is precisely SRV24's subject, and the zero is leg-wide rather than a deferral. Thirteen of this module's fifteen W-1 members make ONE claim between them — that the field carries any JSON value unaltered, and that absent and null stay apart — so one search answers all thirteen and thirteen identical entries would be the D4 defect. The other two W-1 members are NOT here: they carry edges, and a member cannot be in both places."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "a handler emitting a non-empty string as structuredContent puts exactly that value on the wire",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value string survives to the wire",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value string survives to the wire"
+      },
+      "search_id": "SRV24",
+      "tag": "oc:none/no-oc-scenario/structured-content-string-survives",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s isError axes, the only place the suite looks at the SHAPE of a tools/call result beyond its content array. Neither names outputSchema or structuredContent. MEASURED over all 175 manifest rows, BOTH LEGS: 0, and 0 on each sub-term independently — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED, AND THE FIGURE MES-116 WROTE HERE WAS TOO BIG. C1c-iii wrote that `MCP.Server.JsonSchema202012Test`'s FIFTEEN W-1 members make the same claim and would inherit this search. Adjudicated member by member on MES-119 it is THIRTEEN: two of the fifteen carry edges — the extras-map isError member and the pre-SEP-2106 member — so they are not bucket 1 and cannot rest on this or any other search. The thirteen that do rest on it are this entry's rows.",
+      "the_search_that_found_none": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 manifest rows on either leg, and 0 on each sub-term independently. SEP-2106's whole output half is unexercised by the suite.",
+      "why_this_search_is_this_claims_search": "The claim is about `structuredContent` reaching the wire, which is precisely SRV24's subject, and the zero is leg-wide rather than a deferral. Thirteen of this module's fifteen W-1 members make ONE claim between them — that the field carries any JSON value unaltered, and that absent and null stay apart — so one search answers all thirteen and thirteen identical entries would be the D4 defect. The other two W-1 members are NOT here: they carry edges, and a member cannot be in both places."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "a handler emitting the empty array as structuredContent puts exactly that value on the wire",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty array survives to the wire",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value empty array survives to the wire"
+      },
+      "search_id": "SRV24",
+      "tag": "oc:none/no-oc-scenario/structured-content-empty-array-survives",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s isError axes, the only place the suite looks at the SHAPE of a tools/call result beyond its content array. Neither names outputSchema or structuredContent. MEASURED over all 175 manifest rows, BOTH LEGS: 0, and 0 on each sub-term independently — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED, AND THE FIGURE MES-116 WROTE HERE WAS TOO BIG. C1c-iii wrote that `MCP.Server.JsonSchema202012Test`'s FIFTEEN W-1 members make the same claim and would inherit this search. Adjudicated member by member on MES-119 it is THIRTEEN: two of the fifteen carry edges — the extras-map isError member and the pre-SEP-2106 member — so they are not bucket 1 and cannot rest on this or any other search. The thirteen that do rest on it are this entry's rows.",
+      "the_search_that_found_none": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 manifest rows on either leg, and 0 on each sub-term independently. SEP-2106's whole output half is unexercised by the suite.",
+      "why_this_search_is_this_claims_search": "The claim is about `structuredContent` reaching the wire, which is precisely SRV24's subject, and the zero is leg-wide rather than a deferral. Thirteen of this module's fifteen W-1 members make ONE claim between them — that the field carries any JSON value unaltered, and that absent and null stay apart — so one search answers all thirteen and thirteen identical entries would be the D4 defect. The other two W-1 members are NOT here: they carry edges, and a member cannot be in both places."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "a handler emitting a non-empty array as structuredContent puts exactly that value on the wire",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value array survives to the wire",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value array survives to the wire"
+      },
+      "search_id": "SRV24",
+      "tag": "oc:none/no-oc-scenario/structured-content-array-survives",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s isError axes, the only place the suite looks at the SHAPE of a tools/call result beyond its content array. Neither names outputSchema or structuredContent. MEASURED over all 175 manifest rows, BOTH LEGS: 0, and 0 on each sub-term independently — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED, AND THE FIGURE MES-116 WROTE HERE WAS TOO BIG. C1c-iii wrote that `MCP.Server.JsonSchema202012Test`'s FIFTEEN W-1 members make the same claim and would inherit this search. Adjudicated member by member on MES-119 it is THIRTEEN: two of the fifteen carry edges — the extras-map isError member and the pre-SEP-2106 member — so they are not bucket 1 and cannot rest on this or any other search. The thirteen that do rest on it are this entry's rows.",
+      "the_search_that_found_none": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 manifest rows on either leg, and 0 on each sub-term independently. SEP-2106's whole output half is unexercised by the suite.",
+      "why_this_search_is_this_claims_search": "The claim is about `structuredContent` reaching the wire, which is precisely SRV24's subject, and the zero is leg-wide rather than a deferral. Thirteen of this module's fifteen W-1 members make ONE claim between them — that the field carries any JSON value unaltered, and that absent and null stay apart — so one search answers all thirteen and thirteen identical entries would be the D4 defect. The other two W-1 members are NOT here: they carry edges, and a member cannot be in both places."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "a handler emitting the empty object as structuredContent puts exactly that value on the wire",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty object survives to the wire",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value empty object survives to the wire"
+      },
+      "search_id": "SRV24",
+      "tag": "oc:none/no-oc-scenario/structured-content-empty-object-survives",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s isError axes, the only place the suite looks at the SHAPE of a tools/call result beyond its content array. Neither names outputSchema or structuredContent. MEASURED over all 175 manifest rows, BOTH LEGS: 0, and 0 on each sub-term independently — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED, AND THE FIGURE MES-116 WROTE HERE WAS TOO BIG. C1c-iii wrote that `MCP.Server.JsonSchema202012Test`'s FIFTEEN W-1 members make the same claim and would inherit this search. Adjudicated member by member on MES-119 it is THIRTEEN: two of the fifteen carry edges — the extras-map isError member and the pre-SEP-2106 member — so they are not bucket 1 and cannot rest on this or any other search. The thirteen that do rest on it are this entry's rows.",
+      "the_search_that_found_none": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 manifest rows on either leg, and 0 on each sub-term independently. SEP-2106's whole output half is unexercised by the suite.",
+      "why_this_search_is_this_claims_search": "The claim is about `structuredContent` reaching the wire, which is precisely SRV24's subject, and the zero is leg-wide rather than a deferral. Thirteen of this module's fifteen W-1 members make ONE claim between them — that the field carries any JSON value unaltered, and that absent and null stay apart — so one search answers all thirteen and thirteen identical entries would be the D4 defect. The other two W-1 members are NOT here: they carry edges, and a member cannot be in both places."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "a handler emitting a non-empty object as structuredContent puts exactly that value on the wire",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value object survives to the wire",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value object survives to the wire"
+      },
+      "search_id": "SRV24",
+      "tag": "oc:none/no-oc-scenario/structured-content-object-survives",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s isError axes, the only place the suite looks at the SHAPE of a tools/call result beyond its content array. Neither names outputSchema or structuredContent. MEASURED over all 175 manifest rows, BOTH LEGS: 0, and 0 on each sub-term independently — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED, AND THE FIGURE MES-116 WROTE HERE WAS TOO BIG. C1c-iii wrote that `MCP.Server.JsonSchema202012Test`'s FIFTEEN W-1 members make the same claim and would inherit this search. Adjudicated member by member on MES-119 it is THIRTEEN: two of the fifteen carry edges — the extras-map isError member and the pre-SEP-2106 member — so they are not bucket 1 and cannot rest on this or any other search. The thirteen that do rest on it are this entry's rows.",
+      "the_search_that_found_none": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 manifest rows on either leg, and 0 on each sub-term independently. SEP-2106's whole output half is unexercised by the suite.",
+      "why_this_search_is_this_claims_search": "The claim is about `structuredContent` reaching the wire, which is precisely SRV24's subject, and the zero is leg-wide rather than a deferral. Thirteen of this module's fifteen W-1 members make ONE claim between them — that the field carries any JSON value unaltered, and that absent and null stay apart — so one search answers all thirteen and thirteen identical entries would be the D4 defect. The other two W-1 members are NOT here: they carry edges, and a member cannot be in both places."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "a handler emitting JSON null as structuredContent puts exactly that value on the wire",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value null survives to the wire",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value null survives to the wire"
+      },
+      "search_id": "SRV24",
+      "tag": "oc:none/no-oc-scenario/structured-content-null-survives",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s isError axes, the only place the suite looks at the SHAPE of a tools/call result beyond its content array. Neither names outputSchema or structuredContent. MEASURED over all 175 manifest rows, BOTH LEGS: 0, and 0 on each sub-term independently — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED, AND THE FIGURE MES-116 WROTE HERE WAS TOO BIG. C1c-iii wrote that `MCP.Server.JsonSchema202012Test`'s FIFTEEN W-1 members make the same claim and would inherit this search. Adjudicated member by member on MES-119 it is THIRTEEN: two of the fifteen carry edges — the extras-map isError member and the pre-SEP-2106 member — so they are not bucket 1 and cannot rest on this or any other search. The thirteen that do rest on it are this entry's rows.",
+      "the_search_that_found_none": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 manifest rows on either leg, and 0 on each sub-term independently. SEP-2106's whole output half is unexercised by the suite.",
+      "why_this_search_is_this_claims_search": "The claim is about `structuredContent` reaching the wire, which is precisely SRV24's subject, and the zero is leg-wide rather than a deferral. Thirteen of this module's fifteen W-1 members make ONE claim between them — that the field carries any JSON value unaltered, and that absent and null stay apart — so one search answers all thirteen and thirteen identical entries would be the D4 defect. The other two W-1 members are NOT here: they carry edges, and a member cannot be in both places."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "a handler that names no structured content leaves no structuredContent key on the wire at all",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value an absent key omits the field entirely — absent is not null",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value an absent key omits the field entirely — absent is not null"
+      },
+      "search_id": "SRV24",
+      "tag": "oc:none/no-oc-scenario/structured-content-absent-stays-absent",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s isError axes, the only place the suite looks at the SHAPE of a tools/call result beyond its content array. Neither names outputSchema or structuredContent. MEASURED over all 175 manifest rows, BOTH LEGS: 0, and 0 on each sub-term independently — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED, AND THE FIGURE MES-116 WROTE HERE WAS TOO BIG. C1c-iii wrote that `MCP.Server.JsonSchema202012Test`'s FIFTEEN W-1 members make the same claim and would inherit this search. Adjudicated member by member on MES-119 it is THIRTEEN: two of the fifteen carry edges — the extras-map isError member and the pre-SEP-2106 member — so they are not bucket 1 and cannot rest on this or any other search. The thirteen that do rest on it are this entry's rows.",
+      "the_search_that_found_none": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 manifest rows on either leg, and 0 on each sub-term independently. SEP-2106's whole output half is unexercised by the suite.",
+      "why_this_search_is_this_claims_search": "The claim is about `structuredContent` reaching the wire, which is precisely SRV24's subject, and the zero is leg-wide rather than a deferral. Thirteen of this module's fifteen W-1 members make ONE claim between them — that the field carries any JSON value unaltered, and that absent and null stay apart — so one search answers all thirteen and thirteen identical entries would be the D4 defect. The other two W-1 members are NOT here: they carry edges, and a member cannot be in both places."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "a handler naming a nil structured content puts an explicit JSON null on the wire, not an absence",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value a present nil key emits JSON null — null is not absent",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value a present nil key emits JSON null — null is not absent"
+      },
+      "search_id": "SRV24",
+      "tag": "oc:none/no-oc-scenario/structured-content-present-nil-is-json-null",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsList`'s `every_tool_has_an_input_schema` axis — the INPUT half of the same field pair, and the only schema-bearing axis anywhere in the declared population — and `ToolsCallError`'s isError axes, the only place the suite looks at the SHAPE of a tools/call result beyond its content array. Neither names outputSchema or structuredContent. MEASURED over all 175 manifest rows, BOTH LEGS: 0, and 0 on each sub-term independently — so the entire output-schema half of SEP-2106 is unexercised by the official suite. HOMED, AND THE FIGURE MES-116 WROTE HERE WAS TOO BIG. C1c-iii wrote that `MCP.Server.JsonSchema202012Test`'s FIFTEEN W-1 members make the same claim and would inherit this search. Adjudicated member by member on MES-119 it is THIRTEEN: two of the fifteen carry edges — the extras-map isError member and the pre-SEP-2106 member — so they are not bucket 1 and cannot rest on this or any other search. The thirteen that do rest on it are this entry's rows.",
+      "the_search_that_found_none": "`outputSchema` and `structuredContent` — SEP-2106's OUTPUT side, and whether an absent outputSchema stays absent on the wire",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 manifest rows on either leg, and 0 on each sub-term independently. SEP-2106's whole output half is unexercised by the suite.",
+      "why_this_search_is_this_claims_search": "The claim is about `structuredContent` reaching the wire, which is precisely SRV24's subject, and the zero is leg-wide rather than a deferral. Thirteen of this module's fifteen W-1 members make ONE claim between them — that the field carries any JSON value unaltered, and that absent and null stay apart — so one search answers all thirteen and thirteen identical entries would be the D4 defect. The other two W-1 members are NOT here: they carry edges, and a member cannot be in both places."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "the whole 2020-12 fixture schema arrives at the peer intact, compared as decoded maps",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list the whole fixture arrives intact — decoded-map equality, not bytes",
+        "test": "test W-3 — 2020-12 keyword preservation through a real tools/list the whole fixture arrives intact — decoded-map equality, not bytes"
+      },
+      "search_id": "SRV23",
+      "tag": "oc:none/no-oc-server-check/schema-2020-12-whole-fixture-intact",
+      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
+      "the_search_that_found_none": "JSON Schema 2020-12 keywords beyond `type` — `$defs`/`$anchor`, `$ref`, `not`, `oneOf`, `if`/`then`/`else`, `unevaluatedProperties` — surviving verbatim through a tools/list inputSchema",
+      "why_no_counterpart": "`no-oc-server-check` — 0 of the 107 and 0 of all 119 server rows; the one hit in all 175 is the CLIENT-leg $ref row the near miss names.",
+      "why_this_search_is_this_claims_search": "The claim is about what survives INSIDE an inputSchema carried through a real tools/list. SRV23's pattern sweeps exactly the 2020-12 keyword vocabulary these members assert, and its near miss names both the client-leg $ref row and the truthiness axis on this module's own endpoint. All seven rows now resting on it — `MCP.Protocol.Types.ToolTest`'s encoder-level one and this module's six — make ONE claim between them, that no 2020-12 keyword is lost in transit; the SRV25 precedent, one claim, one search, N rows."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "the reference keywords — $schema, $defs, $anchor and a local $ref — survive a real tools/list",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list reference keywords survive: $schema, $defs, $anchor, $ref",
+        "test": "test W-3 — 2020-12 keyword preservation through a real tools/list reference keywords survive: $schema, $defs, $anchor, $ref"
+      },
+      "search_id": "SRV23",
+      "tag": "oc:none/no-oc-server-check/schema-2020-12-reference-keywords",
+      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
+      "the_search_that_found_none": "JSON Schema 2020-12 keywords beyond `type` — `$defs`/`$anchor`, `$ref`, `not`, `oneOf`, `if`/`then`/`else`, `unevaluatedProperties` — surviving verbatim through a tools/list inputSchema",
+      "why_no_counterpart": "`no-oc-server-check` — 0 of the 107 and 0 of all 119 server rows; the one hit in all 175 is the CLIENT-leg $ref row the near miss names.",
+      "why_this_search_is_this_claims_search": "The claim is about what survives INSIDE an inputSchema carried through a real tools/list. SRV23's pattern sweeps exactly the 2020-12 keyword vocabulary these members assert, and its near miss names both the client-leg $ref row and the truthiness axis on this module's own endpoint. All seven rows now resting on it — `MCP.Protocol.Types.ToolTest`'s encoder-level one and this module's six — make ONE claim between them, that no 2020-12 keyword is lost in transit; the SRV25 precedent, one claim, one search, N rows."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "the composition keywords allOf and anyOf survive a real tools/list",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list composition keywords survive: allOf, anyOf",
+        "test": "test W-3 — 2020-12 keyword preservation through a real tools/list composition keywords survive: allOf, anyOf"
+      },
+      "search_id": "SRV23",
+      "tag": "oc:none/no-oc-server-check/schema-2020-12-composition-keywords",
+      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
+      "the_search_that_found_none": "JSON Schema 2020-12 keywords beyond `type` — `$defs`/`$anchor`, `$ref`, `not`, `oneOf`, `if`/`then`/`else`, `unevaluatedProperties` — surviving verbatim through a tools/list inputSchema",
+      "why_no_counterpart": "`no-oc-server-check` — 0 of the 107 and 0 of all 119 server rows; the one hit in all 175 is the CLIENT-leg $ref row the near miss names.",
+      "why_this_search_is_this_claims_search": "The claim is about what survives INSIDE an inputSchema carried through a real tools/list. SRV23's pattern sweeps exactly the 2020-12 keyword vocabulary these members assert, and its near miss names both the client-leg $ref row and the truthiness axis on this module's own endpoint. All seven rows now resting on it — `MCP.Protocol.Types.ToolTest`'s encoder-level one and this module's six — make ONE claim between them, that no 2020-12 keyword is lost in transit; the SRV25 precedent, one claim, one search, N rows."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "the conditional keywords if, then and else survive a real tools/list",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list conditional keywords survive: if, then, else",
+        "test": "test W-3 — 2020-12 keyword preservation through a real tools/list conditional keywords survive: if, then, else"
+      },
+      "search_id": "SRV23",
+      "tag": "oc:none/no-oc-server-check/schema-2020-12-conditional-keywords",
+      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
+      "the_search_that_found_none": "JSON Schema 2020-12 keywords beyond `type` — `$defs`/`$anchor`, `$ref`, `not`, `oneOf`, `if`/`then`/`else`, `unevaluatedProperties` — surviving verbatim through a tools/list inputSchema",
+      "why_no_counterpart": "`no-oc-server-check` — 0 of the 107 and 0 of all 119 server rows; the one hit in all 175 is the CLIENT-leg $ref row the near miss names.",
+      "why_this_search_is_this_claims_search": "The claim is about what survives INSIDE an inputSchema carried through a real tools/list. SRV23's pattern sweeps exactly the 2020-12 keyword vocabulary these members assert, and its near miss names both the client-leg $ref row and the truthiness axis on this module's own endpoint. All seven rows now resting on it — `MCP.Protocol.Types.ToolTest`'s encoder-level one and this module's six — make ONE claim between them, that no 2020-12 keyword is lost in transit; the SRV25 precedent, one claim, one search, N rows."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "the validation keywords enum, const and additionalProperties survive a real tools/list",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list validation keywords survive: enum, const, additionalProperties",
+        "test": "test W-3 — 2020-12 keyword preservation through a real tools/list validation keywords survive: enum, const, additionalProperties"
+      },
+      "search_id": "SRV23",
+      "tag": "oc:none/no-oc-server-check/schema-2020-12-validation-keywords",
+      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
+      "the_search_that_found_none": "JSON Schema 2020-12 keywords beyond `type` — `$defs`/`$anchor`, `$ref`, `not`, `oneOf`, `if`/`then`/`else`, `unevaluatedProperties` — surviving verbatim through a tools/list inputSchema",
+      "why_no_counterpart": "`no-oc-server-check` — 0 of the 107 and 0 of all 119 server rows; the one hit in all 175 is the CLIENT-leg $ref row the near miss names.",
+      "why_this_search_is_this_claims_search": "The claim is about what survives INSIDE an inputSchema carried through a real tools/list. SRV23's pattern sweeps exactly the 2020-12 keyword vocabulary these members assert, and its near miss names both the client-leg $ref row and the truthiness axis on this module's own endpoint. All seven rows now resting on it — `MCP.Protocol.Types.ToolTest`'s encoder-level one and this module's six — make ONE claim between them, that no 2020-12 keyword is lost in transit; the SRV25 precedent, one claim, one search, N rows."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "an explicitly declared non-default dialect is carried to the peer, neither coerced to 2020-12 nor refused",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list an explicit non-default dialect is carried, not coerced or refused",
+        "test": "test W-3 — 2020-12 keyword preservation through a real tools/list an explicit non-default dialect is carried, not coerced or refused"
+      },
+      "search_id": "SRV23",
+      "tag": "oc:none/no-oc-server-check/schema-2020-12-explicit-dialect-carried",
+      "the_near_miss_that_is_not_a_counterpart": "`NoNetworkRefDereference` (`json-schema-ref-no-deref`) — the suite's ONLY $ref row, and it is CLIENT leg, which is why this entry's kind is `no-oc-server-check` rather than `no-oc-scenario`. It cannot be declared in this file at all: this file's member population is the server leg. And it asks a different question even so — whether a client REFUSES to fetch a network $ref, not whether a server PRESERVES the keyword. The other near miss is `ToolsList`'s `every_tool_has_an_input_schema` axis, which every row resting on this entry reaches through a real tools/list: it is a truthiness test on the key and never looks inside the schema, so it cannot distinguish a schema carrying these keywords from one carrying none. MEASURED: 0 over the declared 107 and 0 over all 119 server rows; 1 over all 175, and that 1 is the client row named above. WIDENING THE PATTERN WOULD ADD NOTHING, AND THAT IS MEASURED RATHER THAN ASSUMED: the one row resting on this entry whose vocabulary reaches past it is the explicit-dialect arm, and `(?i)\\$schema`, `(?i)dialect` and `(?i)draft-?07` are each 0 of all 175 independently.",
+      "the_search_that_found_none": "JSON Schema 2020-12 keywords beyond `type` — `$defs`/`$anchor`, `$ref`, `not`, `oneOf`, `if`/`then`/`else`, `unevaluatedProperties` — surviving verbatim through a tools/list inputSchema",
+      "why_no_counterpart": "`no-oc-server-check` — 0 of the 107 and 0 of all 119 server rows; the one hit in all 175 is the CLIENT-leg $ref row the near miss names.",
+      "why_this_search_is_this_claims_search": "The claim is about what survives INSIDE an inputSchema carried through a real tools/list. SRV23's pattern sweeps exactly the 2020-12 keyword vocabulary these members assert, and its near miss names both the client-leg $ref row and the truthiness axis on this module's own endpoint. All seven rows now resting on it — `MCP.Protocol.Types.ToolTest`'s encoder-level one and this module's six — make ONE claim between them, that no 2020-12 keyword is lost in transit; the SRV25 precedent, one claim, one search, N rows."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "an array-valued structuredContent is NOTICED — the handler is warned — and the content list it came with is left exactly as the handler returned it, with nothing injected to satisfy the MUST",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test C-2 — SEP-2106's TextContent fallback is noticed, not injected the content list is never modified — the SDK notices, it does not inject",
+        "test": "test C-2 — SEP-2106's TextContent fallback is noticed, not injected the content list is never modified — the SDK notices, it does not inject"
+      },
+      "search_id": "SRV26",
+      "tag": "oc:none/no-oc-scenario/content-list-is-never-injected-into",
+      "the_near_miss_that_is_not_a_counterpart": "`ToolsCallSimpleText`'s content axes — `the_result_carries_a_content_member`, `content_is_a_json_array`, `content_is_not_empty` and the two type-text ones. They are the closest the suite comes and they are the wrong way round: every one of them asks whether the content array HAS something in it, and the claim here is that the SDK did not PUT something in it. A server that noticed an array-valued structuredContent and quietly injected a serialised-JSON text block to satisfy the MUST would satisfy all five, which is exactly why they cannot be this claim's counterpart. MEASURED: 0 over all 175 manifest rows, both legs, on a pattern deliberately wider than the subject — it would match an `inject`, a `verbatim` or an `unmodified` row in any scenario, and the suite has none. Nothing in the suite compares a response against what the implementation's own handler returned, which is what a not-injected claim needs.",
+      "the_search_that_found_none": "a server SYNTHESISING a content block to satisfy SEP-2106's backward-compatibility MUST — and its converse, the content array reaching the wire exactly as the handler returned it",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 manifest rows on either leg. The suite scores what a content array HAS in it and never what an implementation PUT there.",
+      "why_this_search_is_this_claims_search": "The claim has two halves and the search is chosen for the one with no home. The warning half is SRV27's subject — a server diagnosing its own side — and the not-injected half is this one: the suite's content axes would all be SATISFIED by an implementation that injected a block, which is what makes them a near miss rather than a counterpart. This member is the only one on the leg making the not-injected claim, so the entry has one row and not six."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "an extras map whose key is camelCase rather than the snake_case the SDK reads is named in a warning, and the call still succeeds",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a camelCase key is named, and the call still succeeds",
+        "test": "test R-3 — an unusable extras map is named in a warning, and never raises a camelCase key is named, and the call still succeeds"
+      },
+      "search_id": "SRV27",
+      "tag": "oc:none/no-oc-scenario/extras-camelcase-key-named-not-silent",
+      "the_near_miss_that_is_not_a_counterpart": "`IgnoreUnexpectedParams` — `Server ignores extra unrecognized keys in inputResponses` — and it is the row a reader who greps for `unrecognised` would find and stop at. MEASURED: it is the ONLY hit in all 175 for `(?i)unrecogni[sz]`. It is not a counterpart, twice over. Its subject is extra keys the CLIENT sent in an MRTR inputResponses payload, not a return value the server's own HANDLER produced; and the posture it requires is the OPPOSITE one — ignore them silently, where these rows require the unusable value to be dropped AND NAMED. The other near miss is `ServerNoLogWithoutLogLevel`, the suite's only `(?i)\\blog\\b` hit in 175: it is about the MCP logging capability — notifications the server sends a client — and not about a server's own diagnostic output, which crosses no wire and which no OC check can observe. That last is the general reason for this zero: the harness scores messages, and a warning is not a message.",
+      "the_search_that_found_none": "a server DIAGNOSING a mistake on its own side — warning about a handler return it could not use, rather than dropping it silently or raising",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 manifest rows on either leg. The harness scores MESSAGES, and a server's warning about its own handler crosses no wire.",
+      "why_this_search_is_this_claims_search": "The claim is that an unusable extras map is dropped AND NAMED rather than dropped silently or raised — a diagnostic posture, which is exactly SRV27's subject. Both rows resting on this entry are arms of that one posture over different unusable shapes, so one search answers both. The two SIBLINGS in the same family are not here: their resultType assertions carry edges, so they are edge-bearing members and the same diagnostic claim is recorded against them on their edges rather than twice more here."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "an extras map whose is_error is not a boolean is named in a warning, and no isError reaches the wire at all",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a non-boolean :is_error is named, and no isError reaches the wire",
+        "test": "test R-3 — an unusable extras map is named in a warning, and never raises a non-boolean :is_error is named, and no isError reaches the wire"
+      },
+      "search_id": "SRV27",
+      "tag": "oc:none/no-oc-scenario/extras-non-boolean-is-error-named",
+      "the_near_miss_that_is_not_a_counterpart": "`IgnoreUnexpectedParams` — `Server ignores extra unrecognized keys in inputResponses` — and it is the row a reader who greps for `unrecognised` would find and stop at. MEASURED: it is the ONLY hit in all 175 for `(?i)unrecogni[sz]`. It is not a counterpart, twice over. Its subject is extra keys the CLIENT sent in an MRTR inputResponses payload, not a return value the server's own HANDLER produced; and the posture it requires is the OPPOSITE one — ignore them silently, where these rows require the unusable value to be dropped AND NAMED. The other near miss is `ServerNoLogWithoutLogLevel`, the suite's only `(?i)\\blog\\b` hit in 175: it is about the MCP logging capability — notifications the server sends a client — and not about a server's own diagnostic output, which crosses no wire and which no OC check can observe. That last is the general reason for this zero: the harness scores messages, and a warning is not a message.",
+      "the_search_that_found_none": "a server DIAGNOSING a mistake on its own side — warning about a handler return it could not use, rather than dropping it silently or raising",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 manifest rows on either leg. The harness scores MESSAGES, and a server's warning about its own handler crosses no wire.",
+      "why_this_search_is_this_claims_search": "The claim is that an unusable extras map is dropped AND NAMED rather than dropped silently or raised — a diagnostic posture, which is exactly SRV27's subject. Both rows resting on this entry are arms of that one posture over different unusable shapes, so one search answers both. The two SIBLINGS in the same family are not here: their resultType assertions carry edges, so they are edge-bearing members and the same diagnostic claim is recorded against them on their edges rather than twice more here."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "cg": null,
+      "claim_the_slot_names": "the arguments a tools/call carries reach the handler exactly as sent — nested maps, a list holding a map holding a null, and unknown keys all delivered unchanged",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test arguments reach the handler unchanged — nothing is coerced, defaulted or expanded",
+        "test": "test arguments reach the handler unchanged — nothing is coerced, defaulted or expanded"
+      },
+      "search_id": "SRV28",
+      "tag": "oc:none/no-oc-scenario/tool-arguments-delivered-unchanged",
+      "the_near_miss_that_is_not_a_counterpart": "`PromptsGetWithArgs` — `Get parameterized prompt with argument substitution` — the only row in all 175 matching `(?i)argument`, and a reader who greps for the word lands on it. It is a different obligation on a different endpoint: it scores that a PROMPT template had its placeholders SUBSTITUTED, which is the server transforming the arguments on purpose, where this claim is that a TOOL's arguments are transformed not at all. `ResourcesTemplateRead` is the same shape one endpoint further over. Nearer in spirit is `IgnoreUnexpectedParams`, which is about extra keys being tolerated rather than about the keys that belong arriving unchanged. MEASURED: 0 over all 175 on a pattern deliberately wider than the subject — it would match an `unchanged`, a `verbatim`, a `coerce` or a bare `arguments` row in any scenario. The suite calls tools and scores what comes BACK; no check anywhere asks what the handler was HANDED.",
+      "the_search_that_found_none": "a tool's `arguments` reaching the handler byte-identical — nothing coerced, defaulted, expanded or dropped between the wire and the handler's first line",
+      "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 manifest rows on either leg, on a pattern wider than the subject.",
+      "why_this_search_is_this_claims_search": "The claim is about the INBOUND half of a tools/call — what the handler was handed — and the search is chosen to sweep that vocabulary across every scenario, not only the tools ones. It found the two substitution rows and nothing else, and substitution is the opposite obligation. WHAT THIS ROW DELIBERATELY DOES NOT CLAIM: the unit's pipeline at json_schema_2020_12_test.exs:568 takes the head of the content array and decodes its text, so the unit cannot pass unless the result's content is a non-empty array whose first block carries decodable text — which is three of ToolsCallSimpleText's five axes. That is a PRECONDITION of a pipeline and not an assertion, and this file credits an axis to an ASSERTION's subject. Recorded so the choice is visible rather than silent; a reader who counts preconditions as claims should read this row as an edge."
     }
   ],
   "escalations": {
@@ -7668,7 +8480,7 @@
   },
   "owner": "MES-97 (C1a), MES-104 (C1b-i), MES-108 (C1b-ii), MES-109 (C1b-iii), MES-105 (C1c-i) and MES-115 (C1c-ii)",
   "population": {
-    "check_count": 72,
+    "check_count": 73,
     "checks": [
       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_ControlChar",
       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_CrLf",
@@ -7736,6 +8548,7 @@
       "oc:server/tools-call-audio/tools-call-audio/ToolsCallAudio",
       "oc:server/tools-call-embedded-resource/tools-call-embedded-resource/ToolsCallEmbeddedResource",
       "oc:server/tools-call-embedded-resource/wire-schema-valid/WireSchemaValid",
+      "oc:server/tools-call-error/tools-call-error/ToolsCallError",
       "oc:server/tools-call-image/tools-call-image/ToolsCallImage",
       "oc:server/tools-call-image/wire-schema-valid/WireSchemaValid",
       "oc:server/tools-call-mixed-content/tools-call-mixed-content/ToolsCallMixedContent",
@@ -8681,6 +9494,7 @@
           "oc:server/tools-call-audio/tools-call-audio/ToolsCallAudio",
           "oc:server/tools-call-embedded-resource/tools-call-embedded-resource/ToolsCallEmbeddedResource",
           "oc:server/tools-call-embedded-resource/wire-schema-valid/WireSchemaValid",
+          "oc:server/tools-call-error/tools-call-error/ToolsCallError",
           "oc:server/tools-call-image/tools-call-image/ToolsCallImage",
           "oc:server/tools-call-image/wire-schema-valid/WireSchemaValid",
           "oc:server/tools-call-mixed-content/tools-call-mixed-content/ToolsCallMixedContent",
@@ -8801,7 +9615,7 @@
           "declared": false,
           "result": "NOT ASSERTED — this file declares no `leg`, so it makes no claim to hold a whole one and none is checked. Reported rather than passed: a file whose members are a slice of a leg would be claiming something false if this said `total`."
         },
-        "member_count": 80,
+        "member_count": 111,
         "members": [
           "MCP.Protocol.Messages.DiscoverTest/test to_map/1 produces the schema shape",
           "MCP.Protocol.MetaTest/test from_params/1 extracts the io.modelcontextprotocol/* keys",
@@ -8822,6 +9636,37 @@
           "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)",
           "MCP.Server.DispatchTest/test request without a protocolVersion _meta fails fast (-32022)",
           "MCP.Server.DispatchTest/test server/discover: schema shape (supportedVersions + CacheableResult fields; serverInfo in _meta)",
+          "MCP.Server.JsonSchema202012Test/test C-2 — SEP-2106's TextContent fallback is noticed, not injected the content list is never modified — the SDK notices, it does not inject",
+          "MCP.Server.JsonSchema202012Test/test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named a keyword list, an empty list, an atom and a string are each named",
+          "MCP.Server.JsonSchema202012Test/test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named the legacy boolean slot 3 still works, in both directions, and warns about nothing",
+          "MCP.Server.JsonSchema202012Test/test F-9 — the struct warning describes what the code did, not the opposite a struct carrying one of the two fields names that one, and only that one",
+          "MCP.Server.JsonSchema202012Test/test F-9 — the struct warning describes what the code did, not the opposite a struct that DOES carry the fields has them read, and the warning says so",
+          "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a camelCase key is named, and the call still succeeds",
+          "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a non-boolean :is_error is named, and no isError reaches the wire",
+          "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a struct in slot 3 is named by its module, and nothing is raised",
+          "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value a present nil key emits JSON null — null is not absent",
+          "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value an absent key omits the field entirely — absent is not null",
+          "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value array survives to the wire",
+          "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty array survives to the wire",
+          "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty object survives to the wire",
+          "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty string survives to the wire",
+          "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value false survives to the wire",
+          "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value float survives to the wire",
+          "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value null survives to the wire",
+          "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value object survives to the wire",
+          "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value string survives to the wire",
+          "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value the extras map also carries isError, and false does not become absent",
+          "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value the pre-SEP-2106 return shapes still work unchanged",
+          "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value true survives to the wire",
+          "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value zero survives to the wire",
+          "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list an explicit non-default dialect is carried, not coerced or refused",
+          "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list composition keywords survive: allOf, anyOf",
+          "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list conditional keywords survive: if, then, else",
+          "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list reference keywords survive: $schema, $defs, $anchor, $ref",
+          "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list the whole fixture arrives intact — decoded-map equality, not bytes",
+          "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list validation keywords survive: enum, const, additionalProperties",
+          "MCP.Server.JsonSchema202012Test/test W-4 — no $ref is ever dereferenced: a canary listener is never connected to",
+          "MCP.Server.JsonSchema202012Test/test arguments reach the handler unchanged — nothing is coerced, defaulted or expanded",
           "MCP.Server.NotificationCollectorTest/test drain returns pushed notifications as wire maps, in emission order (G3)",
           "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) a resources/updated frame matches the pinned notification example",
           "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) an absent notifications object is -32602, not a silently empty stream",
@@ -8884,10 +9729,10 @@
           "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the first message is notifications/subscriptions/acknowledged",
           "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the response carries the SSE headers the spec SHOULDs"
         ],
-        "members_declared_unmatched": 47,
-        "members_with_edges": 33,
+        "members_declared_unmatched": 70,
+        "members_with_edges": 41,
         "path": "conformance/data/crosswalk-edges-server.json",
-        "rule": "Every ET-CC member B2b attributes to the SERVER leg whose test lives in one of THIRTEEN modules: the STATELESS CORE — MCP.Transport.StreamableHTTPStatelessTest, MCP.Server.DispatchTest, MCP.Protocol.MetaTest, MCP.Protocol.Messages.DiscoverTest and MCP.Server.CapabilityHonestyTest — the SUBSCRIPTION family — MCP.Server.SubscriptionsDispatchTest, MCP.Transport.SubscriptionsStreamTest and MCP.Server.NotificationCollectorTest — and the ACCEPTANCE-CRITERIA module MCP.Transport.StreamableHTTP.ACTest, added by C1c-ii for its one MRTR member. and the FOUR TYPE-AND-ORDER modules added by C1c-iii for the feature endpoints — MCP.Protocol.Types.ContentTest, MCP.Protocol.Types.ToolTest, MCP.Protocol.Types.ResourceTest and MCP.Server.ToolOrderTest. NOTHING outside these thirteen modules is adjudicated here; the leg's other eight modules are C1c-iii-b's and C1c-iv's.",
+        "rule": "Every ET-CC member B2b attributes to the SERVER leg whose test lives in one of FOURTEEN modules: the STATELESS CORE — MCP.Transport.StreamableHTTPStatelessTest, MCP.Server.DispatchTest, MCP.Protocol.MetaTest, MCP.Protocol.Messages.DiscoverTest and MCP.Server.CapabilityHonestyTest — the SUBSCRIPTION family — MCP.Server.SubscriptionsDispatchTest, MCP.Transport.SubscriptionsStreamTest and MCP.Server.NotificationCollectorTest — and the ACCEPTANCE-CRITERIA module MCP.Transport.StreamableHTTP.ACTest, added by C1c-ii for its one MRTR member. and the FOUR TYPE-AND-ORDER modules added by C1c-iii for the feature endpoints — MCP.Protocol.Types.ContentTest, MCP.Protocol.Types.ToolTest, MCP.Protocol.Types.ResourceTest and MCP.Server.ToolOrderTest. and the SEP-2106 module MCP.Server.JsonSchema202012Test, added by C1c-iii-b, which is the largest single module on the leg. NOTHING outside these fourteen modules is adjudicated here; the leg's other seven modules are C1c-iv's.",
         "selector": {
           "all_of": [
             {
@@ -8935,6 +9780,11 @@
                 {
                   "field": "key",
                   "test": "starts_with",
+                  "value": "MCP.Server.JsonSchema202012Test/"
+                },
+                {
+                  "field": "key",
+                  "test": "starts_with",
                   "value": "MCP.Server.NotificationCollectorTest/"
                 },
                 {
@@ -8965,14 +9815,15 @@
               ]
             }
           ],
-          "denotes": "80 ET-CC members — MCP.Transport.SubscriptionsStreamTest 17, MCP.Server.SubscriptionsDispatchTest 16, MCP.Transport.StreamableHTTPStatelessTest 16, MCP.Server.ToolOrderTest 6, MCP.Server.DispatchTest 5, MCP.Transport.StreamableHTTP.ACTest 5, MCP.Protocol.Types.ContentTest 5, MCP.Protocol.Types.ToolTest 4, MCP.Protocol.MetaTest 2, MCP.Protocol.Messages.DiscoverTest 1, MCP.Server.CapabilityHonestyTest 1, MCP.Server.NotificationCollectorTest 1 and MCP.Protocol.Types.ResourceTest 1. What the trailing `/` does and does not buy is measured in the field of that name; it is NOT a fact about this anchor.",
-          "evaluated": "80 members denoted; set-equal to the population this file derives in both directions (G15a). The counts block was checked field by field (G15b).",
+          "denotes": "111 ET-CC members — MCP.Server.JsonSchema202012Test 31, MCP.Transport.SubscriptionsStreamTest 17, MCP.Server.SubscriptionsDispatchTest 16, MCP.Transport.StreamableHTTPStatelessTest 16, MCP.Server.ToolOrderTest 6, MCP.Protocol.Types.ContentTest 5, MCP.Server.DispatchTest 5, MCP.Transport.StreamableHTTP.ACTest 5, MCP.Protocol.Types.ToolTest 4, MCP.Protocol.MetaTest 2, MCP.Protocol.Messages.DiscoverTest 1, MCP.Protocol.Types.ResourceTest 1, MCP.Server.CapabilityHonestyTest 1 and MCP.Server.NotificationCollectorTest 1. What the trailing `/` does and does not buy is measured in the field of that name; it is NOT a fact about this anchor.",
+          "evaluated": "111 members denoted; set-equal to the population this file derives in both directions (G15a). The counts block was checked field by field (G15b).",
           "everything_else_is": "not_yet_adjudicated — NOT bucket 1, and not state 4.",
           "key_field": "key",
           "rows_at": "rows",
           "source": "docs/conformance/etcc-attribution.json",
           "source_owner": "B2b (MES-82) — the ET-CC attribution register",
-          "the_four_modules_C1c_iii_adds_and_the_one_it_deliberately_leaves": "MES-116 (C1c-iii) adds FOUR module clauses and 16 members: the three content/type round-trip modules and the tool-ordering module. It DECLARES ALL 41 feature-endpoint checks and their whole 107-axis decomposition, but deliberately leaves ONE module of the feature-endpoint family undeclared — MCP.Server.JsonSchema202012Test, 31 members, 66% of the family's member load on its own. WHY THE SEAM IS BY MODULE AND NOT BY ENDPOINT, measured at dispatch and PM-ratified on 2026-09-23: the endpoint cut (`tools-*` against `prompts + resources + completion`) SPLITS ContentTest, whose five members are content-type round-trips that straddle it — TextContent, ImageContent, AudioContent and EmbeddedResource each reach both a `tools-call-*` check and a `prompts-get-*` one — and this file's partition needs every module declared exactly once. It also does not split the load: the endpoint cut puts 41 members on one side and 1 on the other. And it damages the decomposition, which G19 requires to be whole for every declared check: nineteen of the 41 checks are ONE generic validator at ONE span, so splitting the scenarios would split a single reading across two tickets for no gain. WHAT THE DEFERRAL COSTS, stated rather than assumed: nothing in this file has to be rewritten when the sibling lands. An undeclared member is `not_yet_adjudicated`, NOT bucket 1, so no absence search is owed for it, and bucket 2 is DERIVED by the generator rather than hand-listed. What the sibling can move is named in `the_bucket_2_entries_this_slice_records_as_provisional`.",
+          "the_four_modules_C1c_iii_adds_and_the_one_it_deliberately_leaves": "MES-116 (C1c-iii) adds FOUR module clauses and 16 members: the three content/type round-trip modules and the tool-ordering module. It DECLARES ALL 41 feature-endpoint checks and their whole 107-axis decomposition, but deliberately leaves ONE module of the feature-endpoint family undeclared — MCP.Server.JsonSchema202012Test, 31 members, 66% of the family's member load on its own. WHY THE SEAM IS BY MODULE AND NOT BY ENDPOINT, measured at dispatch and PM-ratified on 2026-09-23: the endpoint cut (`tools-*` against `prompts + resources + completion`) SPLITS ContentTest, whose five members are content-type round-trips that straddle it — TextContent, ImageContent, AudioContent and EmbeddedResource each reach both a `tools-call-*` check and a `prompts-get-*` one — and this file's partition needs every module declared exactly once. It also does not split the load: the endpoint cut puts 41 members on one side and 1 on the other. And it damages the decomposition, which G19 requires to be whole for every declared check: nineteen of the 41 checks are ONE generic validator at ONE span, so splitting the scenarios would split a single reading across two tickets for no gain. WHAT THE DEFERRAL COSTS, stated rather than assumed: nothing in this file has to be rewritten when the sibling lands. An undeclared member is `not_yet_adjudicated`, NOT bucket 1, so no absence search is owed for it, and bucket 2 is DERIVED by the generator rather than hand-listed. What the sibling can move is named in `the_bucket_2_entries_this_slice_records_as_provisional`.\n\nTHE DEFERRAL IS DISCHARGED. MES-119 (C1c-iii-b) declares MCP.Server.JsonSchema202012Test and its 31 members against the 41 checks C1c-iii had already decomposed, adding no check and no axis. Two of the three things this field said the sibling could move DID move and the third did not, and all three were measured rather than assumed — see `the_bucket_2_entries_this_slice_records_as_provisional`.",
+          "the_module_C1c_iii_b_adds_and_the_deferral_it_discharges": "MES-119 (C1c-iii-b) adds ONE module clause and 31 members, and it is the largest single module on the leg — 66% of the feature-endpoint family's member load and more than a fifth of the whole leg. It inherits the three things C1c-i settled without amendment, the same way C1c-ii and C1c-iii did: it appends to this file, it adds one leaf to the `any_of` and changes nothing else about the member selector's shape, and it declares NO check and NO axis — every check its edges reach (`ToolsCallSimpleText`, `ToolsCallError`, `ResultTypeIncluded`) is inside C1c-iii's or C1c-ii's decomposition already, so `the_check_population_this_file_declares` is untouched at 107 and `oc-axes-c1.json` is not edited at all. THE CUT IS BY MODULE AND THE SEAM WAS CHOSEN BY MEMBER LOAD rather than by subject: C1c-iii's four modules and this one are all the feature-endpoint family, and splitting the family by endpoint instead would have split MCP.Protocol.Types.ContentTest, whose five members straddle `tools-call-*` and `prompts-get-*`. Ratified on MES-116's plan hop, 2026-09-23.",
           "the_ninth_module_and_why_only_one_of_its_five_members_is_this_slices_subject": "MES-115 (C1c-ii) adds ONE module, `MCP.Transport.StreamableHTTP.ACTest/`, and it is the whole of that ticket's member cut. MEASURED at 3166dc7: of the leg's 145 rows, exactly TWO carry a key that reaches the MRTR family at all — the stateless round-trip (already in this file, as SRV08's bucket-1 row) and ACTest's `spoof — MRTR retry with planted identity` — and ACTest is the only module holding one that was not already declared. Declaring the module is what makes an edge on that member POSSIBLE: G15a refuses an edge on a member outside the declared population, so the alternative was to leave the leg's second MRTR member to a slice that is not the MRTR ticket. The COST is stated rather than absorbed: the module's other four members (AC7 origin-403 parity, two AC8 identity-factory rows and the caching default) enter bucket 1 against checks that are not theirs, and each records a search and a `homed elsewhere` near miss so C1c-iv inherits them instead of re-searching — the SRV08 mechanism running the other way. PM-ratified on MES-115, 2026-09-23.",
           "what_this_is": "The EXECUTABLE half of `rule`. The generator evaluates it against the source named below and requires the result to be SET-EQUAL, in both directions, to the population this file derives. Prose only becomes a guard when something can run it."
         }
@@ -9037,8 +9888,8 @@
         }
       }
     ],
-    "inherited_tokens_guard": "G20 ran over the 188 declared members; 0 inherited tokens unaccounted for.",
-    "member_count": 188,
+    "inherited_tokens_guard": "G20 ran over the 219 declared members; 0 inherited tokens unaccounted for.",
+    "member_count": 219,
     "members": [
       "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
       "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
@@ -9144,6 +9995,37 @@
       "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)",
       "MCP.Server.DispatchTest/test request without a protocolVersion _meta fails fast (-32022)",
       "MCP.Server.DispatchTest/test server/discover: schema shape (supportedVersions + CacheableResult fields; serverInfo in _meta)",
+      "MCP.Server.JsonSchema202012Test/test C-2 — SEP-2106's TextContent fallback is noticed, not injected the content list is never modified — the SDK notices, it does not inject",
+      "MCP.Server.JsonSchema202012Test/test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named a keyword list, an empty list, an atom and a string are each named",
+      "MCP.Server.JsonSchema202012Test/test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named the legacy boolean slot 3 still works, in both directions, and warns about nothing",
+      "MCP.Server.JsonSchema202012Test/test F-9 — the struct warning describes what the code did, not the opposite a struct carrying one of the two fields names that one, and only that one",
+      "MCP.Server.JsonSchema202012Test/test F-9 — the struct warning describes what the code did, not the opposite a struct that DOES carry the fields has them read, and the warning says so",
+      "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a camelCase key is named, and the call still succeeds",
+      "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a non-boolean :is_error is named, and no isError reaches the wire",
+      "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a struct in slot 3 is named by its module, and nothing is raised",
+      "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value a present nil key emits JSON null — null is not absent",
+      "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value an absent key omits the field entirely — absent is not null",
+      "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value array survives to the wire",
+      "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty array survives to the wire",
+      "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty object survives to the wire",
+      "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty string survives to the wire",
+      "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value false survives to the wire",
+      "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value float survives to the wire",
+      "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value null survives to the wire",
+      "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value object survives to the wire",
+      "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value string survives to the wire",
+      "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value the extras map also carries isError, and false does not become absent",
+      "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value the pre-SEP-2106 return shapes still work unchanged",
+      "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value true survives to the wire",
+      "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value zero survives to the wire",
+      "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list an explicit non-default dialect is carried, not coerced or refused",
+      "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list composition keywords survive: allOf, anyOf",
+      "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list conditional keywords survive: if, then, else",
+      "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list reference keywords survive: $schema, $defs, $anchor, $ref",
+      "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list the whole fixture arrives intact — decoded-map equality, not bytes",
+      "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list validation keywords survive: enum, const, additionalProperties",
+      "MCP.Server.JsonSchema202012Test/test W-4 — no $ref is ever dereferenced: a canary listener is never connected to",
+      "MCP.Server.JsonSchema202012Test/test arguments reach the handler unchanged — nothing is coerced, defaulted or expanded",
       "MCP.Server.NotificationCollectorTest/test drain returns pushed notifications as wire maps, in emission order (G3)",
       "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) a resources/updated frame matches the pinned notification example",
       "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) an absent notifications object is -32602, not a silently empty stream",
@@ -9229,18 +10111,18 @@
       "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the first message is notifications/subscriptions/acknowledged",
       "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the response carries the SSE headers the spec SHOULDs"
     ],
-    "members_declared_unmatched": 112,
-    "members_with_edges": 76,
+    "members_declared_unmatched": 135,
+    "members_with_edges": 84,
     "outside_the_population": {
-      "et_cc_members": 93,
+      "et_cc_members": 62,
       "in_denominator_checks": 12,
       "owners": "C1c-iii = MES-116 and C1c-iv = MES-117 — the rest of the server leg, and the none_determinable rows with it. The CLIENT leg is closed, and closed by refusal rather than by assertion (G22b); of the server leg, C1c-i and C1c-ii have between them declared nine of its twenty-one modules and the remaining twelve are those two tickets'. NEITHER NAMES THE PRODUCER: a field naming its own renderer as still owing the remainder is CR-1's defect (MES-104) and it recurred as CR-5 (MES-108). It recurred a THIRD time at C1c-i, which rendered this artefact while this field read `C1c = MES-105 … It is the only ticket left` and went on to say `NOT C1b-iii, which rendered this artefact` — self-naming and, in its second clause, false. Corrected at C1c-ii (MES-115) and named in its close-out rather than quietly rewritten. The sub-population figures an earlier wording carried are the register's to state, not this artefact's — this artefact holds no figure it did not derive (G21).",
       "state": "not_yet_adjudicated",
       "why_it_is_a_third_state": "Distinct from bucket 1 ('we looked and there is no counterpart') and from A3 §6 state 4 ('nobody has adjudicated this member, and the guard FAILS it'). Reporting these as bucket 1 would assert of each something false of every one.",
       "why_not_173_minus_the_declared": "A check that carries an edge has been adjudicated whether or not any file DECLARES it. 0 of the addressed checks lie outside every declared check population — the inherited C1a edges — and counting them as not_yet_adjudicated would be as wrong in one direction as counting them in bucket 2 would be in the other."
     },
-    "rule": "conformance/data/crosswalk-edges-client.json: Every ET-CC member B2b attributes to the CLIENT leg. The leg is reached as the UNION of the four ticket slices that adjudicated it — CG7 (C1b-i), CG1/CG2/CG4 (C1b-ii), NO CG AT ALL (C1b-iii), and whatever C1a had already tagged — and the union is now the whole leg: every client row in B2b carries a `cg` in {CG7, CG1, CG2, CG4} or carries none, so the four limbs are exhaustive over it. NOTHING outside the client leg is adjudicated here.  ||  conformance/data/crosswalk-edges-server.json: Every ET-CC member B2b attributes to the SERVER leg whose test lives in one of THIRTEEN modules: the STATELESS CORE — MCP.Transport.StreamableHTTPStatelessTest, MCP.Server.DispatchTest, MCP.Protocol.MetaTest, MCP.Protocol.Messages.DiscoverTest and MCP.Server.CapabilityHonestyTest — the SUBSCRIPTION family — MCP.Server.SubscriptionsDispatchTest, MCP.Transport.SubscriptionsStreamTest and MCP.Server.NotificationCollectorTest — and the ACCEPTANCE-CRITERIA module MCP.Transport.StreamableHTTP.ACTest, added by C1c-ii for its one MRTR member. and the FOUR TYPE-AND-ORDER modules added by C1c-iii for the feature endpoints — MCP.Protocol.Types.ContentTest, MCP.Protocol.Types.ToolTest, MCP.Protocol.Types.ResourceTest and MCP.Server.ToolOrderTest. NOTHING outside these thirteen modules is adjudicated here; the leg's other eight modules are C1c-iii-b's and C1c-iv's.  ||  conformance/data/crosswalk-edges.json: The ET-CC members C1a had adjudicated — a token or a contradicts_oc record — that are on NEITHER leg. C1a's 18 client rows moved to crosswalk-edges-client.json under MES-104's composition ruling; its server rows moved to crosswalk-edges-server.json under MES-105's, which is the same ruling applied to the other leg. What is left is one member, none_determinable, and C1c-iv (MES-117) absorbs it with the rest of that class.",
-    "state_4_guard": "ran over these 188 members; 0 fired. ENTAILED BY G15a AND THEREFORE UNABLE TO FIRE, and that is recorded rather than left to be read as evidence: the population is set-equal to its selector's denotation in both directions, and it is derived from the file's own rows, so every member has a row and every row has a tag. It was equally entailed in C1a, where the selector and the tagging predicate were the same predicate. What fires on an EMPTY crosswalk is the vacuum guard, not this. The completeness question that is NOT entailed is G20 — every token B2b already records against a member of this population is still carried by one of that member's rows."
+    "rule": "conformance/data/crosswalk-edges-client.json: Every ET-CC member B2b attributes to the CLIENT leg. The leg is reached as the UNION of the four ticket slices that adjudicated it — CG7 (C1b-i), CG1/CG2/CG4 (C1b-ii), NO CG AT ALL (C1b-iii), and whatever C1a had already tagged — and the union is now the whole leg: every client row in B2b carries a `cg` in {CG7, CG1, CG2, CG4} or carries none, so the four limbs are exhaustive over it. NOTHING outside the client leg is adjudicated here.  ||  conformance/data/crosswalk-edges-server.json: Every ET-CC member B2b attributes to the SERVER leg whose test lives in one of FOURTEEN modules: the STATELESS CORE — MCP.Transport.StreamableHTTPStatelessTest, MCP.Server.DispatchTest, MCP.Protocol.MetaTest, MCP.Protocol.Messages.DiscoverTest and MCP.Server.CapabilityHonestyTest — the SUBSCRIPTION family — MCP.Server.SubscriptionsDispatchTest, MCP.Transport.SubscriptionsStreamTest and MCP.Server.NotificationCollectorTest — and the ACCEPTANCE-CRITERIA module MCP.Transport.StreamableHTTP.ACTest, added by C1c-ii for its one MRTR member. and the FOUR TYPE-AND-ORDER modules added by C1c-iii for the feature endpoints — MCP.Protocol.Types.ContentTest, MCP.Protocol.Types.ToolTest, MCP.Protocol.Types.ResourceTest and MCP.Server.ToolOrderTest. and the SEP-2106 module MCP.Server.JsonSchema202012Test, added by C1c-iii-b, which is the largest single module on the leg. NOTHING outside these fourteen modules is adjudicated here; the leg's other seven modules are C1c-iv's.  ||  conformance/data/crosswalk-edges.json: The ET-CC members C1a had adjudicated — a token or a contradicts_oc record — that are on NEITHER leg. C1a's 18 client rows moved to crosswalk-edges-client.json under MES-104's composition ruling; its server rows moved to crosswalk-edges-server.json under MES-105's, which is the same ruling applied to the other leg. What is left is one member, none_determinable, and C1c-iv (MES-117) absorbs it with the rest of that class.",
+    "state_4_guard": "ran over these 219 members; 0 fired. ENTAILED BY G15a AND THEREFORE UNABLE TO FIRE, and that is recorded rather than left to be read as evidence: the population is set-equal to its selector's denotation in both directions, and it is derived from the file's own rows, so every member has a row and every row has a tag. It was equally entailed in C1a, where the selector and the tagging predicate were the same predicate. What fires on an EMPTY crosswalk is the vacuum guard, not this. The completeness question that is NOT entailed is G20 — every token B2b already records against a member of this population is still carried by one of that member's rows."
   },
   "population_statement_guard": "G21 — every population figure this generator's own prose states is one this run derived. Scanned 15 authored statements against the 23 distinct figures the run holds, and pinned 8 load-bearing phrases built from those figures independently of the text. THE UNIVERSE IS THE EMITTED ARTEFACT, not a list this module declares: a string is this generator's own iff it occurs in no input document, so a statement added later is inside the guard without anyone remembering to add it. This block is written AFTER the scan and is required to carry no population claim of its own, so it is not part of what it attests. BOUNDS: a figure spelled as a word, or stated without the noun it counts, is invisible to the scan — both occur here and are handled by interpolating them, not by the scan; a literal that coincides with some other held figure survives until the population next moves, which is when CR-5's recurrence would land anyway; and prose this generator does not EMIT (the moduledoc, a branch not taken) is outside the universe by construction.",
   "residuals": [
@@ -9270,7 +10152,7 @@
     },
     {
       "id": "X5",
-      "text": "The member population is 188 across 3 edges files — 107 members from crosswalk-edges-client.json and 80 members from crosswalk-edges-server.json and 1 members from crosswalk-edges.json. Two of the checks C1a addresses enter through A3 §1's cardinality rule and §4's published worked edge, not through B2b's tokens — inherited, not newly adjudicated, and said so in the edges file. Every figure in this sentence is interpolated: all three were literals until MES-108, and two of the three were already wrong when CR-5 found them."
+      "text": "The member population is 219 across 3 edges files — 107 members from crosswalk-edges-client.json and 111 members from crosswalk-edges-server.json and 1 members from crosswalk-edges.json. Two of the checks C1a addresses enter through A3 §1's cardinality rule and §4's published worked edge, not through B2b's tokens — inherited, not newly adjudicated, and said so in the edges file. Every figure in this sentence is interpolated: all three were literals until MES-108, and two of the three were already wrong when CR-5 found them."
     },
     {
       "id": "X7",
@@ -9278,11 +10160,11 @@
     },
     {
       "id": "X8",
-      "text": "BUCKET 2 WAS EMPTY BY CONSTRUCTION UNTIL MES-104. C1a derived its check universe from the tags its own edges carried, so the complement within it was necessarily empty and its `CHECKED, AND ZERO` could not have said anything else. A file may now declare its check population from an external anchor. This run's answer is 89 of the 161 declared checks carrying no edge from any ET-CC member. A file that declares none contributes none to the universe and the artefact reports that bucket 2 was not asked, rather than reporting a zero. The answer is interpolated — this sentence froze C1b-i's at nine and went on stating it after MES-108 moved the check population (CR-5)."
+      "text": "BUCKET 2 WAS EMPTY BY CONSTRUCTION UNTIL MES-104. C1a derived its check universe from the tags its own edges carried, so the complement within it was necessarily empty and its `CHECKED, AND ZERO` could not have said anything else. A file may now declare its check population from an external anchor. This run's answer is 88 of the 161 declared checks carrying no edge from any ET-CC member. A file that declares none contributes none to the universe and the artefact reports that bucket 2 was not asked, rather than reporting a zero. The answer is interpolated — this sentence froze C1b-i's at nine and went on stating it after MES-108 moved the check population (CR-5)."
     },
     {
       "id": "X9",
-      "text": "A CLAIM-LEVEL STATE 3 HAS NO BUCKET. A3 §6's state 3 is a property of a MEMBER, and the bucket-1 reconciliation requires a member to be edge-bearing or declared unmatched, never both — so a member matching on some claims and not on others has nowhere to record the unmatched ones. C1b-i found five; MES-108 resolved two of them into real edges and found one more. This run carries 5 of them in `claim_level_unmatched`, each with the search that found none, and ESCALATED — the figure interpolated, because it was written as a word and so would not have moved (CR-5). Whether A3 §6 should gain a claim-level state is the PM's."
+      "text": "A CLAIM-LEVEL STATE 3 HAS NO BUCKET. A3 §6's state 3 is a property of a MEMBER, and the bucket-1 reconciliation requires a member to be edge-bearing or declared unmatched, never both — so a member matching on some claims and not on others has nowhere to record the unmatched ones. C1b-i found five; MES-108 resolved two of them into real edges and found one more. This run carries 6 of them in `claim_level_unmatched`, each with the search that found none, and ESCALATED — the figure interpolated, because it was written as a word and so would not have moved (CR-5). Whether A3 §6 should gain a claim-level state is the PM's."
     },
     {
       "id": "X11",
@@ -9295,9 +10177,9 @@
     "every_declared_check_is_decomposed_and_accounted_for": {
       "declared": 161,
       "equation": "declared checks = checks with an edge + bucket 2",
-      "in_bucket_2": 89,
+      "in_bucket_2": 88,
       "why_this_is_not_a_set_equality": "C1a asserted `every declared check appears` as a set equality, and it held TRIVIALLY: the declared set was derived from the tags the edges carried, so the two sides were the same list twice. Once the checks are declared from outside the file the equality is no longer expected — the checks that do NOT appear are bucket 2, which is the answer rather than a failure.",
-      "with_an_edge": 72
+      "with_an_edge": 73
     },
     "every_declared_member_appears": {
       "equal": true,
@@ -9307,11 +10189,11 @@
     "measure": "SET COMPARISON, not arithmetic — two counts agreeing is not two sets agreeing.",
     "negatives_are_enumerated_not_counted": "Bucket 1's members and bucket 2's checks are listed by name in `buckets`, and the not_yet_adjudicated remainder is counted with its owner named (A2d / ruling 4)."
   },
-  "trust_status": "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — over the declared 188-member / 161-declared-check slice and no further. Both figures are INTERPOLATED from the population this run derives, and the slice is NOT decomposed by ticket here. The pair was a literal that had to be re-typed by hand at every move of the population: it was re-typed at MES-104, the population moved again at MES-108, and it was not. That is an argument against the SHAPE and not against an author — it is CR-1 (MES-104) recurring in the one generator CR-1's remedy did not reach (CR-5, MES-108). The parenthetical was the worse half — it enumerated the slice in a way that positively excluded the members the very run rendering it had just added — so it is dropped rather than re-typed: a fresh decomposition would be a third literal, and `population.files` carries the same fact derived. G21 refuses a figure here that the run did not derive. (Standing, not proven: the attempts were made and none succeeded. `UNFALSIFIED` here previously meant `not yet attempted`.) Ruling 5 asked for the control this artefact was unfalsified against: the generator refuses on each falsification class with the mutation committed and shown firing, a drifted per-row bucket assignment is caught naming the row and the buckets it crosses, and the artefact re-derives byte-identically from a second source path. That last is a CONSISTENCY pin, not a correctness claim (ruling 9, residual X6). Nothing here establishes that an axis verdict is RIGHT (X1), and nothing outside the declared population has been falsified at all — the tickets `population.outside_the_population.owners` names own that.",
+  "trust_status": "FALSIFICATION-TESTED by C3 (MES-99) and STANDING — over the declared 219-member / 161-declared-check slice and no further. Both figures are INTERPOLATED from the population this run derives, and the slice is NOT decomposed by ticket here. The pair was a literal that had to be re-typed by hand at every move of the population: it was re-typed at MES-104, the population moved again at MES-108, and it was not. That is an argument against the SHAPE and not against an author — it is CR-1 (MES-104) recurring in the one generator CR-1's remedy did not reach (CR-5, MES-108). The parenthetical was the worse half — it enumerated the slice in a way that positively excluded the members the very run rendering it had just added — so it is dropped rather than re-typed: a fresh decomposition would be a third literal, and `population.files` carries the same fact derived. G21 refuses a figure here that the run did not derive. (Standing, not proven: the attempts were made and none succeeded. `UNFALSIFIED` here previously meant `not yet attempted`.) Ruling 5 asked for the control this artefact was unfalsified against: the generator refuses on each falsification class with the mutation committed and shown firing, a drifted per-row bucket assignment is caught naming the row and the buckets it crosses, and the artefact re-derives byte-identically from a second source path. That last is a CONSISTENCY pin, not a correctness claim (ruling 9, residual X6). Nothing here establishes that an axis verdict is RIGHT (X1), and nothing outside the declared population has been falsified at all — the tickets `population.outside_the_population.owners` names own that.",
   "verdict_mapping": {
     "observed_statuses": {
       "FAILURE": 13,
-      "SUCCESS": 122,
+      "SUCCESS": 131,
       "WARNING": 1
     },
     "rule": "SUCCESS -> :green. FAILURE -> :red. WARNING -> :green carrying warning: true.",

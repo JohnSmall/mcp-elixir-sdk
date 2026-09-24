@@ -1,11 +1,11 @@
 {
   "bucket": "5a",
-  "count": 49,
+  "count": 58,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 188 declared ET-CC members and 161\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 93 members and\n12 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "population_banner": "POPULATION: this projection covers 219 declared ET-CC members and 161\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 62 members and\n12 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
   "predicate": "`cells` where the stored `bucket` == \"5\" AND the stored `oc_key[0]` == \"server\". Universe: the crosswalk's edges.",
   "projected_from": {
     "bucket_zero": {
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 731056,
+      "bytes": 839754,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "f5186f75a75d5eb96265c848dc3cb9a65e183efff4d43d78c52b796ab7f98911"
+      "sha256": "30a7a2dd43ada26e6d214e7545e8c5b4170f551909f961b45efa1bc28a471469"
     }
   },
   "revision": "2026-07-28",
@@ -2173,12 +2173,419 @@
         "oc_status_at_accepted_run": "SUCCESS",
         "oc_warning": false
       }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_error_result_sets_is_error_true",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_error_result_carries_text_in_its_first_content_block",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a handler's extras map carrying a true is_error puts isError on the wire as true, and a false one puts no isError there at all",
+      "escalation": null,
+      "evidence": "json_schema_2020_12_test.exs:237 — `assert call(\"structured\", %{\"isError\" => true, \"content\" => []})[\"isError\"] == true` — and json_schema_2020_12_test.exs:238 — `refute Map.has_key?(call(\"structured\", %{\"isError\" => false, \"content\" => []}), \"isError\")`. The first assertion is exactly the check's isError axis: that axis is an IDENTITY test against boolean true rather than a truthiness test, so a truthy non-boolean does not satisfy it, and an equality assertion against true is the same predicate. The second axis is about the error result's FIRST content block carrying a non-empty text field — the failure being DESCRIBED and not merely flagged — and this unit asserts nothing about content at all. Its result's content array is empty, but it is empty BY CONSTRUCTION: the tool is driven with an empty content list on the same line, so the handler returns exactly what the unit handed it. The axis quantifies over the content of a result from a tool that described its failure; this unit's subject is the isError flag's round trip. Silent by the GRAIN of the claim, not by a reading of it.",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value the extras map also carries isError, and false does not become absent",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value the extras map also carries isError, and false does not become absent"
+      },
+      "note": "THE SECOND ASSERTION IS SHARPER THAN THE AXIS AND THE SUITE HAS NO PLACE FOR IT. json_schema_2020_12_test.exs:238 pins that a FALSE is_error does not become an ABSENT isError — the absent-versus-false distinction SEP-2106 makes on the output side. `ToolsCallError` has no axis about a NON-error result at all: its whole subject is a tool that reported one. So the refute is covered by no axis of this check and by no other check in the declared population, and NO REGISTERED SEARCH CARRIES IT, and that is stated rather than borrowed: SRV24's subject is `outputSchema` and `structuredContent`, not `isError`, so this refute is not one of the thirteen zeros that entry records. It is recorded on this edge because the member is edge-bearing and therefore cannot appear in `declared_unmatched` at all — the same placement the W-4 member's claim gets, and the same residual, named in `the_w4_claim_and_the_registry_no_claim_level_row_can_reach`. The F-10 legacy-boolean edge makes the identical observation from the other slot-3 shape and points here rather than repeating it.",
+      "oc_key": [
+        "server",
+        "tools-call-error",
+        "tools-call-error",
+        "ToolsCallError",
+        "Tool returns error correctly",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-error/tools-call-error/ToolsCallError",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "content_is_a_json_array",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "content_is_not_empty",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "a_content_block_has_type_text",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_text_block_carries_a_text_field",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a handler returning the bare pre-SEP-2106 content list still puts exactly that list on the wire",
+      "escalation": null,
+      "evidence": "json_schema_2020_12_test.exs:243 — `assert call(\"plain\", %{})[\"content\"] == [%{\"type\" => \"text\", \"text\" => \"ok\"}]`. ONE equality against a literal one-block array covers all five axes of this check, and each for its own reason rather than by a single wave: the result carries a content member and that member is a JSON array, because an equality against a list cannot hold if the member is absent or is not a list; the array is not empty, because the literal has one element; that element carries the discriminator spelled lower-case on the wire, which is the WIRE spelling the axis names; and its text field is the non-empty string in the same literal. The handler under it is the pre-SEP-2106 clause of `MCP.Test.SchemaHandler`, which returns a bare content list and no extras map — so the agreement is about the SDK's UNCHANGED path rather than about the structured-content one this module is named for.",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value the pre-SEP-2106 return shapes still work unchanged",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value the pre-SEP-2106 return shapes still work unchanged"
+      },
+      "note": "THE ONLY FULL-AGREEMENT EDGE THIS SLICE ADDS, and it comes from the one member of the W-1 describe block whose subject is BACKWARD COMPATIBILITY rather than from any of the thirteen whose subject is the new field. That is the result worth recording: the official suite scores the shape SEP-2106 left alone and scores nothing about the shape it added. This member also asserts at json_schema_2020_12_test.exs:244 that no structuredContent key appears on that response; that half reaches no axis of this check and no check in the declared population, and it is SRV24's zero rather than a fourteenth home for it.",
+      "oc_key": [
+        "server",
+        "tools-call-simple-text",
+        "tools-call-simple-text",
+        "ToolsCallSimpleText",
+        "Tool returns simple text content",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_error_result_sets_is_error_true",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_error_result_carries_text_in_its_first_content_block",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a handler returning the pre-SEP-2106 error shape still puts isError true on the wire",
+      "escalation": null,
+      "evidence": "json_schema_2020_12_test.exs:245 — `assert call(\"plain_error\", %{})[\"isError\"] == true`. The handler clause behind `plain_error` returns the legacy four-tuple whose third element is the boolean true, and the assertion is an identity test against true, which is what this check's isError axis requires. This result DOES carry a described failure — its content is a one-block text array — but the unit does not assert it, so the description axis is silent on the unit's choice of assertions rather than on the data. That is the same silence json_schema_2020_12_test.exs:243 does NOT have for the non-error sibling, which is why the two claims of this member are two edges and not one.",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value the pre-SEP-2106 return shapes still work unchanged",
+        "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value the pre-SEP-2106 return shapes still work unchanged"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "tools-call-error",
+        "tools-call-error",
+        "ToolsCallError",
+        "Tool returns error correctly",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-error/tools-call-error/ToolsCallError",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_is_a_json_array",
+          "verdict": "silent"
+        },
+        {
+          "axis": "content_is_not_empty",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "a_content_block_has_type_text",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_text_block_carries_a_text_field",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a tools/call on the tool whose inputSchema $refs a network URI returns a result whose content array is not empty",
+      "escalation": null,
+      "evidence": "json_schema_2020_12_test.exs:184 — `assert resp[\"result\"][\"content\"] != []` — over the response to a real tools/call, beside json_schema_2020_12_test.exs:183 — `refute Map.has_key?(resp, \"error\")`. The agreement is exact rather than approximate: the axis fails exactly when the content member is present and its array is empty, and this assertion fails exactly when the content member is the empty array. Same predicate, same polarity. The four silences are the other side of the same precision. An inequality against the empty list is satisfied by an ABSENT content member as well as by a non-empty one, so it establishes nothing about presence and nothing about the member being a JSON array; and the unit never reads a block's type or its text field, so the two type-text axes have nothing of this unit's to be about.",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-4 — no $ref is ever dereferenced: a canary listener is never connected to",
+        "test": "test W-4 — no $ref is ever dereferenced: a canary listener is never connected to"
+      },
+      "note": "WHY THIS MEMBER CARRIES AN EDGE AT ALL, AND THE READING A REVIEWER MAY WANT TO CONTEST. The unit's own comment at json_schema_2020_12_test.exs:180-182 says these two lines exist so that the canary measures a non-dereference rather than a short-circuit: the author's MOTIVE is `the handler ran`, and `the content array is not empty` is the proxy chosen for it. `how_a_silent_axis_was_decided` is a rule about the ASSERTION's subject and not about the author's motive, and this assertion's predicate IS the axis's predicate — so filing the member as bucket 1 to keep its subject-claim inside the search registry would credit the suite with LESS coverage than it has, which is the error FINDING 1 was ratified against. THE COST IS STATED RATHER THAN ABSORBED. A member carrying an edge cannot also sit in `declared_unmatched` (one member, one home), so this member's SEP-2106 MUST NOT claim goes to `claims_without_an_edge`, where no registry entry and no control re-runs its zero. That residual is named in `the_w4_claim_and_the_registry_no_claim_level_row_can_reach`, not left to be noticed.",
+      "oc_key": [
+        "server",
+        "tools-call-simple-text",
+        "tools-call-simple-text",
+        "ToolsCallSimpleText",
+        "Tool returns simple text content",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_error_result_sets_is_error_true",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_error_result_carries_text_in_its_first_content_block",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "an extras STRUCT carrying a true is_error field puts isError true on the wire, exactly as a plain extras map would",
+      "escalation": null,
+      "evidence": "json_schema_2020_12_test.exs:387 — `assert result[\"isError\"] == true` — over the result of a tools/call whose slot 3 is the struct built at json_schema_2020_12_test.exs:382 — `extras = %ExtrasStruct{structured_content: [1, 2], is_error: true}`. An identity test against true, which is this check's isError axis. What makes the edge worth having rather than a duplicate of the plain-map one is the ROUTE: a struct IS a map, so dispatch reads the two fields off it, and this unit is the one that pins the read actually reaching the wire. The second axis is about the error result's FIRST content block carrying a non-empty text field — the failure being DESCRIBED and not merely flagged — and this unit asserts nothing about content at all. Its result's content array is empty, but it is empty BY CONSTRUCTION: the tool is driven with an empty content list on the same line, so the handler returns exactly what the unit handed it. The axis quantifies over the content of a result from a tool that described its failure; this unit's subject is the isError flag's round trip. Silent by the GRAIN of the claim, not by a reading of it.",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test F-9 — the struct warning describes what the code did, not the opposite a struct that DOES carry the fields has them read, and the warning says so",
+        "test": "test F-9 — the struct warning describes what the code did, not the opposite a struct that DOES carry the fields has them read, and the warning says so"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "tools-call-error",
+        "tools-call-error",
+        "ToolsCallError",
+        "Tool returns error correctly",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-error/tools-call-error/ToolsCallError",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_error_result_sets_is_error_true",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_error_result_carries_text_in_its_first_content_block",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "an extras struct carrying a true is_error beside a nil structured_content still puts isError true on the wire",
+      "escalation": null,
+      "evidence": "json_schema_2020_12_test.exs:410 — `assert result[\"isError\"] == true` — over the struct built at json_schema_2020_12_test.exs:401 — `extras = %ExtrasStruct{structured_content: nil, is_error: true}`. The same identity test as its sibling and NOT the same observation: the sibling's struct carries both fields set, this one carries a nil alongside, and the claim is that the nil neighbour does not cost the isError its place. The second axis is about the error result's FIRST content block carrying a non-empty text field — the failure being DESCRIBED and not merely flagged — and this unit asserts nothing about content at all. Its result's content array is empty, but it is empty BY CONSTRUCTION: the tool is driven with an empty content list on the same line, so the handler returns exactly what the unit handed it. The axis quantifies over the content of a result from a tool that described its failure; this unit's subject is the isError flag's round trip. Silent by the GRAIN of the claim, not by a reading of it.",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test F-9 — the struct warning describes what the code did, not the opposite a struct carrying one of the two fields names that one, and only that one",
+        "test": "test F-9 — the struct warning describes what the code did, not the opposite a struct carrying one of the two fields names that one, and only that one"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "tools-call-error",
+        "tools-call-error",
+        "ToolsCallError",
+        "Tool returns error correctly",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-error/tools-call-error/ToolsCallError",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_error_result_sets_is_error_true",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_error_result_carries_text_in_its_first_content_block",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "the pre-SEP-2106 boolean slot 3 still puts isError true on the wire when it is true",
+      "escalation": null,
+      "evidence": "json_schema_2020_12_test.exs:447 — `assert errored[\"isError\"] == true` — where the result comes from json_schema_2020_12_test.exs:444 — `{errored, error_log} = with_log(fn -> call(\"raw_extras\", %{\"extras\" => true}) end)`, a slot 3 that is the bare boolean rather than a map. An identity test against true, which is this check's isError axis. The second axis is about the error result's FIRST content block carrying a non-empty text field — the failure being DESCRIBED and not merely flagged — and this unit asserts nothing about content at all. Its result's content array is empty, but it is empty BY CONSTRUCTION: the tool is driven with an empty content list on the same line, so the handler returns exactly what the unit handed it. The axis quantifies over the content of a result from a tool that described its failure; this unit's subject is the isError flag's round trip. Silent by the GRAIN of the claim, not by a reading of it.",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named the legacy boolean slot 3 still works, in both directions, and warns about nothing",
+        "test": "test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named the legacy boolean slot 3 still works, in both directions, and warns about nothing"
+      },
+      "note": "THE OTHER DIRECTION OF THIS MEMBER REACHES NO AXIS, AND THAT IS THE COVERAGE RESULT. json_schema_2020_12_test.exs:449 pins that a FALSE boolean slot 3 leaves NO isError on the wire. `ToolsCallError` scores only the error case, and no check in the declared population asks what a successful result must NOT carry, so the false half is unmatched. It is the same absent-versus-false fact the extras-map member records at json_schema_2020_12_test.exs:238 and it is not given a second home here.",
+      "oc_key": [
+        "server",
+        "tools-call-error",
+        "tools-call-error",
+        "ToolsCallError",
+        "Tool returns error correctly",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-error/tools-call-error/ToolsCallError",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_response_carries_a_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_carries_a_result_type_field_at_all",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_type_is_input_required",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a COMPLETED tools/call result carries a resultType marker, and its value is `complete`",
+      "escalation": null,
+      "evidence": "json_schema_2020_12_test.exs:340 — `assert result[\"resultType\"] == \"complete\"` — over the result of the tools/call driven at json_schema_2020_12_test.exs:331 — `{result, log} = with_log(fn -> call(\"raw_extras\", %{\"extras\" => %URI{}}) end)`. The test's call helper returns the response's result member, so an error response yields nil and an equality against a string could not hold — which is why the no-error and result-present axes are the SAME observation read at a coarser grain rather than an inference, the reading C1c-ii's two edges on this check already use. The presence axis is the one this edge is really about: it is an IN test on the key, present whatever the value, and an equality assertion against a value cannot hold unless the key is there. THE VALUE AXIS IS SILENT AND THE TWO ANTECEDENTS ARE WHY. The axis requires the resultType of an INPUT-REQUIRED response to be the input_required marker; this unit's response is a COMPLETED tools/call and carries the complete marker, so the axis's antecedent does not hold of it and the axis is not about this case. A reader who reads the axis as unconditional would call it a contradiction, and the difference is stated here so that they can.",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a struct in slot 3 is named by its module, and nothing is raised",
+        "test": "test R-3 — an unusable extras map is named in a warning, and never raises a struct in slot 3 is named by its module, and nothing is raised"
+      },
+      "note": "THE COVERAGE RESULT BEHIND THIS EDGE IS BIGGER THAN THE EDGE. SEP-2322 puts resultType on EVERY result — `dispatch.ex:489-490` says so in terms and puts the complete marker on every one — and the official suite scores the field only inside the input-required family, on the input-required path. This unit and its F-10 sibling are the only members in the declared population that pin resultType on a COMPLETE result, and they do it incidentally, while measuring something else. Recorded once in `the_result_type_marker_the_suite_scores_on_one_path_only`.",
+      "oc_key": [
+        "server",
+        "input-required-result-result-type",
+        "sep-2322-result-type-included",
+        "ResultTypeIncluded",
+        "Server includes resultType field in InputRequiredResult response",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_response_carries_a_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_carries_a_result_type_field_at_all",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_type_is_input_required",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a completed tools/call result carries a resultType marker even when its slot 3 was dropped as unusable",
+      "escalation": null,
+      "evidence": "json_schema_2020_12_test.exs:436 — `assert result[\"resultType\"] == \"complete\"` — asserted once per shape inside the loop at json_schema_2020_12_test.exs:425 — `for extras <- [[structured_content: %{\"a\" => 1}], [], :structured_content, \"true\"] do`, so the claim is made of four slot-3 shapes and not of one. The three agreements are the same reading its R-3 sibling carries: an equality against a string cannot hold over an error response or an absent result, and it cannot hold unless the key the presence axis tests for is there. The value axis is silent for the same reason — a completed result is not the input-required response that axis quantifies over.",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named a keyword list, an empty list, an atom and a string are each named",
+        "test": "test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named a keyword list, an empty list, an atom and a string are each named"
+      },
+      "note": "THIS MEMBER ALSO ASSERTS THAT THE CONTENT ARRAY IS EMPTY, at json_schema_2020_12_test.exs:435, and that assertion is SILENT on `ToolsCallSimpleText` rather than contradicting it. The antecedents differ and both are visible in the source: the unit drives a handler that was handed no content, so the empty array is forced by the construction and what is being pinned is that an unusable slot 3 does not disturb it; the axis quantifies over the content of a result from a tool that RETURNED content. The reasoning is the one PM-ratified for the whole `content == []` family on MES-119 and it is written out in `the_empty_content_assertions_and_why_every_one_of_them_is_silent`.",
+      "oc_key": [
+        "server",
+        "input-required-result-result-type",
+        "sep-2322-result-type-included",
+        "ResultTypeIncluded",
+        "Server includes resultType field in InputRequiredResult response",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
     }
   ],
   "schema": "bucket-view/1",
   "title": "green in both — server",
   "universe": {
-    "count": 136,
+    "count": 145,
     "name": "edges",
     "of": "the crosswalk's `cells`"
   },
