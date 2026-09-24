@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 1088791,
+      "bytes": 1088933,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "8a8eba1300af6031280028a0d0de8301d3bb1d0c0d45f6cce58c3b0b8b5496b5"
+      "sha256": "385524cf0de89eb05df700375d41027b79cf969111cf7f45e6d109ddc7423dc6"
     }
   },
   "revision": "2026-07-28",
