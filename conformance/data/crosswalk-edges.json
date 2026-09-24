@@ -1,15 +1,18 @@
 {
  "schema": "crosswalk-edges/1",
  "revision": "2026-07-28",
- "owner": "MES-97 (C1a), reduced twice. MES-104 (C1b-i) moved the 18 CLIENT rows to crosswalk-edges-client.json; MES-105 (C1c-i) moved the 4 SERVER edges over 2 members to crosswalk-edges-server.json. One member remains.",
+ "leg": "none_determinable",
+ "leg_note": "The population this file is TOTAL over. It is a `leg` in B2b's field and it is NOT a leg in A3's two-peer sense — the name is the register's and is kept rather than invented, because G22b's fresh selector has to be B2b's own vocabulary or it is asking a different question. Declaring it is what turns G22b on for this file: the generator evaluates `all_of[{leg equals none_determinable}]` FRESH against B2b and refuses the build if any none_determinable ET-CC member has no row here. The field was absent through C1a, C1b and the FIVE C1c slices merged before this one — C1c-i, C1c-ii, C1c-iii, C1c-iii-b and C1c-iv-a, counted off `main` rather than off the roman numerals, which run to four and would put this ticket inside the last of them — and its absence was correct at each of those tips — this file held one member of 29, and claiming totality would have been a false statement rather than a missing one. With all three of B2b's leg values now declared, the crosswalk is total over the ET-CC universe, and THAT is asserted by G24 rather than by this field.",
+ "owner": "MES-97 (C1a), reduced twice and then REOPENED as the home of the none_determinable class. MES-104 (C1b-i) moved the 18 CLIENT rows to crosswalk-edges-client.json; MES-105 (C1c-i) moved the 4 SERVER edges over 2 members to crosswalk-edges-server.json. MES-121 (C1c-iv-b) homed the remaining 28, declared `leg: none_determinable`, and built G24 — so this file went from one residual member to the third and last of the three populations the crosswalk is the union of.",
  "authored_by_hand": true,
  "what_this_is": "The AUTHORED adjudications the crosswalk is built from — one record per (ET-CC member, claim, OC check). Judgements are data with evidence; derivations are code. `tag`, `oc_key`, `shape` and `bucket` appear NOWHERE here: the generator derives all four through MCP.Conformance.MatchKey and refuses any edge whose stored form disagrees, so a stored edge cannot lie about its own axes or address a key it does not encode.",
+ "what_none_determinable_means_and_why_a_third_population_rather_than_a_leg_conjunct": "B2b attributes a member to `none_determinable` when the assertion constrains the PAIR rather than one side — an end-to-end test our client and our server both run, a round trip whose decode is applied to our own encoder's output, a codec on neither leg's own lib path, or two independent single-leg claims on OPPOSITE legs in one test. A mutation on either leg reddens such a member, so neither leg alone owns it.\n\nTHE CONSEQUENCE MES-116 FOUND AND MES-117 NAMED: both leg-scoped files' member selectors open with a leg conjunct, so these 29 were outside BOTH by construction, and a check no server member and no client member claimed fell into bucket 2 even where one of THESE claimed it. The server file's `the_counterpart_this_slice_found_that_no_leg_scoped_file_can_declare` records one such check by name and says in terms that fixing it is not that ticket's.\n\nTHREE WAYS TO FIX IT WERE ON THE TABLE and the PM ratified the third (Q2, 2026-09-24). WIDENING a leg-scoped file's conjunct to `leg in [server, none_determinable]` would put a member on a leg B2b does not put it on, and would make the two files' selectors overlap in a class neither is total over. RE-ATTRIBUTING the members in B2b would change a ratified register to suit a downstream artefact. A THIRD POPULATION keeps every artefact saying what it already says: B2b's three leg values become three declared populations, G17's one-member-one-home rule is untouched, and the crosswalk's union becomes the whole ET-CC universe — which is what G24 now asserts. The remaining question, whether A3 §6 should gain a claim-level state 3 so a member can be adjudicated per claim, is MES-110's and is not answered here.",
  "the_population_this_file_declares": {
-  "members": 1,
-  "members_with_edges": 1,
-  "members_declared_unmatched": 0,
-  "checks_addressed": 1,
-  "rule": "The ET-CC members C1a had adjudicated — a token or a contradicts_oc record — that are on NEITHER leg. C1a's 18 client rows moved to crosswalk-edges-client.json under MES-104's composition ruling; its server rows moved to crosswalk-edges-server.json under MES-105's, which is the same ruling applied to the other leg. What is left is one member, none_determinable, and C1c-iv (MES-117) absorbs it with the rest of that class.",
+  "members": 29,
+  "members_with_edges": 8,
+  "members_declared_unmatched": 21,
+  "checks_addressed": 18,
+  "rule": "Every ET-CC member B2b attributes to NEITHER adjudicated leg — the `none_determinable` class — and the whole of it. C1a's 18 client rows moved to crosswalk-edges-client.json under MES-104's composition ruling and its 2 server members to crosswalk-edges-server.json under MES-105's; what was left was the single none_determinable member C1a had tagged. MES-121 (C1c-iv-b) homes the class: 29 members over 9 modules, 8 carrying edges and 21 declared unmatched, with `leg: none_determinable` declared so G22a and G22b assert the totality as refusals.",
   "selector": {
    "what_this_is": "The EXECUTABLE half of `rule`. The generator evaluates it against the source named below and requires the result to be SET-EQUAL, in both directions, to the population this file derives. Prose only becomes a guard when something can run it.",
    "why_it_must_name_a_file_other_than_this_one": "C1a derived its declared population by unioning the register_keys the edges file itself carried, so a dropped row did not violate the universe, it SHRANK it — measured on MES-99, both a dropped edge and a dropped declared_unmatched row built cleanly at 20 members with every set comparison still exact. A selector that read this file's own rows would be circular by another route.",
@@ -18,18 +21,6 @@
    "rows_at": "rows",
    "key_field": "key",
    "all_of": [
-    {
-     "any_of": [
-      {
-       "field": "tokens",
-       "test": "non_empty_list"
-      },
-      {
-       "field": "contradicts_oc",
-       "test": "not_null"
-      }
-     ]
-    },
     {
      "none_of": [
       {
@@ -43,17 +34,68 @@
        "value": "server"
       }
      ]
+    },
+    {
+     "any_of": [
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.IntegrationTest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.Protocol.CapabilitiesTest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.Protocol.ExtensionsTest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.Protocol.HeaderMirrorTest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.ProtocolTest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.Transport.SSETest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.Transport.SelfCompatibilityTest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.Transport.StdioTest/"
+      },
+      {
+       "field": "key",
+       "test": "starts_with",
+       "value": "MCP.Transport.SubscriptionsStreamTest/"
+      }
+     ]
     }
    ],
-   "denotes": "The 1 member of C1a's original 21 that is on neither leg: MCP.IntegrationTest (none_determinable, carrying a token). MEASURED at this tip, both directions — the selector denotes exactly this one key and this file derives exactly this one key, which is what G15a compares. The 2 server members that used to satisfy this predicate now fail its second conjunct.",
-   "why_none_of_and_not_an_enumeration_of_the_other_legs": "`leg` happens to take three values in B2b today, so `any_of[none_determinable]` would denote the same 1 row. It would do so only while that remains true: a fourth leg value would silently pull its members INTO this population — or, under the enumeration form, silently drop them — and nothing would go red. `none_of[client, server]` states the rule the prose states, which is `what neither adjudicated leg has taken`, and carries no assumption about the field's range. MES-105 added the `server` limb for exactly the reason MES-104 wrote the clause this way: the selector had to change when a leg was taken, and changing one leaf is the whole change.",
-   "c1b_and_c1c_declare_their_own": "The selector is per-population and is read from this file, never hard-coded in the generator. crosswalk-edges-client.json declares the client leg; crosswalk-edges-server.json declares the server slices as they land and will declare `leg: server` when C1c-iv closes it."
+   "denotes": "29 — every ET-CC member B2b attributes to NEITHER adjudicated leg, across the 9 modules they fall in: `MCP.IntegrationTest` 6, `MCP.Protocol.CapabilitiesTest` 2, `MCP.Protocol.ExtensionsTest` 7, `MCP.Protocol.HeaderMirrorTest` 2, `MCP.ProtocolTest` 3, `MCP.Transport.SSETest` 1, `MCP.Transport.SelfCompatibilityTest` 2, `MCP.Transport.StdioTest` 5, `MCP.Transport.SubscriptionsStreamTest` 1. MEASURED at this tip, both directions: the selector denotes exactly these 29 keys and this file derives exactly these 29, which is what G15a compares.",
+   "what_the_two_conjuncts_are_for_and_why_NEITHER_is_ornamental": "THE SHAPE IS PM-RATIFIED ON THIS TICKET'S PLAN HOP (Q1, option ii, 2026-09-24) AND THE ALTERNATIVE WAS MEASURED BEFORE IT WAS REJECTED. Q2 ratified dropping C1a's first conjunct — the `tokens non_empty OR contradicts_oc not_null` limb, which denoted 1 of these 29. Taken literally that leaves a bare `none_of[client, server]`, and a bare `none_of` makes G22b ENTAILED and unable to fire: G22b evaluates a fresh `all_of[{leg equals none_determinable}]` and compares it by set, so under the bare form its denotation is a SUBSET of this selector's for every input, and it can differ from the file's members only where G15a has already failed. That is the X7 shape — a guard as empty as one nobody calls — and there is NO mutation that reds G22b with G15a green.\n\nSo the module conjunct is added, which is the conjunct both leg-scoped files already carry, and the separating mutation then EXISTS: a B2b row with `leg: none_determinable` in a TENTH module is denoted by no `starts_with` leaf, so G15a compares 29 denoted against 29 rows and PASSES while G22b compares 30 against 29 and REFUSES, naming it. That mutation is committed and runs beside the unmutated build (`crosswalk_controls.exs totality`).\n\nAND THE LEG CONJUNCT IS LOAD-BEARING HERE IN A WAY IT IS ON NEITHER OTHER FILE — measured, not argued. SIX of the 9 modules also hold rows on another leg: `MCP.Protocol.CapabilitiesTest` 6 client / 2 server, `MCP.Protocol.HeaderMirrorTest` 17 / 1, `MCP.ProtocolTest` 5 / 2, `MCP.Transport.SSETest` 10 / 8, `MCP.Transport.SelfCompatibilityTest` 0 / 4, `MCP.Transport.SubscriptionsStreamTest` 0 / 17. The module union WITHOUT the leg conjunct denotes 101 — 29 none_determinable plus 38 client plus 34 server — so the conjunct removes 72 members, against the server file's module leaves which remove none. Only three of the 9 modules are none_determinable throughout: `MCP.IntegrationTest`, `MCP.Protocol.ExtensionsTest` and `MCP.Transport.StdioTest`.",
+   "why_none_of_and_not_an_enumeration_of_the_other_legs": "`leg` happens to take three values in B2b today, so `any_of[{leg equals none_determinable}]` would denote the same 29 rows. It would do so only while that remains true: a fourth leg value would silently pull its members INTO this population — or, under the enumeration form, silently drop them — and nothing would go red. `none_of[client, server]` states the rule the prose states, which is `what neither adjudicated leg has taken`, and carries no assumption about the field's range. MES-105 added the `server` limb for exactly the reason MES-104 wrote the clause this way: the selector had to change when a leg was taken, and changing one leaf is the whole change.\n\nIT ALSO KEEPS THIS FILE'S SELECTOR AND G22b'S APART, WHICH IS WHAT MAKES G22b ABLE TO FIRE. G22b's fresh selector is the enumeration form — `leg equals none_determinable` — and this one is the complement form. Writing both as the enumeration would make them the same question in the same words.",
+   "the_trailing_slash_and_what_it_does_here": "Every module leaf ends in `/`, the separator `docs/conformance/etcc-row-key.md` §1 puts between module and test name, so `MCP.ProtocolTest/` cannot match a member of a `MCP.ProtocolTestExtra`. RE-MEASURED at this tip over all 30 modules B2b names: not one of these 9 is a plain string-prefix of another, and `MCP.ProtocolTest` and `MCP.Protocol.CapabilitiesTest` — the pair that looks like the hazard — are not in that relation either way. So the slash removes NOTHING live here, and it is kept as the same prospective discipline the server file states rather than as a load-bearing leaf.",
+   "c1b_and_c1c_declare_their_own": "The selector is per-population and is read from this file, never hard-coded in the generator. `crosswalk-edges-client.json` declares the client leg and `crosswalk-edges-server.json` the server leg, both closed. With this file declaring `leg: none_determinable`, all three of B2b's leg values are declared and the crosswalk is TOTAL over the ET-CC universe — which is what G24 asserts, in the generator, as a refusal."
   },
-  "everything_else_is": "not_yet_adjudicated — a THIRD state, distinct from bucket 1 ('we looked, there is no counterpart') and from A3 §6 state 4 ('nobody has adjudicated this member'). C1c-ii/iii/iv (MES-115/116/117) own what is left: the 86 server members outside C1c-i's eight modules, the none_determinable class, and this file's last row with it.",
+  "everything_else_is": "NOTHING — and that is the change this ticket makes. Through C1a, C1b and C1c-i to C1c-iv-a this field named a residue: members no file had declared, in A3 §6's state `not yet adjudicated`, distinct both from bucket 1 and from state 4. With the client leg total at 107, the server leg at 145 and this population at 29, every one of the 281 ET-CC members the register carries has a home. The state is not merely reported empty, it is REFUSED empty: G24 set-compares the ET-CC universe against the union of the three files' members in both directions and will not build an artefact where it is not.",
   "why_4_checks_and_not_2": "HISTORICAL — it described the 4 checks C1a's two SERVER members addressed, and those members are now in crosswalk-edges-server.json where the explanation went with them. Kept as a pointer rather than deleted, because A3 §1's cardinality ruling about MCP.Transport.StreamableHTTPStatelessTest yielding THREE edges is the reason that file carries three rows for one member, and a reader tracing the ruling would otherwise find its trail ending here.",
-  "the_fourth_check": "HISTORICAL, and now simply the only check: `tool-add-numbers` / ToolAddNumbers, addressed by MCP.IntegrationTest. With the server members moved, this residual is 1 member and 1 check.",
-  "no_check_population_is_declared_here": "Deliberately. These 3 rows are a residual awaiting C1c, not a leg anyone claims totality over, and declaring a check population would put the rest of `server-stateless` into bucket 2 — asserting of each sibling check that we looked and found no ET counterpart, which nobody has. A file with no declared check population contributes none to bucket 2's universe; its checks are derived from its own edges, exactly as C1a did.",
-  "what_moved_and_when": "C1a declared twenty-one members. MES-104 (C1b-i) took eighteen to the client file; MES-105 (C1c-i) took two more — MCP.Server.DispatchTest and MCP.Transport.StreamableHTTPStatelessTest, four edges between them, moved byte-identical — to the server file. Written in words rather than digits: the generator composes every file's `rule` and the fields around it into prose of its own, and G21 refuses an uninterpolated population figure there, which these would be."
+  "the_fourth_check": "HISTORICAL, and superseded by measurement. It recorded that after the two server members moved this file held 1 member addressing 1 check — `tool-add-numbers` / ToolAddNumbers — and that was true at MES-105's tip. At this tip the file addresses 18 checks over 19 edges, and ToolAddNumbers is one of them, still carried by the same member and the same edge. Kept rather than deleted because C1a's cardinality trail runs through it, and corrected rather than left, because it is an assertion about this file made by this file.",
+  "no_check_population_is_declared_here": "Deliberately, and PM-ratified on this ticket's plan hop (Q4). These 29 members are on neither leg, and every check in A1's manifest carries one — 119 server rows and 56 client rows — so any check universe declared HERE would be a universe one of the leg-scoped files owns. Declaring one would also assert of each sibling check in a declared scenario that we looked and found no ET counterpart, which over a scenario this file does not own would be a claim nobody has made. A file with no declared check population contributes none to bucket 2's universe; its checks are derived from its own edges, exactly as C1a did.\n\nWHAT THAT COSTS, AND WHERE IT IS PAID: G19 — the guard that makes `total over these checks` expensive by requiring every declared check to be axis-decomposed — has nothing to bite on here. The 18 checks this file's edges address are decomposed anyway, because an edge cannot be built against a check the axes file does not carry. What is NOT asserted is that any check outside those 18 has no counterpart among these 29 members, and no bucket-2 entry of this file's making claims it.",
+  "what_moved_and_when": "C1a declared twenty-one members. MES-104 (C1b-i) took eighteen to the client file; MES-105 (C1c-i) took two more — MCP.Server.DispatchTest and MCP.Transport.StreamableHTTPStatelessTest, four edges between them, moved byte-identical — to the server file. One stayed, and MES-121 (C1c-iv-b) added the rest of its class to it rather than moving it anywhere. Written in words rather than digits: the generator composes every file's `rule` and the fields around it into prose of its own, and G21 refuses an uninterpolated population figure there, which these would be."
  },
  "what_a_record_carries_and_why": {
   "member": "MES-67's unit: module AND test name. The `register_key` is docs/conformance/etcc-row-key.md §1's key and is what joins this file to the register; it was extracted from the register, never typed.",
@@ -65,7 +107,7 @@
   "not_carried": "No `oc_key`, no `shape`, no `bucket`, no OC verdict. All four are derived — the OC verdict from A1's committed per-check `status` at the accepted run, the rest through MatchKey."
  },
  "how_a_silent_axis_was_decided": "Conservatively, and the rule is stated rather than applied case by case: a claim counts as covering an axis only when an assertion's SUBJECT is the behaviour that axis names. A test asserting a tool's RESULT does not cover an axis about the ARGUMENTS' wire type, and a test asserting that a capability is ABSENT does not cover an axis about the SHAPE of a present one. This is match-relation.md §6's CG5 rule — a mention is not a discharge — turned on our own side of the relation. Where it was a judgement rather than a reading, the edge's `evidence` says so in those words.",
- "the_all_silent_case": "Four edges have EVERY axis silent. They are recorded and ESCALATED, never bucketed. A3 §2 rules that covering zero of one axis 'is no match, not a partial one'; generalised to N axes that is exactly this case, and A3 §3's table has no row for it — `shape_from_axes/1` would call it `:partial` and bucket 5 would swallow it. Dropping the edges instead would be worse: the member would then look edge-less and therefore bucket-1, asserting 'we looked and there is no counterpart' where the truth is 'there is a counterpart and our claim does not touch its predicate'. Escalation is A3 §7's own mechanism for a case the rule does not decide.",
+ "the_all_silent_case": "ZERO — MEASURED at this tip over this file's 19 edges, and it REPLACES a figure that was wrong at its own commit.\n\nWHAT IT SAID AND WHY IT WAS ALWAYS FALSE HERE. Through C1a's reduction and both moves this field opened `Four edges have EVERY axis silent`. That figure is C1a's, taken over C1a's twenty-one members; by MES-104 eighteen of them were in the client file and by MES-105 two more were in the server file, and what was left was ONE edge whose axes are agrees / silent / silent. So the field asserted four of something the file held none of, over a population of one. It was not made stale by this ticket and it was not made stale by the moves either: it was false at every tip after the first reduction, which is exactly the class a sweep quantified over `the figures this slice moves` cannot reach — nothing this ticket or MES-104 or MES-105 did to the file TOUCHED the sentence. Found by re-measuring the file's own assertions rather than the ones this ticket moved, which is the sweep population the PM ratified for this work.\n\nWHAT IS TRUE NOW. 19 edges carry 63 axis verdicts — 46 agrees, 17 silent, 0 contradicts — and not one edge has every axis silent. The RULE the field states is unchanged and is still the one that would apply: A3 §2 rules that covering zero of one axis `is no match, not a partial one`, generalised to N axes that is exactly this case, A3 §3's table has no row for it, and `shape_from_axes/1` would call it `:partial` and bucket 5 would swallow it. Dropping such an edge would be worse than escalating it: the member would look edge-less and therefore bucket-1, asserting `we looked and there is no counterpart` where the truth is `there is a counterpart and our claim does not touch its predicate`. For contrast, measured the same way at the same tip: the SERVER file says four and holds four.",
  "edges": [
   {
    "member": {
@@ -91,8 +133,1279 @@
    ],
    "et_verdict": "green",
    "evidence": "integration_test.exs:149-150 — `Client.call_tool(client, \"add\", %{\"a\" => 3, \"b\" => 4})` returns `\"7\"`. The call being made is asserted directly. The two type axes are NOT: the assertion is on the tool's RESULT, and a client sending `\"3\"`/`\"4\"` as JSON strings would be caught here only if this SDK's own `add` tool refused them — a property of the fixture server, not of this assertion. Silent, on the CG5 rule: a test whose subject is downstream of the requirement does not discharge it."
+  },
+  {
+   "member": {
+    "module": "MCP.IntegrationTest",
+    "test": "test connect discovers server capabilities via server/discover (no handshake)",
+    "register_key": "MCP.IntegrationTest/test connect discovers server capabilities via server/discover (no handshake)"
+   },
+   "claim": "`server/discover` answers with a result carrying the server's advertised capabilities",
+   "tag": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
+   "axes": [
+    {
+     "axis": "discover_result_carries_capabilities",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "discover_result_carries_supported_versions",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "integration_test.exs:134 — `assert result.server_capabilities.tools != nil`, where `result` is what `Client.connect/1` returns from a `server/discover` round trip (integration_test.exs:130). The capabilities axis AGREES and presence is entailed rather than assumed: `Discover.Result.from_map/1` reads the member with `Map.fetch!(\"capabilities\")` (messages/discover.ex:79), so a result carrying none raises before the assertion, and a result carrying an empty one leaves `server_capabilities.tools` nil and the assertion fails.\n\nTHE SUPPORTED-VERSIONS AXIS IS SILENT, AND FOR A SHARPER REASON THAN THE USUAL ONE — MEASURED, NOT INFERRED. The neighbouring assertion at integration_test.exs:133 looks like its discharge and is not. `result.protocol_version` is built at client.ex:553 as `List.first(discover.supported_versions) || state.protocol_version`, and `@protocol_version` is `\"2026-07-28\"` (client.ex:103). So the `||` fallback makes that assertion pass IDENTICALLY over a discover result whose `supportedVersions` is `[]` — exactly the state the axis requires to fail. An assertion insensitive to the axis's own failing input does not cover it, which is the CG5 rule reached by measurement rather than by reading the subject off the prose.",
+   "note": "The first edge any ET-CC member files onto `ServerImplementsDiscover` from outside the server leg."
+  },
+  {
+   "member": {
+    "module": "MCP.IntegrationTest",
+    "test": "test connect discovers server capabilities via server/discover (no handshake)",
+    "register_key": "MCP.IntegrationTest/test connect discovers server capabilities via server/discover (no handshake)"
+   },
+   "claim": "the discover result identifies the server in `_meta['io.modelcontextprotocol/serverInfo']`",
+   "tag": "oc:server/server-stateless/sep-2575-server-identifies-in-result-meta/ServerIdentifiesInResultMeta",
+   "axes": [
+    {
+     "axis": "server_info_in_result_meta_carries_a_name",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "server_info_in_result_meta_carries_a_version",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "integration_test.exs:132 — `assert result.server_info.name == \"test-server\"`. The ADDRESS the axis names is the one the value came off: `Discover.Result.from_map/1` takes `server_info` from `Map.get(meta, @server_info_meta_key)` under the result's `_meta` (messages/discover.ex:69-75), so a result whose `_meta` omits the key leaves `server_info` nil and `nil.name` raises. Not the result's top-level `serverInfo` — checked, because a name in the wrong envelope would satisfy a careless reading of this axis and not the check.\n\nThe VERSION axis is silent: nothing here asserts a version, and the fixture's `server_info` carries one (integration_test.exs:108) without any assertion's subject being it. A value present in a fixture is not a value a test constrains."
+  },
+  {
+   "member": {
+    "module": "MCP.IntegrationTest",
+    "test": "test tools: list, echo, add, isError, unknown",
+    "register_key": "MCP.IntegrationTest/test tools: list, echo, add, isError, unknown"
+   },
+   "claim": "`tools/list` answers with the advertised tools as a JSON array, each carrying a name",
+   "tag": "oc:server/tools-list/tools-list/ToolsList",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_tools_member",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "tools_is_a_json_array",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "every_tool_has_a_name",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "every_tool_has_a_description",
+     "verdict": "silent"
+    },
+    {
+     "axis": "every_tool_has_an_input_schema",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "integration_test.exs:144 — `assert Enum.map(list[\"tools\"], & &1[\"name\"]) |> Enum.sort() == [\"add\", \"echo\"]`. Three axes are discharged by ONE expression and each for its own reason. PRESENCE: an absent member makes `list[\"tools\"]` nil and `Enum.map/2` raises. ARRAY: Jason decodes a JSON array to a list and an object to a MAP, and `& &1[\"name\"]` over a map's `{k, v}` tuples raises — so the assertion discriminates the two rather than accepting either. EVERY NAME: the sorted result equals a two-element list of the fixture's own tool names, so no listed tool can carry a nil or empty name.\n\nDESCRIPTION and INPUT SCHEMA are SILENT. The handler declares both (integration_test.exs:28-37) and this assertion's subject is the name list; a field a fixture sets and no assertion reads is not covered, which is the same reading `how_a_silent_axis_was_decided` states."
+  },
+  {
+   "member": {
+    "module": "MCP.IntegrationTest",
+    "test": "test tools: list, echo, add, isError, unknown",
+    "register_key": "MCP.IntegrationTest/test tools: list, echo, add, isError, unknown"
+   },
+   "claim": "a tool reporting a TOOL-level error answers with a normal result whose `isError` is true",
+   "tag": "oc:server/tools-call-error/tools-call-error/ToolsCallError",
+   "axes": [
+    {
+     "axis": "the_error_result_sets_is_error_true",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "the_error_result_carries_text_in_its_first_content_block",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "integration_test.exs:152-153 — `{:ok, err} = Client.call_tool(client, \"error_tool\", %{})` and then `assert err[\"isError\"] == true`. The check's axis is `i=r.isError===!0`, STRICT identity with `true`; Elixir's `==` over booleans is equally strict, so a truthy non-boolean fails here exactly as it fails there. The `{:ok, ...}` match is load-bearing for the axis's own framing — a JSON-RPC error would return `{:error, _}` and the match would fail, so the assertion is about a RESULT that flags an error and not about an error response.\n\nThe TEXT axis is SILENT. The handler returns `\"boom\"` in the first content block (integration_test.exs:50-51) and no assertion here reads it. This is the axis the server leg's five `ToolsCallError` edges reach, so the silence is this member's and not the check's."
+  },
+  {
+   "member": {
+    "module": "MCP.IntegrationTest",
+    "test": "test resources: list, read, unknown, templates",
+    "register_key": "MCP.IntegrationTest/test resources: list, read, unknown, templates"
+   },
+   "claim": "`resources/list` answers with the listed resources as a JSON array, each carrying a uri",
+   "tag": "oc:server/resources-list/resources-list/ResourcesList",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_resources_member",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "resources_is_a_json_array",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "every_resource_has_a_uri",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "every_resource_has_a_name",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "integration_test.exs:165 — `assert hd(list[\"resources\"])[\"uri\"] == \"file:///readme.txt\"`. `hd/1` is what discharges the first two axes: it raises on the nil an absent member yields AND on the map a JSON object decodes to, so neither an absent nor a mis-typed `resources` reaches the equality. The URI axis agrees on the precedent the server file set for an `every_*` axis — the assertion pins the field on the instance the fixture produces, and the fixture produces exactly one (integration_test.exs:67).\n\nThe NAME axis is silent: the fixture sets `name` and nothing reads it."
+  },
+  {
+   "member": {
+    "module": "MCP.IntegrationTest",
+    "test": "test resources: list, read, unknown, templates",
+    "register_key": "MCP.IntegrationTest/test resources: list, read, unknown, templates"
+   },
+   "claim": "`resources/read` answers with a contents array whose first entry carries the resource's text",
+   "tag": "oc:server/resources-read-text/resources-read-text/ResourcesReadText",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_contents_member",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "contents_is_a_json_array",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "contents_is_not_empty",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "the_first_content_carries_a_uri",
+     "verdict": "silent"
+    },
+    {
+     "axis": "the_first_content_carries_a_mime_type",
+     "verdict": "silent"
+    },
+    {
+     "axis": "the_first_content_carries_text",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "integration_test.exs:168 — `assert hd(read[\"contents\"])[\"text\"] == \"Hello from MCP!\"`, on the result bound at integration_test.exs:167. `hd/1` reaches three axes at once and they are not one axis counted three times: it raises on nil (PRESENCE), it raises on a map (ARRAY), and it raises on `[]` (NOT EMPTY) — three distinct inputs, three distinct raises. The TEXT axis agrees on the equality against a non-empty string.\n\nMIME TYPE IS SILENT AND THE SILENCE IS THE INTERESTING ONE. The check requires the first content to carry a `mimeType`, camelCase on the wire, and this handler returns no `mimeType` at all (integration_test.exs:71). So the axis is not merely unasserted here — the fixture this member drives would FAIL it. It is recorded as SILENT and not as `contradicts` because a contradiction is a claim of ours that the check's requirement is wrong, and this member makes no claim about mimeType in either direction; what it shows is that the ET side of this pairing is weaker than the OC side, which is a coverage fact about us and is stated here rather than dressed as agreement. URI is silent on the ordinary reading."
+  },
+  {
+   "member": {
+    "module": "MCP.IntegrationTest",
+    "test": "test resources: list, read, unknown, templates",
+    "register_key": "MCP.IntegrationTest/test resources: list, read, unknown, templates"
+   },
+   "claim": "a `resources/read` for a non-existent resource answers with JSON-RPC error -32602, not the retired -32002",
+   "tag": "oc:server/sep-2164-resource-not-found/sep-2164-error-code/ResourcesNotFoundErrorCode",
+   "axes": [
+    {
+     "axis": "no_result_is_returned_for_a_non_existent_resource",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "the_thrown_value_is_a_json_rpc_error_object",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "the_error_code_is_minus_32602",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "integration_test.exs:170-171 — `{:error, error} = Client.read_resource(client, \"file:///missing\")` and `assert error.code == -32_602`. All three axes agree, each on its own limb of those two lines. NO RESULT: the `{:error, _}` match fails outright if a result comes back, which is the axis's `o===void 0?` arm. A JSON-RPC ERROR OBJECT: `error` is an `%MCP.Protocol.Error{}` decoded off the wire, so `error.code` raises on anything that is not one — a transport failure or a timeout returns a different shape and never reaches the equality. THE CODE: asserted as exactly `-32_602`, and the handler's own clause returns `{:error, -32_602, ...}` (integration_test.exs:73-74), so the value crossed the boundary as an encoded message over `MCP.Test.BridgeTransport` rather than being read back out of a struct we built.",
+   "note": "THE COUNTERPART MES-116 FOUND AND MES-117 HANDED TO THIS TICKET BY NAME. `the_counterpart_this_slice_found_that_no_leg_scoped_file_can_declare` records this check as bucket 2 while a real ET-CC counterpart existed, and names this member and these lines as the counterpart. This edge is that field's discharge: `checks_with_edges` is computed over ALL files' cells, so the check leaves bucket 2 GLOBALLY at this tip — a measured cross-file delta, reported in `the_bucket_2_entries_this_ticket_closed_and_the_measured_global_delta` rather than absorbed silently."
+  },
+  {
+   "member": {
+    "module": "MCP.IntegrationTest",
+    "test": "test prompts: list, get, unknown",
+    "register_key": "MCP.IntegrationTest/test prompts: list, get, unknown"
+   },
+   "claim": "`prompts/list` answers with the advertised prompts as a JSON array, each carrying a name",
+   "tag": "oc:server/prompts-list/prompts-list/PromptsList",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_prompts_member",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "prompts_is_a_json_array",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "every_prompt_has_a_name",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "every_prompt_has_a_description",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "integration_test.exs:183 — `assert hd(list[\"prompts\"])[\"name\"] == \"greeting\"`. Same three-way discharge `hd/1` gives on the resources list, and the same precedent for the `every_*` axis. DESCRIPTION is silent although the fixture sets one (integration_test.exs:82): the axis requires every advertised prompt to carry a non-empty `description` and no assertion's subject here is that field."
+  },
+  {
+   "member": {
+    "module": "MCP.IntegrationTest",
+    "test": "test prompts: list, get, unknown",
+    "register_key": "MCP.IntegrationTest/test prompts: list, get, unknown"
+   },
+   "claim": "`prompts/get` answers with a non-empty messages array",
+   "tag": "oc:server/prompts-get-simple/prompts-get-simple/PromptsGetSimple",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_messages_member",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "messages_is_a_json_array",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "messages_is_not_empty",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "every_message_has_a_role",
+     "verdict": "silent"
+    },
+    {
+     "axis": "every_message_has_content",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "integration_test.exs:186 — `assert length(get[\"messages\"]) == 1`, on the result bound at integration_test.exs:185. `length/1` is a guard-level list test: it raises on the nil an absent member yields and on the map an object decodes to, and the `== 1` excludes the empty array — three axes, three distinct inputs.\n\nROLE and CONTENT are SILENT. The fixture's one message carries both (integration_test.exs:87) and the assertion's subject is the array's LENGTH; a length says nothing about what is in the elements. This is the conservative reading applied where it costs coverage rather than where it is free."
+  },
+  {
+   "member": {
+    "module": "MCP.IntegrationTest",
+    "test": "test completion/complete round-trips",
+    "register_key": "MCP.IntegrationTest/test completion/complete round-trips"
+   },
+   "claim": "`completion/complete` answers with a `completion` member carrying a `values` array",
+   "tag": "oc:server/completion-complete/completion-complete/CompletionComplete",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_completion_member",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "completion_carries_a_values_member",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "completion_values_is_a_json_array",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "integration_test.exs:200 — `assert result[\"completion\"][\"values\"] == [\"foo\", \"foobar\"]`, on the result bound at integration_test.exs:197-198. ALL THREE axes agree and the mechanism is worth stating because it is NOT a raise: Access on nil returns nil in Elixir rather than erroring, so an absent `completion` leaves `result[\"completion\"]` nil, the whole expression nil, and the equality FAILS — the assertion discriminates all three failures through its value rather than through an exception. The equality against a two-element list of strings is what carries the array axis: neither a map nor a scalar can equal it.\n\nThe first edge onto this check from any file. The server leg declared `completion-complete` (C1c-iii) and found no member of its own that reached it."
+  },
+  {
+   "member": {
+    "module": "MCP.IntegrationTest",
+    "test": "test MRTR: call_tool transparently completes an input-required round-trip",
+    "register_key": "MCP.IntegrationTest/test MRTR: call_tool transparently completes an input-required round-trip"
+   },
+   "claim": "a tool that required input is answered, after the client's transparent retry, with a result carrying a `resultType`",
+   "tag": "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded",
+   "axes": [
+    {
+     "axis": "the_call_is_not_answered_with_a_jsonrpc_error",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "the_response_carries_a_result",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "the_result_carries_a_result_type_field_at_all",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "the_result_type_is_input_required",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "integration_test.exs:208-209 — `{:ok, result} = Client.call_tool(client, \"needs_input\", %{})` and `assert result[\"resultType\"] == \"complete\"`. The first three axes agree: `{:ok, _}` excludes a JSON-RPC error and an absent result, and the equality requires the `resultType` MEMBER to be there, which is all the presence axis's `in` test asks.\n\nTHE FOURTH AXIS IS SILENT ON EXACTLY THE READING THE SERVER FILE ALREADY RATIFIED, and it is cited rather than re-argued: `the_result_type_marker_the_suite_scores_on_one_path_only` records two `MCP.Server.JsonSchema202012Test` edges onto this same check with the same three-agrees/one-silent shape, on the ground that the fourth axis's antecedent is an INPUT-REQUIRED response and theirs are completed calls. This member DOES drive a real input-required round trip — the handler asks on the first pass and completes on the retry (integration_test.exs:54-60) — but the intermediate response is consumed inside `Client.call_tool/3` and no assertion here is about it. So the distinction is not MRTR-versus-not: it is which response the assertion's subject IS. C1c-ii's two edges on this check agree with all four because they assert the marker on the input-required answer itself."
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.HeaderMirrorTest",
+    "test": "test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value",
+    "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value"
+   },
+   "claim": "the `Mcp-Param-NonAscii` header our client produced for the fixture's `non_ascii_val` decodes back to exactly that body value",
+   "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_NonAscii",
+   "axes": [
+    {
+     "axis": "mcp_param_header_present",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "mcp_param_header_value_matches_body",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "header_mirror_test.exs:377 — `assert HeaderMirror.decode_value(headers[header]) == @fixture_arguments[arg]`, for `non_ascii_val` => `\"mcp-param-nonascii\"` in the map bound at header_mirror_test.exs:370-376. One assertion per pair, so five subjects and five claims, not one collapsed over a loop (A3 §1).\n\nPRESENCE AGREES BY THE SAME MECHANISM THE CLIENT FILE'S CONTROL-CHAR EDGES USE: `headers` is a map, an absent key yields nil, and `decode_value/1` has a single clause guarded `when is_binary(value)` (header_mirror.ex:186), so a missing header raises a FunctionClauseError rather than comparing as nil.\n\nTHE VALUE AXIS AGREES, AND WHAT IT DOES NOT CATCH IS NAMED RATHER THAN LEFT TO BE DISCOVERED. `Ka`'s unsafe branch requires the sentinel SHAPE and then requires the Base64-decoded payload to equal the body value; this assertion is the second conjunct exactly — `Ka`'s own failure text for it is `Base64-decoded header value '${i}' does not match body value '${t}'`. It is NOT the first: `decode_value/1` returns a non-sentinel value unchanged, so a value sent PLAIN would satisfy this assertion while `Ka` rejects it with `requires Base64 encoding but header was sent as plain`. The shape conjunct is covered by the sibling assertion at header_mirror_test.exs:355-363, a CLIENT-leg member already carrying edges onto these same five checks. Recorded as a JUDGEMENT under `how_a_silent_axis_was_decided`'s final sentence: the axis is one axis and this claim covers the part of it the claim is about."
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.HeaderMirrorTest",
+    "test": "test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value",
+    "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value"
+   },
+   "claim": "the `Mcp-Param-Whitespace` header our client produced for the fixture's `whitespace_val` decodes back to exactly that body value",
+   "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Whitespace",
+   "axes": [
+    {
+     "axis": "mcp_param_header_present",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "mcp_param_header_value_matches_body",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "header_mirror_test.exs:377 — `assert HeaderMirror.decode_value(headers[header]) == @fixture_arguments[arg]`, for `whitespace_val` => `\"mcp-param-whitespace\"` in the map bound at header_mirror_test.exs:370-376. One assertion per pair, so five subjects and five claims, not one collapsed over a loop (A3 §1).\n\nPRESENCE AGREES BY THE SAME MECHANISM THE CLIENT FILE'S CONTROL-CHAR EDGES USE: `headers` is a map, an absent key yields nil, and `decode_value/1` has a single clause guarded `when is_binary(value)` (header_mirror.ex:186), so a missing header raises a FunctionClauseError rather than comparing as nil.\n\nTHE VALUE AXIS AGREES, AND WHAT IT DOES NOT CATCH IS NAMED RATHER THAN LEFT TO BE DISCOVERED. `Ka`'s unsafe branch requires the sentinel SHAPE and then requires the Base64-decoded payload to equal the body value; this assertion is the second conjunct exactly — `Ka`'s own failure text for it is `Base64-decoded header value '${i}' does not match body value '${t}'`. It is NOT the first: `decode_value/1` returns a non-sentinel value unchanged, so a value sent PLAIN would satisfy this assertion while `Ka` rejects it with `requires Base64 encoding but header was sent as plain`. The shape conjunct is covered by the sibling assertion at header_mirror_test.exs:355-363, a CLIENT-leg member already carrying edges onto these same five checks. Recorded as a JUDGEMENT under `how_a_silent_axis_was_decided`'s final sentence: the axis is one axis and this claim covers the part of it the claim is about."
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.HeaderMirrorTest",
+    "test": "test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value",
+    "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value"
+   },
+   "claim": "the `Mcp-Param-ControlChar` header our client produced for the fixture's `control_char_val` decodes back to exactly that body value",
+   "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_ControlChar",
+   "axes": [
+    {
+     "axis": "mcp_param_header_present",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "mcp_param_header_value_matches_body",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "header_mirror_test.exs:377 — `assert HeaderMirror.decode_value(headers[header]) == @fixture_arguments[arg]`, for `control_char_val` => `\"mcp-param-controlchar\"` in the map bound at header_mirror_test.exs:370-376. One assertion per pair, so five subjects and five claims, not one collapsed over a loop (A3 §1).\n\nPRESENCE AGREES BY THE SAME MECHANISM THE CLIENT FILE'S CONTROL-CHAR EDGES USE: `headers` is a map, an absent key yields nil, and `decode_value/1` has a single clause guarded `when is_binary(value)` (header_mirror.ex:186), so a missing header raises a FunctionClauseError rather than comparing as nil.\n\nTHE VALUE AXIS AGREES, AND WHAT IT DOES NOT CATCH IS NAMED RATHER THAN LEFT TO BE DISCOVERED. `Ka`'s unsafe branch requires the sentinel SHAPE and then requires the Base64-decoded payload to equal the body value; this assertion is the second conjunct exactly — `Ka`'s own failure text for it is `Base64-decoded header value '${i}' does not match body value '${t}'`. It is NOT the first: `decode_value/1` returns a non-sentinel value unchanged, so a value sent PLAIN would satisfy this assertion while `Ka` rejects it with `requires Base64 encoding but header was sent as plain`. The shape conjunct is covered by the sibling assertion at header_mirror_test.exs:355-363, a CLIENT-leg member already carrying edges onto these same five checks. Recorded as a JUDGEMENT under `how_a_silent_axis_was_decided`'s final sentence: the axis is one axis and this claim covers the part of it the claim is about."
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.HeaderMirrorTest",
+    "test": "test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value",
+    "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value"
+   },
+   "claim": "the `Mcp-Param-CrLf` header our client produced for the fixture's `crlf_val` decodes back to exactly that body value",
+   "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_CrLf",
+   "axes": [
+    {
+     "axis": "mcp_param_header_present",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "mcp_param_header_value_matches_body",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "header_mirror_test.exs:377 — `assert HeaderMirror.decode_value(headers[header]) == @fixture_arguments[arg]`, for `crlf_val` => `\"mcp-param-crlf\"` in the map bound at header_mirror_test.exs:370-376. One assertion per pair, so five subjects and five claims, not one collapsed over a loop (A3 §1).\n\nPRESENCE AGREES BY THE SAME MECHANISM THE CLIENT FILE'S CONTROL-CHAR EDGES USE: `headers` is a map, an absent key yields nil, and `decode_value/1` has a single clause guarded `when is_binary(value)` (header_mirror.ex:186), so a missing header raises a FunctionClauseError rather than comparing as nil.\n\nTHE VALUE AXIS AGREES, AND WHAT IT DOES NOT CATCH IS NAMED RATHER THAN LEFT TO BE DISCOVERED. `Ka`'s unsafe branch requires the sentinel SHAPE and then requires the Base64-decoded payload to equal the body value; this assertion is the second conjunct exactly — `Ka`'s own failure text for it is `Base64-decoded header value '${i}' does not match body value '${t}'`. It is NOT the first: `decode_value/1` returns a non-sentinel value unchanged, so a value sent PLAIN would satisfy this assertion while `Ka` rejects it with `requires Base64 encoding but header was sent as plain`. The shape conjunct is covered by the sibling assertion at header_mirror_test.exs:355-363, a CLIENT-leg member already carrying edges onto these same five checks. Recorded as a JUDGEMENT under `how_a_silent_axis_was_decided`'s final sentence: the axis is one axis and this claim covers the part of it the claim is about."
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.HeaderMirrorTest",
+    "test": "test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value",
+    "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value"
+   },
+   "claim": "the `Mcp-Param-Tab` header our client produced for the fixture's `tab_val` decodes back to exactly that body value",
+   "tag": "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Tab",
+   "axes": [
+    {
+     "axis": "mcp_param_header_present",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "mcp_param_header_value_matches_body",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "header_mirror_test.exs:377 — `assert HeaderMirror.decode_value(headers[header]) == @fixture_arguments[arg]`, for `tab_val` => `\"mcp-param-tab\"` in the map bound at header_mirror_test.exs:370-376. One assertion per pair, so five subjects and five claims, not one collapsed over a loop (A3 §1).\n\nPRESENCE AGREES BY THE SAME MECHANISM THE CLIENT FILE'S CONTROL-CHAR EDGES USE: `headers` is a map, an absent key yields nil, and `decode_value/1` has a single clause guarded `when is_binary(value)` (header_mirror.ex:186), so a missing header raises a FunctionClauseError rather than comparing as nil.\n\nTHE VALUE AXIS AGREES, AND WHAT IT DOES NOT CATCH IS NAMED RATHER THAN LEFT TO BE DISCOVERED. `Ka`'s unsafe branch requires the sentinel SHAPE and then requires the Base64-decoded payload to equal the body value; this assertion is the second conjunct exactly — `Ka`'s own failure text for it is `Base64-decoded header value '${i}' does not match body value '${t}'`. It is NOT the first: `decode_value/1` returns a non-sentinel value unchanged, so a value sent PLAIN would satisfy this assertion while `Ka` rejects it with `requires Base64 encoding but header was sent as plain`. The shape conjunct is covered by the sibling assertion at header_mirror_test.exs:355-363, a CLIENT-leg member already carrying edges onto these same five checks. Recorded as a JUDGEMENT under `how_a_silent_axis_was_decided`'s final sentence: the axis is one axis and this claim covers the part of it the claim is about."
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SelfCompatibilityTest",
+    "test": "test END TO END: our client calls our server's non-header-safe tool over real HTTP",
+    "register_key": "MCP.Transport.SelfCompatibilityTest/test END TO END: our client calls our server's non-header-safe tool over real HTTP"
+   },
+   "claim": "`tools/list` over real HTTP answers with the server's tools as an array, each carrying a name",
+   "tag": "oc:server/tools-list/tools-list/ToolsList",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_tools_member",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "tools_is_a_json_array",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "every_tool_has_a_name",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "every_tool_has_a_description",
+     "verdict": "silent"
+    },
+    {
+     "axis": "every_tool_has_an_input_schema",
+     "verdict": "silent"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "self_compatibility_test.exs:195 — `assert {:ok, %{\"tools\" => [%{\"name\" => name}]}} = MCP.Client.list_tools(client)`, with the bound name pinned at self_compatibility_test.exs:196. The PATTERN is what discharges the three axes and it does so more tightly than an equality would: the map pattern requires the `tools` key, the list pattern requires a JSON array of exactly one element, and the inner map pattern requires that element to carry `name`. A JSON object under `tools` decodes to a map and fails the list pattern.\n\nThis is the only member in this file that reaches a check over REAL HTTP through a real Bandit server (self_compatibility_test.exs:178-193) rather than in-process over `MCP.Test.BridgeTransport`, which is why it is filed beside the BridgeTransport `ToolsList` edge rather than collapsed into it: same check, different transport, two claims.",
+   "note": "The second edge onto `ToolsList` from this file; `MCP.IntegrationTest` files the other."
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SelfCompatibilityTest",
+    "test": "test END TO END: our client calls our server's non-header-safe tool over real HTTP",
+    "register_key": "MCP.Transport.SelfCompatibilityTest/test END TO END: our client calls our server's non-header-safe tool over real HTTP"
+   },
+   "claim": "a `tools/call` over real HTTP answers with a non-empty content array whose block carries the tool's text",
+   "tag": "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText",
+   "axes": [
+    {
+     "axis": "the_result_carries_a_content_member",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "content_is_a_json_array",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "content_is_not_empty",
+     "verdict": "agrees"
+    },
+    {
+     "axis": "a_content_block_has_type_text",
+     "verdict": "silent"
+    },
+    {
+     "axis": "the_text_block_carries_a_text_field",
+     "verdict": "agrees"
+    }
+   ],
+   "et_verdict": "green",
+   "evidence": "self_compatibility_test.exs:198 — `assert {:ok, %{\"content\" => [%{\"text\" => \"sunny\"}]}} = MCP.Client.call_tool(client, name)`. The pattern carries four axes: the `content` key, a one-element LIST (so not a map and not empty), and a block whose `text` is the non-empty string the tool returned.\n\nTHE TYPE-DISCRIMINATOR AXIS IS SILENT, and it is the one axis a pattern match makes easy to over-claim. `a_content_block_has_type_text` requires a block carrying `\"type\":\"text\"` in the WIRE spelling; this pattern names only the `text` key, so it would match a block with no `type` at all. The handler does set it (self_compatibility_test.exs:62) — a fixture setting a field is not an assertion reading it."
   }
  ],
- "declared_unmatched": [],
- "declared_unmatched_note": "A3 §6 state 3 — members adjudicated as having NO OC counterpart. They are bucket 1 over this population. The generator asserts each tag guard-checks to state 3 (decodes as `oc:none`, does NOT resolve as an oc key) before counting it."
+ "declared_unmatched": [
+  {
+   "member": {
+    "module": "MCP.Transport.StdioTest",
+    "test": "test client mode with echo server sends a request and receives echo response",
+    "register_key": "MCP.Transport.StdioTest/test client mode with echo server sends a request and receives echo response"
+   },
+   "tag": "oc:none/no-oc-scenario/stdio-request-response",
+   "cg": null,
+   "search_id": "ND01",
+   "claim_the_slot_names": "a JSON-RPC request written to a child process's stdin comes back as a response on its stdout, matched to the request by `id` (stdio_test.exs:38-44)",
+   "why_no_counterpart": "`no-oc-scenario` — the suite has no stdio scenario ANYWHERE, so the search is over all 175 and not over a fixture. Measured at this tip: 0 of 175 rows mention stdio, stdin, stdout, a subprocess or newline framing, over a population whose 56 `http` rows show the sweep reached it.",
+   "why_this_search_is_this_claims_search": "The claim is a property of the STDIO transport's framing and of nothing else. ND01's subject is that transport, and its near miss is the whole HTTP-only suite — so the honest instrument is a sweep for the transport's own vocabulary over every row, not a search for `request`, which returns 63.",
+   "the_search_that_found_none": "the STDIO transport — newline-delimited JSON-RPC over a child process's stdin/stdout: a request written and its response read back, several requests multiplexed by `id`, a request with no `params`, a notification drawing no response, and a partial line held in a buffer until the newline completing it arrives",
+   "the_near_miss_that_is_not_a_counterpart": "EVERY scenario in the suite, and that is what makes the zero worth stating rather than obvious. The official conformance harness drives an implementation over HTTP only — 56 of the 175 rows carry the letters `http` and the two transports the suite names are Streamable HTTP POST and SSE. A reader could reasonably take `the suite tests the transport layer` to include ours, because the suite's `server-stateless` family is precisely about framing and routing. It is not a counterpart: every one of those rows is scored on an HTTP status, a header or an SSE frame, and MCP's stdio transport has none of the three. The SDK ships stdio as a first-class transport (`MCP.Transport.Stdio`) and the suite cannot reach it at all, so these five members are outside the suite's reach by construction rather than by omission.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StdioTest",
+    "test": "test client mode with echo server handles multiple requests sequentially",
+    "register_key": "MCP.Transport.StdioTest/test client mode with echo server handles multiple requests sequentially"
+   },
+   "tag": "oc:none/no-oc-scenario/stdio-sequential-multiplexing",
+   "cg": null,
+   "search_id": "ND01",
+   "claim_the_slot_names": "three requests written back to back are each answered, and each response is matched to its own request's `id` (stdio_test.exs:64-68)",
+   "why_no_counterpart": "`no-oc-scenario` — the suite has no stdio scenario ANYWHERE, so the search is over all 175 and not over a fixture. Measured at this tip: 0 of 175 rows mention stdio, stdin, stdout, a subprocess or newline framing, over a population whose 56 `http` rows show the sweep reached it.",
+   "why_this_search_is_this_claims_search": "Same transport, a different property of it: not that one round trip works but that three do not cross. ND01's subject names the multiplexing limb explicitly, and no HTTP row can be its counterpart because HTTP correlates by connection rather than by a line in a shared stream.",
+   "the_search_that_found_none": "the STDIO transport — newline-delimited JSON-RPC over a child process's stdin/stdout: a request written and its response read back, several requests multiplexed by `id`, a request with no `params`, a notification drawing no response, and a partial line held in a buffer until the newline completing it arrives",
+   "the_near_miss_that_is_not_a_counterpart": "EVERY scenario in the suite, and that is what makes the zero worth stating rather than obvious. The official conformance harness drives an implementation over HTTP only — 56 of the 175 rows carry the letters `http` and the two transports the suite names are Streamable HTTP POST and SSE. A reader could reasonably take `the suite tests the transport layer` to include ours, because the suite's `server-stateless` family is precisely about framing and routing. It is not a counterpart: every one of those rows is scored on an HTTP status, a header or an SSE frame, and MCP's stdio transport has none of the three. The SDK ships stdio as a first-class transport (`MCP.Transport.Stdio`) and the suite cannot reach it at all, so these five members are outside the suite's reach by construction rather than by omission.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StdioTest",
+    "test": "test client mode with echo server handles request without params",
+    "register_key": "MCP.Transport.StdioTest/test client mode with echo server handles request without params"
+   },
+   "tag": "oc:none/no-oc-scenario/stdio-request-without-params",
+   "cg": null,
+   "search_id": "ND01",
+   "claim_the_slot_names": "a request carrying no `params` at all is framed, sent and answered (stdio_test.exs:83-87)",
+   "why_no_counterpart": "`no-oc-scenario` — the suite has no stdio scenario ANYWHERE, so the search is over all 175 and not over a fixture. Measured at this tip: 0 of 175 rows mention stdio, stdin, stdout, a subprocess or newline framing, over a population whose 56 `http` rows show the sweep reached it.",
+   "why_this_search_is_this_claims_search": "The absent-`params` case is a framing question on the stdio path, which ND01's subject names. It is NOT the JSON-RPC-shape question ND03 covers: that one is about what `Protocol.encode/1` writes, and this one about a real child process reading it off a pipe.",
+   "the_search_that_found_none": "the STDIO transport — newline-delimited JSON-RPC over a child process's stdin/stdout: a request written and its response read back, several requests multiplexed by `id`, a request with no `params`, a notification drawing no response, and a partial line held in a buffer until the newline completing it arrives",
+   "the_near_miss_that_is_not_a_counterpart": "EVERY scenario in the suite, and that is what makes the zero worth stating rather than obvious. The official conformance harness drives an implementation over HTTP only — 56 of the 175 rows carry the letters `http` and the two transports the suite names are Streamable HTTP POST and SSE. A reader could reasonably take `the suite tests the transport layer` to include ours, because the suite's `server-stateless` family is precisely about framing and routing. It is not a counterpart: every one of those rows is scored on an HTTP status, a header or an SSE frame, and MCP's stdio transport has none of the three. The SDK ships stdio as a first-class transport (`MCP.Transport.Stdio`) and the suite cannot reach it at all, so these five members are outside the suite's reach by construction rather than by omission.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StdioTest",
+    "test": "test client mode with echo server notifications get no response",
+    "register_key": "MCP.Transport.StdioTest/test client mode with echo server notifications get no response"
+   },
+   "tag": "oc:none/no-oc-scenario/stdio-notification-draws-no-response",
+   "cg": null,
+   "search_id": "ND01",
+   "claim_the_slot_names": "a notification written to the pipe draws no response line, and the transport is still usable for the request that follows it (stdio_test.exs:101-108)",
+   "why_no_counterpart": "`no-oc-scenario` — the suite has no stdio scenario ANYWHERE, so the search is over all 175 and not over a fixture. Measured at this tip: 0 of 175 rows mention stdio, stdin, stdout, a subprocess or newline framing, over a population whose 56 `http` rows show the sweep reached it.",
+   "why_this_search_is_this_claims_search": "Two limbs, one transport: nothing comes back, and the stream is not left mid-frame. ND01's subject names the notification limb. ND03's notification framing is the shape of the object; this is the transport's behaviour on receiving one.",
+   "the_search_that_found_none": "the STDIO transport — newline-delimited JSON-RPC over a child process's stdin/stdout: a request written and its response read back, several requests multiplexed by `id`, a request with no `params`, a notification drawing no response, and a partial line held in a buffer until the newline completing it arrives",
+   "the_near_miss_that_is_not_a_counterpart": "EVERY scenario in the suite, and that is what makes the zero worth stating rather than obvious. The official conformance harness drives an implementation over HTTP only — 56 of the 175 rows carry the letters `http` and the two transports the suite names are Streamable HTTP POST and SSE. A reader could reasonably take `the suite tests the transport layer` to include ours, because the suite's `server-stateless` family is precisely about framing and routing. It is not a counterpart: every one of those rows is scored on an HTTP status, a header or an SSE frame, and MCP's stdio transport has none of the three. The SDK ships stdio as a first-class transport (`MCP.Transport.Stdio`) and the suite cannot reach it at all, so these five members are outside the suite's reach by construction rather than by omission.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.StdioTest",
+    "test": "test line buffering handles rapid sequential messages",
+    "register_key": "MCP.Transport.StdioTest/test line buffering handles rapid sequential messages"
+   },
+   "tag": "oc:none/no-oc-scenario/stdio-line-buffering",
+   "cg": null,
+   "search_id": "ND01",
+   "claim_the_slot_names": "five messages written rapidly are each recovered as a whole message, so a partial line is held in a buffer until the newline completing it arrives (stdio_test.exs:130-137)",
+   "why_no_counterpart": "`no-oc-scenario` — the suite has no stdio scenario ANYWHERE, so the search is over all 175 and not over a fixture. Measured at this tip: 0 of 175 rows mention stdio, stdin, stdout, a subprocess or newline framing, over a population whose 56 `http` rows show the sweep reached it.",
+   "why_this_search_is_this_claims_search": "The buffering limb of ND01's subject. The nearest thing the suite has is SSE chunk handling, and that is on the HTTP leg and is not stdio's problem: SSE frames terminate on a blank line and stdio's on a single newline.",
+   "the_search_that_found_none": "the STDIO transport — newline-delimited JSON-RPC over a child process's stdin/stdout: a request written and its response read back, several requests multiplexed by `id`, a request with no `params`, a notification drawing no response, and a partial line held in a buffer until the newline completing it arrives",
+   "the_near_miss_that_is_not_a_counterpart": "EVERY scenario in the suite, and that is what makes the zero worth stating rather than obvious. The official conformance harness drives an implementation over HTTP only — 56 of the 175 rows carry the letters `http` and the two transports the suite names are Streamable HTTP POST and SSE. A reader could reasonably take `the suite tests the transport layer` to include ours, because the suite's `server-stateless` family is precisely about framing and routing. It is not a counterpart: every one of those rows is scored on an HTTP status, a header or an SSE frame, and MCP's stdio transport has none of the three. The SDK ships stdio as a first-class transport (`MCP.Transport.Stdio`) and the suite cannot reach it at all, so these five members are outside the suite's reach by construction rather than by omission.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.ExtensionsTest",
+    "test": "test from_meta/1 — the inbound read (T12) reads the peer's declared extensions",
+    "register_key": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) reads the peer's declared extensions"
+   },
+   "tag": "oc:none/no-oc-scenario/extensions-inbound-read",
+   "cg": null,
+   "search_id": "ND02",
+   "claim_the_slot_names": "a peer's declared extensions are read out of `_meta['io.modelcontextprotocol/clientCapabilities'].extensions` and returned as they stand (extensions_test.exs:388-389)",
+   "why_no_counterpart": "`no-oc-scenario` — SEP-2133 extensions have no OC check on either leg. Measured at this tip: 0 of all 175 rows carry `extension` or `experimental`, over a population whose 12 `capabilit` rows and 13 `_meta` rows show the sweep reached the right part of it.",
+   "why_this_search_is_this_claims_search": "The claim is about which key inside the `_meta` envelope an extension declaration is taken from. ND02's subject is that read. The search is over all 175 because the constrained behaviour is on neither leg's own path — B2b's reason for the attribution — so a counterpart on either would count.",
+   "the_search_that_found_none": "SEP-2133 capability EXTENSIONS — a peer's declared extensions read back out of a request's `_meta` client-capabilities envelope, and the rule that keeps `extensions` and `experimental` separate fields on the wire rather than one reused one",
+   "the_near_miss_that_is_not_a_counterpart": "`sep-2575-request-meta-invalid-missing-client-capabilities` / RequestMetaInvalid and `sep-2575-client-populates-meta` / ClientPopulatesMeta. Twelve rows carry the letters `capabilit` — the positive control returns exactly those — and a reader who greps for capabilities finds them and could stop. They are not counterparts on the same ground in both directions: what they score is whether the `_meta` client-capabilities ENVELOPE is present and valid at all, and what these members assert is which KEY inside it an extension declaration is taken from and how it is spelled. The envelope and its contents are different subjects, and the suite scores only the first. Corroborates A4 §5's measured 0 of 175 for SEP-2133 and the CG2 zero the client file records, re-measured here at this tip over this file's own population.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.ExtensionsTest",
+    "test": "test from_meta/1 — the inbound read (T12) returns %{} for nil, an absent key, or an absent extensions field",
+    "register_key": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) returns %{} for nil, an absent key, or an absent extensions field"
+   },
+   "tag": "oc:none/no-oc-scenario/extensions-absent-envelope",
+   "cg": null,
+   "search_id": "ND02",
+   "claim_the_slot_names": "nil, an empty map, an envelope with no `extensions` field and an unrelated key all read as no declared extensions (extensions_test.exs:394-397)",
+   "why_no_counterpart": "`no-oc-scenario` — SEP-2133 extensions have no OC check on either leg; ND02's zero over all 175 is the measurement.",
+   "why_this_search_is_this_claims_search": "The absent-envelope case of the same read. It is the case an OC check WOULD have to cover to be a counterpart, and ND02's near miss names the two rows that score the envelope's presence and validity without ever reaching its contents.",
+   "the_search_that_found_none": "SEP-2133 capability EXTENSIONS — a peer's declared extensions read back out of a request's `_meta` client-capabilities envelope, and the rule that keeps `extensions` and `experimental` separate fields on the wire rather than one reused one",
+   "the_near_miss_that_is_not_a_counterpart": "`sep-2575-request-meta-invalid-missing-client-capabilities` / RequestMetaInvalid and `sep-2575-client-populates-meta` / ClientPopulatesMeta. Twelve rows carry the letters `capabilit` — the positive control returns exactly those — and a reader who greps for capabilities finds them and could stop. They are not counterparts on the same ground in both directions: what they score is whether the `_meta` client-capabilities ENVELOPE is present and valid at all, and what these members assert is which KEY inside it an extension declaration is taken from and how it is spelled. The envelope and its contents are different subjects, and the suite scores only the first. Corroborates A4 §5's measured 0 of 175 for SEP-2133 and the CG2 zero the client file records, re-measured here at this tip over this file's own population.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.ExtensionsTest",
+    "test": "test from_meta/1 — the inbound read (T12) a peer's `{}` and an omitted key collapse to the same %{} (deliberately)",
+    "register_key": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) a peer's `{}` and an omitted key collapse to the same %{} (deliberately)"
+   },
+   "tag": "oc:none/no-oc-scenario/extensions-empty-and-omitted-collapse",
+   "cg": null,
+   "search_id": "ND02",
+   "claim_the_slot_names": "a peer's `{}` and an omitted key collapse to the same answer inbound, deliberately, although outbound they are different claims (extensions_test.exs:409-410)",
+   "why_no_counterpart": "`no-oc-scenario` — SEP-2133 extensions have no OC check on either leg; ND02's zero over all 175 is the measurement.",
+   "why_this_search_is_this_claims_search": "A decision about the inbound read's semantics, which is ND02's subject. No OC check could contradict it because no OC check reaches the field; that is the point of the zero rather than a convenience of it.",
+   "the_search_that_found_none": "SEP-2133 capability EXTENSIONS — a peer's declared extensions read back out of a request's `_meta` client-capabilities envelope, and the rule that keeps `extensions` and `experimental` separate fields on the wire rather than one reused one",
+   "the_near_miss_that_is_not_a_counterpart": "`sep-2575-request-meta-invalid-missing-client-capabilities` / RequestMetaInvalid and `sep-2575-client-populates-meta` / ClientPopulatesMeta. Twelve rows carry the letters `capabilit` — the positive control returns exactly those — and a reader who greps for capabilities finds them and could stop. They are not counterparts on the same ground in both directions: what they score is whether the `_meta` client-capabilities ENVELOPE is present and valid at all, and what these members assert is which KEY inside it an extension declaration is taken from and how it is spelled. The envelope and its contents are different subjects, and the suite scores only the first. Corroborates A4 §5's measured 0 of 175 for SEP-2133 and the CG2 zero the client file records, re-measured here at this tip over this file's own population.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.ExtensionsTest",
+    "test": "test from_meta/1 — the inbound read (T12) does NOT validate: a malformed identifier reaches the caller verbatim",
+    "register_key": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) does NOT validate: a malformed identifier reaches the caller verbatim"
+   },
+   "tag": "oc:none/no-oc-scenario/extensions-inbound-not-validated",
+   "cg": null,
+   "search_id": "ND02",
+   "claim_the_slot_names": "a malformed extension identifier reaches the caller VERBATIM inbound, where outbound the same identifier is refused (extensions_test.exs:431-433)",
+   "why_no_counterpart": "`no-oc-scenario` — SEP-2133 extensions have no OC check on either leg; ND02's zero over all 175 is the measurement.",
+   "why_this_search_is_this_claims_search": "The asymmetry between the two directions is the claim, and both directions are SEP-2133's, which ND02's subject names. A validation check would be the counterpart and the suite has none in either direction.",
+   "the_search_that_found_none": "SEP-2133 capability EXTENSIONS — a peer's declared extensions read back out of a request's `_meta` client-capabilities envelope, and the rule that keeps `extensions` and `experimental` separate fields on the wire rather than one reused one",
+   "the_near_miss_that_is_not_a_counterpart": "`sep-2575-request-meta-invalid-missing-client-capabilities` / RequestMetaInvalid and `sep-2575-client-populates-meta` / ClientPopulatesMeta. Twelve rows carry the letters `capabilit` — the positive control returns exactly those — and a reader who greps for capabilities finds them and could stop. They are not counterparts on the same ground in both directions: what they score is whether the `_meta` client-capabilities ENVELOPE is present and valid at all, and what these members assert is which KEY inside it an extension declaration is taken from and how it is spelled. The envelope and its contents are different subjects, and the suite scores only the first. Corroborates A4 §5's measured 0 of 175 for SEP-2133 and the CG2 zero the client file records, re-measured here at this tip over this file's own population.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.ExtensionsTest",
+    "test": "test from_meta/1 — the inbound read (T12) caches nothing between calls",
+    "register_key": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) caches nothing between calls"
+   },
+   "tag": "oc:none/no-oc-scenario/extensions-no-inference-between-calls",
+   "cg": null,
+   "search_id": "ND02",
+   "claim_the_slot_names": "the inbound read caches nothing between calls, so a previous request's declaration cannot survive into the next (extensions_test.exs:443-445)",
+   "why_no_counterpart": "`no-oc-scenario` — SEP-2133 extensions have no OC check on either leg; ND02's zero over all 175 is the measurement.",
+   "why_this_search_is_this_claims_search": "The claim is schema.ts:96's `Servers MUST NOT infer capabilities from prior requests` applied to the extensions field. The server file's SRV06 covers cross-request residue for the notification collector; this is the same rule on the field ND02 names, and the field is what has no check.",
+   "the_search_that_found_none": "SEP-2133 capability EXTENSIONS — a peer's declared extensions read back out of a request's `_meta` client-capabilities envelope, and the rule that keeps `extensions` and `experimental` separate fields on the wire rather than one reused one",
+   "the_near_miss_that_is_not_a_counterpart": "`sep-2575-request-meta-invalid-missing-client-capabilities` / RequestMetaInvalid and `sep-2575-client-populates-meta` / ClientPopulatesMeta. Twelve rows carry the letters `capabilit` — the positive control returns exactly those — and a reader who greps for capabilities finds them and could stop. They are not counterparts on the same ground in both directions: what they score is whether the `_meta` client-capabilities ENVELOPE is present and valid at all, and what these members assert is which KEY inside it an extension declaration is taken from and how it is spelled. The envelope and its contents are different subjects, and the suite scores only the first. Corroborates A4 §5's measured 0 of 175 for SEP-2133 and the CG2 zero the client file records, re-measured here at this tip over this file's own population.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.ExtensionsTest",
+    "test": "doctest MCP.Protocol.Extensions.from_meta/1 (8)",
+    "register_key": "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (8)"
+   },
+   "tag": "oc:none/no-oc-scenario/extensions-doctest-inbound-read",
+   "cg": null,
+   "search_id": "ND02",
+   "claim_the_slot_names": "the published example of the inbound read — a `_meta` envelope declaring one extension yields exactly that extension (extensions.ex:413-416)",
+   "why_no_counterpart": "`no-oc-scenario` — SEP-2133 extensions have no OC check on either leg; ND02's zero over all 175 is the measurement.",
+   "why_this_search_is_this_claims_search": "A doctest is a unit like any other under MES-67's member rule, and its claim is ND02's subject. Filed as its own row rather than folded into the T12 test that makes the same claim: one member, one home, and B2b holds them as two members.",
+   "the_search_that_found_none": "SEP-2133 capability EXTENSIONS — a peer's declared extensions read back out of a request's `_meta` client-capabilities envelope, and the rule that keeps `extensions` and `experimental` separate fields on the wire rather than one reused one",
+   "the_near_miss_that_is_not_a_counterpart": "`sep-2575-request-meta-invalid-missing-client-capabilities` / RequestMetaInvalid and `sep-2575-client-populates-meta` / ClientPopulatesMeta. Twelve rows carry the letters `capabilit` — the positive control returns exactly those — and a reader who greps for capabilities finds them and could stop. They are not counterparts on the same ground in both directions: what they score is whether the `_meta` client-capabilities ENVELOPE is present and valid at all, and what these members assert is which KEY inside it an extension declaration is taken from and how it is spelled. The envelope and its contents are different subjects, and the suite scores only the first. Corroborates A4 §5's measured 0 of 175 for SEP-2133 and the CG2 zero the client file records, re-measured here at this tip over this file's own population.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.ExtensionsTest",
+    "test": "doctest MCP.Protocol.Extensions.from_meta/1 (9)",
+    "register_key": "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (9)"
+   },
+   "tag": "oc:none/no-oc-scenario/extensions-doctest-nil-envelope",
+   "cg": null,
+   "search_id": "ND02",
+   "claim_the_slot_names": "the published example of the nil case — `from_meta(nil)` yields no declared extensions (extensions.ex:418-419)",
+   "why_no_counterpart": "`no-oc-scenario` — SEP-2133 extensions have no OC check on either leg; ND02's zero over all 175 is the measurement.",
+   "why_this_search_is_this_claims_search": "The doctest sibling of the absent-envelope case, and ND02's subject covers it for the same reason.",
+   "the_search_that_found_none": "SEP-2133 capability EXTENSIONS — a peer's declared extensions read back out of a request's `_meta` client-capabilities envelope, and the rule that keeps `extensions` and `experimental` separate fields on the wire rather than one reused one",
+   "the_near_miss_that_is_not_a_counterpart": "`sep-2575-request-meta-invalid-missing-client-capabilities` / RequestMetaInvalid and `sep-2575-client-populates-meta` / ClientPopulatesMeta. Twelve rows carry the letters `capabilit` — the positive control returns exactly those — and a reader who greps for capabilities finds them and could stop. They are not counterparts on the same ground in both directions: what they score is whether the `_meta` client-capabilities ENVELOPE is present and valid at all, and what these members assert is which KEY inside it an extension declaration is taken from and how it is spelled. The envelope and its contents are different subjects, and the suite scores only the first. Corroborates A4 §5's measured 0 of 175 for SEP-2133 and the CG2 zero the client file records, re-measured here at this tip over this file's own population.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.CapabilitiesTest",
+    "test": "test extensions vs experimental — the 2x2 (T6-T9) neither is emitted when unset",
+    "register_key": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) neither is emitted when unset"
+   },
+   "tag": "oc:none/no-oc-scenario/extensions-and-experimental-stay-separate",
+   "cg": "CG2",
+   "search_id": "ND02",
+   "claim_the_slot_names": "neither `extensions` nor `experimental` is emitted when unset, and this is asserted over BOTH a ServerCapabilities and a ClientCapabilities in one test (capabilities_test.exs:192-198)",
+   "why_no_counterpart": "`no-oc-scenario` — SEP-2133 extensions have no OC check on either leg; ND02's zero over all 175 is the measurement. The server file's SRV29 records the same zero from the server leg's side, and this member is on neither leg because its two refutes are two independent single-leg claims on OPPOSITE legs.",
+   "why_this_search_is_this_claims_search": "ND02's subject names the `extensions`/`experimental` separation explicitly, which is this member's whole subject. It is NOT ND05's: ND05 is about a capabilities object's encoding generally — which sub-capability keys appear and how the flags inside them are spelled — and this claim is about two specific fields SEP-2133 introduced and the rule that they not be merged.",
+   "the_search_that_found_none": "SEP-2133 capability EXTENSIONS — a peer's declared extensions read back out of a request's `_meta` client-capabilities envelope, and the rule that keeps `extensions` and `experimental` separate fields on the wire rather than one reused one",
+   "the_near_miss_that_is_not_a_counterpart": "`sep-2575-request-meta-invalid-missing-client-capabilities` / RequestMetaInvalid and `sep-2575-client-populates-meta` / ClientPopulatesMeta. Twelve rows carry the letters `capabilit` — the positive control returns exactly those — and a reader who greps for capabilities finds them and could stop. They are not counterparts on the same ground in both directions: what they score is whether the `_meta` client-capabilities ENVELOPE is present and valid at all, and what these members assert is which KEY inside it an extension declaration is taken from and how it is spelled. The envelope and its contents are different subjects, and the suite scores only the first. Corroborates A4 §5's measured 0 of 175 for SEP-2133 and the CG2 zero the client file records, re-measured here at this tip over this file's own population.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.ProtocolTest",
+    "test": "test encode/1 encodes a notification",
+    "register_key": "MCP.ProtocolTest/test encode/1 encodes a notification"
+   },
+   "tag": "oc:none/no-oc-scenario/notification-framing-encode",
+   "cg": null,
+   "search_id": "ND03",
+   "claim_the_slot_names": "a notification with no params encodes with `jsonrpc` and `method` and with NO `id` and NO `params` member (protocol_test.exs:69-72)",
+   "why_no_counterpart": "`no-oc-scenario` — the suite scores WHICH notifications arrive and what headers carry them, never how one is framed. Measured at this tip: 0 of all 175 rows, over a population whose 6 `notification` rows and 46 `json-rpc` rows show the sweep reached it.",
+   "why_this_search_is_this_claims_search": "The claim's subject is the encoded object's own members — two present, two absent. ND03's subject is exactly that, and its near miss enumerates all six rows in the suite that mention notifications at all and says of each why it is about something else.",
+   "the_search_that_found_none": "JSON-RPC NOTIFICATION framing as such — a notification encoded with `jsonrpc` and `method` and NO `id` member, `params` omitted entirely when the notification carries none, and an inbound notification recognised as a notification rather than as a request with a missing id",
+   "the_near_miss_that_is_not_a_counterpart": "`sep-2243-client-includes-standard-headers` / ClientMcpMethodHeader_notifications_initialized, and the three server-stateless subscription rows — ServerHonorsNotificationFilter, ServerSendsToolsListChangedOnSubscription, ServerSendsPromptsListChangedOnSubscription. SIX rows carry the word `notification`; the positive control returns exactly those six, so the sweep reached every place the suite talks about them. Not one is a counterpart. The header row scores whether a POST carrying a notification carries the right `Mcp-Method` VALUE — a property of the envelope around the notification, not of the notification. The three subscription rows score WHICH notification types arrive on an open stream and which do not. None of the six asks whether the JSON object is shaped as a notification: whether the `id` member is absent rather than null, and whether an absent `params` is omitted rather than encoded as null. The framing is the one thing about notifications the suite does not score.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.ProtocolTest",
+    "test": "test encode/1 encodes a notification with params",
+    "register_key": "MCP.ProtocolTest/test encode/1 encodes a notification with params"
+   },
+   "tag": "oc:none/no-oc-scenario/notification-framing-encode-with-params",
+   "cg": null,
+   "search_id": "ND03",
+   "claim_the_slot_names": "a notification carrying params encodes them under `params` unchanged (protocol_test.exs:81)",
+   "why_no_counterpart": "`no-oc-scenario` — the suite has no notification-framing check; ND03's zero over all 175 is the measurement.",
+   "why_this_search_is_this_claims_search": "The complement of the omitted-`params` claim and the reason the two are separate members: one asserts the member is absent, the other that it is present and faithful. ND03's subject names both.",
+   "the_search_that_found_none": "JSON-RPC NOTIFICATION framing as such — a notification encoded with `jsonrpc` and `method` and NO `id` member, `params` omitted entirely when the notification carries none, and an inbound notification recognised as a notification rather than as a request with a missing id",
+   "the_near_miss_that_is_not_a_counterpart": "`sep-2243-client-includes-standard-headers` / ClientMcpMethodHeader_notifications_initialized, and the three server-stateless subscription rows — ServerHonorsNotificationFilter, ServerSendsToolsListChangedOnSubscription, ServerSendsPromptsListChangedOnSubscription. SIX rows carry the word `notification`; the positive control returns exactly those six, so the sweep reached every place the suite talks about them. Not one is a counterpart. The header row scores whether a POST carrying a notification carries the right `Mcp-Method` VALUE — a property of the envelope around the notification, not of the notification. The three subscription rows score WHICH notification types arrive on an open stream and which do not. None of the six asks whether the JSON object is shaped as a notification: whether the `id` member is absent rather than null, and whether an absent `params` is omitted rather than encoded as null. The framing is the one thing about notifications the suite does not score.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.ProtocolTest",
+    "test": "test decode/1 decodes a notification",
+    "register_key": "MCP.ProtocolTest/test decode/1 decodes a notification"
+   },
+   "tag": "oc:none/no-oc-scenario/notification-framing-decode",
+   "cg": null,
+   "search_id": "ND03",
+   "claim_the_slot_names": "an inbound notification is decoded as a notification rather than as a request, with its method kept and its absent params decoded as nil (protocol_test.exs:127-130)",
+   "why_no_counterpart": "`no-oc-scenario` — the suite has no notification-framing check; ND03's zero over all 175 is the measurement.",
+   "why_this_search_is_this_claims_search": "The inbound half of ND03's subject. The server file's SRV31 covers decoding an inbound REQUEST into a typed struct and its id's JSON type; this is the sibling question for a notification, where the discriminating property is the ABSENCE of an id rather than its type.",
+   "the_search_that_found_none": "JSON-RPC NOTIFICATION framing as such — a notification encoded with `jsonrpc` and `method` and NO `id` member, `params` omitted entirely when the notification carries none, and an inbound notification recognised as a notification rather than as a request with a missing id",
+   "the_near_miss_that_is_not_a_counterpart": "`sep-2243-client-includes-standard-headers` / ClientMcpMethodHeader_notifications_initialized, and the three server-stateless subscription rows — ServerHonorsNotificationFilter, ServerSendsToolsListChangedOnSubscription, ServerSendsPromptsListChangedOnSubscription. SIX rows carry the word `notification`; the positive control returns exactly those six, so the sweep reached every place the suite talks about them. Not one is a counterpart. The header row scores whether a POST carrying a notification carries the right `Mcp-Method` VALUE — a property of the envelope around the notification, not of the notification. The three subscription rows score WHICH notification types arrive on an open stream and which do not. None of the six asks whether the JSON object is shaped as a notification: whether the `id` member is absent rather than null, and whether an absent `params` is omitted rather than encoded as null. The framing is the one thing about notifications the suite does not score.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SSETest",
+    "test": "test stream parser round-trip encode then decode",
+    "register_key": "MCP.Transport.SSETest/test stream parser round-trip encode then decode"
+   },
+   "tag": "oc:none/no-oc-scenario/sse-codec-round-trip",
+   "cg": null,
+   "search_id": "ND04",
+   "claim_the_slot_names": "a message encoded to SSE field lines parses back to the same message, with its `event` and `id` fields recovered (sse_test.exs:195-199)",
+   "why_no_counterpart": "`no-oc-scenario` — the suite's only SSE rows score whether concurrent POST streams work end to end, never a frame's syntax. Measured at this tip: 0 of all 175 rows, over a population whose 2 `sse` rows and 7 `stream` rows show the sweep reached them.",
+   "why_this_search_is_this_claims_search": "The claim is our encoder's output being our parser's input, which is why B2b calls the member none_determinable and why a leg-scoped search would be the wrong instrument. ND04's subject is that codec, and its near miss names the two rows a grep for `sse` returns.",
+   "the_search_that_found_none": "the SYNTAX of a Server-Sent-Events frame as our own codec writes and reads it — a message encoded to `event:`/`id:`/`data:` field lines and parsed back to the same message, and a bare `:`-leading comment line arriving between two events being ignored rather than delivered as an event of its own",
+   "the_near_miss_that_is_not_a_counterpart": "`server-sse-multiple-streams` / ServerAcceptsMultiplePostStreams and ServerSSEStreamsFunctional. The suite DOES carry the letters SSE and the positive control returns exactly those two rows, so the sweep reached them. They are not counterparts on two independent grounds, either sufficient: what they score is that concurrent POST streams are FUNCTIONAL end to end, never how one frame's text is split into fields; and neither reaches a comment line, which by the SSE grammar carries no data and is precisely the frame a functional-stream check cannot see. A reader who greps `sse`, finds two rows and stops would take these for the counterpart. The client file's S01 and the server file's SRV30 record the same absence from their own legs' side; this entry is the two-legged codec's, re-measured at this tip.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "test": "test T-8 keep-alive comment lines our parser ignores a comment line arriving between two events",
+    "register_key": "MCP.Transport.SubscriptionsStreamTest/test T-8 keep-alive comment lines our parser ignores a comment line arriving between two events"
+   },
+   "tag": "oc:none/no-oc-scenario/sse-comment-line-ignored",
+   "cg": null,
+   "search_id": "ND04",
+   "claim_the_slot_names": "a bare `:`-leading comment line arriving between two events is ignored, and the two events either side are both delivered in order (subscriptions_stream_test.exs:378-381)",
+   "why_no_counterpart": "`no-oc-scenario` — the suite has no check on SSE frame syntax; ND04's zero over all 175 is the measurement. A comment line is by the SSE grammar a frame carrying no data, so a functional-stream check cannot see one even in principle.",
+   "why_this_search_is_this_claims_search": "ND04's subject names the comment-line limb explicitly. The server file's SRV12 records the absence of a check on a server EMITTING keep-alive comments; this claim is the parser IGNORING one, which is the other side of the same gap and is on neither leg.",
+   "the_search_that_found_none": "the SYNTAX of a Server-Sent-Events frame as our own codec writes and reads it — a message encoded to `event:`/`id:`/`data:` field lines and parsed back to the same message, and a bare `:`-leading comment line arriving between two events being ignored rather than delivered as an event of its own",
+   "the_near_miss_that_is_not_a_counterpart": "`server-sse-multiple-streams` / ServerAcceptsMultiplePostStreams and ServerSSEStreamsFunctional. The suite DOES carry the letters SSE and the positive control returns exactly those two rows, so the sweep reached them. They are not counterparts on two independent grounds, either sufficient: what they score is that concurrent POST streams are FUNCTIONAL end to end, never how one frame's text is split into fields; and neither reaches a comment line, which by the SSE grammar carries no data and is precisely the frame a functional-stream check cannot see. A reader who greps `sse`, finds two rows and stops would take these for the counterpart. The client file's S01 and the server file's SRV30 record the same absence from their own legs' side; this entry is the two-legged codec's, re-measured at this tip.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.CapabilitiesTest",
+    "test": "test ServerCapabilities round-trips through JSON",
+    "register_key": "MCP.Protocol.CapabilitiesTest/test ServerCapabilities round-trips through JSON"
+   },
+   "tag": "oc:none/no-oc-scenario/capabilities-object-encoding",
+   "cg": null,
+   "search_id": "ND05",
+   "claim_the_slot_names": "a ServerCapabilities decoded from a map and re-encoded carries `tools.listChanged` and `resources.subscribe` through, and omits the sub-capabilities that were never set (capabilities_test.exs:56-59)",
+   "why_no_counterpart": "`no-oc-scenario` — no OC check on either leg reads a capabilities object's own keys. Measured at this tip: 0 of all 175 rows, over a population whose 12 `capabilit` rows show the sweep reached the right part of it.",
+   "why_this_search_is_this_claims_search": "The claim is about the object's ENCODING — which keys are there and which are absent. ND05's subject is that, and its near miss names the two `ListChanged` rows that a grep on the flag's name returns and the `DiscoverCapabilitiesMatchHandlers` row that reads `capabilities` without ever reading its keys. It is not ND02's: no `extensions` or `experimental` field is in this test's subject.",
+   "the_search_that_found_none": "the ENCODING of a capabilities object — which sub-capability keys appear under it, the camelCase spelling of the flags inside them, and a sub-capability the implementation left unset being ABSENT from the encoded object rather than present as null",
+   "the_near_miss_that_is_not_a_counterpart": "`sep-2575-server-sends-tools-list-changed-on-subscription` / ServerSendsToolsListChangedOnSubscription and its prompts sibling. The suite carries the letters `ListChanged` in exactly those two row NAMES — which is why this entry's pattern has to require `listChanged` to occur NEAR `capabilit` rather than alone, and the unnarrowed form was measured returning those two. They are not counterparts: what they score is whether a `notifications/*/list_changed` FRAME arrives on an open subscription stream, and this claim is about whether the `listChanged` FLAG appears under `capabilities.tools` in an encoded capabilities object. One is a notification, the other a boolean in a capability declaration, and they share only a name. `sep-2575-discover-capabilities-match-handlers` / DiscoverCapabilitiesMatchHandlers is the second-nearest and fails differently: it READS `capabilities` and then asks whether a real RPC call honours what it found, never what the object's own keys are.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.Protocol.HeaderMirrorTest",
+    "test": "test value encoding — omission and the sentinel's ambiguity rule a plain-ASCII value that LOOKS like a sentinel is itself encoded",
+    "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a plain-ASCII value that LOOKS like a sentinel is itself encoded"
+   },
+   "tag": "oc:none/no-oc-fixture-case/sentinel-shaped-literal-is-itself-encoded",
+   "cg": "CG7",
+   "search_id": "ND06",
+   "claim_the_slot_names": "a plain-ASCII value that LOOKS like the Base64 sentinel is itself encoded on the way out, and decodes back to the literal it was (header_mirror_test.exs:442-446)",
+   "why_no_counterpart": "`no-oc-fixture-case` — the suite HAS the check (`sep-2243-client-base64-unsafe`, which this file carries five edges onto) and its FIXTURE never puts a sentinel-shaped literal in front of it. Measured over the 14027 bytes of the two CG7 scenarios: 0 occurrences of the sentinel, against 55 `x-mcp-header` annotations.",
+   "why_this_search_is_this_claims_search": "The claim is the ambiguity rule, and a manifest-row sweep is the wrong instrument for it: the rows for `sep-2243-client-base64-unsafe` are right there and would come back as hits while telling us nothing about whether the case is reached. ND06 sweeps the FIXTURE instead, which is where the answer is.",
+   "the_search_that_found_none": "a plain-ASCII parameter value that is ITSELF shaped like the Base64 encoded-word sentinel — the ambiguity case `streamable-http.mdx:508-510` exists for, where a literal must be encoded anyway or a server cannot tell an encoded value from a literal one",
+   "the_near_miss_that_is_not_a_counterpart": "`sep-2243-client-base64-unsafe` and its seven `ClientCustomHeader_*` rows. The suite HAS the check in the right place — it scores whether an unsafe value is sent as a sentinel and decodes back — and this file carries five edges onto those very rows, so the resemblance is not superficial. What is missing is the FIXTURE CASE: `Ga`, the predicate that decides whether a value needs encoding, returns true for non-ASCII, for control characters and for untrimmed whitespace, and it returns FALSE for a plain-ASCII string, INCLUDING one that happens to look like `=?base64?x?=`. So the suite's own encode/decode machinery would take such a literal for an already-encoded value, and the fixture never puts one in front of it: zero occurrences of the sentinel in the 14027 bytes of the two CG7 scenarios, against 55 `x-mcp-header` annotations and 15 object-typed schema properties that show the sweep reading the right bytes. The spec MUST is real, our implementation honours it, and the suite's fixture does not reach it.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  },
+  {
+   "member": {
+    "module": "MCP.Transport.SelfCompatibilityTest",
+    "test": "test REACHABILITY CONTROL: an encoded Mcp-Name is decoded before comparison, so our own client is not self-rejected",
+    "register_key": "MCP.Transport.SelfCompatibilityTest/test REACHABILITY CONTROL: an encoded Mcp-Name is decoded before comparison, so our own client is not self-rejected"
+   },
+   "tag": "oc:none/no-oc-fixture-case/routing-header-decoded-before-comparison",
+   "cg": null,
+   "search_id": "ND07",
+   "claim_the_slot_names": "our client's encoded `Mcp-Name` is decoded by our server's plug before it is compared to `params.name`, so a conforming client of ours is not self-rejected (self_compatibility_test.exs:100 and self_compatibility_test.exs:109)",
+   "why_no_counterpart": "`no-oc-fixture-case` — the suite HAS a check on the `Mcp-Name` header against `params.name` and its predicate performs NO decoding, measured over the 1793 bytes holding both routing-header predicates. So the check cannot score this behaviour, and its fixture never provokes the encode that would make the difference visible. The server-side half has no check at all, which is the server file's SRV01 zero over the 119.",
+   "why_this_search_is_this_claims_search": "ND07 sweeps the suite's own comparison machinery for any decode and finds none, with `mcp-name`, `params.` and `headers[` returning hits that show it read the right bytes. That is the only population in which this claim's zero is measurable: the manifest rows for `ClientMcpNameHeader_tools_call` exist, so a row sweep would return the near miss as a hit and the entry would have to explain away a zero it could not get.",
+   "the_search_that_found_none": "a routing header being DECODED before it is compared to the body value it must agree with — `streamable-http.mdx:501-504`'s server-side MUST, and its client-side counterpart of encoding a non-header-safe `Mcp-Name` in the first place",
+   "the_near_miss_that_is_not_a_counterpart": "`sep-2243-client-includes-standard-headers` / ClientMcpNameHeader_tools_call and ClientMcpMethodHeader_tools_call. These are the nearest near miss in this whole file: the suite scores the `Mcp-Name` header on a tools/call, against `params.name`, which is word for word the pair this claim is about. AND THE MEASUREMENT SAYS SOMETHING SHARPER THAN `NOT A COUNTERPART`. Read at the harness build rather than off the description, `checkMcpNameHeader` binds `i` to the body value and `a` to the header and reports on `a!==i` — a RAW string comparison, with no decoding anywhere in the 1793 bytes that hold both routing-header predicates end to end. So an implementation that correctly Base64-sentinel-encodes a non-header-safe tool name, as the spec requires, would be scored FAILURE by this check. It scores SUCCESS at the accepted run only because every tool name in the suite's fixture is header-safe and `encode_value/1` is therefore the identity on all of them. The suite has the check, its predicate could not score the decode, and its fixture never provokes the encode. Recorded in full in `the_client_leg_check_that_would_fail_a_conforming_client_and_why_it_does_not`.",
+   "authored_by": "MES-121 (C1c-iv-b)"
+  }
+ ],
+ "declared_unmatched_note": "A3 §6 state 3 — members adjudicated as having NO OC counterpart. They are bucket 1 over this population. The generator asserts each tag guard-checks to state 3 (decodes as `oc:none`, does NOT resolve as an oc key) before counting it. 21 rows at this tip, against 0 at every previous one: C1a's residual member carried an edge, so this list was empty until the class got a home. Every row names a REGISTERED search (`search_id`), so all 21 are inside G23b/c/d and not only inside G23a's prose limb — which is the reach the client file's and the server file's older rows do not have, and the difference is stated rather than smoothed over.",
+ "absence_searches": [
+  {
+   "id": "ND01",
+   "kind": "no-oc-scenario",
+   "subject": "the STDIO transport — newline-delimited JSON-RPC over a child process's stdin/stdout: a request written and its response read back, several requests multiplexed by `id`, a request with no `params`, a notification drawing no response, and a partial line held in a buffer until the newline completing it arrives",
+   "pattern": "(?i)\\bstdio\\b|\\bstdin\\b|\\bstdout\\b|newline.?delimited|line.?delimited|\\bsubprocess\\b|child process",
+   "positive_controls": [
+    {
+     "term": "(?i)http",
+     "hits": 56
+    },
+    {
+     "term": "(?i)request",
+     "hits": 63
+    },
+    {
+     "term": "(?i)MUST",
+     "hits": 32
+    }
+   ],
+   "near_miss": "EVERY scenario in the suite, and that is what makes the zero worth stating rather than obvious. The official conformance harness drives an implementation over HTTP only — 56 of the 175 rows carry the letters `http` and the two transports the suite names are Streamable HTTP POST and SSE. A reader could reasonably take `the suite tests the transport layer` to include ours, because the suite's `server-stateless` family is precisely about framing and routing. It is not a counterpart: every one of those rows is scored on an HTTP status, a header or an SSE frame, and MCP's stdio transport has none of the three. The SDK ships stdio as a first-class transport (`MCP.Transport.Stdio`) and the suite cannot reach it at all, so these five members are outside the suite's reach by construction rather than by omission.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 175,
+    "restrict": null,
+    "why": "ALL 175, and UNRESTRICTED — which is the client file's norm and is forced here rather than chosen. The server file's `no-oc-server-check` entries narrow to the 119 server rows because the zero they claim is `none on OUR leg`. These members are on NEITHER leg: B2b attributes them `none_determinable` because the assertion constrains the pair, so a counterpart on either leg would be a counterpart and narrowing to one of them would make the zero easier than the claim. PM-ratified on this ticket's plan hop (Q4)."
+   }
+  },
+  {
+   "id": "ND02",
+   "kind": "no-oc-scenario",
+   "subject": "SEP-2133 capability EXTENSIONS — a peer's declared extensions read back out of a request's `_meta` client-capabilities envelope, and the rule that keeps `extensions` and `experimental` separate fields on the wire rather than one reused one",
+   "pattern": "(?i)\\bextensions?\\b|\\bexperimental\\b",
+   "positive_controls": [
+    {
+     "term": "(?i)capabilit",
+     "hits": 12
+    },
+    {
+     "term": "(?i)_meta",
+     "hits": 13
+    },
+    {
+     "term": "(?i)MUST",
+     "hits": 32
+    }
+   ],
+   "near_miss": "`sep-2575-request-meta-invalid-missing-client-capabilities` / RequestMetaInvalid and `sep-2575-client-populates-meta` / ClientPopulatesMeta. Twelve rows carry the letters `capabilit` — the positive control returns exactly those — and a reader who greps for capabilities finds them and could stop. They are not counterparts on the same ground in both directions: what they score is whether the `_meta` client-capabilities ENVELOPE is present and valid at all, and what these members assert is which KEY inside it an extension declaration is taken from and how it is spelled. The envelope and its contents are different subjects, and the suite scores only the first. Corroborates A4 §5's measured 0 of 175 for SEP-2133 and the CG2 zero the client file records, re-measured here at this tip over this file's own population.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 175,
+    "restrict": null,
+    "why": "ALL 175, and UNRESTRICTED — which is the client file's norm and is forced here rather than chosen. The server file's `no-oc-server-check` entries narrow to the 119 server rows because the zero they claim is `none on OUR leg`. These members are on NEITHER leg: B2b attributes them `none_determinable` because the assertion constrains the pair, so a counterpart on either leg would be a counterpart and narrowing to one of them would make the zero easier than the claim. PM-ratified on this ticket's plan hop (Q4)."
+   }
+  },
+  {
+   "id": "ND03",
+   "kind": "no-oc-scenario",
+   "subject": "JSON-RPC NOTIFICATION framing as such — a notification encoded with `jsonrpc` and `method` and NO `id` member, `params` omitted entirely when the notification carries none, and an inbound notification recognised as a notification rather than as a request with a missing id",
+   "pattern": "(?i)notification[^|]{0,40}(fram|encod|decod|shape)|(fram|encod|decod)\\w*[^|]{0,40}notification|\\bno id\\b|omits? (the )?(id|params)",
+   "positive_controls": [
+    {
+     "term": "(?i)notification",
+     "hits": 6
+    },
+    {
+     "term": "(?i)json-?rpc",
+     "hits": 46
+    },
+    {
+     "term": "(?i)method",
+     "hits": 17
+    }
+   ],
+   "near_miss": "`sep-2243-client-includes-standard-headers` / ClientMcpMethodHeader_notifications_initialized, and the three server-stateless subscription rows — ServerHonorsNotificationFilter, ServerSendsToolsListChangedOnSubscription, ServerSendsPromptsListChangedOnSubscription. SIX rows carry the word `notification`; the positive control returns exactly those six, so the sweep reached every place the suite talks about them. Not one is a counterpart. The header row scores whether a POST carrying a notification carries the right `Mcp-Method` VALUE — a property of the envelope around the notification, not of the notification. The three subscription rows score WHICH notification types arrive on an open stream and which do not. None of the six asks whether the JSON object is shaped as a notification: whether the `id` member is absent rather than null, and whether an absent `params` is omitted rather than encoded as null. The framing is the one thing about notifications the suite does not score.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 175,
+    "restrict": null,
+    "why": "ALL 175, and UNRESTRICTED — which is the client file's norm and is forced here rather than chosen. The server file's `no-oc-server-check` entries narrow to the 119 server rows because the zero they claim is `none on OUR leg`. These members are on NEITHER leg: B2b attributes them `none_determinable` because the assertion constrains the pair, so a counterpart on either leg would be a counterpart and narrowing to one of them would make the zero easier than the claim. PM-ratified on this ticket's plan hop (Q4)."
+   }
+  },
+  {
+   "id": "ND04",
+   "kind": "no-oc-scenario",
+   "subject": "the SYNTAX of a Server-Sent-Events frame as our own codec writes and reads it — a message encoded to `event:`/`id:`/`data:` field lines and parsed back to the same message, and a bare `:`-leading comment line arriving between two events being ignored rather than delivered as an event of its own",
+   "pattern": "(?i)\\bevent:|\\bdata:|\\bretry:|comment line|keep.?alive|multi.?line|field line|\\bframing\\b|event.?type",
+   "positive_controls": [
+    {
+     "term": "(?i)\\bsse\\b",
+     "hits": 2
+    },
+    {
+     "term": "(?i)stream",
+     "hits": 7
+    },
+    {
+     "term": "(?i)server",
+     "hits": 119
+    }
+   ],
+   "near_miss": "`server-sse-multiple-streams` / ServerAcceptsMultiplePostStreams and ServerSSEStreamsFunctional. The suite DOES carry the letters SSE and the positive control returns exactly those two rows, so the sweep reached them. They are not counterparts on two independent grounds, either sufficient: what they score is that concurrent POST streams are FUNCTIONAL end to end, never how one frame's text is split into fields; and neither reaches a comment line, which by the SSE grammar carries no data and is precisely the frame a functional-stream check cannot see. A reader who greps `sse`, finds two rows and stops would take these for the counterpart. The client file's S01 and the server file's SRV30 record the same absence from their own legs' side; this entry is the two-legged codec's, re-measured at this tip.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 175,
+    "restrict": null,
+    "why": "ALL 175, and UNRESTRICTED — which is the client file's norm and is forced here rather than chosen. The server file's `no-oc-server-check` entries narrow to the 119 server rows because the zero they claim is `none on OUR leg`. These members are on NEITHER leg: B2b attributes them `none_determinable` because the assertion constrains the pair, so a counterpart on either leg would be a counterpart and narrowing to one of them would make the zero easier than the claim. PM-ratified on this ticket's plan hop (Q4)."
+   }
+  },
+  {
+   "id": "ND05",
+   "kind": "no-oc-scenario",
+   "subject": "the ENCODING of a capabilities object — which sub-capability keys appear under it, the camelCase spelling of the flags inside them, and a sub-capability the implementation left unset being ABSENT from the encoded object rather than present as null",
+   "pattern": "(?i)capabilit\\w*[^|]{0,40}(encod|shape|omit|absent|\\bnull\\b|round.?trip|camel)|\\blistChanged\\b[^|]{0,40}capabilit|capabilit\\w*[^|]{0,40}\\blistChanged\\b",
+   "positive_controls": [
+    {
+     "term": "(?i)capabilit",
+     "hits": 12
+    },
+    {
+     "term": "(?i)\\btools\\b",
+     "hits": 23
+    },
+    {
+     "term": "(?i)MUST",
+     "hits": 32
+    }
+   ],
+   "near_miss": "`sep-2575-server-sends-tools-list-changed-on-subscription` / ServerSendsToolsListChangedOnSubscription and its prompts sibling. The suite carries the letters `ListChanged` in exactly those two row NAMES — which is why this entry's pattern has to require `listChanged` to occur NEAR `capabilit` rather than alone, and the unnarrowed form was measured returning those two. They are not counterparts: what they score is whether a `notifications/*/list_changed` FRAME arrives on an open subscription stream, and this claim is about whether the `listChanged` FLAG appears under `capabilities.tools` in an encoded capabilities object. One is a notification, the other a boolean in a capability declaration, and they share only a name. `sep-2575-discover-capabilities-match-handlers` / DiscoverCapabilitiesMatchHandlers is the second-nearest and fails differently: it READS `capabilities` and then asks whether a real RPC call honours what it found, never what the object's own keys are.",
+   "hits": 0,
+   "population": {
+    "kind": "manifest_rows",
+    "artefact": "docs/conformance/in-scope-2026-07-28.json",
+    "rows_at": "scenarios[].checks[]",
+    "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+    "rows": 175,
+    "restrict": null,
+    "why": "ALL 175, and UNRESTRICTED — which is the client file's norm and is forced here rather than chosen. The server file's `no-oc-server-check` entries narrow to the 119 server rows because the zero they claim is `none on OUR leg`. These members are on NEITHER leg: B2b attributes them `none_determinable` because the assertion constrains the pair, so a counterpart on either leg would be a counterpart and narrowing to one of them would make the zero easier than the claim. PM-ratified on this ticket's plan hop (Q4)."
+   }
+  },
+  {
+   "id": "ND06",
+   "kind": "no-oc-fixture-case",
+   "subject": "a plain-ASCII parameter value that is ITSELF shaped like the Base64 encoded-word sentinel — the ambiguity case `streamable-http.mdx:508-510` exists for, where a literal must be encoded anyway or a server cannot tell an encoded value from a literal one",
+   "pattern": "=\\?base64\\?",
+   "positive_controls": [
+    {
+     "term": "us-west1",
+     "hits": 3
+    },
+    {
+     "term": "x-mcp-header",
+     "hits": 55
+    },
+    {
+     "term": "type:`object`",
+     "hits": 15
+    }
+   ],
+   "near_miss": "`sep-2243-client-base64-unsafe` and its seven `ClientCustomHeader_*` rows. The suite HAS the check in the right place — it scores whether an unsafe value is sent as a sentinel and decodes back — and this file carries five edges onto those very rows, so the resemblance is not superficial. What is missing is the FIXTURE CASE: `Ga`, the predicate that decides whether a value needs encoding, returns true for non-ASCII, for control characters and for untrimmed whitespace, and it returns FALSE for a plain-ASCII string, INCLUDING one that happens to look like `=?base64?x?=`. So the suite's own encode/decode machinery would take such a literal for an already-encoded value, and the fixture never puts one in front of it: zero occurrences of the sentinel in the 14027 bytes of the two CG7 scenarios, against 55 `x-mcp-header` annotations and 15 object-typed schema properties that show the sweep reading the right bytes. The spec MUST is real, our implementation honours it, and the suite's fixture does not reach it.",
+   "hits": 0,
+   "population": {
+    "kind": "harness_bytes",
+    "artefact": "docs/conformance/oc-axes-c1 provenance build — dist/index.js at sha256 a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+    "byte_span": [
+     705563,
+     719590
+    ],
+    "what": "both CG7 scenario classes — `http-custom-headers` and `http-invalid-tool-headers` — from the first to the start of `json-schema-ref-no-deref`. Their tool definitions and argument tables are the fixture. The SAME span the client file's S18 and S19 sweep, deliberately: this claim is about the same fixture and a second span would be a second population for one question.",
+    "bytes": 14027
+   }
+  },
+  {
+   "id": "ND07",
+   "kind": "no-oc-fixture-case",
+   "subject": "a routing header being DECODED before it is compared to the body value it must agree with — `streamable-http.mdx:501-504`'s server-side MUST, and its client-side counterpart of encoding a non-header-safe `Mcp-Name` in the first place",
+   "pattern": "(?i)base64|Buffer\\.from|decodeValue|=\\?|\\bdecode",
+   "positive_controls": [
+    {
+     "term": "mcp-name",
+     "hits": 1
+    },
+    {
+     "term": "params\\.",
+     "hits": 4
+    },
+    {
+     "term": "headers\\[",
+     "hits": 2
+    }
+   ],
+   "near_miss": "`sep-2243-client-includes-standard-headers` / ClientMcpNameHeader_tools_call and ClientMcpMethodHeader_tools_call. These are the nearest near miss in this whole file: the suite scores the `Mcp-Name` header on a tools/call, against `params.name`, which is word for word the pair this claim is about. AND THE MEASUREMENT SAYS SOMETHING SHARPER THAN `NOT A COUNTERPART`. Read at the harness build rather than off the description, `checkMcpNameHeader` binds `i` to the body value and `a` to the header and reports on `a!==i` — a RAW string comparison, with no decoding anywhere in the 1793 bytes that hold both routing-header predicates end to end. So an implementation that correctly Base64-sentinel-encodes a non-header-safe tool name, as the spec requires, would be scored FAILURE by this check. It scores SUCCESS at the accepted run only because every tool name in the suite's fixture is header-safe and `encode_value/1` is therefore the identity on all of them. The suite has the check, its predicate could not score the decode, and its fixture never provokes the encode. Recorded in full in `the_client_leg_check_that_would_fail_a_conforming_client_and_why_it_does_not`.",
+   "hits": 0,
+   "population": {
+    "kind": "harness_bytes",
+    "artefact": "docs/conformance/oc-axes-c1 provenance build — dist/index.js at sha256 a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+    "byte_span": [
+     699044,
+     700837
+    ],
+    "what": "`handlePost` and BOTH routing-header predicates of the `http-standard-headers` scenario — `checkMcpMethodHeader` and `checkMcpNameHeader` — from the dispatch site to the end of the second predicate's push. The span is the whole of the suite's header-versus-body comparison machinery; nothing outside it performs one.",
+    "bytes": 1793
+   }
+  }
+ ],
+ "absence_searches_note": "7 entries, each a search that found NONE, each re-run by `crosswalk_controls.exs absence` over the population it names with the positive controls it names. The control sweeps the REGISTRY rather than a hand-listed pair, so an entry added here is inside it without anyone editing the control, and G23c refuses an entry no row names in both directions.\n\n5 SWEEP A1's MANIFEST ROWS AND 2 SWEEP THE HARNESS BUILD, and the split is the claim's rather than a convenience. A `no-oc-scenario` zero says the suite has no such check ANYWHERE, and the honest population for it is all 175 rows unrestricted — not the 119 server rows the server file narrows to, because a member on NEITHER leg would be matched by a counterpart on either. A `no-oc-fixture-case` zero says the suite HAS the check and its FIXTURE never reaches the case, and no row sweep can measure that: the rows are right there and would come back as hits. ND06 and ND07 sweep the bytes the fixture and the predicate are written in, which is the only population in which their zeros are falsifiable at all.\n\nWHAT A GREEN HERE IS NOT. That any search was well-chosen. G23 checks that a search is NAMED, RUNNABLE and REACHED its population; whether the population was the right one to look in, and whether the member's claim is really what the search looked for, are judgements, and each row carries them in `why_this_search_is_this_claims_search` so a reader can disagree.",
+ "the_sub_populations_this_file_records": {
+  "what_this_is": "One entry per TICKET that adjudicated part of this population, each with a runnable selector against the same external anchor. The generator evaluates both and set-compares their UNION with the members this file derives (G22a), then evaluates `leg equals none_determinable` fresh and set-compares THAT (G22b). Together they are the none_determinable totality assertion, built as a GENERATOR REFUSAL rather than as prose: a none_determinable member in neither an edge nor a declared_unmatched record refuses the build.",
+  "it_is_a_COVER_and_not_a_PARTITION": "An overlap of ONE, and it is the smallest of the three files' — the client's is 18 and the server's is 2. C1a adjudicated exactly one member of this class before the class had a home: `MCP.IntegrationTest/test tools: list, echo, add, isError, unknown`, which carried an `oc:` token in B2b. Summing the two entries gives 1 + 29 = 30 against a population of 29, and 30 - 29 is exactly the overlap because the overlapping member is counted precisely twice. It keeps ONE home, here. G22a asserts the COVER — that the UNION is the population — and never a disjoint sum; the overlap is DERIVED by the generator and its members are reported by name, so nobody has to take this paragraph's word for its size.",
+  "why_C1a_is_an_entry_at_all": "Because G22a's semantic is one entry per TICKET that adjudicated part of this population, and C1a did — one edge over one member, and that edge is still in this file, moved by nobody. The alternative was to leave C1a out and present a clean single-entry partition, which would have been tidier and would have asserted something false: that no ticket before this one touched this class. Both leg-scoped files set the precedent and both had to state the same shape.",
+  "entries": [
+   {
+    "ticket": "C1a = MES-97",
+    "slice": "the one member of this class C1a had already tagged — an `oc:` token, or a `contradicts_oc` record",
+    "selector": {
+     "source": "docs/conformance/etcc-attribution.json",
+     "rows_at": "rows",
+     "key_field": "key",
+     "all_of": [
+      {
+       "none_of": [
+        {
+         "field": "leg",
+         "test": "equals",
+         "value": "client"
+        },
+        {
+         "field": "leg",
+         "test": "equals",
+         "value": "server"
+        }
+       ]
+      },
+      {
+       "any_of": [
+        {
+         "field": "tokens",
+         "test": "non_empty_list"
+        },
+        {
+         "field": "contradicts_oc",
+         "test": "not_null"
+        }
+       ]
+      }
+     ],
+     "denotes": "1 — `MCP.IntegrationTest/test tools: list, echo, add, isError, unknown`, carrying the `ToolAddNumbers` token. This is the whole of the overlap, and it is the selector this file's own top-level one had until this ticket: the ratified Q2 dropped this limb from there and it survives HERE, where it is a slice rather than the population."
+    },
+    "note": "The same limb shape both leg-scoped files' C1a entries use, with the leg conjunct in its complement form. It denotes 1 here against 18 on the client leg and 2 on the server leg."
+   },
+   {
+    "ticket": "MES-121 (C1c-iv-b)",
+    "slice": "the whole none_determinable class — 29 members over 9 modules",
+    "selector": {
+     "source": "docs/conformance/etcc-attribution.json",
+     "rows_at": "rows",
+     "key_field": "key",
+     "all_of": [
+      {
+       "none_of": [
+        {
+         "field": "leg",
+         "test": "equals",
+         "value": "client"
+        },
+        {
+         "field": "leg",
+         "test": "equals",
+         "value": "server"
+        }
+       ]
+      },
+      {
+       "any_of": [
+        {
+         "field": "key",
+         "test": "starts_with",
+         "value": "MCP.IntegrationTest/"
+        },
+        {
+         "field": "key",
+         "test": "starts_with",
+         "value": "MCP.Protocol.CapabilitiesTest/"
+        },
+        {
+         "field": "key",
+         "test": "starts_with",
+         "value": "MCP.Protocol.ExtensionsTest/"
+        },
+        {
+         "field": "key",
+         "test": "starts_with",
+         "value": "MCP.Protocol.HeaderMirrorTest/"
+        },
+        {
+         "field": "key",
+         "test": "starts_with",
+         "value": "MCP.ProtocolTest/"
+        },
+        {
+         "field": "key",
+         "test": "starts_with",
+         "value": "MCP.Transport.SSETest/"
+        },
+        {
+         "field": "key",
+         "test": "starts_with",
+         "value": "MCP.Transport.SelfCompatibilityTest/"
+        },
+        {
+         "field": "key",
+         "test": "starts_with",
+         "value": "MCP.Transport.StdioTest/"
+        },
+        {
+         "field": "key",
+         "test": "starts_with",
+         "value": "MCP.Transport.SubscriptionsStreamTest/"
+        }
+       ]
+      }
+     ],
+     "denotes": "29, of which 1 was already C1a's."
+    },
+    "new_homes": 28
+   }
+  ]
+ },
+ "the_bucket_2_entries_this_ticket_closed_and_the_measured_global_delta": {
+  "what_happened": "5 CHECKS LEFT BUCKET 2, NOT ONE — and the plan said one. `checks_with_edges` is computed over ALL files' cells, so an edge authored here moves a check the SERVER file DECLARES out of the bucket-2 view that file's check population defines. The plan predicted exactly one such move, `ResourcesNotFoundErrorCode`, because that is the one MES-117 had named; measuring the delta rather than asserting it found five. The four the plan missed are this slice's own finding and they are the more interesting half: they are checks the server leg DECLARED and no server member reached, sitting in bucket 2 while a none_determinable member claimed them.",
+  "the_five": [
+   "oc:server/completion-complete/completion-complete/CompletionComplete",
+   "oc:server/prompts-get-simple/prompts-get-simple/PromptsGetSimple",
+   "oc:server/prompts-list/prompts-list/PromptsList",
+   "oc:server/resources-read-text/resources-read-text/ResourcesReadText",
+   "oc:server/sep-2164-resource-not-found/sep-2164-error-code/ResourcesNotFoundErrorCode"
+  ],
+  "how_the_figure_is_DERIVED_rather_than_counted_by_hand": "A check leaves bucket 2 BECAUSE OF THIS FILE iff it is in some file's declared check population AND every cell addressing it comes from a member this file homes. That predicate is run over the committed crosswalk by `crosswalk_controls.exs ndbucket2`, which set-compares its result against this list in both directions, so the five are pinned rather than typed: a sixth check closing and one of these five gaining a sibling edge from another file are both red. The before-and-after count — bucket 2 at 96 of the 173 declared checks before this ticket and 91 after — is stated as the corroborating arithmetic and is not what the control keys on: a count reconciles over a check leaving and another entering, and the set comparison does not.",
+  "the_one_MES_117_named": "`ResourcesNotFoundErrorCode` — SEP-2164's SHOULD that a `resources/read` for a non-existent resource answers -32602 rather than the retired -32002. MES-116 found it, MES-117 recorded it by name in `the_counterpart_this_slice_found_that_no_leg_scoped_file_can_declare` and said in terms that fixing it was not that ticket's, and the edge from `MCP.IntegrationTest/test resources: list, read, unknown, templates` is the fix. That field now carries a superseding clause naming this ticket; it was appended rather than rewritten, which is the project's habit of naming a correction instead of quietly making it.",
+  "the_four_it_did_not": "`PromptsList`, `PromptsGetSimple`, `ResourcesReadText` and `CompletionComplete`. All four are in scenarios C1c-iii declared and in the server file's 119-check population, and all four were bucket 2 there — correctly, on bucket 2's own definition: no member of the DECLARED member population claimed them. `MCP.IntegrationTest` claimed all four, in tests that have been in the suite since MES-9, and no leg-scoped file could see them. `CompletionComplete` is the sharpest: the whole `completion-complete` scenario had NO edge from any file before this one.\n\nWHAT THIS SAYS ABOUT THE PREDICTION HABIT, since the server file made the same kind of prediction and got the same kind of answer. C1c-iii's record hedges at `about three checks` and its enumeration names TWO — `ToolsCallError` and `ToolsList` — of which one moved, and by a route that record measures does not exist; this ticket's plan predicted one and the measurement found five. Two, not three, is what the enumeration supports, and the figure is taken from the enumeration rather than carried from the sentence above it. Both errors run the same way — a prediction made from the checks somebody had already NAMED, over a population nobody had yet swept. The remedy is not a better prediction, it is deriving the delta, which is what the control now does.",
+  "what_it_does_not_mean": "Not that the SDK's coverage improved. Every assertion these five edges rest on was already in the suite, most of them since MES-9. What changed is that the crosswalk can SEE them, because the members they belong to finally have a home — which is this ticket's whole content, and the bucket-2 delta is its most legible single consequence. Nor does it mean the four were wrongly bucketed before: bucket 2 is a claim about the DECLARED member population and it was true of each of them at every earlier tip."
+ },
+ "the_client_leg_check_that_would_fail_a_conforming_client_and_why_it_does_not": "THE SHARPEST THING THIS SLICE MEASURED, AND IT IS A FINDING ABOUT THE SUITE RATHER THAN ABOUT US. `sep-2243-client-includes-standard-headers` / `ClientMcpNameHeader_tools_call` requires a tools/call POST to carry an `Mcp-Name` header whose value is the body's `params.name`. Read at the harness build rather than off that description, `checkMcpNameHeader` binds `i` to the body value and `a` to the header and reports on `a!==i` — a RAW string comparison. There is no decoding anywhere in the 1793 bytes that hold both routing-header predicates end to end: the measurement is ND07, pattern `(?i)base64|Buffer\\.from|decodeValue|=\\?|\\bdecode` over [699044, 700837], zero hits, with `mcp-name`, `params.` and `headers[` returning hits that show the sweep read the right bytes.\n\nSO THE TWO OBLIGATIONS COLLIDE. `streamable-http.mdx:508-510` requires a client to Base64-sentinel-encode a header value that is not header-safe — a non-ASCII tool name, for instance — and :501-504 requires the server to DECODE before comparing. A client that does the first would send `Mcp-Name: =?base64?...?=` against a `params.name` that is the raw name, and `a!==i` would be true, and this check would score FAILURE on a conforming client. It scores SUCCESS at the accepted run for one reason and it is the fixture's: every tool name in the suite is header-safe, so `HeaderMirror.encode_value/1` is the identity on all of them and the encoded and raw forms coincide.\n\nWHY IT IS RECORDED HERE AND WHAT IT IS NOT. It is why `MCP.Transport.SelfCompatibilityTest`'s REACHABILITY CONTROL member is bucket 1 under ND07 rather than carrying an edge: the check is in the right place and cannot score the behaviour, which is a fixture-and-predicate gap and not a counterpart. It is NOT a `contradicts` verdict, and the reason is C1c-iv-a's own lesson restated — a shared error code or a shared header name is not subject identity. On the inputs the check actually sees, our client and the check agree; they would disagree on an input the check never gets. A contradiction is a claim that the check's requirement is wrong, and ours is not that. It is also NOT a defect we can fix: the remedy is upstream, either decoding in the predicate or a non-header-safe name in the fixture. Recorded as a coverage finding about the suite, with the bytes, so a reader does not have to take it on trust.",
+ "the_divergent_despite_agreement_sweep_over_the_29_and_the_whole_crosswalk_zero_it_earns": {
+  "what_was_asked": "C1c-iv-a closed `divergent_despite_agreement` at ZERO over the SERVER leg's last 34 members and wrote that, with the client leg already closed, `it has never gone live anywhere in the crosswalk`. THAT STATEMENT WAS TRUE OF THE DECLARED CROSSWALK AND NOT YET OF THE WHOLE ONE. Its population was the declared members, which at that tip was 253 of the 281 — RE-MEASURED at 9bdd1e8 off the artefact that slice shipped. TWENTY-EIGHT of these 29 were outside every declared population BY CONSTRUCTION, so the class had never been measured over those at all — not found absent, never asked. The TWENTY-NINTH was C1a's residual member and was the whole of this file's own declared population at that tip, so the earlier claim did reach that one; it is the other twenty-eight it was short of. Stated this way the sentence agrees with `it_is_a_COVER_and_not_a_PARTITION` and `what_moved_and_when` two fields away, which an earlier draft of it — 252, and all twenty-nine outside — contradicted; caught in review on this ticket and corrected by re-measurement rather than by copying the correction. This ticket's dispatch required the full cross-product, not a search that stops on a hit, and required the count of candidates examined to be reported beside the verdict. It is this ticket that earns the whole-crosswalk claim.",
+  "the_result": "ZERO of the 29, over 609 candidate pairs examined — 29 members × 21 red OC rows. No member of this population reaches any red OC check with agreement on any axis. With this measured, `divergent_despite_agreement` has never fired anywhere in the crosswalk over a population that is now the WHOLE ET-CC universe: the class does not occur in the artefact's escalation rows, and the three declared populations between them are all 281 members.",
+  "the_method": "The 29 members were taken module by module against all 21 red rows — the full 29 × 21, not a search that stopped on a hit. For each of the 9 modules the NEAREST red check is named with the reason the claim stops short of it, because a bare `no member reaches one` is a search that cannot fail. FIVE of the 9 have a nearest check worth naming and FOUR have none in the population at all; for those four the absence search is the evidence rather than this field, and each names which one.",
+  "the_cross_product": {
+   "members": 29,
+   "red_rows": 21,
+   "candidates_examined": 609,
+   "members_reaching_a_red_check": 0,
+   "why_these_four_numbers_and_not_the_prose": "So the record is keyable. `crosswalk_controls.exs ndsweep` re-derives all four and compares them, and it compares the member population against B2b rather than against this file — a control keyed on the file's own member list would measure LESS if a row were dropped, which is the self-declaring-population defect. `candidates_examined` is required to be the PRODUCT, so a sweep that ran over a subset cannot record the full figure."
+  },
+  "the_red_population_swept_against": {
+   "rows": 21,
+   "failure_rows": 19,
+   "warning_rows": 2,
+   "distinct_names": 17,
+   "names": [
+    "HttpServerHeaderMismatch400",
+    "HttpServerMetaInvalid400",
+    "HttpServerMethodNotFound404",
+    "HttpServerMethodNotFound404initialize",
+    "HttpServerMethodNotFound404loggingsetLevel",
+    "HttpServerMethodNotFound404ping",
+    "HttpServerMethodNotFound404resourcessubscribe",
+    "HttpServerMethodNotFound404resourcesunsubscribe",
+    "HttpServerUnsupportedVersion400",
+    "IgnoreUnexpectedParams",
+    "InputRequiredResultNonToolIncomplete",
+    "MissingCapabilityHttp400",
+    "RequestMetaInvalid",
+    "ResourcesNotFoundDataUri",
+    "ServerRejectsUndeclaredCapability",
+    "ServerUnsupportedVersionError",
+    "WireSchemaValid"
+   ],
+   "how_it_was_derived": "`status_at_accepted_run != \"SUCCESS\"` over all 173 rows of docs/conformance/oc-emitting-sites-2026-07-28.json, re-measured at this tip. The row count and the distinct-name count DIFFER — three `HttpServerMetaInvalid400` rows and three `RequestMetaInvalid` rows share a name and are separated only by their descriptions — so a sweep keyed on the NAME would have swept 17 checks while claiming 21.",
+   "this_population_is_WIDER_than_C1c_iv_a_s_AND_THAT_IS_DELIBERATE": "C1c-iv-a swept against 19 rows and EXCLUDED the two WARNINGs, on the measured ground that the harness scores a WARNING as a pass on the SERVER leg. That reasoning is leg-scoped and these members are on no leg: B2b's own reason for the attribution is that the assertion constrains the pair and can match a check on either side, and on the CLIENT leg a WARNING fails a scenario. Rather than decide which scoring rule an unattributed member inherits, this sweep takes the WIDER population and includes both — `IgnoreUnexpectedParams` and `ResourcesNotFoundDataUri`. A wider population can only make the zero harder to get, which is the direction an honest sweep errs in. The dispatch asked for 29 × 21 and this is that figure.",
+   "the_two_SKIPPED_client_rows_are_not_in_it": "`ClientMcpMethodHeader_initialize` and `ClientMcpMethodHeader_notifications_initialized`. They are SKIPPED at the accepted run, which is neither red nor green, and they are outside the 173-row denominator the emitting-sites artefact carries. A3 §3's combination needs a RED OC verdict, and a skipped check has no verdict to be red, so neither could produce this escalation however a member related to it. Named so the population reads as a decision rather than an omission."
+  },
+  "per_module": [
+   {
+    "module": "MCP.IntegrationTest",
+    "members": 6,
+    "nearest_red_check": "InputRequiredResultNonToolIncomplete",
+    "why_it_stops_short": "The MRTR member is the only one in this file that touches the input-required family at all, and it is the family both of the leg's non-server-stateless FAILUREs are in. It stops short on the check's own antecedent: `input-required-result-non-tool-request` drives `prompts/get` — a NON-TOOL request — and scores what the server does with an InputRequiredResult there, left INCOMPLETE. This member calls `tools/call` on a tool that asks for input and the client completes the round trip, so it is the excluded request type AND the opposite outcome. Silent on both axes, and it already carries an edge to `ResultTypeIncluded` in the same family, which is SUCCESS. The other five members are feature-endpoint and discover claims, and the 17 `server-stateless` FAILUREs are every one of them scored on an HTTP status or a JSON-RPC error code on a malformed `_meta`: all six run in-process over `MCP.Test.BridgeTransport`, where there is no HTTP status for such an axis to be about."
+   },
+   {
+    "module": "MCP.Protocol.CapabilitiesTest",
+    "members": 2,
+    "nearest_red_check": "MissingCapabilityHttp400",
+    "why_it_stops_short": "Its sibling `ServerRejectsUndeclaredCapability` is equally near and fails identically. The bait is the word `capabilities`, which both checks carry and both of these members are about. The checks' subject is a call needing a CLIENT capability the client never declared, scored on an HTTP 400 and an error code; these members' subject is the ENCODING of a capabilities object — which sub-capability keys appear under it and whether an unset one is absent rather than null. A field's presence in an encoded struct and a request's rejection for want of a declared capability are different obligations that share a noun. ND05 and ND02 are the evidence for the wider absence; C1c-iv-a recorded the same reading for its own two members of this module."
+   },
+   {
+    "module": "MCP.Protocol.ExtensionsTest",
+    "members": 7,
+    "nearest_red_check": null,
+    "why_it_stops_short": "NONE of the 21, and not by a near miss — by a total absence. ND02 measures 0 of all 175 manifest rows carrying `extension` or `experimental`, so there is no check on SEP-2133 at all, red or green, for any of these seven members to reach. A module whose subject the suite does not name cannot reach a red check in it."
+   },
+   {
+    "module": "MCP.Protocol.HeaderMirrorTest",
+    "members": 2,
+    "nearest_red_check": "HttpServerHeaderMismatch400",
+    "why_it_stops_short": "The same nearest check C1c-iv-a named for its own member of this module, and the reasoning is CITED rather than restated: the two values that check requires to disagree are the `MCP-Protocol-Version` HEADER and the `_meta` version, not a routing header and the body. These two members are about `Mcp-Param-*` VALUE encoding — the sentinel, its ambiguity rule, and the decode back to the body value — which the suite scores on the CLIENT leg, where all EIGHTEEN `http-custom-headers` rows are SUCCESS — measured at this tip, and the draft of this field said SEVENTEEN, which is the figure the server file's SRV01 near miss carries. Re-measuring rather than copying is what caught it; the discrepancy is reported as a finding against SRV01 and is not edited into another slice's field. One of the two members here carries five edges onto those green rows, which is the positive half of the same measurement."
+   },
+   {
+    "module": "MCP.ProtocolTest",
+    "members": 3,
+    "nearest_red_check": "RequestMetaInvalid",
+    "why_it_stops_short": "Three of the 19 FAILURE rows share this name and all three require a request whose `_meta` is invalid in some stated way to be rejected -32602. All three of this module's members here encode or decode a NOTIFICATION that carries no `_meta` at all and assert the resulting object's members — `jsonrpc`, `method`, and the absence of `id` and `params`. Nothing about rejection, nothing about `_meta`. This is the same verdict the server file reached for its own two members of this module, on the same three rows, and it is reached here over three different members and the same population."
+   },
+   {
+    "module": "MCP.Transport.SSETest",
+    "members": 1,
+    "nearest_red_check": null,
+    "why_it_stops_short": "NONE of the 21 is about SSE at all: the suite's two SSE rows are both SUCCESS and both in `server-sse-multiple-streams`. ND04 is the evidence for the wider absence, and the server file's SRV30 records it from the other side."
+   },
+   {
+    "module": "MCP.Transport.SelfCompatibilityTest",
+    "members": 2,
+    "nearest_red_check": "HttpServerHeaderMismatch400",
+    "why_it_stops_short": "THIS IS THE MODULE THAT LOOKED LIVE AT C1c-iv-a's PLAN HOP AND WAS MEASURED FALSE, and the measurement is cited rather than repeated: `the_claim_this_slice_made_at_its_PLAN_HOP_AND_THEN_MEASURED_FALSE` in the server file. Its four server-leg members are homed under SRV01. THESE TWO ARE FURTHER FROM IT, in the opposite direction from its four: both assert the SUCCESS path — an HTTP 200 and a result with no error — where the check requires a 400 and a -32020, on an input that never puts the check's two values into disagreement. And this ticket adds a second, independent ground: ND07 measures that the suite's only header-versus-body comparisons are the two CLIENT-leg routing predicates, both SUCCESS, and that neither decodes. So the nearest red check is not a counterpart on the subject AND the real counterpart is green and on the other leg."
+   },
+   {
+    "module": "MCP.Transport.StdioTest",
+    "members": 5,
+    "nearest_red_check": null,
+    "why_it_stops_short": "NONE of the 21, by total absence rather than by near miss. ND01 measures 0 of all 175 manifest rows mentioning stdio, stdin, stdout, a subprocess or newline framing. The suite is HTTP-only — 56 of the 175 rows carry `http` — so no red check can be about the transport these five members exercise."
+   },
+   {
+    "module": "MCP.Transport.SubscriptionsStreamTest",
+    "members": 1,
+    "nearest_red_check": null,
+    "why_it_stops_short": "NONE, and the bait is worth naming because it is the closest lexical trap in the sweep: TWO of the 19 FAILURE rows are `HttpServerMethodNotFound404resourcessubscribe` and `...resourcesunsubscribe`, so a search for `subscribe` over the red population returns hits. They are not counterparts. What they require is that an UNIMPLEMENTED `resources/subscribe` JSON-RPC method be answered HTTP 404 with -32601 — a refusal of a method this SDK does not serve. This member asserts that our SSE PARSER ignores a bare `:` comment line arriving between two events on an already-open `subscriptions/listen` stream. Different method, different layer, and the check's whole subject is that the method is absent while the member's presupposes a working one."
+   }
+  ],
+  "what_this_does_not_establish": "That `divergent_despite_agreement` is unreachable, or that the class was not worth defining. It establishes that no ET-CC member ANYWHERE in the crosswalk reaches a red OC check while agreeing with it, over the adjudications this crosswalk made — and an axis verdict is a judgement (X1), so a wrong `silent` anywhere would hide an instance. What the zero does establish is narrower and is what the dispatch asked for: the sweep ran over the whole cross-product rather than stopping at the first plausible hit, its candidate count is stated, and the one module that produced a false positive in an earlier slice's PLAN is named with the measurement that refuted it."
+ },
+ "the_figure_sweep_this_ticket_ran_and_what_its_population_was": "THE POPULATION WAS THIS FILE'S OWN ASSERTIONS, not the figures this ticket moved, and the difference is what the sweep found. C1c-iv-a shipped four stale figures because its sweep quantified over the figures its slice changed, which cannot reach a figure that was wrong BEFORE the slice touched anything. This file held exactly such a figure: `the_all_silent_case` said four over a file holding one, and had said so since MES-104's reduction moved the four edges out. No sweep keyed on this ticket's own changes would have looked at it.\n\nSO THE POPULATION IS EVERY ASSERTION IN THIS FILE, numerals AND number-words, UNCHANGED fields included AND THE FIELDS THIS SLICE ITSELF WROTE INCLUDED. That last clause is not decoration: the first round of this sweep enumerated only fields that existed BEFORE this ticket — an INHERITED-text population wearing a whole-file label — and it shipped a fresh false figure in prose it had authored in the same commit (below). A field this slice wrote is an assertion in this file on the day it is written, and a sweep that quantifies over inherited text is the `moved figures` defect at one remove.\n\nINHERITED FIELDS. What moved: `owner`, `what_moved_and_when`, `everything_else_is`, `the_fourth_check`, `the_all_silent_case`, `no_check_population_is_declared_here`, the selector's `denotes` and its three companion clauses, and the four counts in `the_population_this_file_declares`. What was re-measured and did NOT move: `why_4_checks_and_not_2` (historical by its own first word and re-read as still accurate about C1a), `what_a_record_carries_and_why` (including its `42e6b19` re-measurement of all 281 ET-CC members green, re-checked against `et_verdict` on every edge here), `how_a_silent_axis_was_decided`, and `what_this_is`.\n\nFIELDS THIS SLICE WROTE — the population the first round missed, swept in the correction round after review caught the first of them. `leg`, `leg_note`, `what_none_determinable_means_and_why_a_third_population_rather_than_a_leg_conjunct`, `the_sub_populations_this_file_records`, `absence_searches` and `absence_searches_note`, `declared_unmatched_note`, `the_bucket_2_entries_this_ticket_closed_and_the_measured_global_delta`, `the_client_leg_check_that_would_fail_a_conforming_client_and_why_it_does_not`, `the_divergent_despite_agreement_sweep_over_the_29_and_the_whole_crosswalk_zero_it_earns`, this field, and every `evidence`, `note`, `why_no_counterpart`, `why_this_search_is_this_claims_search`, `the_near_miss_that_is_not_a_counterpart` and `population` clause on the 19 edges, the 21 declared_unmatched rows and the 7 searches. FOUR were wrong and all four are corrected in place:\n\n(1) `…sweep….what_was_asked` said C1c-iv-a's declared crosswalk was 252 of the 281 and that all 29 of these members were outside every declared population. MEASURED at 9bdd1e8: 253 declared, `outside_the_population.et_cc_members` 28, and this file's own declared population 1 — so 28 were outside and the 29th was C1a's residual member, which this file had declared all along. It contradicted `it_is_a_COVER_and_not_a_PARTITION` and `what_moved_and_when` two fields away, and this ticket's own plan had 253. The same belief was appended to the SERVER file's `the_result` and written into `crosswalk_controls.exs`'s ndsweep header; all three are corrected. (2) `leg_note` said this field was absent through `the first four C1c slices`; counted off `main` there are FIVE merged before this one — C1c-i, C1c-ii, C1c-iii, C1c-iii-b, C1c-iv-a. (3) An `edges` note pointed at `the_bucket_2_entry_…` singular, a field name that does not exist: the field was renamed to `…entries_…` when the delta measured five instead of the predicted one, and the pointer did not follow — a dangling cross-reference that composes into the generated crosswalk and bucket-5a. (4) `the_bucket_2_entries_…the_four_it_did_not` restated C1c-iii as having predicted `three checks`; the server file hedges at `about three` and its enumeration names two, so the figure is taken from the enumeration.\n\nWHAT THE RE-SWEEP RE-MEASURED AND FOUND UNMOVED, stated so the four corrections do not read as the whole result: the 281 / 107 / 145 / 29 populations and the 9 modules at 6/2/7/2/3/1/2/5/1; 19 edges, 63 axis verdicts as 46 agrees / 17 silent / 0 contradicts, 0 all-silent, 18 checks addressed, 21 declared_unmatched, 7 searches; the cross-leg module table 6 client/2 server, 17/1, 5/2, 10/8, 0/4, 0/17, the module union at 101 = 29 + 38 + 34 removing 72, and 3 modules none_determinable throughout; 30 B2b modules with zero string-prefix pairs; 175 manifest rows as 119 server + 56 client, 56 carrying `http`, and every registered search's positive controls (56/63/32, 12/13/32, 6/46/17, 2/7/119, 12/23/32) at the counts the entries record; 173 emitting rows with 21 non-green as 19 FAILURE + 2 WARNING over 17 distinct names, the FAILUREs 17 `server-stateless` and 2 input-required; bucket 2a 82 → 77 with 2b unmoved at 14, so bucket 2 96 → 91 of 173; 18 `http-custom-headers` rows all SUCCESS with 7 in the `sep-2243-client-base64-unsafe` case and 5 carrying edges from here; the server file's `the_all_silent_case` saying four over four. The client file's says `Four` over seven — MES-120's, not copied into anything here.\n\nONE FIGURE WAS DELIBERATELY NOT RE-MEASURED, AND THAT IS STATED RATHER THAN COUNTED AS A GREEN. `why_it_must_name_a_file_other_than_this_one` records that on MES-99 a dropped edge and a dropped declared_unmatched row each built cleanly at 20 members. That is a measurement of a MUTATION at C1a's tip, when this file held 21 members; it cannot be re-run at this tip, where the file holds 29 and the mutation would produce a different number. It was RE-READ and found accurate as history, and the sweep records it as unverifiable-here rather than as verified. The property it argues for — that a selector reading this file's own rows would be circular — is verified, by G15a running against an external anchor at every build.\n\nEVERY CROSS-ARTEFACT FIGURE IN THIS FILE IS DERIVED AT AUTHORING TIME FROM THE ARTEFACT THAT OWNS IT rather than typed — the 281 ET-CC members from the register, the 107 client and 145 server members from B2b, the 175 manifest rows and the 21 red ones from A1's artefacts. That is a discipline of how this file was written and it is NOT a guard: nothing re-checks it, because G21's universe is strings that occur in NO input document and this file IS an input document. The guard that would is MES-120's and does not exist yet. Stated as a residual, not as a green."
 }

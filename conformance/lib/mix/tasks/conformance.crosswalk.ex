@@ -206,6 +206,7 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     population =
       populations!(edges_docs, register, attribution, rows, axes, %{
         attribution: require!(opts, :attribution),
+        register: require!(opts, :register),
         emitting_sites: require!(opts, :emitting_sites)
       })
 
@@ -715,11 +716,12 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
   # fire is as empty as one nobody calls.
   # ---------------------------------------------------------------------------
   defp populations!(edges_docs, register, attribution, rows, axes, paths) do
-    etcc =
-      register["rows"]
-      |> Enum.filter(&(&1["label"] == "ET-CC"))
-      |> Enum.map(& &1["key"])
-      |> MapSet.new()
+    # ONE HOME for the `label == "ET-CC"` predicate, and it is a pure function
+    # with its own units (`Crosswalk.etcc_universe/1`): the stray guard needs it
+    # as a membership test and G24 needs it as a SET, and deriving it twice would
+    # be two homes for one fact.
+    universe = Crosswalk.etcc_universe(register)
+    etcc = MapSet.new(universe)
 
     sites = read_json!(paths.emitting_sites)
 
@@ -729,6 +731,8 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     overlaps!(files)
 
     members = files |> Enum.flat_map(& &1["members"]) |> Enum.sort()
+
+    totality = whole_crosswalk_totality!(universe, members, paths.register)
 
     declared_checks =
       files |> Enum.flat_map(& &1["declared_checks"]) |> Enum.uniq() |> Enum.sort()
@@ -799,7 +803,8 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
         "G20 ran over the #{length(members)} declared members; 0 inherited tokens unaccounted for.",
       "outside_the_population" => %{
         "state" => "not_yet_adjudicated",
-        "et_cc_members" => MapSet.size(etcc) - length(members),
+        "et_cc_members" => totality["et_cc_members_outside_every_declared_population"],
+        "whole_crosswalk_totality" => totality,
         "in_denominator_checks" => 173 - length(Enum.uniq(declared_checks ++ checks)),
         "why_not_173_minus_the_declared" =>
           "A check that carries an edge has been adjudicated whether or not any file DECLARES it. " <>
@@ -812,20 +817,111 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
             "state 4 ('nobody has adjudicated this member, and the guard FAILS it'). Reporting " <>
             "these as bucket 1 would assert of each something false of every one.",
         "owners" =>
-          "C1c-iii = MES-116 and C1c-iv = MES-117 — the rest of the server leg, and the " <>
-            "none_determinable rows with it. The CLIENT leg is closed, and closed by refusal " <>
-            "rather than by assertion (G22b); of the server leg, C1c-i and C1c-ii have between " <>
-            "them declared nine of its twenty-one modules and the remaining twelve are those " <>
-            "two tickets'. NEITHER NAMES THE PRODUCER: a field naming its own renderer as " <>
-            "still owing the remainder is CR-1's defect (MES-104) and it recurred as CR-5 " <>
-            "(MES-108). It recurred a THIRD time at C1c-i, which rendered this artefact while " <>
-            "this field read `C1c = MES-105 … It is the only ticket left` and went on to say " <>
-            "`NOT C1b-iii, which rendered this artefact` — self-naming and, in its second " <>
-            "clause, false. Corrected at C1c-ii (MES-115) and named in its close-out rather " <>
-            "than quietly rewritten. The sub-population figures an earlier wording carried are " <>
-            "the register's to state, not this artefact's — this artefact holds no figure it " <>
-            "did not derive (G21)."
+          "NOBODY \u2014 and the field is KEPT saying so rather than removed, because a stated " <>
+            "zero is evidence and a removed block is silence. Through C1a, C1b and C1c-i to " <>
+            "C1c-iv-a this named the tickets that still owed the remainder: the client leg " <>
+            "closed at C1b-iii, the server leg at C1c-iv-a, and the none_determinable class at " <>
+            "C1c-iv-b (MES-121), which also built G24. With all three of B2b's leg values " <>
+            "declared there is no remainder to owe, and `et_cc_members` above is not merely " <>
+            "reported zero, it is REFUSED non-zero: G24 set-compares the register's ET-CC " <>
+            "universe against the union of the declared populations in both directions. The " <>
+            "block stays in any case because `in_denominator_checks` is still non-zero \u2014 " <>
+            "the CHECK side of the crosswalk is not total and no ticket claims it is.\n\n" <>
+            "THE HISTORY THIS FIELD CARRIED IS KEPT BECAUSE THE DEFECT IT RECORDS RECURRED " <>
+            "THREE TIMES. A field naming its own renderer as still owing the remainder is " <>
+            "CR-1's defect (MES-104); it recurred as CR-5 (MES-108) and a third time at C1c-i, " <>
+            "which rendered this artefact while this field read `C1c = MES-105 \u2026 It is the " <>
+            "only ticket left` and went on to say `NOT C1b-iii, which rendered this artefact` " <>
+            "\u2014 self-naming and, in its second clause, false. Corrected at C1c-ii (MES-115) " <>
+            "and named in its close-out rather than quietly rewritten. The sub-population " <>
+            "figures an earlier wording carried are the register's to state, not this " <>
+            "artefact's \u2014 this artefact holds no figure it did not derive (G21)."
       }
+    }
+  end
+
+  # --- G24 — THE WHOLE-CROSSWALK TOTALITY, AS A REFUSAL ----------------------
+  #
+  # G22b asserts of each declared population that it is a whole LEG. Nothing
+  # asserted that the legs BETWEEN them are the whole ET-CC universe, and the
+  # figure that would have shown a gap was COMPUTED AND NEVER CHECKED:
+  # `MapSet.size(etcc) - length(members)` sat in the artefact as
+  # `outside_the_population.et_cc_members` and a reader was invited to notice it
+  # was not zero. A number nobody asserts is a comment with a digit in it, and it
+  # stayed non-zero from C1a to C1c-iv-a without anything going red.
+  #
+  # WHY IT IS NOT ENTAILED BY THE THREE G22bs, WHICH IS THE WHOLE REASON IT CAN
+  # FIRE: THE ANCHORS DIFFER. G15a, G22a and G22b all evaluate selectors against
+  # B2b's ATTRIBUTION register; the universe here is the `ET-CC` label in the
+  # REGISTER. The two agree today — measured, 0 in either direction — and that
+  # agreement is exactly what makes the entailment look total while it is not.
+  # An ET-CC member the register carries and the attribution register does not is
+  # denoted by no selector on either side, so every G22b passes, every G15a
+  # passes, the per-file stray guard passes (it is a subset test and the extra
+  # key is in no file), and only this refuses. That mutation is committed and
+  # runs beside the unmutated build (`crosswalk_controls.exs g24`).
+  #
+  # TWO DIRECTIONS, AND ONE OF THEM IS ENTAILED — stated rather than implied.
+  # The `extra` limb (homed here, not ET-CC in the register) is already refused
+  # PER FILE by the stray guard in `file_population!/8`, which runs first, so on
+  # this artefact it can never be the limb that fires. It is computed and named
+  # in the message for symmetry, so a reader of a refusal is not left working
+  # out which direction failed; it is NOT an independent check and is not
+  # presented as one. The `missing` limb is what nothing else reaches.
+  #
+  # WHAT A GREEN HERE IS NOT: evidence that any adjudication is RIGHT. It closes
+  # the SCOPE claim and nothing else — a universe every member of which was
+  # adjudicated wrongly passes it exactly as firmly.
+  defp whole_crosswalk_totality!(universe, members, register_path) do
+    against = Crosswalk.set_compare(universe, members)
+
+    refuse_unless(against.equal, """
+    G24 — the ET-CC universe and the union of every edges file's declared population are not the
+    same set. Compared by SET in BOTH directions over #{length(universe)} ET-CC rows in
+    #{register_path} and #{length(members)} homed members, never by count: a member the register
+    gained and one an edges file lost reconcile perfectly on a difference of zero.
+      ET-CC in the register, homed by NO edges file (#{length(against.missing)}):
+    #{Enum.map_join(against.missing, "\n", &("      " <> &1))}
+      homed by an edges file, NOT ET-CC in the register (#{length(against.extra)}):
+    #{Enum.map_join(against.extra, "\n", &("      " <> &1))}
+    The FIRST direction is the one only this guard reaches, and it is the one this refusal exists
+    for: a member outside every declared population is adjudicated by nobody, and every equation
+    downstream reconciles over a union that never counted it. The SECOND is already refused per
+    file by the ET-CC stray guard, which runs first — it is named here for symmetry of the
+    message and is not an independent check.
+    """)
+
+    %{
+      "guard" => "G24",
+      "et_cc_members_outside_every_declared_population" => length(against.missing),
+      "universe" => length(universe),
+      "homed" => length(members),
+      "anchor" => register_path,
+      "predicate" => "rows of #{register_path} carrying `label == \"ET-CC\"`",
+      "what_it_asserts" =>
+        "That the union of the #{length(members)} members the edges files declare IS the " <>
+          "#{length(universe)}-member ET-CC universe, compared as SETS in both directions. The " <>
+          "arithmetic falls out of the comparison rather than being asserted as a sum: nothing " <>
+          "here adds the per-file figures up, and a run in which they summed correctly over the " <>
+          "wrong members would still refuse.",
+      "why_it_is_not_entailed_by_the_leg_totality_guards" =>
+        "THE ANCHORS DIFFER. G15a, G22a and G22b evaluate selectors against the ATTRIBUTION " <>
+          "register (B2b); this universe is the `ET-CC` label in the REGISTER. The two are " <>
+          "set-identical on this data, which is what makes the entailment look total: an ET-CC " <>
+          "row the register carries and the attribution register does not is denoted by no " <>
+          "selector either side, so every leg guard stays green and only this refuses. Shown " <>
+          "under mutation rather than argued.",
+      "what_a_green_here_is_not" =>
+        "Evidence that any adjudication is RIGHT. This is a SCOPE guard: it says every ET-CC " <>
+          "member has been adjudicated by somebody, not that any verdict on any axis is " <>
+          "correct. A universe every member of which was adjudicated wrongly passes it exactly " <>
+          "as firmly, and the residual that covers correctness is A3 §7's, which no refusal " <>
+          "reaches.",
+      "what_it_does_not_cover" =>
+        "The CHECK side. `in_denominator_checks` beside it is still non-zero and this guard says " <>
+          "nothing about it: a check universe is declared per file and two of the three files " <>
+          "declare one, so the complement is answerable where it is declared and is not a " <>
+          "totality claim over the 173."
     }
   end
 
@@ -2302,6 +2398,8 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
 
       leg totality      #{leg_line(p)}
 
+      whole crosswalk   #{g24_line(p)}
+
       absence searches  #{a["absence_search_guard"]["rows_checked"]} bucket-1 rows, all naming a search (G23a, leg-wide, no exceptions);
                         #{a["absence_search_guard"]["rows_naming_a_registered_search"]} of them name one of #{a["absence_search_guard"]["entries"]} registry entries re-run by the controls (G23b/c/d)
 
@@ -2315,6 +2413,18 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       trust             FALSIFICATION-TESTED by MES-99 (C3) and standing, over this declared slice only.
                         Ruling 5.
     """)
+  end
+
+  # G24's one line. The universe and the union are printed as two figures rather
+  # than as their difference: a difference of zero is what a reader would have to
+  # trust, and two equal figures with the anchor named is what they can check.
+  defp g24_line(p) do
+    u = p["outside_the_population"]["whole_crosswalk_totality"]
+
+    "TOTAL at #{u["homed"]} members \u2014 the union of the declared populations set-compared " <>
+      "in both directions (G24) against the #{u["universe"]} `label == \"ET-CC\"` rows of " <>
+      "#{u["anchor"]}, a DIFFERENT anchor from the leg guards' B2b; " <>
+      "#{u["et_cc_members_outside_every_declared_population"]} outside every declared population"
   end
 
   defp leg_line(p) do

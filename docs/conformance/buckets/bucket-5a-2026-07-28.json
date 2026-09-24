@@ -1,11 +1,11 @@
 {
   "bucket": "5a",
-  "count": 68,
+  "count": 81,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
   "owner": "MES-98 (C2)",
-  "population_banner": "POPULATION: this projection covers 253 declared ET-CC members and 173\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 28 members and\n0 checks are not_yet_adjudicated -- a third state, distinct from bucket\n1 -- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "population_banner": "POPULATION: this projection covers 281 declared ET-CC members and 173\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 0 members and 0\nchecks are not_yet_adjudicated -- a third state, distinct from bucket 1\n-- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
   "predicate": "`cells` where the stored `bucket` == \"5\" AND the stored `oc_key[0]` == \"server\". Universe: the crosswalk's edges.",
   "projected_from": {
     "bucket_zero": {
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 972841,
+      "bytes": 1088791,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "159e6e7c40478bb82dc1a6275907a7f4da2d181c2a564366f125638f72343d0f"
+      "sha256": "8a8eba1300af6031280028a0d0de8301d3bb1d0c0d45f6cce58c3b0b8b5496b5"
     }
   },
   "revision": "2026-07-28",
@@ -2990,12 +2990,637 @@
         "oc_status_at_accepted_run": "SUCCESS",
         "oc_warning": false
       }
+    },
+    {
+      "axes": [
+        {
+          "axis": "discover_result_carries_capabilities",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "discover_result_carries_supported_versions",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "`server/discover` answers with a result carrying the server's advertised capabilities",
+      "escalation": null,
+      "evidence": "integration_test.exs:134 — `assert result.server_capabilities.tools != nil`, where `result` is what `Client.connect/1` returns from a `server/discover` round trip (integration_test.exs:130). The capabilities axis AGREES and presence is entailed rather than assumed: `Discover.Result.from_map/1` reads the member with `Map.fetch!(\"capabilities\")` (messages/discover.ex:79), so a result carrying none raises before the assertion, and a result carrying an empty one leaves `server_capabilities.tools` nil and the assertion fails.\n\nTHE SUPPORTED-VERSIONS AXIS IS SILENT, AND FOR A SHARPER REASON THAN THE USUAL ONE — MEASURED, NOT INFERRED. The neighbouring assertion at integration_test.exs:133 looks like its discharge and is not. `result.protocol_version` is built at client.ex:553 as `List.first(discover.supported_versions) || state.protocol_version`, and `@protocol_version` is `\"2026-07-28\"` (client.ex:103). So the `||` fallback makes that assertion pass IDENTICALLY over a discover result whose `supportedVersions` is `[]` — exactly the state the axis requires to fail. An assertion insensitive to the axis's own failing input does not cover it, which is the CG5 rule reached by measurement rather than by reading the subject off the prose.",
+      "member": {
+        "module": "MCP.IntegrationTest",
+        "register_key": "MCP.IntegrationTest/test connect discovers server capabilities via server/discover (no handshake)",
+        "test": "test connect discovers server capabilities via server/discover (no handshake)"
+      },
+      "note": "The first edge any ET-CC member files onto `ServerImplementsDiscover` from outside the server leg.",
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-implements-discover",
+        "ServerImplementsDiscover",
+        "Servers MUST implement server/discover.",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "server_info_in_result_meta_carries_a_name",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "server_info_in_result_meta_carries_a_version",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "the discover result identifies the server in `_meta['io.modelcontextprotocol/serverInfo']`",
+      "escalation": null,
+      "evidence": "integration_test.exs:132 — `assert result.server_info.name == \"test-server\"`. The ADDRESS the axis names is the one the value came off: `Discover.Result.from_map/1` takes `server_info` from `Map.get(meta, @server_info_meta_key)` under the result's `_meta` (messages/discover.ex:69-75), so a result whose `_meta` omits the key leaves `server_info` nil and `nil.name` raises. Not the result's top-level `serverInfo` — checked, because a name in the wrong envelope would satisfy a careless reading of this axis and not the check.\n\nThe VERSION axis is silent: nothing here asserts a version, and the fixture's `server_info` carries one (integration_test.exs:108) without any assertion's subject being it. A value present in a fixture is not a value a test constrains.",
+      "member": {
+        "module": "MCP.IntegrationTest",
+        "register_key": "MCP.IntegrationTest/test connect discovers server capabilities via server/discover (no handshake)",
+        "test": "test connect discovers server capabilities via server/discover (no handshake)"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "server-stateless",
+        "sep-2575-server-identifies-in-result-meta",
+        "ServerIdentifiesInResultMeta",
+        "Servers SHOULD identify themselves via _meta['io.modelcontextprotocol/serverInfo'] on responses (spec PR #3002).",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/server-stateless/sep-2575-server-identifies-in-result-meta/ServerIdentifiesInResultMeta",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_tools_member",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "tools_is_a_json_array",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_tool_has_a_name",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_tool_has_a_description",
+          "verdict": "silent"
+        },
+        {
+          "axis": "every_tool_has_an_input_schema",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "`tools/list` answers with the advertised tools as a JSON array, each carrying a name",
+      "escalation": null,
+      "evidence": "integration_test.exs:144 — `assert Enum.map(list[\"tools\"], & &1[\"name\"]) |> Enum.sort() == [\"add\", \"echo\"]`. Three axes are discharged by ONE expression and each for its own reason. PRESENCE: an absent member makes `list[\"tools\"]` nil and `Enum.map/2` raises. ARRAY: Jason decodes a JSON array to a list and an object to a MAP, and `& &1[\"name\"]` over a map's `{k, v}` tuples raises — so the assertion discriminates the two rather than accepting either. EVERY NAME: the sorted result equals a two-element list of the fixture's own tool names, so no listed tool can carry a nil or empty name.\n\nDESCRIPTION and INPUT SCHEMA are SILENT. The handler declares both (integration_test.exs:28-37) and this assertion's subject is the name list; a field a fixture sets and no assertion reads is not covered, which is the same reading `how_a_silent_axis_was_decided` states.",
+      "member": {
+        "module": "MCP.IntegrationTest",
+        "register_key": "MCP.IntegrationTest/test tools: list, echo, add, isError, unknown",
+        "test": "test tools: list, echo, add, isError, unknown"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "tools-list",
+        "tools-list",
+        "ToolsList",
+        "Server lists available tools with valid structure",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-list/tools-list/ToolsList",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_error_result_sets_is_error_true",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_error_result_carries_text_in_its_first_content_block",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a tool reporting a TOOL-level error answers with a normal result whose `isError` is true",
+      "escalation": null,
+      "evidence": "integration_test.exs:152-153 — `{:ok, err} = Client.call_tool(client, \"error_tool\", %{})` and then `assert err[\"isError\"] == true`. The check's axis is `i=r.isError===!0`, STRICT identity with `true`; Elixir's `==` over booleans is equally strict, so a truthy non-boolean fails here exactly as it fails there. The `{:ok, ...}` match is load-bearing for the axis's own framing — a JSON-RPC error would return `{:error, _}` and the match would fail, so the assertion is about a RESULT that flags an error and not about an error response.\n\nThe TEXT axis is SILENT. The handler returns `\"boom\"` in the first content block (integration_test.exs:50-51) and no assertion here reads it. This is the axis the server leg's five `ToolsCallError` edges reach, so the silence is this member's and not the check's.",
+      "member": {
+        "module": "MCP.IntegrationTest",
+        "register_key": "MCP.IntegrationTest/test tools: list, echo, add, isError, unknown",
+        "test": "test tools: list, echo, add, isError, unknown"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "tools-call-error",
+        "tools-call-error",
+        "ToolsCallError",
+        "Tool returns error correctly",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-error/tools-call-error/ToolsCallError",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_resources_member",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "resources_is_a_json_array",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_resource_has_a_uri",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_resource_has_a_name",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "`resources/list` answers with the listed resources as a JSON array, each carrying a uri",
+      "escalation": null,
+      "evidence": "integration_test.exs:165 — `assert hd(list[\"resources\"])[\"uri\"] == \"file:///readme.txt\"`. `hd/1` is what discharges the first two axes: it raises on the nil an absent member yields AND on the map a JSON object decodes to, so neither an absent nor a mis-typed `resources` reaches the equality. The URI axis agrees on the precedent the server file set for an `every_*` axis — the assertion pins the field on the instance the fixture produces, and the fixture produces exactly one (integration_test.exs:67).\n\nThe NAME axis is silent: the fixture sets `name` and nothing reads it.",
+      "member": {
+        "module": "MCP.IntegrationTest",
+        "register_key": "MCP.IntegrationTest/test resources: list, read, unknown, templates",
+        "test": "test resources: list, read, unknown, templates"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "resources-list",
+        "resources-list",
+        "ResourcesList",
+        "Server lists available resources with valid structure",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/resources-list/resources-list/ResourcesList",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_contents_member",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "contents_is_a_json_array",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "contents_is_not_empty",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_first_content_carries_a_uri",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_first_content_carries_a_mime_type",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_first_content_carries_text",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "`resources/read` answers with a contents array whose first entry carries the resource's text",
+      "escalation": null,
+      "evidence": "integration_test.exs:168 — `assert hd(read[\"contents\"])[\"text\"] == \"Hello from MCP!\"`, on the result bound at integration_test.exs:167. `hd/1` reaches three axes at once and they are not one axis counted three times: it raises on nil (PRESENCE), it raises on a map (ARRAY), and it raises on `[]` (NOT EMPTY) — three distinct inputs, three distinct raises. The TEXT axis agrees on the equality against a non-empty string.\n\nMIME TYPE IS SILENT AND THE SILENCE IS THE INTERESTING ONE. The check requires the first content to carry a `mimeType`, camelCase on the wire, and this handler returns no `mimeType` at all (integration_test.exs:71). So the axis is not merely unasserted here — the fixture this member drives would FAIL it. It is recorded as SILENT and not as `contradicts` because a contradiction is a claim of ours that the check's requirement is wrong, and this member makes no claim about mimeType in either direction; what it shows is that the ET side of this pairing is weaker than the OC side, which is a coverage fact about us and is stated here rather than dressed as agreement. URI is silent on the ordinary reading.",
+      "member": {
+        "module": "MCP.IntegrationTest",
+        "register_key": "MCP.IntegrationTest/test resources: list, read, unknown, templates",
+        "test": "test resources: list, read, unknown, templates"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "resources-read-text",
+        "resources-read-text",
+        "ResourcesReadText",
+        "Read text resource successfully",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/resources-read-text/resources-read-text/ResourcesReadText",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "no_result_is_returned_for_a_non_existent_resource",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_thrown_value_is_a_json_rpc_error_object",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_error_code_is_minus_32602",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "a `resources/read` for a non-existent resource answers with JSON-RPC error -32602, not the retired -32002",
+      "escalation": null,
+      "evidence": "integration_test.exs:170-171 — `{:error, error} = Client.read_resource(client, \"file:///missing\")` and `assert error.code == -32_602`. All three axes agree, each on its own limb of those two lines. NO RESULT: the `{:error, _}` match fails outright if a result comes back, which is the axis's `o===void 0?` arm. A JSON-RPC ERROR OBJECT: `error` is an `%MCP.Protocol.Error{}` decoded off the wire, so `error.code` raises on anything that is not one — a transport failure or a timeout returns a different shape and never reaches the equality. THE CODE: asserted as exactly `-32_602`, and the handler's own clause returns `{:error, -32_602, ...}` (integration_test.exs:73-74), so the value crossed the boundary as an encoded message over `MCP.Test.BridgeTransport` rather than being read back out of a struct we built.",
+      "member": {
+        "module": "MCP.IntegrationTest",
+        "register_key": "MCP.IntegrationTest/test resources: list, read, unknown, templates",
+        "test": "test resources: list, read, unknown, templates"
+      },
+      "note": "THE COUNTERPART MES-116 FOUND AND MES-117 HANDED TO THIS TICKET BY NAME. `the_counterpart_this_slice_found_that_no_leg_scoped_file_can_declare` records this check as bucket 2 while a real ET-CC counterpart existed, and names this member and these lines as the counterpart. This edge is that field's discharge: `checks_with_edges` is computed over ALL files' cells, so the check leaves bucket 2 GLOBALLY at this tip — a measured cross-file delta, reported in `the_bucket_2_entries_this_ticket_closed_and_the_measured_global_delta` rather than absorbed silently.",
+      "oc_key": [
+        "server",
+        "sep-2164-resource-not-found",
+        "sep-2164-error-code",
+        "ResourcesNotFoundErrorCode",
+        "Server returns -32602 (Invalid Params) for non-existent resource (SHOULD)",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/sep-2164-resource-not-found/sep-2164-error-code/ResourcesNotFoundErrorCode",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_prompts_member",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "prompts_is_a_json_array",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_prompt_has_a_name",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_prompt_has_a_description",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "`prompts/list` answers with the advertised prompts as a JSON array, each carrying a name",
+      "escalation": null,
+      "evidence": "integration_test.exs:183 — `assert hd(list[\"prompts\"])[\"name\"] == \"greeting\"`. Same three-way discharge `hd/1` gives on the resources list, and the same precedent for the `every_*` axis. DESCRIPTION is silent although the fixture sets one (integration_test.exs:82): the axis requires every advertised prompt to carry a non-empty `description` and no assertion's subject here is that field.",
+      "member": {
+        "module": "MCP.IntegrationTest",
+        "register_key": "MCP.IntegrationTest/test prompts: list, get, unknown",
+        "test": "test prompts: list, get, unknown"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "prompts-list",
+        "prompts-list",
+        "PromptsList",
+        "Server lists available prompts with valid structure",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/prompts-list/prompts-list/PromptsList",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_messages_member",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "messages_is_a_json_array",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "messages_is_not_empty",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_message_has_a_role",
+          "verdict": "silent"
+        },
+        {
+          "axis": "every_message_has_content",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "`prompts/get` answers with a non-empty messages array",
+      "escalation": null,
+      "evidence": "integration_test.exs:186 — `assert length(get[\"messages\"]) == 1`, on the result bound at integration_test.exs:185. `length/1` is a guard-level list test: it raises on the nil an absent member yields and on the map an object decodes to, and the `== 1` excludes the empty array — three axes, three distinct inputs.\n\nROLE and CONTENT are SILENT. The fixture's one message carries both (integration_test.exs:87) and the assertion's subject is the array's LENGTH; a length says nothing about what is in the elements. This is the conservative reading applied where it costs coverage rather than where it is free.",
+      "member": {
+        "module": "MCP.IntegrationTest",
+        "register_key": "MCP.IntegrationTest/test prompts: list, get, unknown",
+        "test": "test prompts: list, get, unknown"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "prompts-get-simple",
+        "prompts-get-simple",
+        "PromptsGetSimple",
+        "Get simple prompt successfully",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/prompts-get-simple/prompts-get-simple/PromptsGetSimple",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_completion_member",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "completion_carries_a_values_member",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "completion_values_is_a_json_array",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [],
+      "claim": "`completion/complete` answers with a `completion` member carrying a `values` array",
+      "escalation": null,
+      "evidence": "integration_test.exs:200 — `assert result[\"completion\"][\"values\"] == [\"foo\", \"foobar\"]`, on the result bound at integration_test.exs:197-198. ALL THREE axes agree and the mechanism is worth stating because it is NOT a raise: Access on nil returns nil in Elixir rather than erroring, so an absent `completion` leaves `result[\"completion\"]` nil, the whole expression nil, and the equality FAILS — the assertion discriminates all three failures through its value rather than through an exception. The equality against a two-element list of strings is what carries the array axis: neither a map nor a scalar can equal it.\n\nThe first edge onto this check from any file. The server leg declared `completion-complete` (C1c-iii) and found no member of its own that reached it.",
+      "member": {
+        "module": "MCP.IntegrationTest",
+        "register_key": "MCP.IntegrationTest/test completion/complete round-trips",
+        "test": "test completion/complete round-trips"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "completion-complete",
+        "completion-complete",
+        "CompletionComplete",
+        "Server responds to completion requests",
+        ""
+      ],
+      "shape": "full",
+      "tag": "oc:server/completion-complete/completion-complete/CompletionComplete",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_call_is_not_answered_with_a_jsonrpc_error",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_response_carries_a_result",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_carries_a_result_type_field_at_all",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "the_result_type_is_input_required",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a tool that required input is answered, after the client's transparent retry, with a result carrying a `resultType`",
+      "escalation": null,
+      "evidence": "integration_test.exs:208-209 — `{:ok, result} = Client.call_tool(client, \"needs_input\", %{})` and `assert result[\"resultType\"] == \"complete\"`. The first three axes agree: `{:ok, _}` excludes a JSON-RPC error and an absent result, and the equality requires the `resultType` MEMBER to be there, which is all the presence axis's `in` test asks.\n\nTHE FOURTH AXIS IS SILENT ON EXACTLY THE READING THE SERVER FILE ALREADY RATIFIED, and it is cited rather than re-argued: `the_result_type_marker_the_suite_scores_on_one_path_only` records two `MCP.Server.JsonSchema202012Test` edges onto this same check with the same three-agrees/one-silent shape, on the ground that the fourth axis's antecedent is an INPUT-REQUIRED response and theirs are completed calls. This member DOES drive a real input-required round trip — the handler asks on the first pass and completes on the retry (integration_test.exs:54-60) — but the intermediate response is consumed inside `Client.call_tool/3` and no assertion here is about it. So the distinction is not MRTR-versus-not: it is which response the assertion's subject IS. C1c-ii's two edges on this check agree with all four because they assert the marker on the input-required answer itself.",
+      "member": {
+        "module": "MCP.IntegrationTest",
+        "register_key": "MCP.IntegrationTest/test MRTR: call_tool transparently completes an input-required round-trip",
+        "test": "test MRTR: call_tool transparently completes an input-required round-trip"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "input-required-result-result-type",
+        "sep-2322-result-type-included",
+        "ResultTypeIncluded",
+        "Server includes resultType field in InputRequiredResult response",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_tools_member",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "tools_is_a_json_array",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_tool_has_a_name",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "every_tool_has_a_description",
+          "verdict": "silent"
+        },
+        {
+          "axis": "every_tool_has_an_input_schema",
+          "verdict": "silent"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "`tools/list` over real HTTP answers with the server's tools as an array, each carrying a name",
+      "escalation": null,
+      "evidence": "self_compatibility_test.exs:195 — `assert {:ok, %{\"tools\" => [%{\"name\" => name}]}} = MCP.Client.list_tools(client)`, with the bound name pinned at self_compatibility_test.exs:196. The PATTERN is what discharges the three axes and it does so more tightly than an equality would: the map pattern requires the `tools` key, the list pattern requires a JSON array of exactly one element, and the inner map pattern requires that element to carry `name`. A JSON object under `tools` decodes to a map and fails the list pattern.\n\nThis is the only member in this file that reaches a check over REAL HTTP through a real Bandit server (self_compatibility_test.exs:178-193) rather than in-process over `MCP.Test.BridgeTransport`, which is why it is filed beside the BridgeTransport `ToolsList` edge rather than collapsed into it: same check, different transport, two claims.",
+      "member": {
+        "module": "MCP.Transport.SelfCompatibilityTest",
+        "register_key": "MCP.Transport.SelfCompatibilityTest/test END TO END: our client calls our server's non-header-safe tool over real HTTP",
+        "test": "test END TO END: our client calls our server's non-header-safe tool over real HTTP"
+      },
+      "note": "The second edge onto `ToolsList` from this file; `MCP.IntegrationTest` files the other.",
+      "oc_key": [
+        "server",
+        "tools-list",
+        "tools-list",
+        "ToolsList",
+        "Server lists available tools with valid structure",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-list/tools-list/ToolsList",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
+    },
+    {
+      "axes": [
+        {
+          "axis": "the_result_carries_a_content_member",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "content_is_a_json_array",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "content_is_not_empty",
+          "verdict": "agrees"
+        },
+        {
+          "axis": "a_content_block_has_type_text",
+          "verdict": "silent"
+        },
+        {
+          "axis": "the_text_block_carries_a_text_field",
+          "verdict": "agrees"
+        }
+      ],
+      "bucket": "5",
+      "bucket_attributes": [
+        "partial"
+      ],
+      "claim": "a `tools/call` over real HTTP answers with a non-empty content array whose block carries the tool's text",
+      "escalation": null,
+      "evidence": "self_compatibility_test.exs:198 — `assert {:ok, %{\"content\" => [%{\"text\" => \"sunny\"}]}} = MCP.Client.call_tool(client, name)`. The pattern carries four axes: the `content` key, a one-element LIST (so not a map and not empty), and a block whose `text` is the non-empty string the tool returned.\n\nTHE TYPE-DISCRIMINATOR AXIS IS SILENT, and it is the one axis a pattern match makes easy to over-claim. `a_content_block_has_type_text` requires a block carrying `\"type\":\"text\"` in the WIRE spelling; this pattern names only the `text` key, so it would match a block with no `type` at all. The handler does set it (self_compatibility_test.exs:62) — a fixture setting a field is not an assertion reading it.",
+      "member": {
+        "module": "MCP.Transport.SelfCompatibilityTest",
+        "register_key": "MCP.Transport.SelfCompatibilityTest/test END TO END: our client calls our server's non-header-safe tool over real HTTP",
+        "test": "test END TO END: our client calls our server's non-header-safe tool over real HTTP"
+      },
+      "note": null,
+      "oc_key": [
+        "server",
+        "tools-call-simple-text",
+        "tools-call-simple-text",
+        "ToolsCallSimpleText",
+        "Tool returns simple text content",
+        ""
+      ],
+      "shape": "partial",
+      "tag": "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText",
+      "verdicts": {
+        "et": "green",
+        "oc": "green",
+        "oc_status_at_accepted_run": "SUCCESS",
+        "oc_warning": false
+      }
     }
   ],
   "schema": "bucket-view/1",
   "title": "green in both — server",
   "universe": {
-    "count": 156,
+    "count": 174,
     "name": "edges",
     "of": "the crosswalk's `cells`"
   },

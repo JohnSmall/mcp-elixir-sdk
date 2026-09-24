@@ -1089,6 +1089,123 @@ defmodule MCP.Conformance.CrosswalkTest do
     end
   end
 
+  describe "etcc_universe/1 and G24 — the whole-crosswalk totality's decision logic" do
+    test "it is the `label == \"ET-CC\"` rows' keys, and a row with another label is not one" do
+      register = %{
+        "rows" => [
+          %{"key" => "A/test a", "label" => "ET-CC"},
+          %{"key" => "B/test b", "label" => "ET-only"},
+          %{"key" => "C/test c", "label" => "ET-CC"},
+          %{"key" => "D/test d"}
+        ]
+      }
+
+      assert Crosswalk.etcc_universe(register) == ["A/test a", "C/test c"]
+    end
+
+    test "it is SORTED and UNIQUE — a duplicated key would make the universe unhomeable" do
+      register = %{
+        "rows" => [
+          %{"key" => "Z/test z", "label" => "ET-CC"},
+          %{"key" => "A/test a", "label" => "ET-CC"},
+          %{"key" => "Z/test z", "label" => "ET-CC"}
+        ]
+      }
+
+      # Two rows, one key. Without `uniq` the universe is 3 long and no set of
+      # members could equal it, so G24 would refuse a correct crosswalk.
+      assert Crosswalk.etcc_universe(register) == ["A/test a", "Z/test z"]
+    end
+
+    test "an EMPTY universe is not a pass — the comparison at the call site reddens on it" do
+      assert Crosswalk.etcc_universe(%{"rows" => []}) == []
+      assert Crosswalk.etcc_universe(%{}) == []
+
+      # This is the vacuum limb, and it lives in the comparison rather than in
+      # the filter: G24 compares the universe against the homed members, so an
+      # empty universe against a non-empty union is not equal.
+      refute Crosswalk.set_compare([], ["A/test a"]).equal
+    end
+
+    test "G24's comparison is BY SET, so a gained member and a lost one do not cancel" do
+      universe = ["A/test a", "B/test b"]
+
+      # One member homed that the register does not carry, one it carries that
+      # nobody homes. The COUNTS are equal and the sets are not.
+      c = Crosswalk.set_compare(universe, ["A/test a", "C/test c"])
+
+      refute c.equal
+      assert c.missing == ["B/test b"]
+      assert c.extra == ["C/test c"]
+    end
+
+    test "the two directions are DISTINGUISHED, which is what the refusal's two limbs report" do
+      universe = ["A/test a", "B/test b"]
+
+      only_missing = Crosswalk.set_compare(universe, ["A/test a"])
+      assert only_missing.missing == ["B/test b"]
+      assert only_missing.extra == []
+
+      only_extra = Crosswalk.set_compare(universe, ["A/test a", "B/test b", "C/test c"])
+      assert only_extra.missing == []
+      assert only_extra.extra == ["C/test c"]
+    end
+  end
+
+  describe "G24 over the committed artefact" do
+    setup do
+      %{a: "docs/conformance/crosswalk-2026-07-28.json" |> File.read!() |> Jason.decode!()}
+    end
+
+    test "the universe IS the union, and the block names a DIFFERENT anchor from the leg guards",
+         %{a: a} do
+      u = a["population"]["outside_the_population"]["whole_crosswalk_totality"]
+
+      assert u["guard"] == "G24"
+      assert u["universe"] == u["homed"]
+      assert u["et_cc_members_outside_every_declared_population"] == 0
+
+      # The anchor is the REGISTER. If it were B2b's attribution register, G24
+      # would be entailed by the leg guards and could not fire.
+      assert u["anchor"] =~ "etcc-register.json"
+      refute u["anchor"] =~ "etcc-attribution.json"
+    end
+
+    test "the universe is what etcc_universe/1 derives from the register it names", %{a: a} do
+      u = a["population"]["outside_the_population"]["whole_crosswalk_totality"]
+      register = u["anchor"] |> File.read!() |> Jason.decode!()
+
+      assert length(Crosswalk.etcc_universe(register)) == u["universe"]
+    end
+
+    test "and it IS the union of every declared population, re-derived here", %{a: a} do
+      u = a["population"]["outside_the_population"]["whole_crosswalk_totality"]
+      register = u["anchor"] |> File.read!() |> Jason.decode!()
+
+      homed =
+        a["population"]["files"]
+        |> Enum.flat_map(& &1["members"])
+        |> Enum.uniq()
+        |> Enum.sort()
+
+      assert Crosswalk.set_compare(Crosswalk.etcc_universe(register), homed).equal
+      assert length(homed) == u["homed"]
+    end
+
+    test "all three of B2b's leg values are declared, which is what makes the union total", %{
+      a: a
+    } do
+      legs =
+        a["population"]["files"]
+        |> Enum.map(& &1["leg_totality"])
+        |> Enum.filter(& &1["declared"])
+        |> Enum.map(& &1["leg"])
+        |> Enum.sort()
+
+      assert legs == ["client", "none_determinable", "server"]
+    end
+  end
+
   describe "the committed crosswalk artefact" do
     setup do
       %{a: "docs/conformance/crosswalk-2026-07-28.json" |> File.read!() |> Jason.decode!()}
@@ -1289,8 +1406,12 @@ defmodule MCP.Conformance.CrosswalkTest do
     test "every declared leg is TOTAL, and each cover's arithmetic closes", %{a: a} do
       fs = Enum.filter(a["population"]["files"], &get_in(&1, ["leg_totality", "declared"]))
 
+      # MES-121 added the third: `none_determinable` is a value of B2b's `leg`
+      # field, so the name is the register's and not an invention. With all three
+      # declared the union of the populations is the whole ET-CC universe, which
+      # is G24's claim and is asserted separately.
       assert Enum.map(fs, &get_in(&1, ["leg_totality", "leg"])) |> Enum.sort() ==
-               ["client", "server"]
+               ["client", "none_determinable", "server"]
 
       for f <- fs, do: assert_leg_total(f)
     end
@@ -1334,15 +1455,31 @@ defmodule MCP.Conformance.CrosswalkTest do
       assert Crosswalk.set_compare(rows, f["members"]).equal
     end
 
-    test "a file that declares no leg says so, rather than reporting a pass", %{a: a} do
-      # The optionality has to be exercised on real data or it is untested
-      # branch. `crosswalk-edges.json` holds three server members that are NOT
-      # the server leg, so claiming totality there would be false rather than
-      # missing.
-      others = Enum.reject(a["population"]["files"], &get_in(&1, ["leg_totality", "declared"]))
+    # THE OPTIONALITY IS NO LONGER EXERCISED BY THE COMMITTED DATA, AND THAT LOSS
+    # IS STATED RATHER THAN PAPERED OVER. Until MES-121 `crosswalk-edges.json`
+    # declared no leg and this test read the `NOT ASSERTED` branch off the real
+    # artefact. All three files now declare one, so that branch has nothing to
+    # bite on here: keeping the old assertion would have made it red on a correct
+    # tree, and deleting the test would have dropped the coverage silently.
+    #
+    # So the test asserts the fact that replaced it, and the branch is driven
+    # where a branch with no real input has to be driven — under mutation, by
+    # `crosswalk_controls.exs totality`, which strips `leg` and
+    # `the_sub_populations_this_file_records` from a copy of one edges file and
+    # requires the build to SUCCEED reporting `NOT ASSERTED` for it. A unit over
+    # the committed artefact cannot reach it, and saying so is the honest form.
+    test "every file declares a leg now, and the NOT-ASSERTED branch moved to a mutation", %{
+      a: a
+    } do
+      fs = a["population"]["files"]
+      declared = Enum.filter(fs, &get_in(&1, ["leg_totality", "declared"]))
 
-      assert others != []
-      assert Enum.all?(others, &(&1["leg_totality"]["result"] =~ "NOT ASSERTED"))
+      assert fs != []
+      assert length(declared) == length(fs)
+
+      # The branch's own text is still what a run that declared none would
+      # report, and the control drives exactly that.
+      assert Enum.all?(declared, &(&1["leg_totality"]["leg"] not in [nil, ""]))
     end
 
     test "every bucket-1 row names a search, and the registry's reach is stated", %{a: a} do

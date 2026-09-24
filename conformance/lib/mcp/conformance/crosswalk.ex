@@ -968,6 +968,32 @@ defmodule MCP.Conformance.Crosswalk do
   defp non_empty?(v), do: is_binary(v) and v != ""
 
   @doc """
+  **G24's universe** — the ET-CC keys a register declares, sorted and unique.
+
+  The one home for the predicate `label == "ET-CC"`. It is a FILTER and not a
+  count: the generator needs the key SET, because G24 compares by set in both
+  directions and a size would reconcile over one row gained and one lost. The
+  `Enum.uniq/1` is not decoration either — the register is keyed by row and
+  nothing upstream forbids two rows carrying one key, and a duplicate would
+  otherwise make the universe larger than the set of members any file could
+  possibly home, refusing a correct crosswalk.
+
+  A row with no `label`, or a label that is not `"ET-CC"`, is excluded. There is
+  no fail-closed limb here and that is deliberate: a register with no ET-CC rows
+  at all yields `[]`, and what refuses THAT is the comparison at the call site —
+  an empty universe against a non-empty union of members is not equal, so the
+  vacuum reddens rather than passing.
+  """
+  @spec etcc_universe(map()) :: [String.t()]
+  def etcc_universe(register) do
+    (register["rows"] || [])
+    |> Enum.filter(&(&1["label"] == "ET-CC"))
+    |> Enum.map(& &1["key"])
+    |> Enum.uniq()
+    |> Enum.sort()
+  end
+
+  @doc """
   Every `{path, phrase}` in `required` whose phrase is absent from the statement
   at that path in `artefact`.
 
