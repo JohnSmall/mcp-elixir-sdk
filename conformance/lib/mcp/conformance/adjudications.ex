@@ -11,7 +11,9 @@ defmodule MCP.Conformance.Adjudications do
   `extend_test` and `accept_bound`, and the `bound_missing` refusal with them
   (PM ratification, MES-127 comment 29430, Q1 and Q2). MES-128 (D2b) added
   `extend_to_match` and `build_test`, and the `build_level_missing` refusal with
-  them (PM ratification, MES-128 comment 29444, Q1).
+  them (PM ratification, MES-128 comment 29444, Q1). MES-129 (D2a-i) added
+  `blocked_on_sdk_gap`, and the `sdk_gap_missing` refusal with it (PM
+  ratification, MES-129 comment 29460, Q1).
 
   ## The dispositions
 
@@ -37,8 +39,19 @@ defmodule MCP.Conformance.Adjudications do
       presumes an existing edge with an omitted axis.
     * `build_test`: for a check with no edge that no existing unit drives at any
       level. The remedy is a new ET-CC unit.
+    * `blocked_on_sdk_gap`: the check's behaviour is not implemented by the SDK,
+      or it passes only through a path an SDK gap creates. So no ET-CC unit can
+      honestly be built or extended until a named SDK change lands. The row's
+      `build_level` and `remedy` name the unit to build once the gap is fixed,
+      and that unit lands in the same change as the fix, so `main` never
+      carries a red test (the `extend_test` precedent). The row also carries
+      `sdk_gap`: the owning ticket (`owner`), one line naming the record that
+      ticket carries (`owner_record`), and a repository citation of the gap in
+      this tree (`record`). Otherwise the row is refused (`sdk_gap_missing`).
+      Shape only: whether the owning ticket really carries the record is the
+      reviewer's check.
 
-  An `extend_to_match` or `build_test` row carries `build_level` (one of
+  An `extend_to_match`, `build_test` or `blocked_on_sdk_gap` row carries `build_level` (one of
   `pure_unit`, `mock_transport`, `plug`, `live_http`) and a one-line `remedy`,
   and an `extend_to_match` row also carries an `extend_target` map. Otherwise
   the row is refused (`build_level_missing`). Like `bound_missing`, this checks
@@ -120,7 +133,8 @@ defmodule MCP.Conformance.Adjudications do
 
   `unreadable`, `bad_record`, `bad_section`, `unknown_view`,
   `view_key_collision`, `open_without_owner`, `bad_row`,
-  `disposition_outside_set`, `bound_missing`, `build_level_missing`, `phantom`, `missing`,
+  `disposition_outside_set`, `bound_missing`, `build_level_missing`, `sdk_gap_missing`,
+  `phantom`, `missing`,
   `duplicate`, `echo_drift`, `citation_drift`, and `reach`. Every refusal names the guard, the kind, the
   record file and the edge key.
 
@@ -157,11 +171,13 @@ defmodule MCP.Conformance.Adjudications do
   # reviewed change to conformance/lib, proposed at the adding ticket's plan hop.
   @dispositions ~w(fix_sdk fix_conformance_adapter keep_design_publish_bound
                    po_decision_required suite_defect_upstream extend_test accept_bound
-                   extend_to_match build_test)
+                   extend_to_match build_test blocked_on_sdk_gap)
 
-  # The build levels an extend_to_match or build_test row may name (MES-128, 29444).
+  # The build levels an extend_to_match, build_test or blocked_on_sdk_gap row may
+  # name (MES-128, 29444; MES-129, 29460).
   @build_levels ~w(pure_unit mock_transport plug live_http)
-  @build_dispositions ~w(extend_to_match build_test)
+  @build_dispositions ~w(extend_to_match build_test blocked_on_sdk_gap)
+  @ticket_key ~r/\A[A-Z][A-Z0-9]+-[0-9]+\z/
 
   @row_fields ~w(member claim tag echo et_test check root_cause if_conformance_fixed
                  disposition rationale)
@@ -404,6 +420,7 @@ defmodule MCP.Conformance.Adjudications do
       disposition_defects(section.file, k, row) ++
       bound_defects(section.file, k, row) ++
       build_defects(section.file, k, row) ++
+      sdk_gap_defects(section.file, k, row) ++
       echo_defects(section.file, k, row, view_row) ++
       if(escalated?, do: escalation_defects(section.file, k, row, view_row), else: [])
   end
@@ -480,6 +497,38 @@ defmodule MCP.Conformance.Adjudications do
   end
 
   defp build_defects(_file, _k, _row), do: []
+
+  # A blocked row names the gap that blocks it: the owning ticket, the record
+  # that ticket carries, and a citation of the gap in this tree (whose bytes
+  # citation_drift holds like any other).
+  defp sdk_gap_defects(file, k, %{"disposition" => "blocked_on_sdk_gap"} = row) do
+    gap = row["sdk_gap"]
+
+    ok? =
+      is_map(gap) and is_binary(gap["owner"]) and gap["owner"] =~ @ticket_key and
+        one_line?(gap["owner_record"]) and repo_citation?(gap["record"])
+
+    if ok? do
+      []
+    else
+      [
+        d(
+          :sdk_gap_missing,
+          file,
+          k,
+          "a blocked_on_sdk_gap row needs `sdk_gap` with a ticket-key `owner`, a one-line `owner_record` and a repository citation `record`, not #{inspect(gap, limit: 3)}"
+        )
+      ]
+    end
+  end
+
+  defp sdk_gap_defects(_file, _k, _row), do: []
+
+  defp repo_citation?(%{"file" => f, "lines" => [_, _], "bytes" => b})
+       when is_binary(f) and is_binary(b),
+       do: true
+
+  defp repo_citation?(_), do: false
 
   defp one_line?(t),
     do: is_binary(t) and String.trim(t) != "" and not String.contains?(t, ["\n", "\r"])

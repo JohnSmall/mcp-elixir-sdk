@@ -24,6 +24,11 @@ defmodule MCP.Conformance.AdjudicationsTest do
   @d2b "docs/conformance/adjudications/adjudication-D2b-2026-07-28.json"
   @v2b "docs/conformance/buckets/bucket-2b-2026-07-28.json"
   @v5b "docs/conformance/buckets/bucket-5b-2026-07-28.json"
+  @d2ai "docs/conformance/adjudications/adjudication-D2a-i-2026-07-28.json"
+  @v2a "docs/conformance/buckets/bucket-2a-2026-07-28.json"
+  # D2a-i's slice of bucket 2a, pinned literally (MES-129 brief: gate 5 pins the
+  # selector and requires the section to EQUAL its result, both ways).
+  @d2ai_selector %{"field" => "tag", "segment" => 1, "starts_with" => "input-required-result-"}
   @ves "docs/conformance/buckets/escalated-2026-07-28.json"
   @locator "docs/conformance/oc-emitting-sites-2026-07-28.json"
   @in_scope "docs/conformance/in-scope-2026-07-28.json"
@@ -234,12 +239,14 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # predicate verbatim, and the record never renders a check here as lacking a
     # test (a check may be covered outside ET-CC). Quoted `bytes` are exempt:
     # they are other files' text, and the anchor itself quotes the rule.
-    test "rendering guard: D2b's population sentence is the predicate verbatim",
+    test "rendering guard: D2b's and D2a-i's population sentences are the predicate verbatim",
          %{inputs: inputs} do
-      {:ok, record} = inputs.records[@d2b]
-      assert rendering_defects(record) == []
-      assert A.verify(record["rendering_guard"]["anchor"], inputs.source_fun) == :ok
-      assert record["rendering_guard"]["anchor"]["bytes"] =~ @population_sentence
+      for f <- [@d2b, @d2ai] do
+        {:ok, record} = inputs.records[f]
+        assert rendering_defects(record) == [], f
+        assert A.verify(record["rendering_guard"]["anchor"], inputs.source_fun) == :ok
+        assert record["rendering_guard"]["anchor"]["bytes"] =~ @population_sentence
+      end
     end
 
     test "rendering guard: goes red on 'untested', and on a paraphrase", %{inputs: inputs} do
@@ -332,9 +339,462 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert length(neg["units"]) == measured |> Map.values() |> Enum.sum()
     end
 
+    # --- D2a-i (MES-129): the MRTR slice of bucket 2a, an OPEN section ---
+
+    test "D2a-i's record holds one OPEN section on bucket 2a, owned by MES-130", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2ai]
+
+      assert for(s <- record["sections"], do: {s["view"], s["closure"], s["owner"]}) == [
+               {@v2a, "open", "MES-130"}
+             ]
+    end
+
+    # The brief: the slice is declared by a selector over the view, so the
+    # D2a-i / D2a-ii partition is checkable and not hand-listed. G32 cannot see
+    # a selector; this holds it, both ways.
+    test "D2a-i's selector is the pinned one, and its rows EQUAL the selector's result",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2ai]
+      assert Map.take(record["selector"], ~w(field segment starts_with)) == @d2ai_selector
+      assert selector_equality(d2ai_rows(inputs), json(@v2a)["rows"]) == :ok
+    end
+
+    test "the selector equality refuses a non-MRTR 2a row and a dropped MRTR row",
+         %{inputs: inputs} do
+      rows = d2ai_rows(inputs)
+      view_rows = json(@v2a)["rows"]
+      [other | _] = Enum.reject(view_rows, &(&1 in selected(view_rows, @d2ai_selector)))
+      planted = rows ++ [%{"member" => nil, "claim" => nil, "tag" => other["tag"]}]
+
+      assert {:error, {:rows_differ, [[nil, nil, tag]], []}} =
+               selector_equality(planted, view_rows)
+
+      assert tag == other["tag"]
+      refute String.starts_with?(Enum.at(String.split(tag, "/"), 1), "input-required-result-")
+
+      [first | rest] = rows
+      assert {:error, {:rows_differ, [], [dropped]}} = selector_equality(rest, view_rows)
+      assert dropped == A.key(first)
+    end
+
+    # PM ratification on MES-129 (29460, Q1 and Q3): per check, the disposition
+    # and the level.
+    test "D2a-i's dispositions and build levels are the ratified ones, per check",
+         %{inputs: inputs} do
+      by_check =
+        for r <- d2ai_rows(inputs), into: %{} do
+          [_, scenario, _, name] = String.split(r["tag"], "/")
+          {{scenario, name}, {r["disposition"], r["build_level"]}}
+        end
+
+      ir = &("input-required-result-" <> &1)
+      extend = {"extend_to_match", "plug"}
+      blocked = {"blocked_on_sdk_gap", "plug"}
+
+      green_wsv =
+        for s <- ~w(basic-elicitation basic-list-roots basic-sampling capability-check
+                    ignore-extra-params missing-input-response multi-round
+                    multiple-input-requests result-type tampered-state
+                    unsupported-methods validate-input),
+            into: %{},
+            do: {{ir.(s), "WireSchemaValid"}, extend}
+
+      assert by_check ==
+               Map.merge(green_wsv, %{
+                 {ir.("basic-elicitation"), "InputRequiredResultElicitationIncomplete"} => extend,
+                 {ir.("basic-elicitation"), "InputRequiredResultElicitationComplete"} => extend,
+                 {ir.("basic-sampling"), "InputRequiredResultSamplingIncomplete"} => extend,
+                 {ir.("basic-sampling"), "InputRequiredResultSamplingComplete"} => extend,
+                 {ir.("basic-list-roots"), "InputRequiredResultListRootsIncomplete"} => extend,
+                 {ir.("basic-list-roots"), "InputRequiredResultListRootsComplete"} => extend,
+                 {ir.("multiple-input-requests"), "InputRequiredResultMultipleInputsIncomplete"} =>
+                   extend,
+                 {ir.("multiple-input-requests"), "InputRequiredResultMultipleInputsComplete"} =>
+                   extend,
+                 {ir.("multi-round"), "InputRequiredResultMultiRoundR2"} => extend,
+                 {ir.("multi-round"), "InputRequiredResultMultiRoundR3"} => extend,
+                 {ir.("capability-check"), "RespectClientCapabilities"} => extend,
+                 {ir.("unsupported-methods"), "NotOnUnsupportedRequests"} =>
+                   {"extend_to_match", "pure_unit"},
+                 {ir.("non-tool-request"), "InputRequiredResultNonToolIncomplete"} => blocked,
+                 {ir.("non-tool-request"), "WireSchemaValid"} => blocked,
+                 {ir.("tampered-state"), "RejectTamperedState"} => blocked,
+                 {ir.("missing-input-response"), "InputRequiredResultMissingResponseRerequests"} =>
+                   blocked,
+                 {ir.("validate-input"), "ValidateInputResponses"} => blocked,
+                 {ir.("validate-input"), "ErrorOnProtocolError"} => blocked
+               })
+    end
+
+    # The substitute echo, as D2b's, with the window widened to the scenario line
+    # because the name and status lines recur (WireSchemaValid, once per
+    # scenario). The FAILURE rows are exactly the non-tool pair, both blocked.
+    test "each D2a-i row cites its own check's status at the accepted run", %{inputs: inputs} do
+      rows = d2ai_rows(inputs)
+      assert length(rows) == 30
+
+      statuses =
+        for r <- rows do
+          c = r["oc_status_at_accepted_run"]
+          assert c["file"] == @in_scope
+          assert A.verify(c, inputs.source_fun) == :ok
+          [_, scenario, _, name] = String.split(r["tag"], "/")
+          assert [^scenario, ^name, status] = census_echo(r), r["tag"]
+          {scenario, name, status, r["disposition"]}
+        end
+
+      failed = for {s, n, "FAILURE", d} <- statuses, do: {s, n, d}
+
+      assert Enum.sort(failed) == [
+               {"input-required-result-non-tool-request", "InputRequiredResultNonToolIncomplete",
+                "blocked_on_sdk_gap"},
+               {"input-required-result-non-tool-request", "WireSchemaValid", "blocked_on_sdk_gap"}
+             ]
+
+      assert Enum.frequencies_by(statuses, &elem(&1, 2)) == %{"SUCCESS" => 28, "FAILURE" => 2}
+    end
+
+    test "the D2a-i status pin refuses another scenario's window and a changed status",
+         %{inputs: inputs} do
+      rows = d2ai_rows(inputs)
+      wsv = Enum.filter(rows, &String.ends_with?(&1["tag"], "/WireSchemaValid"))
+      [w1, w2 | _] = wsv
+      swapped = Map.put(w1, "oc_status_at_accepted_run", w2["oc_status_at_accepted_run"])
+      [scenario, "WireSchemaValid", _] = census_echo(swapped)
+      refute scenario == Enum.at(String.split(w1["tag"], "/"), 1)
+
+      flipped =
+        update_in(
+          w1,
+          ["oc_status_at_accepted_run", "bytes"],
+          &String.replace(&1, "SUCCESS", "FAILURE")
+        )
+
+      assert [_, _, "FAILURE"] = census_echo(flipped)
+    end
+
+    # PM ratification on MES-129 (29460, Q2): why_green is REQUIRED where the
+    # status is SUCCESS and the disposition is blocked_on_sdk_gap.
+    test "why_green is present, and holds its bytes, on every SUCCESS blocked row",
+         %{inputs: inputs} do
+      owed = Enum.filter(d2ai_rows(inputs), &why_green_owed?/1)
+
+      assert owed |> Enum.map(&(&1["tag"] |> String.split("/") |> List.last())) |> Enum.sort() ==
+               ~w(ErrorOnProtocolError InputRequiredResultMissingResponseRerequests RejectTamperedState ValidateInputResponses)
+
+      assert why_green_defects(d2ai_rows(inputs), inputs.source_fun) == []
+    end
+
+    test "the why_green pin refuses a SUCCESS blocked row without it", %{inputs: inputs} do
+      rows = d2ai_rows(inputs)
+      [r | _] = Enum.filter(rows, &why_green_owed?/1)
+      planted = Enum.map(rows, &if(&1 == r, do: Map.delete(&1, "why_green"), else: &1))
+      assert why_green_defects(planted, inputs.source_fun) == [r["tag"]]
+    end
+
+    # PM ruling on MES-129 (29468, B1, superseding 29460's set): every row
+    # whose remedy cannot land until D4a's inputRequests object-shape fix lands
+    # points at D4a's ONE fix_sdk row, by its derived key, so the fix is counted
+    # once. Every row that does not carry it has its reading recorded, so the
+    # criterion and the set are held against each other in both directions.
+    test "each D2a-i depends_on_fix resolves to D4a's fix_sdk row, on exactly the pinned rows",
+         %{inputs: inputs} do
+      rows = d2ai_rows(inputs)
+      {carrying, rest} = Enum.split_with(rows, &Map.has_key?(&1, "depends_on_fix"))
+      name = &(&1["tag"] |> String.split("/") |> List.last())
+
+      names = carrying |> Enum.map(name) |> Enum.frequencies()
+
+      assert names == %{
+               "WireSchemaValid" => 13,
+               "InputRequiredResultElicitationIncomplete" => 1,
+               "InputRequiredResultElicitationComplete" => 1,
+               "InputRequiredResultMultiRoundR2" => 1,
+               "InputRequiredResultMultiRoundR3" => 1,
+               "RejectTamperedState" => 1,
+               "InputRequiredResultSamplingIncomplete" => 1,
+               "InputRequiredResultSamplingComplete" => 1,
+               "InputRequiredResultListRootsIncomplete" => 1,
+               "InputRequiredResultListRootsComplete" => 1,
+               "InputRequiredResultMultipleInputsIncomplete" => 1,
+               "InputRequiredResultMultipleInputsComplete" => 1
+             }
+
+      {:ok, record} = inputs.records[@d2ai]
+      not_carrying = record["depends_on_fix_statement"]["not_carrying"]
+      assert rest |> Enum.map(name) |> Enum.sort() == not_carrying |> Map.keys() |> Enum.sort()
+      assert Enum.all?(Map.values(not_carrying), &(is_binary(&1) and &1 != ""))
+
+      for r <- carrying do
+        ptr = r["depends_on_fix"]
+        assert r["disposition"] != "fix_sdk"
+        {:ok, target} = inputs.records[ptr["record"]]
+
+        [hit] =
+          for s <- target["sections"],
+              s["view"] == ptr["view"],
+              t <- s["rows"],
+              A.key(t) == [ptr["member"], ptr["claim"], ptr["tag"]],
+              do: t
+
+        assert hit["disposition"] == "fix_sdk" and ptr["disposition_there"] == "fix_sdk"
+        assert hit["root_cause"]["id"] == ptr["root_cause_there"]
+      end
+    end
+
+    # PM ratification on MES-129 (29460, Q1, the tightening): each gap is owned
+    # by MES-43 and cited in this tree by address and bytes.
+    test "each blocked D2a-i row names MES-43 and cites its gap's record here", %{inputs: inputs} do
+      for r <- d2ai_rows(inputs), r["disposition"] == "blocked_on_sdk_gap" do
+        gap = r["sdk_gap"]
+        assert gap["owner"] == "MES-43"
+        assert gap["owner_record"] =~ ~r/^MES-43 (body|comment 29459)/
+        assert A.verify(gap["record"], inputs.source_fun) == :ok
+
+        assert gap["record"]["file"] in ~w(docs/sprint_4_issues.md conformance/request_state.ex)
+      end
+    end
+
+    # CR findings B2 (29467) and B3 (29471) on MES-129, both accepted by the PM
+    # (29468, 29472): the continuation-drop fix alone unblocks neither
+    # ErrorOnProtocolError nor ValidateInputResponses, because MES-43 comment
+    # 29464's validator covers a null AND a malformed inputResponses. Each row
+    # names BOTH MES-43 records and its remedy states both preconditions.
+    test "D2a-i's ErrorOnProtocolError and ValidateInputResponses name both MES-43 gaps",
+         %{inputs: inputs} do
+      suffixes = ["/ErrorOnProtocolError", "/ValidateInputResponses"]
+      rows = for r <- d2ai_rows(inputs), String.ends_with?(r["tag"], suffixes), do: r
+      assert length(rows) == length(suffixes)
+
+      for r <- rows do
+        assert r["sdk_gap"]["owner_record"] =~ "comment 29459"
+        assert r["sdk_gap"]["owner_record"] =~ "comment 29464"
+        assert r["remedy"] =~ "29459"
+        assert r["remedy"] =~ "29464"
+      end
+    end
+
+    # The closure rule (PM, MES-129 comment 29472): every landing condition a
+    # remedy states is one of the records the row cites, and every cited record
+    # is a condition the remedy states. lands_when is derived here from the
+    # cited records alone, then held against the record's lands_when and against
+    # the remedy's tokens, both ways.
+    test "D2a-i's remedies state exactly the landing conditions their rows cite",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2ai]
+      conds = record["landing_conditions"]["conditions"]
+      rows = d2ai_rows(inputs)
+
+      for r <- rows do
+        derived =
+          for {id, c} <- conds,
+              (c["owner_record_phrase"] && r["sdk_gap"] &&
+                 String.contains?(r["sdk_gap"]["owner_record"], c["owner_record_phrase"])) ||
+                (id == "d4a_fix_sdk" and Map.has_key?(r, "depends_on_fix")),
+              do: id
+
+        assert r["lands_when"] == Enum.sort(derived), r["tag"]
+
+        for {id, c} <- conds do
+          assert String.contains?(r["remedy"], c["remedy_token"]) == id in r["lands_when"],
+                 "#{r["tag"]}: #{id}"
+        end
+      end
+
+      # The population the rule governs: every blocked row and every
+      # depends_on_fix row, and no other.
+      governed =
+        for r <- rows,
+            r["disposition"] == "blocked_on_sdk_gap" or Map.has_key?(r, "depends_on_fix"),
+            do: r["tag"]
+
+      assert Enum.sort(governed) == Enum.sort(for r <- rows, r["lands_when"] != [], do: r["tag"])
+
+      # No condition in the catalog is dead.
+      used = rows |> Enum.flat_map(& &1["lands_when"]) |> MapSet.new()
+      assert used == MapSet.new(Map.keys(conds))
+    end
+
+    # CR finding B5 (29477) on MES-129, accepted by the PM (29478): the closure
+    # unit above derives through the record's own catalogue, so the catalogue
+    # is pinned here literally, as the selector is. A condition added to the
+    # record, with rows and remedies to match, fails this pin until it is edited.
+    test "D2a-i's landing-condition catalogue is exactly the pinned one", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2ai]
+
+      pinned =
+        for {id, c} <- record["landing_conditions"]["conditions"],
+            into: %{},
+            do: {id, {c["owner_record_phrase"], c["remedy_token"]}}
+
+      assert pinned == %{
+               "mes43_gap1" => {"'Gap 1 —", "(MES-43 body, Gap 1)"},
+               "mes43_gap2" => {"'Gap 2 —", "(MES-43 body, Gap 2)"},
+               "mes43_29459_first_bullet" =>
+                 {"comment 29459, first bullet", "(MES-43 comment 29459, first bullet)"},
+               "mes43_29464" => {"comment 29464", "(MES-43 comment 29464)"},
+               "d4a_fix_sdk" => {nil, "depends_on_fix"}
+             }
+    end
+
+    # CR finding B4 (29477) on MES-129 and PM ruling 29478, option (i): the
+    # owning measurement attributes NonToolIncomplete to Gap 1 alone, and the
+    # non-tool generic validator's remedy bypasses complete/1, so the overwrite
+    # is its root_cause_record and not one of its landing conditions.
+    test "D2a-i's non-tool pair lands on Gap 1, not on the resultType overwrite",
+         %{inputs: inputs} do
+      by_name = Map.new(d2ai_rows(inputs), &{&1["tag"], &1})
+      ir = &"oc:server/input-required-result-non-tool-request/#{&1}"
+
+      nt = by_name[ir.("sep-2322-non-tool-incomplete/InputRequiredResultNonToolIncomplete")]
+      ws = by_name[ir.("wire-schema-valid/WireSchemaValid")]
+
+      assert nt["lands_when"] == ["mes43_gap1"]
+      assert ws["lands_when"] == ["d4a_fix_sdk", "mes43_gap1"]
+
+      rcr = ws["root_cause"]["root_cause_record"]
+      assert rcr["owner_record"] =~ "comment 29459, second bullet"
+      assert A.verify(rcr["record"], inputs.source_fun) == :ok
+      assert A.verify(rcr["code"], inputs.source_fun) == :ok
+    end
+
+    # The generic validator's rows are one validator repeated, reported apart
+    # from the substantive ones, grouped by the emitting site the LOCATOR
+    # records for each check.
+    test "D2a-i's emitting-site grouping is measured from the locator", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2ai]
+      tags = MapSet.new(d2ai_rows(inputs), & &1["tag"])
+      sites = for r <- json(@locator)["rows"], r["token"] in tags, do: {r["token"], r["sites"]}
+      assert length(sites) == MapSet.size(tags)
+
+      {generic, substantive} =
+        Enum.split_with(sites, fn {_, ss} ->
+          Enum.map(ss, & &1["byte_span"]) == [[325_368, 325_721]]
+        end)
+
+      e = record["emitting_sites"]
+      assert e["repeated_generic_validator"]["site_byte_span"] == [325_368, 325_721]
+      assert e["repeated_generic_validator"]["rows"] == length(generic)
+      assert Enum.all?(generic, fn {t, _} -> String.ends_with?(t, "/WireSchemaValid") end)
+      assert e["substantive"]["rows"] == length(substantive)
+
+      assert e["substantive"]["scenarios"] ==
+               substantive
+               |> Enum.map(fn {t, _} -> Enum.at(String.split(t, "/"), 1) end)
+               |> Enum.uniq()
+               |> length()
+    end
+
+    # A7: a green a null server also earns is not evidence. Recomputed from the
+    # null-implementation control: a check passed the null run iff it is not
+    # among the scenario's failed checks, the scenario's SUCCESS count is its
+    # total less its failures, and it is the generic validator or the scenario
+    # failed nothing (a check emitted only after another passes cannot be the
+    # unnamed SUCCESS where that other failed).
+    test "the D2a-i rows carrying null_passability are exactly those the null control passes",
+         %{inputs: inputs} do
+      null = json("docs/conformance/server-2026-07-28-null-control.json")["scenarios"]
+
+      passed? = fn scenario, name ->
+        [sc] =
+          Enum.filter(null, &String.starts_with?(&1["artefact_dir"] || "", "server-#{scenario}-"))
+
+        failed = for f <- sc["failed_checks"] || [], do: f["name"]
+        c = sc["checks"]
+
+        c["SUCCESS"] >= 1 and c["SUCCESS"] == c["total"] - length(failed) and name not in failed and
+          (name == "WireSchemaValid" or failed == [])
+      end
+
+      rows = d2ai_rows(inputs)
+
+      for r <- rows do
+        [_, scenario, _, name] = String.split(r["tag"], "/")
+        assert Map.has_key?(r, "null_passability") == passed?.(scenario, name), r["tag"]
+
+        if c = get_in(r, ["null_passability", "null_control"]) do
+          assert A.verify(c, inputs.source_fun) == :ok
+          assert c["bytes"] =~ ~s("artefact_dir": "server-#{scenario}-)
+        end
+      end
+
+      assert Enum.count(rows, &Map.has_key?(&1, "null_passability")) == 16
+    end
+
+    # A2d: the MRTR universe from the LOCATOR (not the 2a view) is this slice
+    # and the checks carrying an edge, disjointly. recorded == measured.
+    test "D2a-i's MRTR-universe negative is measured, not held", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2ai]
+      [neg] = Enum.filter(record["negatives"], &(&1["id"] == "mrtr_universe_reconciles"))
+
+      universe =
+        for r <- json(@locator)["rows"],
+            r["leg"] == "server",
+            String.starts_with?(r["scenario"], "input-required-result-"),
+            do: r["token"]
+
+      slice = MapSet.new(d2ai_rows(inputs), & &1["tag"])
+
+      edged =
+        for c <- json(@crosswalk)["cells"], c["tag"] in universe, into: MapSet.new(), do: c["tag"]
+
+      escalated =
+        for r <- json(@ves)["rows"], r["tag"] in universe, into: MapSet.new(), do: r["tag"]
+
+      set_u = MapSet.new(universe)
+      assert length(universe) == MapSet.size(set_u)
+
+      assert neg["count"] == %{
+               "mrtr_universe" => length(universe),
+               "slice" => MapSet.size(slice),
+               "matched" => MapSet.size(edged),
+               "matched_escalated" => MapSet.size(escalated)
+             }
+
+      relations = %{
+        "slice_and_matched_disjoint" => MapSet.disjoint?(slice, edged),
+        "slice_union_matched_equals_universe" => MapSet.union(slice, edged) == set_u
+      }
+
+      assert neg["set_relations"] == relations
+      assert Enum.all?(Map.values(relations))
+      assert MapSet.subset?(escalated, edged)
+    end
+
+    # The covered_elsewhere universe, recomputed from the register: every
+    # non-ET-CC row whose test body touches MRTR. A new such unit moves this
+    # and forces the "none" readings to be re-examined.
+    test "D2a-i's covered-elsewhere universe is measured from the register", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2ai]
+      [neg] = Enum.filter(record["negatives"], &(&1["id"] == "covered_elsewhere_universe"))
+      assert neg["units"] == mrtr_non_etcc_units()
+      assert neg["units"] != []
+
+      for r <- d2ai_rows(inputs),
+          u <- r["covered_elsewhere"]["units"] || [],
+          do: assert(u["register_key"] in neg["units"])
+    end
+
+    # PM ratification on MES-129 (29460, condition (b)): the check the harness
+    # emits only after the non-tool incomplete check passes is absent from the
+    # population, and the record says so.
+    test "InputRequiredResultNonToolComplete is in neither the locator nor bucket 2a",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2ai]
+
+      assert Enum.any?(
+               record["negatives"],
+               &(&1["id"] == "non_tool_complete_is_not_in_the_population")
+             )
+
+      absent = "InputRequiredResultNonToolComplete"
+      refute Enum.any?(json(@locator)["rows"], &(&1["name"] == absent))
+      refute Enum.any?(json(@v2a)["rows"], &String.ends_with?(&1["tag"], "/" <> absent))
+    end
+
     # MES-120's K1: a record under docs/conformance/ is inside G31, and a file
     # added after G31's baseline may carry no pending figure.
-    for record <- [@d4a, @d4b, @d2b] do
+    for record <- [@d4a, @d4b, @d2b, @d2ai] do
       test "#{Path.basename(record)} is hand_authored to G31 and has no pending figure" do
         universe = "conformance/figures/universe.json" |> File.read!() |> Jason.decode!()
         ledger = "conformance/figures/ledger.json" |> File.read!() |> Jason.decode!()
@@ -371,8 +831,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
     #
     # Scoped to rows with a member (PM ratification on MES-128, 29444, Q3): a
     # bucket-2 row has no member and no et_test. The pin after it holds the
-    # scoping: the rows it skips are EXACTLY bucket 2b's, so no bucket-4 row can
-    # be skipped silently.
+    # scoping: the rows it skips are EXACTLY bucket 2b's and, since MES-129, the
+    # rows of bucket 2a that D2a-i's selector admits, each in its own record, so
+    # no bucket-4 row can be skipped silently.
     test "every row's et_test lies inside the member's own test", %{inputs: inputs} do
       {owned, _skipped} = ownership_split(inputs.records)
       assert owned != []
@@ -381,7 +842,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
           do: assert(et_test_owner(r, inputs.source_fun) == :ok, inspect(A.key(r)))
     end
 
-    test "the rows the ownership check skips are exactly bucket 2b's, all in D2b's record",
+    test "the rows the ownership check skips are exactly bucket 2b's and D2a-i's slice, each in its own record",
          %{inputs: inputs} do
       assert skip_pin(inputs.records) == :ok
     end
@@ -488,10 +949,11 @@ defmodule MCP.Conformance.AdjudicationsTest do
     end
 
     # MES-126 ratified the first five; MES-127 (29430, Q1) added extend_test and
-    # accept_bound; MES-128 (29444, Q1) added extend_to_match and build_test.
-    test "the closed disposition set is the one MES-126, MES-127 and MES-128 ratified" do
+    # accept_bound; MES-128 (29444, Q1) added extend_to_match and build_test;
+    # MES-129 (29460, Q1) added blocked_on_sdk_gap.
+    test "the closed disposition set is the one MES-126, MES-127, MES-128 and MES-129 ratified" do
       assert A.dispositions() ==
-               ~w(fix_sdk fix_conformance_adapter keep_design_publish_bound po_decision_required suite_defect_upstream extend_test accept_bound extend_to_match build_test)
+               ~w(fix_sdk fix_conformance_adapter keep_design_publish_bound po_decision_required suite_defect_upstream extend_test accept_bound extend_to_match build_test blocked_on_sdk_gap)
 
       assert A.build_levels() == ~w(pure_unit mock_transport plug live_http)
     end
@@ -547,7 +1009,12 @@ defmodule MCP.Conformance.AdjudicationsTest do
   defp skip_pin(records) do
     {_, skipped} = ownership_split(records)
     got = Enum.sort(for {f, v, r} <- skipped, do: {f, v, A.key(r)})
-    want = Enum.sort(for vr <- json(@v2b)["rows"], do: {@d2b, @v2b, A.key(vr)})
+
+    want =
+      Enum.sort(
+        for(vr <- json(@v2b)["rows"], do: {@d2b, @v2b, A.key(vr)}) ++
+          for(vr <- selected(json(@v2a)["rows"], @d2ai_selector), do: {@d2ai, @v2a, A.key(vr)})
+      )
 
     if got == want,
       do: :ok,
@@ -558,6 +1025,79 @@ defmodule MCP.Conformance.AdjudicationsTest do
     {:ok, record} = inputs.records[@d2b]
     [%{"rows" => rows}] = record["sections"]
     rows
+  end
+
+  defp d2ai_rows(inputs) do
+    {:ok, record} = inputs.records[@d2ai]
+    [%{"rows" => rows}] = record["sections"]
+    rows
+  end
+
+  defp selected(view_rows, %{"field" => f, "segment" => i, "starts_with" => p}) do
+    Enum.filter(view_rows, fn r ->
+      r[f] |> String.split("/") |> Enum.at(i) |> Kernel.||("") |> String.starts_with?(p)
+    end)
+  end
+
+  defp selector_equality(rows, view_rows) do
+    got = rows |> Enum.map(&A.key/1) |> Enum.sort()
+    want = view_rows |> selected(@d2ai_selector) |> Enum.map(&A.key/1) |> Enum.sort()
+
+    if got == want,
+      do: :ok,
+      else: {:error, {:rows_differ, got -- want, want -- got}}
+  end
+
+  # [scenario, name, status] read out of the cited census window.
+  defp census_echo(row) do
+    b = row["oc_status_at_accepted_run"]["bytes"]
+    # The window opens on the key's scenario line.
+    [scenario] = Regex.run(~r/\A\s*"([^"]+)",/, b, capture: :all_but_first)
+
+    [name, status] =
+      Regex.run(~r/"name": "([^"]+)",\s*"status": "([A-Z]+)"/, b, capture: :all_but_first)
+
+    [scenario, name, status]
+  end
+
+  defp why_green_owed?(r) do
+    r["disposition"] == "blocked_on_sdk_gap" and List.last(census_echo(r)) == "SUCCESS"
+  end
+
+  # The tags of owed rows whose why_green is absent, carries no statement, or
+  # carries no citation that holds its bytes.
+  defp why_green_defects(rows, source_fun) do
+    for r <- rows, why_green_owed?(r), not why_green_ok?(r["why_green"], source_fun), do: r["tag"]
+  end
+
+  defp why_green_ok?(%{"statement" => s} = w, source_fun) when is_binary(s) and s != "" do
+    cites = A.collect(w)
+    cites != [] and Enum.all?(cites, &(A.verify(&1, source_fun) == :ok))
+  end
+
+  defp why_green_ok?(_, _), do: false
+
+  @mrtr_needle ~r/input_required|inputRequests|requestState|inputResponses|RequestState|on_input_required/
+
+  # Non-ET-CC register rows whose body (its line to the next register row in
+  # the same file) matches the needle. Sorted keys.
+  defp mrtr_non_etcc_units do
+    json("docs/conformance/etcc-register.json")["rows"]
+    |> Enum.group_by(& &1["file"])
+    |> Enum.flat_map(fn {file, rows} -> mrtr_non_etcc_units(file, rows) end)
+    |> Enum.sort()
+  end
+
+  defp mrtr_non_etcc_units(file, rows) do
+    src = file |> File.read!() |> String.split("\n")
+    starts = rows |> Enum.map(& &1["line"]) |> Enum.sort()
+
+    for r <- rows,
+        r["label"] != "ET-CC",
+        stop = Enum.find(starts, length(src) + 1, &(&1 > r["line"])) - 1,
+        body = src |> Enum.slice((r["line"] - 1)..(stop - 1)//1) |> Enum.join("\n"),
+        Regex.match?(@mrtr_needle, body),
+        do: r["key"]
   end
 
   defp status_echo(row),
@@ -843,6 +1383,84 @@ defmodule MCP.Conformance.AdjudicationsTest do
                ])
              ) == []
 
+      assert kinds(inputs([a()], [section([row(a(), %{"disposition" => "fix_sdk"})])])) == []
+    end
+
+    # MES-129 (29460, Q1): a blocked_on_sdk_gap row carries a level, a remedy
+    # and an sdk_gap naming the owning ticket, its record there, and a citation
+    # of the gap here. Shape only.
+    defp gap,
+      do: %{
+        "owner" => "MES-43",
+        "owner_record" => "MES-43 body, Gap 1",
+        "record" => %{"file" => @src, "lines" => [2, 2], "bytes" => "assert x == 1"}
+      }
+
+    defp blocked(extra \\ %{}) do
+      row(
+        a(),
+        Map.merge(
+          %{
+            "disposition" => "blocked_on_sdk_gap",
+            "build_level" => "plug",
+            "remedy" => "build the unit with the fix",
+            "sdk_gap" => gap()
+          },
+          extra
+        )
+      )
+    end
+
+    test "blocked_on_sdk_gap is in the set, with a level, a remedy and an sdk_gap" do
+      assert kinds(inputs([a()], [section([blocked()])])) == []
+    end
+
+    test "sdk_gap_missing: a blocked row without a well-shaped sdk_gap" do
+      for bad <- [
+            :absent,
+            nil,
+            "MES-43",
+            Map.delete(gap(), "owner"),
+            Map.put(gap(), "owner", "mes-43"),
+            Map.put(gap(), "owner", "MES-43 and more"),
+            Map.delete(gap(), "owner_record"),
+            Map.put(gap(), "owner_record", ""),
+            Map.put(gap(), "owner_record", "two\nlines"),
+            Map.delete(gap(), "record"),
+            Map.put(gap(), "record", "docs/sprint_4_issues.md:4410")
+          ] do
+        r =
+          if bad == :absent,
+            do: Map.delete(blocked(), "sdk_gap"),
+            else: blocked(%{"sdk_gap" => bad})
+
+        assert kinds(inputs([a()], [section([r])])) == [:sdk_gap_missing], inspect(bad)
+      end
+    end
+
+    test "a blocked row's sdk_gap record is a citation, held by citation_drift" do
+      # A record with no line window is refused by shape AND, being a
+      # malformed citation, by citation_drift: neither masks the other.
+      no_lines = Map.put(gap(), "record", %{"file" => @src, "bytes" => "x"})
+
+      assert kinds(inputs([a()], [section([blocked(%{"sdk_gap" => no_lines})])])) ==
+               [:sdk_gap_missing, :citation_drift]
+
+      stale = put_in(gap(), ["record", "lines"], [3, 3])
+
+      assert kinds(inputs([a()], [section([blocked(%{"sdk_gap" => stale})])])) == [
+               :citation_drift
+             ]
+    end
+
+    test "build_level_missing extends to blocked_on_sdk_gap; an sdk_gap on another code is not required" do
+      assert kinds(inputs([a()], [section([Map.delete(blocked(), "build_level")])])) ==
+               [:build_level_missing]
+
+      assert kinds(inputs([a()], [section([Map.delete(blocked(), "remedy")])])) ==
+               [:build_level_missing]
+
+      assert kinds(inputs([a()], [section([Map.delete(blocked(), "extend_target")])])) == []
       assert kinds(inputs([a()], [section([row(a(), %{"disposition" => "fix_sdk"})])])) == []
     end
 

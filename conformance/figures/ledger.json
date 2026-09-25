@@ -4696,6 +4696,46 @@
       "path": "what_bucket_2b_is",
       "phrase": "15 checks",
       "quantity": "d2b_bucket_2b_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D2a-i-2026-07-28.json",
+      "nth": 1,
+      "path": "negatives[mrtr_universe_reconciles].statement",
+      "phrase": "36 MRTR checks",
+      "quantity": "d2ai_mrtr_universe"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D2a-i-2026-07-28.json",
+      "nth": 1,
+      "path": "negatives[mrtr_universe_reconciles].statement",
+      "phrase": "30 checks",
+      "quantity": "d2ai_slice_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D2a-i-2026-07-28.json",
+      "nth": 1,
+      "path": "negatives[mrtr_universe_reconciles].statement",
+      "phrase": "6 checks",
+      "quantity": "d2ai_mrtr_matched"
+    },
+    {
+      "class": "not_a_count",
+      "file": "docs/conformance/adjudications/adjudication-D2a-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[oc:server/input-required-result-multiple-input-requests/sep-2322-multiple-inputs-incomplete/InputRequiredResultMultipleInputsIncomplete].check.predicate.reading",
+      "phrase": "three entries",
+      "reason": "R2"
+    },
+    {
+      "class": "not_a_count",
+      "file": "docs/conformance/adjudications/adjudication-D2a-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[oc:server/input-required-result-non-tool-request/wire-schema-valid/WireSchemaValid].root_cause.consequence_of_the_first.bytes",
+      "phrase": "2 checks",
+      "reason": "R6"
     }
   ],
   "guard": "G31 — MCP.Conformance.InputFigures (MES-120)",
@@ -14585,6 +14625,75 @@
           "distinct": "tag",
           "in": "docs/conformance/buckets/bucket-5b-2026-07-28.json"
         }
+      }
+    },
+    "d2ai_mrtr_universe": {
+      "means": "the MRTR server checks in the locator (server leg, scenario input-required-result-*)",
+      "query": {
+        "count": {
+          "at": "rows[]",
+          "in": "docs/conformance/oc-emitting-sites-2026-07-28.json",
+          "where": [
+            {
+              "eq": "server",
+              "field": "leg"
+            },
+            {
+              "field": "scenario",
+              "starts_with": "input-required-result-"
+            }
+          ]
+        }
+      }
+    },
+    "d2ai_slice_checks": {
+      "means": "bucket 2a's MRTR slice (tag scenario input-required-result-*), D2a-i's rows",
+      "query": {
+        "count": {
+          "at": "rows[]",
+          "in": "docs/conformance/buckets/bucket-2a-2026-07-28.json",
+          "where": [
+            {
+              "field": "tag",
+              "starts_with": "oc:server/input-required-result-"
+            }
+          ]
+        }
+      }
+    },
+    "d2ai_mrtr_matched": {
+      "means": "the MRTR server checks that carry an edge: the MRTR universe minus the bucket-2a slice",
+      "query": {
+        "difference": [
+          {
+            "count": {
+              "at": "rows[]",
+              "in": "docs/conformance/oc-emitting-sites-2026-07-28.json",
+              "where": [
+                {
+                  "eq": "server",
+                  "field": "leg"
+                },
+                {
+                  "field": "scenario",
+                  "starts_with": "input-required-result-"
+                }
+              ]
+            }
+          },
+          {
+            "count": {
+              "at": "rows[]",
+              "in": "docs/conformance/buckets/bucket-2a-2026-07-28.json",
+              "where": [
+                {
+                  "field": "tag",
+                  "starts_with": "oc:server/input-required-result-"
+                }
+              ]
+            }
+          }
+        ]
       }
     }
   },
