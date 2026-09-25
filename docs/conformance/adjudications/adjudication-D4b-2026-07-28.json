@@ -1,0 +1,678 @@
+{
+  "schema": "adjudication-record/1",
+  "authored_by_hand": true,
+  "ticket": "MES-127",
+  "revision": "2026-07-28",
+  "what_this_is": "The D4b adjudication record. It is normative for the edges it adjudicates, and Confluence page 276594880 mirrors it. It reuses D4a's record format (MES-126). Guard G32 (MCP.Conformance.Adjudications) holds its rows equal to the view its section binds, in both directions, with dispositions from the guard's closed set, a stated bound on every accept_bound row, and every repository citation holding the bytes it quotes. Harness citations are verified by the control's harness mode against the pinned build.",
+  "harness": {
+    "version": "0.2.0-alpha.11",
+    "sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae"
+  },
+  "a3_ruling": {
+    "statement": "Bucket 4b operates under A3's partial-axis ruling, cited and not re-decided. A claim that agrees on one axis of a multi-axis check and is silent on another is :partial, and (red, green, :partial) is 4b, whose remedy is to extend the assertion or accept the bound. A claim silent on EVERY axis is no match at all, which is bucket 2 (write the test). That second reading would have put these edges in 2a; each row's extend_vs_fresh says why it does not apply.",
+    "shape_precedence": {
+      "file": "docs/conformance/match-relation.md",
+      "lines": [
+        64,
+        67
+      ],
+      "bytes": "**shape** follows, in **stated precedence**:\n\n    any axis contradicts  ->  :contradicting\n    else any axis silent  ->  :partial        (covered and uncovered axes named)"
+    },
+    "bucket_rule": {
+      "file": "docs/conformance/match-relation.md",
+      "lines": [
+        195,
+        195
+      ],
+      "bytes": "| red, green | `:partial` | **4b** |"
+    },
+    "all_silent_rule": {
+      "file": "docs/conformance/match-relation.md",
+      "lines": [
+        140,
+        146
+      ],
+      "bytes": "### An all-silent claim is NO MATCH, at any arity  [authored 29283 | ratified 29319]\n\n§2 rules that for a single-axis check, a claim covering zero of its one\naxis \"is no match, not a partial one\". **The rule does not depend on arity.\nA claim that is `silent` on every axis of a check is not an edge onto that\ncheck**, however many axes the check has. `:partial` requires at least one\naxis that `agrees` or `contradicts`. Touching none of the predicate is not a"
+    }
+  },
+  "dispositions_added": {
+    "extend_test": "The unit already drives the seam at which the omitted axis can be observed. The remedy is an added assertion on that axis in the same unit, not a new test. The disposition is recorded here and performed by remediation (ruling 3). Where the SDK currently fails the axis, the assertion lands in the same change as the named root cause's fix, so main never carries a red test.",
+    "accept_bound": "The unit's seam cannot observe the omitted axis. The edge's coverage is bounded to the axes the unit asserts. The row states that bound as one consumer-readable sentence in `bound` (G32 refuses an accept_bound row without it: bound_missing), and points to the unit, if any, that does reach the omitted axis.",
+    "ratified": "MES-127 comment 29430, Q1 and Q2."
+  },
+  "sections": [
+    {
+      "view": "docs/conformance/buckets/bucket-4b-2026-07-28.json",
+      "closure": "closed",
+      "owner": "MES-127",
+      "rows": [
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
+          "claim": "a removed `ping` over HTTP yields JSON-RPC error -32601",
+          "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping",
+          "echo": {
+            "shape": "partial",
+            "verdicts": {
+              "et": "green",
+              "oc": "red",
+              "oc_status_at_accepted_run": "FAILURE",
+              "oc_warning": false
+            },
+            "bucket": "4b"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+            "lines": [
+              88,
+              90
+            ],
+            "bytes": "  test \"initialize is gone → -32022; ping/logging.setLevel → -32601\" do\n    assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022\n    assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601",
+            "asserts": "Through the real MCPPlug, a POST of the removed method ping is answered with JSON-RPC error -32601.",
+            "axis_asserted": "jsonrpc_error_code",
+            "axis_omitted": "http_status",
+            "why_omitted": "By omission, not by seam: `post/2` returns the Plug.Conn, which carries the status, and the `error/1` helper decodes only the body and throws the conn away (quoted in `helper`).",
+            "helper": {
+              "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+              "lines": [
+                45,
+                45
+              ],
+              "bytes": "  defp error(conn), do: conn.resp_body |> Jason.decode!() |> Map.get(\"error\")"
+            }
+          },
+          "check": {
+            "requires": "HTTP 404 and JSON-RPC error -32601 for the removed method ping.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                374909,
+                375169
+              ],
+              "bytes": "()=>!r||!i?{error:`Removed method validation hit dropped connections unexpectedly`}:r.status!==404||i?.error?.code!==-32601?{error:`Expected HTTP 404 and code -32601 for removed methods, got HTTP ${r.status} and code ${i?.error?.code}`}:{details:{response:i}})"
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                374423,
+                374595
+              ],
+              "bytes": "for(let e of[`initialize`,`ping`,`logging/setLevel`,`resources/subscribe`,`resources/unsubscribe`]){let t=e.toLowerCase().replace(`/`,`-`),n=await s(e,{_meta:l},void 0,500)",
+              "reading": "The harness loops over the removed methods and sends ping carrying the complete valid _meta (the value bound to `l`), so the request is well formed and only the method is removed. The predicate this loop feeds is the one quoted above, applied per method."
+            },
+            "observed_at_accepted_run": {
+              "file": "docs/conformance/server-2026-07-28.json",
+              "lines": [
+                367,
+                368
+              ],
+              "bytes": "          \"id\": \"sep-2575-http-server-method-not-found-404-ping\",\n          \"message\": \"Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601\","
+            }
+          },
+          "root_cause": {
+            "id": "R2",
+            "stated_at": {
+              "file": "docs/conformance/report-2026-07-28.md",
+              "lines": [
+                254,
+                254
+              ],
+              "bytes": "| **R2** no JSON-RPC-code → HTTP-status mapping: every dispatch result leaves as HTTP 200 | 12 checks, overlapping R1/R3/R4/R5/R6 | **MES-43 gap 3** |"
+            },
+            "adjudicated_at": {
+              "record": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
+              "view": "docs/conformance/buckets/bucket-4a-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream",
+              "claim": "in JSON mode subscriptions/listen is refused with -32601 inside an HTTP 200 response",
+              "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404",
+              "disposition_there": "fix_sdk"
+            },
+            "referenced_not_rerouted": "R2 is routed ONCE, as fix_sdk on the D4a row named in `adjudicated_at` (PM ratification Q4, MES-127 comment 29430). This row does not route it again: filing fix_sdk here would count one fix several times.",
+            "why": "The status half the test omits is exactly R2: the SDK answers -32601 inside HTTP 200. The code half agrees."
+          },
+          "if_conformance_fixed": [
+            {
+              "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+              "lines": [
+                90,
+                90
+              ],
+              "bytes": "    assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601",
+              "breaks": "Does NOT break: the line asserts -32601 and never reads the status. Under the R2 fix it stays green and gains the status assertion this disposition records."
+            }
+          ],
+          "disposition": "extend_test",
+          "extend": "Bind the conn this unit already builds for ping and assert its status is 404 beside the existing code assertion. The assertion lands in the same change as R2's fix, because at this tip the SDK answers 200 and the added line would be red.",
+          "extend_vs_fresh": "Extending is cheaper: the unit already drives the transport seam at which the status is observable and already holds the conn. A fresh test would duplicate this unit's request to add one line. So the other A3 reading, which would have filed this edge in bucket 2a as a test to write, buys nothing here.",
+          "a3_ruling": "match-relation.md §2 and §3: the check is a two-axis conjunction (http_status AND jsonrpc_error_code); this claim agrees on the code and is silent on the status, so the edge is :partial, and (red, green, :partial) is bucket 4b.",
+          "rationale": "The edge is an incompleteness, not a contradiction: nothing we assert disagrees with the check. The omitted axis is reachable from this unit, so the remedy is to extend it (ruling 3: recorded here, performed by remediation), riding R2's fix."
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
+          "claim": "a removed `logging/setLevel` over HTTP yields JSON-RPC error -32601",
+          "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel",
+          "echo": {
+            "shape": "partial",
+            "verdicts": {
+              "et": "green",
+              "oc": "red",
+              "oc_status_at_accepted_run": "FAILURE",
+              "oc_warning": false
+            },
+            "bucket": "4b"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+            "lines": [
+              88,
+              91
+            ],
+            "bytes": "  test \"initialize is gone → -32022; ping/logging.setLevel → -32601\" do\n    assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022\n    assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601\n    assert error(post(opts(), rpc(\"logging/setLevel\", %{\"level\" => \"info\"})))[\"code\"] == -32_601",
+            "asserts": "Through the real MCPPlug, a POST of the removed method logging/setLevel is answered with JSON-RPC error -32601.",
+            "axis_asserted": "jsonrpc_error_code",
+            "axis_omitted": "http_status",
+            "why_omitted": "By omission, not by seam: `post/2` returns the Plug.Conn, which carries the status, and the `error/1` helper decodes only the body and throws the conn away (quoted in `helper`).",
+            "helper": {
+              "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+              "lines": [
+                45,
+                45
+              ],
+              "bytes": "  defp error(conn), do: conn.resp_body |> Jason.decode!() |> Map.get(\"error\")"
+            }
+          },
+          "check": {
+            "requires": "HTTP 404 and JSON-RPC error -32601 for the removed method logging/setLevel.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                374909,
+                375169
+              ],
+              "bytes": "()=>!r||!i?{error:`Removed method validation hit dropped connections unexpectedly`}:r.status!==404||i?.error?.code!==-32601?{error:`Expected HTTP 404 and code -32601 for removed methods, got HTTP ${r.status} and code ${i?.error?.code}`}:{details:{response:i}})"
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                374423,
+                374595
+              ],
+              "bytes": "for(let e of[`initialize`,`ping`,`logging/setLevel`,`resources/subscribe`,`resources/unsubscribe`]){let t=e.toLowerCase().replace(`/`,`-`),n=await s(e,{_meta:l},void 0,500)",
+              "reading": "The harness loops over the removed methods and sends logging/setLevel carrying the complete valid _meta (the value bound to `l`), so the request is well formed and only the method is removed. The predicate this loop feeds is the one quoted above, applied per method."
+            },
+            "observed_at_accepted_run": {
+              "file": "docs/conformance/server-2026-07-28.json",
+              "lines": [
+                373,
+                374
+              ],
+              "bytes": "          \"id\": \"sep-2575-http-server-method-not-found-404-logging-setlevel\",\n          \"message\": \"Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601\","
+            }
+          },
+          "root_cause": {
+            "id": "R2",
+            "stated_at": {
+              "file": "docs/conformance/report-2026-07-28.md",
+              "lines": [
+                254,
+                254
+              ],
+              "bytes": "| **R2** no JSON-RPC-code → HTTP-status mapping: every dispatch result leaves as HTTP 200 | 12 checks, overlapping R1/R3/R4/R5/R6 | **MES-43 gap 3** |"
+            },
+            "adjudicated_at": {
+              "record": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
+              "view": "docs/conformance/buckets/bucket-4a-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream",
+              "claim": "in JSON mode subscriptions/listen is refused with -32601 inside an HTTP 200 response",
+              "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404",
+              "disposition_there": "fix_sdk"
+            },
+            "referenced_not_rerouted": "R2 is routed ONCE, as fix_sdk on the D4a row named in `adjudicated_at` (PM ratification Q4, MES-127 comment 29430). This row does not route it again: filing fix_sdk here would count one fix several times.",
+            "why": "The status half the test omits is exactly R2: the SDK answers -32601 inside HTTP 200. The code half agrees."
+          },
+          "if_conformance_fixed": [
+            {
+              "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+              "lines": [
+                91,
+                91
+              ],
+              "bytes": "    assert error(post(opts(), rpc(\"logging/setLevel\", %{\"level\" => \"info\"})))[\"code\"] == -32_601",
+              "breaks": "Does NOT break: the line asserts -32601 and never reads the status. Under the R2 fix it stays green and gains the status assertion this disposition records."
+            }
+          ],
+          "disposition": "extend_test",
+          "extend": "Bind the conn this unit already builds for logging/setLevel and assert its status is 404 beside the existing code assertion. The assertion lands in the same change as R2's fix, because at this tip the SDK answers 200 and the added line would be red.",
+          "extend_vs_fresh": "Extending is cheaper: the unit already drives the transport seam at which the status is observable and already holds the conn. A fresh test would duplicate this unit's request to add one line. So the other A3 reading, which would have filed this edge in bucket 2a as a test to write, buys nothing here.",
+          "a3_ruling": "match-relation.md §2 and §3: the check is a two-axis conjunction (http_status AND jsonrpc_error_code); this claim agrees on the code and is silent on the status, so the edge is :partial, and (red, green, :partial) is bucket 4b.",
+          "rationale": "The edge is an incompleteness, not a contradiction: nothing we assert disagrees with the check. The omitted axis is reachable from this unit, so the remedy is to extend it (ruling 3: recorded here, performed by remediation), riding R2's fix."
+        },
+        {
+          "member": "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)",
+          "claim": "a dispatched `ping` is answered with -32601 method-not-found",
+          "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping",
+          "echo": {
+            "shape": "partial",
+            "verdicts": {
+              "et": "green",
+              "oc": "red",
+              "oc_status_at_accepted_run": "FAILURE",
+              "oc_warning": false
+            },
+            "bucket": "4b"
+          },
+          "et_test": {
+            "file": "test/mcp/server/dispatch_test.exs",
+            "lines": [
+              88,
+              95
+            ],
+            "bytes": "  test \"ping and logging/setLevel are removed → method not found (-32601)\" do\n    {:reply, ping_resp, _} = Dispatch.dispatch(req(\"ping\", %{}), ctx(), config())\n\n    {:reply, log_resp, _} =\n      Dispatch.dispatch(req(\"logging/setLevel\", %{\"level\" => \"info\"}), ctx(), config())\n\n    assert ping_resp[\"error\"][\"code\"] == -32_601\n    assert log_resp[\"error\"][\"code\"] == -32_601",
+            "asserts": "Dispatch.dispatch/3 answers the removed method ping with JSON-RPC error -32601.",
+            "axis_asserted": "jsonrpc_error_code",
+            "axis_omitted": "http_status",
+            "why_omitted": "By seam: the unit drives the dispatch below the transport and never builds an HTTP response, so no status exists here to assert."
+          },
+          "check": {
+            "requires": "HTTP 404 and JSON-RPC error -32601 for the removed method ping.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                374909,
+                375169
+              ],
+              "bytes": "()=>!r||!i?{error:`Removed method validation hit dropped connections unexpectedly`}:r.status!==404||i?.error?.code!==-32601?{error:`Expected HTTP 404 and code -32601 for removed methods, got HTTP ${r.status} and code ${i?.error?.code}`}:{details:{response:i}})"
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                374423,
+                374595
+              ],
+              "bytes": "for(let e of[`initialize`,`ping`,`logging/setLevel`,`resources/subscribe`,`resources/unsubscribe`]){let t=e.toLowerCase().replace(`/`,`-`),n=await s(e,{_meta:l},void 0,500)",
+              "reading": "The harness loops over the removed methods and sends ping carrying the complete valid _meta (the value bound to `l`), so the request is well formed and only the method is removed. The predicate this loop feeds is the one quoted above, applied per method."
+            },
+            "observed_at_accepted_run": {
+              "file": "docs/conformance/server-2026-07-28.json",
+              "lines": [
+                367,
+                368
+              ],
+              "bytes": "          \"id\": \"sep-2575-http-server-method-not-found-404-ping\",\n          \"message\": \"Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601\","
+            }
+          },
+          "root_cause": {
+            "id": "R2",
+            "stated_at": {
+              "file": "docs/conformance/report-2026-07-28.md",
+              "lines": [
+                254,
+                254
+              ],
+              "bytes": "| **R2** no JSON-RPC-code → HTTP-status mapping: every dispatch result leaves as HTTP 200 | 12 checks, overlapping R1/R3/R4/R5/R6 | **MES-43 gap 3** |"
+            },
+            "adjudicated_at": {
+              "record": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
+              "view": "docs/conformance/buckets/bucket-4a-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream",
+              "claim": "in JSON mode subscriptions/listen is refused with -32601 inside an HTTP 200 response",
+              "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404",
+              "disposition_there": "fix_sdk"
+            },
+            "referenced_not_rerouted": "R2 is routed ONCE, as fix_sdk on the D4a row named in `adjudicated_at` (PM ratification Q4, MES-127 comment 29430). This row does not route it again: filing fix_sdk here would count one fix several times.",
+            "why": "The status half is R2's, and it is decided in the transport, which this unit does not reach."
+          },
+          "if_conformance_fixed": [
+            {
+              "file": "test/mcp/server/dispatch_test.exs",
+              "lines": [
+                94,
+                94
+              ],
+              "bytes": "    assert ping_resp[\"error\"][\"code\"] == -32_601",
+              "breaks": "Does NOT break: the dispatch's -32601 is unchanged by an HTTP status mapping."
+            }
+          ],
+          "disposition": "accept_bound",
+          "bound": "This unit attests the JSON-RPC code for a removed ping at the dispatch seam and never the HTTP status; the status for ping is reached by StreamableHTTPStatelessTest's removed-method unit (named in reached_elsewhere_by) once its extend_test disposition is performed.",
+          "reached_elsewhere_by": {
+            "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+            "lines": [
+              88,
+              90
+            ],
+            "bytes": "  test \"initialize is gone → -32022; ping/logging.setLevel → -32601\" do\n    assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022\n    assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601"
+          },
+          "extend_vs_fresh": "This seam cannot be extended, because no HTTP response exists below the transport. A fresh test is not needed either: the transport-seam unit for the same method is extended instead (its extend_test row in this section).",
+          "a3_ruling": "match-relation.md §2 and §3: the check is a two-axis conjunction (http_status AND jsonrpc_error_code); this claim agrees on the code and is silent on the status, so the edge is :partial, and (red, green, :partial) is bucket 4b.",
+          "rationale": "The claim is true at its seam and says nothing false about the check. Its coverage is bounded to the code axis by construction, and the omitted axis is owned by the extend_test row on the same method, so the bound is accepted in writing rather than duplicated."
+        },
+        {
+          "member": "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)",
+          "claim": "a dispatched `logging/setLevel` is answered with -32601 method-not-found",
+          "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel",
+          "echo": {
+            "shape": "partial",
+            "verdicts": {
+              "et": "green",
+              "oc": "red",
+              "oc_status_at_accepted_run": "FAILURE",
+              "oc_warning": false
+            },
+            "bucket": "4b"
+          },
+          "et_test": {
+            "file": "test/mcp/server/dispatch_test.exs",
+            "lines": [
+              88,
+              95
+            ],
+            "bytes": "  test \"ping and logging/setLevel are removed → method not found (-32601)\" do\n    {:reply, ping_resp, _} = Dispatch.dispatch(req(\"ping\", %{}), ctx(), config())\n\n    {:reply, log_resp, _} =\n      Dispatch.dispatch(req(\"logging/setLevel\", %{\"level\" => \"info\"}), ctx(), config())\n\n    assert ping_resp[\"error\"][\"code\"] == -32_601\n    assert log_resp[\"error\"][\"code\"] == -32_601",
+            "asserts": "Dispatch.dispatch/3 answers the removed method logging/setLevel with JSON-RPC error -32601.",
+            "axis_asserted": "jsonrpc_error_code",
+            "axis_omitted": "http_status",
+            "why_omitted": "By seam: the unit drives the dispatch below the transport and never builds an HTTP response, so no status exists here to assert."
+          },
+          "check": {
+            "requires": "HTTP 404 and JSON-RPC error -32601 for the removed method logging/setLevel.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                374909,
+                375169
+              ],
+              "bytes": "()=>!r||!i?{error:`Removed method validation hit dropped connections unexpectedly`}:r.status!==404||i?.error?.code!==-32601?{error:`Expected HTTP 404 and code -32601 for removed methods, got HTTP ${r.status} and code ${i?.error?.code}`}:{details:{response:i}})"
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                374423,
+                374595
+              ],
+              "bytes": "for(let e of[`initialize`,`ping`,`logging/setLevel`,`resources/subscribe`,`resources/unsubscribe`]){let t=e.toLowerCase().replace(`/`,`-`),n=await s(e,{_meta:l},void 0,500)",
+              "reading": "The harness loops over the removed methods and sends logging/setLevel carrying the complete valid _meta (the value bound to `l`), so the request is well formed and only the method is removed. The predicate this loop feeds is the one quoted above, applied per method."
+            },
+            "observed_at_accepted_run": {
+              "file": "docs/conformance/server-2026-07-28.json",
+              "lines": [
+                373,
+                374
+              ],
+              "bytes": "          \"id\": \"sep-2575-http-server-method-not-found-404-logging-setlevel\",\n          \"message\": \"Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601\","
+            }
+          },
+          "root_cause": {
+            "id": "R2",
+            "stated_at": {
+              "file": "docs/conformance/report-2026-07-28.md",
+              "lines": [
+                254,
+                254
+              ],
+              "bytes": "| **R2** no JSON-RPC-code → HTTP-status mapping: every dispatch result leaves as HTTP 200 | 12 checks, overlapping R1/R3/R4/R5/R6 | **MES-43 gap 3** |"
+            },
+            "adjudicated_at": {
+              "record": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
+              "view": "docs/conformance/buckets/bucket-4a-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream",
+              "claim": "in JSON mode subscriptions/listen is refused with -32601 inside an HTTP 200 response",
+              "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404",
+              "disposition_there": "fix_sdk"
+            },
+            "referenced_not_rerouted": "R2 is routed ONCE, as fix_sdk on the D4a row named in `adjudicated_at` (PM ratification Q4, MES-127 comment 29430). This row does not route it again: filing fix_sdk here would count one fix several times.",
+            "why": "The status half is R2's, and it is decided in the transport, which this unit does not reach."
+          },
+          "if_conformance_fixed": [
+            {
+              "file": "test/mcp/server/dispatch_test.exs",
+              "lines": [
+                95,
+                95
+              ],
+              "bytes": "    assert log_resp[\"error\"][\"code\"] == -32_601",
+              "breaks": "Does NOT break: the dispatch's -32601 is unchanged by an HTTP status mapping."
+            }
+          ],
+          "disposition": "accept_bound",
+          "bound": "This unit attests the JSON-RPC code for a removed logging/setLevel at the dispatch seam and never the HTTP status; the status for logging/setLevel is reached by StreamableHTTPStatelessTest's removed-method unit (named in reached_elsewhere_by) once its extend_test disposition is performed.",
+          "reached_elsewhere_by": {
+            "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+            "lines": [
+              88,
+              91
+            ],
+            "bytes": "  test \"initialize is gone → -32022; ping/logging.setLevel → -32601\" do\n    assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022\n    assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601\n    assert error(post(opts(), rpc(\"logging/setLevel\", %{\"level\" => \"info\"})))[\"code\"] == -32_601"
+          },
+          "extend_vs_fresh": "This seam cannot be extended, because no HTTP response exists below the transport. A fresh test is not needed either: the transport-seam unit for the same method is extended instead (its extend_test row in this section).",
+          "a3_ruling": "match-relation.md §2 and §3: the check is a two-axis conjunction (http_status AND jsonrpc_error_code); this claim agrees on the code and is silent on the status, so the edge is :partial, and (red, green, :partial) is bucket 4b.",
+          "rationale": "The claim is true at its seam and says nothing false about the check. Its coverage is bounded to the code axis by construction, and the omitted axis is owned by the extend_test row on the same method, so the bound is accepted in writing rather than duplicated."
+        },
+        {
+          "member": "MCP.Server.SubscriptionsDispatchTest/test T-5 JSON mode refuses the method outright a non-streaming driver gets -32601, never a silent black hole",
+          "claim": "a deployment that cannot serve subscriptions/listen answers it with -32601, never a silent black hole",
+          "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404",
+          "echo": {
+            "shape": "partial",
+            "verdicts": {
+              "et": "green",
+              "oc": "red",
+              "oc_status_at_accepted_run": "FAILURE",
+              "oc_warning": false
+            },
+            "bucket": "4b"
+          },
+          "et_test": {
+            "file": "test/mcp/server/subscriptions_dispatch_test.exs",
+            "lines": [
+              367,
+              373
+            ],
+            "bytes": "    test \"a non-streaming driver gets -32601, never a silent black hole\" do\n      json_mode = config(streaming: false)\n\n      assert {:reply, %{\"error\" => error}, _} =\n               Dispatch.dispatch(listen_request(%{\"toolsListChanged\" => true}), ctx(), json_mode)\n\n      assert error[\"code\"] == -32_601",
+            "asserts": "Dispatch.dispatch/3 in a non-streaming (JSON-mode) deployment answers subscriptions/listen with JSON-RPC error -32601.",
+            "axis_asserted": "jsonrpc_error_code",
+            "axis_omitted": "http_status",
+            "why_omitted": "By seam: the unit drives the dispatch below the transport and never builds an HTTP response."
+          },
+          "check": {
+            "requires": "HTTP 404 and JSON-RPC error -32601 when the server does not implement the requested method.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                375507,
+                375758
+              ],
+              "bytes": "()=>!te||!M?{error:`Unknown fallback test target returned an invalid layout`}:te.status!==404||M?.error?.code!==-32601?{error:`Expected HTTP 404 and JSON-RPC error code -32601, got HTTP ${te.status} and code ${M?.error?.code}`}:{details:{response:M}})"
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                375170,
+                375222
+              ],
+              "bytes": "let j=await s(`unknown/method`,{_meta:l},void 0,601)",
+              "reading": "The check sends unknown/method, not subscriptions/listen. The shared ground is the requirement's subject: a method this deployment does not implement, answered -32601. The check requires HTTP 404 as well."
+            },
+            "observed_at_accepted_run": {
+              "file": "docs/conformance/server-2026-07-28.json",
+              "lines": [
+                391,
+                392
+              ],
+              "bytes": "          \"id\": \"sep-2575-http-server-method-not-found-404\",\n          \"message\": \"Expected HTTP 404 and JSON-RPC error code -32601, got HTTP 200 and code -32601\","
+            }
+          },
+          "root_cause": {
+            "id": "R2",
+            "stated_at": {
+              "file": "docs/conformance/report-2026-07-28.md",
+              "lines": [
+                254,
+                254
+              ],
+              "bytes": "| **R2** no JSON-RPC-code → HTTP-status mapping: every dispatch result leaves as HTTP 200 | 12 checks, overlapping R1/R3/R4/R5/R6 | **MES-43 gap 3** |"
+            },
+            "adjudicated_at": {
+              "record": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
+              "view": "docs/conformance/buckets/bucket-4a-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream",
+              "claim": "in JSON mode subscriptions/listen is refused with -32601 inside an HTTP 200 response",
+              "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404",
+              "disposition_there": "fix_sdk"
+            },
+            "referenced_not_rerouted": "R2 is routed ONCE, as fix_sdk on the D4a row named in `adjudicated_at` (PM ratification Q4, MES-127 comment 29430). This row does not route it again: filing fix_sdk here would count one fix several times.",
+            "why": "The status half is R2's, decided in the transport, which this unit does not reach."
+          },
+          "if_conformance_fixed": [
+            {
+              "file": "test/mcp/server/subscriptions_dispatch_test.exs",
+              "lines": [
+                373,
+                373
+              ],
+              "bytes": "      assert error[\"code\"] == -32_601",
+              "breaks": "Does NOT break: the dispatch's -32601 is unchanged by an HTTP status mapping."
+            }
+          ],
+          "disposition": "accept_bound",
+          "bound": "This unit attests the JSON-RPC code for subscriptions/listen in JSON mode at the dispatch seam and never the HTTP status; the status on this route is asserted over a real socket by SubscriptionsStreamTest's JSON-mode refusal unit (named in reached_elsewhere_by), which asserts 200 today and moves to 404 with R2's fix (D4a's fix_sdk row).",
+          "reached_elsewhere_by": {
+            "file": "test/mcp/transport/subscriptions_stream_test.exs",
+            "lines": [
+              1028,
+              1029
+            ],
+            "bytes": "      assert response.status == 200\n      assert response.body[\"error\"][\"code\"] == -32_601"
+          },
+          "extend_vs_fresh": "This seam cannot be extended. A fresh test is not needed: the transport-seam unit for the same route already asserts the status, and D4a's fix_sdk row moves it from 200 to 404.",
+          "a3_ruling": "match-relation.md §2 and §3: the check is a two-axis conjunction (http_status AND jsonrpc_error_code); this claim agrees on the code and is silent on the status, so the edge is :partial, and (red, green, :partial) is bucket 4b.",
+          "rationale": "The claim is true at its seam and nothing it asserts disagrees with the check. Its coverage is bounded to the code axis by construction, so the bound is accepted in writing, with the unit that reaches the status named where one exists and the gap stated where none does."
+        },
+        {
+          "member": "MCP.Server.SubscriptionsDispatchTest/test T-5 JSON mode refuses the method outright a handler with no handle_listen/3 also gets -32601",
+          "claim": "a handler that implements no handle_listen/3 likewise yields -32601 for subscriptions/listen",
+          "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404",
+          "echo": {
+            "shape": "partial",
+            "verdicts": {
+              "et": "green",
+              "oc": "red",
+              "oc_status_at_accepted_run": "FAILURE",
+              "oc_warning": false
+            },
+            "bucket": "4b"
+          },
+          "et_test": {
+            "file": "test/mcp/server/subscriptions_dispatch_test.exs",
+            "lines": [
+              386,
+              390
+            ],
+            "bytes": "    test \"a handler with no handle_listen/3 also gets -32601\" do\n      {:ok, no_listen} = Config.build(MCP.Test.StatelessHandler, streaming: true)\n\n      assert {:reply, %{\"error\" => %{\"code\" => -32_601}}, _} =\n               Dispatch.dispatch(listen_request(%{\"toolsListChanged\" => true}), ctx(), no_listen)",
+            "asserts": "Dispatch.dispatch/3 over a handler that implements no handle_listen/3 answers subscriptions/listen with JSON-RPC error -32601.",
+            "axis_asserted": "jsonrpc_error_code",
+            "axis_omitted": "http_status",
+            "why_omitted": "By seam: the unit drives the dispatch below the transport and never builds an HTTP response."
+          },
+          "check": {
+            "requires": "HTTP 404 and JSON-RPC error -32601 when the server does not implement the requested method.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                375507,
+                375758
+              ],
+              "bytes": "()=>!te||!M?{error:`Unknown fallback test target returned an invalid layout`}:te.status!==404||M?.error?.code!==-32601?{error:`Expected HTTP 404 and JSON-RPC error code -32601, got HTTP ${te.status} and code ${M?.error?.code}`}:{details:{response:M}})"
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                375170,
+                375222
+              ],
+              "bytes": "let j=await s(`unknown/method`,{_meta:l},void 0,601)",
+              "reading": "The check sends unknown/method, not subscriptions/listen. The shared ground is the requirement's subject: a method this deployment does not implement, answered -32601. The check requires HTTP 404 as well."
+            },
+            "observed_at_accepted_run": {
+              "file": "docs/conformance/server-2026-07-28.json",
+              "lines": [
+                391,
+                392
+              ],
+              "bytes": "          \"id\": \"sep-2575-http-server-method-not-found-404\",\n          \"message\": \"Expected HTTP 404 and JSON-RPC error code -32601, got HTTP 200 and code -32601\","
+            }
+          },
+          "root_cause": {
+            "id": "R2",
+            "stated_at": {
+              "file": "docs/conformance/report-2026-07-28.md",
+              "lines": [
+                254,
+                254
+              ],
+              "bytes": "| **R2** no JSON-RPC-code → HTTP-status mapping: every dispatch result leaves as HTTP 200 | 12 checks, overlapping R1/R3/R4/R5/R6 | **MES-43 gap 3** |"
+            },
+            "adjudicated_at": {
+              "record": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
+              "view": "docs/conformance/buckets/bucket-4a-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream",
+              "claim": "in JSON mode subscriptions/listen is refused with -32601 inside an HTTP 200 response",
+              "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404",
+              "disposition_there": "fix_sdk"
+            },
+            "referenced_not_rerouted": "R2 is routed ONCE, as fix_sdk on the D4a row named in `adjudicated_at` (PM ratification Q4, MES-127 comment 29430). This row does not route it again: filing fix_sdk here would count one fix several times.",
+            "why": "The status half is R2's, decided in the transport, which this unit does not reach."
+          },
+          "if_conformance_fixed": [
+            {
+              "file": "test/mcp/server/subscriptions_dispatch_test.exs",
+              "lines": [
+                389,
+                389
+              ],
+              "bytes": "      assert {:reply, %{\"error\" => %{\"code\" => -32_601}}, _} =",
+              "breaks": "Does NOT break: the dispatch's -32601 is unchanged by an HTTP status mapping."
+            }
+          ],
+          "disposition": "accept_bound",
+          "bound": "This unit attests the JSON-RPC code for subscriptions/listen over a handler without handle_listen/3 at the dispatch seam only; the HTTP status on THIS route is UNATTESTED, because no unit in test/mcp/transport/*.exs posts subscriptions/listen to such a handler (see the negative on this record), and the check's status is reached only on the JSON-mode route, by SubscriptionsStreamTest's JSON-mode refusal unit.",
+          "reached_elsewhere_by": null,
+          "extend_vs_fresh": "This seam cannot be extended. No transport-seam unit exercises this route, so none can be extended either. The check itself sends unknown/method; the JSON-mode pointer on the sibling row reaches that status only on the shared subject (that unit posts subscriptions/listen, while the check sends unknown/method); what is left unattested is this route's status, and the bound says so rather than borrowing the sibling's.",
+          "a3_ruling": "match-relation.md §2 and §3: the check is a two-axis conjunction (http_status AND jsonrpc_error_code); this claim agrees on the code and is silent on the status, so the edge is :partial, and (red, green, :partial) is bucket 4b.",
+          "rationale": "The claim is true at its seam and nothing it asserts disagrees with the check. Its coverage is bounded to the code axis by construction, so the bound is accepted in writing, with the unit that reaches the status named where one exists and the gap stated where none does."
+        }
+      ]
+    }
+  ],
+  "negatives": [
+    {
+      "id": "divergent_despite_agreement",
+      "universe": "The crosswalk's cells, docs/conformance/crosswalk-2026-07-28.json `cells`, and its escalations block.",
+      "predicate": "verdicts.oc == red AND verdicts.et == green AND shape == full: the standing (red, green, :full) escalation match-relation.md §3 names, owned by MES-127 by MES-110 ruling C.",
+      "measured_at": "ec5f02d",
+      "count": {
+        "cells_matching": 0,
+        "cells_in_universe": 163,
+        "escalation_rows_with_this_reason": 0
+      },
+      "statement": "Looked for and not found: 0 of the crosswalk's 163 cells satisfy the predicate, and none of its escalated rows carries the divergent_despite_agreement reason. Gate 5 recomputes both from the crosswalk and requires them to equal this record.",
+      "recorded_as": "A record negative, not an empty section (PM ratification Q3, MES-127 comment 29430). G32 binds a section only to a bucket or escalated view, and the escalated view has no reason filter, so an empty closed section would pass G32 and say nothing about this reason.",
+      "residual": "G32 itself does not check this reason. The zero is held by gate 5's recompute, not by the guard."
+    },
+    {
+      "id": "no_transport_seam_unit_for_the_no_handle_listen_route",
+      "universe": "Every unit in test/mcp/transport/*.exs, the transport-seam test files at ec5f02d.",
+      "predicate": "a unit that posts subscriptions/listen over HTTP to a server whose handler implements no handle_listen/3.",
+      "measured_at": "ec5f02d",
+      "statement": "Looked for and not found. Every subscriptions/listen request in that universe is made in subscriptions_stream_test.exs, to an instance started over SubscribingHandler, which implements handle_listen/3 (test/support/subscribing_handler.ex). The JSON-mode refusal there is a different route (a streaming-disabled deployment, not a missing callback). So the HTTP status of the no-handle_listen route is unattested, and the accept_bound row for it says so.",
+      "what_this_does_not_say": "It does not say the SDK gets that status wrong. It says no unit reads it."
+    },
+    {
+      "id": "no_contradicting_axis_in_4b",
+      "universe": "The bucket-4b view's rows at ec5f02d.",
+      "predicate": "a row with any axis whose verdict is contradicts.",
+      "measured_at": "ec5f02d",
+      "statement": "Looked for and not found: every 4b row agrees on jsonrpc_error_code and is silent on http_status. The overlapping R2 edge that also contradicts (HttpServerMethodNotFound404initialize, R2 and R6) is stored in 4a and adjudicated by D4a. The stored bucket decides membership, not the root-cause label.",
+      "what_this_does_not_say": "It says nothing about edges outside the declared slice the crosswalk projects."
+    }
+  ],
+  "findings_for_pm": []
+}

@@ -7,7 +7,26 @@ defmodule MCP.Conformance.Adjudications do
   gives.
 
   Established by MES-126 (D4a) for the D group. MES-127, 128, 129 and 130 reuse
-  it unchanged. A new disposition is a reviewed change to this file.
+  it. A new disposition is a reviewed change to this file: MES-127 (D4b) added
+  `extend_test` and `accept_bound`, and the `bound_missing` refusal with them
+  (PM ratification, MES-127 comment 29430, Q1 and Q2).
+
+  ## The dispositions
+
+    * `fix_sdk`, `fix_conformance_adapter`, `keep_design_publish_bound`,
+      `po_decision_required`, `suite_defect_upstream`: MES-126.
+    * `extend_test`: the unit already drives the seam at which the omitted axis
+      can be observed. The remedy is an added assertion on that axis in the same
+      unit, not a new test. It is recorded by D and performed by remediation
+      (ruling 3). Where the SDK currently fails the axis, the assertion lands in
+      the same change as the named root cause's fix, so `main` never carries a
+      red test.
+    * `accept_bound`: the unit's seam cannot observe the omitted axis, so the
+      edge's coverage is bounded to the axes the unit asserts. The row states
+      that bound in `bound`, as one consumer-readable sentence: a non-empty
+      string on a single line, or the row is refused (`bound_missing`). The
+      guard holds the shape. Whether the sentence is honest is the reviewer's
+      check.
 
   ## The record, and the unit it adjudicates
 
@@ -75,8 +94,8 @@ defmodule MCP.Conformance.Adjudications do
 
   `unreadable`, `bad_record`, `bad_section`, `unknown_view`,
   `view_key_collision`, `open_without_owner`, `bad_row`,
-  `disposition_outside_set`, `phantom`, `missing`, `duplicate`, `echo_drift`,
-  `citation_drift`, and `reach`. Every refusal names the guard, the kind, the
+  `disposition_outside_set`, `bound_missing`, `phantom`, `missing`,
+  `duplicate`, `echo_drift`, `citation_drift`, and `reach`. Every refusal names the guard, the kind, the
   record file and the edge key.
 
   ## Reach, and what the guard reports over an empty directory
@@ -111,7 +130,7 @@ defmodule MCP.Conformance.Adjudications do
   # (G31's @reasons precedent, PM ratification on MES-126 (ii)). Adding one is a
   # reviewed change to conformance/lib, proposed at the adding ticket's plan hop.
   @dispositions ~w(fix_sdk fix_conformance_adapter keep_design_publish_bound
-                   po_decision_required suite_defect_upstream)
+                   po_decision_required suite_defect_upstream extend_test accept_bound)
 
   @row_fields ~w(member claim tag echo et_test check root_cause if_conformance_fixed
                  disposition rationale)
@@ -351,6 +370,7 @@ defmodule MCP.Conformance.Adjudications do
 
     field_defects(section.file, k, row, escalated?) ++
       disposition_defects(section.file, k, row) ++
+      bound_defects(section.file, k, row) ++
       echo_defects(section.file, k, row, view_row) ++
       if(escalated?, do: escalation_defects(section.file, k, row, view_row), else: [])
   end
@@ -384,6 +404,26 @@ defmodule MCP.Conformance.Adjudications do
       ]
     end
   end
+
+  # An accept_bound row must say what it accepts, in one line a consumer can read.
+  defp bound_defects(file, k, %{"disposition" => "accept_bound"} = row) do
+    b = row["bound"]
+
+    if is_binary(b) and String.trim(b) != "" and not String.contains?(b, ["\n", "\r"]) do
+      []
+    else
+      [
+        d(
+          :bound_missing,
+          file,
+          k,
+          "an accept_bound row must state its bound as one non-empty line in `bound`, not #{inspect(b, limit: 3)}"
+        )
+      ]
+    end
+  end
+
+  defp bound_defects(_file, _k, _row), do: []
 
   defp echo_defects(file, k, row, view_row) do
     if is_map(view_row) and row["echo"] != echo(view_row) do

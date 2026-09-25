@@ -19,6 +19,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
   alias MCP.Conformance.Adjudications, as: A
 
   @d4a "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json"
+  @d4b "docs/conformance/adjudications/adjudication-D4b-2026-07-28.json"
+  @v4b "docs/conformance/buckets/bucket-4b-2026-07-28.json"
+  @crosswalk "docs/conformance/crosswalk-2026-07-28.json"
 
   setup_all do
     inputs = A.load()
@@ -69,22 +72,284 @@ defmodule MCP.Conformance.AdjudicationsTest do
              ]
     end
 
+    test "D4b's record closes bucket 4b", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d4b]
+
+      assert for(s <- record["sections"], do: {s["view"], s["closure"], s["owner"]}) == [
+               {@v4b, "closed", "MES-127"}
+             ]
+    end
+
+    # PM ratification on MES-127 (29430, Q1): extend_test where the unit reaches
+    # the HTTP seam (StreamableHTTPStatelessTest), accept_bound below it.
+    test "D4b's dispositions are the ratified ones, per edge", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d4b]
+      [%{"rows" => rows}] = record["sections"]
+
+      by_module =
+        rows
+        |> Enum.map(&{&1["member"] |> String.split("/") |> hd(), &1["disposition"]})
+        |> Enum.frequencies()
+
+      assert by_module == %{
+               {"MCP.Transport.StreamableHTTPStatelessTest", "extend_test"} => 2,
+               {"MCP.Server.DispatchTest", "accept_bound"} => 2,
+               {"MCP.Server.SubscriptionsDispatchTest", "accept_bound"} => 2
+             }
+    end
+
+    # PM ratification on MES-127 (29430, Q4): R2 is REFERENCED, not re-routed.
+    # Every D4b row points at a real D4a row that routes R2 as fix_sdk.
+    test "each D4b row's R2 pointer resolves to D4a's fix_sdk row", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d4b]
+      [%{"rows" => rows}] = record["sections"]
+
+      for r <- rows do
+        ptr = r["root_cause"]["adjudicated_at"]
+        assert r["root_cause"]["id"] == "R2"
+        assert r["disposition"] != "fix_sdk"
+        {:ok, target} = inputs.records[ptr["record"]]
+
+        [hit] =
+          for s <- target["sections"],
+              s["view"] == ptr["view"],
+              t <- s["rows"],
+              A.key(t) == [ptr["member"], ptr["claim"], ptr["tag"]],
+              do: t
+
+        assert hit["disposition"] == "fix_sdk" and hit["disposition"] == ptr["disposition_there"]
+        assert hit["root_cause"]["id"] == "R2"
+      end
+    end
+
+    # PM ratification on MES-127 (29430, Q3): the standing (red, green, :full)
+    # escalation, divergent_despite_agreement, is a record NEGATIVE. G32 does not
+    # check it, so gate 5 RECOMPUTES it from the crosswalk: recorded == measured.
+    test "D4b's divergent_despite_agreement zero is measured, not held", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d4b]
+      [neg] = Enum.filter(record["negatives"], &(&1["id"] == "divergent_despite_agreement"))
+      crosswalk = @crosswalk |> File.read!() |> Jason.decode!()
+
+      matching =
+        Enum.count(crosswalk["cells"], fn c ->
+          c["verdicts"]["oc"] == "red" and c["verdicts"]["et"] == "green" and c["shape"] == "full"
+        end)
+
+      escalated =
+        Enum.count(
+          crosswalk["escalations"]["rows"],
+          &String.contains?(&1["escalation"], "divergent_despite_agreement")
+        )
+
+      assert neg["count"] == %{
+               "cells_matching" => matching,
+               "cells_in_universe" => length(crosswalk["cells"]),
+               "escalation_rows_with_this_reason" => escalated
+             }
+    end
+
     # MES-120's K1: a record under docs/conformance/ is inside G31, and a file
     # added after G31's baseline may carry no pending figure.
-    test "D4a's record is hand_authored to G31 and has no pending figure" do
-      universe = "conformance/figures/universe.json" |> File.read!() |> Jason.decode!()
-      ledger = "conformance/figures/ledger.json" |> File.read!() |> Jason.decode!()
+    for record <- [@d4a, @d4b] do
+      test "#{Path.basename(record)} is hand_authored to G31 and has no pending figure" do
+        universe = "conformance/figures/universe.json" |> File.read!() |> Jason.decode!()
+        ledger = "conformance/figures/ledger.json" |> File.read!() |> Jason.decode!()
 
-      assert universe["files"][@d4a] == "hand_authored"
-      assert Enum.filter(ledger["pending"], &(&1["file"] == @d4a)) == []
-      assert Enum.any?(ledger["entries"], &(&1["file"] == @d4a and &1["class"] == "measured"))
+        assert universe["files"][unquote(record)] == "hand_authored"
+        assert Enum.filter(ledger["pending"], &(&1["file"] == unquote(record))) == []
+
+        assert Enum.any?(
+                 ledger["entries"],
+                 &(&1["file"] == unquote(record) and &1["class"] == "measured")
+               )
+      end
     end
 
-    test "the closed disposition set is the one MES-126 ratified" do
+    # G32 verifies the citations inside SECTIONS. A record's top-level
+    # citations (D4a's decision_row, D4b's a3_ruling) are held here instead.
+    test "every repository citation outside a record's sections holds its bytes",
+         %{inputs: inputs} do
+      found =
+        for {file, {:ok, doc}} <- inputs.records,
+            c <- A.collect(Map.delete(doc, "sections")),
+            do: {file, c}
+
+      assert found != []
+
+      for {file, c} <- found,
+          do: assert(A.verify(c, inputs.source_fun) == :ok, "#{file}: #{inspect(c["file"])}")
+    end
+
+    # A partial answer to MES-135's K1 (G32 binds a row's KEY, not its content).
+    # This ties each row's et_test to the row's member: the cited window lies
+    # inside the member's own test in the member's own module. It does NOT tie
+    # the check citation to the tag.
+    test "every row's et_test lies inside the member's own test", %{inputs: inputs} do
+      rows = for {_, {:ok, doc}} <- inputs.records, s <- doc["sections"], r <- s["rows"], do: r
+      assert rows != []
+
+      for r <- rows,
+          do: assert(et_test_owner(r, inputs.source_fun) == :ok, inspect(A.key(r)))
+    end
+
+    # The ownership check above supersedes this one (it requires the window to
+    # lie inside the member's own test, compared by equality on the qualified
+    # name). Kept as the literal form of the ratified wording, D4b only; its
+    # `ends_with?` is a suffix match, not equality (CR N1).
+    test "every D4b row's et_test quotes the member's test line itself", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d4b]
+      [%{"rows" => rows}] = record["sections"]
+
+      for r <- rows do
+        [_, name] = Regex.run(~r/^\s*test "((?:[^"\\]|\\.)*)"/m, r["et_test"]["bytes"])
+        assert String.ends_with?(r["member"], name)
+      end
+    end
+
+    test "the et_test self-check refuses a row whose member is a sibling test",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d4b]
+      [%{"rows" => [r1, _, r3 | _]}] = record["sections"]
+
+      assert et_test_owner(r1, inputs.source_fun) == :ok
+      swapped = Map.put(r1, "member", r3["member"])
+      assert {:error, _} = et_test_owner(swapped, inputs.source_fun)
+      renamed = Map.update!(r1, "member", &(&1 <> " (renamed)"))
+      assert {:error, _} = et_test_owner(renamed, inputs.source_fun)
+    end
+
+    # CR's P5 probe (MES-127 review 29435, B1): a window past the owning test's
+    # `end` quotes no test code, and was admitted as the preceding test before
+    # the self-check found the test's own closing line.
+    test "the et_test self-check refuses a window past the owning test's end",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d4b]
+      [%{"rows" => [r1, _, r3 | _]}] = record["sections"]
+
+      for {r, file, [from, to]} <- [
+            {r1, "test/mcp/transport/streamable_http_stateless_test.exs", [92, 96]},
+            {r3, "test/mcp/server/dispatch_test.exs", [96, 98]}
+          ] do
+        {:ok, src} = inputs.source_fun.(file)
+        bytes = src |> String.split("\n") |> Enum.slice((from - 1)..(to - 1)) |> Enum.join("\n")
+        refute bytes =~ ~r/^\s*test "/m
+        plant = put_in(r, ["et_test"], %{"file" => file, "lines" => [from, to], "bytes" => bytes})
+
+        assert {:error, {:window_outside_test, last}} = et_test_owner(plant, inputs.source_fun)
+        assert last < to
+      end
+    end
+
+    test "the et_test self-check refuses a window straddling two tests", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d4b]
+      [%{"rows" => [r1 | _]}] = record["sections"]
+      plant = put_in(r1, ["et_test", "lines"], [88, 100])
+
+      assert et_test_owner(plant, inputs.source_fun) == {:error, :window_crosses_a_test}
+    end
+
+    test "the et_test self-check ends a nested test at its own `end`, a one-line test at its line" do
+      src = """
+      defmodule M do
+        describe "d" do
+          test "block" do
+            fn -> :x end
+          end
+        end
+
+        test "one", do: assert(true)
+        @tag :x
+      end
+      """
+
+      source_fun = fn "test/src.exs" -> {:ok, src} end
+
+      at = fn member, lines ->
+        et_test_owner(
+          %{
+            "member" => "M/" <> member,
+            "et_test" => %{"file" => "test/src.exs", "lines" => lines}
+          },
+          source_fun
+        )
+      end
+
+      assert at.("test d block", [4, 5]) == :ok
+      assert at.("test d block", [4, 6]) == {:error, {:window_outside_test, 5}}
+      assert at.("test one", [8, 8]) == :ok
+      assert at.("test one", [8, 9]) == {:error, {:window_outside_test, 8}}
+    end
+
+    # MES-126 ratified the first five; MES-127 (29430, Q1) added the last two.
+    test "the closed disposition set is the one MES-126 and MES-127 ratified" do
       assert A.dispositions() ==
-               ~w(fix_sdk fix_conformance_adapter keep_design_publish_bound po_decision_required suite_defect_upstream)
+               ~w(fix_sdk fix_conformance_adapter keep_design_publish_bound po_decision_required suite_defect_upstream extend_test accept_bound)
     end
   end
+
+  # The innermost `test "…"` at or above the window's first line owns the
+  # window. No other test line may start inside the window, and the owner's own
+  # closing line must be at or after the window's last line: for a block test
+  # that is the first later line equal to the test's indent followed by `end`
+  # (so a nested `describe`'s shallower `end`, and any deeper `end` inside the
+  # body, are not taken for it); for a one-line `, do:` test it is the test line
+  # itself, so a window reaching past that line is refused (fail-closed, even
+  # for a `do:` body continued onto later lines). The owner must be the
+  # member's test (qualified by its `describe` when nested), in a file that
+  # defines the member's module.
+  @test_line ~r/^(\s*)test "((?:[^"\\]|\\.)*)"/
+  @one_line_test ~r/,\s*do:/
+  @describe_line ~r/^  describe "((?:[^"\\]|\\.)*)"/
+
+  defp et_test_owner(row, source_fun) do
+    %{"file" => file, "lines" => [from, to]} = row["et_test"]
+    [module, member_test] = String.split(row["member"], "/", parts: 2)
+    {:ok, src} = source_fun.(file)
+    lines = src |> String.split("\n") |> Enum.with_index(1)
+    tests = for {l, i} <- lines, m = Regex.run(@test_line, l), do: {i, m}
+
+    with {i, [_, indent, name]} <- tests |> Enum.filter(&(elem(&1, 0) <= from)) |> List.last(),
+         true <- Enum.all?(tests, fn {j, _} -> j <= i or j > to end) || :window_crosses_a_test,
+         last when is_integer(last) <- test_end(lines, i, indent) || :test_end_not_found,
+         true <- to <= last || {:window_outside_test, last},
+         describe <- describe_above(lines, i, indent),
+         expected = Enum.join(["test", describe, unescape(name)] |> Enum.reject(&is_nil/1), " "),
+         true <- expected == member_test || {:names, expected},
+         true <- String.contains?(src, "defmodule #{module} do") || :module do
+      :ok
+    else
+      other -> {:error, other}
+    end
+  end
+
+  defp test_end(lines, i, indent) do
+    {head, _} = Enum.at(lines, i - 1)
+
+    if Regex.match?(@one_line_test, head) do
+      i
+    else
+      lines
+      |> Enum.drop(i)
+      |> Enum.find_value(fn {l, j} -> String.trim_trailing(l) == indent <> "end" && j end)
+    end
+  end
+
+  defp describe_above(_lines, _i, "  "), do: nil
+
+  defp describe_above(lines, i, "    ") do
+    lines
+    |> Enum.take(i - 1)
+    |> Enum.reverse()
+    |> Enum.find_value(fn {l, _} ->
+      case Regex.run(@describe_line, l),
+        do: (
+          [_, d] -> unescape(d)
+          nil -> nil
+        )
+    end)
+  end
+
+  defp unescape(s), do: String.replace(s, ~S(\"), ~S("))
 
   # --- synthetic inputs ---------------------------------------------------------
 
@@ -226,6 +491,26 @@ defmodule MCP.Conformance.AdjudicationsTest do
     test "disposition_outside_set" do
       assert kinds(inputs([a()], [section([row(a(), %{"disposition" => "wontfix"})])])) ==
                [:disposition_outside_set]
+    end
+
+    test "extend_test and accept_bound are in the set" do
+      assert kinds(inputs([a()], [section([row(a(), %{"disposition" => "extend_test"})])])) == []
+
+      bounded = row(a(), %{"disposition" => "accept_bound", "bound" => "code only, at this seam"})
+      assert kinds(inputs([a()], [section([bounded])])) == []
+    end
+
+    # MES-127 (29430, Q2): an accept_bound row states its bound as one line.
+    test "bound_missing: an accept_bound row without a single-line, non-empty bound" do
+      for bound <- [:absent, nil, "", "   ", "two\nlines", "a\r\nb", 7] do
+        r = row(a(), %{"disposition" => "accept_bound"})
+        r = if bound == :absent, do: r, else: Map.put(r, "bound", bound)
+        assert kinds(inputs([a()], [section([r])])) == [:bound_missing], inspect(bound)
+      end
+    end
+
+    test "a bound on a row that is not accept_bound is not required" do
+      assert kinds(inputs([a()], [section([row(a(), %{"disposition" => "fix_sdk"})])])) == []
     end
 
     test "bad_row: a missing field is named" do

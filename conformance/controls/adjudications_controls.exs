@@ -1,4 +1,5 @@
-# Controls for G32, the D-group adjudication guard (MES-126).
+# Controls for G32, the D-group adjudication guard (MES-126; MES-127 added the
+# D4b plants, the removed-code mutations and the bound_missing mutation).
 #
 #     mix run conformance/controls/adjudications_controls.exs positive
 #     mix run conformance/controls/adjudications_controls.exs refusals
@@ -13,9 +14,15 @@
 # requires the refusal it is about and nothing else. Each refusal must NAME G32,
 # because a red for an unrelated reason would otherwise pass the control.
 #
+# `refusals` covers BOTH records: the D4a plants below, and on D4b's record a
+# phantom 4b row, a dropped 4b row, and an accept_bound row with its `bound`
+# removed (bound_missing).
+#
 # `mutation` recompiles the guard inside this VM. (1) THE KEY. It binds
 # complete synthetic sections to the REAL views `bucket-4b` and `bucket-5a`,
-# which the next D tickets adjudicate. The real guard keys both and is clean.
+# with D4b's own section on `bucket-4b` removed IN MEMORY first, since a second
+# closed section over the same view would otherwise refuse as duplicate
+# whatever the key. The real guard keys both and is clean.
 # With `key/1` cut to the member alone, `bucket-4b` is refused
 # (view_key_collision). With `key/1` cut to `[member, tag]`, `bucket-4b` passes
 # and `bucket-5a` is refused, because 5a carries rows that differ only by claim.
@@ -23,9 +30,13 @@
 # shorter key can adjudicate the D group. (2) THE WALK. With the walk glob
 # narrowed, the committed tree audits clean over ZERO records. That is the
 # silent pass the gate-5 pin on `walk_root/0` exists to catch, and the control
-# shows the pin failing under that mutant.
+# shows the pin failing under that mutant. (3) THE NEW CODES. With
+# `extend_test` or `accept_bound` removed from the closed set, the committed tree
+# is refused as disposition_outside_set on exactly the D4b rows carrying that
+# code. (4) BOUND_MISSING. With the bound check cut out of the guard, the
+# missing-bound plant audits CLEAN, so the refusal in `refusals` is the check's.
 #
-# `harness` verifies every harness citation in the record against the pinned
+# `harness` verifies every harness citation in EVERY record against the pinned
 # conformance build: sha256 first, then each byte span. Gate 5 cannot do this,
 # because the build is not in this repository. It FAILS CLOSED when the build
 # is absent or its sha differs. Set MES_HARNESS_DIST to point at it; the default
@@ -38,6 +49,7 @@ defmodule AdjudicationsControls do
   alias MCP.Conformance.Adjudications, as: A
 
   @record "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json"
+  @d4b "docs/conformance/adjudications/adjudication-D4b-2026-07-28.json"
   @v4a "docs/conformance/buckets/bucket-4a-2026-07-28.json"
   @ves "docs/conformance/buckets/escalated-2026-07-28.json"
   @v0 "docs/conformance/buckets/bucket-0-2026-07-28.json"
@@ -74,6 +86,7 @@ defmodule AdjudicationsControls do
 
     check("clean", defects == [], Enum.map(defects, &A.format_defect/1))
     check("the D4a record is visited", @record in A.load().walk)
+    check("the D4b record is visited", @d4b in A.load().walk)
 
     check(
       "reach: #{r["rows_visited"]} rows over #{r["views_bound"]} views",
@@ -168,6 +181,49 @@ defmodule AdjudicationsControls do
       Enum.any?(A.audit(swapped).defects, &(&1.kind == :missing and &1.key == A.key(ascii)))
     )
 
+    # --- D4b's record ---
+    first_4b = rows(base, @v4b, @d4b) |> hd()
+
+    phantom_4b =
+      Map.put(first_4b, "claim", "a removed `ping` over HTTP yields HTTP 404 (no such claim)")
+
+    expect(
+      "(D4b) phantom: a 4b row keyed to an edge bucket-4b does not project",
+      [:phantom],
+      A.key(phantom_4b),
+      update_rows(base, @v4b, &(&1 ++ [phantom_4b]), @d4b)
+    )
+
+    expect(
+      "(D4b) missing: a 4b row dropped",
+      [:missing],
+      A.key(first_4b),
+      update_rows(base, @v4b, &tl/1, @d4b)
+    )
+
+    bounded = Enum.find(rows(base, @v4b, @d4b), &(&1["disposition"] == "accept_bound"))
+
+    expect(
+      "(D4b) bound_missing: an accept_bound row with its bound removed",
+      [:bound_missing],
+      A.key(bounded),
+      drop_bound(base, bounded)
+    )
+
+    expect(
+      "(D4b) bound_missing: an accept_bound row whose bound runs to two lines",
+      [:bound_missing],
+      A.key(bounded),
+      update_rows(
+        base,
+        @v4b,
+        &Enum.map(&1, fn r ->
+          if r == bounded, do: Map.update!(r, "bound", fn b -> b <> "\nand more" end), else: r
+        end),
+        @d4b
+      )
+    )
+
     bound0 = bind(base, @v0)
 
     expect_kinds(
@@ -183,7 +239,24 @@ defmodule AdjudicationsControls do
     header("mutation — the guard recompiled in this VM")
     src = File.read!(@source)
 
-    real = A.load() |> bind_complete(@v4b) |> bind_complete(@v5a)
+    # D4b's section on bucket-4b is removed in memory, and the control shows
+    # that without the removal the plant is refused as duplicate: it is the
+    # removal, not the key, that the unmodified plant would trip on.
+    unremoved = A.load() |> bind_complete(@v4b) |> bind_complete(@v5a)
+
+    check(
+      "(1) without removing D4b's section, the synthetic 4b section is a duplicate",
+      A.audit(unremoved).defects |> Enum.map(& &1.kind) |> Enum.uniq() == [:duplicate]
+    )
+
+    real =
+      A.load()
+      |> update_in([:records, @d4b], fn {:ok, r} ->
+        {:ok, Map.update!(r, "sections", &Enum.reject(&1, fn s -> s["view"] == @v4b end))}
+      end)
+      |> bind_complete(@v4b)
+      |> bind_complete(@v5a)
+
     %{defects: ds, report: r} = A.audit(real)
 
     check(
@@ -247,6 +320,41 @@ defmodule AdjudicationsControls do
       )
     end)
 
+    base = A.load()
+    d4b_rows = rows(base, @v4b, @d4b)
+
+    for code <- ~w(extend_test accept_bound) do
+      set_def = ~s|po_decision_required suite_defect_upstream extend_test accept_bound)|
+      cut = String.replace(set_def, " #{code}", "")
+      mutant = String.replace(src, set_def, cut)
+      check("(3) the no-#{code} mutant differs from the source", mutant != src)
+
+      with_module(mutant, fn ->
+        %{defects: ds} = A.audit(base)
+
+        expected =
+          for r <- d4b_rows, r["disposition"] == code, do: {:disposition_outside_set, A.key(r)}
+
+        check(
+          "(3) without #{code}, exactly its #{length(expected)} D4b rows are refused as disposition_outside_set",
+          expected != [] and Enum.sort(for(d <- ds, do: {d.kind, d.key})) == Enum.sort(expected),
+          Enum.map(ds, &A.format_defect/1)
+        )
+      end)
+    end
+
+    bounded = Enum.find(d4b_rows, &(&1["disposition"] == "accept_bound"))
+    call = "      bound_defects(section.file, k, row) ++\n"
+    unbound = String.replace(src, call, "")
+    check("(4) the no-bound-check mutant differs from the source", unbound != src)
+
+    with_module(unbound, fn ->
+      check(
+        "(4) with the bound check cut, the missing-bound plant audits CLEAN — the refusal is the check's",
+        A.audit(drop_bound(base, bounded)).defects == []
+      )
+    end)
+
     %{defects: ds} = A.audit(A.load())
     check("restored: the real guard is back and the tree is clean", ds == [])
   end
@@ -264,9 +372,25 @@ defmodule AdjudicationsControls do
   def harness do
     header("harness — every harness citation against the pinned build")
     dist = System.get_env("MES_HARNESS_DIST", @default_dist)
-    {:ok, record} = A.load().records[@record]
+    records = A.load().records
 
-    cites = A.collect(record["sections"]) |> Enum.filter(&Map.has_key?(&1, "harness_sha256"))
+    check(
+      "every record is read: #{inspect(Map.keys(records))}",
+      @record in Map.keys(records) and @d4b in Map.keys(records)
+    )
+
+    cites =
+      for {_, {:ok, record}} <- records,
+          c <- A.collect(record),
+          Map.has_key?(c, "harness_sha256"),
+          do: c
+
+    for f <- [@record, @d4b] do
+      {:ok, rec} = records[f]
+      n = rec |> A.collect() |> Enum.count(&Map.has_key?(&1, "harness_sha256"))
+      check("  … #{Path.basename(f)} carries #{n} harness citations", n > 0)
+    end
+
     shas = cites |> Enum.map(& &1["harness_sha256"]) |> Enum.uniq()
 
     case File.read(dist) do
@@ -309,13 +433,13 @@ defmodule AdjudicationsControls do
 
   # --- plumbing ------------------------------------------------------------------------
 
-  defp rows(inputs, view) do
-    {:ok, r} = inputs.records[@record]
+  defp rows(inputs, view, record \\ @record) do
+    {:ok, r} = inputs.records[record]
     r["sections"] |> Enum.find(&(&1["view"] == view)) |> Map.fetch!("rows")
   end
 
-  defp update_section(inputs, view, fun) do
-    update_in(inputs, [:records, @record], fn {:ok, r} ->
+  defp update_section(inputs, view, fun, record \\ @record) do
+    update_in(inputs, [:records, record], fn {:ok, r} ->
       {:ok,
        Map.update!(
          r,
@@ -325,8 +449,17 @@ defmodule AdjudicationsControls do
     end)
   end
 
-  defp update_rows(inputs, view, fun),
-    do: update_section(inputs, view, &Map.update!(&1, "rows", fun))
+  defp update_rows(inputs, view, fun, record \\ @record),
+    do: update_section(inputs, view, &Map.update!(&1, "rows", fun), record)
+
+  defp drop_bound(inputs, row) do
+    update_rows(
+      inputs,
+      @v4b,
+      &Enum.map(&1, fn r -> if r == row, do: Map.delete(r, "bound"), else: r end),
+      @d4b
+    )
+  end
 
   defp update_view_row(inputs, view, key, fun) do
     update_in(inputs, [:views, view], fn {:ok, v} ->

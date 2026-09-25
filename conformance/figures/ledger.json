@@ -4616,6 +4616,54 @@
       "path": "sections[#0].rows[MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream | in JSON mode subscriptions/listen is refused with -32601 inside an HTTP 200 response | oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404].root_cause.stated_at.bytes",
       "phrase": "12 checks",
       "quantity": "report_r2_http_status_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D4b-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601 | a removed `ping` over HTTP yields JSON-RPC error -32601 | oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping].root_cause.stated_at.bytes",
+      "phrase": "12 checks",
+      "quantity": "report_r2_http_status_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D4b-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601 | a removed `logging/setLevel` over HTTP yields JSON-RPC error -32601 | oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel].root_cause.stated_at.bytes",
+      "phrase": "12 checks",
+      "quantity": "report_r2_http_status_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D4b-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601) | a dispatched `ping` is answered with -32601 method-not-found | oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping].root_cause.stated_at.bytes",
+      "phrase": "12 checks",
+      "quantity": "report_r2_http_status_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D4b-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601) | a dispatched `logging/setLevel` is answered with -32601 method-not-found | oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel].root_cause.stated_at.bytes",
+      "phrase": "12 checks",
+      "quantity": "report_r2_http_status_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D4b-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Server.SubscriptionsDispatchTest/test T-5 JSON mode refuses the method outright a non-streaming driver gets -32601, never a silent black hole | a deployment that cannot serve subscriptions/listen answers it with -32601, never a silent black hole | oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404].root_cause.stated_at.bytes",
+      "phrase": "12 checks",
+      "quantity": "report_r2_http_status_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D4b-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Server.SubscriptionsDispatchTest/test T-5 JSON mode refuses the method outright a handler with no handle_listen/3 also gets -32601 | a handler that implements no handle_listen/3 likewise yields -32601 for subscriptions/listen | oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404].root_cause.stated_at.bytes",
+      "phrase": "12 checks",
+      "quantity": "report_r2_http_status_checks"
     }
   ],
   "guard": "G31 — MCP.Conformance.InputFigures (MES-120)",
