@@ -9,7 +9,9 @@ defmodule MCP.Conformance.Adjudications do
   Established by MES-126 (D4a) for the D group. MES-127, 128, 129 and 130 reuse
   it. A new disposition is a reviewed change to this file: MES-127 (D4b) added
   `extend_test` and `accept_bound`, and the `bound_missing` refusal with them
-  (PM ratification, MES-127 comment 29430, Q1 and Q2).
+  (PM ratification, MES-127 comment 29430, Q1 and Q2). MES-128 (D2b) added
+  `extend_to_match` and `build_test`, and the `build_level_missing` refusal with
+  them (PM ratification, MES-128 comment 29444, Q1).
 
   ## The dispositions
 
@@ -27,6 +29,22 @@ defmodule MCP.Conformance.Adjudications do
       string on a single line, or the row is refused (`bound_missing`). The
       guard holds the shape. Whether the sentence is honest is the reviewer's
       check.
+    * `extend_to_match`: for a check with NO edge (bucket 2). An existing ET-CC
+      unit already drives the seam and sends the check's stimulus, but asserts
+      nothing the check requires. The remedy is an added assertion, or added
+      loop cases, in that unit, which would give the crosswalk an edge. The row
+      cites the unit in `extend_target`. It differs from `extend_test`, which
+      presumes an existing edge with an omitted axis.
+    * `build_test`: for a check with no edge that no existing unit drives at any
+      level. The remedy is a new ET-CC unit.
+
+  An `extend_to_match` or `build_test` row carries `build_level` (one of
+  `pure_unit`, `mock_transport`, `plug`, `live_http`) and a one-line `remedy`,
+  and an `extend_to_match` row also carries an `extend_target` map. Otherwise
+  the row is refused (`build_level_missing`). Like `bound_missing`, this checks
+  SHAPE only: whether the level is the cheapest one that works, and whether the
+  remedy would really give the check an edge, is the reviewer's check. The
+  `extend_target` citation's bytes are held by `citation_drift` like any other.
 
   ## The record, and the unit it adjudicates
 
@@ -78,6 +96,14 @@ defmodule MCP.Conformance.Adjudications do
   (`echo_drift`), rather than leaving an adjudication standing over a fact
   that has changed.
 
+  **Echo is vacuous on bucket-2 views.** A bucket-2 (and bucket-1) view row
+  carries only `leg` and `tag`, none of the echoed fields, so its echo is `{}`
+  and `echo_drift` cannot fire there (CR K4 on MES-126). `leg` and `tag` are
+  both inside the key, so there is nothing a view row could change under an
+  unchanged key. What such a record can still hold is its PREMISE: D2b's rows
+  cite each check's status at the accepted run as a repository citation, and
+  gate 5 requires it to be SUCCESS. The hardening is MES-135's.
+
   ## Citations: an address AND the bytes at it (ruling 7)
 
   Anywhere in a row, a map carrying `file`, `lines` (`[from, to]`, 1-based,
@@ -94,7 +120,7 @@ defmodule MCP.Conformance.Adjudications do
 
   `unreadable`, `bad_record`, `bad_section`, `unknown_view`,
   `view_key_collision`, `open_without_owner`, `bad_row`,
-  `disposition_outside_set`, `bound_missing`, `phantom`, `missing`,
+  `disposition_outside_set`, `bound_missing`, `build_level_missing`, `phantom`, `missing`,
   `duplicate`, `echo_drift`, `citation_drift`, and `reach`. Every refusal names the guard, the kind, the
   record file and the edge key.
 
@@ -130,7 +156,12 @@ defmodule MCP.Conformance.Adjudications do
   # (G31's @reasons precedent, PM ratification on MES-126 (ii)). Adding one is a
   # reviewed change to conformance/lib, proposed at the adding ticket's plan hop.
   @dispositions ~w(fix_sdk fix_conformance_adapter keep_design_publish_bound
-                   po_decision_required suite_defect_upstream extend_test accept_bound)
+                   po_decision_required suite_defect_upstream extend_test accept_bound
+                   extend_to_match build_test)
+
+  # The build levels an extend_to_match or build_test row may name (MES-128, 29444).
+  @build_levels ~w(pure_unit mock_transport plug live_http)
+  @build_dispositions ~w(extend_to_match build_test)
 
   @row_fields ~w(member claim tag echo et_test check root_cause if_conformance_fixed
                  disposition rationale)
@@ -142,6 +173,7 @@ defmodule MCP.Conformance.Adjudications do
   def guard, do: @guard
   def walk_root, do: {@walk_root, @walk_glob}
   def dispositions, do: @dispositions
+  def build_levels, do: @build_levels
   def schema, do: @schema
 
   # --- the key -------------------------------------------------------------
@@ -371,6 +403,7 @@ defmodule MCP.Conformance.Adjudications do
     field_defects(section.file, k, row, escalated?) ++
       disposition_defects(section.file, k, row) ++
       bound_defects(section.file, k, row) ++
+      build_defects(section.file, k, row) ++
       echo_defects(section.file, k, row, view_row) ++
       if(escalated?, do: escalation_defects(section.file, k, row, view_row), else: [])
   end
@@ -424,6 +457,32 @@ defmodule MCP.Conformance.Adjudications do
   end
 
   defp bound_defects(_file, _k, _row), do: []
+
+  # A bucket-2 row says at what level the missing test would be built, and how,
+  # in one line; an extend_to_match row also names the unit it would extend.
+  defp build_defects(file, k, %{"disposition" => disp} = row) when disp in @build_dispositions do
+    wrong =
+      [
+        {row["build_level"] in @build_levels,
+         "`build_level` in #{inspect(@build_levels)}, not #{inspect(row["build_level"], limit: 3)}"},
+        {one_line?(row["remedy"]),
+         "a one-line, non-empty `remedy`, not #{inspect(row["remedy"], limit: 3)}"},
+        {disp != "extend_to_match" or is_map(row["extend_target"]),
+         "an `extend_target` map naming the unit it extends"}
+      ]
+      |> Enum.reject(&elem(&1, 0))
+      |> Enum.map(&elem(&1, 1))
+
+    case wrong do
+      [] -> []
+      ws -> [d(:build_level_missing, file, k, "a #{disp} row needs " <> Enum.join(ws, "; "))]
+    end
+  end
+
+  defp build_defects(_file, _k, _row), do: []
+
+  defp one_line?(t),
+    do: is_binary(t) and String.trim(t) != "" and not String.contains?(t, ["\n", "\r"])
 
   defp echo_defects(file, k, row, view_row) do
     if is_map(view_row) and row["echo"] != echo(view_row) do

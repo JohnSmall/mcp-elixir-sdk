@@ -1,0 +1,1493 @@
+{
+  "schema": "adjudication-record/1",
+  "authored_by_hand": true,
+  "ticket": "MES-128",
+  "revision": "2026-07-28",
+  "what_this_is": "The D2b adjudication record. It is normative for the checks it adjudicates, and Confluence page 277708859 mirrors it. It reuses D4a's record format (MES-126) and G32 (MCP.Conformance.Adjudications), which holds its rows equal to the bucket-2b view in both directions, with dispositions from the guard's closed set, a build level and a one-line remedy on every extend_to_match and build_test row, and every repository citation holding the bytes it quotes. Harness citations are verified by the control's harness mode against the pinned build.",
+  "harness": {
+    "version": "0.2.0-alpha.11",
+    "sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae"
+  },
+  "what_bucket_2b_is": "The bucket-2b view holds 15 checks: every client-leg OC check in the declared population that carries no edge in the crosswalk. Bucket 2 means write the test. Every check here was green at the accepted run (each row's oc_status_at_accepted_run), so each row is a COVERAGE gap, not a behaviour gap: the SDK already does what the check requires, and no ET-CC unit says so.",
+  "rendering_guard": {
+    "rule": "Bucket 2b's population sentence, here and on its Confluence mirror, is the predicate verbatim. It is never paraphrased as a claim that the check has no test: a check here may be covered by a unit outside ET-CC (covered_elsewhere).",
+    "anchor": {
+      "file": "docs/conformance/etcc-register.md",
+      "lines": [
+        1887,
+        1888
+      ],
+      "bytes": "* It **does not render bucket 2b.** The rule that bucket 2b's population sentence is its\n  predicate verbatim (*\"OC check with no ET-CC member match\"*), and never \"untested\","
+    },
+    "enforced_by": "test/conformance/adjudications_test.exs: the section's population_sentence must equal the anchored predicate, and no prose leaf of this record (quoted bytes excepted) may carry the forbidden word, case-insensitively. Shown red on a plant.",
+    "residual": "The Confluence mirror is outside the repository, so gate 5 cannot read it. It is checked by hand at write time, and the check is stated in the close-out."
+  },
+  "dispositions_added": {
+    "extend_to_match": "An existing ET-CC unit already drives the seam and sends the check's stimulus, but asserts nothing the check requires. The remedy is an added assertion (or added loop cases) in that unit, which would give the crosswalk an edge. The row cites the unit in extend_target (address and bytes). This is not D4b's extend_test: that code presumes an existing edge with an omitted axis, and a bucket-2 check has no edge.",
+    "build_test": "No existing unit drives the check's stimulus at any level, so the remedy is a new ET-CC unit.",
+    "build_level": "Both codes carry build_level, one of pure_unit, mock_transport, plug or live_http, and a one-line remedy. G32 refuses a row without them (build_level_missing), and an extend_to_match row without an extend_target. It checks shape only: whether the level and the remedy are right is the reviewer's check.",
+    "covered_elsewhere": "An optional row field, not a disposition: the non-ET-CC units that cover the check, each with its address and bytes, or an explicit none with the search that found none.",
+    "not_added": "accept_unmatched is not added: no row here needs it, and an unused code widens the set with nothing to exercise it (PM ratification, 29444).",
+    "ratified": "MES-128 comment 29444, Q1."
+  },
+  "echo_statement": {
+    "statement": "The bucket-2b view's rows carry only leg and tag. G32's echo takes shape, verdicts, bucket and the escalation fields, none of which a bucket-2 row has, so every row's echo is {} and echo_drift is VACUOUS for this section: G32 cannot detect a view row changing under an unchanged key (CR K4 on MES-126, 29418).",
+    "substitute": "Each row carries oc_status_at_accepted_run, a repository citation of the check's name and status lines in docs/conformance/in-scope-2026-07-28.json. G32's citation_drift verifies those bytes, and gate 5 requires each cited status to be SUCCESS and each cited name to equal the last segment of the row's tag.",
+    "limit": "The substitute guards the adjudication's PREMISE, that every check here was green at the accepted run. It does not guard the view: a view row is leg and tag, and both are segments of the key, so there is nothing left in a row that could change under an unchanged key. General G32 hardening is MES-135's.",
+    "ratified": "MES-128 comment 29444, Q2 (a) and (b)."
+  },
+  "sections": [
+    {
+      "view": "docs/conformance/buckets/bucket-2b-2026-07-28.json",
+      "closure": "closed",
+      "owner": "MES-128",
+      "population_sentence": "OC check with no ET-CC member match",
+      "rows": [
+        {
+          "member": null,
+          "claim": null,
+          "tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_colon_in_name",
+          "echo": {},
+          "oc_status_at_accepted_run": {
+            "file": "docs/conformance/in-scope-2026-07-28.json",
+            "lines": [
+              3228,
+              3229
+            ],
+            "bytes": "          \"name\": \"ClientRejectsInvalidTool_invalid_colon_in_name\",\n          \"status\": \"SUCCESS\""
+          },
+          "et_test": null,
+          "check": {
+            "requires": "The client never calls the fixture tool invalid_colon_in_name, whose x-mcp-header annotation is invalid: it must exclude the tool from its tool list.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                715434,
+                715660
+              ],
+              "bytes": "for(let[e,t]of Object.entries(Ua)){let n=this.calledTools.has(e);this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`,description:`Client MUST NOT call tool '${e}' with invalid x-mcp-header`,status:n?`FAILURE`:`SUCCESS`",
+              "reading": "For each fixture tool, the check whose id the Ua map gives: FAILURE if the client ever called that tool (calledTools.has), SUCCESS otherwise."
+            },
+            "check_ids": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                703878,
+                704457
+              ],
+              "bytes": ",Ua={invalid_empty_header:`sep-2243-x-mcp-header-not-empty`,invalid_object_header:`sep-2243-x-mcp-header-primitive-only`,invalid_array_header:`sep-2243-x-mcp-header-primitive-only`,invalid_null_header:`sep-2243-x-mcp-header-primitive-only`,invalid_duplicate_same_case:`sep-2243-x-mcp-header-unique`,invalid_duplicate_diff_case:`sep-2243-x-mcp-header-unique`,invalid_space_in_name:`sep-2243-x-mcp-header-charset`,invalid_colon_in_name:`sep-2243-x-mcp-header-charset`,invalid_non_ascii_name:`sep-2243-x-mcp-header-charset`,invalid_control_char_name:`sep-2243-x-mcp-header-charset`}",
+              "reading": "The map from fixture tool to check id that the loop above iterates. invalid_object_header's check is matched (bucket 5b), so it is not in this bucket."
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                718067,
+                718279
+              ],
+              "bytes": "{name:`invalid_colon_in_name`,description:`x-mcp-header MUST NOT contain colon (MUST be rejected)`,inputSchema:{type:`object`,properties:{value:{type:`string`,\"x-mcp-header\":`Region:Primary`}},required:[`value`]}",
+              "reading": "The fixture tool definition the harness serves in tools/list for this class; its x-mcp-header annotation is invalid, and that annotation is what the check is about."
+            }
+          },
+          "covered_elsewhere": {
+            "verdict": "covered_at_the_validation_step",
+            "units": [
+              {
+                "register_key": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_space_in_name / invalid_colon_in_name / invalid_non_ascii_name: not 1*tchar",
+                "label": "ET-ADJ",
+                "test": {
+                  "file": "test/mcp/protocol/header_mirror_test.exs",
+                  "lines": [
+                    87,
+                    87
+                  ],
+                  "bytes": "    test \"invalid_space_in_name / invalid_colon_in_name / invalid_non_ascii_name: not 1*tchar\" do"
+                },
+                "register_section_12_row": {
+                  "file": "docs/conformance/etcc-register.md",
+                  "lines": [
+                    1838,
+                    1838
+                  ],
+                  "bytes": "| `ClientRejectsInvalidTool_invalid_colon_in_name` | the same unit, same loop |"
+                }
+              }
+            ],
+            "why_not_et_cc": "MES-111 ruling (register §12): the unit asserts the error tuple HeaderMirror.validate_schema/1 returns, a value no wire message carries, and MCP.Client.partition_tools/1 lies between that verdict and the wire. A client that ignores the verdict leaves it green. It stays ET-ADJ and untagged; this row does not tag it."
+          },
+          "root_cause": {
+            "statement": "The wire-level exclusion (the client never calls a tool whose x-mcp-header annotation is invalid) is asserted at ET-CC for one fixture class only, invalid_object_header, by W6's helper. This class reaches only the validation step, at ET-ADJ.",
+            "stated_at": {
+              "file": "docs/conformance/etcc-register.md",
+              "lines": [
+                1851,
+                1854
+              ],
+              "bytes": "**That asymmetry is the finding this section leaves open.** The wire-level exclusion is\ntested at ET-CC for **one** fixture class. For the other **nine**, only the validation\nstep is tested, at ET-ADJ. Whether to close that gap is a remediation build decision\nand belongs to **MES-128 (D2b)**. It is not decided here. One candidate remedy is to"
+            }
+          },
+          "if_conformance_fixed": [],
+          "disposition": "extend_to_match",
+          "build_level": "mock_transport",
+          "extend_target": {
+            "file": "test/mcp/client_tool_schemas_test.exs",
+            "lines": [
+              83,
+              83
+            ],
+            "bytes": "    test \"an invalid tool is dropped and the valid ones are kept\" do",
+            "helper": {
+              "file": "test/mcp/client_tool_schemas_test.exs",
+              "lines": [
+                55,
+                63
+              ],
+              "bytes": "  defp invalid_tool(name) do\n    %{\n      \"name\" => name,\n      \"inputSchema\" => %{\n        \"type\" => \"object\",\n        \"properties\" => %{\"a\" => %{\"type\" => \"object\", \"x-mcp-header\" => \"Bad\"}}\n      }\n    }\n  end"
+            },
+            "reading": "W6 already drives list_tools through MockTransport and asserts the invalid tool is dropped, but its invalid_tool/1 helper builds only the invalid_object_header class (an x-mcp-header on a property of type object)."
+          },
+          "remedy": "Drive W6's exclusion over the fixture's invalid_colon_in_name schema too (parametrise invalid_tool/1 over all ten classes), at MockTransport level with no HTTP server.",
+          "build_cost": "Recorded, not built (ruling 3). One helper parametrised over the fixture schemas and one loop in W6; no new infrastructure. It would add ET-CC members the crosswalk can match, and it moves the unit population.",
+          "rationale": "The check is green at the accepted run, so this is a coverage gap, not a behaviour gap. An ET-CC unit already drives the seam and sends the stimulus for one class; extending its fixture set is the cheapest route to an edge."
+        },
+        {
+          "member": null,
+          "claim": null,
+          "tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_control_char_name",
+          "echo": {},
+          "oc_status_at_accepted_run": {
+            "file": "docs/conformance/in-scope-2026-07-28.json",
+            "lines": [
+              3262,
+              3263
+            ],
+            "bytes": "          \"name\": \"ClientRejectsInvalidTool_invalid_control_char_name\",\n          \"status\": \"SUCCESS\""
+          },
+          "et_test": null,
+          "check": {
+            "requires": "The client never calls the fixture tool invalid_control_char_name, whose x-mcp-header annotation is invalid: it must exclude the tool from its tool list.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                715434,
+                715660
+              ],
+              "bytes": "for(let[e,t]of Object.entries(Ua)){let n=this.calledTools.has(e);this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`,description:`Client MUST NOT call tool '${e}' with invalid x-mcp-header`,status:n?`FAILURE`:`SUCCESS`",
+              "reading": "For each fixture tool, the check whose id the Ua map gives: FAILURE if the client ever called that tool (calledTools.has), SUCCESS otherwise."
+            },
+            "check_ids": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                703878,
+                704457
+              ],
+              "bytes": ",Ua={invalid_empty_header:`sep-2243-x-mcp-header-not-empty`,invalid_object_header:`sep-2243-x-mcp-header-primitive-only`,invalid_array_header:`sep-2243-x-mcp-header-primitive-only`,invalid_null_header:`sep-2243-x-mcp-header-primitive-only`,invalid_duplicate_same_case:`sep-2243-x-mcp-header-unique`,invalid_duplicate_diff_case:`sep-2243-x-mcp-header-unique`,invalid_space_in_name:`sep-2243-x-mcp-header-charset`,invalid_colon_in_name:`sep-2243-x-mcp-header-charset`,invalid_non_ascii_name:`sep-2243-x-mcp-header-charset`,invalid_control_char_name:`sep-2243-x-mcp-header-charset`}",
+              "reading": "The map from fixture tool to check id that the loop above iterates. invalid_object_header's check is matched (bucket 5b), so it is not in this bucket."
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                718496,
+                718714
+              ],
+              "bytes": "{name:`invalid_control_char_name`,description:`x-mcp-header MUST NOT contain control chars (MUST be rejected)`,inputSchema:{type:`object`,properties:{value:{type:`string`,\"x-mcp-header\":`Region\t1`}},required:[`value`]}",
+              "reading": "The fixture tool definition the harness serves in tools/list for this class; its x-mcp-header annotation is invalid, and that annotation is what the check is about."
+            }
+          },
+          "covered_elsewhere": {
+            "verdict": "covered_at_the_validation_step",
+            "units": [
+              {
+                "register_key": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_control_char_name: a control character is named as such, not as a grammar miss",
+                "label": "ET-ADJ",
+                "test": {
+                  "file": "test/mcp/protocol/header_mirror_test.exs",
+                  "lines": [
+                    96,
+                    96
+                  ],
+                  "bytes": "    test \"invalid_control_char_name: a control character is named as such, not as a grammar miss\" do"
+                },
+                "register_section_12_row": {
+                  "file": "docs/conformance/etcc-register.md",
+                  "lines": [
+                    1840,
+                    1840
+                  ],
+                  "bytes": "| `ClientRejectsInvalidTool_invalid_control_char_name` | `MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_control_char_name: a control character is named as such, not as a grammar miss` |"
+                }
+              }
+            ],
+            "why_not_et_cc": "MES-111 ruling (register §12): the unit asserts the error tuple HeaderMirror.validate_schema/1 returns, a value no wire message carries, and MCP.Client.partition_tools/1 lies between that verdict and the wire. A client that ignores the verdict leaves it green. It stays ET-ADJ and untagged; this row does not tag it."
+          },
+          "root_cause": {
+            "statement": "The wire-level exclusion (the client never calls a tool whose x-mcp-header annotation is invalid) is asserted at ET-CC for one fixture class only, invalid_object_header, by W6's helper. This class reaches only the validation step, at ET-ADJ.",
+            "stated_at": {
+              "file": "docs/conformance/etcc-register.md",
+              "lines": [
+                1851,
+                1854
+              ],
+              "bytes": "**That asymmetry is the finding this section leaves open.** The wire-level exclusion is\ntested at ET-CC for **one** fixture class. For the other **nine**, only the validation\nstep is tested, at ET-ADJ. Whether to close that gap is a remediation build decision\nand belongs to **MES-128 (D2b)**. It is not decided here. One candidate remedy is to"
+            }
+          },
+          "if_conformance_fixed": [],
+          "disposition": "extend_to_match",
+          "build_level": "mock_transport",
+          "extend_target": {
+            "file": "test/mcp/client_tool_schemas_test.exs",
+            "lines": [
+              83,
+              83
+            ],
+            "bytes": "    test \"an invalid tool is dropped and the valid ones are kept\" do",
+            "helper": {
+              "file": "test/mcp/client_tool_schemas_test.exs",
+              "lines": [
+                55,
+                63
+              ],
+              "bytes": "  defp invalid_tool(name) do\n    %{\n      \"name\" => name,\n      \"inputSchema\" => %{\n        \"type\" => \"object\",\n        \"properties\" => %{\"a\" => %{\"type\" => \"object\", \"x-mcp-header\" => \"Bad\"}}\n      }\n    }\n  end"
+            },
+            "reading": "W6 already drives list_tools through MockTransport and asserts the invalid tool is dropped, but its invalid_tool/1 helper builds only the invalid_object_header class (an x-mcp-header on a property of type object)."
+          },
+          "remedy": "Drive W6's exclusion over the fixture's invalid_control_char_name schema too (parametrise invalid_tool/1 over all ten classes), at MockTransport level with no HTTP server.",
+          "build_cost": "Recorded, not built (ruling 3). One helper parametrised over the fixture schemas and one loop in W6; no new infrastructure. It would add ET-CC members the crosswalk can match, and it moves the unit population.",
+          "rationale": "The check is green at the accepted run, so this is a coverage gap, not a behaviour gap. An ET-CC unit already drives the seam and sends the stimulus for one class; extending its fixture set is the cheapest route to an edge."
+        },
+        {
+          "member": null,
+          "claim": null,
+          "tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_non_ascii_name",
+          "echo": {},
+          "oc_status_at_accepted_run": {
+            "file": "docs/conformance/in-scope-2026-07-28.json",
+            "lines": [
+              3245,
+              3246
+            ],
+            "bytes": "          \"name\": \"ClientRejectsInvalidTool_invalid_non_ascii_name\",\n          \"status\": \"SUCCESS\""
+          },
+          "et_test": null,
+          "check": {
+            "requires": "The client never calls the fixture tool invalid_non_ascii_name, whose x-mcp-header annotation is invalid: it must exclude the tool from its tool list.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                715434,
+                715660
+              ],
+              "bytes": "for(let[e,t]of Object.entries(Ua)){let n=this.calledTools.has(e);this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`,description:`Client MUST NOT call tool '${e}' with invalid x-mcp-header`,status:n?`FAILURE`:`SUCCESS`",
+              "reading": "For each fixture tool, the check whose id the Ua map gives: FAILURE if the client ever called that tool (calledTools.has), SUCCESS otherwise."
+            },
+            "check_ids": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                703878,
+                704457
+              ],
+              "bytes": ",Ua={invalid_empty_header:`sep-2243-x-mcp-header-not-empty`,invalid_object_header:`sep-2243-x-mcp-header-primitive-only`,invalid_array_header:`sep-2243-x-mcp-header-primitive-only`,invalid_null_header:`sep-2243-x-mcp-header-primitive-only`,invalid_duplicate_same_case:`sep-2243-x-mcp-header-unique`,invalid_duplicate_diff_case:`sep-2243-x-mcp-header-unique`,invalid_space_in_name:`sep-2243-x-mcp-header-charset`,invalid_colon_in_name:`sep-2243-x-mcp-header-charset`,invalid_non_ascii_name:`sep-2243-x-mcp-header-charset`,invalid_control_char_name:`sep-2243-x-mcp-header-charset`}",
+              "reading": "The map from fixture tool to check id that the loop above iterates. invalid_object_header's check is matched (bucket 5b), so it is not in this bucket."
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                718281,
+                718494
+              ],
+              "bytes": "{name:`invalid_non_ascii_name`,description:`x-mcp-header MUST contain only ASCII chars (MUST be rejected)`,inputSchema:{type:`object`,properties:{value:{type:`string`,\"x-mcp-header\":`Région`}},required:[`value`]}",
+              "reading": "The fixture tool definition the harness serves in tools/list for this class; its x-mcp-header annotation is invalid, and that annotation is what the check is about."
+            }
+          },
+          "covered_elsewhere": {
+            "verdict": "covered_at_the_validation_step",
+            "units": [
+              {
+                "register_key": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_space_in_name / invalid_colon_in_name / invalid_non_ascii_name: not 1*tchar",
+                "label": "ET-ADJ",
+                "test": {
+                  "file": "test/mcp/protocol/header_mirror_test.exs",
+                  "lines": [
+                    87,
+                    87
+                  ],
+                  "bytes": "    test \"invalid_space_in_name / invalid_colon_in_name / invalid_non_ascii_name: not 1*tchar\" do"
+                },
+                "register_section_12_row": {
+                  "file": "docs/conformance/etcc-register.md",
+                  "lines": [
+                    1839,
+                    1839
+                  ],
+                  "bytes": "| `ClientRejectsInvalidTool_invalid_non_ascii_name` | the same unit, same loop |"
+                }
+              }
+            ],
+            "why_not_et_cc": "MES-111 ruling (register §12): the unit asserts the error tuple HeaderMirror.validate_schema/1 returns, a value no wire message carries, and MCP.Client.partition_tools/1 lies between that verdict and the wire. A client that ignores the verdict leaves it green. It stays ET-ADJ and untagged; this row does not tag it."
+          },
+          "root_cause": {
+            "statement": "The wire-level exclusion (the client never calls a tool whose x-mcp-header annotation is invalid) is asserted at ET-CC for one fixture class only, invalid_object_header, by W6's helper. This class reaches only the validation step, at ET-ADJ.",
+            "stated_at": {
+              "file": "docs/conformance/etcc-register.md",
+              "lines": [
+                1851,
+                1854
+              ],
+              "bytes": "**That asymmetry is the finding this section leaves open.** The wire-level exclusion is\ntested at ET-CC for **one** fixture class. For the other **nine**, only the validation\nstep is tested, at ET-ADJ. Whether to close that gap is a remediation build decision\nand belongs to **MES-128 (D2b)**. It is not decided here. One candidate remedy is to"
+            }
+          },
+          "if_conformance_fixed": [],
+          "disposition": "extend_to_match",
+          "build_level": "mock_transport",
+          "extend_target": {
+            "file": "test/mcp/client_tool_schemas_test.exs",
+            "lines": [
+              83,
+              83
+            ],
+            "bytes": "    test \"an invalid tool is dropped and the valid ones are kept\" do",
+            "helper": {
+              "file": "test/mcp/client_tool_schemas_test.exs",
+              "lines": [
+                55,
+                63
+              ],
+              "bytes": "  defp invalid_tool(name) do\n    %{\n      \"name\" => name,\n      \"inputSchema\" => %{\n        \"type\" => \"object\",\n        \"properties\" => %{\"a\" => %{\"type\" => \"object\", \"x-mcp-header\" => \"Bad\"}}\n      }\n    }\n  end"
+            },
+            "reading": "W6 already drives list_tools through MockTransport and asserts the invalid tool is dropped, but its invalid_tool/1 helper builds only the invalid_object_header class (an x-mcp-header on a property of type object)."
+          },
+          "remedy": "Drive W6's exclusion over the fixture's invalid_non_ascii_name schema too (parametrise invalid_tool/1 over all ten classes), at MockTransport level with no HTTP server.",
+          "build_cost": "Recorded, not built (ruling 3). One helper parametrised over the fixture schemas and one loop in W6; no new infrastructure. It would add ET-CC members the crosswalk can match, and it moves the unit population.",
+          "rationale": "The check is green at the accepted run, so this is a coverage gap, not a behaviour gap. An ET-CC unit already drives the seam and sends the stimulus for one class; extending its fixture set is the cheapest route to an edge."
+        },
+        {
+          "member": null,
+          "claim": null,
+          "tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_space_in_name",
+          "echo": {},
+          "oc_status_at_accepted_run": {
+            "file": "docs/conformance/in-scope-2026-07-28.json",
+            "lines": [
+              3211,
+              3212
+            ],
+            "bytes": "          \"name\": \"ClientRejectsInvalidTool_invalid_space_in_name\",\n          \"status\": \"SUCCESS\""
+          },
+          "et_test": null,
+          "check": {
+            "requires": "The client never calls the fixture tool invalid_space_in_name, whose x-mcp-header annotation is invalid: it must exclude the tool from its tool list.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                715434,
+                715660
+              ],
+              "bytes": "for(let[e,t]of Object.entries(Ua)){let n=this.calledTools.has(e);this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`,description:`Client MUST NOT call tool '${e}' with invalid x-mcp-header`,status:n?`FAILURE`:`SUCCESS`",
+              "reading": "For each fixture tool, the check whose id the Ua map gives: FAILURE if the client ever called that tool (calledTools.has), SUCCESS otherwise."
+            },
+            "check_ids": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                703878,
+                704457
+              ],
+              "bytes": ",Ua={invalid_empty_header:`sep-2243-x-mcp-header-not-empty`,invalid_object_header:`sep-2243-x-mcp-header-primitive-only`,invalid_array_header:`sep-2243-x-mcp-header-primitive-only`,invalid_null_header:`sep-2243-x-mcp-header-primitive-only`,invalid_duplicate_same_case:`sep-2243-x-mcp-header-unique`,invalid_duplicate_diff_case:`sep-2243-x-mcp-header-unique`,invalid_space_in_name:`sep-2243-x-mcp-header-charset`,invalid_colon_in_name:`sep-2243-x-mcp-header-charset`,invalid_non_ascii_name:`sep-2243-x-mcp-header-charset`,invalid_control_char_name:`sep-2243-x-mcp-header-charset`}",
+              "reading": "The map from fixture tool to check id that the loop above iterates. invalid_object_header's check is matched (bucket 5b), so it is not in this bucket."
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                717858,
+                718065
+              ],
+              "bytes": "{name:`invalid_space_in_name`,description:`x-mcp-header MUST NOT contain space (MUST be rejected)`,inputSchema:{type:`object`,properties:{value:{type:`string`,\"x-mcp-header\":`My Region`}},required:[`value`]}",
+              "reading": "The fixture tool definition the harness serves in tools/list for this class; its x-mcp-header annotation is invalid, and that annotation is what the check is about."
+            }
+          },
+          "covered_elsewhere": {
+            "verdict": "covered_at_the_validation_step",
+            "units": [
+              {
+                "register_key": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_space_in_name / invalid_colon_in_name / invalid_non_ascii_name: not 1*tchar",
+                "label": "ET-ADJ",
+                "test": {
+                  "file": "test/mcp/protocol/header_mirror_test.exs",
+                  "lines": [
+                    87,
+                    87
+                  ],
+                  "bytes": "    test \"invalid_space_in_name / invalid_colon_in_name / invalid_non_ascii_name: not 1*tchar\" do"
+                },
+                "register_section_12_row": {
+                  "file": "docs/conformance/etcc-register.md",
+                  "lines": [
+                    1837,
+                    1837
+                  ],
+                  "bytes": "| `ClientRejectsInvalidTool_invalid_space_in_name` | `MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_space_in_name / invalid_colon_in_name / invalid_non_ascii_name: not 1*tchar` |"
+                }
+              }
+            ],
+            "why_not_et_cc": "MES-111 ruling (register §12): the unit asserts the error tuple HeaderMirror.validate_schema/1 returns, a value no wire message carries, and MCP.Client.partition_tools/1 lies between that verdict and the wire. A client that ignores the verdict leaves it green. It stays ET-ADJ and untagged; this row does not tag it."
+          },
+          "root_cause": {
+            "statement": "The wire-level exclusion (the client never calls a tool whose x-mcp-header annotation is invalid) is asserted at ET-CC for one fixture class only, invalid_object_header, by W6's helper. This class reaches only the validation step, at ET-ADJ.",
+            "stated_at": {
+              "file": "docs/conformance/etcc-register.md",
+              "lines": [
+                1851,
+                1854
+              ],
+              "bytes": "**That asymmetry is the finding this section leaves open.** The wire-level exclusion is\ntested at ET-CC for **one** fixture class. For the other **nine**, only the validation\nstep is tested, at ET-ADJ. Whether to close that gap is a remediation build decision\nand belongs to **MES-128 (D2b)**. It is not decided here. One candidate remedy is to"
+            }
+          },
+          "if_conformance_fixed": [],
+          "disposition": "extend_to_match",
+          "build_level": "mock_transport",
+          "extend_target": {
+            "file": "test/mcp/client_tool_schemas_test.exs",
+            "lines": [
+              83,
+              83
+            ],
+            "bytes": "    test \"an invalid tool is dropped and the valid ones are kept\" do",
+            "helper": {
+              "file": "test/mcp/client_tool_schemas_test.exs",
+              "lines": [
+                55,
+                63
+              ],
+              "bytes": "  defp invalid_tool(name) do\n    %{\n      \"name\" => name,\n      \"inputSchema\" => %{\n        \"type\" => \"object\",\n        \"properties\" => %{\"a\" => %{\"type\" => \"object\", \"x-mcp-header\" => \"Bad\"}}\n      }\n    }\n  end"
+            },
+            "reading": "W6 already drives list_tools through MockTransport and asserts the invalid tool is dropped, but its invalid_tool/1 helper builds only the invalid_object_header class (an x-mcp-header on a property of type object)."
+          },
+          "remedy": "Drive W6's exclusion over the fixture's invalid_space_in_name schema too (parametrise invalid_tool/1 over all ten classes), at MockTransport level with no HTTP server.",
+          "build_cost": "Recorded, not built (ruling 3). One helper parametrised over the fixture schemas and one loop in W6; no new infrastructure. It would add ET-CC members the crosswalk can match, and it moves the unit population.",
+          "rationale": "The check is green at the accepted run, so this is a coverage gap, not a behaviour gap. An ET-CC unit already drives the seam and sends the stimulus for one class; extending its fixture set is the cheapest route to an edge."
+        },
+        {
+          "member": null,
+          "claim": null,
+          "tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-not-empty/ClientRejectsInvalidTool_invalid_empty_header",
+          "echo": {},
+          "oc_status_at_accepted_run": {
+            "file": "docs/conformance/in-scope-2026-07-28.json",
+            "lines": [
+              3109,
+              3110
+            ],
+            "bytes": "          \"name\": \"ClientRejectsInvalidTool_invalid_empty_header\",\n          \"status\": \"SUCCESS\""
+          },
+          "et_test": null,
+          "check": {
+            "requires": "The client never calls the fixture tool invalid_empty_header, whose x-mcp-header annotation is invalid: it must exclude the tool from its tool list.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                715434,
+                715660
+              ],
+              "bytes": "for(let[e,t]of Object.entries(Ua)){let n=this.calledTools.has(e);this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`,description:`Client MUST NOT call tool '${e}' with invalid x-mcp-header`,status:n?`FAILURE`:`SUCCESS`",
+              "reading": "For each fixture tool, the check whose id the Ua map gives: FAILURE if the client ever called that tool (calledTools.has), SUCCESS otherwise."
+            },
+            "check_ids": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                703878,
+                704457
+              ],
+              "bytes": ",Ua={invalid_empty_header:`sep-2243-x-mcp-header-not-empty`,invalid_object_header:`sep-2243-x-mcp-header-primitive-only`,invalid_array_header:`sep-2243-x-mcp-header-primitive-only`,invalid_null_header:`sep-2243-x-mcp-header-primitive-only`,invalid_duplicate_same_case:`sep-2243-x-mcp-header-unique`,invalid_duplicate_diff_case:`sep-2243-x-mcp-header-unique`,invalid_space_in_name:`sep-2243-x-mcp-header-charset`,invalid_colon_in_name:`sep-2243-x-mcp-header-charset`,invalid_non_ascii_name:`sep-2243-x-mcp-header-charset`,invalid_control_char_name:`sep-2243-x-mcp-header-charset`}",
+              "reading": "The map from fixture tool to check id that the loop above iterates. invalid_object_header's check is matched (bucket 5b), so it is not in this bucket."
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                716425,
+                716627
+              ],
+              "bytes": "{name:`invalid_empty_header`,description:`x-mcp-header MUST NOT be empty (MUST be rejected by client)`,inputSchema:{type:`object`,properties:{value:{type:`string`,\"x-mcp-header\":``}},required:[`value`]}",
+              "reading": "The fixture tool definition the harness serves in tools/list for this class; its x-mcp-header annotation is invalid, and that annotation is what the check is about."
+            }
+          },
+          "covered_elsewhere": {
+            "verdict": "covered_at_the_validation_step",
+            "units": [
+              {
+                "register_key": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_empty_header: an empty value is rejected",
+                "label": "ET-ADJ",
+                "test": {
+                  "file": "test/mcp/protocol/header_mirror_test.exs",
+                  "lines": [
+                    43,
+                    43
+                  ],
+                  "bytes": "    test \"invalid_empty_header: an empty value is rejected\" do"
+                },
+                "register_section_12_row": {
+                  "file": "docs/conformance/etcc-register.md",
+                  "lines": [
+                    1832,
+                    1832
+                  ],
+                  "bytes": "| `ClientRejectsInvalidTool_invalid_empty_header` | `MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_empty_header: an empty value is rejected` |"
+                }
+              }
+            ],
+            "why_not_et_cc": "MES-111 ruling (register §12): the unit asserts the error tuple HeaderMirror.validate_schema/1 returns, a value no wire message carries, and MCP.Client.partition_tools/1 lies between that verdict and the wire. A client that ignores the verdict leaves it green. It stays ET-ADJ and untagged; this row does not tag it."
+          },
+          "root_cause": {
+            "statement": "The wire-level exclusion (the client never calls a tool whose x-mcp-header annotation is invalid) is asserted at ET-CC for one fixture class only, invalid_object_header, by W6's helper. This class reaches only the validation step, at ET-ADJ.",
+            "stated_at": {
+              "file": "docs/conformance/etcc-register.md",
+              "lines": [
+                1851,
+                1854
+              ],
+              "bytes": "**That asymmetry is the finding this section leaves open.** The wire-level exclusion is\ntested at ET-CC for **one** fixture class. For the other **nine**, only the validation\nstep is tested, at ET-ADJ. Whether to close that gap is a remediation build decision\nand belongs to **MES-128 (D2b)**. It is not decided here. One candidate remedy is to"
+            }
+          },
+          "if_conformance_fixed": [],
+          "disposition": "extend_to_match",
+          "build_level": "mock_transport",
+          "extend_target": {
+            "file": "test/mcp/client_tool_schemas_test.exs",
+            "lines": [
+              83,
+              83
+            ],
+            "bytes": "    test \"an invalid tool is dropped and the valid ones are kept\" do",
+            "helper": {
+              "file": "test/mcp/client_tool_schemas_test.exs",
+              "lines": [
+                55,
+                63
+              ],
+              "bytes": "  defp invalid_tool(name) do\n    %{\n      \"name\" => name,\n      \"inputSchema\" => %{\n        \"type\" => \"object\",\n        \"properties\" => %{\"a\" => %{\"type\" => \"object\", \"x-mcp-header\" => \"Bad\"}}\n      }\n    }\n  end"
+            },
+            "reading": "W6 already drives list_tools through MockTransport and asserts the invalid tool is dropped, but its invalid_tool/1 helper builds only the invalid_object_header class (an x-mcp-header on a property of type object)."
+          },
+          "remedy": "Drive W6's exclusion over the fixture's invalid_empty_header schema too (parametrise invalid_tool/1 over all ten classes), at MockTransport level with no HTTP server.",
+          "build_cost": "Recorded, not built (ruling 3). One helper parametrised over the fixture schemas and one loop in W6; no new infrastructure. It would add ET-CC members the crosswalk can match, and it moves the unit population.",
+          "rationale": "The check is green at the accepted run, so this is a coverage gap, not a behaviour gap. An ET-CC unit already drives the seam and sends the stimulus for one class; extending its fixture set is the cheapest route to an edge."
+        },
+        {
+          "member": null,
+          "claim": null,
+          "tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_array_header",
+          "echo": {},
+          "oc_status_at_accepted_run": {
+            "file": "docs/conformance/in-scope-2026-07-28.json",
+            "lines": [
+              3143,
+              3144
+            ],
+            "bytes": "          \"name\": \"ClientRejectsInvalidTool_invalid_array_header\",\n          \"status\": \"SUCCESS\""
+          },
+          "et_test": null,
+          "check": {
+            "requires": "The client never calls the fixture tool invalid_array_header, whose x-mcp-header annotation is invalid: it must exclude the tool from its tool list.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                715434,
+                715660
+              ],
+              "bytes": "for(let[e,t]of Object.entries(Ua)){let n=this.calledTools.has(e);this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`,description:`Client MUST NOT call tool '${e}' with invalid x-mcp-header`,status:n?`FAILURE`:`SUCCESS`",
+              "reading": "For each fixture tool, the check whose id the Ua map gives: FAILURE if the client ever called that tool (calledTools.has), SUCCESS otherwise."
+            },
+            "check_ids": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                703878,
+                704457
+              ],
+              "bytes": ",Ua={invalid_empty_header:`sep-2243-x-mcp-header-not-empty`,invalid_object_header:`sep-2243-x-mcp-header-primitive-only`,invalid_array_header:`sep-2243-x-mcp-header-primitive-only`,invalid_null_header:`sep-2243-x-mcp-header-primitive-only`,invalid_duplicate_same_case:`sep-2243-x-mcp-header-unique`,invalid_duplicate_diff_case:`sep-2243-x-mcp-header-unique`,invalid_space_in_name:`sep-2243-x-mcp-header-charset`,invalid_colon_in_name:`sep-2243-x-mcp-header-charset`,invalid_non_ascii_name:`sep-2243-x-mcp-header-charset`,invalid_control_char_name:`sep-2243-x-mcp-header-charset`}",
+              "reading": "The map from fixture tool to check id that the loop above iterates. invalid_object_header's check is matched (bucket 5b), so it is not in this bucket."
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                716840,
+                717072
+              ],
+              "bytes": "{name:`invalid_array_header`,description:`x-mcp-header MUST only be on primitive types (MUST be rejected)`,inputSchema:{type:`object`,properties:{items:{type:`array`,items:{type:`string`},\"x-mcp-header\":`Items`}},required:[`items`]}",
+              "reading": "The fixture tool definition the harness serves in tools/list for this class; its x-mcp-header annotation is invalid, and that annotation is what the check is about."
+            }
+          },
+          "covered_elsewhere": {
+            "verdict": "covered_at_the_validation_step",
+            "units": [
+              {
+                "register_key": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_object_header / invalid_array_header / invalid_null_header: non-primitive types",
+                "label": "ET-ADJ",
+                "test": {
+                  "file": "test/mcp/protocol/header_mirror_test.exs",
+                  "lines": [
+                    52,
+                    52
+                  ],
+                  "bytes": "    test \"invalid_object_header / invalid_array_header / invalid_null_header: non-primitive types\" do"
+                },
+                "register_section_12_row": {
+                  "file": "docs/conformance/etcc-register.md",
+                  "lines": [
+                    1833,
+                    1833
+                  ],
+                  "bytes": "| `ClientRejectsInvalidTool_invalid_array_header` | `MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_object_header / invalid_array_header / invalid_null_header: non-primitive types` |"
+                }
+              }
+            ],
+            "why_not_et_cc": "MES-111 ruling (register §12): the unit asserts the error tuple HeaderMirror.validate_schema/1 returns, a value no wire message carries, and MCP.Client.partition_tools/1 lies between that verdict and the wire. A client that ignores the verdict leaves it green. It stays ET-ADJ and untagged; this row does not tag it."
+          },
+          "root_cause": {
+            "statement": "The wire-level exclusion (the client never calls a tool whose x-mcp-header annotation is invalid) is asserted at ET-CC for one fixture class only, invalid_object_header, by W6's helper. This class reaches only the validation step, at ET-ADJ.",
+            "stated_at": {
+              "file": "docs/conformance/etcc-register.md",
+              "lines": [
+                1851,
+                1854
+              ],
+              "bytes": "**That asymmetry is the finding this section leaves open.** The wire-level exclusion is\ntested at ET-CC for **one** fixture class. For the other **nine**, only the validation\nstep is tested, at ET-ADJ. Whether to close that gap is a remediation build decision\nand belongs to **MES-128 (D2b)**. It is not decided here. One candidate remedy is to"
+            }
+          },
+          "if_conformance_fixed": [],
+          "disposition": "extend_to_match",
+          "build_level": "mock_transport",
+          "extend_target": {
+            "file": "test/mcp/client_tool_schemas_test.exs",
+            "lines": [
+              83,
+              83
+            ],
+            "bytes": "    test \"an invalid tool is dropped and the valid ones are kept\" do",
+            "helper": {
+              "file": "test/mcp/client_tool_schemas_test.exs",
+              "lines": [
+                55,
+                63
+              ],
+              "bytes": "  defp invalid_tool(name) do\n    %{\n      \"name\" => name,\n      \"inputSchema\" => %{\n        \"type\" => \"object\",\n        \"properties\" => %{\"a\" => %{\"type\" => \"object\", \"x-mcp-header\" => \"Bad\"}}\n      }\n    }\n  end"
+            },
+            "reading": "W6 already drives list_tools through MockTransport and asserts the invalid tool is dropped, but its invalid_tool/1 helper builds only the invalid_object_header class (an x-mcp-header on a property of type object)."
+          },
+          "remedy": "Drive W6's exclusion over the fixture's invalid_array_header schema too (parametrise invalid_tool/1 over all ten classes), at MockTransport level with no HTTP server.",
+          "build_cost": "Recorded, not built (ruling 3). One helper parametrised over the fixture schemas and one loop in W6; no new infrastructure. It would add ET-CC members the crosswalk can match, and it moves the unit population.",
+          "rationale": "The check is green at the accepted run, so this is a coverage gap, not a behaviour gap. An ET-CC unit already drives the seam and sends the stimulus for one class; extending its fixture set is the cheapest route to an edge."
+        },
+        {
+          "member": null,
+          "claim": null,
+          "tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_null_header",
+          "echo": {},
+          "oc_status_at_accepted_run": {
+            "file": "docs/conformance/in-scope-2026-07-28.json",
+            "lines": [
+              3160,
+              3161
+            ],
+            "bytes": "          \"name\": \"ClientRejectsInvalidTool_invalid_null_header\",\n          \"status\": \"SUCCESS\""
+          },
+          "et_test": null,
+          "check": {
+            "requires": "The client never calls the fixture tool invalid_null_header, whose x-mcp-header annotation is invalid: it must exclude the tool from its tool list.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                715434,
+                715660
+              ],
+              "bytes": "for(let[e,t]of Object.entries(Ua)){let n=this.calledTools.has(e);this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`,description:`Client MUST NOT call tool '${e}' with invalid x-mcp-header`,status:n?`FAILURE`:`SUCCESS`",
+              "reading": "For each fixture tool, the check whose id the Ua map gives: FAILURE if the client ever called that tool (calledTools.has), SUCCESS otherwise."
+            },
+            "check_ids": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                703878,
+                704457
+              ],
+              "bytes": ",Ua={invalid_empty_header:`sep-2243-x-mcp-header-not-empty`,invalid_object_header:`sep-2243-x-mcp-header-primitive-only`,invalid_array_header:`sep-2243-x-mcp-header-primitive-only`,invalid_null_header:`sep-2243-x-mcp-header-primitive-only`,invalid_duplicate_same_case:`sep-2243-x-mcp-header-unique`,invalid_duplicate_diff_case:`sep-2243-x-mcp-header-unique`,invalid_space_in_name:`sep-2243-x-mcp-header-charset`,invalid_colon_in_name:`sep-2243-x-mcp-header-charset`,invalid_non_ascii_name:`sep-2243-x-mcp-header-charset`,invalid_control_char_name:`sep-2243-x-mcp-header-charset`}",
+              "reading": "The map from fixture tool to check id that the loop above iterates. invalid_object_header's check is matched (bucket 5b), so it is not in this bucket."
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                717074,
+                717276
+              ],
+              "bytes": "{name:`invalid_null_header`,description:`x-mcp-header MUST only be on primitive types (MUST be rejected)`,inputSchema:{type:`object`,properties:{nil:{type:`null`,\"x-mcp-header\":`Nil`}},required:[`nil`]}",
+              "reading": "The fixture tool definition the harness serves in tools/list for this class; its x-mcp-header annotation is invalid, and that annotation is what the check is about."
+            }
+          },
+          "covered_elsewhere": {
+            "verdict": "covered_at_the_validation_step",
+            "units": [
+              {
+                "register_key": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_object_header / invalid_array_header / invalid_null_header: non-primitive types",
+                "label": "ET-ADJ",
+                "test": {
+                  "file": "test/mcp/protocol/header_mirror_test.exs",
+                  "lines": [
+                    52,
+                    52
+                  ],
+                  "bytes": "    test \"invalid_object_header / invalid_array_header / invalid_null_header: non-primitive types\" do"
+                },
+                "register_section_12_row": {
+                  "file": "docs/conformance/etcc-register.md",
+                  "lines": [
+                    1834,
+                    1834
+                  ],
+                  "bytes": "| `ClientRejectsInvalidTool_invalid_null_header` | the same unit, same loop |"
+                }
+              }
+            ],
+            "why_not_et_cc": "MES-111 ruling (register §12): the unit asserts the error tuple HeaderMirror.validate_schema/1 returns, a value no wire message carries, and MCP.Client.partition_tools/1 lies between that verdict and the wire. A client that ignores the verdict leaves it green. It stays ET-ADJ and untagged; this row does not tag it."
+          },
+          "root_cause": {
+            "statement": "The wire-level exclusion (the client never calls a tool whose x-mcp-header annotation is invalid) is asserted at ET-CC for one fixture class only, invalid_object_header, by W6's helper. This class reaches only the validation step, at ET-ADJ.",
+            "stated_at": {
+              "file": "docs/conformance/etcc-register.md",
+              "lines": [
+                1851,
+                1854
+              ],
+              "bytes": "**That asymmetry is the finding this section leaves open.** The wire-level exclusion is\ntested at ET-CC for **one** fixture class. For the other **nine**, only the validation\nstep is tested, at ET-ADJ. Whether to close that gap is a remediation build decision\nand belongs to **MES-128 (D2b)**. It is not decided here. One candidate remedy is to"
+            }
+          },
+          "if_conformance_fixed": [],
+          "disposition": "extend_to_match",
+          "build_level": "mock_transport",
+          "extend_target": {
+            "file": "test/mcp/client_tool_schemas_test.exs",
+            "lines": [
+              83,
+              83
+            ],
+            "bytes": "    test \"an invalid tool is dropped and the valid ones are kept\" do",
+            "helper": {
+              "file": "test/mcp/client_tool_schemas_test.exs",
+              "lines": [
+                55,
+                63
+              ],
+              "bytes": "  defp invalid_tool(name) do\n    %{\n      \"name\" => name,\n      \"inputSchema\" => %{\n        \"type\" => \"object\",\n        \"properties\" => %{\"a\" => %{\"type\" => \"object\", \"x-mcp-header\" => \"Bad\"}}\n      }\n    }\n  end"
+            },
+            "reading": "W6 already drives list_tools through MockTransport and asserts the invalid tool is dropped, but its invalid_tool/1 helper builds only the invalid_object_header class (an x-mcp-header on a property of type object)."
+          },
+          "remedy": "Drive W6's exclusion over the fixture's invalid_null_header schema too (parametrise invalid_tool/1 over all ten classes), at MockTransport level with no HTTP server.",
+          "build_cost": "Recorded, not built (ruling 3). One helper parametrised over the fixture schemas and one loop in W6; no new infrastructure. It would add ET-CC members the crosswalk can match, and it moves the unit population.",
+          "rationale": "The check is green at the accepted run, so this is a coverage gap, not a behaviour gap. An ET-CC unit already drives the seam and sends the stimulus for one class; extending its fixture set is the cheapest route to an edge."
+        },
+        {
+          "member": null,
+          "claim": null,
+          "tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_diff_case",
+          "echo": {},
+          "oc_status_at_accepted_run": {
+            "file": "docs/conformance/in-scope-2026-07-28.json",
+            "lines": [
+              3194,
+              3195
+            ],
+            "bytes": "          \"name\": \"ClientRejectsInvalidTool_invalid_duplicate_diff_case\",\n          \"status\": \"SUCCESS\""
+          },
+          "et_test": null,
+          "check": {
+            "requires": "The client never calls the fixture tool invalid_duplicate_diff_case, whose x-mcp-header annotation is invalid: it must exclude the tool from its tool list.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                715434,
+                715660
+              ],
+              "bytes": "for(let[e,t]of Object.entries(Ua)){let n=this.calledTools.has(e);this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`,description:`Client MUST NOT call tool '${e}' with invalid x-mcp-header`,status:n?`FAILURE`:`SUCCESS`",
+              "reading": "For each fixture tool, the check whose id the Ua map gives: FAILURE if the client ever called that tool (calledTools.has), SUCCESS otherwise."
+            },
+            "check_ids": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                703878,
+                704457
+              ],
+              "bytes": ",Ua={invalid_empty_header:`sep-2243-x-mcp-header-not-empty`,invalid_object_header:`sep-2243-x-mcp-header-primitive-only`,invalid_array_header:`sep-2243-x-mcp-header-primitive-only`,invalid_null_header:`sep-2243-x-mcp-header-primitive-only`,invalid_duplicate_same_case:`sep-2243-x-mcp-header-unique`,invalid_duplicate_diff_case:`sep-2243-x-mcp-header-unique`,invalid_space_in_name:`sep-2243-x-mcp-header-charset`,invalid_colon_in_name:`sep-2243-x-mcp-header-charset`,invalid_non_ascii_name:`sep-2243-x-mcp-header-charset`,invalid_control_char_name:`sep-2243-x-mcp-header-charset`}",
+              "reading": "The map from fixture tool to check id that the loop above iterates. invalid_object_header's check is matched (bucket 5b), so it is not in this bucket."
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                717562,
+                717856
+              ],
+              "bytes": "{name:`invalid_duplicate_diff_case`,description:`Duplicate case-insensitive x-mcp-header \"MyField\"/\"myfield\" (MUST be rejected)`,inputSchema:{type:`object`,properties:{field1:{type:`string`,\"x-mcp-header\":`MyField`},field2:{type:`string`,\"x-mcp-header\":`myfield`}},required:[`field1`,`field2`]}",
+              "reading": "The fixture tool definition the harness serves in tools/list for this class; its x-mcp-header annotation is invalid, and that annotation is what the check is about."
+            }
+          },
+          "covered_elsewhere": {
+            "verdict": "covered_at_the_validation_step",
+            "units": [
+              {
+                "register_key": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_duplicate_diff_case: values differing only in case are rejected",
+                "label": "ET-ADJ",
+                "test": {
+                  "file": "test/mcp/protocol/header_mirror_test.exs",
+                  "lines": [
+                    74,
+                    74
+                  ],
+                  "bytes": "    test \"invalid_duplicate_diff_case: values differing only in case are rejected\" do"
+                },
+                "register_section_12_row": {
+                  "file": "docs/conformance/etcc-register.md",
+                  "lines": [
+                    1836,
+                    1836
+                  ],
+                  "bytes": "| `ClientRejectsInvalidTool_invalid_duplicate_diff_case` | `MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_duplicate_diff_case: values differing only in case are rejected` |"
+                }
+              }
+            ],
+            "why_not_et_cc": "MES-111 ruling (register §12): the unit asserts the error tuple HeaderMirror.validate_schema/1 returns, a value no wire message carries, and MCP.Client.partition_tools/1 lies between that verdict and the wire. A client that ignores the verdict leaves it green. It stays ET-ADJ and untagged; this row does not tag it."
+          },
+          "root_cause": {
+            "statement": "The wire-level exclusion (the client never calls a tool whose x-mcp-header annotation is invalid) is asserted at ET-CC for one fixture class only, invalid_object_header, by W6's helper. This class reaches only the validation step, at ET-ADJ.",
+            "stated_at": {
+              "file": "docs/conformance/etcc-register.md",
+              "lines": [
+                1851,
+                1854
+              ],
+              "bytes": "**That asymmetry is the finding this section leaves open.** The wire-level exclusion is\ntested at ET-CC for **one** fixture class. For the other **nine**, only the validation\nstep is tested, at ET-ADJ. Whether to close that gap is a remediation build decision\nand belongs to **MES-128 (D2b)**. It is not decided here. One candidate remedy is to"
+            }
+          },
+          "if_conformance_fixed": [],
+          "disposition": "extend_to_match",
+          "build_level": "mock_transport",
+          "extend_target": {
+            "file": "test/mcp/client_tool_schemas_test.exs",
+            "lines": [
+              83,
+              83
+            ],
+            "bytes": "    test \"an invalid tool is dropped and the valid ones are kept\" do",
+            "helper": {
+              "file": "test/mcp/client_tool_schemas_test.exs",
+              "lines": [
+                55,
+                63
+              ],
+              "bytes": "  defp invalid_tool(name) do\n    %{\n      \"name\" => name,\n      \"inputSchema\" => %{\n        \"type\" => \"object\",\n        \"properties\" => %{\"a\" => %{\"type\" => \"object\", \"x-mcp-header\" => \"Bad\"}}\n      }\n    }\n  end"
+            },
+            "reading": "W6 already drives list_tools through MockTransport and asserts the invalid tool is dropped, but its invalid_tool/1 helper builds only the invalid_object_header class (an x-mcp-header on a property of type object)."
+          },
+          "remedy": "Drive W6's exclusion over the fixture's invalid_duplicate_diff_case schema too (parametrise invalid_tool/1 over all ten classes), at MockTransport level with no HTTP server.",
+          "build_cost": "Recorded, not built (ruling 3). One helper parametrised over the fixture schemas and one loop in W6; no new infrastructure. It would add ET-CC members the crosswalk can match, and it moves the unit population.",
+          "rationale": "The check is green at the accepted run, so this is a coverage gap, not a behaviour gap. An ET-CC unit already drives the seam and sends the stimulus for one class; extending its fixture set is the cheapest route to an edge."
+        },
+        {
+          "member": null,
+          "claim": null,
+          "tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_same_case",
+          "echo": {},
+          "oc_status_at_accepted_run": {
+            "file": "docs/conformance/in-scope-2026-07-28.json",
+            "lines": [
+              3177,
+              3178
+            ],
+            "bytes": "          \"name\": \"ClientRejectsInvalidTool_invalid_duplicate_same_case\",\n          \"status\": \"SUCCESS\""
+          },
+          "et_test": null,
+          "check": {
+            "requires": "The client never calls the fixture tool invalid_duplicate_same_case, whose x-mcp-header annotation is invalid: it must exclude the tool from its tool list.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                715434,
+                715660
+              ],
+              "bytes": "for(let[e,t]of Object.entries(Ua)){let n=this.calledTools.has(e);this.checks.push({id:t,name:`ClientRejectsInvalidTool_${e}`,description:`Client MUST NOT call tool '${e}' with invalid x-mcp-header`,status:n?`FAILURE`:`SUCCESS`",
+              "reading": "For each fixture tool, the check whose id the Ua map gives: FAILURE if the client ever called that tool (calledTools.has), SUCCESS otherwise."
+            },
+            "check_ids": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                703878,
+                704457
+              ],
+              "bytes": ",Ua={invalid_empty_header:`sep-2243-x-mcp-header-not-empty`,invalid_object_header:`sep-2243-x-mcp-header-primitive-only`,invalid_array_header:`sep-2243-x-mcp-header-primitive-only`,invalid_null_header:`sep-2243-x-mcp-header-primitive-only`,invalid_duplicate_same_case:`sep-2243-x-mcp-header-unique`,invalid_duplicate_diff_case:`sep-2243-x-mcp-header-unique`,invalid_space_in_name:`sep-2243-x-mcp-header-charset`,invalid_colon_in_name:`sep-2243-x-mcp-header-charset`,invalid_non_ascii_name:`sep-2243-x-mcp-header-charset`,invalid_control_char_name:`sep-2243-x-mcp-header-charset`}",
+              "reading": "The map from fixture tool to check id that the loop above iterates. invalid_object_header's check is matched (bucket 5b), so it is not in this bucket."
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                717278,
+                717560
+              ],
+              "bytes": "{name:`invalid_duplicate_same_case`,description:`Duplicate x-mcp-header \"Region\" on two properties (MUST be rejected)`,inputSchema:{type:`object`,properties:{field1:{type:`string`,\"x-mcp-header\":`Region`},field2:{type:`string`,\"x-mcp-header\":`Region`}},required:[`field1`,`field2`]}",
+              "reading": "The fixture tool definition the harness serves in tools/list for this class; its x-mcp-header annotation is invalid, and that annotation is what the check is about."
+            }
+          },
+          "covered_elsewhere": {
+            "verdict": "covered_at_the_validation_step",
+            "units": [
+              {
+                "register_key": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_duplicate_same_case: the same value twice is rejected",
+                "label": "ET-ADJ",
+                "test": {
+                  "file": "test/mcp/protocol/header_mirror_test.exs",
+                  "lines": [
+                    62,
+                    62
+                  ],
+                  "bytes": "    test \"invalid_duplicate_same_case: the same value twice is rejected\" do"
+                },
+                "register_section_12_row": {
+                  "file": "docs/conformance/etcc-register.md",
+                  "lines": [
+                    1835,
+                    1835
+                  ],
+                  "bytes": "| `ClientRejectsInvalidTool_invalid_duplicate_same_case` | `MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_duplicate_same_case: the same value twice is rejected` |"
+                }
+              }
+            ],
+            "why_not_et_cc": "MES-111 ruling (register §12): the unit asserts the error tuple HeaderMirror.validate_schema/1 returns, a value no wire message carries, and MCP.Client.partition_tools/1 lies between that verdict and the wire. A client that ignores the verdict leaves it green. It stays ET-ADJ and untagged; this row does not tag it."
+          },
+          "root_cause": {
+            "statement": "The wire-level exclusion (the client never calls a tool whose x-mcp-header annotation is invalid) is asserted at ET-CC for one fixture class only, invalid_object_header, by W6's helper. This class reaches only the validation step, at ET-ADJ.",
+            "stated_at": {
+              "file": "docs/conformance/etcc-register.md",
+              "lines": [
+                1851,
+                1854
+              ],
+              "bytes": "**That asymmetry is the finding this section leaves open.** The wire-level exclusion is\ntested at ET-CC for **one** fixture class. For the other **nine**, only the validation\nstep is tested, at ET-ADJ. Whether to close that gap is a remediation build decision\nand belongs to **MES-128 (D2b)**. It is not decided here. One candidate remedy is to"
+            }
+          },
+          "if_conformance_fixed": [],
+          "disposition": "extend_to_match",
+          "build_level": "mock_transport",
+          "extend_target": {
+            "file": "test/mcp/client_tool_schemas_test.exs",
+            "lines": [
+              83,
+              83
+            ],
+            "bytes": "    test \"an invalid tool is dropped and the valid ones are kept\" do",
+            "helper": {
+              "file": "test/mcp/client_tool_schemas_test.exs",
+              "lines": [
+                55,
+                63
+              ],
+              "bytes": "  defp invalid_tool(name) do\n    %{\n      \"name\" => name,\n      \"inputSchema\" => %{\n        \"type\" => \"object\",\n        \"properties\" => %{\"a\" => %{\"type\" => \"object\", \"x-mcp-header\" => \"Bad\"}}\n      }\n    }\n  end"
+            },
+            "reading": "W6 already drives list_tools through MockTransport and asserts the invalid tool is dropped, but its invalid_tool/1 helper builds only the invalid_object_header class (an x-mcp-header on a property of type object)."
+          },
+          "remedy": "Drive W6's exclusion over the fixture's invalid_duplicate_same_case schema too (parametrise invalid_tool/1 over all ten classes), at MockTransport level with no HTTP server.",
+          "build_cost": "Recorded, not built (ruling 3). One helper parametrised over the fixture schemas and one loop in W6; no new infrastructure. It would add ET-CC members the crosswalk can match, and it moves the unit population.",
+          "rationale": "The check is green at the accepted run, so this is a coverage gap, not a behaviour gap. An ET-CC unit already drives the seam and sends the stimulus for one class; extending its fixture set is the cheapest route to an edge."
+        },
+        {
+          "member": null,
+          "claim": null,
+          "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_get",
+          "echo": {},
+          "oc_status_at_accepted_run": {
+            "file": "docs/conformance/in-scope-2026-07-28.json",
+            "lines": [
+              3405,
+              3406
+            ],
+            "bytes": "          \"name\": \"ClientMcpMethodHeader_prompts_get\",\n          \"status\": \"SUCCESS\""
+          },
+          "et_test": null,
+          "check": {
+            "requires": "The client's POST carrying prompts/get has an mcp-method header equal to the body method prompts/get.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                699670,
+                700298
+              ],
+              "bytes": "checkMcpMethodHeader(e,t){let n=t.method;if(!n||this.methodHeaderChecks.has(n))return;let r=e.headers[`mcp-method`],i=[];r?r!==n&&i.push(`Mcp-Method header value '${r}' does not match body method '${n}'. Header values are case-sensitive.`):i.push(`Missing Mcp-Method header on ${n} request. Clients MUST include the Mcp-Method header on all POST requests.`),this.methodHeaderChecks.set(n,i.length===0),this.checks.push({id:`sep-2243-client-includes-standard-headers`,name:`ClientMcpMethodHeader_${n.replace(/\\//g,`_`)}`,description:`Client sends correct Mcp-Method header on ${n} request`,status:i.length===0?`SUCCESS`:`FAILURE`",
+              "reading": "On the first request of each method: FAILURE when mcp-method is absent or differs from the body method, SUCCESS otherwise."
+            },
+            "skipped_when_unsent": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                698067,
+                698436
+              ],
+              "bytes": "for(let t of[`initialize`,`notifications/initialized`,`tools/list`,`tools/call`,`resources/list`,`resources/read`,`prompts/list`,`prompts/get`])this.methodHeaderChecks.has(t)||e.push({id:`sep-2243-client-includes-standard-headers`,name:`ClientMcpMethodHeader_${t.replace(/\\//g,`_`)}`,description:`Client sends correct Mcp-Method header on ${t} request`,status:`SKIPPED`",
+              "reading": "A method the client never sends is reported SKIPPED, not FAILURE: the check is null-passable on the OC side."
+            }
+          },
+          "covered_elsewhere": {
+            "verdict": "none",
+            "search": "Every unit in test/mcp/transport/routing_headers_test.exs, the module that captures the client's outbound headers on the wire, and test/mcp/client_defects_test.exs's D-4 unit, which calls HTTPClient.build_headers/2 directly.",
+            "near_misses": [
+              {
+                "unit": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri",
+                "sends": {
+                  "file": "test/mcp/transport/routing_headers_test.exs",
+                  "lines": [
+                    145,
+                    145
+                  ],
+                  "bytes": "        {\"prompts/get\", %{\"name\" => \"summarise\"}, \"summarise\"},"
+                },
+                "asserts": {
+                  "file": "test/mcp/transport/routing_headers_test.exs",
+                  "lines": [
+                    161,
+                    161
+                  ],
+                  "bytes": "        assert headers_of(agent, index)[\"mcp-name\"] == expected"
+                },
+                "why_not": "It SENDS prompts/get over the real HTTP client, but asserts only mcp-name, never mcp-method."
+              },
+              {
+                "unit": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a request carries the body method",
+                "sends": {
+                  "file": "test/mcp/transport/routing_headers_test.exs",
+                  "lines": [
+                    93,
+                    93
+                  ],
+                  "bytes": "      for method <- ~w(server/discover tools/list resources/list prompts/list completion/complete) do"
+                },
+                "why_not": "It asserts mcp-method, but its method list omits prompts/get."
+              }
+            ]
+          },
+          "root_cause": {
+            "statement": "Neither routing-header unit pairs the prompts/get send with an mcp-method assertion: T-CG1b has the send, T-CG1a has the assertion."
+          },
+          "if_conformance_fixed": [],
+          "disposition": "extend_to_match",
+          "build_level": "live_http",
+          "extend_target": {
+            "file": "test/mcp/transport/routing_headers_test.exs",
+            "lines": [
+              137,
+              137
+            ],
+            "bytes": "    test \"tools/call and prompts/get take params.name; resources/read takes params.uri\", %{",
+            "reading": "T-CG1b already runs a live Bandit capture server and sends this method; the added assertion needs no new infrastructure."
+          },
+          "remedy": "In T-CG1b's assertion loop also assert headers_of(agent, index)[\"mcp-method\"] == method, which covers prompts/get.",
+          "cheaper_alternative": "HTTPClient.build_headers/2 is public and D-4 already asserts on it at pure-unit level, so a pure_unit test is also possible. It is not preferred: T-CG1b already pays for the live server and observes the header on the wire.",
+          "null_passability": "The OC check is null-passable: an unsent method scores SKIPPED (skipped_when_unsent). An ET assertion on a request the unit actually sends is not vacuous, because it reads the header value off the wire. At the accepted run this check was SUCCESS, not SKIPPED, so the adapter did send the method. The vacuity is the OC side's and is already recorded against bucket 5b.",
+          "rationale": "Coverage gap, not behaviour gap: green at the accepted run. The stimulus and the capture already exist in one unit; the missing piece is one assertion."
+        },
+        {
+          "member": null,
+          "claim": null,
+          "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_read",
+          "echo": {},
+          "oc_status_at_accepted_run": {
+            "file": "docs/conformance/in-scope-2026-07-28.json",
+            "lines": [
+              3354,
+              3355
+            ],
+            "bytes": "          \"name\": \"ClientMcpMethodHeader_resources_read\",\n          \"status\": \"SUCCESS\""
+          },
+          "et_test": null,
+          "check": {
+            "requires": "The client's POST carrying resources/read has an mcp-method header equal to the body method resources/read.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                699670,
+                700298
+              ],
+              "bytes": "checkMcpMethodHeader(e,t){let n=t.method;if(!n||this.methodHeaderChecks.has(n))return;let r=e.headers[`mcp-method`],i=[];r?r!==n&&i.push(`Mcp-Method header value '${r}' does not match body method '${n}'. Header values are case-sensitive.`):i.push(`Missing Mcp-Method header on ${n} request. Clients MUST include the Mcp-Method header on all POST requests.`),this.methodHeaderChecks.set(n,i.length===0),this.checks.push({id:`sep-2243-client-includes-standard-headers`,name:`ClientMcpMethodHeader_${n.replace(/\\//g,`_`)}`,description:`Client sends correct Mcp-Method header on ${n} request`,status:i.length===0?`SUCCESS`:`FAILURE`",
+              "reading": "On the first request of each method: FAILURE when mcp-method is absent or differs from the body method, SUCCESS otherwise."
+            },
+            "skipped_when_unsent": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                698067,
+                698436
+              ],
+              "bytes": "for(let t of[`initialize`,`notifications/initialized`,`tools/list`,`tools/call`,`resources/list`,`resources/read`,`prompts/list`,`prompts/get`])this.methodHeaderChecks.has(t)||e.push({id:`sep-2243-client-includes-standard-headers`,name:`ClientMcpMethodHeader_${t.replace(/\\//g,`_`)}`,description:`Client sends correct Mcp-Method header on ${t} request`,status:`SKIPPED`",
+              "reading": "A method the client never sends is reported SKIPPED, not FAILURE: the check is null-passable on the OC side."
+            }
+          },
+          "covered_elsewhere": {
+            "verdict": "none",
+            "search": "Every unit in test/mcp/transport/routing_headers_test.exs, the module that captures the client's outbound headers on the wire, and test/mcp/client_defects_test.exs's D-4 unit, which calls HTTPClient.build_headers/2 directly.",
+            "near_misses": [
+              {
+                "unit": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri",
+                "sends": {
+                  "file": "test/mcp/transport/routing_headers_test.exs",
+                  "lines": [
+                    146,
+                    146
+                  ],
+                  "bytes": "        {\"resources/read\", %{\"uri\" => \"file:///projects/app/config.json\"},"
+                },
+                "asserts": {
+                  "file": "test/mcp/transport/routing_headers_test.exs",
+                  "lines": [
+                    161,
+                    161
+                  ],
+                  "bytes": "        assert headers_of(agent, index)[\"mcp-name\"] == expected"
+                },
+                "why_not": "It SENDS resources/read over the real HTTP client, but asserts only mcp-name, never mcp-method."
+              },
+              {
+                "unit": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a request carries the body method",
+                "sends": {
+                  "file": "test/mcp/transport/routing_headers_test.exs",
+                  "lines": [
+                    93,
+                    93
+                  ],
+                  "bytes": "      for method <- ~w(server/discover tools/list resources/list prompts/list completion/complete) do"
+                },
+                "why_not": "It asserts mcp-method, but its method list omits resources/read."
+              }
+            ]
+          },
+          "root_cause": {
+            "statement": "Neither routing-header unit pairs the resources/read send with an mcp-method assertion: T-CG1b has the send, T-CG1a has the assertion."
+          },
+          "if_conformance_fixed": [],
+          "disposition": "extend_to_match",
+          "build_level": "live_http",
+          "extend_target": {
+            "file": "test/mcp/transport/routing_headers_test.exs",
+            "lines": [
+              137,
+              137
+            ],
+            "bytes": "    test \"tools/call and prompts/get take params.name; resources/read takes params.uri\", %{",
+            "reading": "T-CG1b already runs a live Bandit capture server and sends this method; the added assertion needs no new infrastructure."
+          },
+          "remedy": "In T-CG1b's assertion loop also assert headers_of(agent, index)[\"mcp-method\"] == method, which covers resources/read.",
+          "cheaper_alternative": "HTTPClient.build_headers/2 is public and D-4 already asserts on it at pure-unit level, so a pure_unit test is also possible. It is not preferred: T-CG1b already pays for the live server and observes the header on the wire.",
+          "null_passability": "The OC check is null-passable: an unsent method scores SKIPPED (skipped_when_unsent). An ET assertion on a request the unit actually sends is not vacuous, because it reads the header value off the wire. At the accepted run this check was SUCCESS, not SKIPPED, so the adapter did send the method. The vacuity is the OC side's and is already recorded against bucket 5b.",
+          "rationale": "Coverage gap, not behaviour gap: green at the accepted run. The stimulus and the capture already exist in one unit; the missing piece is one assertion."
+        },
+        {
+          "member": null,
+          "claim": null,
+          "tag": "oc:client/request-metadata/sep-2575-client-declares-elicitation-capability/ClientDeclaresElicitationCapability",
+          "echo": {},
+          "oc_status_at_accepted_run": {
+            "file": "docs/conformance/in-scope-2026-07-28.json",
+            "lines": [
+              3606,
+              3607
+            ],
+            "bytes": "          \"name\": \"ClientDeclaresElicitationCapability\",\n          \"status\": \"SUCCESS\""
+          },
+          "et_test": null,
+          "check": {
+            "requires": "If the client declares the elicitation capability in the clientCapabilities it sends, the declared value is a plain JSON object.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                341300,
+                341400
+              ],
+              "bytes": "r=`SKIPPED`;if(d&&e in d){let t=d[e];r=typeof t==`object`&&t&&!Array.isArray(t)?`SUCCESS`:`FAILURE`}",
+              "reading": "SKIPPED when the capability is not declared; when declared, SUCCESS only if its value is a plain object (not null, not an array)."
+            },
+            "applied_to": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                341880,
+                341984
+              ],
+              "bytes": "f(`elicitation`,`sep-2575-client-declares-elicitation-capability`,`ClientDeclaresElicitationCapability`)",
+              "reading": "The same predicate applied to the elicitation capability of the clientCapabilities the client sends in _meta."
+            },
+            "why_it_scored_success": {
+              "file": "conformance/client_adapter.exs",
+              "lines": [
+                355,
+                355
+              ],
+              "bytes": "        elicitation: %ElicitationCapabilities{}"
+            }
+          },
+          "covered_elsewhere": {
+            "verdict": "none",
+            "search": "Every unit under test/ mentioning elicitation as a capability (grep -rn elicitation test/, excluding elicitation/create and input-request kinds).",
+            "near_misses": [
+              {
+                "unit": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities from_map/1 parses full capabilities",
+                "label": "ET-OUT",
+                "test": {
+                  "file": "test/mcp/protocol/capabilities_test.exs",
+                  "lines": [
+                    64,
+                    64
+                  ],
+                  "bytes": "    test \"from_map/1 parses full capabilities\" do"
+                },
+                "why_not": "It DECODES a declared elicitation map into the struct. The check is about what the client ENCODES and sends."
+              },
+              {
+                "unit": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON",
+                "label": "ET-CC",
+                "asserts": {
+                  "file": "test/mcp/protocol/capabilities_test.exs",
+                  "lines": [
+                    100,
+                    100
+                  ],
+                  "bytes": "      refute Map.has_key?(decoded, \"elicitation\")"
+                },
+                "why_not": "It asserts the UNDECLARED branch, the check's precondition, not its axis. That claim is NAC03's (next field) and is not re-adjudicated here."
+              }
+            ]
+          },
+          "cross_reference": {
+            "row": "NAC03",
+            "owner": "MES-133",
+            "at": {
+              "file": "docs/conformance/buckets/claim-unmatched-2026-07-28.json",
+              "lines": [
+                102,
+                102
+              ],
+              "bytes": "      \"search_id\": \"NAC03\","
+            },
+            "statement": "The CapabilitiesTest claim about an undeclared elicitation capability is a claim-level no-axis-contact row owned by MES-133. This row adjudicates the CHECK only."
+          },
+          "root_cause": {
+            "statement": "MES-110's rule A removed the only edge onto this check, an all-silent one; no unit encodes a DECLARED elicitation capability and reads the value back."
+          },
+          "if_conformance_fixed": [],
+          "disposition": "build_test",
+          "build_level": "pure_unit",
+          "remedy": "A new ET-CC unit: encode ClientCapabilities with elicitation declared and assert the decoded elicitation value is a map (a JSON object).",
+          "why_not_extend": "The round-trip unit is the obvious host, but it asserts the elicitation key is ABSENT; adding a declared value there would refute its own claim.",
+          "null_passability": "Same shape as the header pair: SKIPPED when undeclared. It scored SUCCESS because the conformance adapter declares elicitation (why_it_scored_success).",
+          "rationale": "Coverage gap, not behaviour gap: green at the accepted run. No unit drives the declared branch at any level, so the remedy is a new unit."
+        },
+        {
+          "member": null,
+          "claim": null,
+          "tag": "oc:client/sep-2322-client-request-state/sep-2322-client-jsonrpc-id-different/MRTRClientJsonRpcIdDifferent",
+          "echo": {},
+          "oc_status_at_accepted_run": {
+            "file": "docs/conformance/in-scope-2026-07-28.json",
+            "lines": [
+              3664,
+              3665
+            ],
+            "bytes": "          \"name\": \"MRTRClientJsonRpcIdDifferent\",\n          \"status\": \"SUCCESS\""
+          },
+          "et_test": null,
+          "check": {
+            "requires": "The MRTR retry request carries a JSON-RPC id different from the original request's id.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                346352,
+                346655
+              ],
+              "bytes": "let u=[];e===s&&u.push(`JSON-RPC id is the same on retry (${e}) — MUST be different`),a.push({id:`sep-2322-client-jsonrpc-id-different`,name:`MRTRClientJsonRpcIdDifferent`,description:`The JSON-RPC id MUST be different between the initial request and the retry`,status:u.length===0?`SUCCESS`:`FAILURE`",
+              "reading": "FAILURE when the retry's JSON-RPC id (e) equals the original request's id (s), which the harness recorded under echo_state."
+            }
+          },
+          "covered_elsewhere": {
+            "verdict": "none",
+            "search": "The units under test/ that configure a resolver (grep -rn 'on_input_required:' test/) and so perform a retry. Each holds both the original and the retry message; none compares their ids.",
+            "near_misses": [
+              {
+                "unit": "MCP.ClientTest/test MRTR client retry an input_required result is transparently completed via :on_input_required",
+                "holds_original": {
+                  "file": "test/mcp/client_test.exs",
+                  "lines": [
+                    277,
+                    277
+                  ],
+                  "bytes": "      first = last_after_connect(transport, 1)"
+                },
+                "holds_retry": {
+                  "file": "test/mcp/client_test.exs",
+                  "lines": [
+                    290,
+                    290
+                  ],
+                  "bytes": "      retry = last_after_connect(transport, 2)"
+                },
+                "why_not": "It binds both messages and asserts the retry's method, requestState and inputResponses, but never its id."
+              }
+            ]
+          },
+          "root_cause": {
+            "statement": "The retry units assert the retry's payload, and none states the id property."
+          },
+          "if_conformance_fixed": [],
+          "disposition": "extend_to_match",
+          "build_level": "mock_transport",
+          "extend_target": {
+            "file": "test/mcp/client_test.exs",
+            "lines": [
+              270,
+              270
+            ],
+            "bytes": "    test \"an input_required result is transparently completed via :on_input_required\" do",
+            "reading": "MockTransport; the unit already binds first and retry."
+          },
+          "remedy": "Add refute retry[\"id\"] == first[\"id\"] to the MRTR client retry unit.",
+          "rationale": "Coverage gap, not behaviour gap: green at the accepted run. Both ids are already in hand in one unit."
+        },
+        {
+          "member": null,
+          "claim": null,
+          "tag": "oc:client/sep-2322-client-request-state/sep-2322-client-parallel-isolation/MRTRClientParallelIsolation",
+          "echo": {},
+          "oc_status_at_accepted_run": {
+            "file": "docs/conformance/in-scope-2026-07-28.json",
+            "lines": [
+              3681,
+              3682
+            ],
+            "bytes": "          \"name\": \"MRTRClientParallelIsolation\",\n          \"status\": \"SUCCESS\""
+          },
+          "et_test": null,
+          "check": {
+            "requires": "While one tool call is in an MRTR input-required flow, an unrelated concurrent tool call carries neither inputResponses nor requestState from that flow.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                347789,
+                348242
+              ],
+              "bytes": "function o(e,t,n,r,i){let a=[];e!==void 0&&a.push(`Unrelated tool call included inputResponses from another tool's MRTR flow`),t!==void 0&&a.push(`Unrelated tool call included requestState from another tool's MRTR flow`),n.push({id:`sep-2322-client-parallel-isolation`,name:`MRTRClientParallelIsolation`,description:`inputRequests and requestState MUST NOT be used for any other request the client may be sending`,status:a.length===0?`SUCCESS`:`FAILURE`",
+              "reading": "For a tool call unrelated to an MRTR flow in progress: FAILURE if it carries inputResponses (e) or requestState (t) from that other flow."
+            }
+          },
+          "covered_elsewhere": {
+            "verdict": "none",
+            "search_ref": "negatives: no_unit_runs_a_concurrent_call_beside_an_mrtr_flow"
+          },
+          "root_cause": {
+            "statement": "No unit runs two tool calls concurrently while one of them is in an MRTR flow."
+          },
+          "if_conformance_fixed": [],
+          "disposition": "build_test",
+          "build_level": "mock_transport",
+          "remedy": "A new ET-CC unit: two concurrent call_tool through MockTransport, one answered input_required; assert the other call's params carry neither inputResponses nor requestState.",
+          "rationale": "Coverage gap, not behaviour gap: green at the accepted run. No unit drives the stimulus, so the remedy is a new unit."
+        },
+        {
+          "member": null,
+          "claim": null,
+          "tag": "oc:client/sep-2322-client-request-state/sep-2322-default-result-type-complete/DefaultResultTypeComplete",
+          "echo": {},
+          "oc_status_at_accepted_run": {
+            "file": "docs/conformance/in-scope-2026-07-28.json",
+            "lines": [
+              3715,
+              3716
+            ],
+            "bytes": "          \"name\": \"DefaultResultTypeComplete\",\n          \"status\": \"SUCCESS\""
+          },
+          "et_test": null,
+          "check": {
+            "requires": "A tool-call result with no resultType is treated as complete: the client does not retry with inputResponses.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                348504,
+                349340
+              ],
+              "bytes": "function s(e,t,n,r){let i=`sep-2322-default-result-type-complete`;if(t){let t=n.findIndex(e=>e.id===i);t!==-1&&n.splice(t,1),n.push({id:i,name:`DefaultResultTypeComplete`,description:`Client MUST assume resultType \"complete\" when not specified`,status:`FAILURE`,timestamp:new Date().toISOString(),errorMessage:`Client retried with inputResponses even though the result had no resultType (should default to complete)`,specReferences:Vt}),r.json({jsonrpc:`2.0`,id:e,result:{resultType:`complete`,content:[{type:`text`,text:`unexpected-retry`}]}});return}n.push({id:i,name:`DefaultResultTypeComplete`,description:`Client MUST assume resultType \"complete\" when not specified`,status:`SUCCESS`,timestamp:new Date().toISOString(),specReferences:Vt}),r.json({jsonrpc:`2.0`,id:e,result:{content:[{type:`text`,text:`no-result-type-test-ok`}]}})}",
+              "reading": "The first call is answered with a result that carries NO resultType. If the client then retries with inputResponses (t), the SUCCESS is replaced by FAILURE: a missing resultType must be read as complete."
+            }
+          },
+          "covered_elsewhere": {
+            "verdict": "none",
+            "search_ref": "negatives: no_unit_sends_a_resolver_configured_client_a_result_without_result_type",
+            "decided_in_lib_at": {
+              "file": "lib/mcp/client.ex",
+              "lines": [
+                670,
+                670
+              ],
+              "bytes": "  defp input_required?(result), do: Map.get(result, \"resultType\") == MRTR.result_type()"
+            },
+            "reading": "The SDK decides this by equality with input_required, so an absent resultType is not a retry. No unit exercises that branch with a resolver configured, which is the only case where the difference is observable."
+          },
+          "root_cause": {
+            "statement": "Every result injected into a resolver-configured client in test/ carries a resultType."
+          },
+          "if_conformance_fixed": [],
+          "disposition": "build_test",
+          "build_level": "mock_transport",
+          "remedy": "A new ET-CC unit: a resolver configured, a tools/call result injected with no resultType; assert the call returns it and no second message is sent.",
+          "rationale": "Coverage gap, not behaviour gap: green at the accepted run. No unit drives the stimulus, so the remedy is a new unit."
+        }
+      ]
+    }
+  ],
+  "negatives": [
+    {
+      "id": "client_universe_reconciles",
+      "universe": "The client-leg rows of the locator, docs/conformance/oc-emitting-sites-2026-07-28.json, which is what the client edges file's check selector (conformance/data/crosswalk-edges-client.json) is evaluated over. It is read independently of the bucket-2b view, so the complement is not taken from the set it checks.",
+      "predicate": "The client universe is the disjoint union of the bucket-2b tags and the client tags carrying a crosswalk cell; those matched tags are exactly bucket 5b's distinct tags; the client tags in the escalated view are a subset of them; and bucket 5b's rows plus the escalated view's client rows are the client cells.",
+      "measured_at": "a68b28b",
+      "count": {
+        "client_universe": 54,
+        "bucket_2b": 15,
+        "matched_client_checks": 39,
+        "client_cells": 70,
+        "bucket_5b_rows": 67,
+        "bucket_5b_distinct_checks": 39,
+        "escalated_client_rows": 3,
+        "escalated_client_checks": 1
+      },
+      "set_relations": {
+        "bucket_2b_and_matched_disjoint": true,
+        "bucket_2b_union_matched_equals_universe": true,
+        "matched_equals_bucket_5b_checks": true,
+        "escalated_client_checks_within_bucket_5b": true
+      },
+      "statement": "Holds by arithmetic and by set comparison: the 54 client checks are the 15 checks in bucket 2b and the 39 checks bucket 5b holds, disjointly. Gate 5 recomputes every figure and relation here from the locator, the crosswalk and the three views, and requires them to equal this record.",
+      "residual": "G32 does not check this. It is held by gate 5's recompute."
+    },
+    {
+      "id": "no_unit_runs_a_concurrent_call_beside_an_mrtr_flow",
+      "universe": "Every unit under test/ that configures an MRTR resolver (grep -rn 'on_input_required:' test/), since without a resolver there is no MRTR flow for an unrelated call to leak from.",
+      "universe_by_file": {
+        "test/mcp/client_defects_test.exs": 4,
+        "test/mcp/client_test.exs": 1,
+        "test/mcp/integration_test.exs": 1
+      },
+      "units": [
+        "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an absent server requestState produces a retry with NO requestState key",
+        "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an explicit null server requestState also produces NO requestState key",
+        "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) a server requestState is echoed verbatim on the retry (control)",
+        "MCP.ClientDefectsTest/test D-2 — a failed transport send fails the call (CAUGHT REGRESSION) a failed send on the MRTR retry path fails the original caller",
+        "MCP.ClientTest/test MRTR client retry an input_required result is transparently completed via :on_input_required",
+        "MCP.IntegrationTest/test MRTR: call_tool transparently completes an input-required round-trip"
+      ],
+      "predicate": "a unit that runs a second call_tool concurrently with one in an input-required flow.",
+      "measured_at": "a68b28b",
+      "statement": "Looked for and not found: each unit in the universe makes exactly one call_tool. Gate 5 recomputes the universe by file and requires it to equal universe_by_file, so a new resolver-configured unit forces this negative to be re-examined.",
+      "residual": "The per-unit reading (one call_tool each) was made by hand at a68b28b; gate 5 holds the universe, not the reading."
+    },
+    {
+      "id": "no_unit_sends_a_resolver_configured_client_a_result_without_result_type",
+      "universe": "The same resolver-configured units as the negative above: the only case where a missing resultType is observable, since without a resolver no retry can happen.",
+      "universe_ref": "no_unit_runs_a_concurrent_call_beside_an_mrtr_flow",
+      "predicate": "a unit that delivers a tools/call result with no resultType to a client with a resolver configured.",
+      "measured_at": "a68b28b",
+      "statement": "Looked for and not found: in the five MockTransport units every injected result carries resultType (input_required, then complete), and the integration unit's first result is input_required and its final result is asserted complete.",
+      "residual": "As above: gate 5 holds the universe, not the reading."
+    }
+  ],
+  "findings_for_pm": []
+}

@@ -21,6 +21,15 @@ defmodule MCP.Conformance.AdjudicationsTest do
   @d4a "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json"
   @d4b "docs/conformance/adjudications/adjudication-D4b-2026-07-28.json"
   @v4b "docs/conformance/buckets/bucket-4b-2026-07-28.json"
+  @d2b "docs/conformance/adjudications/adjudication-D2b-2026-07-28.json"
+  @v2b "docs/conformance/buckets/bucket-2b-2026-07-28.json"
+  @v5b "docs/conformance/buckets/bucket-5b-2026-07-28.json"
+  @ves "docs/conformance/buckets/escalated-2026-07-28.json"
+  @locator "docs/conformance/oc-emitting-sites-2026-07-28.json"
+  @in_scope "docs/conformance/in-scope-2026-07-28.json"
+  # The predicate bucket 2b's population sentence must be, verbatim (MES-111
+  # point 1; the anchor is etcc-register.md §12, cited in the D2b record).
+  @population_sentence "OC check with no ET-CC member match"
   @crosswalk "docs/conformance/crosswalk-2026-07-28.json"
 
   setup_all do
@@ -148,9 +157,184 @@ defmodule MCP.Conformance.AdjudicationsTest do
              }
     end
 
+    test "D2b's record closes bucket 2b", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2b]
+
+      assert for(s <- record["sections"], do: {s["view"], s["closure"], s["owner"]}) == [
+               {@v2b, "closed", "MES-128"}
+             ]
+    end
+
+    # PM ratification on MES-128 (29444, Q1): per check, the disposition and the
+    # level the missing test would be built at.
+    test "D2b's dispositions and build levels are the ratified ones, per check",
+         %{inputs: inputs} do
+      by_check =
+        for r <- d2b_rows(inputs), into: %{} do
+          {r["tag"] |> String.split("/") |> List.last(), {r["disposition"], r["build_level"]}}
+        end
+
+      nine =
+        for c <- ~w(colon_in_name control_char_name non_ascii_name space_in_name empty_header
+                    array_header null_header duplicate_diff_case duplicate_same_case),
+            into: %{},
+            do: {"ClientRejectsInvalidTool_invalid_" <> c, {"extend_to_match", "mock_transport"}}
+
+      assert by_check ==
+               Map.merge(nine, %{
+                 "ClientMcpMethodHeader_prompts_get" => {"extend_to_match", "live_http"},
+                 "ClientMcpMethodHeader_resources_read" => {"extend_to_match", "live_http"},
+                 "ClientDeclaresElicitationCapability" => {"build_test", "pure_unit"},
+                 "MRTRClientJsonRpcIdDifferent" => {"extend_to_match", "mock_transport"},
+                 "MRTRClientParallelIsolation" => {"build_test", "mock_transport"},
+                 "DefaultResultTypeComplete" => {"build_test", "mock_transport"}
+               })
+    end
+
+    # PM ratification on MES-128 (29444, Q2 (b)): the substitute echo. G32's
+    # citation_drift holds the bytes; this holds what they SAY: the cited name is
+    # the row's check and its status at the accepted run was SUCCESS. It guards
+    # the adjudication's premise, not the view (the record says so).
+    test "each D2b row cites its own check as SUCCESS at the accepted run", %{inputs: inputs} do
+      rows = d2b_rows(inputs)
+      assert rows != []
+
+      for r <- rows do
+        c = r["oc_status_at_accepted_run"]
+        assert c["file"] == @in_scope
+        assert A.verify(c, inputs.source_fun) == :ok
+        name = r["tag"] |> String.split("/") |> List.last()
+
+        assert Regex.run(~r/"name": "([^"]+)",\s*"status": "([A-Z]+)"/, c["bytes"],
+                 capture: :all_but_first
+               ) == [name, "SUCCESS"],
+               name
+      end
+    end
+
+    test "the D2b substitute-echo pin refuses another check's line and a non-SUCCESS status",
+         %{inputs: inputs} do
+      [r1, r2 | _] = d2b_rows(inputs)
+      swapped = Map.put(r1, "oc_status_at_accepted_run", r2["oc_status_at_accepted_run"])
+      name = r1["tag"] |> String.split("/") |> List.last()
+      [cited, _] = status_echo(swapped)
+      refute cited == name
+
+      failed =
+        update_in(
+          r1,
+          ["oc_status_at_accepted_run", "bytes"],
+          &String.replace(&1, "SUCCESS", "FAILURE")
+        )
+
+      assert status_echo(failed) == [name, "FAILURE"]
+    end
+
+    # MES-111 point 1, owned by MES-128: bucket 2b's population sentence is the
+    # predicate verbatim, and the record never renders a check here as lacking a
+    # test (a check may be covered outside ET-CC). Quoted `bytes` are exempt:
+    # they are other files' text, and the anchor itself quotes the rule.
+    test "rendering guard: D2b's population sentence is the predicate verbatim",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2b]
+      assert rendering_defects(record) == []
+      assert A.verify(record["rendering_guard"]["anchor"], inputs.source_fun) == :ok
+      assert record["rendering_guard"]["anchor"]["bytes"] =~ @population_sentence
+    end
+
+    test "rendering guard: goes red on 'untested', and on a paraphrase", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2b]
+
+      at = fn rec, sentence ->
+        put_in(rec, ["sections", Access.at(0), "population_sentence"], sentence)
+      end
+
+      assert rendering_defects(at.(record, "OC check with no ET-CC member match (untested)")) !=
+               []
+
+      assert rendering_defects(at.(record, "Untested OC checks")) != []
+      assert rendering_defects(at.(record, "OC checks with no ET-CC test")) != []
+
+      prose = put_in(record, ["what_bucket_2b_is"], "These checks are UNTESTED.")
+      assert rendering_defects(prose) != []
+
+      quoted = put_in(record, ["rendering_guard", "anchor", "bytes"], "never \"untested\"")
+      assert rendering_defects(quoted) == []
+    end
+
+    # A2d: the matched client checks reconcile with 5b and the escalations, by
+    # arithmetic AND by set comparison, over a universe read from the locator,
+    # not from the 2b view. recorded == measured.
+    test "D2b's client-universe negative is measured, not held", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2b]
+      [neg] = Enum.filter(record["negatives"], &(&1["id"] == "client_universe_reconciles"))
+
+      universe =
+        for r <- json(@locator)["rows"], r["leg"] == "client", do: r["token"]
+
+      cells = for c <- json(@crosswalk)["cells"], client?(c["tag"]), do: c["tag"]
+      matched = MapSet.new(cells)
+      in_2b = for r <- json(@v2b)["rows"], do: r["tag"]
+      rows_5b = for r <- json(@v5b)["rows"], do: r["tag"]
+      esc = for r <- json(@ves)["rows"], client?(r["tag"]), do: r["tag"]
+      set_2b = MapSet.new(in_2b)
+      set_5b = MapSet.new(rows_5b)
+      set_u = MapSet.new(universe)
+
+      assert length(universe) == MapSet.size(set_u)
+
+      assert neg["count"] == %{
+               "client_universe" => length(universe),
+               "bucket_2b" => length(in_2b),
+               "matched_client_checks" => MapSet.size(matched),
+               "client_cells" => length(cells),
+               "bucket_5b_rows" => length(rows_5b),
+               "bucket_5b_distinct_checks" => MapSet.size(set_5b),
+               "escalated_client_rows" => length(esc),
+               "escalated_client_checks" => esc |> MapSet.new() |> MapSet.size()
+             }
+
+      relations = %{
+        "bucket_2b_and_matched_disjoint" => MapSet.disjoint?(set_2b, matched),
+        "bucket_2b_union_matched_equals_universe" => MapSet.union(set_2b, matched) == set_u,
+        "matched_equals_bucket_5b_checks" => matched == set_5b,
+        "escalated_client_checks_within_bucket_5b" => MapSet.subset?(MapSet.new(esc), set_5b)
+      }
+
+      assert neg["set_relations"] == relations
+      assert Enum.all?(Map.values(relations))
+      assert length(rows_5b) + length(esc) == length(cells)
+      assert length(in_2b) + MapSet.size(matched) == length(universe)
+    end
+
+    # The two MRTR negatives' universe: every resolver-configured unit under
+    # test/. A new one moves this and forces the negatives to be re-examined.
+    test "D2b's MRTR negatives' universe is measured, by file", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2b]
+
+      [neg] =
+        Enum.filter(
+          record["negatives"],
+          &(&1["id"] == "no_unit_runs_a_concurrent_call_beside_an_mrtr_flow")
+        )
+
+      # Built, not written, so this file does not count itself.
+      needle = "on_input_required" <> ":"
+
+      measured =
+        for f <- Path.wildcard("test/**/*.exs"),
+            n = f |> File.read!() |> String.split(needle) |> length() |> Kernel.-(1),
+            n > 0,
+            into: %{},
+            do: {f, n}
+
+      assert neg["universe_by_file"] == measured
+      assert length(neg["units"]) == measured |> Map.values() |> Enum.sum()
+    end
+
     # MES-120's K1: a record under docs/conformance/ is inside G31, and a file
     # added after G31's baseline may carry no pending figure.
-    for record <- [@d4a, @d4b] do
+    for record <- [@d4a, @d4b, @d2b] do
       test "#{Path.basename(record)} is hand_authored to G31 and has no pending figure" do
         universe = "conformance/figures/universe.json" |> File.read!() |> Jason.decode!()
         ledger = "conformance/figures/ledger.json" |> File.read!() |> Jason.decode!()
@@ -184,12 +368,35 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # This ties each row's et_test to the row's member: the cited window lies
     # inside the member's own test in the member's own module. It does NOT tie
     # the check citation to the tag.
+    #
+    # Scoped to rows with a member (PM ratification on MES-128, 29444, Q3): a
+    # bucket-2 row has no member and no et_test. The pin after it holds the
+    # scoping: the rows it skips are EXACTLY bucket 2b's, so no bucket-4 row can
+    # be skipped silently.
     test "every row's et_test lies inside the member's own test", %{inputs: inputs} do
-      rows = for {_, {:ok, doc}} <- inputs.records, s <- doc["sections"], r <- s["rows"], do: r
-      assert rows != []
+      {owned, _skipped} = ownership_split(inputs.records)
+      assert owned != []
 
-      for r <- rows,
+      for {_, _, r} <- owned,
           do: assert(et_test_owner(r, inputs.source_fun) == :ok, inspect(A.key(r)))
+    end
+
+    test "the rows the ownership check skips are exactly bucket 2b's, all in D2b's record",
+         %{inputs: inputs} do
+      assert skip_pin(inputs.records) == :ok
+    end
+
+    test "the skip pin refuses a member-less row planted into D4a's section", %{inputs: inputs} do
+      planted =
+        update_in(inputs.records[@d4a], fn {:ok, doc} ->
+          {:ok,
+           update_in(doc, ["sections", Access.at(0), "rows"], fn [r | _] = rows ->
+             rows ++ [Map.put(r, "member", nil)]
+           end)}
+        end)
+
+      assert {:error, {:skipped_rows_differ, extra, []}} = skip_pin(planted.records)
+      assert [{@d4a, _, [nil | _]}] = extra
     end
 
     # The ownership check above supersedes this one (it requires the window to
@@ -280,10 +487,13 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert at.("test one", [8, 9]) == {:error, {:window_outside_test, 8}}
     end
 
-    # MES-126 ratified the first five; MES-127 (29430, Q1) added the last two.
-    test "the closed disposition set is the one MES-126 and MES-127 ratified" do
+    # MES-126 ratified the first five; MES-127 (29430, Q1) added extend_test and
+    # accept_bound; MES-128 (29444, Q1) added extend_to_match and build_test.
+    test "the closed disposition set is the one MES-126, MES-127 and MES-128 ratified" do
       assert A.dispositions() ==
-               ~w(fix_sdk fix_conformance_adapter keep_design_publish_bound po_decision_required suite_defect_upstream extend_test accept_bound)
+               ~w(fix_sdk fix_conformance_adapter keep_design_publish_bound po_decision_required suite_defect_upstream extend_test accept_bound extend_to_match build_test)
+
+      assert A.build_levels() == ~w(pure_unit mock_transport plug live_http)
     end
   end
 
@@ -321,6 +531,64 @@ defmodule MCP.Conformance.AdjudicationsTest do
       other -> {:error, other}
     end
   end
+
+  # {owned, skipped}, each a list of {record, view, row}: a row with no member
+  # has no test to own its et_test.
+  defp ownership_split(records) do
+    all =
+      for {file, {:ok, doc}} <- records,
+          s <- doc["sections"],
+          r <- s["rows"],
+          do: {file, s["view"], r}
+
+    Enum.split_with(all, fn {_, _, r} -> not is_nil(r["member"]) end)
+  end
+
+  defp skip_pin(records) do
+    {_, skipped} = ownership_split(records)
+    got = Enum.sort(for {f, v, r} <- skipped, do: {f, v, A.key(r)})
+    want = Enum.sort(for vr <- json(@v2b)["rows"], do: {@d2b, @v2b, A.key(vr)})
+
+    if got == want,
+      do: :ok,
+      else: {:error, {:skipped_rows_differ, got -- want, want -- got}}
+  end
+
+  defp d2b_rows(inputs) do
+    {:ok, record} = inputs.records[@d2b]
+    [%{"rows" => rows}] = record["sections"]
+    rows
+  end
+
+  defp status_echo(row),
+    do:
+      Regex.run(
+        ~r/"name": "([^"]+)",\s*"status": "([A-Z]+)"/,
+        row["oc_status_at_accepted_run"]["bytes"],
+        capture: :all_but_first
+      )
+
+  # The section's population sentence must EQUAL the predicate, and no prose leaf
+  # of the record may say "untested" (case-insensitive). Leaves under a `bytes`
+  # key are quotations of other files and are exempt.
+  defp rendering_defects(record) do
+    sentence =
+      for s <- record["sections"],
+          s["population_sentence"] != @population_sentence,
+          do: {:population_sentence, s["population_sentence"]}
+
+    sentence ++ for leaf <- prose_leaves(record), leaf =~ ~r/untested/i, do: {:untested, leaf}
+  end
+
+  defp prose_leaves(m) when is_map(m),
+    do: Enum.flat_map(m, fn {k, v} -> if k == "bytes", do: [], else: prose_leaves(v) end)
+
+  defp prose_leaves(l) when is_list(l), do: Enum.flat_map(l, &prose_leaves/1)
+  defp prose_leaves(s) when is_binary(s), do: [s]
+  defp prose_leaves(_), do: []
+
+  defp json(path), do: path |> File.read!() |> Jason.decode!()
+  defp client?(tag), do: String.starts_with?(tag, "oc:client/")
 
   defp test_end(lines, i, indent) do
     {head, _} = Enum.at(lines, i - 1)
@@ -507,6 +775,75 @@ defmodule MCP.Conformance.AdjudicationsTest do
         r = if bound == :absent, do: r, else: Map.put(r, "bound", bound)
         assert kinds(inputs([a()], [section([r])])) == [:bound_missing], inspect(bound)
       end
+    end
+
+    test "extend_to_match and build_test are in the set, with a level and a remedy" do
+      built = %{"build_level" => "mock_transport", "remedy" => "add one assertion"}
+      target = %{"extend_target" => %{"reading" => "the unit"}}
+
+      assert kinds(
+               inputs([a()], [
+                 section([row(a(), Map.merge(built, %{"disposition" => "build_test"}))])
+               ])
+             ) == []
+
+      assert kinds(
+               inputs([a()], [
+                 section([
+                   row(
+                     a(),
+                     built |> Map.merge(target) |> Map.put("disposition", "extend_to_match")
+                   )
+                 ])
+               ])
+             ) == []
+    end
+
+    # MES-128 (29444, Q1): both bucket-2 codes carry build_level and a one-line
+    # remedy; extend_to_match also names the unit it extends. Shape only.
+    test "build_level_missing: a bucket-2 row without a level, a remedy or a target" do
+      good = %{
+        "build_level" => "pure_unit",
+        "remedy" => "one line",
+        "extend_target" => %{"reading" => "the unit"}
+      }
+
+      for disp <- ~w(extend_to_match build_test),
+          {field, bad} <- [
+            {"build_level", :absent},
+            {"build_level", "unit"},
+            {"build_level", nil},
+            {"remedy", :absent},
+            {"remedy", ""},
+            {"remedy", "two\nlines"},
+            {"remedy", 7}
+          ] do
+        r = row(a(), Map.put(good, "disposition", disp))
+        r = if bad == :absent, do: Map.delete(r, field), else: Map.put(r, field, bad)
+
+        assert kinds(inputs([a()], [section([r])])) == [:build_level_missing],
+               "#{disp} #{field}=#{inspect(bad)}"
+      end
+
+      no_target =
+        row(a(), good |> Map.delete("extend_target") |> Map.put("disposition", "extend_to_match"))
+
+      assert kinds(inputs([a()], [section([no_target])])) == [:build_level_missing]
+
+      # build_test needs no target, and no other code needs a level.
+      assert kinds(
+               inputs([a()], [
+                 section([
+                   row(a(), %{
+                     "disposition" => "build_test",
+                     "build_level" => "plug",
+                     "remedy" => "x"
+                   })
+                 ])
+               ])
+             ) == []
+
+      assert kinds(inputs([a()], [section([row(a(), %{"disposition" => "fix_sdk"})])])) == []
     end
 
     test "a bound on a row that is not accept_bound is not required" do

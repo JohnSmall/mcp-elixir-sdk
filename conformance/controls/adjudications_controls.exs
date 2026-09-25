@@ -1,5 +1,7 @@
 # Controls for G32, the D-group adjudication guard (MES-126; MES-127 added the
-# D4b plants, the removed-code mutations and the bound_missing mutation).
+# D4b plants, the removed-code mutations and the bound_missing mutation; MES-128
+# added the D2b plants, its two codes' removal and the build_level_missing
+# mutation).
 #
 #     mix run conformance/controls/adjudications_controls.exs positive
 #     mix run conformance/controls/adjudications_controls.exs refusals
@@ -14,9 +16,11 @@
 # requires the refusal it is about and nothing else. Each refusal must NAME G32,
 # because a red for an unrelated reason would otherwise pass the control.
 #
-# `refusals` covers BOTH records: the D4a plants below, and on D4b's record a
+# `refusals` covers ALL THREE records: the D4a plants below; on D4b's record a
 # phantom 4b row, a dropped 4b row, and an accept_bound row with its `bound`
-# removed (bound_missing).
+# removed (bound_missing); and on D2b's record a phantom 2b row, a dropped 2b
+# row, and extend_to_match / build_test rows with their `build_level`,
+# `remedy` or `extend_target` removed (build_level_missing).
 #
 # `mutation` recompiles the guard inside this VM. (1) THE KEY. It binds
 # complete synthetic sections to the REAL views `bucket-4b` and `bucket-5a`,
@@ -31,10 +35,12 @@
 # narrowed, the committed tree audits clean over ZERO records. That is the
 # silent pass the gate-5 pin on `walk_root/0` exists to catch, and the control
 # shows the pin failing under that mutant. (3) THE NEW CODES. With
-# `extend_test` or `accept_bound` removed from the closed set, the committed tree
-# is refused as disposition_outside_set on exactly the D4b rows carrying that
-# code. (4) BOUND_MISSING. With the bound check cut out of the guard, the
-# missing-bound plant audits CLEAN, so the refusal in `refusals` is the check's.
+# `extend_test`, `accept_bound`, `extend_to_match` or `build_test` removed from
+# the closed set, the committed tree is refused as disposition_outside_set on
+# exactly the rows carrying that code. (4) BOUND_MISSING. With the bound check
+# cut out of the guard, the missing-bound plant audits CLEAN, so the refusal in
+# `refusals` is the check's. (5) BUILD_LEVEL_MISSING. Likewise with the build
+# check cut out: the missing-level plant audits CLEAN.
 #
 # `harness` verifies every harness citation in EVERY record against the pinned
 # conformance build: sha256 first, then each byte span. Gate 5 cannot do this,
@@ -54,6 +60,8 @@ defmodule AdjudicationsControls do
   @ves "docs/conformance/buckets/escalated-2026-07-28.json"
   @v0 "docs/conformance/buckets/bucket-0-2026-07-28.json"
   @v4b "docs/conformance/buckets/bucket-4b-2026-07-28.json"
+  @d2b "docs/conformance/adjudications/adjudication-D2b-2026-07-28.json"
+  @v2b "docs/conformance/buckets/bucket-2b-2026-07-28.json"
   @v5a "docs/conformance/buckets/bucket-5a-2026-07-28.json"
   @source "conformance/lib/mcp/conformance/adjudications.ex"
   @default_dist "/tmp/conf11/node_modules/@modelcontextprotocol/conformance/dist/index.js"
@@ -87,6 +95,7 @@ defmodule AdjudicationsControls do
     check("clean", defects == [], Enum.map(defects, &A.format_defect/1))
     check("the D4a record is visited", @record in A.load().walk)
     check("the D4b record is visited", @d4b in A.load().walk)
+    check("the D2b record is visited", @d2b in A.load().walk)
 
     check(
       "reach: #{r["rows_visited"]} rows over #{r["views_bound"]} views",
@@ -224,6 +233,58 @@ defmodule AdjudicationsControls do
       )
     )
 
+    # --- D2b's record ---
+    first_2b = rows(base, @v2b, @d2b) |> hd()
+
+    phantom_2b =
+      Map.put(first_2b, "tag", "oc:client/http-invalid-tool-headers/no-such-check/NoSuchCheck")
+
+    expect(
+      "(D2b) phantom: a 2b row keyed to a check bucket-2b does not project",
+      [:phantom],
+      A.key(phantom_2b),
+      update_rows(base, @v2b, &(&1 ++ [phantom_2b]), @d2b)
+    )
+
+    expect(
+      "(D2b) missing: a 2b row dropped",
+      [:missing],
+      A.key(first_2b),
+      update_rows(base, @v2b, &tl/1, @d2b)
+    )
+
+    extend_row = Enum.find(rows(base, @v2b, @d2b), &(&1["disposition"] == "extend_to_match"))
+    build_row = Enum.find(rows(base, @v2b, @d2b), &(&1["disposition"] == "build_test"))
+
+    for {row, field} <- [
+          {extend_row, "build_level"},
+          {extend_row, "remedy"},
+          {extend_row, "extend_target"},
+          {build_row, "build_level"},
+          {build_row, "remedy"}
+        ] do
+      expect(
+        "(D2b) build_level_missing: the #{row["disposition"]} row with its #{field} removed",
+        [:build_level_missing],
+        A.key(row),
+        drop_field(base, row, field)
+      )
+    end
+
+    expect(
+      "(D2b) build_level_missing: a build_level outside the set",
+      [:build_level_missing],
+      A.key(build_row),
+      update_rows(
+        base,
+        @v2b,
+        &Enum.map(&1, fn r ->
+          if r == build_row, do: Map.put(r, "build_level", "unit"), else: r
+        end),
+        @d2b
+      )
+    )
+
     bound0 = bind(base, @v0)
 
     expect_kinds(
@@ -322,10 +383,15 @@ defmodule AdjudicationsControls do
 
     base = A.load()
     d4b_rows = rows(base, @v4b, @d4b)
+    all_rows = d4b_rows ++ rows(base, @v2b, @d2b)
 
-    for code <- ~w(extend_test accept_bound) do
-      set_def = ~s|po_decision_required suite_defect_upstream extend_test accept_bound)|
-      cut = String.replace(set_def, " #{code}", "")
+    set_def =
+      ~s|suite_defect_upstream extend_test accept_bound\n                   extend_to_match build_test)|
+
+    check("(3) the closed-set definition is found in the source", String.contains?(src, set_def))
+
+    for code <- ~w(extend_test accept_bound extend_to_match build_test) do
+      cut = String.replace(set_def, ~r/(?<=\s)#{code}(?=[\s)])\s?/, "")
       mutant = String.replace(src, set_def, cut)
       check("(3) the no-#{code} mutant differs from the source", mutant != src)
 
@@ -333,10 +399,10 @@ defmodule AdjudicationsControls do
         %{defects: ds} = A.audit(base)
 
         expected =
-          for r <- d4b_rows, r["disposition"] == code, do: {:disposition_outside_set, A.key(r)}
+          for r <- all_rows, r["disposition"] == code, do: {:disposition_outside_set, A.key(r)}
 
         check(
-          "(3) without #{code}, exactly its #{length(expected)} D4b rows are refused as disposition_outside_set",
+          "(3) without #{code}, exactly its #{length(expected)} rows are refused as disposition_outside_set",
           expected != [] and Enum.sort(for(d <- ds, do: {d.kind, d.key})) == Enum.sort(expected),
           Enum.map(ds, &A.format_defect/1)
         )
@@ -352,6 +418,18 @@ defmodule AdjudicationsControls do
       check(
         "(4) with the bound check cut, the missing-bound plant audits CLEAN — the refusal is the check's",
         A.audit(drop_bound(base, bounded)).defects == []
+      )
+    end)
+
+    levelled = Enum.find(rows(base, @v2b, @d2b), &(&1["disposition"] == "build_test"))
+    call = "      build_defects(section.file, k, row) ++\n"
+    unlevelled = String.replace(src, call, "")
+    check("(5) the no-build-check mutant differs from the source", unlevelled != src)
+
+    with_module(unlevelled, fn ->
+      check(
+        "(5) with the build check cut, the missing-level plant audits CLEAN — the refusal is the check's",
+        A.audit(drop_field(base, levelled, "build_level")).defects == []
       )
     end)
 
@@ -376,7 +454,8 @@ defmodule AdjudicationsControls do
 
     check(
       "every record is read: #{inspect(Map.keys(records))}",
-      @record in Map.keys(records) and @d4b in Map.keys(records)
+      @record in Map.keys(records) and @d4b in Map.keys(records) and
+        @d2b in Map.keys(records)
     )
 
     cites =
@@ -385,7 +464,7 @@ defmodule AdjudicationsControls do
           Map.has_key?(c, "harness_sha256"),
           do: c
 
-    for f <- [@record, @d4b] do
+    for f <- [@record, @d4b, @d2b] do
       {:ok, rec} = records[f]
       n = rec |> A.collect() |> Enum.count(&Map.has_key?(&1, "harness_sha256"))
       check("  … #{Path.basename(f)} carries #{n} harness citations", n > 0)
@@ -458,6 +537,15 @@ defmodule AdjudicationsControls do
       @v4b,
       &Enum.map(&1, fn r -> if r == row, do: Map.delete(r, "bound"), else: r end),
       @d4b
+    )
+  end
+
+  defp drop_field(inputs, row, field) do
+    update_rows(
+      inputs,
+      @v2b,
+      &Enum.map(&1, fn r -> if r == row, do: Map.delete(r, field), else: r end),
+      @d2b
     )
   end
 

@@ -4664,6 +4664,38 @@
       "path": "sections[#0].rows[MCP.Server.SubscriptionsDispatchTest/test T-5 JSON mode refuses the method outright a handler with no handle_listen/3 also gets -32601 | a handler that implements no handle_listen/3 likewise yields -32601 for subscriptions/listen | oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404].root_cause.stated_at.bytes",
       "phrase": "12 checks",
       "quantity": "report_r2_http_status_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D2b-2026-07-28.json",
+      "nth": 1,
+      "path": "negatives[client_universe_reconciles].statement",
+      "phrase": "54 client checks",
+      "quantity": "locator_client"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D2b-2026-07-28.json",
+      "nth": 1,
+      "path": "negatives[client_universe_reconciles].statement",
+      "phrase": "15 checks",
+      "quantity": "d2b_bucket_2b_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D2b-2026-07-28.json",
+      "nth": 1,
+      "path": "negatives[client_universe_reconciles].statement",
+      "phrase": "39 checks",
+      "quantity": "d2b_bucket_5b_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D2b-2026-07-28.json",
+      "nth": 1,
+      "path": "what_bucket_2b_is",
+      "phrase": "15 checks",
+      "quantity": "d2b_bucket_2b_checks"
     }
   ],
   "guard": "G31 — MCP.Conformance.InputFigures (MES-120)",
@@ -14533,6 +14565,25 @@
               "matches": "-40[04](-|$)"
             }
           ]
+        }
+      }
+    },
+    "d2b_bucket_2b_checks": {
+      "means": "bucket 2b's checks (client-leg, no crosswalk edge)",
+      "query": {
+        "count": {
+          "at": "rows[]",
+          "in": "docs/conformance/buckets/bucket-2b-2026-07-28.json"
+        }
+      }
+    },
+    "d2b_bucket_5b_checks": {
+      "means": "bucket 5b's distinct checks (the matched client checks)",
+      "query": {
+        "count": {
+          "at": "rows[]",
+          "distinct": "tag",
+          "in": "docs/conformance/buckets/bucket-5b-2026-07-28.json"
         }
       }
     }
