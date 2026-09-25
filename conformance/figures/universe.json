@@ -12,6 +12,7 @@
     "conformance/data/oc-axes-c1.json": "hand_authored",
     "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json": "hand_authored",
     "docs/conformance/adjudications/adjudication-D2a-i-2026-07-28.json": "hand_authored",
+    "docs/conformance/adjudications/adjudication-D2a-ii-2026-07-28.json": "hand_authored",
     "docs/conformance/adjudications/adjudication-D2b-2026-07-28.json": "hand_authored",
     "docs/conformance/adjudications/adjudication-D4b-2026-07-28.json": "hand_authored",
     "docs/conformance/bucket-0-2026-07-28.json": "generated",
@@ -62,6 +63,7 @@
     "docs/conformance/server-2026-07-28.json": "Census of a harness run — evidence.",
     "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json": "D4a's adjudication record (MES-126). It is hand-authored, including the rows and the prose, and it carries `authored_by_hand: true`. G32 holds it against its views. Registered here so that G31 scans its figures from its first commit, with none pending.",
     "docs/conformance/adjudications/adjudication-D2a-i-2026-07-28.json": "D2a-i's adjudication record (MES-129). It is hand-authored, including the rows and the prose, and it carries `authored_by_hand: true`. G32 holds it against bucket 2a, where its section is open and MES-130's closes the view. Registered here so that G31 scans its figures from its first commit, with none pending.",
+    "docs/conformance/adjudications/adjudication-D2a-ii-2026-07-28.json": "D2a-ii's adjudication record (MES-130). It is hand-authored, including the rows and the prose, and it carries `authored_by_hand: true`. G32 holds it against bucket 2a, where its section is closed and so closes the view. Registered here so that G31 scans its figures from its first commit, with none pending.",
     "docs/conformance/adjudications/adjudication-D2b-2026-07-28.json": "D2b's adjudication record (MES-128). It is hand-authored, including the rows and the prose, and it carries `authored_by_hand: true`. G32 holds it against bucket 2b. Registered here so that G31 scans its figures from its first commit, with none pending.",
     "docs/conformance/adjudications/adjudication-D4b-2026-07-28.json": "D4b's adjudication record (MES-127). It is hand-authored, including the rows and the prose, and it carries `authored_by_hand: true`. G32 holds it against bucket 4b. Registered here so that G31 scans its figures from its first commit, with none pending."
   }

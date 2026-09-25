@@ -29,6 +29,18 @@ defmodule MCP.Conformance.AdjudicationsTest do
   # D2a-i's slice of bucket 2a, pinned literally (MES-129 brief: gate 5 pins the
   # selector and requires the section to EQUAL its result, both ways).
   @d2ai_selector %{"field" => "tag", "segment" => 1, "starts_with" => "input-required-result-"}
+  @d2aii "docs/conformance/adjudications/adjudication-D2a-ii-2026-07-28.json"
+  # D2a-ii's slice, the literal complement of D2a-i's (MES-130 brief; PM 29491).
+  @d2aii_selector %{
+    "field" => "tag",
+    "segment" => 1,
+    "not_starts_with" => "input-required-result-"
+  }
+  # D2a-ii's covered-elsewhere needle, pinned here and required to equal the
+  # record's: the stimuli, headers and result members its checks send or read.
+  @d2aii_needle ~r{ttlMs|cacheScope|prompts/get|resources/templates|completion/complete|send_progress|progressToken|notifications/progress|list_changed|listChanged|-32_021|-32021|-32_020|mcp-protocol-version|MCP-Protocol-Version|resources/subscribe|resources/unsubscribe|"origin"|"host"|blob|logLevel}
+  @v4a "docs/conformance/buckets/bucket-4a-2026-07-28.json"
+  @v5a "docs/conformance/buckets/bucket-5a-2026-07-28.json"
   @ves "docs/conformance/buckets/escalated-2026-07-28.json"
   @locator "docs/conformance/oc-emitting-sites-2026-07-28.json"
   @in_scope "docs/conformance/in-scope-2026-07-28.json"
@@ -239,7 +251,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # predicate verbatim, and the record never renders a check here as lacking a
     # test (a check may be covered outside ET-CC). Quoted `bytes` are exempt:
     # they are other files' text, and the anchor itself quotes the rule.
-    test "rendering guard: D2b's and D2a-i's population sentences are the predicate verbatim",
+    test "rendering guard: D2b's, D2a-i's and D2a-ii's population sentences are the predicate verbatim",
          %{inputs: inputs} do
       for f <- [@d2b, @d2ai] do
         {:ok, record} = inputs.records[f]
@@ -247,6 +259,13 @@ defmodule MCP.Conformance.AdjudicationsTest do
         assert A.verify(record["rendering_guard"]["anchor"], inputs.source_fun) == :ok
         assert record["rendering_guard"]["anchor"]["bytes"] =~ @population_sentence
       end
+
+      # D2a-ii keeps D2a-i's anchor by reference (PM 29491, F3) and cites the
+      # view's own title, whose wording it records rather than resolves.
+      {:ok, ii} = inputs.records[@d2aii]
+      assert rendering_defects(ii) == []
+      assert ii["rendering_guard"]["anchor_ref"] =~ "D2a-i's rendering_guard.anchor"
+      assert A.verify(ii["rendering_guard"]["view_title"], inputs.source_fun) == :ok
     end
 
     test "rendering guard: goes red on 'untested', and on a paraphrase", %{inputs: inputs} do
@@ -356,7 +375,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
          %{inputs: inputs} do
       {:ok, record} = inputs.records[@d2ai]
       assert Map.take(record["selector"], ~w(field segment starts_with)) == @d2ai_selector
-      assert selector_equality(d2ai_rows(inputs), json(@v2a)["rows"]) == :ok
+      assert selector_equality(d2ai_rows(inputs), json(@v2a)["rows"], @d2ai_selector) == :ok
     end
 
     test "the selector equality refuses a non-MRTR 2a row and a dropped MRTR row",
@@ -367,13 +386,16 @@ defmodule MCP.Conformance.AdjudicationsTest do
       planted = rows ++ [%{"member" => nil, "claim" => nil, "tag" => other["tag"]}]
 
       assert {:error, {:rows_differ, [[nil, nil, tag]], []}} =
-               selector_equality(planted, view_rows)
+               selector_equality(planted, view_rows, @d2ai_selector)
 
       assert tag == other["tag"]
       refute String.starts_with?(Enum.at(String.split(tag, "/"), 1), "input-required-result-")
 
       [first | rest] = rows
-      assert {:error, {:rows_differ, [], [dropped]}} = selector_equality(rest, view_rows)
+
+      assert {:error, {:rows_differ, [], [dropped]}} =
+               selector_equality(rest, view_rows, @d2ai_selector)
+
       assert dropped == A.key(first)
     end
 
@@ -792,9 +814,623 @@ defmodule MCP.Conformance.AdjudicationsTest do
       refute Enum.any?(json(@v2a)["rows"], &String.ends_with?(&1["tag"], "/" <> absent))
     end
 
+    # --- D2a-ii (MES-130): the rest of bucket 2a, a CLOSED section ---
+
+    test "D2a-ii's record holds one CLOSED section on bucket 2a", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2aii]
+      assert for(s <- record["sections"], do: {s["view"], s["closure"]}) == [{@v2a, "closed"}]
+    end
+
+    # The MES-130 brief: the slice is declared by the complement of D2a-i's
+    # selector, pinned literally, and the section EQUALS its result both ways.
+    test "D2a-ii's selector is the pinned one, and its rows EQUAL the selector's result",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2aii]
+      assert Map.take(record["selector"], ~w(field segment not_starts_with)) == @d2aii_selector
+      assert selector_equality(d2aii_rows(inputs), json(@v2a)["rows"], @d2aii_selector) == :ok
+    end
+
+    # The two selectors PARTITION the view: computed over the view, disjoint,
+    # with union equal to the view. And no tag can satisfy both, because they
+    # test the same segment against the same prefix, one negated.
+    test "the D2a-i and D2a-ii selectors partition bucket 2a, and the sections meet them",
+         %{inputs: inputs} do
+      view_rows = json(@v2a)["rows"]
+      assert partition(d2ai_rows(inputs), d2aii_rows(inputs), view_rows) == :ok
+
+      i = selected(view_rows, @d2ai_selector) |> MapSet.new(&A.key/1)
+      ii = selected(view_rows, @d2aii_selector) |> MapSet.new(&A.key/1)
+      assert MapSet.disjoint?(i, ii)
+      assert MapSet.union(i, ii) == MapSet.new(view_rows, &A.key/1)
+      assert MapSet.size(i) == 30 and MapSet.size(ii) == 48
+
+      assert @d2ai_selector["starts_with"] == @d2aii_selector["not_starts_with"]
+      assert @d2ai_selector["segment"] == @d2aii_selector["segment"]
+      assert @d2ai_selector["field"] == @d2aii_selector["field"]
+    end
+
+    test "the partition refuses a row planted into both slices, and a view row in neither",
+         %{inputs: inputs} do
+      view_rows = json(@v2a)["rows"]
+      i = d2ai_rows(inputs)
+      [ii_first | ii_rest] = ii = d2aii_rows(inputs)
+
+      assert partition(i ++ [ii_first], ii, view_rows) == {:error, {:overlap, [A.key(ii_first)]}}
+      assert partition(i, ii_rest, view_rows) == {:error, {:gap, [A.key(ii_first)]}}
+
+      # ...and each selector-equality unit names the same row.
+      assert {:error, {:rows_differ, [k], []}} =
+               selector_equality(i ++ [ii_first], view_rows, @d2ai_selector)
+
+      assert k == A.key(ii_first)
+
+      assert {:error, {:rows_differ, [], [^k]}} =
+               selector_equality(ii_rest, view_rows, @d2aii_selector)
+    end
+
+    # PM ratification on MES-130 (29491): per check, the disposition and the level.
+    test "D2a-ii's dispositions and build levels are the ratified ones, per check",
+         %{inputs: inputs} do
+      got =
+        for r <- d2aii_rows(inputs), into: %{} do
+          [_ | rest] = String.split(r["tag"], "/")
+          {Enum.join(rest, "/"), {r["disposition"], r["build_level"]}}
+        end
+
+      ss = &("server-stateless/sep-2575-" <> &1)
+      po = {"po_decision_required", nil}
+      blocked = {"blocked_on_sdk_gap", "plug"}
+      ext = &{"extend_to_match", &1}
+      build = &{"build_test", &1}
+
+      wsv =
+        for {s, level} <- [
+              {"caching", "plug"},
+              {"completion-complete", "mock_transport"},
+              {"prompts-get-embedded-resource", "mock_transport"},
+              {"prompts-get-simple", "mock_transport"},
+              {"prompts-get-with-args", "mock_transport"},
+              {"prompts-get-with-image", "mock_transport"},
+              {"prompts-list", "mock_transport"},
+              {"resources-list", "mock_transport"},
+              {"resources-read-binary", "plug"},
+              {"resources-read-text", "plug"},
+              {"resources-templates-read", "plug"},
+              {"sep-2164-resource-not-found", "mock_transport"},
+              {"tools-call-audio", "mock_transport"},
+              {"tools-call-error", "mock_transport"},
+              {"tools-call-mixed-content", "mock_transport"},
+              {"tools-list", "plug"}
+            ],
+            into: %{},
+            do: {s <> "/wire-schema-valid/WireSchemaValid", ext.(level)}
+
+      assert got ==
+               wsv
+               |> Map.merge(%{
+                 "tools-call-with-progress/wire-schema-valid/WireSchemaValid" => build.("plug"),
+                 ss.("http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-meta") => po,
+                 ss.(
+                   "http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-protocol-version"
+                 ) => po,
+                 ss.(
+                   "http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities"
+                 ) => po,
+                 ss.("request-meta-invalid-missing-protocol-version/RequestMetaInvalid") => po,
+                 ss.("request-meta-invalid-missing-client-capabilities/RequestMetaInvalid") => po,
+                 ss.("server-unsupported-version-error/ServerUnsupportedVersionError") => po,
+                 ss.("http-server-unsupported-version-400/HttpServerUnsupportedVersion400") => po,
+                 ss.(
+                   "http-server-method-not-found-404-resources-subscribe/HttpServerMethodNotFound404resourcessubscribe"
+                 ) => blocked,
+                 ss.(
+                   "http-server-method-not-found-404-resources-unsubscribe/HttpServerMethodNotFound404resourcesunsubscribe"
+                 ) => blocked,
+                 ss.("missing-capability-http-400/MissingCapabilityHttp400") => blocked,
+                 ss.("server-rejects-undeclared-capability/ServerRejectsUndeclaredCapability") =>
+                   blocked,
+                 ss.("http-server-header-mismatch-400/HttpServerHeaderMismatch400") => blocked,
+                 "sep-2164-resource-not-found/sep-2164-data-uri/ResourcesNotFoundDataUri" =>
+                   {"blocked_on_sdk_gap", "mock_transport"},
+                 "caching/sep-2549-prompts-list-caching-hints/PromptsListCachingHints" =>
+                   ext.("plug"),
+                 "caching/sep-2549-resources-list-caching-hints/ResourcesListCachingHints" =>
+                   ext.("plug"),
+                 "caching/sep-2549-resources-templates-list-caching-hints/ResourcesTemplatesListCachingHints" =>
+                   ext.("plug"),
+                 "caching/sep-2549-resources-read-caching-hints/ResourcesReadCachingHints" =>
+                   ext.("plug"),
+                 "dns-rebinding-protection/localhost-host-valid-accepted/LocalhostHostAccepted" =>
+                   ext.("plug"),
+                 "prompts-get-with-args/prompts-get-with-args/PromptsGetWithArgs" =>
+                   ext.("mock_transport"),
+                 "resources-read-binary/resources-read-binary/ResourcesReadBinary" =>
+                   ext.("mock_transport"),
+                 "resources-templates-read/resources-templates-read/ResourcesTemplateRead" =>
+                   ext.("mock_transport"),
+                 "sep-2164-resource-not-found/sep-2164-no-empty-contents/ResourcesNotFoundNoEmptyContents" =>
+                   ext.("mock_transport"),
+                 "server-sse-multiple-streams/server-accepts-multiple-post-streams/ServerAcceptsMultiplePostStreams" =>
+                   ext.("live_http"),
+                 "server-sse-multiple-streams/server-sse-streams-functional/ServerSSEStreamsFunctional" =>
+                   build.("live_http"),
+                 ss.(
+                   "http-server-no-independent-requests-on-stream/HttpServerNoIndependentRequestsOnStream"
+                 ) => build.("plug"),
+                 ss.("server-declares-prompts-in-discover/ServerDeclaresPromptsInDiscover") =>
+                   ext.("pure_unit"),
+                 ss.("server-no-log-without-loglevel/ServerNoLogWithoutLogLevel") =>
+                   build.("plug"),
+                 ss.(
+                   "server-sends-prompts-list-changed-on-subscription/ServerSendsPromptsListChangedOnSubscription"
+                 ) => ext.("live_http"),
+                 ss.(
+                   "server-sends-tools-list-changed-on-subscription/ServerSendsToolsListChangedOnSubscription"
+                 ) => ext.("live_http"),
+                 "tools-call-with-progress/tools-call-with-progress/ToolsCallWithProgress" =>
+                   build.("plug"),
+                 "tools-list/tools-name-format/ToolsNameFormat" => ext.("plug")
+               })
+    end
+
+    # The status premise: the census window from the scenario line through the
+    # status line (the discriminator line inside it when the tag carries one).
+    # The red rows are exactly the po and blocked rows; DataUri is the WARNING.
+    test "each D2a-ii row cites its own check's status at the accepted run", %{inputs: inputs} do
+      rows = d2aii_rows(inputs)
+      assert length(rows) == 48
+
+      statuses =
+        for r <- rows do
+          c = r["oc_status_at_accepted_run"]
+          assert c["file"] == @in_scope
+          assert A.verify(c, inputs.source_fun) == :ok
+          [_, scenario, _, name_disc] = String.split(r["tag"], "/")
+          [name | disc] = String.split(name_disc, "#")
+          assert [^scenario, ^name, status] = census_echo(r), r["tag"]
+          for d <- disc, do: assert(c["bytes"] =~ ~s("#{d}"\n), r["tag"])
+          {r["disposition"], status}
+        end
+
+      assert Enum.frequencies(statuses) == %{
+               {"po_decision_required", "FAILURE"} => 7,
+               {"blocked_on_sdk_gap", "FAILURE"} => 5,
+               {"blocked_on_sdk_gap", "WARNING"} => 1,
+               {"extend_to_match", "SUCCESS"} => 30,
+               {"build_test", "SUCCESS"} => 5
+             }
+
+      [warn] = for r <- rows, List.last(census_echo(r)) == "WARNING", do: r["tag"]
+      assert String.ends_with?(warn, "/ResourcesNotFoundDataUri")
+    end
+
+    # The brief: for every SUCCESS, record whether the SDK earned it or the
+    # adapter did (why_green). A null-passable green says so and is no evidence.
+    test "every SUCCESS D2a-ii row carries why_green, and its citations hold", %{inputs: inputs} do
+      rows = d2aii_rows(inputs)
+      green = Enum.filter(rows, &(List.last(census_echo(&1)) == "SUCCESS"))
+      assert length(green) == 35
+      assert d2aii_why_green_defects(rows, inputs.source_fun) == []
+
+      assert green |> Enum.map(& &1["why_green"]["earned_by"]) |> Enum.frequencies() ==
+               %{"sdk" => 10, "adapter" => 8, "none_null_passable" => 17}
+
+      for r <- green,
+          r["why_green"]["earned_by"] == "none_null_passable",
+          do: assert(Map.has_key?(r, "null_passability"), r["tag"])
+    end
+
+    test "the D2a-ii why_green pin refuses a SUCCESS row without it, or with an unknown earner",
+         %{inputs: inputs} do
+      rows = d2aii_rows(inputs)
+      [r | _] = Enum.filter(rows, &(List.last(census_echo(&1)) == "SUCCESS"))
+      dropped = Enum.map(rows, &if(&1 == r, do: Map.delete(&1, "why_green"), else: &1))
+      assert d2aii_why_green_defects(dropped, inputs.source_fun) == [r["tag"]]
+
+      renamed =
+        Enum.map(rows, &if(&1 == r, do: put_in(&1, ["why_green", "earned_by"], "luck"), else: &1))
+
+      assert d2aii_why_green_defects(renamed, inputs.source_fun) == [r["tag"]]
+    end
+
+    # MES-130 29500, B1: ServerSSEStreamsFunctional was committed as earned_by
+    # sdk with an adapter citation only, and the pin above admitted it. Every
+    # SDK green now cites lib/; the committed shape is planted back and refused.
+    test "an SDK-earned green must cite code under lib/, and SSEFunctional as committed is refused",
+         %{inputs: inputs} do
+      rows = d2aii_rows(inputs)
+      sdk = Enum.filter(rows, &(get_in(&1, ["why_green", "earned_by"]) == "sdk"))
+      assert length(sdk) == 10
+
+      for r <- sdk,
+          do: assert(Enum.any?(A.collect(r["why_green"]), &(&1["file"] =~ ~r/^lib\//)), r["tag"])
+
+      [r] = Enum.filter(sdk, &String.ends_with?(&1["tag"], "/ServerSSEStreamsFunctional"))
+      as_committed = Map.update!(r, "why_green", &Map.take(&1, ~w(earned_by statement adapter)))
+
+      assert A.collect(as_committed["why_green"]) |> Enum.map(& &1["file"]) == [
+               "conformance/server_adapter.exs"
+             ]
+
+      planted = Enum.map(rows, &if(&1 == r, do: as_committed, else: &1))
+      assert d2aii_why_green_defects(planted, inputs.source_fun) == [r["tag"]]
+    end
+
+    # PM ratification on MES-130 (29491, Q1 and Q2): the R2 criterion, stated
+    # once and applied to every row. The carrying rows point at D4a's ONE
+    # fix_sdk R2 row by derived key, and every other row is read in not_carrying.
+    test "each D2a-ii depends_on_fix resolves to D4a's fix_sdk R2 row, on exactly the pinned rows",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2aii]
+      rows = d2aii_rows(inputs)
+      {carrying, rest} = Enum.split_with(rows, &Map.has_key?(&1, "depends_on_fix"))
+      name = &(&1["tag"] |> String.split("/") |> List.last())
+
+      assert carrying |> Enum.map(name) |> Enum.sort() ==
+               Enum.sort(~w(
+                 HttpServerMetaInvalid400#missing-meta
+                 HttpServerMetaInvalid400#missing-protocol-version
+                 HttpServerMetaInvalid400#missing-client-capabilities
+                 HttpServerUnsupportedVersion400
+                 HttpServerMethodNotFound404resourcessubscribe
+                 HttpServerMethodNotFound404resourcesunsubscribe
+                 MissingCapabilityHttp400
+                 HttpServerHeaderMismatch400
+               ))
+
+      statement = record["depends_on_fix_statement"]
+      not_carrying = statement["not_carrying"]
+
+      assert rest |> Enum.map(& &1["tag"]) |> Enum.sort() ==
+               not_carrying |> Map.keys() |> Enum.sort()
+
+      assert Enum.all?(Map.values(not_carrying), &(is_binary(&1) and &1 != ""))
+      assert statement["input_requests_criterion"]["carrying"] == []
+
+      for r <- carrying do
+        ptr = r["depends_on_fix"]
+        assert r["disposition"] != "fix_sdk"
+        {:ok, target} = inputs.records[ptr["record"]]
+
+        [hit] =
+          for s <- target["sections"],
+              s["view"] == ptr["view"],
+              t <- s["rows"],
+              A.key(t) == [ptr["member"], ptr["claim"], ptr["tag"]],
+              do: t
+
+        assert hit["disposition"] == "fix_sdk" and ptr["disposition_there"] == "fix_sdk"
+        assert hit["root_cause"]["id"] == "R2" and ptr["root_cause_there"] == "R2"
+      end
+    end
+
+    # The brief: R1 and R3 are with the PO. Each po row points at D4a's R1 rows
+    # by derived key, or at D4a's decision_row, and names its questions.
+    test "each D2a-ii po row's pointer resolves in D4a's record", %{inputs: inputs} do
+      {:ok, d4a} = inputs.records[@d4a]
+      po = for r <- d2aii_rows(inputs), r["disposition"] == "po_decision_required", do: r
+      assert length(po) == 7
+
+      qs =
+        for r <- po, into: %{} do
+          p = r["po_decision"]
+
+          for ptr <- p["rows"] || [] do
+            [hit] =
+              for s <- d4a["sections"],
+                  s["view"] == ptr["view"],
+                  t <- s["rows"],
+                  A.key(t) == [ptr["member"], ptr["claim"], ptr["tag"]],
+                  do: t
+
+            assert hit["disposition"] == "po_decision_required"
+            assert hit["root_cause"]["id"] == "R1" and ptr["root_cause_there"] == "R1"
+          end
+
+          if dr = p["decision_row"] do
+            assert dr["record"] == @d4a and dr["field"] == "decision_row"
+            assert dr["citation"] == d4a["decision_row"]["stated_at"]
+            assert A.verify(dr["citation"], inputs.source_fun) == :ok
+          end
+
+          assert (p["rows"] || []) != [] or p["decision_row"] != nil
+
+          {r["tag"] |> String.split("/") |> Enum.drop(2) |> Enum.join("/"),
+           {p["questions"], p["either"] == true}}
+        end
+
+      assert qs == %{
+               "sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-meta" =>
+                 {["Q1a", "Q1b"], true},
+               "sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-protocol-version" =>
+                 {["Q1a"], false},
+               "sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities" =>
+                 {["Q1b"], false},
+               "sep-2575-request-meta-invalid-missing-protocol-version/RequestMetaInvalid" =>
+                 {["Q1a"], false},
+               "sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid" =>
+                 {["Q1b"], false},
+               "sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError" =>
+                 {["Q2"], false},
+               "sep-2575-http-server-unsupported-version-400/HttpServerUnsupportedVersion400" =>
+                 {["Q2"], false}
+             }
+    end
+
+    # PM ratification on MES-130 (29491, Q2, Q3 and the R5/DataUri ruling): the
+    # owners, and each gap cited in this tree by address and bytes.
+    test "each blocked D2a-ii row names its ratified owner and cites its gap's record here",
+         %{inputs: inputs} do
+      owners =
+        for r <- d2aii_rows(inputs), r["disposition"] == "blocked_on_sdk_gap", into: %{} do
+          gap = r["sdk_gap"]
+          assert A.verify(gap["record"], inputs.source_fun) == :ok
+          {r["tag"] |> String.split("/") |> List.last(), {gap["owner"], gap["record"]["file"]}}
+        end
+
+      assert owners == %{
+               "HttpServerMethodNotFound404resourcessubscribe" =>
+                 {"MES-43", "docs/sprint_4_issues.md"},
+               "HttpServerMethodNotFound404resourcesunsubscribe" =>
+                 {"MES-43", "docs/sprint_4_issues.md"},
+               "MissingCapabilityHttp400" => {"MES-43", "docs/sprint_4_issues.md"},
+               "ServerRejectsUndeclaredCapability" => {"MES-43", "docs/sprint_4_issues.md"},
+               "ResourcesNotFoundDataUri" => {"MES-43", "docs/sprint_4_issues.md"},
+               "HttpServerHeaderMismatch400" =>
+                 {"MES-62", "docs/conformance/report-2026-07-28.md"}
+             }
+    end
+
+    # The closure rule, applied to D2a-ii with its own catalogue. lands_when is
+    # derived from the cited records alone (sdk_gap.owner_record, depends_on_fix,
+    # po_decision), then held against lands_when and the remedy's tokens, both
+    # ways; every comment an owner_record names must be a catalogued phrase.
+    test "D2a-ii's remedies state exactly the landing conditions their rows cite",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2aii]
+      conds = record["landing_conditions"]["conditions"]
+      assert d2aii_closure_defects(d2aii_rows(inputs), conds) == []
+    end
+
+    test "D2a-ii's landing-condition catalogue is exactly the pinned one", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2aii]
+
+      pinned =
+        for {id, c} <- record["landing_conditions"]["conditions"],
+            into: %{},
+            do:
+              {id,
+               {c["owner_record_phrase"], c["depends_on_fix_tag"], c["po_questions"],
+                c["either"] == true, c["remedy_token"]}}
+
+      r2 =
+        "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404"
+
+      assert pinned == %{
+               "d4a_fix_sdk_r2" =>
+                 {"comment 29410 (a)", r2, nil, false, "(D4a fix_sdk R2, depends_on_fix)"},
+               "mes43_29490" => {"comment 29490", nil, nil, false, "(MES-43 comment 29490)"},
+               "mes62_r4" => {"MES-62 body", nil, nil, false, "(MES-62 body, R4)"},
+               "po_q1a" => {nil, nil, ["Q1a"], false, "(PO Q1a, MES-126 29420)"},
+               "po_q1b" => {nil, nil, ["Q1b"], false, "(PO Q1b, MES-126 29420)"},
+               "po_q1a_or_q1b" =>
+                 {nil, nil, ["Q1a", "Q1b"], true, "(PO Q1a or Q1b, MES-126 29420)"},
+               "po_q2" => {nil, nil, ["Q2"], false, "(PO Q2, MES-126 29407)"}
+             }
+    end
+
+    # Deliverable (4): each new catalogue entry is refused once removed, and the
+    # closure refuses an owner_record naming an uncatalogued record and a remedy
+    # missing its token. Each plant names the row it reddens.
+    test "the D2a-ii closure refuses a removed condition, an uncatalogued record, a missing token",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2aii]
+      conds = record["landing_conditions"]["conditions"]
+      rows = d2aii_rows(inputs)
+
+      for id <- Map.keys(conds) do
+        users = for r <- rows, id in r["lands_when"], do: r["tag"]
+        assert users != [], id
+        got = d2aii_closure_defects(rows, Map.delete(conds, id))
+
+        assert Enum.sort(Enum.uniq(for {t, _} <- got, t != :catalogue, do: t)) == Enum.sort(users),
+               id
+      end
+
+      [blocked | _] =
+        for r <- rows,
+            is_binary(get_in(r, ["sdk_gap", "owner_record"])),
+            r["sdk_gap"]["owner_record"] =~ "comment 29490",
+            do: r
+
+      stray =
+        Enum.map(rows, fn r ->
+          if r == blocked,
+            do:
+              update_in(
+                r,
+                ["sdk_gap", "owner_record"],
+                &(&1 <> " See also MES-43 comment 29999.")
+              ),
+            else: r
+        end)
+
+      assert {blocked["tag"], {:uncatalogued, ["comment 29999"]}} in d2aii_closure_defects(
+               stray,
+               conds
+             )
+
+      tokenless =
+        Enum.map(rows, fn r ->
+          if r == blocked,
+            do: Map.update!(r, "remedy", &String.replace(&1, "(MES-43 comment 29490)", "")),
+            else: r
+        end)
+
+      assert {blocked["tag"], {:token, "mes43_29490"}} in d2aii_closure_defects(tokenless, conds)
+
+      unused = Map.put(conds, "dead_condition", %{"remedy_token" => "(nobody)"})
+      assert {:catalogue, {:unused, ["dead_condition"]}} in d2aii_closure_defects(rows, unused)
+    end
+
+    test "D2a-ii's emitting-site grouping is measured from the locator", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2aii]
+      tags = MapSet.new(d2aii_rows(inputs), & &1["tag"])
+      sites = for r <- json(@locator)["rows"], r["token"] in tags, do: {r["token"], r["sites"]}
+      assert length(sites) == MapSet.size(tags)
+
+      {generic, substantive} =
+        Enum.split_with(sites, fn {_, ss} ->
+          Enum.map(ss, & &1["byte_span"]) == [[325_368, 325_721]]
+        end)
+
+      e = record["emitting_sites"]
+      assert e["repeated_generic_validator"]["site_byte_span"] == [325_368, 325_721]
+      assert e["repeated_generic_validator"]["rows"] == length(generic)
+      assert Enum.all?(generic, fn {t, _} -> String.ends_with?(t, "/WireSchemaValid") end)
+      assert e["substantive"]["rows"] == length(substantive)
+
+      assert e["substantive"]["scenarios"] ==
+               substantive
+               |> Enum.map(fn {t, _} -> Enum.at(String.split(t, "/"), 1) end)
+               |> Enum.uniq()
+               |> length()
+    end
+
+    # A7, by the amended rule (PM ratification on MES-130, 29491, Q5), over BOTH
+    # slices: D2a-i's 16 come out unchanged, and every emission reading is used
+    # by a scenario the counts alone cannot place, and by no other.
+    test "null_passability over both slices is exactly what the amended rule computes",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2aii]
+      readings = record["null_control_statement"]["emission_readings"]
+      null = json("docs/conformance/server-2026-07-28-null-control.json")["scenarios"]
+      loc = for r <- json(@locator)["rows"], r["leg"] == "server", do: r
+
+      {placed, needs_reading} = null_placements(null, loc, readings)
+
+      assert needs_reading |> MapSet.new() == readings |> Map.keys() |> MapSet.new()
+
+      for {rows, want} <- [{d2ai_rows(inputs), 16}, {d2aii_rows(inputs), 21}] do
+        for r <- rows do
+          [_, scenario, _, name_disc] = String.split(r["tag"], "/")
+          [name | _] = String.split(name_disc, "#")
+          passed = name in Map.fetch!(placed, scenario)
+          assert Map.has_key?(r, "null_passability") == passed, r["tag"]
+
+          if c = get_in(r, ["null_passability", "null_control"]) do
+            assert A.verify(c, inputs.source_fun) == :ok
+            assert c["bytes"] =~ ~s("artefact_dir": "server-#{scenario}-)
+          end
+        end
+
+        assert Enum.count(rows, &Map.has_key?(&1, "null_passability")) == want
+      end
+    end
+
+    test "the amended null rule refuses a reading that does not reconcile, and a missing one",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2aii]
+      readings = record["null_control_statement"]["emission_readings"]
+      null = json("docs/conformance/server-2026-07-28-null-control.json")["scenarios"]
+      loc = for r <- json(@locator)["rows"], r["leg"] == "server", do: r
+
+      {placed, _} = null_placements(null, loc, readings)
+      assert "WireSchemaValid" in placed["caching"]
+
+      # Without caching's reading, its SUCCESS cannot be placed: no claim at all.
+      {bare, _} = null_placements(null, loc, Map.delete(readings, "caching"))
+      assert bare["caching"] == []
+
+      # A reading that moves the SKIPPED onto the validator places the wrong row.
+      wrong = put_in(readings, ["caching", "not_success"], %{"WireSchemaValid" => "SKIPPED"})
+      {moved, _} = null_placements(null, loc, wrong)
+      assert moved["caching"] == ["ResourcesReadCachingHints"]
+
+      # A reading whose counts do not reconcile is no placement.
+      skew = put_in(readings, ["tools-list", "not_emitted"], [])
+      {skewed, _} = null_placements(null, loc, skew)
+      assert skewed["tools-list"] == []
+    end
+
+    # A2d: the server universe from the LOCATOR (not a bucket view) reconciles
+    # with bucket 2a and the matched checks, by arithmetic AND by set.
+    test "D2a-ii's server-universe negative is measured, not held", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2aii]
+      [neg] = Enum.filter(record["negatives"], &(&1["id"] == "server_universe_reconciles"))
+
+      u =
+        for r <- json(@locator)["rows"], r["leg"] == "server", into: MapSet.new(), do: r["token"]
+
+      server = fn view ->
+        for r <- json(view)["rows"],
+            String.starts_with?(r["tag"], "oc:server/"),
+            into: MapSet.new(),
+            do: r["tag"]
+      end
+
+      [a4, b4, a5, esc, two] = Enum.map([@v4a, @v4b, @v5a, @ves, @v2a], server)
+      matched = Enum.reduce([a4, b4, a5, esc], &MapSet.union/2)
+
+      cells =
+        for c <- json(@crosswalk)["cells"],
+            String.starts_with?(c["tag"], "oc:server/"),
+            into: MapSet.new(),
+            do: c["tag"]
+
+      i = MapSet.new(d2ai_rows(inputs), & &1["tag"])
+      ii = MapSet.new(d2aii_rows(inputs), & &1["tag"])
+
+      assert neg["count"] == %{
+               "server_universe" => MapSet.size(u),
+               "bucket_2a" => MapSet.size(two),
+               "d2a_i" => MapSet.size(i),
+               "d2a_ii" => MapSet.size(ii),
+               "matched" => MapSet.size(matched),
+               "bucket_4a" => MapSet.size(a4),
+               "bucket_4b" => MapSet.size(b4),
+               "bucket_5a" => MapSet.size(a5),
+               "escalated" => MapSet.size(esc),
+               "overlap_4a_4b" => MapSet.size(MapSet.intersection(a4, b4))
+             }
+
+      assert MapSet.size(u) == MapSet.size(two) + MapSet.size(matched)
+
+      assert MapSet.size(matched) ==
+               MapSet.size(a4) + MapSet.size(b4) + MapSet.size(a5) + MapSet.size(esc) -
+                 MapSet.size(MapSet.intersection(a4, b4))
+
+      relations = %{
+        "bucket_2a_and_matched_disjoint" => MapSet.disjoint?(two, matched),
+        "bucket_2a_union_matched_equals_universe" => MapSet.union(two, matched) == u,
+        "matched_equals_crosswalk_server_cells" => matched == cells,
+        "slices_partition_bucket_2a" => MapSet.union(i, ii) == two and MapSet.disjoint?(i, ii)
+      }
+
+      assert neg["set_relations"] == relations
+      assert Enum.all?(Map.values(relations))
+      assert neg["overlap"] == a4 |> MapSet.intersection(b4) |> Enum.sort()
+    end
+
+    # The covered_elsewhere universe, recomputed from the register with the
+    # needle pinned HERE, not read from the record it checks.
+    test "D2a-ii's covered-elsewhere universe is measured from the register", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2aii]
+      [neg] = Enum.filter(record["negatives"], &(&1["id"] == "covered_elsewhere_universe"))
+      assert neg["needle"] == Regex.source(@d2aii_needle)
+      assert neg["units"] == non_etcc_units(@d2aii_needle)
+      assert length(neg["units"]) == 36
+
+      for r <- d2aii_rows(inputs),
+          u <- r["covered_elsewhere"]["units"] || [] do
+        assert u["register_key"] in neg["units"]
+        assert A.verify(u["test"], inputs.source_fun) == :ok
+      end
+    end
+
     # MES-120's K1: a record under docs/conformance/ is inside G31, and a file
     # added after G31's baseline may carry no pending figure.
-    for record <- [@d4a, @d4b, @d2b, @d2ai] do
+    for record <- [@d4a, @d4b, @d2b, @d2ai, @d2aii] do
       test "#{Path.basename(record)} is hand_authored to G31 and has no pending figure" do
         universe = "conformance/figures/universe.json" |> File.read!() |> Jason.decode!()
         ledger = "conformance/figures/ledger.json" |> File.read!() |> Jason.decode!()
@@ -842,9 +1478,11 @@ defmodule MCP.Conformance.AdjudicationsTest do
           do: assert(et_test_owner(r, inputs.source_fun) == :ok, inspect(A.key(r)))
     end
 
-    test "the rows the ownership check skips are exactly bucket 2b's and D2a-i's slice, each in its own record",
+    test "the rows the ownership check skips are exactly bucket 2b's and both bucket-2a slices, each in its own record",
          %{inputs: inputs} do
       assert skip_pin(inputs.records) == :ok
+      {_, skipped} = ownership_split(inputs.records)
+      assert length(skipped) == 15 + 30 + 48
     end
 
     test "the skip pin refuses a member-less row planted into D4a's section", %{inputs: inputs} do
@@ -1013,7 +1651,8 @@ defmodule MCP.Conformance.AdjudicationsTest do
     want =
       Enum.sort(
         for(vr <- json(@v2b)["rows"], do: {@d2b, @v2b, A.key(vr)}) ++
-          for(vr <- selected(json(@v2a)["rows"], @d2ai_selector), do: {@d2ai, @v2a, A.key(vr)})
+          for(vr <- selected(json(@v2a)["rows"], @d2ai_selector), do: {@d2ai, @v2a, A.key(vr)}) ++
+          for(vr <- selected(json(@v2a)["rows"], @d2aii_selector), do: {@d2aii, @v2a, A.key(vr)})
       )
 
     if got == want,
@@ -1033,15 +1672,168 @@ defmodule MCP.Conformance.AdjudicationsTest do
     rows
   end
 
+  defp d2aii_rows(inputs) do
+    {:ok, record} = inputs.records[@d2aii]
+    [%{"rows" => rows}] = record["sections"]
+    rows
+  end
+
+  # :ok, or the keys in BOTH slices, or the view keys in NEITHER. Computed over
+  # the view, so a row the view does not project cannot hide in either answer.
+  defp partition(i_rows, ii_rows, view_rows) do
+    i = MapSet.new(i_rows, &A.key/1)
+    ii = MapSet.new(ii_rows, &A.key/1)
+    view = MapSet.new(view_rows, &A.key/1)
+
+    cond do
+      not MapSet.disjoint?(i, ii) ->
+        {:error, {:overlap, i |> MapSet.intersection(ii) |> Enum.sort()}}
+
+      MapSet.union(i, ii) != view ->
+        {:error, {:gap, view |> MapSet.difference(MapSet.union(i, ii)) |> Enum.sort()}}
+
+      true ->
+        :ok
+    end
+  end
+
+  @earners ~w(sdk adapter none_null_passable)
+
+  # The tags of SUCCESS rows whose why_green is absent, names no known earner,
+  # carries no statement, or (for an SDK or adapter green) carries no citation
+  # that holds its bytes. An SDK green must also cite code under lib/: a claim
+  # that the SDK earned it is a claim about the SDK's bytes (MES-130 29500, B1).
+  defp d2aii_why_green_defects(rows, source_fun) do
+    for r <- rows,
+        List.last(census_echo(r)) == "SUCCESS",
+        not d2aii_why_green_ok?(r["why_green"], source_fun),
+        do: r["tag"]
+  end
+
+  defp d2aii_why_green_ok?(%{"earned_by" => e, "statement" => s} = w, source_fun)
+       when e in @earners and is_binary(s) and s != "" do
+    cites = A.collect(w)
+
+    Enum.all?(cites, &(A.verify(&1, source_fun) == :ok)) and
+      (e == "none_null_passable" or cites != []) and
+      (e != "sdk" or Enum.any?(cites, &String.starts_with?(&1["file"] || "", "lib/")))
+  end
+
+  defp d2aii_why_green_ok?(_, _), do: false
+
+  # The closure rule over a catalogue: [{tag, why}] for every row whose derived
+  # conditions differ from lands_when, whose remedy's tokens differ from
+  # lands_when, whose owner_record names a comment no catalogue phrase is, or
+  # that is governed (blocked, po or depends_on_fix) exactly when lands_when is
+  # empty; plus {:catalogue, {:unused, ids}} for conditions no row uses.
+  defp d2aii_closure_defects(rows, conds) do
+    used = rows |> Enum.flat_map(& &1["lands_when"]) |> MapSet.new()
+    unused = for id <- Map.keys(conds), id not in used, do: id
+    catalogue = if unused == [], do: [], else: [{:catalogue, {:unused, Enum.sort(unused)}}]
+    Enum.flat_map(rows, &closure_row_defects(&1, conds)) ++ catalogue
+  end
+
+  defp closure_row_defects(r, conds) do
+    owner_record = get_in(r, ["sdk_gap", "owner_record"])
+    lw = r["lands_when"]
+
+    derived =
+      conds
+      |> Enum.filter(fn {_, c} -> derives?(r, c, owner_record) end)
+      |> Enum.map(&elem(&1, 0))
+
+    tokens =
+      for {id, c} <- conds,
+          String.contains?(r["remedy"] || "", c["remedy_token"]) != id in lw,
+          do: {r["tag"], {:token, id}}
+
+    uncat = uncatalogued(owner_record, conds)
+
+    governed =
+      r["disposition"] in ~w(blocked_on_sdk_gap po_decision_required) or
+        Map.has_key?(r, "depends_on_fix")
+
+    List.flatten([
+      if(Enum.sort(derived) == lw,
+        do: [],
+        else: [{r["tag"], {:lands_when, Enum.sort(derived), lw}}]
+      ),
+      tokens,
+      if(uncat == [], do: [], else: [{r["tag"], {:uncatalogued, uncat}}]),
+      if(governed == (lw != []), do: [], else: [{r["tag"], :ungoverned}])
+    ])
+  end
+
+  # Every comment an owner_record names must be some condition's phrase.
+  defp uncatalogued(nil, _conds), do: []
+
+  defp uncatalogued(owner_record, conds) do
+    phrases = for {_, c} <- conds, do: c["owner_record_phrase"]
+
+    ~r/comment \d+(?: \([a-z]\))?/
+    |> Regex.scan(owner_record)
+    |> List.flatten()
+    |> Enum.reject(&(&1 in phrases))
+  end
+
+  defp derives?(r, c, owner_record) do
+    po = r["po_decision"]
+
+    (is_binary(c["owner_record_phrase"]) and is_binary(owner_record) and
+       String.contains?(owner_record, c["owner_record_phrase"])) or
+      (is_binary(c["depends_on_fix_tag"]) and
+         get_in(r, ["depends_on_fix", "tag"]) == c["depends_on_fix_tag"]) or
+      (is_list(c["po_questions"]) and is_map(po) and po["questions"] == c["po_questions"] and
+         po["either"] == true == (c["either"] == true))
+  end
+
+  # The amended null rule (MES-130, 29491 Q5): {scenario => the checks the null
+  # run passed, scenarios the counts cannot place without a reading}. A reading
+  # that does not reconcile with the census places nothing.
+  defp null_placements(null, loc, readings) do
+    results =
+      json(@v2a)["rows"]
+      |> Enum.map(&Enum.at(String.split(&1["tag"], "/"), 1))
+      |> Enum.uniq()
+      |> Enum.map(&null_placement(&1, null, loc, Map.get(readings, &1, %{})))
+
+    {Map.new(results, fn {s, p, _} -> {s, p} end), for({s, _, true} <- results, do: s)}
+  end
+
+  defp null_placement(s, null, loc, rd) do
+    [sc] = Enum.filter(null, &String.starts_with?(&1["artefact_dir"] || "", "server-#{s}-"))
+    names = for r <- loc, r["scenario"] == s, do: r["name"]
+    failed = for f <- sc["failed_checks"] || [], do: f["name"]
+    placed = place(sc["checks"], names, failed, rd["not_emitted"] || [], rd["not_success"] || %{})
+    {s, placed || [], place(sc["checks"], names, failed, [], %{}) == nil}
+  end
+
+  defp place(c, names, failed, not_emitted, not_success) do
+    candidates = ((names -- failed) -- not_emitted) -- Map.keys(not_success)
+    other = for k <- ~w(SKIPPED INFO), c[k] > 0, into: %{}, do: {k, c[k]}
+
+    if length(names) - length(not_emitted) == c["total"] and
+         length(failed) == c["FAILURE"] + c["WARNING"] and
+         Enum.frequencies(Map.values(not_success)) == other and
+         length(candidates) == c["SUCCESS"],
+       do: Enum.uniq(candidates)
+  end
+
   defp selected(view_rows, %{"field" => f, "segment" => i, "starts_with" => p}) do
     Enum.filter(view_rows, fn r ->
       r[f] |> String.split("/") |> Enum.at(i) |> Kernel.||("") |> String.starts_with?(p)
     end)
   end
 
-  defp selector_equality(rows, view_rows) do
+  defp selected(view_rows, %{"field" => f, "segment" => i, "not_starts_with" => p}) do
+    Enum.reject(view_rows, fn r ->
+      r[f] |> String.split("/") |> Enum.at(i) |> Kernel.||("") |> String.starts_with?(p)
+    end)
+  end
+
+  defp selector_equality(rows, view_rows, selector) do
     got = rows |> Enum.map(&A.key/1) |> Enum.sort()
-    want = view_rows |> selected(@d2ai_selector) |> Enum.map(&A.key/1) |> Enum.sort()
+    want = view_rows |> selected(selector) |> Enum.map(&A.key/1) |> Enum.sort()
 
     if got == want,
       do: :ok,
@@ -1081,14 +1873,16 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
   # Non-ET-CC register rows whose body (its line to the next register row in
   # the same file) matches the needle. Sorted keys.
-  defp mrtr_non_etcc_units do
+  defp mrtr_non_etcc_units, do: non_etcc_units(@mrtr_needle)
+
+  defp non_etcc_units(needle) do
     json("docs/conformance/etcc-register.json")["rows"]
     |> Enum.group_by(& &1["file"])
-    |> Enum.flat_map(fn {file, rows} -> mrtr_non_etcc_units(file, rows) end)
+    |> Enum.flat_map(fn {file, rows} -> non_etcc_units(file, rows, needle) end)
     |> Enum.sort()
   end
 
-  defp mrtr_non_etcc_units(file, rows) do
+  defp non_etcc_units(file, rows, needle) do
     src = file |> File.read!() |> String.split("\n")
     starts = rows |> Enum.map(& &1["line"]) |> Enum.sort()
 
@@ -1096,7 +1890,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
         r["label"] != "ET-CC",
         stop = Enum.find(starts, length(src) + 1, &(&1 > r["line"])) - 1,
         body = src |> Enum.slice((r["line"] - 1)..(stop - 1)//1) |> Enum.join("\n"),
-        Regex.match?(@mrtr_needle, body),
+        Regex.match?(needle, body),
         do: r["key"]
   end
 

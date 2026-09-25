@@ -2,7 +2,9 @@
 # D4b plants, the removed-code mutations and the bound_missing mutation; MES-128
 # added the D2b plants, its two codes' removal and the build_level_missing
 # mutation; MES-129 added the D2a-i plants on an OPEN section, the selector
-# refusal, blocked_on_sdk_gap's removal and the sdk_gap_missing mutation).
+# refusal, blocked_on_sdk_gap's removal and the sdk_gap_missing mutation; MES-130
+# added D2a-ii's CLOSED section on the same view, which turns D2a-i's two
+# admitted plants into refusals, and the D2a-ii plants).
 #
 #     mix run conformance/controls/adjudications_controls.exs positive
 #     mix run conformance/controls/adjudications_controls.exs refusals
@@ -17,17 +19,19 @@
 # requires the refusal it is about and nothing else. Each refusal must NAME G32,
 # because a red for an unrelated reason would otherwise pass the control.
 #
-# `refusals` covers ALL FOUR records: the D4a plants below; on D4b's record a
+# `refusals` covers ALL FIVE records: the D4a plants below; on D4b's record a
 # phantom 4b row, a dropped 4b row, and an accept_bound row with its `bound`
 # removed (bound_missing); and on D2b's record a phantom 2b row, a dropped 2b
 # row, and extend_to_match / build_test rows with their `build_level`,
 # `remedy` or `extend_target` removed (build_level_missing); and on D2a-i's
 # OPEN section on bucket-2a a phantom row, a shifted status window
 # (citation_drift), a blocked_on_sdk_gap row with its `sdk_gap` or its
-# `build_level` removed, and two plants G32 must ADMIT because the section is
-# open (a dropped MRTR row, and a real 2a row from outside the slice), each
-# shown refused instead by the record's own selector, which is what gate 5's
-# selector-equality unit holds.
+# `build_level` removed, and two plants that G32 ADMITTED while the section was
+# the view's only binding (a dropped MRTR row, and a real 2a row from outside the
+# slice). Since MES-130 bound bucket-2a with D2a-ii's CLOSED section, G32 refuses
+# them itself (missing and duplicate), and the selector still names each. On
+# D2a-ii's record: a phantom row, a view row in NEITHER slice (missing), a row
+# in BOTH slices (duplicate), and a blocked row with its sdk_gap removed.
 #
 # `mutation` recompiles the guard inside this VM. (1) THE KEY. It binds
 # complete synthetic sections to the REAL views `bucket-4b` and `bucket-5a`,
@@ -73,6 +77,7 @@ defmodule AdjudicationsControls do
   @v5a "docs/conformance/buckets/bucket-5a-2026-07-28.json"
   @d2ai "docs/conformance/adjudications/adjudication-D2a-i-2026-07-28.json"
   @v2a "docs/conformance/buckets/bucket-2a-2026-07-28.json"
+  @d2aii "docs/conformance/adjudications/adjudication-D2a-ii-2026-07-28.json"
   @source "conformance/lib/mcp/conformance/adjudications.ex"
   @default_dist "/tmp/conf11/node_modules/@modelcontextprotocol/conformance/dist/index.js"
   @tcg1c_ascii "a non-ASCII tool name rides `mcp-name` as the Base64 sentinel and decodes back to the body value"
@@ -107,6 +112,7 @@ defmodule AdjudicationsControls do
     check("the D4b record is visited", @d4b in A.load().walk)
     check("the D2b record is visited", @d2b in A.load().walk)
     check("the D2a-i record is visited", @d2ai in A.load().walk)
+    check("the D2a-ii record is visited", @d2aii in A.load().walk)
 
     check(
       "reach: #{r["rows_visited"]} rows over #{r["views_bound"]} views",
@@ -335,8 +341,9 @@ defmodule AdjudicationsControls do
       )
     end
 
-    # The section is OPEN, so G32 admits both of these. The selector is what
-    # refuses them, and gate 5 holds the selector.
+    # D2a-i's section is still OPEN, but since MES-130 the view is also bound by
+    # D2a-ii's CLOSED section, so G32 refuses both of these itself. The
+    # selector still names each, and gate 5 holds the selector.
     view_rows = File.read!(@v2a) |> Jason.decode!() |> Map.fetch!("rows")
     {:ok, rec} = base.records[@d2ai]
     in_slice = selected(view_rows, rec["selector"])
@@ -344,9 +351,11 @@ defmodule AdjudicationsControls do
     foreign = %{first_2a | "tag" => outside["tag"]}
     planted = update_rows(base, @v2a, &(&1 ++ [foreign]), @d2ai)
 
-    check(
-      "(D2a-i) a real 2a row from OUTSIDE the slice is admitted by G32 (open section)",
-      A.audit(planted).defects == []
+    expect(
+      "(D2a-i) a real 2a row from OUTSIDE the slice: duplicate, D2a-ii adjudicates it",
+      [:duplicate],
+      A.key(foreign),
+      planted
     )
 
     check(
@@ -356,9 +365,11 @@ defmodule AdjudicationsControls do
 
     dropped = update_rows(base, @v2a, &tl/1, @d2ai)
 
-    check(
-      "(D2a-i) a dropped MRTR row is admitted by G32 (open section)",
-      A.audit(dropped).defects == []
+    expect(
+      "(D2a-i) a dropped MRTR row: missing, because a CLOSED section binds the view",
+      [:missing],
+      A.key(first_2a),
+      dropped
     )
 
     check(
@@ -369,6 +380,49 @@ defmodule AdjudicationsControls do
     check(
       "  … and the committed record meets its selector exactly",
       selector_diff(base, view_rows) == {[], []}
+    )
+
+    check(
+      "  … and with D2a-ii's section removed, G32 admits both again: the refusals are the closure's",
+      A.audit(drop_record(planted, @d2aii)).defects == [] and
+        A.audit(drop_record(dropped, @d2aii)).defects == []
+    )
+
+    # --- D2a-ii's record: a CLOSED section on bucket-2a ---
+    d2aii = rows(base, @v2a, @d2aii)
+    first_ii = hd(d2aii)
+
+    phantom_ii =
+      Map.put(first_ii, "tag", "oc:server/server-stateless/no-such-check/NoSuchCheck")
+
+    expect(
+      "(D2a-ii) phantom: a row keyed to a check bucket-2a does not project",
+      [:phantom],
+      A.key(phantom_ii),
+      update_rows(base, @v2a, &(&1 ++ [phantom_ii]), @d2aii)
+    )
+
+    expect(
+      "(D2a-ii) a GAP, one view row in neither slice: missing",
+      [:missing],
+      A.key(first_ii),
+      update_rows(base, @v2a, &tl/1, @d2aii)
+    )
+
+    expect(
+      "(D2a-ii) an OVERLAP, one D2a-ii row planted into D2a-i too: duplicate",
+      [:duplicate],
+      A.key(first_ii),
+      update_rows(base, @v2a, &(&1 ++ [first_ii]), @d2ai)
+    )
+
+    blocked_ii = Enum.find(d2aii, &(&1["disposition"] == "blocked_on_sdk_gap"))
+
+    expect(
+      "(D2a-ii) sdk_gap_missing: a blocked_on_sdk_gap row with its sdk_gap removed",
+      [:sdk_gap_missing],
+      A.key(blocked_ii),
+      drop_field(base, blocked_ii, "sdk_gap", @v2a, @d2aii)
     )
 
     bound0 = bind(base, @v0)
@@ -469,7 +523,9 @@ defmodule AdjudicationsControls do
 
     base = A.load()
     d4b_rows = rows(base, @v4b, @d4b)
-    all_rows = d4b_rows ++ rows(base, @v2b, @d2b) ++ rows(base, @v2a, @d2ai)
+
+    all_rows =
+      d4b_rows ++ rows(base, @v2b, @d2b) ++ rows(base, @v2a, @d2ai) ++ rows(base, @v2a, @d2aii)
 
     set_def =
       ~s|suite_defect_upstream extend_test accept_bound\n                   extend_to_match build_test blocked_on_sdk_gap)|
@@ -553,7 +609,7 @@ defmodule AdjudicationsControls do
     check(
       "every record is read: #{inspect(Map.keys(records))}",
       @record in Map.keys(records) and @d4b in Map.keys(records) and
-        @d2b in Map.keys(records) and @d2ai in Map.keys(records)
+        @d2b in Map.keys(records) and @d2ai in Map.keys(records) and @d2aii in Map.keys(records)
     )
 
     cites =
@@ -562,7 +618,7 @@ defmodule AdjudicationsControls do
           Map.has_key?(c, "harness_sha256"),
           do: c
 
-    for f <- [@record, @d4b, @d2b, @d2ai] do
+    for f <- [@record, @d4b, @d2b, @d2ai, @d2aii] do
       {:ok, rec} = records[f]
       n = rec |> A.collect() |> Enum.count(&Map.has_key?(&1, "harness_sha256"))
       check("  … #{Path.basename(f)} carries #{n} harness citations", n > 0)
@@ -660,6 +716,10 @@ defmodule AdjudicationsControls do
     got = rows(inputs, @v2a, @d2ai) |> Enum.map(&A.key/1) |> Enum.sort()
     want = view_rows |> selected(rec["selector"]) |> Enum.map(&A.key/1) |> Enum.sort()
     {got -- want, want -- got}
+  end
+
+  defp drop_record(inputs, record) do
+    %{inputs | walk: inputs.walk -- [record], records: Map.delete(inputs.records, record)}
   end
 
   defp update_view_row(inputs, view, key, fun) do

@@ -4736,6 +4736,22 @@
       "path": "sections[#0].rows[oc:server/input-required-result-non-tool-request/wire-schema-valid/WireSchemaValid].root_cause.consequence_of_the_first.bytes",
       "phrase": "2 checks",
       "reason": "R6"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D2a-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "negatives[server_universe_reconciles].statement",
+      "phrase": "119 server checks",
+      "quantity": "d2aii_server_universe"
+    },
+    {
+      "class": "not_a_count",
+      "file": "docs/conformance/adjudications/adjudication-D2a-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "null_control_statement.supersedes",
+      "phrase": "5 recomputes both slices",
+      "reason": "R4"
     }
   ],
   "guard": "G31 — MCP.Conformance.InputFigures (MES-120)",
@@ -14624,6 +14640,21 @@
           "at": "rows[]",
           "distinct": "tag",
           "in": "docs/conformance/buckets/bucket-5b-2026-07-28.json"
+        }
+      }
+    },
+    "d2aii_server_universe": {
+      "means": "the server checks in the locator (server leg): bucket 2a's two slices plus the matched server checks",
+      "query": {
+        "count": {
+          "at": "rows[]",
+          "in": "docs/conformance/oc-emitting-sites-2026-07-28.json",
+          "where": [
+            {
+              "eq": "server",
+              "field": "leg"
+            }
+          ]
         }
       }
     },
