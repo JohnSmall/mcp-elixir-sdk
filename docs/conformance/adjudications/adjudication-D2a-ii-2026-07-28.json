@@ -164,7 +164,7 @@
   },
   "depends_on_fix_statement": {
     "criterion": "The row's remedy, as written, asserts an HTTP status that R2's JSON-RPC-code to HTTP-status mapping sets: 400 or 404 on an error response. Such a remedy cannot land until D4a's fix_sdk R2 row lands.",
-    "statement": "Rows meeting the criterion carry depends_on_fix, a pointer by derived key to D4a's fix_sdk R2 row, which gate 5 resolves; the fix is counted once, as D4b does for R2. The criterion is applied to every row of the slice: po_decision_required and blocked rows included, since a conditional build that asserts 400 waits on R2 as well.",
+    "statement": "Rows meeting the criterion carry depends_on_fix, a pointer by derived key to D4a's fix_sdk R2 row, which gate 5 resolves; the fix is counted once, as D4b does for R2. The criterion is applied to every row of the slice, blocked rows included, since a build that asserts 400 waits on R2 as well.",
     "ratified": "PM ratification, MES-130 comment 29491, Q1 and Q2.",
     "not_carrying": {
       "oc:server/caching/sep-2549-prompts-list-caching-hints/PromptsListCachingHints": "The remedy asserts a success-path result or frame, and no HTTP status.",
@@ -214,12 +214,13 @@
       "statement": "Applied to every row of this slice, it carries NONE. HttpServerNoIndependentRequestsOnStream, the row whose stimulus returns an InputRequiredResult, reads each frame's method only, so a list or a map of inputRequests passes it alike. The zero is a stated null, not an omission (29491, Q2)."
     }
   },
-  "po_statement": {
-    "statement": "Each po_decision_required row points at the PO question it waits on: the R1 rows at D4a's missing-meta RequestMetaInvalid rows by derived key, with Q1a and Q1b of MES-126 comment 29420; the R3 rows at D4a's decision_row, with Q2 of 29407. Gate 5 resolves each pointer. Their remedies are conditional builds: a YES builds the unit, a NO turns the row into keep_design_publish_bound and nothing is written.",
-    "ratified": "PM ratification 29491, Q1; PM scope note 29321 for R3."
+  "ruling_statement": {
+    "statement": "Each row that waited on a PO question records the answer in ruling. The PO ruled Q1a, Q1b, Q2 and Q3 YES (MES-126 comment 29509), and MES-43 carries the fixes, one bullet per question (comment 29510). The R1 rows point at D4a's missing-meta RequestMetaInvalid rows by derived key, fix_sdk there; the R3 rows point at D4a's decision_row, resolved there. Gate 5 resolves each pointer. The SDK implements none of the fixes yet, so each row is blocked_on_sdk_gap, and its unit lands with MES-43's fix. The NO branch of each earlier conditional build is gone.",
+    "ratified": "The ruling, MES-126 comment 29509; PM ratification of MES-136's plan, MES-136 comment 29534.",
+    "history": "Until the ruling these rows waited on Q1a and Q1b of MES-126 comment 29420 and Q2 of 29407 (PM ratification 29491, Q1; PM scope note 29321 for R3)."
   },
   "landing_conditions": {
-    "rule": "D2a-i's closure rule (PM, MES-129 comment 29472), applied to this slice with this record's own catalogue: for every row whose remedy names an unblock or landing condition, the conditions the remedy states EQUAL the records the row cites (sdk_gap.owner_record, depends_on_fix and po_decision), both ways, and none is fixture-earned. A row's lands_when names its conditions; gate 5 derives them from the cited records THROUGH this catalogue and requires equality with lands_when and with the remedy's tokens.",
+    "rule": "D2a-i's closure rule (PM, MES-129 comment 29472), applied to this slice with this record's own catalogue: for every row whose remedy names an unblock or landing condition, the conditions the remedy states EQUAL the records the row cites (sdk_gap.owner_record, read with the row's ruling where a condition names ruled questions, and depends_on_fix), both ways, and none is fixture-earned. A row's lands_when names its conditions; gate 5 derives them from the cited records THROUGH this catalogue and requires equality with lands_when and with the remedy's tokens. Every catalogued phrase an sdk_gap.owner_record names must also derive at least one condition carrying that phrase for the row: a ruled_questions condition derives only on a row whose ruling matches it, so without this a row could cite MES-43 comment 29510 and land on none of its conditions (MES-136 correction round 1; CR 29538 B1, PM 29539).",
     "two_routes": "d4a_fix_sdk_r2 has two derivation routes, the depends_on_fix pointer and the owner_record phrase for MES-43 comment 29410 (a), so either derives it. Every comment an owner_record names must be a catalogued phrase, so the derivation cannot ignore an owner_record (PM ratification 29491, Q2).",
     "not_held_mechanically": "As in D2a-i: gate 5 holds tokens against cited records, not the prose around them. The catalogue is held by a gate-5 pin, not derived from any record.",
     "catalogue_of_d2a_i": "D2a-i's five conditions are not repeated here: no row of this slice uses one, and a condition no row uses is a defect.",
@@ -244,39 +245,47 @@
         "remedy_token": "(MES-62 body, R4)",
         "statement": "The server cross-checks the MCP-Protocol-Version header against _meta.protocolVersion and answers -32020 on a mismatch."
       },
-      "po_q1a": {
-        "owner": "PO",
-        "po_questions": [
+      "mes43_29510_q1a": {
+        "owner": "MES-43",
+        "owner_record_phrase": "comment 29510",
+        "ruled_questions": [
           "Q1a"
         ],
-        "remedy_token": "(PO Q1a, MES-126 29420)",
-        "statement": "The PO answers Q1a YES or discover-only: a missing _meta or protocolVersion is -32602 on server/discover."
+        "derived_from": "an sdk_gap.owner_record carrying the phrase, on a row whose ruling.questions equal ruled_questions and whose ruling.either equals either. The phrase is shared by four conditions, so the phrase alone cannot tell them apart.",
+        "remedy_token": "(MES-43 29510, R1 / Q1a)",
+        "statement": "MES-43's R1 / Q1a fix lands: a missing _meta or protocolVersion is answered -32602 on every method, server/discover included (PO ruling, MES-126 comment 29509)."
       },
-      "po_q1b": {
-        "owner": "PO",
-        "po_questions": [
+      "mes43_29510_q1b": {
+        "owner": "MES-43",
+        "owner_record_phrase": "comment 29510",
+        "ruled_questions": [
           "Q1b"
         ],
-        "remedy_token": "(PO Q1b, MES-126 29420)",
-        "statement": "The PO answers Q1b YES or discover-only: a missing clientCapabilities is -32602 on server/discover."
+        "derived_from": "an sdk_gap.owner_record carrying the phrase, on a row whose ruling.questions equal ruled_questions and whose ruling.either equals either. The phrase is shared by four conditions, so the phrase alone cannot tell them apart.",
+        "remedy_token": "(MES-43 29510, R1 / Q1b)",
+        "statement": "MES-43's R1 / Q1b fix lands: a missing clientCapabilities is answered -32602 on every method, server/discover included (PO ruling, MES-126 comment 29509)."
       },
-      "po_q1a_or_q1b": {
-        "owner": "PO",
-        "po_questions": [
+      "mes43_29510_q1a_or_q1b": {
+        "owner": "MES-43",
+        "owner_record_phrase": "comment 29510",
+        "ruled_questions": [
           "Q1a",
           "Q1b"
         ],
         "either": true,
-        "remedy_token": "(PO Q1a or Q1b, MES-126 29420)",
-        "statement": "The PO answers Q1a or Q1b affirmatively: either makes a request with no _meta a rejection."
+        "derived_from": "an sdk_gap.owner_record carrying the phrase, on a row whose ruling.questions equal ruled_questions and whose ruling.either equals either. The phrase is shared by four conditions, so the phrase alone cannot tell them apart.",
+        "remedy_token": "(MES-43 29510, R1 / Q1a or Q1b)",
+        "statement": "Either of MES-43's R1 fixes lands: either one makes a request with no _meta a rejection, because such a request lacks both keys."
       },
-      "po_q2": {
-        "owner": "PO",
-        "po_questions": [
+      "mes43_29510_q2": {
+        "owner": "MES-43",
+        "owner_record_phrase": "comment 29510",
+        "ruled_questions": [
           "Q2"
         ],
-        "remedy_token": "(PO Q2, MES-126 29407)",
-        "statement": "The PO answers Q2 YES: server/discover rejects an unsupported version with -32022 carrying data.supported and data.requested."
+        "derived_from": "an sdk_gap.owner_record carrying the phrase, on a row whose ruling.questions equal ruled_questions and whose ruling.either equals either. The phrase is shared by four conditions, so the phrase alone cannot tell them apart.",
+        "remedy_token": "(MES-43 29510, R3 / Q2)",
+        "statement": "MES-43's R3 / Q2 fix lands: server/discover rejects an unsupported version with -32022 carrying data.supported and data.requested (PO ruling, MES-126 comment 29509)."
       }
     }
   },
@@ -2194,7 +2203,7 @@
             "d4a_fix_sdk_r2",
             "mes62_r4"
           ],
-          "note": "The stimulus is server/discover, which the SDK leaves ungated by design (R3), carrying an unsupported _meta version. So MES-62's cross-check must run on server/discover, and ahead of any version gate a YES to Q2 might add, or this check would earn -32022 instead of -32020. Recorded as a reading, not as a landing condition, and routed to the PM as a finding.",
+          "note": "The stimulus is server/discover, which the SDK leaves ungated by design (R3), carrying an unsupported _meta version. So MES-62's cross-check must run on server/discover, and ahead of the version gate the PO's Q2 YES adds (MES-126 comment 29509; MES-43 comment 29510 carries the ordering), or this check would earn -32022 instead of -32020. Recorded as a reading, not as a landing condition, and routed to the PM as a finding.",
           "rationale": "MES-62 records R4 and states that it and R2 must land together (PM ratification 29491, Q3). The brief's '43 or 45' was an example, not a closed list."
         },
         {
@@ -2247,15 +2256,32 @@
             "statement": "No unit outside ET-CC sends this check's stimulus to a server and asserts on the response: the negative covered_elsewhere_universe enumerates every non-ET-CC register row whose body touches this slice's stimuli, with a reading of each."
           },
           "root_cause": {
-            "statement": "Two causes, both already with an owner. First, the SDK does not reject the request at all: server/discover validates no _meta, which is R1's design half, now with the PO. Second, even a rejection would leave as HTTP 200, because there is no code-to-status mapping (R2). The census records 'got status code 200'."
+            "statement": "Two causes, both with an owner. First, the SDK does not reject the request at all: server/discover validates no _meta, which is R1's design half. The PO ruled Q1b YES (MES-126 comment 29509), so it is now an SDK fix owned by MES-43 (comment 29510). Second, even a rejection would leave as HTTP 200, because there is no code-to-status mapping (R2). The census records 'got status code 200'."
           },
           "if_conformance_fixed": [],
-          "disposition": "po_decision_required",
-          "po_decision": {
+          "disposition": "blocked_on_sdk_gap",
+          "build_level": "plug",
+          "sdk_gap": {
+            "owner": "MES-43",
+            "owner_record": "MES-43 comment 29510, the R1 / Q1b bullet",
+            "record": {
+              "file": "lib/mcp/server/dispatch.ex",
+              "lines": [
+                146,
+                148
+              ],
+              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do"
+            }
+          },
+          "ruling": {
             "questions": [
               "Q1b"
             ],
             "asked_at": "MES-126 comment 29420 (supersedes 29407's Q1)",
+            "ruled_at": "MES-126 comment 29509",
+            "answer": "YES",
+            "owner": "MES-43",
+            "owner_record": "MES-43 comment 29510, the R1 / Q1b bullet",
             "rows": [
               {
                 "record": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
@@ -2263,7 +2289,7 @@
                 "member": "MCP.Server.DispatchTest/test request without a protocolVersion _meta fails fast (-32022)",
                 "claim": "a tools/call carrying no _meta at all is rejected with -32022, not -32602",
                 "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
-                "disposition_there": "po_decision_required",
+                "disposition_there": "fix_sdk",
                 "root_cause_there": "R1"
               },
               {
@@ -2272,12 +2298,12 @@
                 "member": "MCP.Transport.StreamableHTTPStatelessTest/test a request without a protocolVersion _meta fails fast (-32022)",
                 "claim": "a tools/call over real HTTP carrying no _meta is rejected with -32022, not -32602",
                 "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
-                "disposition_there": "po_decision_required",
+                "disposition_there": "fix_sdk",
                 "root_cause_there": "R1"
               }
             ]
           },
-          "po_reading": "Only Q1b governs a missing clientCapabilities: no answer to the version question reaches it (29420, point 1).",
+          "ruling_reading": "Only Q1b governs a missing clientCapabilities: no answer to the version question reaches it (29420, point 1).",
           "depends_on_fix": {
             "record": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
             "view": "docs/conformance/buckets/bucket-4a-2026-07-28.json",
@@ -2288,12 +2314,12 @@
             "root_cause_there": "R2",
             "referenced_not_rerouted": "R2, the JSON-RPC-code to HTTP-status mapping, is routed ONCE, as fix_sdk on the D4a row named here, and MES-43 carries it (comment 29410 (a)). This row's remedy lands in that change and does not route the fix again, so the one fix is counted once (PM ratification, MES-130 comment 29491, Q2)."
           },
-          "remedy": "Conditional build. If the PO answers YES or discover-only (PO Q1b, MES-126 29420), and R2's mapping lands (D4a fix_sdk R2, depends_on_fix): add a plug unit to the stateless transport test that posts server/discover with this fixture's params and asserts HTTP 400 with -32602. If the PO answers NO, the row becomes keep_design_publish_bound and no unit is written.",
+          "remedy": "Build with the fix. When MES-43's R1 / Q1b fix lands (MES-43 29510, R1 / Q1b) and R2's mapping lands (D4a fix_sdk R2, depends_on_fix): add a plug unit to the stateless transport test that posts server/discover with this fixture's params and asserts HTTP 400 with -32602, in the same change as the fix.",
           "lands_when": [
             "d4a_fix_sdk_r2",
-            "po_q1b"
+            "mes43_29510_q1b"
           ],
-          "rationale": "R1's design question is the PO's (Q1a and Q1b, MES-126 29420), so no disposition here pre-empts it. The status half is R2, routed once on D4a's fix_sdk row, and it is referenced here, not re-routed. The build waits on BOTH (PM ratification 29491, Q1)."
+          "rationale": "The PO ruled Q1a and Q1b YES (MES-126 comment 29509), so R1 is an SDK fix owned by MES-43 (comment 29510). The SDK does not implement it yet, so no unit can be built now: the row is blocked on that gap, and its unit lands with the fix. The status half is R2, routed once on D4a's fix_sdk row, and it is referenced here, not re-routed. The build waits on BOTH (PM ratification 29491, Q1)."
         },
         {
           "member": null,
@@ -2345,17 +2371,34 @@
             "statement": "No unit outside ET-CC sends this check's stimulus to a server and asserts on the response: the negative covered_elsewhere_universe enumerates every non-ET-CC register row whose body touches this slice's stimuli, with a reading of each."
           },
           "root_cause": {
-            "statement": "Two causes, both already with an owner. First, the SDK does not reject the request at all: server/discover validates no _meta, which is R1's design half, now with the PO. Second, even a rejection would leave as HTTP 200, because there is no code-to-status mapping (R2). The census records 'got status code 200'."
+            "statement": "Two causes, both with an owner. First, the SDK does not reject the request at all: server/discover validates no _meta, which is R1's design half. The PO ruled Q1a and Q1b YES (MES-126 comment 29509), so it is now an SDK fix owned by MES-43 (comment 29510). Second, even a rejection would leave as HTTP 200, because there is no code-to-status mapping (R2). The census records 'got status code 200'."
           },
           "if_conformance_fixed": [],
-          "disposition": "po_decision_required",
-          "po_decision": {
+          "disposition": "blocked_on_sdk_gap",
+          "build_level": "plug",
+          "sdk_gap": {
+            "owner": "MES-43",
+            "owner_record": "MES-43 comment 29510, the R1 / Q1a and R1 / Q1b bullets",
+            "record": {
+              "file": "lib/mcp/server/dispatch.ex",
+              "lines": [
+                146,
+                148
+              ],
+              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do"
+            }
+          },
+          "ruling": {
             "questions": [
               "Q1a",
               "Q1b"
             ],
-            "asked_at": "MES-126 comment 29420 (supersedes 29407's Q1)",
             "either": true,
+            "asked_at": "MES-126 comment 29420 (supersedes 29407's Q1)",
+            "ruled_at": "MES-126 comment 29509",
+            "answer": "YES",
+            "owner": "MES-43",
+            "owner_record": "MES-43 comment 29510, the R1 / Q1a and R1 / Q1b bullets",
             "rows": [
               {
                 "record": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
@@ -2363,7 +2406,7 @@
                 "member": "MCP.Server.DispatchTest/test request without a protocolVersion _meta fails fast (-32022)",
                 "claim": "a tools/call carrying no _meta at all is rejected with -32022, not -32602",
                 "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
-                "disposition_there": "po_decision_required",
+                "disposition_there": "fix_sdk",
                 "root_cause_there": "R1"
               },
               {
@@ -2372,12 +2415,12 @@
                 "member": "MCP.Transport.StreamableHTTPStatelessTest/test a request without a protocolVersion _meta fails fast (-32022)",
                 "claim": "a tools/call over real HTTP carrying no _meta is rejected with -32022, not -32602",
                 "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
-                "disposition_there": "po_decision_required",
+                "disposition_there": "fix_sdk",
                 "root_cause_there": "R1"
               }
             ]
           },
-          "po_reading": "Either answer alone makes a missing-meta request a rejection: the fixture lacks both keys (MES-126 comment 29420, Q1b's YES: 'and also missing-meta (101) on its own').",
+          "ruling_reading": "Either answer alone makes a missing-meta request a rejection: the fixture lacks both keys (MES-126 comment 29420, Q1b's YES: 'and also missing-meta (101) on its own').",
           "depends_on_fix": {
             "record": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
             "view": "docs/conformance/buckets/bucket-4a-2026-07-28.json",
@@ -2388,12 +2431,12 @@
             "root_cause_there": "R2",
             "referenced_not_rerouted": "R2, the JSON-RPC-code to HTTP-status mapping, is routed ONCE, as fix_sdk on the D4a row named here, and MES-43 carries it (comment 29410 (a)). This row's remedy lands in that change and does not route the fix again, so the one fix is counted once (PM ratification, MES-130 comment 29491, Q2)."
           },
-          "remedy": "Conditional build. If the PO answers YES or discover-only (PO Q1a or Q1b, MES-126 29420), and R2's mapping lands (D4a fix_sdk R2, depends_on_fix): add a plug unit to the stateless transport test that posts server/discover with this fixture's params and asserts HTTP 400 with -32602. If the PO answers NO, the row becomes keep_design_publish_bound and no unit is written.",
+          "remedy": "Build with the fix. When MES-43's R1 / Q1a or R1 / Q1b fix lands (MES-43 29510, R1 / Q1a or Q1b) and R2's mapping lands (D4a fix_sdk R2, depends_on_fix): add a plug unit to the stateless transport test that posts server/discover with this fixture's params and asserts HTTP 400 with -32602, in the same change as the fix.",
           "lands_when": [
             "d4a_fix_sdk_r2",
-            "po_q1a_or_q1b"
+            "mes43_29510_q1a_or_q1b"
           ],
-          "rationale": "R1's design question is the PO's (Q1a and Q1b, MES-126 29420), so no disposition here pre-empts it. The status half is R2, routed once on D4a's fix_sdk row, and it is referenced here, not re-routed. The build waits on BOTH (PM ratification 29491, Q1)."
+          "rationale": "The PO ruled Q1a and Q1b YES (MES-126 comment 29509), so R1 is an SDK fix owned by MES-43 (comment 29510). The SDK does not implement it yet, so no unit can be built now: the row is blocked on that gap, and its unit lands with the fix. The status half is R2, routed once on D4a's fix_sdk row, and it is referenced here, not re-routed. The build waits on BOTH (PM ratification 29491, Q1)."
         },
         {
           "member": null,
@@ -2445,15 +2488,32 @@
             "statement": "No unit outside ET-CC sends this check's stimulus to a server and asserts on the response: the negative covered_elsewhere_universe enumerates every non-ET-CC register row whose body touches this slice's stimuli, with a reading of each."
           },
           "root_cause": {
-            "statement": "Two causes, both already with an owner. First, the SDK does not reject the request at all: server/discover validates no _meta, which is R1's design half, now with the PO. Second, even a rejection would leave as HTTP 200, because there is no code-to-status mapping (R2). The census records 'got status code 200'."
+            "statement": "Two causes, both with an owner. First, the SDK does not reject the request at all: server/discover validates no _meta, which is R1's design half. The PO ruled Q1a YES (MES-126 comment 29509), so it is now an SDK fix owned by MES-43 (comment 29510). Second, even a rejection would leave as HTTP 200, because there is no code-to-status mapping (R2). The census records 'got status code 200'."
           },
           "if_conformance_fixed": [],
-          "disposition": "po_decision_required",
-          "po_decision": {
+          "disposition": "blocked_on_sdk_gap",
+          "build_level": "plug",
+          "sdk_gap": {
+            "owner": "MES-43",
+            "owner_record": "MES-43 comment 29510, the R1 / Q1a bullet",
+            "record": {
+              "file": "lib/mcp/server/dispatch.ex",
+              "lines": [
+                146,
+                148
+              ],
+              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do"
+            }
+          },
+          "ruling": {
             "questions": [
               "Q1a"
             ],
             "asked_at": "MES-126 comment 29420 (supersedes 29407's Q1)",
+            "ruled_at": "MES-126 comment 29509",
+            "answer": "YES",
+            "owner": "MES-43",
+            "owner_record": "MES-43 comment 29510, the R1 / Q1a bullet",
             "rows": [
               {
                 "record": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
@@ -2461,7 +2521,7 @@
                 "member": "MCP.Server.DispatchTest/test request without a protocolVersion _meta fails fast (-32022)",
                 "claim": "a tools/call carrying no _meta at all is rejected with -32022, not -32602",
                 "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
-                "disposition_there": "po_decision_required",
+                "disposition_there": "fix_sdk",
                 "root_cause_there": "R1"
               },
               {
@@ -2470,12 +2530,12 @@
                 "member": "MCP.Transport.StreamableHTTPStatelessTest/test a request without a protocolVersion _meta fails fast (-32022)",
                 "claim": "a tools/call over real HTTP carrying no _meta is rejected with -32022, not -32602",
                 "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
-                "disposition_there": "po_decision_required",
+                "disposition_there": "fix_sdk",
                 "root_cause_there": "R1"
               }
             ]
           },
-          "po_reading": "Only Q1a governs a missing protocolVersion.",
+          "ruling_reading": "Only Q1a governs a missing protocolVersion.",
           "depends_on_fix": {
             "record": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
             "view": "docs/conformance/buckets/bucket-4a-2026-07-28.json",
@@ -2486,12 +2546,12 @@
             "root_cause_there": "R2",
             "referenced_not_rerouted": "R2, the JSON-RPC-code to HTTP-status mapping, is routed ONCE, as fix_sdk on the D4a row named here, and MES-43 carries it (comment 29410 (a)). This row's remedy lands in that change and does not route the fix again, so the one fix is counted once (PM ratification, MES-130 comment 29491, Q2)."
           },
-          "remedy": "Conditional build. If the PO answers YES or discover-only (PO Q1a, MES-126 29420), and R2's mapping lands (D4a fix_sdk R2, depends_on_fix): add a plug unit to the stateless transport test that posts server/discover with this fixture's params and asserts HTTP 400 with -32602. If the PO answers NO, the row becomes keep_design_publish_bound and no unit is written.",
+          "remedy": "Build with the fix. When MES-43's R1 / Q1a fix lands (MES-43 29510, R1 / Q1a) and R2's mapping lands (D4a fix_sdk R2, depends_on_fix): add a plug unit to the stateless transport test that posts server/discover with this fixture's params and asserts HTTP 400 with -32602, in the same change as the fix.",
           "lands_when": [
             "d4a_fix_sdk_r2",
-            "po_q1a"
+            "mes43_29510_q1a"
           ],
-          "rationale": "R1's design question is the PO's (Q1a and Q1b, MES-126 29420), so no disposition here pre-empts it. The status half is R2, routed once on D4a's fix_sdk row, and it is referenced here, not re-routed. The build waits on BOTH (PM ratification 29491, Q1)."
+          "rationale": "The PO ruled Q1a and Q1b YES (MES-126 comment 29509), so R1 is an SDK fix owned by MES-43 (comment 29510). The SDK does not implement it yet, so no unit can be built now: the row is blocked on that gap, and its unit lands with the fix. The status half is R2, routed once on D4a's fix_sdk row, and it is referenced here, not re-routed. The build waits on BOTH (PM ratification 29491, Q1)."
         },
         {
           "member": null,
@@ -2745,15 +2805,32 @@
             "statement": "No unit outside ET-CC sends this check's stimulus to a server and asserts on the response: the negative covered_elsewhere_universe enumerates every non-ET-CC register row whose body touches this slice's stimuli, with a reading of each."
           },
           "root_cause": {
-            "statement": "No error is produced (R3, with the PO), and an error would leave as HTTP 200 (R2). The census records 'got status code 200'. The census's server-stateless classification (b) files it under R2; the brief files it under R3. Both hold, and both are conditions."
+            "statement": "No error is produced (R3, which the PO ruled an SDK fix as Q2 YES, MES-126 comment 29509, owned by MES-43), and an error would leave as HTTP 200 (R2). The census records 'got status code 200'. The census's server-stateless classification (b) files it under R2; the brief files it under R3. Both hold, and both are conditions."
           },
           "if_conformance_fixed": [],
-          "disposition": "po_decision_required",
-          "po_decision": {
+          "disposition": "blocked_on_sdk_gap",
+          "build_level": "plug",
+          "sdk_gap": {
+            "owner": "MES-43",
+            "owner_record": "MES-43 comment 29510, the R3 / Q2 bullet",
+            "record": {
+              "file": "lib/mcp/server/dispatch.ex",
+              "lines": [
+                146,
+                148
+              ],
+              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do"
+            }
+          },
+          "ruling": {
             "questions": [
               "Q2"
             ],
             "asked_at": "MES-126 comment 29407, Q2",
+            "ruled_at": "MES-126 comment 29509",
+            "answer": "YES",
+            "owner": "MES-43",
+            "owner_record": "MES-43 comment 29510, the R3 / Q2 bullet",
             "decision_row": {
               "record": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
               "field": "decision_row",
@@ -2777,12 +2854,12 @@
             "root_cause_there": "R2",
             "referenced_not_rerouted": "R2, the JSON-RPC-code to HTTP-status mapping, is routed ONCE, as fix_sdk on the D4a row named here, and MES-43 carries it (comment 29410 (a)). This row's remedy lands in that change and does not route the fix again, so the one fix is counted once (PM ratification, MES-130 comment 29491, Q2)."
           },
-          "remedy": "Conditional build. If the PO answers YES (PO Q2, MES-126 29407) and R2's mapping lands (D4a fix_sdk R2, depends_on_fix): extend the unsupported-version unit to assert HTTP 400. If NO, the row becomes keep_design_publish_bound and no unit is written.",
+          "remedy": "Build with the fix. When MES-43's R3 / Q2 fix lands (MES-43 29510, R3 / Q2) and R2's mapping lands (D4a fix_sdk R2, depends_on_fix): extend the unsupported-version unit to assert HTTP 400, in the same change as the fix.",
           "lands_when": [
             "d4a_fix_sdk_r2",
-            "po_q2"
+            "mes43_29510_q2"
           ],
-          "rationale": "The build waits on the PO's answer AND on R2's fix (PM ratification 29491, Q1)."
+          "rationale": "The PO ruled Q2 YES (MES-126 comment 29509), so R3 is an SDK fix owned by MES-43 (comment 29510). The build waits on that fix AND on R2's (PM ratification 29491, Q1)."
         },
         {
           "member": null,
@@ -2908,15 +2985,32 @@
             "statement": "No unit outside ET-CC sends this check's stimulus to a server and asserts on the response: the negative covered_elsewhere_universe enumerates every non-ET-CC register row whose body touches this slice's stimuli, with a reading of each."
           },
           "root_cause": {
-            "statement": "server/discover validates no _meta, so the fixture gets a normal result (census: 'got undefined'). That is R1's design half, with the PO."
+            "statement": "server/discover validates no _meta, so the fixture gets a normal result (census: 'got undefined'). That is R1's design half. The PO ruled Q1b YES (MES-126 comment 29509), so it is now an SDK fix owned by MES-43 (comment 29510)."
           },
           "if_conformance_fixed": [],
-          "disposition": "po_decision_required",
-          "po_decision": {
+          "disposition": "blocked_on_sdk_gap",
+          "build_level": "pure_unit",
+          "sdk_gap": {
+            "owner": "MES-43",
+            "owner_record": "MES-43 comment 29510, the R1 / Q1b bullet",
+            "record": {
+              "file": "lib/mcp/server/dispatch.ex",
+              "lines": [
+                146,
+                148
+              ],
+              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do"
+            }
+          },
+          "ruling": {
             "questions": [
               "Q1b"
             ],
             "asked_at": "MES-126 comment 29420 (supersedes 29407's Q1)",
+            "ruled_at": "MES-126 comment 29509",
+            "answer": "YES",
+            "owner": "MES-43",
+            "owner_record": "MES-43 comment 29510, the R1 / Q1b bullet",
             "rows": [
               {
                 "record": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
@@ -2924,7 +3018,7 @@
                 "member": "MCP.Server.DispatchTest/test request without a protocolVersion _meta fails fast (-32022)",
                 "claim": "a tools/call carrying no _meta at all is rejected with -32022, not -32602",
                 "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
-                "disposition_there": "po_decision_required",
+                "disposition_there": "fix_sdk",
                 "root_cause_there": "R1"
               },
               {
@@ -2933,16 +3027,16 @@
                 "member": "MCP.Transport.StreamableHTTPStatelessTest/test a request without a protocolVersion _meta fails fast (-32022)",
                 "claim": "a tools/call over real HTTP carrying no _meta is rejected with -32022, not -32602",
                 "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
-                "disposition_there": "po_decision_required",
+                "disposition_there": "fix_sdk",
                 "root_cause_there": "R1"
               }
             ]
           },
-          "remedy": "Conditional build. If the PO answers YES or discover-only (PO Q1b, MES-126 29420): add a unit that sends server/discover with this fixture's params and asserts -32602. If NO, the row becomes keep_design_publish_bound and no unit is written. No HTTP status is asserted, so R2 is not a condition.",
+          "remedy": "Build with the fix. When MES-43's R1 / Q1b fix lands (MES-43 29510, R1 / Q1b): add a unit at Dispatch.dispatch/3 that sends server/discover with this fixture's params and asserts -32602, in the same change as the fix. No HTTP status is asserted, so R2 is not a condition.",
           "lands_when": [
-            "po_q1b"
+            "mes43_29510_q1b"
           ],
-          "rationale": "The predicate reads the JSON-RPC code only, so R2 does not bear on it (29420, point 2). The D4a rows named in po_decision.rows are the same root cause on the missing-meta fixture, keyed on its two ET-CC contradictions; this is the same question on a sibling fixture."
+          "rationale": "The predicate reads the JSON-RPC code only, so R2 does not bear on it (29420, point 2). The D4a rows named in ruling.rows are the same root cause on the missing-meta fixture, keyed on its two ET-CC contradictions, and fix_sdk there; this is the same ruling on a sibling fixture. The SDK does not implement it yet, so the row is blocked on MES-43's fix (comment 29510), and its unit lands with it."
         },
         {
           "member": null,
@@ -2994,15 +3088,32 @@
             "statement": "No unit outside ET-CC sends this check's stimulus to a server and asserts on the response: the negative covered_elsewhere_universe enumerates every non-ET-CC register row whose body touches this slice's stimuli, with a reading of each."
           },
           "root_cause": {
-            "statement": "server/discover validates no _meta, so the fixture gets a normal result (census: 'got undefined'). That is R1's design half, with the PO."
+            "statement": "server/discover validates no _meta, so the fixture gets a normal result (census: 'got undefined'). That is R1's design half. The PO ruled Q1a YES (MES-126 comment 29509), so it is now an SDK fix owned by MES-43 (comment 29510)."
           },
           "if_conformance_fixed": [],
-          "disposition": "po_decision_required",
-          "po_decision": {
+          "disposition": "blocked_on_sdk_gap",
+          "build_level": "pure_unit",
+          "sdk_gap": {
+            "owner": "MES-43",
+            "owner_record": "MES-43 comment 29510, the R1 / Q1a bullet",
+            "record": {
+              "file": "lib/mcp/server/dispatch.ex",
+              "lines": [
+                146,
+                148
+              ],
+              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do"
+            }
+          },
+          "ruling": {
             "questions": [
               "Q1a"
             ],
             "asked_at": "MES-126 comment 29420 (supersedes 29407's Q1)",
+            "ruled_at": "MES-126 comment 29509",
+            "answer": "YES",
+            "owner": "MES-43",
+            "owner_record": "MES-43 comment 29510, the R1 / Q1a bullet",
             "rows": [
               {
                 "record": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
@@ -3010,7 +3121,7 @@
                 "member": "MCP.Server.DispatchTest/test request without a protocolVersion _meta fails fast (-32022)",
                 "claim": "a tools/call carrying no _meta at all is rejected with -32022, not -32602",
                 "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
-                "disposition_there": "po_decision_required",
+                "disposition_there": "fix_sdk",
                 "root_cause_there": "R1"
               },
               {
@@ -3019,16 +3130,16 @@
                 "member": "MCP.Transport.StreamableHTTPStatelessTest/test a request without a protocolVersion _meta fails fast (-32022)",
                 "claim": "a tools/call over real HTTP carrying no _meta is rejected with -32022, not -32602",
                 "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
-                "disposition_there": "po_decision_required",
+                "disposition_there": "fix_sdk",
                 "root_cause_there": "R1"
               }
             ]
           },
-          "remedy": "Conditional build. If the PO answers YES or discover-only (PO Q1a, MES-126 29420): add a unit that sends server/discover with this fixture's params and asserts -32602. If NO, the row becomes keep_design_publish_bound and no unit is written. No HTTP status is asserted, so R2 is not a condition.",
+          "remedy": "Build with the fix. When MES-43's R1 / Q1a fix lands (MES-43 29510, R1 / Q1a): add a unit at Dispatch.dispatch/3 that sends server/discover with this fixture's params and asserts -32602, in the same change as the fix. No HTTP status is asserted, so R2 is not a condition.",
           "lands_when": [
-            "po_q1a"
+            "mes43_29510_q1a"
           ],
-          "rationale": "The predicate reads the JSON-RPC code only, so R2 does not bear on it (29420, point 2). The D4a rows named in po_decision.rows are the same root cause on the missing-meta fixture, keyed on its two ET-CC contradictions; this is the same question on a sibling fixture."
+          "rationale": "The predicate reads the JSON-RPC code only, so R2 does not bear on it (29420, point 2). The D4a rows named in ruling.rows are the same root cause on the missing-meta fixture, keyed on its two ET-CC contradictions, and fix_sdk there; this is the same ruling on a sibling fixture. The SDK does not implement it yet, so the row is blocked on MES-43's fix (comment 29510), and its unit lands with it."
         },
         {
           "member": null,
@@ -3497,15 +3608,32 @@
             "statement": "No unit outside ET-CC sends this check's stimulus to a server and asserts on the response: the negative covered_elsewhere_universe enumerates every non-ET-CC register row whose body touches this slice's stimuli, with a reading of each."
           },
           "root_cause": {
-            "statement": "server/discover has no version gate, by design, so it answers a normal result (census: 'data layout ... undefined'). That design is R3, a decision row with the PO (Q2)."
+            "statement": "server/discover has no version gate, by design, so it answers a normal result (census: 'data layout ... undefined'). That design is R3. The PO ruled Q2 YES (MES-126 comment 29509), so it is now an SDK fix owned by MES-43 (comment 29510)."
           },
           "if_conformance_fixed": [],
-          "disposition": "po_decision_required",
-          "po_decision": {
+          "disposition": "blocked_on_sdk_gap",
+          "build_level": "pure_unit",
+          "sdk_gap": {
+            "owner": "MES-43",
+            "owner_record": "MES-43 comment 29510, the R3 / Q2 bullet",
+            "record": {
+              "file": "lib/mcp/server/dispatch.ex",
+              "lines": [
+                146,
+                148
+              ],
+              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do"
+            }
+          },
+          "ruling": {
             "questions": [
               "Q2"
             ],
             "asked_at": "MES-126 comment 29407, Q2",
+            "ruled_at": "MES-126 comment 29509",
+            "answer": "YES",
+            "owner": "MES-43",
+            "owner_record": "MES-43 comment 29510, the R3 / Q2 bullet",
             "decision_row": {
               "record": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
               "field": "decision_row",
@@ -3519,11 +3647,11 @@
               }
             }
           },
-          "remedy": "Conditional build, a red unmatched check whose build rides R3 (PM scope note, MES-130 comment 29321). If the PO answers YES (PO Q2, MES-126 29407): add a unit that sends server/discover with protocolVersion v999.0.0 and asserts -32022 with data.supported and data.requested. If NO, the row becomes keep_design_publish_bound and no unit is written.",
+          "remedy": "Build with the fix, a red unmatched check whose build rides R3 (PM scope note, MES-130 comment 29321). When MES-43's R3 / Q2 fix lands (MES-43 29510, R3 / Q2): add a unit at Dispatch.dispatch/3 that sends server/discover with protocolVersion v999.0.0 and asserts -32022 with data.supported and data.requested, in the same change as the fix.",
           "lands_when": [
-            "po_q2"
+            "mes43_29510_q2"
           ],
-          "rationale": "Moved into bucket 2a by MES-110 rule A; the question is D4a's decision_row and Q2 of 29407, not re-adjudicated here. The predicate reads error.data only, so R2 is not a condition."
+          "rationale": "Moved into bucket 2a by MES-110 rule A; the question was D4a's decision_row and Q2 of 29407, which the PO ruled YES (MES-126 comment 29509). D4a's decision_row records that as resolved; it is not re-adjudicated here. The SDK does not implement the gate yet, so the row is blocked on MES-43's fix (comment 29510). The predicate reads error.data only, so R2 is not a condition."
         },
         {
           "member": null,
@@ -4117,12 +4245,13 @@
   ],
   "findings_for_pm": [
     "F1 (null rule): D2a-i's null_passability rule does not carry to this slice. It is amended to a counting rule with pinned emission readings for the combined view, and D2a-i's 16 are reproduced unchanged (29491, Q5). The sse pair, planned as null_indeterminate, is placed by the harness's status vocabulary instead; that deviation from 29491's wording is stated in null_control_statement.sse_pair.",
-    "F2 (ordering, MES-62 against the PO's Q2): HttpServerHeaderMismatch400 sends server/discover carrying an unsupported _meta version. MES-62's cross-check must therefore run on discover, and ahead of any version gate a YES to Q2 would add; otherwise the check earns -32022, not -32020. It is recorded on the row as a note and is not a landing condition.",
+    "F2 (ordering, MES-62 against Q2's version gate): HttpServerHeaderMismatch400 sends server/discover carrying an unsupported _meta version. MES-62's cross-check must therefore run on discover, and ahead of the version gate the PO's Q2 YES adds (MES-126 comment 29509); otherwise the check earns -32022, not -32020. MES-43 comment 29510 carries the ordering. It is recorded on the row as a note and is not a landing condition.",
     "F3 (possible SDK gap, no owner): ToolContext.log/4 does not consult the request's logLevel, so the MUST NOT falls on every handler. The adapter gates it by hand. It is routed for a decision, not given an owner here.",
     "F4 (possible SDK gap, no owner): nothing in lib/ validates a tool name against SEP-986's format, and the SDK passes the handler's names through. It is routed for a decision.",
     "F5 (latent defect): MCP.Protocol.Error.resource_not_found/1 sets data to the bare URI string, not a map carrying uri, so a handler using it once MES-43 comment 29490's slot lands would still earn the DataUri WARNING. It is unreachable from a handler today.",
     "F6 (published artefact): report-2026-07-28.md's R4 row still reads UNOWNED. MES-62 is its owner now. The report was not edited.",
-    "F7 (G32 reporting): a missing or duplicate defect is attributed to the FIRST section bound to the view (set_defects takes hd(sections).file). With D2a-i's and this record both bound to bucket 2a, a row dropped from this closed section is reported against D2a-i's record. The refusal is right; the file it names can be the wrong one. Shown in the controls' D2a-ii gap plant; not changed here."
+    "F7 (G32 reporting): a missing or duplicate defect is attributed to the FIRST section bound to the view (set_defects takes hd(sections).file). With D2a-i's and this record both bound to bucket 2a, a row dropped from this closed section is reported against D2a-i's record. The refusal is right; the file it names can be the wrong one. Shown in the controls' D2a-ii gap plant; not changed here.",
+    "F8 (G31 coverage; CR 29538 N2, PM 29539): each 29510 condition's derived_from sentence states a count of conditions (\"shared by four conditions\"), and G31 does not see it, because \"conditions\" is not among the recogniser's nouns (conformance/lib/mcp/conformance/input_figures.ex:124). mix conformance.figures reports CLEAN over it. The catalogue pin holds the four ids, so the figure is held indirectly; the noun list is not changed here."
   ],
   "finding_citations": {
     "F5": {
@@ -4132,6 +4261,14 @@
         130
       ],
       "bytes": "    %__MODULE__{code: @resource_not_found, message: \"Resource not found\", data: uri}"
+    },
+    "F8": {
+      "file": "conformance/lib/mcp/conformance/input_figures.ex",
+      "lines": [
+        124,
+        124
+      ],
+      "bytes": "  @nouns ~w(members? checks? edges? entries rows? modules? claims? axes conjuncts? clauses?"
     }
   }
 }

@@ -9,7 +9,7 @@
     "sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae"
   },
   "decision_row": {
-    "why": "R3 and R6 are the report's decision row. This record adds R1's broad half, which has a part per required _meta key (protocolVersion, clientCapabilities). The PO question on MES-126 presents all three root causes, with R1 split as Q1a and Q1b.",
+    "why": "R3 and R6 are the report's decision row. This record adds R1's broad half, which has a part per required _meta key (protocolVersion, clientCapabilities). The PO questions on MES-126 presented all three root causes, with R1 split as Q1a and Q1b.",
     "stated_at": {
       "file": "docs/conformance/report-2026-07-28.md",
       "lines": [
@@ -17,6 +17,17 @@
         265
       ],
       "bytes": "**R3 and R6 are a DECISION row, not a fix row.** Both are documented SDK design decisions\nthat the referee contradicts — `dispatch.ex:146` names the missing version gate as the\ndesign, and `dispatch.ex:66-68`/`:131-139` document `initialize → -32022` and why. PM ruling\n(MES-24, comment 24503) routes them to the **release ticket as decisions requiring a PO\ncall**, *not* to MES-43 as gaps to fix. They are carried here so the measurement is not\nlost and so **nobody schedules them as bugs**."
+    },
+    "resolved": {
+      "ruled_at": "MES-126 comment 29509",
+      "answers": {
+        "Q2": "YES",
+        "Q3": "YES"
+      },
+      "disposition": "fix_sdk",
+      "owner": "MES-43",
+      "owner_record": "MES-43 comment 29510, the R3 / Q2 and R6 / Q3 bullets",
+      "statement": "The PO ruled Q2 and Q3 YES, so R3 and R6 are no longer a decision row: each is an SDK fix owned by MES-43. stated_at is kept as the history of why they were decisions. The report it cites is not edited (F3)."
     }
   },
   "sections": [
@@ -155,8 +166,18 @@
               "breaks": "Must change: the clause that returns -32022, and the reason carried in its message."
             }
           ],
-          "disposition": "po_decision_required",
-          "rationale": "The edge stands: the claim and the check address the same behaviour, the reply to initialize, and they disagree. The SDK behaviour is documented design, not an accident (dispatch.ex:66-68 and :131-139). PM ruling MES-24/24503 reserved R6 for a PO call and routed it to MES-19. MES-19 is now Done, and the MES-126 brief carries the call forward as still open. So the disposition is the PO's. The question is posted on MES-126."
+          "disposition": "fix_sdk",
+          "ruling": {
+            "questions": [
+              "Q3"
+            ],
+            "asked_at": "MES-126 comment 29407, Q3",
+            "ruled_at": "MES-126 comment 29509",
+            "answer": "YES",
+            "owner": "MES-43",
+            "owner_record": "MES-43 comment 29510, the R6 / Q3 bullet"
+          },
+          "rationale": "The edge stands: the claim and the check address the same behaviour, the reply to initialize, and they disagree. The SDK behaviour was documented design (dispatch.ex:66-68 and :131-139), which is why PM ruling MES-24/24503 reserved R6 for a PO call. The PO has ruled Q3 YES (MES-126 comment 29509): initialize is answered -32601. So the disposition is fix_sdk, owned by MES-43 (comment 29510, the R6 / Q3 bullet). This test's -32022 and the design statements change in the same change, as if_conformance_fixed lists."
         },
         {
           "member": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
@@ -251,8 +272,18 @@
               "breaks": "Breaks: the dispatch-level sibling of this edge."
             }
           ],
-          "disposition": "po_decision_required",
-          "rationale": "Same decision as the dispatch-level row, one layer up. Taking R6 alone would still leave this check red on the status half until R2 lands. The two have to land together for the check to pass."
+          "disposition": "fix_sdk",
+          "ruling": {
+            "questions": [
+              "Q3"
+            ],
+            "asked_at": "MES-126 comment 29407, Q3",
+            "ruled_at": "MES-126 comment 29509",
+            "answer": "YES",
+            "owner": "MES-43",
+            "owner_record": "MES-43 comment 29510, the R6 / Q3 bullet"
+          },
+          "rationale": "Same ruling as the dispatch-level row, one layer up. Taking R6 alone would still leave this check red on the status half until R2 lands. The two have to land together for the check to pass, and MES-43 carries both (comment 29510, the R6 / Q3 bullet; comment 29410 (a) for R2)."
         },
         {
           "member": "MCP.Server.DispatchTest/test request without a protocolVersion _meta fails fast (-32022)",
@@ -370,7 +401,7 @@
               ],
               "bytes": "| **R1** `server/discover` does no `_meta` structural validation, so a request with no `_meta`, or missing `protocolVersion`/`clientCapabilities`, gets a normal result instead of `-32602` | `sep-2575-request-meta-invalid-{missing-meta, missing-protocol-version, missing-client-capabilities}` (3) | **MES-43 gap 5** |"
             },
-            "narrower_than_this_evidence": "R1 as the report words it names server/discover's missing _meta validation, over both required keys, protocolVersion and clientCapabilities. That is what the check SEES: at the accepted run, discover returned a normal result, hence got undefined. This edge is a different request, a tools/call. On every method other than server/discover the SDK answers a missing protocolVersion with -32022, because Meta.validate_protocol_version/2 returns {:error, :missing} and the gate maps every error to -32022; and it does not look at clientCapabilities at all, so a request missing only that key is served normally. The suite reads both cases as -32602 on every method (suite_required_keys). So R1 has a narrow half (discover validates _meta) and a broad half (which code a request missing a required key earns on every method), and each half has a part per key. The report routes the narrow half as a fix and states neither part of the broad half. The PO question splits them: Q1a for a missing _meta or protocolVersion, Q1b for a missing clientCapabilities.",
+            "narrower_than_this_evidence": "R1 as the report words it names server/discover's missing _meta validation, over both required keys, protocolVersion and clientCapabilities. That is what the check SEES: at the accepted run, discover returned a normal result, hence got undefined. This edge is a different request, a tools/call. On every method other than server/discover the SDK answers a missing protocolVersion with -32022, because Meta.validate_protocol_version/2 returns {:error, :missing} and the gate maps every error to -32022; and it does not look at clientCapabilities at all, so a request missing only that key is served normally. The suite reads both cases as -32602 on every method (suite_required_keys). So R1 has a narrow half (discover validates _meta) and a broad half (which code a request missing a required key earns on every method), and each half has a part per key. The report routes the narrow half as a fix and states neither part of the broad half. The PO questions split them, Q1a for a missing _meta or protocolVersion and Q1b for a missing clientCapabilities, and the PO ruled both YES (MES-126 comment 29509).",
             "gate": [
               {
                 "file": "lib/mcp/protocol/meta.ex",
@@ -471,8 +502,20 @@
               "breaks": "Does NOT break on any Q1 answer alone. Measured: under every variant this test stays green, because it asserts only HTTP 200 and, without R2, the -32602 still leaves as HTTP 200. It breaks when R2 lands with Q1a or Q1b, because the HttpServerMetaInvalid400 check requires the rejection to leave as HTTP 400 (status_is_a_separate_check). That last step is inferred from the check, not measured, since R2 is not built. The first cut of this record said it breaks under either reading; that was wrong."
             }
           ],
-          "disposition": "po_decision_required",
-          "rationale": "The edge stands at the requirement: the check's description is method-general, the suite's own mock applies it to every method, and this claim asserts the opposite code. But the check never sends tools/call, so the view's evidence clause claiming the fixture is exactly this request shape is wrong about the method. This record recorded that as a finding, and did not edit the generated view. The narrow fix cannot land without deciding the broad question, because the SDK's own tests encode discover-without-_meta as a success (see if_conformance_fixed). So the disposition is the PO's, even though the Sprint 4 register routed the narrow half as a fix.",
+          "disposition": "fix_sdk",
+          "ruling": {
+            "questions": [
+              "Q1a",
+              "Q1b"
+            ],
+            "either": true,
+            "asked_at": "MES-126 comment 29420 (supersedes 29407's Q1)",
+            "ruled_at": "MES-126 comment 29509",
+            "answer": "YES",
+            "owner": "MES-43",
+            "owner_record": "MES-43 comment 29510, the R1 / Q1a and R1 / Q1b bullets"
+          },
+          "rationale": "The edge stands at the requirement: the check's description is method-general, the suite's own mock applies it to every method, and this claim asserts the opposite code. But the check never sends tools/call, so the view's evidence clause claiming the fixture is exactly this request shape is wrong about the method. This record recorded that as a finding, and did not edit the generated view. The narrow fix cannot land without deciding the broad question, because the SDK's own tests encode discover-without-_meta as a success (see if_conformance_fixed). The PO has ruled Q1a and Q1b YES (MES-126 comment 29509): a request missing either required key is answered -32602 on every method, server/discover included. So the disposition is fix_sdk, owned by MES-43 (comment 29510, the R1 / Q1a and R1 / Q1b bullets), and the tests if_conformance_fixed lists change in the same change, as measured_break_sets measures.",
           "measured_break_sets": {
             "what": "Which tests go red under each answer to Q1a and Q1b, measured rather than read. The SDK is not changed: a scratch copy of the branch had its dispatch gate patched to answer -32602 for a missing key, under six variants (below), and the full suite was run once per variant at seed 0. The one G32 citation_drift failure that the patch itself causes (the committed-tree audit) is excluded from every list. The patch is not committed; the close-out on MES-126 carries it.",
             "variants": {
@@ -893,9 +936,21 @@
               "breaks": "Breaks under Q1a YES and under Q1b YES: the dispatch-level sibling. Stays green under either discover-only option. Measured."
             }
           ],
-          "disposition": "po_decision_required",
-          "rationale": "Same decision as the dispatch-level row. Carrying it over the transport the check uses rules out the reading that the contradiction is an artefact of the dispatch seam. It does not make the check's request and this test's request the same request.",
-          "measured_break_sets": "The same decision, so the same sets: see the dispatch-level RequestMetaInvalid row's measured_break_sets."
+          "disposition": "fix_sdk",
+          "ruling": {
+            "questions": [
+              "Q1a",
+              "Q1b"
+            ],
+            "either": true,
+            "asked_at": "MES-126 comment 29420 (supersedes 29407's Q1)",
+            "ruled_at": "MES-126 comment 29509",
+            "answer": "YES",
+            "owner": "MES-43",
+            "owner_record": "MES-43 comment 29510, the R1 / Q1a and R1 / Q1b bullets"
+          },
+          "rationale": "Same ruling as the dispatch-level row. Carrying it over the transport the check uses rules out the reading that the contradiction is an artefact of the dispatch seam. It does not make the check's request and this test's request the same request.",
+          "measured_break_sets": "The same ruling, so the same sets: see the dispatch-level RequestMetaInvalid row's measured_break_sets."
         },
         {
           "member": "MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream",
@@ -1299,6 +1354,7 @@
   },
   "findings_for_pm": [
     "F1: The view evidence of the two RequestMetaInvalid edges says the check's missing-meta fixture is exactly the tools/call request shape. The harness sends that fixture as server/discover. The generated view was not edited. Its source is the crosswalk input, whose per-record figures are MES-131's.",
-    "F2: R1 as report-2026-07-28.md:253 words it is narrower than the 4a evidence (see the RequestMetaInvalid rows): it names discover's validation of both keys, and states neither part of the broad half. The report is a published artefact and was not edited."
+    "F2: R1 as report-2026-07-28.md:253 words it is narrower than the 4a evidence (see the RequestMetaInvalid rows): it names discover's validation of both keys, and states neither part of the broad half. The report is a published artefact and was not edited.",
+    "F3: report-2026-07-28.md:260-265 routes R3 and R6 as decisions, 'so nobody schedules them as bugs'. The PO's ruling (MES-126 comment 29509) makes both fix_sdk, owned by MES-43 (comment 29510), so that passage is superseded. The report is a published artefact and was not edited. Routed to MES-74 (comment 29533)."
   ]
 }

@@ -98,6 +98,47 @@ defmodule MCP.Conformance.AdjudicationsTest do
              ]
     end
 
+    # MES-136: the PO's ruling (MES-126 comment 29509) made D4a's four PO rows
+    # fix_sdk, each citing the ruling and its MES-43 comment 29510 bullet, and
+    # resolved the decision_row. Per edge: disposition, root cause, questions.
+    test "D4a's dispositions are the ruled ones, per edge", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d4a]
+      [%{"rows" => rows}, _escalated] = record["sections"]
+
+      got =
+        for r <- rows do
+          ruling = r["ruling"]
+
+          if ruling do
+            assert {ruling["ruled_at"], ruling["answer"], ruling["owner"]} ==
+                     {"MES-126 comment 29509", "YES", "MES-43"}
+
+            assert ruling["owner_record"] =~ ~r/\AMES-43 comment 29510, the R[16] \/ Q/
+          end
+
+          {r["member"] |> String.split("/") |> hd(), r["tag"] |> String.split("/") |> List.last(),
+           r["disposition"], r["root_cause"]["id"], ruling && ruling["questions"]}
+        end
+
+      assert got == [
+               {"MCP.Server.DispatchTest", "HttpServerMethodNotFound404initialize", "fix_sdk",
+                "R6", ["Q3"]},
+               {"MCP.Transport.StreamableHTTPStatelessTest",
+                "HttpServerMethodNotFound404initialize", "fix_sdk", "R6", ["Q3"]},
+               {"MCP.Server.DispatchTest", "RequestMetaInvalid", "fix_sdk", "R1", ["Q1a", "Q1b"]},
+               {"MCP.Transport.StreamableHTTPStatelessTest", "RequestMetaInvalid", "fix_sdk",
+                "R1", ["Q1a", "Q1b"]},
+               {"MCP.Transport.SubscriptionsStreamTest", "HttpServerMethodNotFound404", "fix_sdk",
+                "R2", nil}
+             ]
+
+      resolved = record["decision_row"]["resolved"]
+
+      assert {resolved["ruled_at"], resolved["answers"], resolved["disposition"],
+              resolved["owner"]} ==
+               {"MES-126 comment 29509", %{"Q2" => "YES", "Q3" => "YES"}, "fix_sdk", "MES-43"}
+    end
+
     test "D4b's record closes bucket 4b", %{inputs: inputs} do
       {:ok, record} = inputs.records[@d4b]
 
@@ -608,14 +649,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       rows = d2ai_rows(inputs)
 
       for r <- rows do
-        derived =
-          for {id, c} <- conds,
-              (c["owner_record_phrase"] && r["sdk_gap"] &&
-                 String.contains?(r["sdk_gap"]["owner_record"], c["owner_record_phrase"])) ||
-                (id == "d4a_fix_sdk" and Map.has_key?(r, "depends_on_fix")),
-              do: id
-
-        assert r["lands_when"] == Enum.sort(derived), r["tag"]
+        assert r["lands_when"] == d2ai_derived(r, conds), r["tag"]
 
         for {id, c} <- conds do
           assert String.contains?(r["remedy"], c["remedy_token"]) == id in r["lands_when"],
@@ -878,8 +912,10 @@ defmodule MCP.Conformance.AdjudicationsTest do
         end
 
       ss = &("server-stateless/sep-2575-" <> &1)
-      po = {"po_decision_required", nil}
       blocked = {"blocked_on_sdk_gap", "plug"}
+      # MES-136: the PO's ruling (MES-126 29509) moved the seven PO rows to
+      # blocked_on_sdk_gap, plug where R2 is a condition (PM ratification 29534, Q2).
+      ruled_unit = {"blocked_on_sdk_gap", "pure_unit"}
       ext = &{"extend_to_match", &1}
       build = &{"build_test", &1}
 
@@ -909,17 +945,22 @@ defmodule MCP.Conformance.AdjudicationsTest do
                wsv
                |> Map.merge(%{
                  "tools-call-with-progress/wire-schema-valid/WireSchemaValid" => build.("plug"),
-                 ss.("http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-meta") => po,
+                 ss.("http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-meta") =>
+                   blocked,
                  ss.(
                    "http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-protocol-version"
-                 ) => po,
+                 ) => blocked,
                  ss.(
                    "http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities"
-                 ) => po,
-                 ss.("request-meta-invalid-missing-protocol-version/RequestMetaInvalid") => po,
-                 ss.("request-meta-invalid-missing-client-capabilities/RequestMetaInvalid") => po,
-                 ss.("server-unsupported-version-error/ServerUnsupportedVersionError") => po,
-                 ss.("http-server-unsupported-version-400/HttpServerUnsupportedVersion400") => po,
+                 ) => blocked,
+                 ss.("request-meta-invalid-missing-protocol-version/RequestMetaInvalid") =>
+                   ruled_unit,
+                 ss.("request-meta-invalid-missing-client-capabilities/RequestMetaInvalid") =>
+                   ruled_unit,
+                 ss.("server-unsupported-version-error/ServerUnsupportedVersionError") =>
+                   ruled_unit,
+                 ss.("http-server-unsupported-version-400/HttpServerUnsupportedVersion400") =>
+                   blocked,
                  ss.(
                    "http-server-method-not-found-404-resources-subscribe/HttpServerMethodNotFound404resourcessubscribe"
                  ) => blocked,
@@ -975,7 +1016,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
     # The status premise: the census window from the scenario line through the
     # status line (the discriminator line inside it when the tag carries one).
-    # The red rows are exactly the po and blocked rows; DataUri is the WARNING.
+    # The red rows are exactly the blocked rows; DataUri is the WARNING.
     test "each D2a-ii row cites its own check's status at the accepted run", %{inputs: inputs} do
       rows = d2aii_rows(inputs)
       assert length(rows) == 48
@@ -993,8 +1034,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
         end
 
       assert Enum.frequencies(statuses) == %{
-               {"po_decision_required", "FAILURE"} => 7,
-               {"blocked_on_sdk_gap", "FAILURE"} => 5,
+               {"blocked_on_sdk_gap", "FAILURE"} => 12,
                {"blocked_on_sdk_gap", "WARNING"} => 1,
                {"extend_to_match", "SUCCESS"} => 30,
                {"build_test", "SUCCESS"} => 5
@@ -1104,16 +1144,27 @@ defmodule MCP.Conformance.AdjudicationsTest do
       end
     end
 
-    # The brief: R1 and R3 are with the PO. Each po row points at D4a's R1 rows
-    # by derived key, or at D4a's decision_row, and names its questions.
-    test "each D2a-ii po row's pointer resolves in D4a's record", %{inputs: inputs} do
+    # MES-136: the PO ruled Q1a, Q1b, Q2 and Q3 YES (MES-126 comment 29509), and
+    # MES-43 carries the fixes (comment 29510). Each ruled row records the
+    # ruling by address and still points at D4a's R1 rows by derived key, now
+    # fix_sdk there, or at D4a's decision_row, now resolved there. Its
+    # owner_record is its sdk_gap's.
+    test "each D2a-ii ruled row cites the ruling, and its pointer resolves in D4a's record",
+         %{inputs: inputs} do
       {:ok, d4a} = inputs.records[@d4a]
-      po = for r <- d2aii_rows(inputs), r["disposition"] == "po_decision_required", do: r
-      assert length(po) == 7
+      ruled = for r <- d2aii_rows(inputs), Map.has_key?(r, "ruling"), do: r
+      assert length(ruled) == 7
 
       qs =
-        for r <- po, into: %{} do
-          p = r["po_decision"]
+        for r <- ruled, into: %{} do
+          p = r["ruling"]
+          assert r["disposition"] == "blocked_on_sdk_gap"
+
+          assert {p["ruled_at"], p["answer"], p["owner"]} ==
+                   {"MES-126 comment 29509", "YES", "MES-43"}
+
+          assert p["owner_record"] == r["sdk_gap"]["owner_record"]
+          assert p["owner_record"] =~ ~r/\AMES-43 comment 29510, the R[13] \/ Q/
 
           for ptr <- p["rows"] || [] do
             [hit] =
@@ -1123,7 +1174,8 @@ defmodule MCP.Conformance.AdjudicationsTest do
                   A.key(t) == [ptr["member"], ptr["claim"], ptr["tag"]],
                   do: t
 
-            assert hit["disposition"] == "po_decision_required"
+            assert hit["disposition"] == "fix_sdk" and ptr["disposition_there"] == "fix_sdk"
+            assert hit["ruling"]["ruled_at"] == p["ruled_at"]
             assert hit["root_cause"]["id"] == "R1" and ptr["root_cause_there"] == "R1"
           end
 
@@ -1131,6 +1183,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
             assert dr["record"] == @d4a and dr["field"] == "decision_row"
             assert dr["citation"] == d4a["decision_row"]["stated_at"]
             assert A.verify(dr["citation"], inputs.source_fun) == :ok
+            resolved = d4a["decision_row"]["resolved"]
+            assert {resolved["ruled_at"], resolved["disposition"]} == {p["ruled_at"], "fix_sdk"}
+            assert resolved["answers"]["Q2"] == "YES"
           end
 
           assert (p["rows"] || []) != [] or p["decision_row"] != nil
@@ -1165,26 +1220,54 @@ defmodule MCP.Conformance.AdjudicationsTest do
         for r <- d2aii_rows(inputs), r["disposition"] == "blocked_on_sdk_gap", into: %{} do
           gap = r["sdk_gap"]
           assert A.verify(gap["record"], inputs.source_fun) == :ok
-          {r["tag"] |> String.split("/") |> List.last(), {gap["owner"], gap["record"]["file"]}}
+
+          {r["tag"] |> String.split("/") |> Enum.drop(2) |> Enum.join("/"),
+           {gap["owner"], gap["record"]["file"]}}
         end
 
+      # Keyed on the tag after its scenario, not its last segment: the two
+      # RequestMetaInvalid rows share the last segment (MES-136, 29534).
+      ss = &("sep-2575-" <> &1)
+      sprint4 = {"MES-43", "docs/sprint_4_issues.md"}
+      discover = {"MES-43", "lib/mcp/server/dispatch.ex"}
+
       assert owners == %{
-               "HttpServerMethodNotFound404resourcessubscribe" =>
-                 {"MES-43", "docs/sprint_4_issues.md"},
-               "HttpServerMethodNotFound404resourcesunsubscribe" =>
-                 {"MES-43", "docs/sprint_4_issues.md"},
-               "MissingCapabilityHttp400" => {"MES-43", "docs/sprint_4_issues.md"},
-               "ServerRejectsUndeclaredCapability" => {"MES-43", "docs/sprint_4_issues.md"},
-               "ResourcesNotFoundDataUri" => {"MES-43", "docs/sprint_4_issues.md"},
-               "HttpServerHeaderMismatch400" =>
-                 {"MES-62", "docs/conformance/report-2026-07-28.md"}
+               ss.(
+                 "http-server-method-not-found-404-resources-subscribe/HttpServerMethodNotFound404resourcessubscribe"
+               ) => sprint4,
+               ss.(
+                 "http-server-method-not-found-404-resources-unsubscribe/HttpServerMethodNotFound404resourcesunsubscribe"
+               ) => sprint4,
+               ss.("missing-capability-http-400/MissingCapabilityHttp400") => sprint4,
+               ss.("server-rejects-undeclared-capability/ServerRejectsUndeclaredCapability") =>
+                 sprint4,
+               "sep-2164-data-uri/ResourcesNotFoundDataUri" => sprint4,
+               ss.("http-server-header-mismatch-400/HttpServerHeaderMismatch400") =>
+                 {"MES-62", "docs/conformance/report-2026-07-28.md"},
+               ss.("http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-meta") =>
+                 discover,
+               ss.(
+                 "http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-protocol-version"
+               ) => discover,
+               ss.(
+                 "http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities"
+               ) => discover,
+               ss.("http-server-unsupported-version-400/HttpServerUnsupportedVersion400") =>
+                 discover,
+               ss.("request-meta-invalid-missing-protocol-version/RequestMetaInvalid") =>
+                 discover,
+               ss.("request-meta-invalid-missing-client-capabilities/RequestMetaInvalid") =>
+                 discover,
+               ss.("server-unsupported-version-error/ServerUnsupportedVersionError") => discover
              }
     end
 
     # The closure rule, applied to D2a-ii with its own catalogue. lands_when is
-    # derived from the cited records alone (sdk_gap.owner_record, depends_on_fix,
-    # po_decision), then held against lands_when and the remedy's tokens, both
-    # ways; every comment an owner_record names must be a catalogued phrase.
+    # derived from the cited records alone (sdk_gap.owner_record, read with the
+    # row's ruling where a condition names ruled questions, and depends_on_fix),
+    # then held against lands_when and the remedy's tokens, both
+    # ways; every comment an owner_record names must be a catalogued phrase, and
+    # every catalogued phrase it names must derive a condition for the row.
     test "D2a-ii's remedies state exactly the landing conditions their rows cite",
          %{inputs: inputs} do
       {:ok, record} = inputs.records[@d2aii]
@@ -1200,7 +1283,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
             into: %{},
             do:
               {id,
-               {c["owner_record_phrase"], c["depends_on_fix_tag"], c["po_questions"],
+               {c["owner_record_phrase"], c["depends_on_fix_tag"], c["ruled_questions"],
                 c["either"] == true, c["remedy_token"]}}
 
       r2 =
@@ -1211,12 +1294,194 @@ defmodule MCP.Conformance.AdjudicationsTest do
                  {"comment 29410 (a)", r2, nil, false, "(D4a fix_sdk R2, depends_on_fix)"},
                "mes43_29490" => {"comment 29490", nil, nil, false, "(MES-43 comment 29490)"},
                "mes62_r4" => {"MES-62 body", nil, nil, false, "(MES-62 body, R4)"},
-               "po_q1a" => {nil, nil, ["Q1a"], false, "(PO Q1a, MES-126 29420)"},
-               "po_q1b" => {nil, nil, ["Q1b"], false, "(PO Q1b, MES-126 29420)"},
-               "po_q1a_or_q1b" =>
-                 {nil, nil, ["Q1a", "Q1b"], true, "(PO Q1a or Q1b, MES-126 29420)"},
-               "po_q2" => {nil, nil, ["Q2"], false, "(PO Q2, MES-126 29407)"}
+               "mes43_29510_q1a" =>
+                 {"comment 29510", nil, ["Q1a"], false, "(MES-43 29510, R1 / Q1a)"},
+               "mes43_29510_q1b" =>
+                 {"comment 29510", nil, ["Q1b"], false, "(MES-43 29510, R1 / Q1b)"},
+               "mes43_29510_q1a_or_q1b" =>
+                 {"comment 29510", nil, ["Q1a", "Q1b"], true, "(MES-43 29510, R1 / Q1a or Q1b)"},
+               "mes43_29510_q2" =>
+                 {"comment 29510", nil, ["Q2"], false, "(MES-43 29510, R3 / Q2)"}
              }
+    end
+
+    # MES-136, the dead-condition rule (MES-129 round 3): the four PO-question
+    # ids lost their users to the ruling (MES-126 29509) and left the catalogue.
+    # Each, reinstated as it stood at 5794619, is refused as unused. The entries
+    # are held byte-exact from that commit's record (git show
+    # 5794619:docs/conformance/adjudications/adjudication-D2a-ii-2026-07-28.json,
+    # landing_conditions.conditions), statement included (CR 29538 N1).
+    @retired_po_conditions %{
+      "po_q1a" => %{
+        "owner" => "PO",
+        "po_questions" => ["Q1a"],
+        "remedy_token" => "(PO Q1a, MES-126 29420)",
+        "statement" =>
+          "The PO answers Q1a YES or discover-only: a missing _meta or protocolVersion is -32602 on server/discover."
+      },
+      "po_q1b" => %{
+        "owner" => "PO",
+        "po_questions" => ["Q1b"],
+        "remedy_token" => "(PO Q1b, MES-126 29420)",
+        "statement" =>
+          "The PO answers Q1b YES or discover-only: a missing clientCapabilities is -32602 on server/discover."
+      },
+      "po_q1a_or_q1b" => %{
+        "owner" => "PO",
+        "po_questions" => ["Q1a", "Q1b"],
+        "either" => true,
+        "remedy_token" => "(PO Q1a or Q1b, MES-126 29420)",
+        "statement" =>
+          "The PO answers Q1a or Q1b affirmatively: either makes a request with no _meta a rejection."
+      },
+      "po_q2" => %{
+        "owner" => "PO",
+        "po_questions" => ["Q2"],
+        "remedy_token" => "(PO Q2, MES-126 29407)",
+        "statement" =>
+          "The PO answers Q2 YES: server/discover rejects an unsupported version with -32022 carrying data.supported and data.requested."
+      }
+    }
+
+    test "each retired PO-question condition is refused as unused once reinstated",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2aii]
+      conds = record["landing_conditions"]["conditions"]
+      rows = d2aii_rows(inputs)
+
+      for {id, c} <- @retired_po_conditions do
+        refute Map.has_key?(conds, id)
+
+        assert d2aii_closure_defects(rows, Map.put(conds, id, c)) == [
+                 {:catalogue, {:unused, [id]}}
+               ],
+               id
+      end
+    end
+
+    # MES-136 (PM ratification 29534, Q1 (a)): the four 29510 conditions share
+    # one owner_record phrase, so derives?/3 tells them apart by the row's
+    # ruling. A row whose ruling names Q1a while lands_when says the Q1b id is
+    # refused: the ruling derives the Q1a id. The unplanted row is the control.
+    test "the D2a-ii closure refuses a ruling that disagrees with lands_when", %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2aii]
+      conds = record["landing_conditions"]["conditions"]
+      rows = d2aii_rows(inputs)
+
+      [q1b] =
+        for r <- rows,
+            String.ends_with?(r["tag"], "missing-client-capabilities/RequestMetaInvalid"),
+            do: r
+
+      assert q1b["lands_when"] == ["mes43_29510_q1b"]
+      planted = put_in(q1b, ["ruling", "questions"], ["Q1a"])
+      got = d2aii_closure_defects([planted], conds)
+
+      assert {q1b["tag"], {:lands_when, ["mes43_29510_q1a"], ["mes43_29510_q1b"]}} in got
+      assert d2aii_closure_defects([q1b], Map.take(conds, ["mes43_29510_q1b"])) == []
+    end
+
+    # MES-136 (PM ratification 29534, Q1 (b)): the missing-meta row, whose
+    # ruling is Q1a and Q1b with either, derives only the either-id, never the
+    # single-question ids.
+    test "the missing-meta row derives only the either-id of the 29510 conditions",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2aii]
+      conds = record["landing_conditions"]["conditions"]
+
+      [meta] =
+        for r <- d2aii_rows(inputs),
+            String.ends_with?(r["tag"], "HttpServerMetaInvalid400#missing-meta"),
+            do: r
+
+      assert derived_conditions(meta, conds) == ["d4a_fix_sdk_r2", "mes43_29510_q1a_or_q1b"]
+    end
+
+    # MES-136 correction round 1 (CR 29538 B1, PM 29539): an owner_record that
+    # names a catalogued phrase must derive a condition carrying it, so the
+    # ruled_questions clause cannot let a row cite 29510 and land on none of its
+    # conditions. P0 is row 25 unchanged, the control; P1 deletes its ruling and
+    # strips its Q1b id and token; P2 sets its ruling's questions to [Q3], which
+    # no condition names. Held at the closure unit's own entry point.
+    test "the D2a-ii closure refuses an owner_record phrase that derives no condition",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d2aii]
+      conds = record["landing_conditions"]["conditions"]
+      rows = d2aii_rows(inputs)
+
+      [row25] =
+        for r <- rows,
+            String.ends_with?(r["tag"], "HttpServerMetaInvalid400#missing-client-capabilities"),
+            do: r
+
+      assert row25["lands_when"] == ["d4a_fix_sdk_r2", "mes43_29510_q1b"]
+      assert row25["sdk_gap"]["owner_record"] =~ "comment 29510"
+
+      stripped =
+        row25
+        |> Map.put("lands_when", ["d4a_fix_sdk_r2"])
+        |> Map.update!("remedy", &String.replace(&1, "(MES-43 29510, R1 / Q1b)", ""))
+
+      p1 = Map.delete(stripped, "ruling")
+      p2 = put_in(stripped, ["ruling", "questions"], ["Q3"])
+      plant = fn p -> Enum.map(rows, &if(&1 == row25, do: p, else: &1)) end
+
+      assert d2aii_closure_defects(plant.(row25), conds) == []
+
+      for p <- [p1, p2] do
+        assert d2aii_closure_defects(plant.(p), conds) == [
+                 {row25["tag"], {:owner_record_not_derived, "comment 29510"}}
+               ]
+      end
+    end
+
+    # PM 29539: the owner_record clause over EVERY adjudication record. A record
+    # with a catalogue runs it through its own derivation; a record without one
+    # must cite no sdk_gap, or its owner_records would escape the rule. The
+    # (row, catalogued phrase) pairs checked are counted and pinned per record.
+    test "every owner_record phrase in every record derives a condition", %{inputs: inputs} do
+      derivations = %{
+        @d2ai => &d2ai_derived/2,
+        @d2aii => &derived_conditions/2
+      }
+
+      checked =
+        for f <- [@d4a, @d4b, @d2b, @d2ai, @d2aii], into: %{} do
+          {:ok, record} = inputs.records[f]
+
+          gapped =
+            for s <- record["sections"],
+                r <- s["rows"],
+                is_binary(get_in(r, ["sdk_gap", "owner_record"])),
+                do: r
+
+          case get_in(record, ["landing_conditions", "conditions"]) do
+            nil ->
+              assert gapped == [], f
+              {f, 0}
+
+            conds ->
+              derive = Map.fetch!(derivations, f)
+
+              pairs =
+                for r <- gapped do
+                  owner_record = r["sdk_gap"]["owner_record"]
+
+                  assert owner_record_not_derived(owner_record, conds, derive.(r, conds)) == [],
+                         r["tag"]
+
+                  conds
+                  |> Enum.map(fn {_, c} -> c["owner_record_phrase"] end)
+                  |> Enum.filter(&(is_binary(&1) and String.contains?(owner_record, &1)))
+                  |> Enum.uniq()
+                  |> length()
+                end
+
+              {f, Enum.sum(pairs)}
+          end
+        end
+
+      assert checked == %{@d4a => 0, @d4b => 0, @d2b => 0, @d2ai => 8, @d2aii => 13}
     end
 
     # Deliverable (4): each new catalogue entry is refused once removed, and the
@@ -1723,9 +1988,12 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
   # The closure rule over a catalogue: [{tag, why}] for every row whose derived
   # conditions differ from lands_when, whose remedy's tokens differ from
-  # lands_when, whose owner_record names a comment no catalogue phrase is, or
-  # that is governed (blocked, po or depends_on_fix) exactly when lands_when is
-  # empty; plus {:catalogue, {:unused, ids}} for conditions no row uses.
+  # lands_when, whose owner_record names a comment no catalogue phrase is, whose
+  # owner_record names a catalogued phrase none of whose conditions is derived
+  # (so the derivation cannot ignore an owner_record: 29491 Q2, kept true by
+  # MES-136 correction round 1 after CR 29538 B1), or that is governed
+  # (blocked, po or depends_on_fix) exactly when lands_when is empty; plus
+  # {:catalogue, {:unused, ids}} for conditions no row uses.
   defp d2aii_closure_defects(rows, conds) do
     used = rows |> Enum.flat_map(& &1["lands_when"]) |> MapSet.new()
     unused = for id <- Map.keys(conds), id not in used, do: id
@@ -1737,10 +2005,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
     owner_record = get_in(r, ["sdk_gap", "owner_record"])
     lw = r["lands_when"]
 
-    derived =
-      conds
-      |> Enum.filter(fn {_, c} -> derives?(r, c, owner_record) end)
-      |> Enum.map(&elem(&1, 0))
+    derived = derived_conditions(r, conds)
 
     tokens =
       for {id, c} <- conds,
@@ -1748,6 +2013,10 @@ defmodule MCP.Conformance.AdjudicationsTest do
           do: {r["tag"], {:token, id}}
 
     uncat = uncatalogued(owner_record, conds)
+
+    not_derived =
+      for p <- owner_record_not_derived(owner_record, conds, derived),
+          do: {r["tag"], {:owner_record_not_derived, p}}
 
     governed =
       r["disposition"] in ~w(blocked_on_sdk_gap po_decision_required) or
@@ -1760,6 +2029,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       ),
       tokens,
       if(uncat == [], do: [], else: [{r["tag"], {:uncatalogued, uncat}}]),
+      not_derived,
       if(governed == (lw != []), do: [], else: [{r["tag"], :ungoverned}])
     ])
   end
@@ -1776,15 +2046,58 @@ defmodule MCP.Conformance.AdjudicationsTest do
     |> Enum.reject(&(&1 in phrases))
   end
 
+  # D2a-i's derivation (MES-129 29472): phrase containment, and d4a_fix_sdk by
+  # the depends_on_fix pointer.
+  defp d2ai_derived(r, conds) do
+    Enum.sort(
+      for {id, c} <- conds,
+          (c["owner_record_phrase"] && r["sdk_gap"] &&
+             String.contains?(r["sdk_gap"]["owner_record"], c["owner_record_phrase"])) ||
+            (id == "d4a_fix_sdk" and Map.has_key?(r, "depends_on_fix")),
+          do: id
+    )
+  end
+
+  # The catalogued phrases an owner_record names for which no condition carrying
+  # that phrase is derived. Phrase containment derived every such condition
+  # until ruled_questions narrowed it (MES-136); this restores "the derivation
+  # cannot ignore an owner_record" for any record's catalogue and derivation.
+  defp owner_record_not_derived(nil, _conds, _derived), do: []
+
+  defp owner_record_not_derived(owner_record, conds, derived) do
+    conds
+    |> Enum.filter(fn {_, c} ->
+      is_binary(c["owner_record_phrase"]) and
+        String.contains?(owner_record, c["owner_record_phrase"])
+    end)
+    |> Enum.group_by(fn {_, c} -> c["owner_record_phrase"] end, &elem(&1, 0))
+    |> Enum.reject(fn {_, ids} -> Enum.any?(ids, &(&1 in derived)) end)
+    |> Enum.map(&elem(&1, 0))
+    |> Enum.sort()
+  end
+
+  defp derived_conditions(r, conds) do
+    owner_record = get_in(r, ["sdk_gap", "owner_record"])
+
+    conds
+    |> Enum.filter(fn {_, c} -> derives?(r, c, owner_record) end)
+    |> Enum.map(&elem(&1, 0))
+    |> Enum.sort()
+  end
+
+  # A condition naming ruled_questions shares its owner_record phrase with its
+  # siblings (MES-136: four ids on MES-43 comment 29510), so the phrase derives
+  # it only on a row whose ruling names exactly those questions, either or not.
   defp derives?(r, c, owner_record) do
-    po = r["po_decision"]
+    ruling = r["ruling"]
 
     (is_binary(c["owner_record_phrase"]) and is_binary(owner_record) and
-       String.contains?(owner_record, c["owner_record_phrase"])) or
+       String.contains?(owner_record, c["owner_record_phrase"]) and
+       (not is_list(c["ruled_questions"]) or
+          (is_map(ruling) and ruling["questions"] == c["ruled_questions"] and
+             ruling["either"] == true == (c["either"] == true)))) or
       (is_binary(c["depends_on_fix_tag"]) and
-         get_in(r, ["depends_on_fix", "tag"]) == c["depends_on_fix_tag"]) or
-      (is_list(c["po_questions"]) and is_map(po) and po["questions"] == c["po_questions"] and
-         po["either"] == true == (c["either"] == true))
+         get_in(r, ["depends_on_fix", "tag"]) == c["depends_on_fix_tag"])
   end
 
   # The amended null rule (MES-130, 29491 Q5): {scenario => the checks the null
