@@ -10,6 +10,7 @@
     "conformance/data/etcc-boundaries.json": "hand_authored",
     "conformance/data/etcc-decisions.json": "hand_authored",
     "conformance/data/oc-axes-c1.json": "hand_authored",
+    "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json": "hand_authored",
     "docs/conformance/bucket-0-2026-07-28.json": "generated",
     "docs/conformance/buckets/bucket-0-2026-07-28.json": "generated",
     "docs/conformance/buckets/bucket-1-2026-07-28.json": "generated",
@@ -55,6 +56,7 @@
     "docs/conformance/client-2026-07-28-null-request.json": "Census of a harness run — evidence.",
     "docs/conformance/client-2026-07-28-probe-strict-connect.json": "Census of a harness run — evidence.",
     "docs/conformance/server-2026-07-28-null-control.json": "Census of a harness run — evidence.",
-    "docs/conformance/server-2026-07-28.json": "Census of a harness run — evidence."
+    "docs/conformance/server-2026-07-28.json": "Census of a harness run — evidence.",
+    "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json": "D4a's adjudication record (MES-126). It is hand-authored, including the rows and the prose, and it carries `authored_by_hand: true`. G32 holds it against its views. Registered here so that G31 scans its figures from its first commit, with none pending."
   }
 }

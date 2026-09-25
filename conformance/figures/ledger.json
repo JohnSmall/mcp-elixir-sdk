@@ -4536,6 +4536,86 @@
       "nth": 1,
       "path": "the_schema_question_this_slice_asked_and_the_answer_it_got.which_schema_copy_and_how_it_was_identified",
       "phrase": "two slices"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
+      "nth": 1,
+      "path": "findings_for_pm[#0]",
+      "phrase": "two RequestMetaInvalid edges",
+      "quantity": "d4a_request_meta_invalid_4a"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
+      "nth": 1,
+      "path": "negatives.statement",
+      "phrase": "0 contradicting edges",
+      "quantity": "d4a_oc_red_4b_contradicting"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
+      "nth": 1,
+      "path": "negatives.statement",
+      "phrase": "0 edges",
+      "quantity": "d4a_edges_in_3_or_6"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
+      "nth": 1,
+      "path": "negatives.statement",
+      "phrase": "11 edges",
+      "quantity": "d4a_oc_red_edges"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
+      "nth": 1,
+      "path": "negatives.statement",
+      "phrase": "4 contradicting edges",
+      "quantity": "d4a_green_contradicting"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
+      "nth": 1,
+      "path": "negatives.statement",
+      "phrase": "5 edges",
+      "quantity": "d4a_oc_red_4a"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
+      "nth": 1,
+      "path": "negatives.statement",
+      "phrase": "6 edges",
+      "quantity": "d4a_oc_red_4b"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022) | a removed `initialize` yields JSON-RPC error -32022 | oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize].root_cause.also.stated_at.bytes",
+      "phrase": "12 checks",
+      "quantity": "report_r2_http_status_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601 | a removed `initialize` over HTTP yields JSON-RPC error -32022 | oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize].root_cause.also.stated_at.bytes",
+      "phrase": "12 checks",
+      "quantity": "report_r2_http_status_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream | in JSON mode subscriptions/listen is refused with -32601 inside an HTTP 200 response | oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404].root_cause.stated_at.bytes",
+      "phrase": "12 checks",
+      "quantity": "report_r2_http_status_checks"
     }
   ],
   "guard": "G31 — MCP.Conformance.InputFigures (MES-120)",
@@ -14260,6 +14340,149 @@
             {
               "field": "tag",
               "matches": "/ClientRetrySupportedVersion$"
+            }
+          ]
+        }
+      }
+    },
+    "d4a_oc_red_edges": {
+      "means": "crosswalk edges whose OC verdict is red (MES-126's negatives universe)",
+      "query": {
+        "count": {
+          "at": "cells[]",
+          "in": "docs/conformance/crosswalk-2026-07-28.json",
+          "where": [
+            {
+              "field": "verdicts.oc",
+              "eq": "red"
+            }
+          ]
+        }
+      }
+    },
+    "d4a_oc_red_4a": {
+      "means": "OC-red edges in bucket 4a",
+      "query": {
+        "count": {
+          "at": "cells[]",
+          "in": "docs/conformance/crosswalk-2026-07-28.json",
+          "where": [
+            {
+              "field": "verdicts.oc",
+              "eq": "red"
+            },
+            {
+              "field": "bucket",
+              "eq": "4a"
+            }
+          ]
+        }
+      }
+    },
+    "d4a_oc_red_4b": {
+      "means": "OC-red edges in bucket 4b",
+      "query": {
+        "count": {
+          "at": "cells[]",
+          "in": "docs/conformance/crosswalk-2026-07-28.json",
+          "where": [
+            {
+              "field": "verdicts.oc",
+              "eq": "red"
+            },
+            {
+              "field": "bucket",
+              "eq": "4b"
+            }
+          ]
+        }
+      }
+    },
+    "d4a_oc_red_4b_contradicting": {
+      "means": "OC-red bucket-4b edges whose shape is contradicting",
+      "query": {
+        "count": {
+          "at": "cells[]",
+          "in": "docs/conformance/crosswalk-2026-07-28.json",
+          "where": [
+            {
+              "field": "verdicts.oc",
+              "eq": "red"
+            },
+            {
+              "field": "bucket",
+              "eq": "4b"
+            },
+            {
+              "field": "shape",
+              "eq": "contradicting"
+            }
+          ]
+        }
+      }
+    },
+    "d4a_edges_in_3_or_6": {
+      "means": "crosswalk edges in bucket 3 or bucket 6",
+      "query": {
+        "count": {
+          "at": "cells[]",
+          "in": "docs/conformance/crosswalk-2026-07-28.json",
+          "where": [
+            {
+              "field": "bucket",
+              "in": [
+                "3",
+                "6"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "d4a_green_contradicting": {
+      "means": "crosswalk edges whose OC verdict is green and whose shape is contradicting (the escalated inconsistent_verdict_pair edges)",
+      "query": {
+        "count": {
+          "at": "cells[]",
+          "in": "docs/conformance/crosswalk-2026-07-28.json",
+          "where": [
+            {
+              "field": "verdicts.oc",
+              "eq": "green"
+            },
+            {
+              "field": "shape",
+              "eq": "contradicting"
+            }
+          ]
+        }
+      }
+    },
+    "d4a_request_meta_invalid_4a": {
+      "means": "bucket-4a rows on the RequestMetaInvalid missing-meta check",
+      "query": {
+        "count": {
+          "at": "rows[]",
+          "in": "docs/conformance/buckets/bucket-4a-2026-07-28.json",
+          "where": [
+            {
+              "field": "tag",
+              "eq": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid"
+            }
+          ]
+        }
+      }
+    },
+    "report_r2_http_status_checks": {
+      "means": "R2's checks: failed checks at the accepted server run whose id names an HTTP 400 or 404 requirement (report-2026-07-28.md:254 states the figure)",
+      "query": {
+        "count": {
+          "at": "scenarios[].failed_checks[]",
+          "in": "docs/conformance/server-2026-07-28.json",
+          "where": [
+            {
+              "field": "id",
+              "matches": "-40[04](-|$)"
             }
           ]
         }

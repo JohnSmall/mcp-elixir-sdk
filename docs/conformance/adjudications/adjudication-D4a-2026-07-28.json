@@ -1,0 +1,1304 @@
+{
+  "schema": "adjudication-record/1",
+  "authored_by_hand": true,
+  "ticket": "MES-126",
+  "revision": "2026-07-28",
+  "what_this_is": "The D4a adjudication record. It is normative for the edges it adjudicates, and Confluence page 276594860 mirrors it. Guard G32 (MCP.Conformance.Adjudications) holds its rows equal to the views its sections bind, in both directions, with dispositions from the guard's closed set and every repository citation holding the bytes it quotes. A harness citation names the build by sha256 and a byte span. Gate 5 cannot read the build, so those citations are verified by the control's harness mode instead.",
+  "harness": {
+    "version": "0.2.0-alpha.11",
+    "sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae"
+  },
+  "decision_row": {
+    "why": "R3 and R6 are the report's decision row. This record adds R1's broad half, which has a part per required _meta key (protocolVersion, clientCapabilities). The PO question on MES-126 presents all three root causes, with R1 split as Q1a and Q1b.",
+    "stated_at": {
+      "file": "docs/conformance/report-2026-07-28.md",
+      "lines": [
+        260,
+        265
+      ],
+      "bytes": "**R3 and R6 are a DECISION row, not a fix row.** Both are documented SDK design decisions\nthat the referee contradicts — `dispatch.ex:146` names the missing version gate as the\ndesign, and `dispatch.ex:66-68`/`:131-139` document `initialize → -32022` and why. PM ruling\n(MES-24, comment 24503) routes them to the **release ticket as decisions requiring a PO\ncall**, *not* to MES-43 as gaps to fix. They are carried here so the measurement is not\nlost and so **nobody schedules them as bugs**."
+    }
+  },
+  "sections": [
+    {
+      "view": "docs/conformance/buckets/bucket-4a-2026-07-28.json",
+      "closure": "closed",
+      "owner": "MES-126",
+      "rows": [
+        {
+          "member": "MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)",
+          "claim": "a removed `initialize` yields JSON-RPC error -32022",
+          "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
+          "echo": {
+            "shape": "contradicting",
+            "verdicts": {
+              "et": "green",
+              "oc": "red",
+              "oc_status_at_accepted_run": "FAILURE",
+              "oc_warning": false
+            },
+            "bucket": "4a"
+          },
+          "et_test": {
+            "file": "test/mcp/server/dispatch_test.exs",
+            "lines": [
+              82,
+              84
+            ],
+            "bytes": "  test \"initialize is removed → UnsupportedProtocolVersion (-32022)\" do\n    {:reply, resp, _} = Dispatch.dispatch(req(\"initialize\", %{}), ctx(), config())\n    assert resp[\"error\"][\"code\"] == -32_022",
+            "asserts": "Dispatch.dispatch/3 answers a request for the removed method initialize with JSON-RPC error -32022. The test drives the dispatch below the transport, so no HTTP status exists at this seam."
+          },
+          "check": {
+            "requires": "HTTP 404 and JSON-RPC error -32601 for the removed method initialize.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                374909,
+                375169
+              ],
+              "bytes": "()=>!r||!i?{error:`Removed method validation hit dropped connections unexpectedly`}:r.status!==404||i?.error?.code!==-32601?{error:`Expected HTTP 404 and code -32601 for removed methods, got HTTP ${r.status} and code ${i?.error?.code}`}:{details:{response:i}})"
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                374423,
+                374595
+              ],
+              "bytes": "for(let e of[`initialize`,`ping`,`logging/setLevel`,`resources/subscribe`,`resources/unsubscribe`]){let t=e.toLowerCase().replace(`/`,`-`),n=await s(e,{_meta:l},void 0,500)",
+              "reading": "The harness sends initialize carrying the complete valid _meta, which is the value bound to `l`. The -32022 at the accepted run is therefore not a version failure of the request. The SDK answers initialize with -32022 whatever the request carries."
+            },
+            "observed_at_accepted_run": {
+              "file": "docs/conformance/server-2026-07-28.json",
+              "lines": [
+                361,
+                362
+              ],
+              "bytes": "          \"id\": \"sep-2575-http-server-method-not-found-404-initialize\",\n          \"message\": \"Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32022\","
+            }
+          },
+          "root_cause": {
+            "id": "R6",
+            "stated_at": {
+              "file": "docs/conformance/report-2026-07-28.md",
+              "lines": [
+                258,
+                258
+              ],
+              "bytes": "| **R6** `initialize` is answered `-32022 UnsupportedProtocolVersion`; the scenario requires `-32601` + HTTP 404 for every removed method | `sep-2575-http-server-method-not-found-404-initialize` (also under R2) | **decision row — see below** |"
+            },
+            "also": {
+              "id": "R2",
+              "stated_at": {
+                "file": "docs/conformance/report-2026-07-28.md",
+                "lines": [
+                  254,
+                  254
+                ],
+                "bytes": "| **R2** no JSON-RPC-code → HTTP-status mapping: every dispatch result leaves as HTTP 200 | 12 checks, overlapping R1/R3/R4/R5/R6 | **MES-43 gap 3** |"
+              },
+              "why": "The status half (HTTP 200 where 404 is required) is R2. This test cannot see it, so the http_status axis is silent here."
+            },
+            "design_statement": [
+              {
+                "file": "lib/mcp/server/dispatch.ex",
+                "lines": [
+                  66,
+                  68
+                ],
+                "bytes": "  Removed methods return the stateless behaviour (no legacy path): `initialize`\n  → `UnsupportedProtocolVersion` (-32022); `ping` and `logging/setLevel` →\n  method-not-found."
+              },
+              {
+                "file": "lib/mcp/server/dispatch.ex",
+                "lines": [
+                  131,
+                  139
+                ],
+                "bytes": "  defp handle_request(\"initialize\", id, _params, _ctx, config) do\n    reply(\n      id,\n      Error.unsupported_protocol_version(\n        \"the initialize handshake is removed in 2026-07-28; carry protocol version in per-request _meta\"\n      ),\n      config\n    )\n  end"
+              }
+            ]
+          },
+          "if_conformance_fixed": [
+            {
+              "file": "test/mcp/server/dispatch_test.exs",
+              "lines": [
+                82,
+                84
+              ],
+              "bytes": "  test \"initialize is removed → UnsupportedProtocolVersion (-32022)\" do\n    {:reply, resp, _} = Dispatch.dispatch(req(\"initialize\", %{}), ctx(), config())\n    assert resp[\"error\"][\"code\"] == -32_022",
+              "breaks": "Breaks: initialize would answer -32601, and this line asserts -32022."
+            },
+            {
+              "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+              "lines": [
+                88,
+                89
+              ],
+              "bytes": "  test \"initialize is gone → -32022; ping/logging.setLevel → -32601\" do\n    assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022",
+              "breaks": "Breaks: the same assertion, made through the real plug."
+            },
+            {
+              "file": "lib/mcp/server/dispatch.ex",
+              "lines": [
+                66,
+                68
+              ],
+              "bytes": "  Removed methods return the stateless behaviour (no legacy path): `initialize`\n  → `UnsupportedProtocolVersion` (-32022); `ping` and `logging/setLevel` →\n  method-not-found.",
+              "breaks": "Must change: the moduledoc states the -32022 design. This is lib/, so any change here is an SDK change and not this ticket's."
+            },
+            {
+              "file": "lib/mcp/server/dispatch.ex",
+              "lines": [
+                131,
+                139
+              ],
+              "bytes": "  defp handle_request(\"initialize\", id, _params, _ctx, config) do\n    reply(\n      id,\n      Error.unsupported_protocol_version(\n        \"the initialize handshake is removed in 2026-07-28; carry protocol version in per-request _meta\"\n      ),\n      config\n    )\n  end",
+              "breaks": "Must change: the clause that returns -32022, and the reason carried in its message."
+            }
+          ],
+          "disposition": "po_decision_required",
+          "rationale": "The edge stands: the claim and the check address the same behaviour, the reply to initialize, and they disagree. The SDK behaviour is documented design, not an accident (dispatch.ex:66-68 and :131-139). PM ruling MES-24/24503 reserved R6 for a PO call and routed it to MES-19. MES-19 is now Done, and the MES-126 brief carries the call forward as still open. So the disposition is the PO's. The question is posted on MES-126."
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
+          "claim": "a removed `initialize` over HTTP yields JSON-RPC error -32022",
+          "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
+          "echo": {
+            "shape": "contradicting",
+            "verdicts": {
+              "et": "green",
+              "oc": "red",
+              "oc_status_at_accepted_run": "FAILURE",
+              "oc_warning": false
+            },
+            "bucket": "4a"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+            "lines": [
+              88,
+              89
+            ],
+            "bytes": "  test \"initialize is gone → -32022; ping/logging.setLevel → -32601\" do\n    assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022",
+            "asserts": "Through the real plug, a POST of initialize comes back carrying JSON-RPC error -32022. The response has an HTTP status, and this test does not assert it."
+          },
+          "check": {
+            "requires": "HTTP 404 and JSON-RPC error -32601 for the removed method initialize.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                374909,
+                375169
+              ],
+              "bytes": "()=>!r||!i?{error:`Removed method validation hit dropped connections unexpectedly`}:r.status!==404||i?.error?.code!==-32601?{error:`Expected HTTP 404 and code -32601 for removed methods, got HTTP ${r.status} and code ${i?.error?.code}`}:{details:{response:i}})"
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                374423,
+                374595
+              ],
+              "bytes": "for(let e of[`initialize`,`ping`,`logging/setLevel`,`resources/subscribe`,`resources/unsubscribe`]){let t=e.toLowerCase().replace(`/`,`-`),n=await s(e,{_meta:l},void 0,500)"
+            },
+            "observed_at_accepted_run": {
+              "file": "docs/conformance/server-2026-07-28.json",
+              "lines": [
+                361,
+                362
+              ],
+              "bytes": "          \"id\": \"sep-2575-http-server-method-not-found-404-initialize\",\n          \"message\": \"Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32022\","
+            }
+          },
+          "root_cause": {
+            "id": "R6",
+            "stated_at": {
+              "file": "docs/conformance/report-2026-07-28.md",
+              "lines": [
+                258,
+                258
+              ],
+              "bytes": "| **R6** `initialize` is answered `-32022 UnsupportedProtocolVersion`; the scenario requires `-32601` + HTTP 404 for every removed method | `sep-2575-http-server-method-not-found-404-initialize` (also under R2) | **decision row — see below** |"
+            },
+            "also": {
+              "id": "R2",
+              "stated_at": {
+                "file": "docs/conformance/report-2026-07-28.md",
+                "lines": [
+                  254,
+                  254
+                ],
+                "bytes": "| **R2** no JSON-RPC-code → HTTP-status mapping: every dispatch result leaves as HTTP 200 | 12 checks, overlapping R1/R3/R4/R5/R6 | **MES-43 gap 3** |"
+              },
+              "why": "HTTP 200 where 404 is required. The test does not assert the status, so the status axis is silent, not agreeing."
+            }
+          },
+          "if_conformance_fixed": [
+            {
+              "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+              "lines": [
+                88,
+                89
+              ],
+              "bytes": "  test \"initialize is gone → -32022; ping/logging.setLevel → -32601\" do\n    assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022",
+              "breaks": "Breaks: this line asserts -32022."
+            },
+            {
+              "file": "test/mcp/server/dispatch_test.exs",
+              "lines": [
+                82,
+                84
+              ],
+              "bytes": "  test \"initialize is removed → UnsupportedProtocolVersion (-32022)\" do\n    {:reply, resp, _} = Dispatch.dispatch(req(\"initialize\", %{}), ctx(), config())\n    assert resp[\"error\"][\"code\"] == -32_022",
+              "breaks": "Breaks: the dispatch-level sibling of this edge."
+            }
+          ],
+          "disposition": "po_decision_required",
+          "rationale": "Same decision as the dispatch-level row, one layer up. Taking R6 alone would still leave this check red on the status half until R2 lands. The two have to land together for the check to pass."
+        },
+        {
+          "member": "MCP.Server.DispatchTest/test request without a protocolVersion _meta fails fast (-32022)",
+          "claim": "a tools/call carrying no _meta at all is rejected with -32022, not -32602",
+          "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+          "echo": {
+            "shape": "contradicting",
+            "verdicts": {
+              "et": "green",
+              "oc": "red",
+              "oc_status_at_accepted_run": "FAILURE",
+              "oc_warning": false
+            },
+            "bucket": "4a"
+          },
+          "et_test": {
+            "file": "test/mcp/server/dispatch_test.exs",
+            "lines": [
+              101,
+              105
+            ],
+            "bytes": "  test \"request without a protocolVersion _meta fails fast (-32022)\" do\n    {:reply, resp, _} =\n      Dispatch.dispatch(req(\"tools/call\", %{\"name\" => \"whoami\"}), ctx(\"PM\"), config())\n\n    assert resp[\"error\"][\"code\"] == -32_022",
+            "asserts": "A tools/call whose params carry no _meta is answered with -32022 by the per-request version gate."
+          },
+          "check": {
+            "requires": "JSON-RPC error -32602 for a request whose params carry no _meta.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                366137,
+                366266
+              ],
+              "bytes": "()=>t?r?.error?.code===-32602?{details:{fieldIssue:e.slug,response:r}}:{error:`Expected error code -32602, got ${r?.error?.code}`"
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                365916,
+                365988
+              ],
+              "bytes": "for(let e of d){let t=await s(`server/discover`,e.params,void 0,e.rpcId)",
+              "reading": "The request the check sends is server/discover, not tools/call. The missing-meta fixture supplies only its params, as the next citation shows."
+            },
+            "fixture": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                365157,
+                365274
+              ],
+              "bytes": "{slug:`missing-meta`,description:`Rejects request with missing _meta with -32602 Invalid params`,params:{},rpcId:101}"
+            },
+            "sibling_fixtures": [
+              {
+                "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+                "byte_span": [
+                  365275,
+                  365594
+                ],
+                "bytes": "{slug:`missing-protocol-version`,description:`Rejects request with _meta missing io.modelcontextprotocol/protocolVersion`,params:{_meta:{\"io.modelcontextprotocol/clientInfo\":l[`io.modelcontextprotocol/clientInfo`],\"io.modelcontextprotocol/clientCapabilities\":l[`io.modelcontextprotocol/clientCapabilities`]}},rpcId:102}",
+                "reading": "Fixture missing-protocol-version (rpcId 102): _meta carries clientInfo and clientCapabilities, no protocolVersion. It is its own check id, and it sits in bucket 2a (MES-130), not 4a. Q1a governs it."
+              },
+              {
+                "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+                "byte_span": [
+                  365595,
+                  365914
+                ],
+                "bytes": "{slug:`missing-client-capabilities`,description:`Rejects request with _meta missing io.modelcontextprotocol/clientCapabilities`,params:{_meta:{\"io.modelcontextprotocol/protocolVersion\":l[`io.modelcontextprotocol/protocolVersion`],\"io.modelcontextprotocol/clientInfo\":l[`io.modelcontextprotocol/clientInfo`]}},rpcId:104}",
+                "reading": "Fixture missing-client-capabilities (rpcId 104): _meta carries protocolVersion and clientInfo, no clientCapabilities. It is its own check id in bucket 2a (MES-130). No ruling about a missing version can turn it green: only Q1b governs it. The missing-meta fixture this edge is keyed on lacks both keys, so either Q1a or Q1b alone, applied to server/discover, makes it passable."
+              }
+            ],
+            "suite_reading_on_every_method": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                335199,
+                335479
+              ],
+              "bytes": "let u=Mt.filter(e=>s?.[e]===void 0);return u.length>0?c(400,-32602,`Invalid params: missing _meta keys: ${u.join(`, `)}`):s?.[Mt[0]]===l?typeof l!=`string`||!n.includes(l)?{kind:`reject`,status:400,body:{jsonrpc:`2.0`,id:i,error:{code:-32022,message:`Unsupported protocol version`",
+              "reading": "The harness's own mock server rejects a request missing ANY required _meta key with 400/-32602 on every method: the required keys are Mt, protocolVersion and clientCapabilities (see suite_required_keys). It uses -32022 only for a version that is present and unsupported. That is the suite's reading of the requirement. The SDK's gate differs from it on a missing protocolVersion, which earns -32022, and on a missing clientCapabilities, which no gate in lib/mcp/server/ reads at all."
+            },
+            "suite_required_keys": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                334543,
+                334634
+              ],
+              "bytes": "Mt=[`io.modelcontextprotocol/protocolVersion`,`io.modelcontextprotocol/clientCapabilities`]",
+              "reading": "The mock's required _meta keys: protocolVersion AND clientCapabilities. clientInfo is not among them."
+            },
+            "status_is_a_separate_check": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                366379,
+                366776
+              ],
+              "bytes": "await a(`sep-2575-http-server-meta-invalid-400`,`HttpServerMetaInvalid400`,`Rejections of requests missing required _meta fields use HTTP 400 Bad Request.`,()=>n?n.status===400?{details:{fieldIssue:e.slug,response:r}}:{error:`Expected HTTP 400 Bad Request, got status code ${n.status}`,details:{fieldIssue:e.slug,response:r}}:{error:`_meta validation probe failed completely`},{fieldIssue:e.slug})",
+              "reading": "The 400 is a SEPARATE check, HttpServerMetaInvalid400 (bucket 2a, R2's status half). The RequestMetaInvalid predicate reads the JSON-RPC code only, so R2 is not needed for it to pass."
+            },
+            "observed_at_accepted_run": {
+              "file": "docs/conformance/server-2026-07-28.json",
+              "lines": [
+                295,
+                296
+              ],
+              "bytes": "          \"id\": \"sep-2575-request-meta-invalid-missing-meta\",\n          \"message\": \"Expected error code -32602, got undefined\","
+            }
+          },
+          "root_cause": {
+            "id": "R1",
+            "stated_at": {
+              "file": "docs/conformance/report-2026-07-28.md",
+              "lines": [
+                253,
+                253
+              ],
+              "bytes": "| **R1** `server/discover` does no `_meta` structural validation, so a request with no `_meta`, or missing `protocolVersion`/`clientCapabilities`, gets a normal result instead of `-32602` | `sep-2575-request-meta-invalid-{missing-meta, missing-protocol-version, missing-client-capabilities}` (3) | **MES-43 gap 5** |"
+            },
+            "narrower_than_this_evidence": "R1 as the report words it names server/discover's missing _meta validation, over both required keys, protocolVersion and clientCapabilities. That is what the check SEES: at the accepted run, discover returned a normal result, hence got undefined. This edge is a different request, a tools/call. On every method other than server/discover the SDK answers a missing protocolVersion with -32022, because Meta.validate_protocol_version/2 returns {:error, :missing} and the gate maps every error to -32022; and it does not look at clientCapabilities at all, so a request missing only that key is served normally. The suite reads both cases as -32602 on every method (suite_required_keys). So R1 has a narrow half (discover validates _meta) and a broad half (which code a request missing a required key earns on every method), and each half has a part per key. The report routes the narrow half as a fix and states neither part of the broad half. The PO question splits them: Q1a for a missing _meta or protocolVersion, Q1b for a missing clientCapabilities.",
+            "gate": [
+              {
+                "file": "lib/mcp/protocol/meta.ex",
+                "lines": [
+                  129,
+                  130
+                ],
+                "bytes": "  def validate_protocol_version(%__MODULE__{protocol_version: nil}, _supported),\n    do: {:error, :missing}"
+              },
+              {
+                "file": "lib/mcp/server/dispatch.ex",
+                "lines": [
+                  162,
+                  168
+                ],
+                "bytes": "  defp handle_request(method, id, params, ctx, config) do\n    meta = Meta.from_params(params)\n\n    case Meta.validate_protocol_version(meta, target_version(config)) do\n      :ok -> route(method, id, params, ctx, config)\n      {:error, _} -> reply(id, Error.unsupported_protocol_version(meta.protocol_version), config)\n    end"
+              }
+            ],
+            "discover_is_ungated_by_design": {
+              "file": "lib/mcp/server/dispatch.ex",
+              "lines": [
+                146,
+                148
+              ],
+              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do"
+            },
+            "client_capabilities_is_read_but_not_gated": {
+              "file": "lib/mcp/protocol/meta.ex",
+              "lines": [
+                101,
+                108
+              ],
+              "bytes": "  def from_meta(meta) when is_map(meta) do\n    %__MODULE__{\n      protocol_version: Map.get(meta, @protocol_version_key),\n      client_info: Map.get(meta, @client_info_key),\n      client_capabilities: Map.get(meta, @client_capabilities_key),\n      log_level: Map.get(meta, @log_level_key),\n      trace_context: extract_trace_context(meta),\n      raw: meta"
+            }
+          },
+          "if_conformance_fixed": [
+            {
+              "file": "test/mcp/server/dispatch_test.exs",
+              "lines": [
+                101,
+                105
+              ],
+              "bytes": "  test \"request without a protocolVersion _meta fails fast (-32022)\" do\n    {:reply, resp, _} =\n      Dispatch.dispatch(req(\"tools/call\", %{\"name\" => \"whoami\"}), ctx(\"PM\"), config())\n\n    assert resp[\"error\"][\"code\"] == -32_022",
+              "breaks": "Breaks under Q1a YES and under Q1b YES (it sends no _meta, so both keys are missing). Stays green under either discover-only option, and the edge then becomes green/green contradicting, an inconsistent_verdict_pair like the escalated section below. Measured: see measured_break_sets."
+            },
+            {
+              "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+              "lines": [
+                82,
+                84
+              ],
+              "bytes": "  test \"a request without a protocolVersion _meta fails fast (-32022)\" do\n    conn = post(opts(), rpc(\"tools/call\", %{\"name\" => \"whoami\"}))\n    assert error(conn)[\"code\"] == -32_022",
+              "breaks": "Breaks under Q1a YES and under Q1b YES: the same assertion through the real plug. Stays green under either discover-only option. Measured."
+            },
+            {
+              "file": "test/mcp/server/dispatch_test.exs",
+              "lines": [
+                118,
+                122
+              ],
+              "bytes": "  test \"server/discover: schema shape (supportedVersions + CacheableResult fields; serverInfo in _meta)\" do\n    {:reply, resp, _} = Dispatch.dispatch(req(\"server/discover\", %{}), ctx(), config())\n    result = resp[\"result\"]\n\n    assert result[\"supportedVersions\"] == [@version]",
+              "breaks": "Breaks under every option of Q1a and of Q1b, discover-only included: it asserts a result for a server/discover sent with no _meta. Measured."
+            },
+            {
+              "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+              "lines": [
+                51,
+                54
+              ],
+              "bytes": "  test \"server/discover returns the schema-shaped result with no version gate\" do\n    conn = post(opts(), rpc(\"server/discover\", %{}))\n    r = result(conn)\n    assert conn.status == 200",
+              "breaks": "Breaks under every option of Q1a and of Q1b, discover-only included: a server/discover with no _meta, asserted to carry a result. Measured."
+            },
+            {
+              "file": "test/mcp/server/extensions_negotiation_test.exs",
+              "lines": [
+                68,
+                77
+              ],
+              "bytes": "  defp discover(opts \\\\ []) do\n    {:reply, response, _state} =\n      Dispatch.dispatch(\n        %Request{id: 1, method: \"server/discover\", params: %{}},\n        %ToolContext{request_id: 1},\n        config(opts)\n      )\n\n    response[\"result\"][\"capabilities\"]\n  end",
+              "breaks": "Breaks under every option of Q1a and of Q1b, discover-only included: this helper sends server/discover with no _meta, and every test in the file that calls it inherits the break. Measured."
+            },
+            {
+              "file": "test/mcp/server/extensions_negotiation_test.exs",
+              "lines": [
+                154,
+                167
+              ],
+              "bytes": "    test \"the server's declaration is fixed at build time, not per request\" do\n      config = config(extensions: %{\"com.example/x\" => %{}})\n\n      for id <- 1..3 do\n        {:reply, response, _} =\n          Dispatch.dispatch(\n            %Request{id: id, method: \"server/discover\", params: %{\"_meta\" => %{}}},\n            %ToolContext{request_id: id},\n            config\n          )\n\n        assert response[\"result\"][\"capabilities\"][\"extensions\"] == %{\"com.example/x\" => %{}}\n      end\n    end",
+              "breaks": "Breaks under every option of Q1a and of Q1b, discover-only included: it sends server/discover with params {\"_meta\" => %{}}, carrying neither required key, three times, and asserts a result each time. Measured."
+            },
+            {
+              "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+              "lines": [
+                352,
+                367
+              ],
+              "bytes": "      sequence = [\n        {\"server/discover\", %{}},\n        {\"tools/list\", with_meta(%{})},\n        {\"tools/call\", with_meta(%{\"name\" => \"whoami\", \"arguments\" => %{}})},\n        {\"resources/read\", with_meta(%{\"uri\" => \"mem://res\"})}\n      ]\n\n      results =\n        sequence\n        |> Enum.with_index()\n        |> Enum.map(fn {{method, params}, i} ->\n          url = Enum.at(urls, rem(i, 2))\n          http_post(url, method, params)\n        end)\n\n      assert Enum.all?(results, &(&1.status == 200))",
+              "breaks": "Does NOT break on any Q1 answer alone. Measured: under every variant this test stays green, because it asserts only HTTP 200 and, without R2, the -32602 still leaves as HTTP 200. It breaks when R2 lands with Q1a or Q1b, because the HttpServerMetaInvalid400 check requires the rejection to leave as HTTP 400 (status_is_a_separate_check). That last step is inferred from the check, not measured, since R2 is not built. The first cut of this record said it breaks under either reading; that was wrong."
+            }
+          ],
+          "disposition": "po_decision_required",
+          "rationale": "The edge stands at the requirement: the check's description is method-general, the suite's own mock applies it to every method, and this claim asserts the opposite code. But the check never sends tools/call, so the view's evidence clause claiming the fixture is exactly this request shape is wrong about the method. This record recorded that as a finding, and did not edit the generated view. The narrow fix cannot land without deciding the broad question, because the SDK's own tests encode discover-without-_meta as a success (see if_conformance_fixed). So the disposition is the PO's, even though the Sprint 4 register routed the narrow half as a fix.",
+          "measured_break_sets": {
+            "what": "Which tests go red under each answer to Q1a and Q1b, measured rather than read. The SDK is not changed: a scratch copy of the branch had its dispatch gate patched to answer -32602 for a missing key, under six variants (below), and the full suite was run once per variant at seed 0. The one G32 citation_drift failure that the patch itself causes (the committed-tree audit) is excluded from every list. The patch is not committed; the close-out on MES-126 carries it.",
+            "variants": {
+              "Q1a_yes": "a missing _meta or protocolVersion earns -32602 on every method, server/discover included",
+              "Q1a_discover_only": "the same, on server/discover only",
+              "Q1b_yes": "a missing clientCapabilities earns -32602 on every method, server/discover included",
+              "Q1b_discover_only": "the same, on server/discover only",
+              "Q1a_and_Q1b_yes": "both keys, every method",
+              "Q1a_and_Q1b_discover_only": "both keys, server/discover only"
+            },
+            "red_under": {
+              "Q1a_yes": [
+                {
+                  "file": "test/mcp/server/dispatch_test.exs",
+                  "test_lines": [
+                    101,
+                    118
+                  ]
+                },
+                {
+                  "file": "test/mcp/server/extensions_negotiation_test.exs",
+                  "test_lines": [
+                    112,
+                    123,
+                    133,
+                    143,
+                    154,
+                    182,
+                    207,
+                    232,
+                    267
+                  ]
+                },
+                {
+                  "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+                  "test_lines": [
+                    51,
+                    82
+                  ]
+                }
+              ],
+              "Q1b_yes": [
+                {
+                  "file": "test/mcp/server/dispatch_test.exs",
+                  "test_lines": [
+                    41,
+                    45,
+                    54,
+                    58,
+                    64,
+                    74,
+                    101,
+                    109,
+                    118,
+                    134,
+                    160
+                  ]
+                },
+                {
+                  "file": "test/mcp/server/extensions_negotiation_test.exs",
+                  "test_lines": [
+                    112,
+                    123,
+                    133,
+                    143,
+                    154,
+                    182,
+                    207,
+                    232,
+                    267,
+                    306
+                  ]
+                },
+                {
+                  "file": "test/mcp/server/json_schema_2020_12_test.exs",
+                  "test_lines": [
+                    87,
+                    92,
+                    100,
+                    106,
+                    113,
+                    120,
+                    140,
+                    149,
+                    209,
+                    209,
+                    209,
+                    209,
+                    209,
+                    209,
+                    209,
+                    209,
+                    209,
+                    209,
+                    209,
+                    223,
+                    229,
+                    236,
+                    242,
+                    252,
+                    258,
+                    265,
+                    292,
+                    310,
+                    321,
+                    330,
+                    344,
+                    381,
+                    400,
+                    424,
+                    443,
+                    459,
+                    471,
+                    509,
+                    532,
+                    559
+                  ]
+                },
+                {
+                  "file": "test/mcp/server/subscriptions_dispatch_test.exs",
+                  "test_lines": [
+                    179,
+                    191,
+                    207,
+                    217,
+                    228,
+                    237,
+                    248,
+                    267,
+                    294,
+                    320,
+                    346,
+                    367,
+                    386,
+                    397,
+                    439,
+                    464,
+                    481,
+                    491,
+                    499,
+                    511,
+                    526
+                  ]
+                },
+                {
+                  "file": "test/mcp/server/tool_order_test.exs",
+                  "test_lines": [
+                    89,
+                    97,
+                    103,
+                    114,
+                    125,
+                    139,
+                    147
+                  ]
+                },
+                {
+                  "file": "test/mcp/transport/self_compatibility_test.exs",
+                  "test_lines": [
+                    97
+                  ]
+                },
+                {
+                  "file": "test/mcp/transport/streamable_http_ac_test.exs",
+                  "test_lines": [
+                    100,
+                    110,
+                    119,
+                    126,
+                    135,
+                    144,
+                    156,
+                    222,
+                    233,
+                    245,
+                    271,
+                    280
+                  ]
+                },
+                {
+                  "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+                  "test_lines": [
+                    51,
+                    61,
+                    75,
+                    82,
+                    114,
+                    152,
+                    166,
+                    183,
+                    244,
+                    299
+                  ]
+                },
+                {
+                  "file": "test/mcp/transport/subscriptions_stream_test.exs",
+                  "test_lines": [
+                    270,
+                    287,
+                    302,
+                    324,
+                    341,
+                    385,
+                    412,
+                    428,
+                    443,
+                    485,
+                    503,
+                    537,
+                    588,
+                    630,
+                    655,
+                    693,
+                    716,
+                    734,
+                    772,
+                    844,
+                    902,
+                    959,
+                    1008
+                  ]
+                }
+              ],
+              "every_discover_only_variant": [
+                {
+                  "file": "test/mcp/server/dispatch_test.exs",
+                  "test_lines": [
+                    118
+                  ]
+                },
+                {
+                  "file": "test/mcp/server/extensions_negotiation_test.exs",
+                  "test_lines": [
+                    112,
+                    123,
+                    133,
+                    143,
+                    154,
+                    182,
+                    207,
+                    232,
+                    267
+                  ]
+                },
+                {
+                  "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+                  "test_lines": [
+                    51
+                  ]
+                }
+              ]
+            },
+            "equalities_measured": "Q1a_discover_only, Q1b_discover_only and Q1a_and_Q1b_discover_only redden the same set, every_discover_only_variant. Q1a_and_Q1b_yes reddens the same set as Q1b_yes, and Q1a_yes's set is contained in it.",
+            "why_q1b_is_wider": "The test helpers that stamp _meta put protocolVersion in it and not clientCapabilities: dispatch_test.exs meta/1 and streamable_http_stateless_test.exs @meta are cited here. Every test built on such a helper passes the version gate today and would be refused under Q1b_yes.",
+            "helpers": [
+              {
+                "file": "test/mcp/server/dispatch_test.exs",
+                "lines": [
+                  27,
+                  27
+                ],
+                "bytes": "  defp meta(version \\\\ @version), do: %{\"io.modelcontextprotocol/protocolVersion\" => version}"
+              },
+              {
+                "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+                "lines": [
+                  19,
+                  19
+                ],
+                "bytes": "  @meta %{\"io.modelcontextprotocol/protocolVersion\" => @version}"
+              }
+            ],
+            "our_client_is_unaffected": {
+              "file": "lib/mcp/client.ex",
+              "lines": [
+                822,
+                826
+              ],
+              "bytes": "    meta = %{\n      @protocol_version_meta_key => state.protocol_version,\n      \"io.modelcontextprotocol/clientInfo\" => encode(state.client_info),\n      \"io.modelcontextprotocol/clientCapabilities\" => encode(state.client_capabilities)\n    }"
+            }
+          }
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test a request without a protocolVersion _meta fails fast (-32022)",
+          "claim": "a tools/call over real HTTP carrying no _meta is rejected with -32022, not -32602",
+          "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+          "echo": {
+            "shape": "contradicting",
+            "verdicts": {
+              "et": "green",
+              "oc": "red",
+              "oc_status_at_accepted_run": "FAILURE",
+              "oc_warning": false
+            },
+            "bucket": "4a"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+            "lines": [
+              82,
+              84
+            ],
+            "bytes": "  test \"a request without a protocolVersion _meta fails fast (-32022)\" do\n    conn = post(opts(), rpc(\"tools/call\", %{\"name\" => \"whoami\"}))\n    assert error(conn)[\"code\"] == -32_022",
+            "asserts": "Through the real plug, a tools/call with no _meta comes back carrying -32022."
+          },
+          "check": {
+            "requires": "JSON-RPC error -32602 for a request whose params carry no _meta.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                366137,
+                366266
+              ],
+              "bytes": "()=>t?r?.error?.code===-32602?{details:{fieldIssue:e.slug,response:r}}:{error:`Expected error code -32602, got ${r?.error?.code}`"
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                365916,
+                365988
+              ],
+              "bytes": "for(let e of d){let t=await s(`server/discover`,e.params,void 0,e.rpcId)",
+              "reading": "The request the check sends is server/discover, not tools/call. The missing-meta fixture supplies only its params, as the next citation shows."
+            },
+            "fixture": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                365157,
+                365274
+              ],
+              "bytes": "{slug:`missing-meta`,description:`Rejects request with missing _meta with -32602 Invalid params`,params:{},rpcId:101}"
+            },
+            "sibling_fixtures": [
+              {
+                "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+                "byte_span": [
+                  365275,
+                  365594
+                ],
+                "bytes": "{slug:`missing-protocol-version`,description:`Rejects request with _meta missing io.modelcontextprotocol/protocolVersion`,params:{_meta:{\"io.modelcontextprotocol/clientInfo\":l[`io.modelcontextprotocol/clientInfo`],\"io.modelcontextprotocol/clientCapabilities\":l[`io.modelcontextprotocol/clientCapabilities`]}},rpcId:102}",
+                "reading": "Fixture missing-protocol-version (rpcId 102): _meta carries clientInfo and clientCapabilities, no protocolVersion. It is its own check id, and it sits in bucket 2a (MES-130), not 4a. Q1a governs it."
+              },
+              {
+                "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+                "byte_span": [
+                  365595,
+                  365914
+                ],
+                "bytes": "{slug:`missing-client-capabilities`,description:`Rejects request with _meta missing io.modelcontextprotocol/clientCapabilities`,params:{_meta:{\"io.modelcontextprotocol/protocolVersion\":l[`io.modelcontextprotocol/protocolVersion`],\"io.modelcontextprotocol/clientInfo\":l[`io.modelcontextprotocol/clientInfo`]}},rpcId:104}",
+                "reading": "Fixture missing-client-capabilities (rpcId 104): _meta carries protocolVersion and clientInfo, no clientCapabilities. It is its own check id in bucket 2a (MES-130). No ruling about a missing version can turn it green: only Q1b governs it. The missing-meta fixture this edge is keyed on lacks both keys, so either Q1a or Q1b alone, applied to server/discover, makes it passable."
+              }
+            ],
+            "suite_reading_on_every_method": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                335199,
+                335479
+              ],
+              "bytes": "let u=Mt.filter(e=>s?.[e]===void 0);return u.length>0?c(400,-32602,`Invalid params: missing _meta keys: ${u.join(`, `)}`):s?.[Mt[0]]===l?typeof l!=`string`||!n.includes(l)?{kind:`reject`,status:400,body:{jsonrpc:`2.0`,id:i,error:{code:-32022,message:`Unsupported protocol version`",
+              "reading": "The harness's own mock server rejects a request missing ANY required _meta key with 400/-32602 on every method: the required keys are Mt, protocolVersion and clientCapabilities (see suite_required_keys). It uses -32022 only for a version that is present and unsupported. That is the suite's reading of the requirement. The SDK's gate differs from it on a missing protocolVersion, which earns -32022, and on a missing clientCapabilities, which no gate in lib/mcp/server/ reads at all."
+            },
+            "suite_required_keys": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                334543,
+                334634
+              ],
+              "bytes": "Mt=[`io.modelcontextprotocol/protocolVersion`,`io.modelcontextprotocol/clientCapabilities`]",
+              "reading": "The mock's required _meta keys: protocolVersion AND clientCapabilities. clientInfo is not among them."
+            },
+            "status_is_a_separate_check": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                366379,
+                366776
+              ],
+              "bytes": "await a(`sep-2575-http-server-meta-invalid-400`,`HttpServerMetaInvalid400`,`Rejections of requests missing required _meta fields use HTTP 400 Bad Request.`,()=>n?n.status===400?{details:{fieldIssue:e.slug,response:r}}:{error:`Expected HTTP 400 Bad Request, got status code ${n.status}`,details:{fieldIssue:e.slug,response:r}}:{error:`_meta validation probe failed completely`},{fieldIssue:e.slug})",
+              "reading": "The 400 is a SEPARATE check, HttpServerMetaInvalid400 (bucket 2a, R2's status half). The RequestMetaInvalid predicate reads the JSON-RPC code only, so R2 is not needed for it to pass."
+            },
+            "observed_at_accepted_run": {
+              "file": "docs/conformance/server-2026-07-28.json",
+              "lines": [
+                295,
+                296
+              ],
+              "bytes": "          \"id\": \"sep-2575-request-meta-invalid-missing-meta\",\n          \"message\": \"Expected error code -32602, got undefined\","
+            }
+          },
+          "root_cause": {
+            "id": "R1",
+            "stated_at": {
+              "file": "docs/conformance/report-2026-07-28.md",
+              "lines": [
+                253,
+                253
+              ],
+              "bytes": "| **R1** `server/discover` does no `_meta` structural validation, so a request with no `_meta`, or missing `protocolVersion`/`clientCapabilities`, gets a normal result instead of `-32602` | `sep-2575-request-meta-invalid-{missing-meta, missing-protocol-version, missing-client-capabilities}` (3) | **MES-43 gap 5** |"
+            },
+            "narrower_than_this_evidence": "As on the dispatch-level row: the check sends server/discover and this test sends tools/call, so the shared ground is the requirement, not the request; and the requirement covers both required keys, protocolVersion and clientCapabilities, of which this test exercises the absence of both at once (it sends no _meta)."
+          },
+          "if_conformance_fixed": [
+            {
+              "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+              "lines": [
+                82,
+                84
+              ],
+              "bytes": "  test \"a request without a protocolVersion _meta fails fast (-32022)\" do\n    conn = post(opts(), rpc(\"tools/call\", %{\"name\" => \"whoami\"}))\n    assert error(conn)[\"code\"] == -32_022",
+              "breaks": "Breaks under Q1a YES and under Q1b YES (no _meta, so both keys are missing); stays green under either discover-only option. Measured on the dispatch-level row's measured_break_sets."
+            },
+            {
+              "file": "test/mcp/server/dispatch_test.exs",
+              "lines": [
+                101,
+                105
+              ],
+              "bytes": "  test \"request without a protocolVersion _meta fails fast (-32022)\" do\n    {:reply, resp, _} =\n      Dispatch.dispatch(req(\"tools/call\", %{\"name\" => \"whoami\"}), ctx(\"PM\"), config())\n\n    assert resp[\"error\"][\"code\"] == -32_022",
+              "breaks": "Breaks under Q1a YES and under Q1b YES: the dispatch-level sibling. Stays green under either discover-only option. Measured."
+            }
+          ],
+          "disposition": "po_decision_required",
+          "rationale": "Same decision as the dispatch-level row. Carrying it over the transport the check uses rules out the reading that the contradiction is an artefact of the dispatch seam. It does not make the check's request and this test's request the same request.",
+          "measured_break_sets": "The same decision, so the same sets: see the dispatch-level RequestMetaInvalid row's measured_break_sets."
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream",
+          "claim": "in JSON mode subscriptions/listen is refused with -32601 inside an HTTP 200 response",
+          "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404",
+          "echo": {
+            "shape": "contradicting",
+            "verdicts": {
+              "et": "green",
+              "oc": "red",
+              "oc_status_at_accepted_run": "FAILURE",
+              "oc_warning": false
+            },
+            "bucket": "4a"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/subscriptions_stream_test.exs",
+            "lines": [
+              1028,
+              1029
+            ],
+            "bytes": "      assert response.status == 200\n      assert response.body[\"error\"][\"code\"] == -32_601",
+            "asserts": "Over a real socket, a JSON-mode deployment refuses subscriptions/listen with -32601 carried in an HTTP 200 response, and asserts the 200."
+          },
+          "check": {
+            "requires": "HTTP 404 and JSON-RPC error -32601 when the server does not implement the requested method.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                375507,
+                375758
+              ],
+              "bytes": "()=>!te||!M?{error:`Unknown fallback test target returned an invalid layout`}:te.status!==404||M?.error?.code!==-32601?{error:`Expected HTTP 404 and JSON-RPC error code -32601, got HTTP ${te.status} and code ${M?.error?.code}`}:{details:{response:M}})"
+            },
+            "sends": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                375170,
+                375222
+              ],
+              "bytes": "let j=await s(`unknown/method`,{_meta:l},void 0,601)",
+              "reading": "The check sends unknown/method, not subscriptions/listen. The shared ground is the requirement's subject, a method this deployment does not implement, answered -32601. On that subject the test asserts HTTP status 200; the check requires 404."
+            },
+            "observed_at_accepted_run": {
+              "file": "docs/conformance/server-2026-07-28.json",
+              "lines": [
+                391,
+                392
+              ],
+              "bytes": "          \"id\": \"sep-2575-http-server-method-not-found-404\",\n          \"message\": \"Expected HTTP 404 and JSON-RPC error code -32601, got HTTP 200 and code -32601\","
+            }
+          },
+          "root_cause": {
+            "id": "R2",
+            "stated_at": {
+              "file": "docs/conformance/report-2026-07-28.md",
+              "lines": [
+                254,
+                254
+              ],
+              "bytes": "| **R2** no JSON-RPC-code → HTTP-status mapping: every dispatch result leaves as HTTP 200 | 12 checks, overlapping R1/R3/R4/R5/R6 | **MES-43 gap 3** |"
+            },
+            "routed_as_a_fix": {
+              "file": "docs/sprint_4_issues.md",
+              "lines": [
+                4412,
+                4412
+              ],
+              "bytes": "| 3 | no JSON-RPC-code → HTTP-status mapping | 12 of `server-stateless`'s 17 failures |"
+            }
+          },
+          "if_conformance_fixed": [
+            {
+              "file": "test/mcp/transport/subscriptions_stream_test.exs",
+              "lines": [
+                1028,
+                1029
+              ],
+              "bytes": "      assert response.status == 200\n      assert response.body[\"error\"][\"code\"] == -32_601",
+              "breaks": "Breaks: under a -32601 to 404 mapping, the status this line asserts becomes 404. It is the only assertion of HTTP 200 over a -32601 response in test/mcp. The other status-200 assertions sit on success paths or on SSE streams already open when the error is written."
+            },
+            {
+              "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+              "lines": [
+                90,
+                91
+              ],
+              "bytes": "    assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601\n    assert error(post(opts(), rpc(\"logging/setLevel\", %{\"level\" => \"info\"})))[\"code\"] == -32_601",
+              "breaks": "Does NOT break: these assert -32601 for ping and logging/setLevel and never read the status."
+            }
+          ],
+          "disposition": "fix_sdk",
+          "rationale": "R2 is a gap, not a design: the Sprint 4 register routes it as one (gap 3), and no lib/ statement defends HTTP 200 for an error. The fix is a JSON-RPC-code-to-HTTP-status mapping, with this test's 200 moving to 404 in the same change. The owner the report names, MES-43 gap 3, is not on MES-43's body at the tip of Jira. That is routed to the PM as a finding."
+        }
+      ]
+    },
+    {
+      "view": "docs/conformance/buckets/escalated-2026-07-28.json",
+      "closure": "closed",
+      "owner": "MES-126",
+      "rows": [
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a tools/call whose params carry no name emits no Mcp-Name rather than an empty one",
+          "claim": "a tools/call carrying no `params.name` emits NO `mcp-name` header, rather than an empty one",
+          "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+          "echo": {
+            "shape": "contradicting",
+            "verdicts": {
+              "et": "green",
+              "oc": "green",
+              "oc_status_at_accepted_run": "SUCCESS",
+              "oc_warning": false
+            },
+            "bucket": null,
+            "escalation_reason": "inconsistent_verdict_pair",
+            "escalation_cause": "check_defect_unexercised"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/routing_headers_test.exs",
+            "lines": [
+              192,
+              200
+            ],
+            "bytes": "      :ok =\n        HTTPClient.send_message(transport, %{\n          \"jsonrpc\" => \"2.0\",\n          \"id\" => 1,\n          \"method\" => \"tools/call\",\n          \"params\" => %{}\n        })\n\n      refute Map.has_key?(headers_of(agent, 0), \"mcp-name\")",
+            "asserts": "A tools/call whose params carry no name goes out with no mcp-name header at all."
+          },
+          "check": {
+            "requires": "An Mcp-Name header on tools/call equal to params.name.",
+            "check_body": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                700442,
+                700794
+              ],
+              "bytes": "checkMcpNameHeader(e,t,n){let r=t.method;if(this.nameHeaderChecks.has(r))return;let i=n===`params.uri`?t.params?.uri:t.params?.name,a=e.headers[`mcp-name`],o=[];a?a!==i&&o.push(`Mcp-Name header value '${a}' does not match body ${n} '${i}'.`):o.push(`Missing Mcp-Name header on ${r} request. Clients MUST include the Mcp-Name header for ${r} requests.`)"
+            },
+            "called_on_every_tools_call": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                699194,
+                699288
+              ],
+              "bytes": "n.method===`tools/call`?(this.checkMcpNameHeader(e,n,`params.name`),this.handleToolsCall(t,n))"
+            }
+          },
+          "root_cause": {
+            "id": "suite_check_unsatisfiable_without_source_field",
+            "why": "With params.name absent, the check binds its expected value to undefined. If no header is sent, it pushes the missing-header error. If any header is sent, the raw comparison of a string against undefined is true, and it pushes the mismatch error. No client behaviour passes the check on this input. The check also records only the FIRST tools/call of a run (the nameHeaderChecks early return), so it runs green only because the fixture's first tools/call carries a name."
+          },
+          "whose_defect": "suite",
+          "cause_slug": {
+            "view": "check_defect_unexercised",
+            "verdict": "confirmed",
+            "note": "Confirmed, and sharpened: the check is not merely unexercised on this input, it has no passing answer on it. The input itself is schema-invalid, since name is required on a tools/call, so the defect is dormant for any well-formed request."
+          },
+          "if_conformance_fixed": [],
+          "disposition": "suite_defect_upstream",
+          "rationale": "Nothing in our tree changes. This is a SECOND suite defect, distinct from MES-124's raw comparison. MES-124's upstream report should carry it, and that is routed to the PM as a finding."
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a non-ASCII tool name is encoded, and decodes back to the body value",
+          "claim": "a non-ASCII tool name rides `mcp-name` as the Base64 sentinel and decodes back to the body value",
+          "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+          "echo": {
+            "shape": "contradicting",
+            "verdicts": {
+              "et": "green",
+              "oc": "green",
+              "oc_status_at_accepted_run": "SUCCESS",
+              "oc_warning": false
+            },
+            "bucket": null,
+            "escalation_reason": "inconsistent_verdict_pair",
+            "escalation_cause": "check_defect_unexercised"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/routing_headers_test.exs",
+            "lines": [
+              221,
+              226
+            ],
+            "bytes": "      header = headers_of(agent, 0)[\"mcp-name\"]\n      assert String.starts_with?(header, \"=?base64?\")\n      assert HeaderMirror.decode_value(header) == name\n\n      # The body still carries the plain name; only the header is encoded.\n      assert Enum.at(requests(agent), 0).message[\"params\"][\"name\"] == name",
+            "asserts": "A non-ASCII tool name rides mcp-name as the Base64 sentinel and decodes back to the plain body value, which the body still carries."
+          },
+          "check": {
+            "requires": "An Mcp-Name header on tools/call equal to params.name, compared raw.",
+            "check_body": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                700442,
+                700794
+              ],
+              "bytes": "checkMcpNameHeader(e,t,n){let r=t.method;if(this.nameHeaderChecks.has(r))return;let i=n===`params.uri`?t.params?.uri:t.params?.name,a=e.headers[`mcp-name`],o=[];a?a!==i&&o.push(`Mcp-Name header value '${a}' does not match body ${n} '${i}'.`):o.push(`Missing Mcp-Name header on ${r} request. Clients MUST include the Mcp-Name header for ${r} requests.`)"
+            },
+            "called_on_every_tools_call": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                699194,
+                699288
+              ],
+              "bytes": "n.method===`tools/call`?(this.checkMcpNameHeader(e,n,`params.name`),this.handleToolsCall(t,n))"
+            }
+          },
+          "root_cause": {
+            "id": "suite_raw_header_compare",
+            "why": "The check compares the raw header against params.name and decodes nothing, so a sentinel-encoded header can never equal a name that needed encoding. The SDK's encoder cites the requirement to encode at streamable-http.mdx:490-492 (header_mirror.ex:158).",
+            "sdk_cites_the_requirement": {
+              "file": "lib/mcp/protocol/header_mirror.ex",
+              "lines": [
+                153,
+                158
+              ],
+              "bytes": "  @doc \"\"\"\n  Encodes a value for a header field, applying the Base64 sentinel when the\n  value cannot be carried as plain ASCII.\n\n  This is the same rule for `Mcp-Param-*` and for `Mcp-Name`\n  (`streamable-http.mdx:490-492`), so both callers share one encoder."
+            }
+          },
+          "whose_defect": "suite",
+          "cause_slug": {
+            "view": "check_defect_unexercised",
+            "verdict": "confirmed",
+            "note": "Confirmed: a conforming client is scored FAILURE on any name that needs encoding, and the run is green only because the fixture's tool names are header-safe. This is MES-124's defect."
+          },
+          "if_conformance_fixed": [],
+          "disposition": "suite_defect_upstream",
+          "rationale": "Nothing in our tree changes if the suite decodes before comparing. Changing our client to satisfy the check as it stands would put a CRLF-bearing value on the wire unencoded. Owner: MES-124 (upstream report, To Do)."
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a name that would inject a header is neutralised",
+          "claim": "a CRLF-bearing tool name is neutralised — it rides `mcp-name` encoded, carries no raw CR, and injects no header",
+          "tag": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+          "echo": {
+            "shape": "contradicting",
+            "verdicts": {
+              "et": "green",
+              "oc": "green",
+              "oc_status_at_accepted_run": "SUCCESS",
+              "oc_warning": false
+            },
+            "bucket": null,
+            "escalation_reason": "inconsistent_verdict_pair",
+            "escalation_cause": "check_defect_unexercised"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/routing_headers_test.exs",
+            "lines": [
+              260,
+              263
+            ],
+            "bytes": "      headers = headers_of(agent, 0)\n      assert HeaderMirror.decode_value(headers[\"mcp-name\"]) == hostile\n      refute headers[\"mcp-name\"] =~ \"\\r\"\n      refute Map.has_key?(headers, \"x-injected\")",
+            "asserts": "A CRLF-bearing tool name rides mcp-name encoded: it decodes back to the hostile value, carries no raw CR, and injects no header."
+          },
+          "check": {
+            "requires": "An Mcp-Name header on tools/call equal to params.name, compared raw.",
+            "check_body": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                700442,
+                700794
+              ],
+              "bytes": "checkMcpNameHeader(e,t,n){let r=t.method;if(this.nameHeaderChecks.has(r))return;let i=n===`params.uri`?t.params?.uri:t.params?.name,a=e.headers[`mcp-name`],o=[];a?a!==i&&o.push(`Mcp-Name header value '${a}' does not match body ${n} '${i}'.`):o.push(`Missing Mcp-Name header on ${r} request. Clients MUST include the Mcp-Name header for ${r} requests.`)"
+            },
+            "called_on_every_tools_call": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                699194,
+                699288
+              ],
+              "bytes": "n.method===`tools/call`?(this.checkMcpNameHeader(e,n,`params.name`),this.handleToolsCall(t,n))"
+            }
+          },
+          "root_cause": {
+            "id": "suite_raw_header_compare",
+            "why": "The check compares the raw header against params.name and decodes nothing, so a sentinel-encoded header can never equal a name that needed encoding. The SDK's encoder cites the requirement to encode at streamable-http.mdx:490-492 (header_mirror.ex:158).",
+            "sdk_cites_the_requirement": {
+              "file": "lib/mcp/protocol/header_mirror.ex",
+              "lines": [
+                153,
+                158
+              ],
+              "bytes": "  @doc \"\"\"\n  Encodes a value for a header field, applying the Base64 sentinel when the\n  value cannot be carried as plain ASCII.\n\n  This is the same rule for `Mcp-Param-*` and for `Mcp-Name`\n  (`streamable-http.mdx:490-492`), so both callers share one encoder."
+            }
+          },
+          "whose_defect": "suite",
+          "cause_slug": {
+            "view": "check_defect_unexercised",
+            "verdict": "confirmed",
+            "note": "Confirmed: a conforming client is scored FAILURE on any name that needs encoding, and the run is green only because the fixture's tool names are header-safe. This is MES-124's defect."
+          },
+          "if_conformance_fixed": [],
+          "disposition": "suite_defect_upstream",
+          "rationale": "Nothing in our tree changes if the suite decodes before comparing. Changing our client to satisfy the check as it stands would put a CRLF-bearing value on the wire unencoded. Owner: MES-124 (upstream report, To Do)."
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+          "claim": "that InputRequiredResult carries `inputRequests`, and the SDK puts that value on the wire as a JSON ARRAY",
+          "tag": "oc:server/input-required-result-request-state/wire-schema-valid/WireSchemaValid",
+          "echo": {
+            "shape": "contradicting",
+            "verdicts": {
+              "et": "green",
+              "oc": "green",
+              "oc_status_at_accepted_run": "SUCCESS",
+              "oc_warning": false
+            },
+            "bucket": null,
+            "escalation_reason": "inconsistent_verdict_pair",
+            "escalation_cause": "adapter_path_unexercised"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+            "lines": [
+              244,
+              248
+            ],
+            "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do\n    first = post(opts(), rpc(\"tools/call\", with_meta(%{\"name\" => \"needs_input\"}))) |> result()\n    assert first[\"resultType\"] == \"input_required\"\n    assert first[\"requestState\"] == \"rs-token-1\"\n    assert is_list(first[\"inputRequests\"])",
+            "asserts": "The InputRequiredResult the real plug returns carries inputRequests as a JSON array."
+          },
+          "check": {
+            "requires": "Every message the implementation sent validates against the spec schema.",
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                325368,
+                325588
+              ],
+              "bytes": "a.push({id:`wire-schema-valid`,name:`WireSchemaValid`,description:`Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version`,status:o.length===0?`SUCCESS`:`FAILURE`"
+            },
+            "schema_definition": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                250443,
+                250672
+              ],
+              "bytes": "InputRequests:{additionalProperties:{$ref:`#/$defs/InputRequest`},description:`A map of server-initiated requests that the client must fulfill.\nKeys are server-assigned identifiers; values are the request objects.`,type:`object`}",
+              "reading": "InputRequests is an object whose additionalProperties are InputRequest. An array is not an object."
+            }
+          },
+          "root_cause": {
+            "id": "sdk_typespec_invites_a_list",
+            "why": "MRTR.input_required/2 is spec'd list() | nil and passes the value through untouched, so a handler that follows the SDK's own type puts an array on the wire. The Sprint 4 register recorded this as a gap to fix (gap 7).",
+            "sdk_spec": {
+              "file": "lib/mcp/protocol/messages/mrtr.ex",
+              "lines": [
+                43,
+                46
+              ],
+              "bytes": "  @spec input_required(list() | nil, binary() | nil) :: map()\n  def input_required(input_requests, request_state) do\n    base = %{\"resultType\" => @result_type}\n    base = if input_requests, do: Map.put(base, \"inputRequests\", input_requests), else: base"
+            },
+            "routed_as_a_fix": {
+              "file": "docs/sprint_4_issues.md",
+              "lines": [
+                4416,
+                4416
+              ],
+              "bytes": "| 7 | `MRTR.input_required/2` typespec/doc say `list()`; the wire type is an object | C-A: the list form fails `wire-schema-valid` |"
+            },
+            "why_the_check_was_green": {
+              "file": "conformance/server_handler.ex",
+              "lines": [
+                55,
+                57
+              ],
+              "bytes": "    * `MRTR.input_required/2` is spec'd `list() | nil` while the wire type\n      `InputRequests` is a JSON **object** keyed by input name. This file sends\n      a map, per the schema."
+            }
+          },
+          "whose_defect": "ours",
+          "cause_slug": {
+            "view": "adapter_path_unexercised",
+            "verdict": "confirmed",
+            "note": "Confirmed: the accepted run only ever saw the conformance adapter, which sends a map per the schema. The SDK path that puts an array on the wire was never exercised by the harness."
+          },
+          "if_conformance_fixed": [
+            {
+              "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+              "lines": [
+                244,
+                248
+              ],
+              "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do\n    first = post(opts(), rpc(\"tools/call\", with_meta(%{\"name\" => \"needs_input\"}))) |> result()\n    assert first[\"resultType\"] == \"input_required\"\n    assert first[\"requestState\"] == \"rs-token-1\"\n    assert is_list(first[\"inputRequests\"])",
+              "breaks": "Breaks when the SDK is fixed (the typespec becomes a map, and a list is refused or converted): this line asserts a list."
+            },
+            {
+              "file": "test/support/stateless_handler.ex",
+              "lines": [
+                30,
+                33
+              ],
+              "bytes": "  def handle_call_tool(\"needs_input\", _args, %ToolContext{input: nil}, state) do\n    input_requests = [%{\"kind\" => \"elicitation\", \"message\" => \"what is your name?\"}]\n    {:input_required, input_requests, \"rs-token-1\", state}\n  end",
+              "breaks": "Must change with it: the test handler builds the input requests as a list."
+            }
+          ],
+          "disposition": "fix_sdk",
+          "rationale": "Ours, not the suite's: the schema is unambiguous, and the adapter already sends the conforming shape. The fix is the lib/ typespec and doc, plus the test handler and the assertion above. The owner the Sprint 4 register names, MES-43 gap 7, is not on MES-43's body; routed to the PM."
+        }
+      ]
+    }
+  ],
+  "negatives": {
+    "universe": "Crosswalk edges whose OC verdict is red, read from the crosswalk's cells.",
+    "statement": "Contradictions looked for and not found. The crosswalk holds 11 edges with an OC-red verdict. Bucket 4a holds 5 edges of them, every one contradicting and every one adjudicated above. Bucket 4b holds the other 6 edges, all partial, with 0 contradicting edges among them. Buckets 3 and 6 are empty by construction (0 edges between them), because each requires an ET-red verdict and none exists. So no OC-red contradiction sits outside bucket 4a. The escalated section covers the 4 contradicting edges whose OC verdict is green; they are outside this universe by definition.",
+    "what_this_does_not_say": "It does not say the 4b edges are complete, which is MES-127's question. And it covers only the declared slice the crosswalk projects."
+  },
+  "findings_for_pm": [
+    "F1: The view evidence of the two RequestMetaInvalid edges says the check's missing-meta fixture is exactly the tools/call request shape. The harness sends that fixture as server/discover. The generated view was not edited. Its source is the crosswalk input, whose per-record figures are MES-131's.",
+    "F2: R1 as report-2026-07-28.md:253 words it is narrower than the 4a evidence (see the RequestMetaInvalid rows): it names discover's validation of both keys, and states neither part of the broad half. The report is a published artefact and was not edited."
+  ]
+}
