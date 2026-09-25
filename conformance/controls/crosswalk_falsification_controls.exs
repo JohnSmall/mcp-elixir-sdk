@@ -580,8 +580,15 @@ defmodule CrosswalkFalsificationControls do
           cell == "escalated" and length(edge["axes"]) > 1 and
             hd(edge["axes"])["verdict"] == "contradicts"
         end,
+        # The cause goes WITH the contradiction (MES-110, rule C): an edge that
+        # no longer escalates carrying one is refused as
+        # `escalation_cause_on_an_edge_that_buckets`, which is the guard firing
+        # correctly on a mutation that forgot to drop it — not the defect this
+        # mutation exists to plant.
         fn edge ->
-          update_in(edge, ["axes", Access.at(0), "verdict"], fn "contradicts" -> "agrees" end)
+          edge
+          |> update_in(["axes", Access.at(0), "verdict"], fn "contradicts" -> "agrees" end)
+          |> Map.delete("escalation_cause")
         end
       )
 

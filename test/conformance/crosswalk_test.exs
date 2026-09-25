@@ -66,7 +66,7 @@ defmodule MCP.Conformance.CrosswalkTest do
     end
   end
 
-  describe "assign/1 — A3 §3's table, plus the escalation A3's table has no row for" do
+  describe "assign/1 — A3 §3's table, and rule A's refusal of the all-silent edge" do
     test "the six bucketing rows of the ratified table" do
       assert {"4a", [], nil} = Crosswalk.assign(edge([ax("a", :contradicts)], :red, :green))
 
@@ -106,25 +106,214 @@ defmodule MCP.Conformance.CrosswalkTest do
                )
     end
 
-    test "an ALL-SILENT edge escalates, where MatchKey alone would file it as bucket 5" do
+    test "an ALL-SILENT edge is REFUSED under rule A, where MatchKey alone would file it as bucket 5" do
       e = edge([ax("a", :silent), ax("b", :silent)], :green, :green)
 
       # What the ratified function alone does with it:
       assert {:ok, "5", [:partial]} = MatchKey.bucket(e)
 
-      # What this module does instead, and why:
-      assert {nil, [], msg} = Crosswalk.assign(e)
-      assert msg =~ "no_axis_contact"
-      assert msg =~ "covering zero"
+      # What this module does instead (MES-110, A3 §2 rule A): no match, at any
+      # arity. Not an escalation any more — a refusal naming the rule.
+      assert {:refused, {:no_axis_contact_is_no_match, 2, rule}} = Crosswalk.assign(e)
+      assert rule == Crosswalk.rule_a()
+      assert rule =~ "rule A"
+      assert rule =~ "authored 29283 | ratified 29319"
+    end
+
+    test "rule A does not depend on arity — a ONE-axis all-silent edge is refused too" do
+      assert {:error, {:no_axis_contact_is_no_match, 1, _}} =
+               Crosswalk.axis_contact(edge([ax("a", :silent)], :red, :green))
     end
 
     test "one covered axis among silent ones is a PARTIAL, not a no-contact" do
-      # The boundary of the rule above. Without this the escalation could be
+      # The boundary of the rule above. Without this the refusal could be
       # swallowing every partial edge and the test above would not notice.
+      assert :ok =
+               Crosswalk.axis_contact(
+                 edge([ax("a", :agrees), ax("b", :silent), ax("c", :silent)], :green, :green)
+               )
+
       assert {"5", [:partial], nil} =
                Crosswalk.assign(
                  edge([ax("a", :agrees), ax("b", :silent), ax("c", :silent)], :green, :green)
                )
+    end
+  end
+
+  describe "escalation_record/2 — rule C (A3 §3, MES-110): every escalation owned, every inconsistent pair caused" do
+    test "an inconsistent_verdict_pair carries the owner §3 names and the cause the edge records" do
+      e = edge([ax("a", :contradicts)], :green, :green)
+
+      assert {:ok, rec} =
+               Crosswalk.escalation_record(e, %{"escalation_cause" => "check_defect_unexercised"})
+
+      assert rec == %{
+               "escalation_reason" => "inconsistent_verdict_pair",
+               "escalation_owner" => "MES-126 (D4a)",
+               "escalation_cause" => "check_defect_unexercised"
+             }
+    end
+
+    test "an inconsistent_verdict_pair with NO cause is refused, naming the closed set" do
+      e = edge([ax("a", :contradicts)], :green, :green)
+
+      assert {:error, {:escalation_has_no_cause, :inconsistent_verdict_pair, set}} =
+               Crosswalk.escalation_record(e, %{})
+
+      assert set == Crosswalk.escalation_causes()
+    end
+
+    test "a cause OUTSIDE the closed set is refused" do
+      e = edge([ax("a", :contradicts)], :green, :green)
+
+      assert {:error, {:escalation_cause_outside_the_closed_set, "vibes", _}} =
+               Crosswalk.escalation_record(e, %{"escalation_cause" => "vibes"})
+    end
+
+    test "divergent_despite_agreement is owned by D4b and needs no cause" do
+      assert {:ok, %{"escalation_owner" => "MES-127 (D4b)"} = rec} =
+               Crosswalk.escalation_record(edge([ax("a", :agrees)], :red, :green), %{})
+
+      refute Map.has_key?(rec, "escalation_cause")
+    end
+
+    test "a cause on an edge that BUCKETS is refused — the near miss is the same pair, red OC" do
+      # (red, green, :contradicting) is 4a: the same contradiction under a red
+      # verdict is bucketed, and a cause recorded on it adjudicates nothing.
+      e = edge([ax("a", :contradicts)], :red, :green)
+
+      assert {:error, {:escalation_cause_on_an_edge_that_buckets, "4a", "provenance"}} =
+               Crosswalk.escalation_record(e, %{"escalation_cause" => "provenance"})
+
+      assert {:ok, %{}} = Crosswalk.escalation_record(e, %{})
+    end
+
+    test "the closed set is §3's three, and each owner is §3's" do
+      assert Crosswalk.escalation_causes() ==
+               ~w(provenance check_defect_unexercised adapter_path_unexercised)
+
+      assert Crosswalk.escalation_owners() == %{
+               inconsistent_verdict_pair: "MES-126 (D4a)",
+               divergent_despite_agreement: "MES-127 (D4b)"
+             }
+    end
+  end
+
+  describe "rule B (A3 §6, MES-110) — the claim-level state" do
+    @rows [["client", "s", "c", "N", "d", ""]]
+
+    defp claim_row(key, tag),
+      do: %{"member" => %{"register_key" => key}, "tag" => tag, "claim" => "a claim"}
+
+    test "a state-3 token on an edge-bearing member is a claim-level record" do
+      assert [] ==
+               Crosswalk.claim_level_problems(
+                 claim_row("M/t", "oc:none/no-axis-contact/X-a-claim"),
+                 @rows,
+                 MapSet.new(["M/t"])
+               )
+    end
+
+    test "the SAME record on an edge-less member is refused — it is bucket 1, mis-filed" do
+      assert [{:claim_level_record_on_a_member_with_no_edge, "M/t"}] ==
+               Crosswalk.claim_level_problems(
+                 claim_row("M/t", "oc:none/no-axis-contact/X-a-claim"),
+                 @rows,
+                 MapSet.new()
+               )
+    end
+
+    test "a record with no token, or a resolving one, is not state 3 and is refused" do
+      for tag <- [nil, "oc:client/s/c/N"] do
+        assert [{:claim_level_tag_is_not_state_3, "M/t", ^tag, _}] =
+                 Crosswalk.claim_level_problems(claim_row("M/t", tag), @rows, MapSet.new(["M/t"]))
+      end
+    end
+
+    test "the claim index runs over BOTH sets, so one id cannot name two claims across them" do
+      du = [%{"tag" => "oc:none/no-oc-scenario/X-one", "claim_the_slot_names" => "claim one"}]
+      cl = [%{"tag" => "oc:none/no-axis-contact/X-one", "claim" => "claim TWO"}]
+
+      {rows, []} = Crosswalk.claim_index_rows(du, cl)
+
+      assert {:error, {:native_id_names_two_claims, "X-one", ["claim TWO", "claim one"]}} =
+               MatchKey.declared_claim_index(rows)
+
+      # Near miss: the same id with the SAME claim is a legal repeat (§6).
+      {same, []} = Crosswalk.claim_index_rows(du, [%{hd(cl) | "claim" => "claim one"}])
+      assert {:ok, _} = MatchKey.declared_claim_index(same)
+    end
+
+    test "a row stating no claim is RETURNED as uncomparable, not silently dropped" do
+      du = [%{"tag" => "oc:none/no-oc-scenario/X-one"}]
+      assert {[], ["oc:none/no-oc-scenario/X-one"]} = Crosswalk.claim_index_rows(du, [])
+    end
+  end
+
+  describe "G20 under rule A — superseded_tokens/1" do
+    test "a no-axis-contact record supersedes exactly its own member's near-miss token" do
+      r = %{
+        "member" => %{"register_key" => "M/t"},
+        "tag" => "oc:none/no-axis-contact/X-a",
+        "near_miss_tag" => "oc:client/s/c/N"
+      }
+
+      assert MapSet.new([{"M/t", "oc:client/s/c/N"}]) == Crosswalk.superseded_tokens([r])
+    end
+
+    test "any other reason slug supersedes nothing — the near miss alone is not enough" do
+      r = %{
+        "member" => %{"register_key" => "M/t"},
+        "tag" => "oc:none/no-oc-scenario/X-a",
+        "near_miss_tag" => "oc:client/s/c/N"
+      }
+
+      assert MapSet.new() == Crosswalk.superseded_tokens([r])
+    end
+  end
+
+  describe "G23 under rule A — a no-axis-contact search names its near miss BY TAG" do
+    defp nac_entry(extra) do
+      Map.merge(
+        %{
+          "kind" => "no-axis-contact",
+          "hits" => 0,
+          "population" => %{},
+          "pattern" => "x",
+          "subject" => "s",
+          "near_miss" => "n",
+          "positive_controls" => [%{"term" => "y", "hits" => 1}]
+        },
+        extra
+      )
+    end
+
+    test "with a check tag it holds; without one, or with an oc:none one, it is refused" do
+      tag = "oc:none/no-axis-contact/X-a"
+
+      assert [] =
+               Crosswalk.absence_entry_problems(
+                 tag,
+                 "N1",
+                 nac_entry(%{"near_miss_tag" => "oc:client/s/c/N"})
+               )
+
+      assert [{:no_axis_contact_entry_names_no_near_miss_tag, "N1", nil}] =
+               Crosswalk.absence_entry_problems(tag, "N1", nac_entry(%{}))
+
+      assert [{:near_miss_tag_is_not_a_check, "N1", _}] =
+               Crosswalk.absence_entry_problems(
+                 tag,
+                 "N1",
+                 nac_entry(%{"near_miss_tag" => "oc:none/x/y"})
+               )
+    end
+
+    test "a near_miss_tag on any OTHER kind of search is refused" do
+      e = nac_entry(%{"kind" => "no-oc-scenario", "near_miss_tag" => "oc:client/s/c/N"})
+
+      assert [{:near_miss_tag_on_a_search_that_is_not_no_axis_contact, "S1", "no-oc-scenario"}] =
+               Crosswalk.absence_entry_problems("oc:none/no-oc-scenario/X", "S1", e)
     end
   end
 
@@ -1500,8 +1689,9 @@ defmodule MCP.Conformance.CrosswalkTest do
       # Every id a row names resolves, and every entry is named — checked on
       # the OUTPUT, which is a different question from the generator refusing
       # to build one that does not.
+      # Rule B (MES-110): claim-level rows name registered searches too.
       named =
-        a["declared_unmatched"]
+        (a["declared_unmatched"] ++ a["claim_level_unmatched"]["rows"])
         |> Enum.map(& &1["search_id"])
         |> Enum.reject(&is_nil/1)
         |> MapSet.new()
@@ -1604,10 +1794,17 @@ defmodule MCP.Conformance.CrosswalkTest do
     test "every escalated cell is routed, with its reason and its shape", %{a: a} do
       esc = a["escalations"]
       assert esc["count"] == Enum.count(a["cells"], &(not is_nil(&1["escalation"])))
-      assert esc["routed_to"] =~ "PM"
+      assert esc["routed_to"] =~ "STANDING"
 
       for row <- esc["rows"] do
         assert row["escalation"] != nil
+        # Rule C (MES-110): every row owned, and an inconsistent pair caused.
+        assert row["owner"] ==
+                 Crosswalk.escalation_owners()[String.to_existing_atom(row["reason"])]
+
+        if row["reason"] == "inconsistent_verdict_pair",
+          do: assert(row["cause"] in Crosswalk.escalation_causes())
+
         assert row["tag"] != nil
         assert row["claim"] != nil
       end
@@ -1746,12 +1943,15 @@ defmodule MCP.Conformance.CrosswalkTest do
       assert g["what_this_does_not_establish"] =~ "RIGHT one"
     end
 
-    test "claim-level unmatched rows are escalated, and every one names its search", %{a: a} do
+    test "claim-level unmatched rows are owned by D1, tokened, and every one names its search", %{
+      a: a
+    } do
       c = a["claim_level_unmatched"]
 
       assert c["count"] == length(c["rows"])
       assert c["count"] > 0
-      assert c["routed_to"] =~ "the PM"
+      assert c["owner"] == "MES-133 (D1)"
+      assert c["routed_to"] =~ "MES-133 (D1)"
 
       with_edges = MapSet.new(Enum.map(a["cells"], & &1["member"]["register_key"]))
 
@@ -1759,7 +1959,9 @@ defmodule MCP.Conformance.CrosswalkTest do
         # The record is only admissible against a member that HAS an edge — a
         # member with none is state 3 whole and belongs in bucket 1.
         assert MapSet.member?(with_edges, row["member"]["register_key"])
-        assert String.length(row["the_search_that_found_none"]) > 80
+        assert "oc:none/" <> _ = row["tag"]
+        assert is_binary(row["search_id"])
+        assert String.length(row["the_search_that_found_none"]) > 40
         assert is_binary(row["owner"]) and row["owner"] != ""
         assert is_binary(row["from"])
       end

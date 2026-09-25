@@ -52,19 +52,22 @@ defmodule MCP.Conformance.Crosswalk do
   `check_population/2` is that guard and `project/2` refuses a bucket-1 or
   bucket-2 projection whose universe it was not given.
 
-  ## The escalations — three, where A3 has two
+  ## The escalations — two, each standing and each OWNED; and one refusal
 
   A3 §3 escalates `(red, green, :full)` and `(green, green, :contradicting)`.
-  This module adds a third and does **not** invent a bucket for it:
+  Since MES-110 both are **standing** escalations with an owner named in §3 —
+  `divergent_despite_agreement` MES-127 (D4b), `inconsistent_verdict_pair`
+  MES-126 (D4a) — and every `inconsistent_verdict_pair` edge carries a `cause`
+  from the closed set §3 names. `escalation_record/2` enforces both, and
+  refuses a cause on an edge that does not escalate.
 
-      every axis silent  ->  {:escalate, :no_axis_contact}
-
-  A3 §2 rules that covering zero of one axis *"is no match, not a partial
-  one"*. Generalised to N axes that is this case exactly, and A3 §3's table has
-  no row for it — left alone, `shape_from_axes/1` returns `:partial` and bucket
-  5 swallows a claim that never touched the check's predicate. Escalating is
-  A3 §7's own mechanism for what the rule does not decide, and unlike a new
-  bucket it costs nothing if the PM rules the other way.
+  Until MES-110 this module escalated a THIRD case, `no_axis_contact` — every
+  axis silent — because A3 §3's table had no row for it. A3 §2 now decides it
+  (rule A, *an all-silent claim is NO MATCH, at any arity*), so it is no
+  longer escalated: `axis_contact/1` **refuses** the edge record and names the
+  rule. Left alone, `shape_from_axes/1` would return `:partial` and bucket 5
+  would swallow a claim that never touched the check's predicate, so the
+  refusal is on the join's path rather than in `assign/1` alone.
 
   ## What a green run of this module does NOT establish
 
@@ -152,9 +155,113 @@ defmodule MCP.Conformance.Crosswalk do
          :ok <- axes_exist(edge, oc_key, axes),
          {:ok, built} <- build_edge(edge, oc_key, oc, et),
          :ok <- MatchKey.validate_edge(built),
-         :ok <- tag_round_trips(edge["tag"], built.tag) do
-      {:ok, decorate(built, edge, status, attrs)}
+         :ok <- tag_round_trips(edge["tag"], built.tag),
+         :ok <- axis_contact(built),
+         {:ok, escalation} <- escalation_record(built, edge) do
+      {:ok, built |> decorate(edge, status, attrs) |> Map.merge(escalation)}
     end
+  end
+
+  @rule_a "match-relation.md §2, rule A — an all-silent claim is NO MATCH, at any arity " <>
+            "[authored 29283 | ratified 29319]"
+
+  @doc """
+  **Rule A** (A3 §2, MES-110): a claim `silent` on every axis of a check is not
+  an edge onto it, however many axes the check has.
+
+  Returns `:ok` for an edge touching at least one axis, and otherwise the
+  refusal, naming the rule. The record belongs in `declared_unmatched` with the
+  reason slug `no-axis-contact` if its member has no other edge, or in
+  `claims_without_an_edge` if it has one — in both cases with the check as the
+  G23 search's near miss.
+  """
+  @spec axis_contact(MatchKey.edge() | map()) :: :ok | {:error, term()}
+  def axis_contact(%{axes: axes}) do
+    if axes != [] and Enum.all?(axes, &(&1.verdict == :silent)) do
+      {:error, {:no_axis_contact_is_no_match, length(axes), @rule_a}}
+    else
+      :ok
+    end
+  end
+
+  @doc "The rule `axis_contact/1` refuses under, as the refusal names it."
+  @spec rule_a() :: String.t()
+  def rule_a, do: @rule_a
+
+  @escalation_owners %{
+    inconsistent_verdict_pair: "MES-126 (D4a)",
+    divergent_despite_agreement: "MES-127 (D4b)"
+  }
+
+  # A3 §3 as amended by rule C: the closed set a `(green, green, :contradicting)`
+  # edge's cause is drawn from. `provenance` is the paragraph's original reading
+  # (the INPUT is wrong); the other two are the unexercised-input forms.
+  @escalation_causes ~w(provenance check_defect_unexercised adapter_path_unexercised)
+
+  @doc "The owner A3 §3 names for each standing escalation."
+  @spec escalation_owners() :: %{atom() => String.t()}
+  def escalation_owners, do: @escalation_owners
+
+  @doc "The closed set of causes an `inconsistent_verdict_pair` edge may carry (A3 §3, rule C)."
+  @spec escalation_causes() :: [String.t()]
+  def escalation_causes, do: @escalation_causes
+
+  @doc """
+  **Rule C** (A3 §3, MES-110) — the fields an escalated cell carries, or the
+  refusal.
+
+  Every escalation gets its OWNER, from the table in §3 and never from the edge
+  record. An `inconsistent_verdict_pair` edge must also carry an
+  `escalation_cause` from `escalation_causes/0`: the cause is a hand judgement
+  made in the edges file from the evidence on the row, so what is checked here is
+  that it is PRESENT and IN THE SET — not that it is right, which is D4a's.
+
+  A cause on an edge that does not escalate is refused. It would otherwise sit
+  in the file as an adjudication of a contradiction that is not there.
+  """
+  @spec escalation_record(MatchKey.edge() | map(), map()) :: {:ok, map()} | {:error, term()}
+  def escalation_record(built, edge) do
+    cause = edge["escalation_cause"]
+
+    case MatchKey.bucket(built) do
+      {:ok, _bucket, _attrs} when is_nil(cause) ->
+        {:ok, %{}}
+
+      {:ok, bucket, _attrs} ->
+        {:error, {:escalation_cause_on_an_edge_that_buckets, bucket, cause}}
+
+      {:escalate, :inconsistent_verdict_pair = reason} ->
+        caused(reason, cause)
+
+      {:escalate, reason} when is_map_key(@escalation_owners, reason) ->
+        # divergent_despite_agreement: §3 names the owner and rules no cause set.
+        {:ok, owned(reason, if(cause, do: %{"escalation_cause" => cause}, else: %{}))}
+
+      {:escalate, reason} ->
+        {:error, {:escalation_has_no_owner, reason}}
+    end
+  end
+
+  # Rule C's two limbs on an inconsistent_verdict_pair: a cause, and one from
+  # §3's closed set. Named separately so each is a single, mutable line.
+  defp caused(reason, cause) do
+    cond do
+      is_nil(cause) ->
+        {:error, {:escalation_has_no_cause, reason, @escalation_causes}}
+
+      cause not in @escalation_causes ->
+        {:error, {:escalation_cause_outside_the_closed_set, cause, @escalation_causes}}
+
+      true ->
+        {:ok, owned(reason, %{"escalation_cause" => cause})}
+    end
+  end
+
+  defp owned(reason, extra) do
+    Map.merge(extra, %{
+      "escalation_reason" => Atom.to_string(reason),
+      "escalation_owner" => Map.fetch!(@escalation_owners, reason)
+    })
   end
 
   defp resolve_tag(nil, _rows), do: {:error, :edge_has_no_tag}
@@ -262,20 +369,24 @@ defmodule MCP.Conformance.Crosswalk do
   `bucket = f(verdict pair, edge shape)`, with the all-silent case intercepted
   **before** `MatchKey.bucket/1` sees it.
 
-  Returns `{bucket_or_nil, attributes, escalation_or_nil}`.
+  Returns `{bucket_or_nil, attributes, escalation_or_nil}`, or `{:refused,
+  reason}` for an all-silent edge. That is not an escalation any more: rule A
+  (A3 §2, MES-110) decides it as NO MATCH, and `cell/4` refuses such a record
+  before it reaches here. The clause stays so that a direct caller cannot get
+  bucket 5 out of an edge that touches nothing.
   """
-  @spec assign(MatchKey.edge()) :: {String.t() | nil, [atom()], String.t() | nil}
-  def assign(%{axes: axes} = edge) do
-    if Enum.all?(axes, &(&1.verdict == :silent)) do
-      {nil, [],
-       "no_axis_contact — every axis of this check is silent. A3 §2 rules that covering zero " <>
-         "of one axis is no match, not a partial one; generalised to #{length(axes)} axes that " <>
-         "is this edge. §3's table has no row for it, so it escalates rather than being bucketed."}
-    else
-      case MatchKey.bucket(edge) do
-        {:ok, bucket, attrs} -> {bucket, attrs, nil}
-        {:escalate, reason} -> {nil, [], "#{inspect(reason)} — match-relation.md §3"}
-      end
+  @spec assign(MatchKey.edge()) ::
+          {String.t() | nil, [atom()], String.t() | nil} | {:refused, term()}
+  def assign(edge) do
+    case axis_contact(edge) do
+      {:error, reason} ->
+        {:refused, reason}
+
+      :ok ->
+        case MatchKey.bucket(edge) do
+          {:ok, bucket, attrs} -> {bucket, attrs, nil}
+          {:escalate, reason} -> {nil, [], "#{inspect(reason)} — match-relation.md §3"}
+        end
     end
   end
 
@@ -743,7 +854,7 @@ defmodule MCP.Conformance.Crosswalk do
   defp citation_windows(record, axes, build, squashed_build) do
     evidence = record["evidence"] || ""
     et = et_windows(evidence)
-    rows = axis_rows(record["tag"], axes)
+    rows = axis_rows(window_tag(record), axes)
 
     %{
       narrow: et.narrow ++ oc_windows(rows, build),
@@ -782,6 +893,14 @@ defmodule MCP.Conformance.Crosswalk do
     |> Enum.flat_map(&Path.wildcard(Path.join([&1, "**", basename])))
     |> List.first()
   end
+
+  # The check whose bytes a record's evidence may quote. An edge's is its own
+  # tag. A record filed under rule A (A3 §2, MES-110) carries an `oc:none`
+  # token, which addresses no bytes — but its evidence was written about the
+  # near-miss check's predicate, and still quotes it, so the near miss's tag is
+  # the address. A record with neither has no OC window, as before.
+  defp window_tag(%{"tag" => "oc:none/" <> _, "near_miss_tag" => t}) when is_binary(t), do: t
+  defp window_tag(record), do: record["tag"]
 
   defp axis_rows(nil, _axes), do: []
 
@@ -935,7 +1054,8 @@ defmodule MCP.Conformance.Crosswalk do
     copies =
       for {row_field, entry_field} <- [
             {"the_search_that_found_none", "subject"},
-            {"the_near_miss_that_is_not_a_counterpart", "near_miss"}
+            {"the_near_miss_that_is_not_a_counterpart", "near_miss"},
+            {"near_miss_tag", "near_miss_tag"}
           ],
           copy = Map.get(row, row_field),
           is_binary(copy),
@@ -963,9 +1083,105 @@ defmodule MCP.Conformance.Crosswalk do
     ]
     |> Enum.reject(&elem(&1, 0))
     |> Enum.map(&elem(&1, 1))
+    |> Kernel.++(near_miss_tag_problems(id, entry))
+  end
+
+  # RULE A's search (A3 §2, MES-110). A `no-axis-contact` record exists because
+  # a claim shares a check's SUBJECT and touches none of its PREDICATE, so its
+  # near miss is not a prose aside but a specific check — and the tag is what
+  # lets the generator (G20's supersession, G30's OC windows) find it. Required
+  # on that kind and refused on every other: on a search that found no such
+  # check it would name a counterpart the row denies.
+  defp near_miss_tag_problems(id, %{"kind" => "no-axis-contact"} = entry) do
+    case entry["near_miss_tag"] do
+      "oc:none/" <> _ = t -> [{:near_miss_tag_is_not_a_check, id, t}]
+      "oc:" <> _ -> []
+      other -> [{:no_axis_contact_entry_names_no_near_miss_tag, id, other}]
+    end
+  end
+
+  defp near_miss_tag_problems(id, entry) do
+    if Map.has_key?(entry, "near_miss_tag"),
+      do: [{:near_miss_tag_on_a_search_that_is_not_no_axis_contact, id, entry["kind"]}],
+      else: []
   end
 
   defp non_empty?(v), do: is_binary(v) and v != ""
+
+  @doc """
+  **Rule B** (A3 §6, MES-110) — the ways one claim-level unmatched record fails
+  to be one.
+
+  A claim-level record is an `oc:none` token on an EDGE-BEARING member: it must
+  guard-check to state 3 lexically, and its member must carry an edge
+  (`with_edges`). A record on an edge-less member is refused — that member is
+  bucket 1 and belongs in `declared_unmatched`, where the member equation counts
+  it. The G23 search behind the record is checked by the caller, with the same
+  registry limbs a bucket-1 row gets.
+  """
+  @spec claim_level_problems(map(), [MatchKey.oc_key()], MapSet.t(String.t())) :: [tuple()]
+  def claim_level_problems(row, rows, with_edges) do
+    key = get_in(row, ["member", "register_key"])
+
+    state =
+      case MatchKey.guard_state(row["tag"], rows) do
+        {:declared_unmatched, _} -> []
+        other -> [{:claim_level_tag_is_not_state_3, key, row["tag"], other}]
+      end
+
+    edge =
+      if MapSet.member?(with_edges, key),
+        do: [],
+        else: [{:claim_level_record_on_a_member_with_no_edge, key}]
+
+    state ++ edge
+  end
+
+  @doc """
+  The `{native_id, claim}` pairs `MatchKey.declared_claim_index/1` runs over
+  under rule B — bucket-1 rows and claim-level rows TOGETHER, so one native id
+  cannot name two claims across the two sets — and the rows it cannot compare.
+
+  A bucket-1 row states its claim in `claim_the_slot_names`, a claim-level row
+  in `claim`. A row stating neither has nothing to compare and is returned in
+  the second element rather than silently left out, so the reach of the index is
+  reported and not implied.
+  """
+  @spec claim_index_rows([map()], [map()]) :: {[{String.t(), String.t()}], [String.t()]}
+  def claim_index_rows(declared_unmatched, claim_level) do
+    rows =
+      Enum.map(declared_unmatched, &{&1["tag"], &1["claim_the_slot_names"]}) ++
+        Enum.map(claim_level, &{&1["tag"], &1["claim"]})
+
+    {stated, unstated} = Enum.split_with(rows, fn {_t, c} -> is_binary(c) and c != "" end)
+
+    {Enum.map(stated, fn {t, c} -> {native_id_of(t), c} end),
+     Enum.map(unstated, fn {t, _} -> t end)}
+  end
+
+  defp native_id_of(tag), do: tag |> String.split("/") |> List.last()
+
+  @doc """
+  **G20 under rule A** — the inherited B2b tokens a `no-axis-contact` record
+  SUPERSEDES, as `{register_key, token}`.
+
+  B2b tagged some members with the check their subject names. Rule A (A3 §2,
+  MES-110) rules that a shared subject is not an edge, so the edge those tokens
+  stood for is gone and G20 — *every inherited token is still carried by one of
+  the member's rows* — would refuse the build. The token is not lost, though: it
+  is the record's near miss, named by tag. So a token is accounted for iff a
+  `no-axis-contact` record OF THAT MEMBER names it as `near_miss_tag`, and by
+  nothing looser — a record of another member, or of another reason slug, does
+  not account for it.
+  """
+  @spec superseded_tokens([map()]) :: MapSet.t({String.t(), String.t()})
+  def superseded_tokens(records) do
+    for r <- records,
+        match?("oc:none/no-axis-contact/" <> _, r["tag"]),
+        is_binary(r["near_miss_tag"]),
+        into: MapSet.new(),
+        do: {get_in(r, ["member", "register_key"]), r["near_miss_tag"]}
+  end
 
   @doc """
   **G24's universe** — the ET-CC keys a register declares, sorted and unique.

@@ -1,6 +1,6 @@
 {
   "bucket": "1",
-  "count": 186,
+  "count": 195,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 1088933,
+      "bytes": 1106223,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "385524cf0de89eb05df700375d41027b79cf969111cf7f45e6d109ddc7423dc6"
+      "sha256": "447d8651844d4093adf96c8fd73519e1c6e62ebdaa816c092dfdd10c5811118b"
     }
   },
   "revision": "2026-07-28",
@@ -46,6 +46,137 @@
       "the_near_miss_that_is_not_a_counterpart": "The near miss, named — a zero with its near miss named is a search, a bare zero is a grep. The RUN CENSUSES carry `\"reason\": \"extension\"` on not_scored scenarios, and a reader meeting the word there could take it for a counterpart. It is not one: those are protocol-extension PACKAGING — scenarios outside the frozen set — and not SEP-2133 capability-extensions negotiation. MEASURED at this tip, on both censuses: 16 of the 20 not_scored entries carry that reason, 6 on the client leg (`auth/client-credentials-jwt`, `-basic`, `auth/enterprise-managed-authorization`, `auth/dpop`, `auth/dpop-nonce`, `auth/wif-jwt-bearer`) and 10 on the server leg (the `tasks-*` family). NOTE — cg-reconciliation.md §2 states this as \"seven not_scored scenarios\"; that figure does not hold and has not since it was written. The client leg has 7 not_scored ENTRIES, of which 6 carry `extension` — the 7th, `json-schema-2020-12-preservation`, carries `added-after-release`. Over both legs it is 16 of 20. The census has not changed since MES-57 (3e487f8), so this is not drift. The ZERO above is unaffected; the near-miss figure is what was wrong. Recorded here and reported as a finding against cg-reconciliation.md, which is change-controlled and is not edited from this ticket.",
       "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population.",
       "why_no_counterpart": "`no-oc-scenario` — the suite has no such check ANYWHERE, so the search is over all 175 and not over a fixture. SEP-2133 extensions negotiation has no OC check on either leg: A4 §5 measured 0 of 175 and the search recorded above re-measures it here. This is CG2's whole shape and the reason it is a bucket-1 BLOCK rather than a correspondence question — there is nothing to correspond WITH."
+    },
+    {
+      "cg": null,
+      "claim_the_slot_names": "a -32022 offering no version we support is surfaced to the caller and produces no retry at all",
+      "evidence": "client_defects_test.exs:345-346 — asserts the error surfaces and `length(MockTransport.sent_messages(transport)) == 1`. There is no retry, so neither axis — both of which are predicates ON a retry — is touched.",
+      "member": {
+        "module": "MCP.ClientDefectsTest",
+        "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 offering only versions we do not support is surfaced, never retried",
+        "test": "test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 offering only versions we do not support is surfaced, never retried"
+      },
+      "moved_by": "MES-110 (rule A)",
+      "near_miss_tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
+      "search_id": "NAC01",
+      "tag": "oc:none/no-axis-contact/D-3-no-retry-when-no-offered-version-is-supported",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientRetrySupportedVersion`, and it shares this claim's SUBJECT, the version-negotiation retry, while touching none of its PREDICATE: both of its axes (`retry_header_version_is_supported`, `retry_meta_version_is_supported`) are predicates ON a retry, and this claim is that there is none. Until MES-110 that was an all-silent edge onto it; rule A makes it no match. A broader first pattern, `no retry`, came back with `DefaultResultTypeComplete`'s `no_retry_when_the_result_states_no_result_type` and was narrowed rather than accepted: that axis is the MRTR retry after a result with no `resultType`, a different retry with a different trigger, and it is named here so the narrowing is visible rather than convenient.",
+      "the_search_that_found_none": "a client NOT retrying: an error from which it cannot negotiate a version (a -32022 offering no version it supports, a -32022 with no usable `supported` data, or an error that is not -32022 at all) surfaced to the caller with no second request sent",
+      "until_MES_110": {
+        "axes": [
+          {
+            "axis": "retry_meta_version_is_supported",
+            "verdict": "silent"
+          },
+          {
+            "axis": "retry_header_version_is_supported",
+            "verdict": "silent"
+          }
+        ],
+        "et_verdict": "green",
+        "was": "an edge onto `near_miss_tag` with every axis silent, escalated as `no_axis_contact`"
+      },
+      "why_no_counterpart": "`no-axis-contact` — rule A (A3 §2, MES-110; authored 29283, ratified 29319): the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge, so it is bucket 1.",
+      "why_this_search_is_this_claims_search": "The claim is about the version-negotiation retry, and so is `near_miss_tag`; the search asks whether ANY predicate in this file's declared check population scores what the claim asserts, over the predicates themselves rather than their descriptions."
+    },
+    {
+      "cg": null,
+      "claim_the_slot_names": "a -32022 carrying no usable `supported` data is surfaced and produces no retry",
+      "evidence": "client_defects_test.exs:362-363 — same shape as the row above, a different malformed input.",
+      "member": {
+        "module": "MCP.ClientDefectsTest",
+        "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 with no usable data is surfaced, never retried",
+        "test": "test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 with no usable data is surfaced, never retried"
+      },
+      "moved_by": "MES-110 (rule A)",
+      "near_miss_tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
+      "search_id": "NAC01",
+      "tag": "oc:none/no-axis-contact/D-3-no-retry-when-supported-data-is-unusable",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientRetrySupportedVersion`, and it shares this claim's SUBJECT, the version-negotiation retry, while touching none of its PREDICATE: both of its axes (`retry_header_version_is_supported`, `retry_meta_version_is_supported`) are predicates ON a retry, and this claim is that there is none. Until MES-110 that was an all-silent edge onto it; rule A makes it no match. A broader first pattern, `no retry`, came back with `DefaultResultTypeComplete`'s `no_retry_when_the_result_states_no_result_type` and was narrowed rather than accepted: that axis is the MRTR retry after a result with no `resultType`, a different retry with a different trigger, and it is named here so the narrowing is visible rather than convenient.",
+      "the_search_that_found_none": "a client NOT retrying: an error from which it cannot negotiate a version (a -32022 offering no version it supports, a -32022 with no usable `supported` data, or an error that is not -32022 at all) surfaced to the caller with no second request sent",
+      "until_MES_110": {
+        "axes": [
+          {
+            "axis": "retry_meta_version_is_supported",
+            "verdict": "silent"
+          },
+          {
+            "axis": "retry_header_version_is_supported",
+            "verdict": "silent"
+          }
+        ],
+        "et_verdict": "green",
+        "was": "an edge onto `near_miss_tag` with every axis silent, escalated as `no_axis_contact`"
+      },
+      "why_no_counterpart": "`no-axis-contact` — rule A (A3 §2, MES-110; authored 29283, ratified 29319): the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge, so it is bucket 1.",
+      "why_this_search_is_this_claims_search": "The claim is about the version-negotiation retry, and so is `near_miss_tag`; the search asks whether ANY predicate in this file's declared check population scores what the claim asserts, over the predicates themselves rather than their descriptions."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "an error whose code is not -32022 produces no retry at all",
+      "evidence": "client_defects_test.exs:412-413 — `assert {:error, %MCP.Protocol.Error{code: -32_601}} = Task.await(task)` and `assert length(MockTransport.sent_messages(transport)) == 1`. There is no retry, so neither axis — both of which are predicates ON a retry, decided where the excerpt writes `p.status=` after one has happened — is touched.",
+      "member": {
+        "module": "MCP.ClientDefectsTest",
+        "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a non-32022 error is never retried",
+        "test": "test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a non-32022 error is never retried"
+      },
+      "moved_by": "MES-110 (rule A)",
+      "near_miss_tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
+      "note": "Until MES-110: ALL AXES SILENT, escalated as `no_axis_contact`. This is the FOURTH member of the D-3 block and it landed exactly where its three siblings did: C1b-i recorded `a -32022 offering only versions we do not support is surfaced, never retried` and two others as all-silent edges against this same check, on this same reasoning. It carried no CG, so it fell to C1b-iii while its siblings went with C1a's tokens — a split by the accident of tagging, not by anything about the claims, and the adjudication was the same one. Rule A (A3 §2, MES-110) now makes the record bucket 1: the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge; the near miss, `ClientRetrySupportedVersion`, is kept and named in `the_near_miss_that_is_not_a_counterpart`.",
+      "search_id": "NAC01",
+      "tag": "oc:none/no-axis-contact/D-3-no-retry-on-a-non-32022-error",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientRetrySupportedVersion`, and it shares this claim's SUBJECT, the version-negotiation retry, while touching none of its PREDICATE: both of its axes (`retry_header_version_is_supported`, `retry_meta_version_is_supported`) are predicates ON a retry, and this claim is that there is none. Until MES-110 that was an all-silent edge onto it; rule A makes it no match. A broader first pattern, `no retry`, came back with `DefaultResultTypeComplete`'s `no_retry_when_the_result_states_no_result_type` and was narrowed rather than accepted: that axis is the MRTR retry after a result with no `resultType`, a different retry with a different trigger, and it is named here so the narrowing is visible rather than convenient.",
+      "the_search_that_found_none": "a client NOT retrying: an error from which it cannot negotiate a version (a -32022 offering no version it supports, a -32022 with no usable `supported` data, or an error that is not -32022 at all) surfaced to the caller with no second request sent",
+      "until_MES_110": {
+        "axes": [
+          {
+            "axis": "retry_meta_version_is_supported",
+            "verdict": "silent"
+          },
+          {
+            "axis": "retry_header_version_is_supported",
+            "verdict": "silent"
+          }
+        ],
+        "et_verdict": "green",
+        "was": "an edge onto `near_miss_tag` with every axis silent, escalated as `no_axis_contact`"
+      },
+      "why_no_counterpart": "`no-axis-contact` — rule A (A3 §2, MES-110; authored 29283, ratified 29319): the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge, so it is bucket 1.",
+      "why_this_search_is_this_claims_search": "The claim is about the version-negotiation retry, and so is `near_miss_tag`; the search asks whether ANY predicate in this file's declared check population scores what the claim asserts, over the predicates themselves rather than their descriptions."
+    },
+    {
+      "cg": null,
+      "claim_the_slot_names": "the retry completes after a -32022 whose `supported` names the configured version",
+      "evidence": "client_defects_test.exs:376 — the ONLY version assertion in this test is on `first`, the request BEFORE the rejection; the retry's own `_meta` is never asserted. The member's name says 're-stamps' and its assertions do not check it. Recorded as S9-17; not fixed here (epic ruling 3).",
+      "member": {
+        "module": "MCP.ClientDefectsTest",
+        "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) the retry re-stamps the version chosen from `supported`",
+        "test": "test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) the retry re-stamps the version chosen from `supported`"
+      },
+      "moved_by": "MES-110 (rule A)",
+      "near_miss_tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
+      "note": "The name promises more than the assertions deliver. Left standing and routed.",
+      "search_id": "NAC02",
+      "tag": "oc:none/no-axis-contact/D-3-retry-completes-after-32022",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientRetrySupportedVersion`. Same subject, the retry after a -32022; its axes score what the RETRY carries (the header and the `_meta` version), and this member asserts neither: its only version assertion is on the request BEFORE the rejection (S9-17). So it touches none of the predicate and rule A makes it no match. `(?i)complete` reaches `DefaultResultTypeComplete`, whose axis reads a result with no `resultType` as `complete`. That is MRTR completion, not a version retry, and it is not this claim.",
+      "the_search_that_found_none": "the version-negotiation retry COMPLETING: after a -32022 whose `supported` names the configured version, the retried call returns its result to the caller",
+      "until_MES_110": {
+        "axes": [
+          {
+            "axis": "retry_meta_version_is_supported",
+            "verdict": "silent"
+          },
+          {
+            "axis": "retry_header_version_is_supported",
+            "verdict": "silent"
+          }
+        ],
+        "et_verdict": "green",
+        "was": "an edge onto `near_miss_tag` with every axis silent, escalated as `no_axis_contact`"
+      },
+      "why_no_counterpart": "`no-axis-contact` — rule A (A3 §2, MES-110; authored 29283, ratified 29319): the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge, so it is bucket 1.",
+      "why_this_search_is_this_claims_search": "The claim is about the version-negotiation retry, and so is `near_miss_tag`; the search asks whether ANY predicate in this file's declared check population scores what the claim asserts, over the predicates themselves rather than their descriptions."
     },
     {
       "authored_by": "MES-109 (C1b-iii)",
@@ -535,6 +666,35 @@
       "why_no_counterpart": "The merge/reset rule is what decides whether an earlier page's annotations survive a later one. Both scenarios serve a single page, so the rule is never exercised — a fixture gap, not an absent scenario."
     },
     {
+      "cg": "CG7",
+      "claim_the_slot_names": "a tool excluded for an invalid annotation leaves no annotations behind, so calling it anyway mirrors nothing",
+      "evidence": "client_tool_schemas_test.exs:125-146. The member's `invalid_tool/1` helper (client_tool_schemas_test.exs:55-63) builds exactly the fixture's `invalid_object_header` class — an `x-mcp-header` on a property of `\"type\" => \"object\"` — so the counterpart check is unambiguous. The single axis is SILENT: the check's subject is whether the client CALLED the tool, and this member deliberately calls it, asserting instead that the call carries no headers (`assert [] = Enum.at(MockTransport.sent_opts(transport), 1) |> Keyword.get(:headers, [])`). The two are not in conflict — the call here is the TEST's choice through `Client.call_tool/3`, not the client's own selection — but the assertion's subject is the headers, not the calling.",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an excluded tool leaves no annotations behind, so calling it mirrors nothing",
+        "test": "test W6 — SEP-2243 tool exclusion an excluded tool leaves no annotations behind, so calling it mirrors nothing"
+      },
+      "moved_by": "MES-110 (rule A)",
+      "near_miss_tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header",
+      "note": "Until MES-110: ALL AXES SILENT, recorded and ESCALATED, never bucketed, per this file's all-silent rule as it then stood. Rule A (A3 §2, MES-110) now makes the record bucket 1: the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge; the near miss, `ClientRejectsInvalidTool_invalid_object_header`, is kept and named in `the_near_miss_that_is_not_a_counterpart`. The question the escalation put to the PM is narrow and is untouched by moving the record: our client excludes the tool from tools/list and drops its annotations, but does not refuse a direct `call_tool/3` on the name. Whether SEP-2243's `MUST reject (exclude) such tools` reaches that far is a requirement reading, not an adjudication this file can make.",
+      "search_id": "NAC04",
+      "tag": "oc:none/no-axis-contact/CG7-excluded-tool-called-anyway-mirrors-nothing",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientRejectsInvalidTool_invalid_object_header`. Its one axis, `invalid_tool_is_not_called`, scores whether the client CALLED the tool; this member deliberately calls it through `Client.call_tool/3` and asserts only that the call carries no headers. Same subject, the excluded `invalid_object_header` tool, and none of the predicate: no match under rule A. Whether SEP-2243's `MUST reject (exclude)` reaches a direct `call_tool/3` on the name is the requirement-reading question the edge's note routed, and it is untouched by moving the record.",
+      "the_search_that_found_none": "a tool the client EXCLUDED for an invalid annotation, called anyway by the test, carrying no mirrored headers because its annotations were dropped with it",
+      "until_MES_110": {
+        "axes": [
+          {
+            "axis": "invalid_tool_is_not_called",
+            "verdict": "silent"
+          }
+        ],
+        "et_verdict": "green",
+        "was": "an edge onto `near_miss_tag` with every axis silent, escalated as `no_axis_contact`"
+      },
+      "why_no_counterpart": "`no-axis-contact` — rule A (A3 §2, MES-110; authored 29283, ratified 29319): the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge, so it is bucket 1.",
+      "why_this_search_is_this_claims_search": "The claim shares `near_miss_tag`'s subject, and the search asks whether ANY predicate in this file's declared check population scores what the claim actually asserts, reading the predicates rather than their descriptions, which would find the near miss by construction."
+    },
+    {
       "authored_by": "MES-109 (C1b-iii)",
       "cg": null,
       "claim_the_slot_names": "an `experimental` key is preserved rather than dropped",
@@ -545,7 +705,7 @@
       },
       "search_id": "S05",
       "tag": "oc:none/no-oc-scenario/server-capabilities-experimental",
-      "the_near_miss_that_is_not_a_counterpart": "`ClientDeclaresRootsCapability` / `ClientDeclaresSamplingCapability` / `ClientDeclaresElicitationCapability`, which are in this file's declared check population and already carry edges from `MCP.Protocol.CapabilitiesTest`'s ClientCapabilities row. They point the OTHER WAY: their single axis is `capability_value_is_a_plain_object` over the capability the CLIENT declares in its own `_meta`. `ServerDeclaresPromptsInDiscover` is the server-side mirror and is SERVER-leg. So `capabilit` returns 12 rows and not one of them is about what a client makes of a server's map — the same word, the opposite direction.",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientDeclaresRootsCapability` / `ClientDeclaresSamplingCapability` / `ClientDeclaresElicitationCapability`, which are in this file's declared check population. The first two carry edges from `MCP.Protocol.CapabilitiesTest`'s ClientCapabilities row, and until MES-110 the third did too; since MES-110 (rule A, A3 §2) that claim is a claim-level `no-axis-contact` row under NAC03 that names `ClientDeclaresElicitationCapability` as its near miss. They point the OTHER WAY: their single axis is `capability_value_is_a_plain_object` over the capability the CLIENT declares in its own `_meta`. `ServerDeclaresPromptsInDiscover` is the server-side mirror and is SERVER-leg. So `capabilit` returns 12 rows and not one of them is about what a client makes of a server's map — the same word, the opposite direction.",
       "the_search_that_found_none": "a client decoding the SERVER's advertised capabilities map into a struct — a full map, a map with capabilities missing, and an `experimental` key preserved",
       "why_no_counterpart": "`no-oc-scenario` — 12 rows mention a capability and not one is about a client PARSING the server's map: the client-leg three score the shape of the capability the CLIENT declares, and `ServerDeclaresPromptsInDiscover` is server-leg.",
       "why_this_search_is_this_claims_search": "The claim is about reading the SERVER's capabilities map. S05's subject is that read, and its near miss is the three client-capability checks this file already matches — same word, opposite direction, which is precisely why the member needs the search rather than the word."
@@ -561,7 +721,7 @@
       },
       "search_id": "S05",
       "tag": "oc:none/no-oc-scenario/server-capabilities-missing-keys",
-      "the_near_miss_that_is_not_a_counterpart": "`ClientDeclaresRootsCapability` / `ClientDeclaresSamplingCapability` / `ClientDeclaresElicitationCapability`, which are in this file's declared check population and already carry edges from `MCP.Protocol.CapabilitiesTest`'s ClientCapabilities row. They point the OTHER WAY: their single axis is `capability_value_is_a_plain_object` over the capability the CLIENT declares in its own `_meta`. `ServerDeclaresPromptsInDiscover` is the server-side mirror and is SERVER-leg. So `capabilit` returns 12 rows and not one of them is about what a client makes of a server's map — the same word, the opposite direction.",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientDeclaresRootsCapability` / `ClientDeclaresSamplingCapability` / `ClientDeclaresElicitationCapability`, which are in this file's declared check population. The first two carry edges from `MCP.Protocol.CapabilitiesTest`'s ClientCapabilities row, and until MES-110 the third did too; since MES-110 (rule A, A3 §2) that claim is a claim-level `no-axis-contact` row under NAC03 that names `ClientDeclaresElicitationCapability` as its near miss. They point the OTHER WAY: their single axis is `capability_value_is_a_plain_object` over the capability the CLIENT declares in its own `_meta`. `ServerDeclaresPromptsInDiscover` is the server-side mirror and is SERVER-leg. So `capabilit` returns 12 rows and not one of them is about what a client makes of a server's map — the same word, the opposite direction.",
       "the_search_that_found_none": "a client decoding the SERVER's advertised capabilities map into a struct — a full map, a map with capabilities missing, and an `experimental` key preserved",
       "why_no_counterpart": "`no-oc-scenario` — 12 rows mention a capability and not one is about a client PARSING the server's map: the client-leg three score the shape of the capability the CLIENT declares, and `ServerDeclaresPromptsInDiscover` is server-leg.",
       "why_this_search_is_this_claims_search": "The claim is about reading the SERVER's capabilities map. S05's subject is that read, and its near miss is the three client-capability checks this file already matches — same word, opposite direction, which is precisely why the member needs the search rather than the word."
@@ -577,7 +737,7 @@
       },
       "search_id": "S05",
       "tag": "oc:none/no-oc-scenario/server-capabilities-full-map",
-      "the_near_miss_that_is_not_a_counterpart": "`ClientDeclaresRootsCapability` / `ClientDeclaresSamplingCapability` / `ClientDeclaresElicitationCapability`, which are in this file's declared check population and already carry edges from `MCP.Protocol.CapabilitiesTest`'s ClientCapabilities row. They point the OTHER WAY: their single axis is `capability_value_is_a_plain_object` over the capability the CLIENT declares in its own `_meta`. `ServerDeclaresPromptsInDiscover` is the server-side mirror and is SERVER-leg. So `capabilit` returns 12 rows and not one of them is about what a client makes of a server's map — the same word, the opposite direction.",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientDeclaresRootsCapability` / `ClientDeclaresSamplingCapability` / `ClientDeclaresElicitationCapability`, which are in this file's declared check population. The first two carry edges from `MCP.Protocol.CapabilitiesTest`'s ClientCapabilities row, and until MES-110 the third did too; since MES-110 (rule A, A3 §2) that claim is a claim-level `no-axis-contact` row under NAC03 that names `ClientDeclaresElicitationCapability` as its near miss. They point the OTHER WAY: their single axis is `capability_value_is_a_plain_object` over the capability the CLIENT declares in its own `_meta`. `ServerDeclaresPromptsInDiscover` is the server-side mirror and is SERVER-leg. So `capabilit` returns 12 rows and not one of them is about what a client makes of a server's map — the same word, the opposite direction.",
       "the_search_that_found_none": "a client decoding the SERVER's advertised capabilities map into a struct — a full map, a map with capabilities missing, and an `experimental` key preserved",
       "why_no_counterpart": "`no-oc-scenario` — 12 rows mention a capability and not one is about a client PARSING the server's map: the client-leg three score the shape of the capability the CLIENT declares, and `ServerDeclaresPromptsInDiscover` is server-leg.",
       "why_this_search_is_this_claims_search": "The claim is about reading the SERVER's capabilities map. S05's subject is that read, and its near miss is the three client-capability checks this file already matches — same word, opposite direction, which is precisely why the member needs the search rather than the word."
@@ -957,6 +1117,44 @@
       "why_this_search_is_this_claims_search": "The claim is the key-by-key extraction. SRV15's subject is that, and its near miss is the presence family, which a wrong extraction would satisfy."
     },
     {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "validate_protocol_version/2 classifies a known earlier version as unsupported, echoing the version it was given",
+      "evidence": "meta_test.exs:50-51 — `assert Meta.validate_protocol_version(meta, @version) == {:error, {:unsupported, \"2025-11-25\"}}`. The tuple DOES carry the requested version back, which is the nearest this unit comes to the `error_data_requested_echoes_the_requested_version` axis — and it is not near enough. The axis is a predicate on `error.data.requested`, a WIRE field of the JSON-RPC error object; `{:error, {:unsupported, _}}` is an SDK-invented container that B2b's own register records as `mixed` for that reason, and no assertion here follows it to the wire.",
+      "member": {
+        "module": "MCP.Protocol.MetaTest",
+        "register_key": "MCP.Protocol.MetaTest/test validate_protocol_version/2 mismatched (e.g. legacy 2025-11-25) → {:error, {:unsupported, got}}",
+        "test": "test validate_protocol_version/2 mismatched (e.g. legacy 2025-11-25) → {:error, {:unsupported, got}}"
+      },
+      "moved_by": "MES-110 (rule A)",
+      "near_miss_tag": "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError",
+      "note": "Until MES-110: ALL AXES SILENT, escalated as `no_axis_contact`, and recorded rather than dropped because the near-agreement is the interesting part: the SDK has the value the check wants and this unit stops one step short of asserting where it ends up. Rule A (A3 §2, MES-110) now makes the record bucket 1: the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge; the near miss, `ServerUnsupportedVersionError`, is kept and named in `the_near_miss_that_is_not_a_counterpart`.",
+      "search_id": "NAC07",
+      "tag": "oc:none/no-axis-contact/SEP-2575-validate-classifies-earlier-version-unsupported",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerUnsupportedVersionError`. The nearest axis is `error_data_requested_echoes_the_requested_version`, and this member does carry the requested version back, but in an SDK-invented tuple that no assertion follows to the WIRE field the axis reads (`error.data.requested`). Same subject, none of the predicate: no match under rule A. A first pattern carried `validate`, which returns `WireSchemaValid`'s `validates against the published spec schema` rows. That is schema validation of a message, not version classification, and it was dropped from the pattern rather than argued past.",
+      "the_search_that_found_none": "the SDK's own version CLASSIFIER: `validate_protocol_version/2` returning `{:error, {:unsupported, got}}` for a known earlier version, echoing the version it was given in an SDK tuple",
+      "until_MES_110": {
+        "axes": [
+          {
+            "axis": "error_data_supported_is_a_non_empty_array",
+            "verdict": "silent"
+          },
+          {
+            "axis": "error_data_supported_lists_only_versions_the_server_reports",
+            "verdict": "silent"
+          },
+          {
+            "axis": "error_data_requested_echoes_the_requested_version",
+            "verdict": "silent"
+          }
+        ],
+        "et_verdict": "green",
+        "was": "an edge onto `near_miss_tag` with every axis silent, escalated as `no_axis_contact`"
+      },
+      "why_no_counterpart": "`no-axis-contact` — rule A (A3 §2, MES-110; authored 29283, ratified 29319): the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge, so it is bucket 1.",
+      "why_this_search_is_this_claims_search": "The claim shares `near_miss_tag`'s subject, and the search asks whether ANY predicate in this file's declared check population scores what the claim actually asserts, reading the predicates rather than their descriptions, which would find the near miss by construction."
+    },
+    {
       "authored_by": "MES-116 (C1c-iii)",
       "cg": null,
       "claim_the_slot_names": "a ResourceLink content block reaches the wire with the snake_case discriminator `resource_link` and a camelCase `mimeType`",
@@ -1079,7 +1277,7 @@
       },
       "search_id": "S03",
       "tag": "oc:none/no-oc-scenario/jsonrpc-decode-success-response",
-      "the_near_miss_that_is_not_a_counterpart": "`wire-schema-valid` / WireSchemaValid, and it is the sharpest near miss in this file because it is IN this file's declared check population and THREE members of this very ticket carry an edge to it — two agreeing (`MCP.ProtocolTest`'s two `encode/1` claims) and one all-silent and escalated. It validates JSON-RPC messages against the spec schema — but `o=t.filter(e=>e.origin===` implementation, at [325325,325367], scopes it to the messages the implementation SENT, and its sibling `wire-schema-harness-error` takes the harness-origin half and reports it as a BUG IN THE HARNESS rather than as a score of our parsing. So the suite validates messages in BOTH directions and scores our handling of neither inbound one. The scope is read off the addressed bytes — oc-axes-c1.json's `harness_origin_sibling` excerpt — and not off the check's description.",
+      "the_near_miss_that_is_not_a_counterpart": "`wire-schema-valid` / WireSchemaValid, and it is the sharpest near miss in this file because it is IN this file's declared check population and, until MES-110, THREE members of this very ticket carried an edge to it — two agreeing (`MCP.ProtocolTest`'s two `encode/1` claims) and one all-silent and escalated. Since MES-110 (rule A, A3 §2) TWO do: the third, `encode!/1 returns JSON string`, is a `no-axis-contact` bucket-1 row under NAC05 that names this check as its near miss. It validates JSON-RPC messages against the spec schema — but `o=t.filter(e=>e.origin===` implementation, at [325325,325367], scopes it to the messages the implementation SENT, and its sibling `wire-schema-harness-error` takes the harness-origin half and reports it as a BUG IN THE HARNESS rather than as a score of our parsing. So the suite validates messages in BOTH directions and scores our handling of neither inbound one. The scope is read off the addressed bytes — oc-axes-c1.json's `harness_origin_sibling` excerpt — and not off the check's description.",
       "the_search_that_found_none": "a client DECODING an INBOUND JSON-RPC response — classifying a `result` message and an `error` message and building the struct the caller receives",
       "why_no_counterpart": "`no-oc-scenario` — no check on either leg scores a client's handling of a message it RECEIVED; `wire-schema-valid` scores only messages the implementation SENT, and its `origin===`harness`` sibling is a harness bug report. The search is therefore over all 175.",
       "why_this_search_is_this_claims_search": "The claim is about DECODING an inbound response. S03's subject is that decode, and its near miss is the one check that validates JSON-RPC messages — resolved against the addressed bytes that scope it to the OUTBOUND direction. The member's claim and the search's subject are the same act."
@@ -1095,10 +1293,40 @@
       },
       "search_id": "S03",
       "tag": "oc:none/no-oc-scenario/jsonrpc-decode-error-response",
-      "the_near_miss_that_is_not_a_counterpart": "`wire-schema-valid` / WireSchemaValid, and it is the sharpest near miss in this file because it is IN this file's declared check population and THREE members of this very ticket carry an edge to it — two agreeing (`MCP.ProtocolTest`'s two `encode/1` claims) and one all-silent and escalated. It validates JSON-RPC messages against the spec schema — but `o=t.filter(e=>e.origin===` implementation, at [325325,325367], scopes it to the messages the implementation SENT, and its sibling `wire-schema-harness-error` takes the harness-origin half and reports it as a BUG IN THE HARNESS rather than as a score of our parsing. So the suite validates messages in BOTH directions and scores our handling of neither inbound one. The scope is read off the addressed bytes — oc-axes-c1.json's `harness_origin_sibling` excerpt — and not off the check's description.",
+      "the_near_miss_that_is_not_a_counterpart": "`wire-schema-valid` / WireSchemaValid, and it is the sharpest near miss in this file because it is IN this file's declared check population and, until MES-110, THREE members of this very ticket carried an edge to it — two agreeing (`MCP.ProtocolTest`'s two `encode/1` claims) and one all-silent and escalated. Since MES-110 (rule A, A3 §2) TWO do: the third, `encode!/1 returns JSON string`, is a `no-axis-contact` bucket-1 row under NAC05 that names this check as its near miss. It validates JSON-RPC messages against the spec schema — but `o=t.filter(e=>e.origin===` implementation, at [325325,325367], scopes it to the messages the implementation SENT, and its sibling `wire-schema-harness-error` takes the harness-origin half and reports it as a BUG IN THE HARNESS rather than as a score of our parsing. So the suite validates messages in BOTH directions and scores our handling of neither inbound one. The scope is read off the addressed bytes — oc-axes-c1.json's `harness_origin_sibling` excerpt — and not off the check's description.",
       "the_search_that_found_none": "a client DECODING an INBOUND JSON-RPC response — classifying a `result` message and an `error` message and building the struct the caller receives",
       "why_no_counterpart": "`no-oc-scenario` — as above; the direction is read off `o=t.filter(e=>e.origin===`implementation`)` at [325325,325367], not off the check's description.",
       "why_this_search_is_this_claims_search": "The claim is about DECODING an inbound response. S03's subject is that decode, and its near miss is the one check that validates JSON-RPC messages — resolved against the addressed bytes that scope it to the OUTBOUND direction. The member's claim and the search's subject are the same act."
+    },
+    {
+      "authored_by": "MES-109 (C1b-iii)",
+      "cg": null,
+      "claim_the_slot_names": "`encode!/1` returns the JSON string bare rather than wrapped in an `{:ok, _}` tuple",
+      "evidence": "protocol_test.exs:182-185 — `json = Protocol.encode!(request)`, then `assert is_binary(json)` and `assert Jason.decode!(json)[\"method\"] == \"ping\"`. The subject is the BANG VARIANT'S RETURN TYPE: that encode!/1 hands back the binary its non-bang sibling wraps in a tuple. The second assert reads one field to show the binary is the right message, which is a sanity check on the test rather than a claim about wire validity — and how_a_silent_axis_was_decided is conservative by rule, so an incidental assertion is not coverage.",
+      "member": {
+        "module": "MCP.ProtocolTest",
+        "register_key": "MCP.ProtocolTest/test encode!/1 returns JSON string",
+        "test": "test encode!/1 returns JSON string"
+      },
+      "moved_by": "MES-110 (rule A)",
+      "near_miss_tag": "oc:client/tools_call/wire-schema-valid/WireSchemaValid",
+      "note": "Until MES-110: ALL AXES SILENT, so this escalated as `no_axis_contact` and was not bucketed. The note argued that dropping the edge instead would make the member look edge-less and therefore bucket 1, which asserts `we looked and there is no counterpart` — false here, it said: the counterpart is WireSchemaValid, the same check its two siblings above match, and what is true is that this claim does not touch its predicate. That was the distinction `the_all_silent_case` was written for, and this was its fifth instance. Rule A (A3 §2, MES-110) now makes the record bucket 1: the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge; the near miss, `WireSchemaValid`, is kept and named in `the_near_miss_that_is_not_a_counterpart`.",
+      "search_id": "NAC05",
+      "tag": "oc:none/no-axis-contact/MES-109-encode-bang-returns-bare-json",
+      "the_near_miss_that_is_not_a_counterpart": "`WireSchemaValid` (client, `tools_call`). Its one axis scores that every message the implementation put on the wire validates against the spec schema. This member's subject is an SDK function's return shape, and its one incidental field read is a sanity check on the test, not a claim about wire validity. It is a near miss because the member's two siblings in the same module ARE edges onto this check.",
+      "the_search_that_found_none": "the BANG encoder's return type: `encode!/1` handing back the JSON binary bare, where its non-bang sibling wraps it in an `{:ok, _}` tuple",
+      "until_MES_110": {
+        "axes": [
+          {
+            "axis": "no_schema_violation_in_a_message_the_implementation_sent",
+            "verdict": "silent"
+          }
+        ],
+        "et_verdict": "green",
+        "was": "an edge onto `near_miss_tag` with every axis silent, escalated as `no_axis_contact`"
+      },
+      "why_no_counterpart": "`no-axis-contact` — rule A (A3 §2, MES-110; authored 29283, ratified 29319): the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge, so it is bucket 1.",
+      "why_this_search_is_this_claims_search": "The claim shares `near_miss_tag`'s subject, and the search asks whether ANY predicate in this file's declared check population scores what the claim actually asserts, reading the predicates rather than their descriptions, which would find the near miss by construction."
     },
     {
       "authored_by": "MES-121 (C1c-iv-b)",
@@ -1131,6 +1359,78 @@
       "the_search_that_found_none": "JSON-RPC NOTIFICATION framing as such — a notification encoded with `jsonrpc` and `method` and NO `id` member, `params` omitted entirely when the notification carries none, and an inbound notification recognised as a notification rather than as a request with a missing id",
       "why_no_counterpart": "`no-oc-scenario` — the suite has no notification-framing check; ND03's zero over all 175 is the measurement.",
       "why_this_search_is_this_claims_search": "The complement of the omitted-`params` claim and the reason the two are separate members: one asserts the member is absent, the other that it is present and faithful. ND03's subject names both."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "a listChanged claim the deployment has no channel to honour never reaches the wire as `false` — the key is absent",
+      "evidence": "capability_honesty_test.exs:60-69 — `assert wire[\"tools\"] == %{}` and `refute Map.has_key?(wire[\"tools\"], \"listChanged\")`, on the far side of the hand-written encoder — `wire` is built at capability_honesty_test.exs:60-64 by `|> Jason.encode!()` then `|> Jason.decode!()`. The check's two axes are both about the `tools` capability as a WHOLE against a real `tools/list` call — `!Array.isArray(e?.result?.tools)` in the advertised arm and `e?.error?.code!==-32601` in the other — and this unit makes no RPC call at all. Neither axis is touched.",
+      "member": {
+        "module": "MCP.Server.CapabilityHonestyTest",
+        "register_key": "MCP.Server.CapabilityHonestyTest/test a listChanged claim needs a channel to honour it on absent, not present-and-false: the key never reaches the wire",
+        "test": "test a listChanged claim needs a channel to honour it on absent, not present-and-false: the key never reaches the wire"
+      },
+      "moved_by": "MES-110 (rule A)",
+      "near_miss_tag": "oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers",
+      "note": "Until MES-110: ALL AXES SILENT, escalated as `no_axis_contact`, and filed as an EDGE rather than as bucket 1 because the check's subject really is this member's subject — `DiscoverCapabilitiesMatchHandlers` is the capability-honesty rule and this unit is the capability-honesty test — and the mismatch is one of GRANULARITY: the OC check scores honesty at the level of a whole capability (`tools`, present or absent, against `tools/list`), and this unit scores it at the level of a SUB-KEY (`tools.listChanged`, absent rather than false, against whether a delivery channel exists). A server could pass the check while advertising a `listChanged` it cannot honour, which is the gap the member was written for. The note argued that recording it as bucket 1 would say the suite has nothing on capability honesty, which it has, and that recording an agreement would say this unit corroborates a check it never exercises. Rule A (A3 §2, MES-110) now makes the record bucket 1: the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge; the near miss, `DiscoverCapabilitiesMatchHandlers`, is kept and named in `the_near_miss_that_is_not_a_counterpart`.",
+      "search_id": "NAC08",
+      "tag": "oc:none/no-axis-contact/SEP-2575-listchanged-absent-without-a-channel",
+      "the_near_miss_that_is_not_a_counterpart": "`DiscoverCapabilitiesMatchHandlers`, the capability-honesty check. Its axes score a WHOLE capability (`tools`, advertised or not) against a real `tools/list` call; this member makes no RPC call and scores a SUB-KEY. Same subject at a different grain: no match under rule A. `(?i)listchanged` reaches the other `listChanged` rows, `ServerSendsToolsListChangedOnSubscription`, `ServerSendsPromptsListChangedOnSubscription` and `ServerHonorsNotificationFilter`. They are the HONOURING side (a server declaring `listChanged` delivers the notification on an open subscription), and their predicates read a received notification, which this claim never produces. So they are read and set aside, not counterparts.",
+      "the_search_that_found_none": "a `listChanged` claim the deployment has no channel to honour kept OFF the wire: the key absent from the capability, not present with `false`",
+      "until_MES_110": {
+        "axes": [
+          {
+            "axis": "advertised_tools_capability_is_honoured",
+            "verdict": "silent"
+          },
+          {
+            "axis": "unadvertised_tools_capability_yields_method_not_found",
+            "verdict": "silent"
+          }
+        ],
+        "et_verdict": "green",
+        "was": "an edge onto `near_miss_tag` with every axis silent, escalated as `no_axis_contact`"
+      },
+      "why_no_counterpart": "`no-axis-contact` — rule A (A3 §2, MES-110; authored 29283, ratified 29319): the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge, so it is bucket 1.",
+      "why_this_search_is_this_claims_search": "The claim shares `near_miss_tag`'s subject, and the search asks whether ANY predicate in this file's declared check population scores what the claim actually asserts, reading the predicates rather than their descriptions, which would find the near miss by construction."
+    },
+    {
+      "authored_by": "MES-105 (C1c-i)",
+      "cg": null,
+      "claim_the_slot_names": "a request whose _meta names a real but unsupported earlier version is rejected with -32022",
+      "evidence": "dispatch_test.exs:109-112 — `assert resp[\"error\"][\"code\"] == -32_022` for `_meta` carrying `\"2025-11-25\"`. The assertion's subject is the error CODE; all three of the check's axes are predicates on `error.data` — that it carries a non-empty `supported` array, that every entry is a version the server reports, and that `requested` echoes what was asked for. Nothing in this unit reads the error object's data member at all.",
+      "member": {
+        "module": "MCP.Server.DispatchTest",
+        "register_key": "MCP.Server.DispatchTest/test old-shape (2025-11-25) version fails fast (-32022)",
+        "test": "test old-shape (2025-11-25) version fails fast (-32022)"
+      },
+      "moved_by": "MES-110 (rule A)",
+      "near_miss_tag": "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError",
+      "note": "Until MES-110: ALL AXES SILENT, escalated as `no_axis_contact`, never bucketed. It was the client-leg file's `the_all_silent_case` on the server leg, and it was recorded as a finding rather than an accident: the OC check scores the SHAPE of the UnsupportedProtocolVersionError's data and this SDK's suite scores only its code. The check is RED at the accepted run, so the silence is not harmless — it is the precise reason our green tells us nothing about why the harness failed us here. Rule A (A3 §2, MES-110) now makes the record bucket 1: the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge; the near miss, `ServerUnsupportedVersionError`, is kept and named in `the_near_miss_that_is_not_a_counterpart`.",
+      "search_id": "NAC06",
+      "tag": "oc:none/no-axis-contact/SEP-2575-old-version-rejected-32022",
+      "the_near_miss_that_is_not_a_counterpart": "`ServerUnsupportedVersionError`, RED at the accepted run. Every one of its axes is a predicate on the error's DATA (`supported` a non-empty array, `supported` listing only versions the server reports, `requested` echoing the request), and none scores the code. MEASURED: no axis row anywhere in this file's declared check population scores -32022 at all, so the code this member asserts is scored by no predicate. `HttpServerUnsupportedVersion400` is the other near miss the positive control returns, and it scores the HTTP status, a third observable.",
+      "the_search_that_found_none": "a server rejecting a request whose `_meta` names a real but unsupported earlier version with the JSON-RPC error CODE -32022, the code alone",
+      "until_MES_110": {
+        "axes": [
+          {
+            "axis": "error_data_supported_is_a_non_empty_array",
+            "verdict": "silent"
+          },
+          {
+            "axis": "error_data_supported_lists_only_versions_the_server_reports",
+            "verdict": "silent"
+          },
+          {
+            "axis": "error_data_requested_echoes_the_requested_version",
+            "verdict": "silent"
+          }
+        ],
+        "et_verdict": "green",
+        "was": "an edge onto `near_miss_tag` with every axis silent, escalated as `no_axis_contact`"
+      },
+      "why_no_counterpart": "`no-axis-contact` — rule A (A3 §2, MES-110; authored 29283, ratified 29319): the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge, so it is bucket 1.",
+      "why_this_search_is_this_claims_search": "The claim shares `near_miss_tag`'s subject, and the search asks whether ANY predicate in this file's declared check population scores what the claim actually asserts, reading the predicates rather than their descriptions, which would find the near miss by construction."
     },
     {
       "authored_by": "MES-117 (C1c-iv-a)",
@@ -2642,8 +2942,9 @@
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test MC-6 — a factory that raises fails cleanly (-32603) with no handler invoked",
         "test": "test MC-6 — a factory that raises fails cleanly (-32603) with no handler invoked"
       },
+      "native_id_split_by": "MES-110: rule B's declared_claim_index/1, run over the bucket-1 and claim-level ids together, refused `identity-factory-raises` because it named this claim AND the differently worded claim of MES-115's AC8 row. A3 §6: a second claim needs its own id. This row's claim is the one that adds the HTTP 500 and the secret the factory was given, so it takes the qualified id and AC8 keeps the original.",
       "search_id": "SRV04",
-      "tag": "oc:none/no-oc-scenario/identity-factory-raises",
+      "tag": "oc:none/no-oc-scenario/identity-factory-raises-yields-500",
       "the_near_miss_that_is_not_a_counterpart": "`ToolsCallError` — `Tool returns error correctly` — in the server scenario `tools-call-error`. It is the suite's only row about a server producing an error at all, and a reader could take it for this. It is not: its subject is a TOOL returning a declared error result through the protocol's own error channel, which is the server working correctly. This claim's subject is the server's own INFRASTRUCTURE failing — a collector that will not start, an identity factory that raises, a chunked response that cannot open — where there is no tool-level error to return and the only question is what the client is told instead.",
       "the_search_that_found_none": "a server whose OWN machinery fails mid-request answering a controlled -32603 whose `data` does not leak the internal cause, rather than a bare crash or a partial success",
       "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 rows mention -32603, an internal error, a leak or a redaction. The suite scores what a CONFORMING server does; it has no probe that makes a server's own machinery fail, and without one it cannot ask what a server says when it does.",

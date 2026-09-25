@@ -61,9 +61,20 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     span, and the rejection is guarded harder than the acceptance.
   * **A DECLARED check with no axis decomposition** — G19. A bucket-2 check has
     to be read before it can be reported as having no ET counterpart.
-  * **A claim-level unmatched record against a member that carries no edge** —
-    that member is state 3 whole and belongs in `declared_unmatched`, where
-    bucket 1 counts it.
+  * **An all-silent edge record** — rule A (A3 §2, MES-110): a claim silent on
+    every axis of a check is NO MATCH at any arity. Refused naming the rule; the
+    claim is filed as bucket 1 (`no-axis-contact`) or as a claim-level record.
+  * **An escalation with no owner, an `inconsistent_verdict_pair` with no cause
+    or a cause outside §3's closed set, and a cause on an edge that buckets** —
+    rule C (A3 §3, MES-110).
+  * **A claim-level unmatched record that is not one** — rule B (A3 §6,
+    MES-110): on a member that carries no edge (it is state 3 whole and belongs
+    in `declared_unmatched`, where bucket 1 counts it), with a token that is not
+    state 3, with no registered search, or whose native id names a different
+    claim from a bucket-1 row's (`declared_claim_index/1` over both sets).
+  * **An inherited B2b token no row carries** — G20; since MES-110 a token rule A
+    moved out of an edge is accounted for only by that member's own
+    `no-axis-contact` record naming it as `near_miss_tag`.
   * **A quoted byte-string in a record's `evidence` that is not verbatim at an
     address the evidence itself names** — G30. Ruling 7 is "an address AND the
     bytes at it"; every sweep before this one established only the first half.
@@ -221,7 +232,7 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       )
 
     buckets = buckets!(cells, population)
-    claim_level = claim_level!(edges_docs, cells)
+    claim_level = claim_level!(edges_docs, cells, rows)
 
     # Bound BEFORE the artefact, because `trust_status` and three residuals are
     # interpolated from them. Every figure any statement below states comes from
@@ -243,7 +254,8 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       "generated_by" => "mix conformance.crosswalk",
       "owner" =>
         "MES-97 (C1a), MES-104 (C1b-i), MES-108 (C1b-ii), MES-109 (C1b-iii), MES-105 (C1c-i) " <>
-          "and MES-115 (C1c-ii)",
+          "and MES-115 (C1c-ii); the escalation, claim-level and all-silent rules MES-110 (the " <>
+          "A3 amendment)",
       "what_this_is" =>
         "The single matrix the ten buckets are PROJECTIONS of. C2 renders it, C3 falsifies it, " <>
           "D adjudicates its cells. It decides what no bucket MEANS.",
@@ -760,7 +772,7 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
 
     tagged = Enum.uniq(b2b_tagged ++ Map.keys(member_tags(edges_docs)))
 
-    inherited_tokens!(edges_docs, attribution, members)
+    superseded = inherited_tokens!(edges_docs, attribution, members)
 
     case Crosswalk.check_population(members, tagged) do
       :ok ->
@@ -801,6 +813,16 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
           "against a member of this population is still carried by one of that member's rows.",
       "inherited_tokens_guard" =>
         "G20 ran over the #{length(members)} declared members; 0 inherited tokens unaccounted for.",
+      "inherited_tokens_superseded_under_rule_a" => %{
+        "rule" => Crosswalk.rule_a(),
+        "what_this_is" =>
+          "Tokens B2b records against a member whose edge onto that check rule A refused. Each " <>
+            "is carried by no row as a TAG, and each is named as the `near_miss_tag` of the " <>
+            "member's own `no-axis-contact` record, which is the only way G20 accepts it. B2b's " <>
+            "register is not edited: its token was a reading of the member's subject, and the " <>
+            "subject is still the near miss.",
+        "tokens" => superseded
+      },
       "outside_the_population" => %{
         "state" => "not_yet_adjudicated",
         "et_cc_members" => totality["et_cc_members_outside_every_declared_population"],
@@ -927,7 +949,7 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
 
   defp member_tags(edges_docs) do
     Enum.reduce(edges_docs, %{}, fn {_p, d}, acc ->
-      (d["edges"] ++ d["declared_unmatched"])
+      (d["edges"] ++ d["declared_unmatched"] ++ (d["claims_without_an_edge"] || []))
       |> Enum.reduce(acc, fn r, a ->
         Map.update(a, r["member"]["register_key"], [r["tag"]], &[r["tag"] | &1])
       end)
@@ -950,16 +972,34 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
   # moved 18 rows between files, and a row silently dropping or re-slugging its
   # tag would leave the member still edge-bearing, still counted, still
   # reconciling — and no longer saying what B2b says it says.
+  #
+  # UNDER RULE A (A3 §2, MES-110) an inherited token may be SUPERSEDED, and only
+  # one way. B2b tagged some members with the check their SUBJECT names; rule A
+  # rules that a shared subject is not an edge, so the edge the token stood for
+  # is refused and the token is carried by no row. It is not lost: it is the
+  # near miss of the member's own `no-axis-contact` record, named there by tag
+  # (`Crosswalk.superseded_tokens/1`). Anything looser — a record of another
+  # member, another slug, a near miss named only in prose — does not account for
+  # it, and the supersessions are listed in the artefact rather than absorbed.
   defp inherited_tokens!(edges_docs, attribution, members) do
     tags = member_tags(edges_docs)
     in_population = MapSet.new(members)
 
-    lost =
+    superseding =
+      Crosswalk.superseded_tokens(
+        Enum.flat_map(edges_docs, fn {_p, d} ->
+          d["declared_unmatched"] ++ (d["claims_without_an_edge"] || [])
+        end)
+      )
+
+    unaccounted =
       for row <- attribution["rows"],
           MapSet.member?(in_population, row["key"]),
           token <- row["tokens"] || [],
           token not in Map.get(tags, row["key"], []),
           do: {row["key"], token}
+
+    {superseded, lost} = Enum.split_with(unaccounted, &MapSet.member?(superseding, &1))
 
     refuse_unless(lost == [], """
     G20 — #{length(lost)} tokens B2b records against a member of the declared population are
@@ -967,8 +1007,11 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     #{Enum.map_join(lost, "\n", fn {k, t} -> "  #{k}\n    #{t}" end)}
     B2b (MES-82) is the prior adjudication. A row that drops or re-slugs an inherited token
     leaves the member edge-bearing, counted and reconciling, while no longer saying what the
-    register says it says.
+    register says it says. A token rule A (A3 §2) moved out of an edge is accounted for only by
+    that member's own `no-axis-contact` record naming it as `near_miss_tag`.
     """)
+
+    Enum.map(superseded, fn {k, t} -> %{"member" => k, "token" => t} end)
   end
 
   # --- G23 — every bucket-1 record names the SEARCH that found none ----------
@@ -992,14 +1035,26 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
   # either re-running 26 searches this ticket did not run, or writing a
   # `hits: 0` nobody re-measured — the invented-field defect C1b-i refused. So
   # the reach is stated on the file and here, and is not pretended away.
+  #
+  # RULE B (A3 §6, MES-110) puts the claim-level rows under the SAME limbs: a
+  # claim-level record is bucket 1 at the grain of one claim, so it asserts the
+  # same `we looked and there is no counterpart`, and it is swept here beside the
+  # bucket-1 rows rather than by a second copy of this function. Its figures are
+  # reported apart, because a claim is not a member and adding the two counts
+  # would put two units in one number (§5's rows lost / rows involved hazard).
   defp absence_searches!(edges_docs) do
     rows =
       Enum.flat_map(edges_docs, fn {path, d} ->
         Enum.map(d["declared_unmatched"], &{path, &1})
       end)
 
+    claim_rows =
+      Enum.flat_map(edges_docs, fn {path, d} ->
+        Enum.map(d["claims_without_an_edge"] || [], &{path, &1})
+      end)
+
     searchless =
-      Enum.reject(rows, fn {_p, r} ->
+      Enum.reject(rows ++ claim_rows, fn {_p, r} ->
         is_binary(r["the_search_that_found_none"]) and r["the_search_that_found_none"] != ""
       end)
 
@@ -1017,7 +1072,7 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
         {path, Map.new(d["absence_searches"] || [], &{&1["id"], &1})}
       end)
 
-    problems = Enum.flat_map(rows, &registry_problems(&1, registries))
+    problems = Enum.flat_map(rows ++ claim_rows, &registry_problems(&1, registries))
 
     refuse_unless(problems == [], """
     G23b — #{length(problems)} declared-unmatched rows name a registry entry that does not hold up:
@@ -1028,7 +1083,7 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     """)
 
     named =
-      rows
+      (rows ++ claim_rows)
       |> Enum.flat_map(fn {p, r} -> if r["search_id"], do: [{p, r["search_id"]}], else: [] end)
       |> MapSet.new()
 
@@ -1050,9 +1105,13 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       "rows_checked" => length(rows),
       "rows_naming_a_registered_search" =>
         Enum.count(rows, fn {_p, r} -> r["search_id"] != nil end),
+      "claim_level_rows_checked" => length(claim_rows),
+      "claim_level_rows_naming_a_registered_search" =>
+        Enum.count(claim_rows, fn {_p, r} -> r["search_id"] != nil end),
       "distinct_searches_those_rows_name" => MapSet.size(named),
       "leg_wide_limb" =>
-        "G23a ran over ALL #{length(rows)} declared-unmatched rows in this run, with no " <>
+        "G23a ran over ALL #{length(rows)} declared-unmatched rows in this run, and over the " <>
+          "#{length(claim_rows)} claim-level rows beside them (rule B, A3 §6), with no " <>
           "exception list, and requires a non-empty `the_search_that_found_none` on each.",
       "registry_limb_reach" =>
         "G23b/c/d reach the rows carrying a `search_id`. The rows without one carry a PROSE " <>
@@ -1567,14 +1626,21 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     }
   end
 
-  # A3's state 3 is a property of a MEMBER — the generator's own bucket-1
-  # reconciliation requires a member to be edge-bearing or declared unmatched,
-  # never both. A member that matches on some claims and not on others has
-  # nowhere to put the unmatched ones. Recorded here and ESCALATED, and the two
-  # ways of getting it wrong are refused: a record against a member that is NOT
-  # edge-bearing (it should have been a declared_unmatched row), and one against
-  # a member no file's population contains.
-  defp claim_level!(edges_docs, cells) do
+  # RULE B (A3 §6, MES-110; PO 2026-09-24). State 3 is decided per TOKEN and a
+  # member's bucket by all of its tokens together, so an `oc:none` token on an
+  # EDGE-BEARING member is a claim-level unmatched record: in a named view outside
+  # the ten, owned by MES-133 (D1), and under the same guards as a bucket-1 row —
+  # state 3 lexically, a registered G23 search (checked in `absence_searches!/1`
+  # beside the bucket-1 rows), and `declared_claim_index/1` over the bucket-1 and
+  # claim-level ids TOGETHER. The record against a member with no edge is refused:
+  # that member is bucket 1 and the member equation must count it.
+  #
+  # Until MES-110 these rows had no token and were ESCALATED to the PM, because
+  # A3 had no claim-level state; the block keeps its name, `claim_level_unmatched`,
+  # by PM ruling (29319) — a rename would leave dangling prose pointers.
+  @claim_level_owner "MES-133 (D1)"
+
+  defp claim_level!(edges_docs, cells, manifest_rows) do
     with_edges = cells |> Enum.map(& &1["member"]["register_key"]) |> MapSet.new()
 
     rows =
@@ -1582,25 +1648,66 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
         Enum.map(d["claims_without_an_edge"] || [], &Map.put(&1, "from", path))
       end)
 
-    strays = Enum.reject(rows, &MapSet.member?(with_edges, &1["member"]["register_key"]))
+    problems = Enum.flat_map(rows, &Crosswalk.claim_level_problems(&1, manifest_rows, with_edges))
 
-    refuse_unless(strays == [], """
-    #{length(strays)} claim-level unmatched records name a member that carries NO edge:
-    #{Enum.map_join(strays, "\n", &("  " <> &1["member"]["register_key"]))}
-    A member with no edge at all is A3 §6 state 3 whole, and belongs in `declared_unmatched` where
-    bucket 1 counts it. Recording it here instead would hide it from bucket 1 and from the member
-    equation both.
+    refuse_unless(problems == [], """
+    RULE B (A3 §6) — #{length(problems)} claim-level unmatched records are not what they claim:
+    #{Enum.map_join(problems, "\n", &("  " <> inspect(&1)))}
+    A claim-level record is an `oc:none` token that guard-checks to state 3, on a member that
+    CARRIES an edge. A member with no edge at all is state 3 whole and belongs in
+    `declared_unmatched`, where bucket 1 and the member equation count it.
     """)
+
+    searchless = Enum.filter(rows, &is_nil(&1["search_id"]))
+
+    refuse_unless(searchless == [], """
+    RULE B (A3 §6) — #{length(searchless)} claim-level records name no registered search:
+    #{Enum.map_join(searchless, "\n", &("  " <> (&1["tag"] || inspect(&1["member"]))))}
+    Rule B puts a G23 absence search behind every claim-level record. These rows arrive with the
+    ruling, so there is no prose-only backlog to excuse, unlike the bucket-1 rows X11 describes.
+    """)
+
+    unmatched = Enum.flat_map(edges_docs, fn {_p, d} -> d["declared_unmatched"] end)
+    {index_rows, unstated} = Crosswalk.claim_index_rows(unmatched, rows)
+
+    case MatchKey.declared_claim_index(index_rows) do
+      {:ok, _index} ->
+        :ok
+
+      {:error, reason} ->
+        Mix.raise("""
+        RULE B (A3 §6) — declared_claim_index/1 refused the bucket-1 and claim-level ids taken
+        TOGETHER: #{inspect(reason)}
+        One native id names one claim, across both sets. Repeats of one id with the SAME claim are
+        legal (§6); a second claim needs its own id.
+        """)
+    end
 
     %{
       "count" => length(rows),
+      "owner" => @claim_level_owner,
+      "view" => "docs/conformance/buckets/claim-unmatched-#{@revision}.json",
       "what_this_is" =>
         "A claim within an EDGE-BEARING member that has no counterpart in its file's declared " <>
-          "check population. A3 §6's state 3 is a property of a member, so there is no bucket for " <>
-          "this and none is invented.",
+          "check population. A3 §6 as amended by rule B (MES-110; authored 29284, ratified " <>
+          "29319, PO 2026-09-24): an `oc:none` token on a member that also carries an edge is a " <>
+          "claim-level unmatched record. It is in a named view OUTSIDE the ten, because the " <>
+          "buckets count members, checks or edges and a claim is none of them.",
       "routed_to" =>
-        "the PM, per case — match-relation.md §7. Whether A3 §6 should gain a claim-level state 3 " <>
-          "is a ruling, not an adjudication an edges file can make.",
+        "#{@claim_level_owner}, the bucket-1 adjudication — at the grain of one claim it asks the " <>
+          "same question of each record that it asks of a bucket-1 member.",
+      "guards" =>
+        "Each record's token guard-checks to state 3; its member carries an edge (a record on an " <>
+          "edge-less member is refused); it names a registered G23 search, re-run by the " <>
+          "controls; and declared_claim_index/1 ran over the bucket-1 and claim-level ids " <>
+          "together, over #{length(index_rows)} rows that state a claim.",
+      "rows_the_claim_index_cannot_compare" => %{
+        "tags" => unstated,
+        "why" =>
+          "Bucket-1 rows that state no `claim_the_slot_names`. With no claim written down there " <>
+            "is nothing to compare an id's claim against, so they are listed rather than " <>
+            "silently left out of the index."
+      },
       "rows" => rows
     }
   end
@@ -1844,7 +1951,13 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     %{
       "count" => length(esc),
       "routed_to" =>
-        "the PM, per case — match-relation.md §7. An escalation is NOT a bucket and is never counted as one.",
+        "The owner match-relation.md §3 names for each reason, carried on every row: " <>
+          "inconsistent_verdict_pair #{Crosswalk.escalation_owners().inconsistent_verdict_pair}, " <>
+          "divergent_despite_agreement " <>
+          "#{Crosswalk.escalation_owners().divergent_despite_agreement}. Both are STANDING " <>
+          "escalations since MES-110 (rule C) — an escalation is NOT a bucket and is never " <>
+          "counted as one — and an inconsistent_verdict_pair row also carries its cause, from " <>
+          "the closed set §3 names.",
       "rows" =>
         Enum.map(esc, fn c ->
           %{
@@ -1852,7 +1965,10 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
             "claim" => c["claim"],
             "tag" => c["tag"],
             "shape" => c["shape"],
-            "escalation" => c["escalation"]
+            "escalation" => c["escalation"],
+            "reason" => c["escalation_reason"],
+            "owner" => c["escalation_owner"],
+            "cause" => c["escalation_cause"]
           }
         end)
     }
@@ -2198,7 +2314,15 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
         %{
           "id" => "X4",
           "text" =>
-            "`no_axis_contact` is a THIRD escalation, added here by generalising A3 §2's 'covering zero of one axis is no match, not a partial one' to N axes. A3 §3's table has no row for it. Escalation rather than a new bucket is deliberate: it routes to the PM and costs nothing if the ruling goes the other way."
+            "`no_axis_contact` WAS A THIRD ESCALATION and is not one any more. Until MES-110 an " <>
+              "edge silent on every axis escalated, by generalising A3 §2's 'covering zero of one " <>
+              "axis is no match, not a partial one' to N axes, because A3 §3's table had no row " <>
+              "for it. MES-110 ruled it (rule A, #{Crosswalk.rule_a()}): the generator REFUSES " <>
+              "such an edge record, naming the rule, and the claim is filed as bucket 1 under the " <>
+              "reason slug `no-axis-contact` or, on an edge-bearing member, as a claim-level " <>
+              "record — in both cases with the check it shares a subject with named as its " <>
+              "search's near miss, by tag. The two escalations left are A3 §3's own, each " <>
+              "standing and each owned."
         },
         %{
           "id" => "X5",
@@ -2235,12 +2359,17 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
         %{
           "id" => "X9",
           "text" =>
-            "A CLAIM-LEVEL STATE 3 HAS NO BUCKET. A3 §6's state 3 is a property of a MEMBER, and the bucket-1 reconciliation requires a member to be edge-bearing or declared unmatched, never both — so a member matching on some claims and not on others has nowhere to record the unmatched ones. C1b-i found five; MES-108 resolved " <>
-              "two of them into real edges and found one more. This run carries " <>
-              "#{f.claim_level_unmatched} of them in `claim_level_unmatched`, each with the search " <>
-              "that found none, and ESCALATED — the figure interpolated, because it was written as " <>
-              "a word and so would not have moved (CR-5). Whether A3 §6 should gain a claim-level " <>
-              "state is the PM's."
+            "A CLAIM-LEVEL STATE 3 NOW HAS A HOME, AND IT IS NOT A BUCKET. A3 §6's state 3 was a " <>
+              "property of a MEMBER, and the bucket-1 reconciliation requires a member to be " <>
+              "edge-bearing or declared unmatched, never both — so a member matching on some " <>
+              "claims and not on others had nowhere to record the unmatched ones, and C1b-i to " <>
+              "C1c-iv-a escalated them. MES-110's rule B (A3 §6; PO 2026-09-24) decides it per " <>
+              "TOKEN: an `oc:none` token on an edge-bearing member is a claim-level unmatched " <>
+              "record. This run carries #{f.claim_level_unmatched} of them in " <>
+              "`claim_level_unmatched`, each guard-checked to state 3, each naming a registered " <>
+              "search, all owned by MES-133 (D1) and projected into the claim-unmatched view — " <>
+              "the figure interpolated, because it was written as a word once and so would not " <>
+              "have moved (CR-5)."
         },
         %{
           "id" => "X11",
@@ -2381,7 +2510,7 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
                         State-4 guard: #{p["state_4_guard"]}
                         outside it: #{p["outside_the_population"]["et_cc_members"]} members / #{p["outside_the_population"]["in_denominator_checks"]} checks = not_yet_adjudicated
 
-      edges             #{a["arithmetic"]["edges"]} = #{a["arithmetic"]["bucketed"]} bucketed + #{a["arithmetic"]["escalated"]} escalated
+      edges             #{a["arithmetic"]["edges"]} = #{a["arithmetic"]["bucketed"]} bucketed + #{a["arithmetic"]["escalated"]} escalated (standing, owned — rule C)
 
       buckets           #{b["from_edges"] |> Enum.sort() |> Enum.map_join(", ", fn {k2, v} -> "#{k2}: #{v}" end)}
                         bucket 5 partial sub-count: #{b["bucket_5_partial_sub_count"]}
@@ -2394,7 +2523,7 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       axis provenance   harness checked: #{a["axis_provenance"]["harness_checked"]}#{if a["axis_provenance"]["harness_checked"], do: " (#{a["axis_provenance"]["axes_checked"]} axes verbatim at their spans)", else: ""}
                         spans vs the locator (G18): #{a["axis_span_provenance"]["locator_row"]} accepted, #{a["axis_span_provenance"]["locator_row_rejected"]} rejected with a reason
 
-      claim-level       #{a["claim_level_unmatched"]["count"]} claims inside edge-bearing members with no counterpart — escalated, not bucketed
+      claim-level       #{a["claim_level_unmatched"]["count"]} claims inside edge-bearing members with no counterpart — owned by #{a["claim_level_unmatched"]["owner"]}, in the claim-unmatched view (rule B)
 
       leg totality      #{leg_line(p)}
 

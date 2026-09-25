@@ -101,9 +101,13 @@ defmodule InputFiguresControls do
 
     # Shape 1 by DATA: the figure's text is untouched and the set under it moves,
     # so only measurement — not occurrence identity — can see it.
+    # RE-AIMED AT MES-110. Rule A (A3 §2) left the client file with ZERO
+    # all-silent edges, so there is none to drop; the measured figure is now
+    # `ZERO all-silent edges`, and the planted defect is the opposite move —
+    # one edge silenced on every axis — which must make that zero mismatch.
     expect(
-      "S1 measured — drop one all-silent client edge; `Seven edges` must now mismatch",
-      drop_all_silent_edge(i),
+      "S1 measured — silence every axis of one client edge; `ZERO all-silent edges` must now mismatch",
+      plant_all_silent_edge(i),
       :mismatch,
       @client,
       "the_all_silent_case"
@@ -484,11 +488,11 @@ defmodule InputFiguresControls do
     %{i | docs: Map.put(i.docs, file, {:ok, mutated})}
   end
 
-  defp drop_all_silent_edge(i) do
+  defp plant_all_silent_edge(i) do
     {:ok, doc} = i.docs[@client]
-    silent = fn e -> e["axes"] != [] and Enum.all?(e["axes"], &(&1["verdict"] == "silent")) end
-    {before, [_dropped | rest]} = Enum.split_while(doc["edges"], &(not silent.(&1)))
-    %{i | docs: Map.put(i.docs, @client, {:ok, %{doc | "edges" => before ++ rest}})}
+    [first | rest] = doc["edges"]
+    silenced = %{first | "axes" => Enum.map(first["axes"], &%{&1 | "verdict" => "silent"})}
+    %{i | docs: Map.put(i.docs, @client, {:ok, %{doc | "edges" => [silenced | rest]}})}
   end
 
   defp first_leaf(i, file, pred) do

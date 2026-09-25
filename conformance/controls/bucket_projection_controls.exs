@@ -151,11 +151,12 @@ defmodule BucketProjectionControls do
     # nothing re-derives (S9-11), and it would go stale the moment C1b lands.
     expect = expected_rows(doc)
 
-    IO.puts("  POSITIVE  the unmutated crosswalk projects #{map_size(base)} rows across 11 views")
+    IO.puts("  POSITIVE  the unmutated crosswalk projects #{map_size(base)} rows across 12 views")
     IO.puts("            #{summary(base)}")
 
     verdict(
-      "the baseline places every row of all four universes (#{expect} derived from the inputs)",
+      "the baseline places every row of all five universes, claims included since MES-110 " <>
+        "(#{expect} derived from the inputs)",
       map_size(base) == expect
     )
 
@@ -453,6 +454,16 @@ defmodule BucketProjectionControls do
       {"check_partition  the stored bucket 2 names a check that reaches no view",
        ["[check_partition]", "CHECK PARTITION", "in the crosswalk's bucket 2, in no view (1)"],
        update_in(doc, ["buckets", "bucket_2", "checks"], &["oc:client/s/c/Absent" | &1])},
+      # MES-110 (rule B). One claim-level record moved onto a bucket-1 member —
+      # a member with NO edge. Every other partition still holds (claims are in
+      # no equation), so this guard is the only one that can see it.
+      {"claim_unmatched a claim-level record on a member with no edge",
+       ["[claim_unmatched]", "CLAIM-UNMATCHED", "1 claim-level unmatched records"],
+       update_in(
+         doc,
+         ["claim_level_unmatched", "rows", Access.at(0), "member"],
+         fn _ -> hd(doc["declared_unmatched"])["member"] end
+       )},
       # CR-1 on MES-104. Both limbs the crosswalk can move; P3 and P4 are
       # module-level and are the `population` mode below.
       {"population_statement the crosswalk states nothing about what lies outside it",
@@ -824,6 +835,9 @@ defmodule BucketProjectionControls do
   end
 
   defp view_id("escalated-" <> _), do: "escalated"
+  # MES-110 (rule B): the twelfth view. Its rows are CLAIMS, keyed by the same
+  # (member, claim, tag) triple as an edge, so they cannot collide with one.
+  defp view_id("claim-unmatched-" <> _), do: "claim-unmatched"
   defp view_id("roll-up-" <> _), do: "roll-up"
 
   defp row_key("0", row), do: row["key"]
@@ -944,8 +958,11 @@ defmodule BucketProjectionControls do
     bucket_0 =
       @bucket_zero |> read() |> Map.fetch!("checks") |> Enum.count(&(not &1["matchable"]))
 
+    # MES-110 (rule B): the claim-unmatched view is a fifth universe, CLAIMS.
+    claims = length(get_in(doc, ["claim_level_unmatched", "rows"]) || [])
+
     length(doc["cells"]) + (members - length(with_edges)) +
-      Enum.count(declared, &(&1 not in tagged)) + bucket_0
+      Enum.count(declared, &(&1 not in tagged)) + bucket_0 + claims
   end
 
   defp index_of(doc, pred), do: Enum.find_index(doc["cells"], pred)

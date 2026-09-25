@@ -1647,14 +1647,24 @@ defmodule CrosswalkControls do
         axes: [%{axis: "a1", verdict: :silent}, %{axis: "a2", verdict: :silent}]
       })
 
-    {bucket, _attrs, escalation} = Crosswalk.assign(e)
+    # MES-110 (rule A, A3 §2): no longer an escalation but a REFUSAL naming the
+    # rule. What this limb attests is unchanged — the edge is not bucketed.
+    refused = Crosswalk.assign(e)
     {:ok, naive, _} = MatchKey.bucket(e)
 
     IO.puts("\n  an all-silent edge:")
     IO.puts("    MatchKey.bucket/1 alone would file it as bucket #{naive} (shape #{e.shape})")
-    IO.puts("    Crosswalk.assign/1 escalates instead: #{String.slice(escalation || "", 0, 60)}…")
-    verdict("the all-silent edge is NOT bucketed", is_nil(bucket) and naive == "5")
-    halt_unless(is_nil(bucket))
+
+    IO.puts(
+      "    Crosswalk.assign/1 refuses it instead: #{inspect(refused) |> String.slice(0, 90)}…"
+    )
+
+    verdict(
+      "the all-silent edge is NOT bucketed — refused under rule A",
+      match?({:refused, {:no_axis_contact_is_no_match, _, _}}, refused) and naive == "5"
+    )
+
+    halt_unless(match?({:refused, _}, refused))
   end
 
   # --- selectors: the new language, driven against the REAL anchor ----------
@@ -2951,7 +2961,10 @@ defmodule CrosswalkControls do
 
     halt_unless(entries != [])
 
-    for {path, e} <- entries do
+    for {path, e0} <- entries do
+      # The file an entry lives in travels with it: an `axis_rows` population
+      # (MES-110, rule A) is the axes of THAT file's declared checks.
+      e = Map.put(e0, "__path", path)
       {population_label, hits, total} = run_search(e, rows)
 
       IO.puts("  #{e["id"]}  #{e["kind"]}  — #{population_label}")
@@ -3043,10 +3056,11 @@ defmodule CrosswalkControls do
     # AND every kind a ROW uses is a kind some ENTRY declares, in both
     # directions. G23d compares them per row; this is the set comparison, which
     # catches a slug that has no search behind it at all.
+    # Rule B (MES-110): the claim-level rows carry tokens and name searches too.
     row_kinds =
       @all_edges
       |> Enum.flat_map(fn path ->
-        read(path)["declared_unmatched"]
+        (read(path)["declared_unmatched"] ++ (read(path)["claims_without_an_edge"] || []))
         |> Enum.map(&(&1["tag"] |> String.split("/") |> Enum.at(1)))
       end)
       |> Enum.uniq()
@@ -3097,6 +3111,17 @@ defmodule CrosswalkControls do
         {"#{length(pop)} manifest rows#{restrict_label(p["restrict"])}", length(sweep(pop, re)),
          length(pop)}
 
+      %{"kind" => "axis_rows"} = p ->
+        pop = axis_rows_of(e["__path"], p)
+
+        if length(pop) != p["rows"] do
+          IO.puts("  #{e["id"]}: RECORDS #{p["rows"]} axis rows, this run reads #{length(pop)}")
+          System.halt(1)
+        end
+
+        {"#{length(pop)} axis rows of #{Path.basename(e["__path"])}'s declared checks",
+         Enum.count(pop, &Regex.match?(re, &1)), length(pop)}
+
       %{"kind" => "harness_bytes", "byte_span" => [from, to]} ->
         text = harness_bytes(from, to)
         # `byte_size`, not `String.length`. `Regex.compile!/1` without the `u`
@@ -3111,6 +3136,37 @@ defmodule CrosswalkControls do
         IO.puts("  UNKNOWN POPULATION KIND in #{e["id"]}: #{inspect(other)}")
         System.halt(1)
     end
+  end
+
+  # `axis_rows` — MES-110 (rule A, A3 §2). A `no-axis-contact` search asks
+  # whether ANY predicate in the file's declared check population is one the
+  # claim touches, so its population is the PREDICATES — every axis of every
+  # declared check, `axis | expr | requires` — and not the manifest's prose. A
+  # description-level sweep would return the near miss every time, because rule
+  # A's near miss shares the claim's subject by definition.
+  #
+  # The check set is the file's OWN check selector, evaluated here against the
+  # source it names, and the axis artefacts are the ones the ENTRY names. So the
+  # population cannot drift from the declaration it is taken within (the D4
+  # shape `restrict_values!/2` guards for the list form), and a declared check
+  # with no decomposition is a crash here rather than a silently smaller zero —
+  # G19 already refuses it in the generator.
+  defp axis_rows_of(path, %{"artefacts" => artefacts, "checks" => block}) do
+    selector = read(path)[block]["selector"]
+    {:ok, tags} = Crosswalk.select(selector, read(selector["source"]))
+    manifest_rows = MatchKey.rows_from_manifest(read(@manifest))
+
+    axes =
+      for f <- artefacts, c <- read(f)["checks"], into: %{}, do: {c["key"], c["axes"]}
+
+    Enum.flat_map(tags, fn tag ->
+      {:ok, key} = MatchKey.resolve(tag, manifest_rows)
+
+      Enum.map(
+        Map.fetch!(axes, key),
+        &Enum.join([&1["axis"], &1["expr"], &1["requires"] || ""], " | ")
+      )
+    end)
   end
 
   # `restrict` — the SUB-POPULATION an entry declares, applied here rather than
@@ -4379,7 +4435,10 @@ defmodule CrosswalkControls do
             do: {:bare_citation_has_no_file, label, ":" <> n}
 
       et_window = cited_window(ev)
-      oc_window = axis_window(r["tag"], axes, build)
+      # MES-110: a record rule A moved out of `edges` carries an `oc:none` token,
+      # and its evidence still quotes the near-miss check's bytes — the same
+      # address the generator's G30 uses (`Crosswalk.citation_windows/2`).
+      oc_window = axis_window(r["near_miss_tag"] || r["tag"], axes, build)
 
       {e, o, q_bad} =
         Enum.reduce(source_quotes(ev), {0, 0, []}, fn q, {e, o, acc} ->

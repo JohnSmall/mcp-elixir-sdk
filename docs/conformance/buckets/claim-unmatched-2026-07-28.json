@@ -1,0 +1,207 @@
+{
+  "adjudication_owner": "MES-133 (D1)",
+  "bucket": null,
+  "count": 9,
+  "derivation": "projection",
+  "emptiness_reason": null,
+  "generated_by": "mix conformance.buckets",
+  "owner": "MES-98 (C2); the view added by MES-110 (rule B)",
+  "population_banner": "POPULATION: this projection covers 281 declared ET-CC members and 173\ndeclared in-population OC checks. That is the slice adjudicated so far,\nand it is NOT the whole conformance picture: the full comparison is 281\nET-CC members and 173 in-denominator OC checks, of which 0 members and 0\nchecks are not_yet_adjudicated -- a third state, distinct from bucket 1\n-- owned by the tickets the crosswalk's own `outside_the_population`\nblock names. A further 0 checks carry an edge without being declared by\nany file, so they are counted in neither.\n\nA count of zero in this view means zero WITHIN THAT SLICE. It does not\nmean zero in the suite. As the declared population grows this projection\nre-runs and fills.\n\nEVERY FIGURE ABOVE IS INTERPOLATED from the crosswalk being projected;\nnone is written here. The [population_statement] guard refuses a\npopulation figure that is not.",
+  "predicate": "the crosswalk's `claim_level_unmatched.rows`, verbatim.",
+  "projected_from": {
+    "bucket_zero": {
+      "bytes": 176409,
+      "file": "docs/conformance/bucket-0-2026-07-28.json",
+      "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
+    },
+    "crosswalk": {
+      "bytes": 1106223,
+      "file": "docs/conformance/crosswalk-2026-07-28.json",
+      "sha256": "447d8651844d4093adf96c8fd73519e1c6e62ebdaa816c092dfdd10c5811118b"
+    }
+  },
+  "revision": "2026-07-28",
+  "rows": [
+    {
+      "claim": "an annotated parameter cannot forge the Mcp-Method ROUTING header (header_mirror_test.exs:416 — `refute Map.has_key?(headers, \"mcp-method\")`)",
+      "disposition": "no counterpart in this file's declared check population",
+      "from": "conformance/data/crosswalk-edges-client.json",
+      "member": {
+        "module": "MCP.Protocol.HeaderMirrorTest",
+        "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method",
+        "test": "test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method"
+      },
+      "owner": "MES-133 (D1) — rule B (A3 §6, MES-110; PO 2026-09-24). Before MES-110: unowned — CONFIRMED by C1b-ii from INSIDE a declared CG1 population. No counterpart in CG1 either.",
+      "resolved_by": "MES-108 (C1b-ii), 2026-09-21. C1b-i could only argue this from OUTSIDE a declared CG1 check population; C1b-ii has one — the 9 in-denominator `http-standard-headers` checks — and re-ran the search over it. CONFIRMED, and the reason is sharper than 'none has it as its subject': the `headers` map at header_mirror_test.exs:416 is `HeaderMirror`'s MIRRORING OUTPUT, not a request's header set. CG1's six `ClientMcpMethodHeader_*` checks take the ROUTING header on a real POST as their subject, which is a different object produced further down the stack. So this is not merely unmatched in CG1 — it could not be matched by a CG1 check, and the recommendation is answered rather than forwarded again.",
+      "search_id": "CLV01",
+      "tag": "oc:none/no-oc-scenario/CG7-annotation-cannot-forge-mcp-method",
+      "the_search_as_first_recorded": "All 29 CG7 checks were read: none has `mcp-method` as its subject. The check that does is `ClientMcpMethodHeader_tools_call` (`oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_call`), which is CG1's and outside this file's declared check population — but it asserts the header is PRESENT and correct, not that it is not forged by a mirrored parameter. So this claim has no counterpart in CG1 either, and is recorded rather than deferred.",
+      "the_search_that_found_none": "an annotated parameter FORGING the Mcp-Method routing header: a mirrored `x-mcp-header` named `Method` producing `Mcp-Method` rather than `Mcp-Param-Method`"
+    },
+    {
+      "claim": "the exclusion is logged naming the tool and the reason (client_tool_schemas_test.exs:107-108 — `assert log =~ ~s(EXCLUDING tool \"bad\" from tools/list)` and `assert log =~ \"only string, integer and boolean are permitted\"`)",
+      "disposition": "no counterpart in this file's declared check population",
+      "from": "conformance/data/crosswalk-edges-client.json",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept",
+        "test": "test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept"
+      },
+      "owner": "MES-133 (D1) — rule B (A3 §6, MES-110; PO 2026-09-24). Before MES-110: unowned — SEP-2243's SHOULD-log has no OC check on either leg",
+      "search_id": "CLV02",
+      "tag": "oc:none/no-oc-scenario/CG7-exclusion-is-logged",
+      "the_search_as_first_recorded": "All 29 CG7 checks were read for one whose subject is a diagnostic: none is. (C1b-i) A log line is invisible on the wire, so the harness cannot observe it at all — the same reason the four cache members above are `no-oc-scenario`.",
+      "the_search_that_found_none": "a DIAGNOSTIC for a SEP-2243 exclusion: the client logging which tool it excluded from tools/list and why"
+    },
+    {
+      "claim": "a NON-tools/call request carries no :headers at all (client_tool_schemas_test.exs:395 — `assert Enum.at(MockTransport.sent_opts(transport), 0) == []`, the tools/list)",
+      "disposition": "no counterpart in this file's declared check population",
+      "from": "conformance/data/crosswalk-edges-client.json",
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "register_key": "MCP.ClientToolSchemasTest/test the transport seam a tools/call for a known tool carries :headers; other methods carry none",
+        "test": "test the transport seam a tools/call for a known tool carries :headers; other methods carry none"
+      },
+      "owner": "MES-133 (D1) — rule B (A3 §6, MES-110; PO 2026-09-24). Before MES-110: unowned — CONFIRMED by C1b-ii from INSIDE a declared CG1 population. No counterpart in CG1 either.",
+      "resolved_by": "MES-108 (C1b-ii), 2026-09-21. Re-run over the real 10. CONFIRMED — and the check matters, because the naive reading makes this look like a CONTRADICTION of `ClientMcpMethodHeader_tools_list` and it is not. `Enum.at(MockTransport.sent_opts(transport), 0) == []` is about the `:headers` OPT `MCP.Client` hands the transport, and the routing headers are added BELOW that seam by `MCP.Transport.StreamableHTTP.Client`, which MockTransport does not have. So a tools/list with no `:headers` opt still carries `mcp-method` on the wire, and the two statements are about different layers. Recorded rather than left implicit: a later ticket re-reading this row would otherwise have to re-derive the non-contradiction.",
+      "search_id": "CLV03",
+      "tag": "oc:none/no-oc-scenario/CG7-non-tools-call-carries-no-headers-opt",
+      "the_search_as_first_recorded": "All 29 CG7 checks are emitted from `handleToolsCall`, so every one of them is conditioned on a tools/call having arrived; none has a non-tools/call request as its subject. The scenario's `handlePost` was read too: it emits no check on the tools/list path other than `http-invalid-tool-headers`'s gate, whose subject is that tools/list was SENT.",
+      "the_search_that_found_none": "the `:headers` TRANSPORT OPT `MCP.Client` hands its transport being empty for every request that is not a tools/call"
+    },
+    {
+      "claim": "a method with no name target carries NO `mcp-name` (routing_headers_test.exs:182 — `refute Map.has_key?(headers, \"mcp-name\")`, on a tools/list)",
+      "disposition": "no counterpart in this file's declared check population",
+      "from": "conformance/data/crosswalk-edges-client.json",
+      "member": {
+        "module": "MCP.Transport.RoutingHeadersTest",
+        "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name",
+        "test": "test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name"
+      },
+      "owner": "MES-133 (D1) — rule B (A3 §6, MES-110; PO 2026-09-24). Before MES-110: unowned — ESCALATED to MES-110 (A3 §6 claim-level state 3). NEW case, found by C1b-ii.",
+      "search_id": "CLV04",
+      "tag": "oc:none/no-oc-scenario/CG1-no-mcp-name-without-a-name-target",
+      "the_search_as_first_recorded": "All 10 of this file's declared checks were read. The three `ClientMcpNameHeader_*` checks exist only for `tools/call`, `resources/read` and `prompts/get`: the addressed `dispatch_site` excerpt shows `handlePost` calling `checkMcpNameHeader` on those three branches and on no other, so there is no check whose subject is the header's ABSENCE on a non-name-bearing method. The six `ClientMcpMethodHeader_*` checks have the Mcp-METHOD header as their subject. Widened to all 175: `/Mcp-Name/i` over the whole row returns exactly 3, and they ARE the three declared rows — there is no fourth check anywhere in the suite, on either leg, whose subject is that header.",
+      "the_search_that_found_none": "the ABSENCE of `Mcp-Name` on a method with no name target (a tools/list carrying `Mcp-Method` and no `Mcp-Name`)",
+      "why_it_is_recorded_here": "This was the A3 §6 claim-level-state gap MES-110 was raised for, found again by C1b-ii and NOT force-bucketed; since MES-110, rule B (A3 §6) makes it a claim-level unmatched record. The member is edge-bearing — its other claim carries a full edge to `ClientMcpMethodHeader_tools_list` — so it cannot go in `declared_unmatched` without making it both edge-bearing and bucket 1; and dropping this claim would report the member as fully matched, which is the failure C1b-i's `claims_without_an_edge_note` describes. No bucket is invented for it."
+    },
+    {
+      "claim": "an undeclared `elicitation` capability is omitted from the encoding entirely",
+      "disposition": "no axis contact with the near miss — rule A (A3 §2, MES-110; authored 29283, ratified 29319). The member keeps its other edge(s), so this is a claim-level record (rule B, A3 §6), not bucket 1.",
+      "evidence": "capabilities_test.exs:100 — `refute Map.has_key?(decoded, \"elicitation\")`. This addresses the check's PRECONDITION (`d&&e in d`), not its axis: it asserts the branch on which the check SKIPS. A precondition is not an axis and a claim about one is neither agreement nor contradiction.",
+      "from": "conformance/data/crosswalk-edges-client.json",
+      "member": {
+        "module": "MCP.Protocol.CapabilitiesTest",
+        "register_key": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON",
+        "test": "test ClientCapabilities round-trips through JSON"
+      },
+      "moved_by": "MES-110 (rule A)",
+      "near_miss_tag": "oc:client/request-metadata/sep-2575-client-declares-elicitation-capability/ClientDeclaresElicitationCapability",
+      "note": "Until MES-110, the one edge in this population whose claim lands on a precondition rather than on an axis.",
+      "owner": "MES-133 (D1) — rule B (A3 §6, MES-110; PO 2026-09-24)",
+      "search_id": "NAC03",
+      "tag": "oc:none/no-axis-contact/SEP-2575-undeclared-elicitation-omitted",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientDeclaresElicitationCapability`. Its one axis, `capability_value_is_a_plain_object`, is a predicate on a DECLARED capability's value; the case this claim asserts, an undeclared one being absent, is the check's PRECONDITION (`d&&e in d`, the branch on which it skips), and a precondition is not an axis. So the claim shares the check's subject and touches none of its predicate: no match under rule A. A sweep for `omit`/`absent`/`missing` alone returns the SEP-2243 header rows (`ClientCustomHeaderOmitNull`, the `Missing Mcp-Method header` rows). They are about headers, not capabilities, and the pattern keeps the two words together for that reason.",
+      "the_search_that_found_none": "an UNDECLARED capability omitted from the encoding entirely: the key absent, not present with an empty or false value",
+      "until_MES_110": {
+        "axes": [
+          {
+            "axis": "capability_value_is_a_plain_object",
+            "verdict": "silent"
+          }
+        ],
+        "et_verdict": "green",
+        "was": "an edge onto `near_miss_tag` with every axis silent, escalated as `no_axis_contact`"
+      }
+    },
+    {
+      "authored_by": "MES-115 (C1c-ii)",
+      "claim": "the identity the completion reports is the RETRY request's re-resolved identity — neither the first request's, nor the one planted inside `inputResponses` (streamable_http_ac_test.exs:264 — `assert tool_text(final) == \"REVIEWER\"`, where the first call ran as `PM` and the planted value was `PM-SPOOF`)",
+      "disposition": "no counterpart in this file's declared check population",
+      "from": "conformance/data/crosswalk-edges-server.json",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+        "test": "test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh"
+      },
+      "owner": "MES-133 (D1) — rule B (A3 §6, MES-110; PO 2026-09-24). Before MES-110: unowned — and the search was run over ALL 175, not only the declared 107, so this is not a deferral to a later C1c slice.",
+      "search_id": "CLV05",
+      "tag": "oc:none/no-oc-scenario/MES-115-retry-identity-re-resolved",
+      "the_search_as_first_recorded": "All 36 checks of the `input-required-result-*` family were read: not one scores WHOSE request a retry is. The family's checks take the SHAPE of the MRTR exchange as their subject — resultType, inputRequests, requestState, completion, tampering, extra keys — and every one of them runs as a single anonymous client. `RejectTamperedState` is the nearest and is about INTEGRITY of the token, not about the principal the retry arrives under: a correctly-signed token replayed by a different caller passes it. Widened to all 175 with the pattern `(?i)\\bidentity\\b|\\bprincipal\\b|authenticat|impersonat` — 0 hits, over a population whose positive controls (`(?i)server` 119, `(?i)error` 18, `(?i)MUST` 32) show the sweep reached it.",
+      "the_search_that_found_none": "WHOSE request an MRTR retry is: the identity a completion reports being the retry's re-resolved one, not the first request's and not one planted in `inputResponses`",
+      "why_it_is_recorded_here_and_not_in_bucket_1": "The member DOES carry edges — five of them — so it is not A3 §6 state 3 whole, and bucket 1 would hide it from the member equation. Until MES-110, A3 §6's state 3 was read as a property of a MEMBER and there was no bucket for a claim, so none was invented. Since MES-110 state 3 is read per token (rule B, A3 §6), and this row is a claim-level unmatched record in the `claim-unmatched` view, which is not a bucket."
+    },
+    {
+      "authored_by": "MES-119 (C1c-iii-b)",
+      "claim": "a $ref in a tool inputSchema that resolves to a network URI is never dereferenced by this SERVER — measured against a live TCP listener the test owns, on both the tools/list and the tools/call paths, and required to time out",
+      "disposition": "no counterpart in this file's declared check population, and none declarable in any server-leg file",
+      "from": "conformance/data/crosswalk-edges-server.json",
+      "member": {
+        "module": "MCP.Server.JsonSchema202012Test",
+        "register_key": "MCP.Server.JsonSchema202012Test/test W-4 — no $ref is ever dereferenced: a canary listener is never connected to",
+        "test": "test W-4 — no $ref is ever dereferenced: a canary listener is never connected to"
+      },
+      "owner": "MES-133 (D1) — rule B (A3 §6, MES-110; PO 2026-09-24). Before MES-110: unowned — the search was run over ALL 175, not only the declared 107, so this is not a deferral to a later C1c slice. The real counterpart is CLIENT leg and is named below.",
+      "search_id": "CLV06",
+      "tag": "oc:none/no-oc-server-check/SEP-2106-server-never-dereferences-a-network-ref",
+      "the_near_miss_that_is_a_real_counterpart_on_the_other_leg": "`NoNetworkRefDereference` — `Client did not dereference the network-URI $ref in the tool inputSchema`. It is a REAL counterpart to the obligation and a real non-counterpart to this claim: SEP-2106's Security Implications binds both peers, and this row scores the CLIENT half. It cannot be declared in this file because this file's member selector opens with a leg equality on `server`; it is not in the client edges file's declared check population either, which is that file's to say. Named so the row reads as `the suite asks the other peer` and not as `nothing exists`.",
+      "the_search_as_first_recorded": "A SERVER declining to dereference a network-URI $ref in a tool inputSchema. MEASURED over all 175 manifest rows: `(?i)\\$ref` 1, `(?i)dereferenc` 1 and `(?i)network` 1 are the SAME single row — `client | json-schema-ref-no-deref | sep-2106-no-network-ref-deref | NoNetworkRefDereference` — and 0 of the 119 server rows on all three. `(?i)canary` 0 of 175 and `(?i)fetch|http-uri|remote` 0 of 175. The positive controls over the same population and the same machinery are `(?i)server` 119, `(?i)tool` 39 and `(?i)result` 41, so the sweep reached the rows.",
+      "the_search_that_found_none": "a SERVER declining to dereference a network-URI `$ref` in a tool inputSchema",
+      "why_it_is_recorded_here_and_not_in_bucket_1": "The member DOES carry an edge — its success control at json_schema_2020_12_test.exs:184 asserts a non-empty content array, which is `ToolsCallSimpleText`'s `content_is_not_empty` predicate at its own polarity — so it is not A3 §6 state 3 whole, and bucket 1 would hide it from the member equation. Until MES-110, A3 §6's state 3 was read as a property of a MEMBER and there was no bucket for a claim, so none was invented. Since MES-110 state 3 is read per token (rule B, A3 §6), and this row is a claim-level unmatched record in the `claim-unmatched` view, which is not a bucket. Until MES-110 the cost of that placement was that no registered search carried this zero and no control re-ran it, as `the_w4_claim_and_the_registry_no_claim_level_row_can_reach` records. Since MES-110 the zero is registered as CLV06, and the absence control re-runs it."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "claim": "the values a deployment gets when it configures NO caching policy are the DEFAULTS — `ttlMs` 0 and `cacheScope` `public` — rather than settings someone chose (streamable_http_ac_test.exs:271 — the server under test is started with no `cache_defaults`)",
+      "disposition": "no counterpart in this file's declared check population",
+      "from": "conformance/data/crosswalk-edges-server.json",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTP.ACTest",
+        "register_key": "MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)",
+        "test": "test default caching policy is no-store (ttlMs 0)"
+      },
+      "owner": "MES-133 (D1) — rule B (A3 §6, MES-110; PO 2026-09-24). Before MES-110: unowned, and unownable by this suite — CONFIRMED from INSIDE the declared population rather than argued from outside it: C1c-iv-a declares all eight `caching` checks and decomposed every one of them, and not one axis reads what the server was configured with.",
+      "placement_and_why": "A structured `claims_without_an_edge` row, which is the W-4 shape and not the edge-prose one. Chosen because the residual is a WHOLE CLAIM of the member rather than a sharper reading of a claim that already has an edge: `ttlMs` 0 and `cacheScope` `public` are edges, and `and these are the DEFAULTS` is a third thing the member asserts and nothing scores. Until MES-110 the file had no criterion that would make this choice forced rather than argued — see the note on the `:237/:238` edge. Since MES-110, rule B (A3 §6) says what this row IS: an `oc:none` token on an edge-bearing member is a claim-level unmatched record. It does not say that an uncovered sub-claim must take this form rather than edge prose; that is MES-133's (D1) question.",
+      "search_id": "CLV07",
+      "tag": "oc:none/no-oc-scenario/MES-117-default-caching-policy-values",
+      "the_near_miss_that_is_not_a_counterpart": "`DefaultResultTypeComplete` — and it is the only row in all 175 that matches `(?i)\\bdefault|\\bconfigur`, so a reader greping for `default` finds exactly one hit and could stop at it. It is not a counterpart on three counts: it is CLIENT leg, its subject is `resultType` rather than any caching field, and its `default` is a SPEC default — how a client must read an ABSENT field — not a deployment's unconfigured state. The nearer rows by subject are this file's own five `*CachingHints` plus `TtlNonNegative` and `CacheScopeValid`, which this member DOES carry edges onto; they score the values and are silent on where the values came from.",
+      "the_search_as_first_recorded": "an OC check that establishes what a server does when a policy is NOT configured — a DEFAULT as distinct from a setting — by varying the implementation's configuration between runs or by reading it, rather than scoring whatever values the single server under test happened to return",
+      "the_search_that_found_none": "what a server's caching hints are when NO caching policy is configured: the DEFAULT values, as distinct from a setting",
+      "why_it_is_recorded_here_and_not_in_bucket_1": "The member is EDGE-BEARING — its two value assertions carry four edges between them — and a bucket-1 row is a statement about a MEMBER with no counterpart at all. Until MES-110, A3 §6's state 3 was read as a property of a member, so a sub-claim of an edge-bearing member had no bucket and was escalated instead. Since MES-110 state 3 is read per token (rule B, A3 §6): this sub-claim is a claim-level unmatched record in the `claim-unmatched` view, owned by MES-133 (D1), and it is not escalated. The placement among the three the file uses for such residuals is argued in `placement_and_why`.",
+      "why_no_axis_reaches_it": "Every caching axis is a predicate on a result the harness received from ONE server in ONE configuration; nothing in the suite varies a server's configuration or asks what it was, so no OC check can distinguish a value that was configured from one that was not. The distinction is the whole point of this member — it is the regression guard on the no-store default — and it is invisible to the harness in principle rather than by omission."
+    },
+    {
+      "authored_by": "MES-117 (C1c-iv-a)",
+      "claim": "the per-request identity factory is never invoked for a rejected non-localhost `Origin`",
+      "disposition": "no axis contact with the near miss — rule A (A3 §2, MES-110; authored 29283, ratified 29319). The member keeps its other edge(s), so this is a claim-level record (rule B, A3 §6), not bucket 1.",
+      "evidence": "streamable_http_stateless_test.exs:147 — `    refute_receive :factory_ran, 200`, where the factory sends `:factory_ran` to the test process before returning an identity. The assertion's subject is the ORDER of two server-internal events; the axis's subject is the HTTP status on the wire. Nothing observable to the harness distinguishes a 403 decided before the factory ran from one decided after it, so the axis is silent on this claim rather than agreeing with it.",
+      "from": "conformance/data/crosswalk-edges-server.json",
+      "member": {
+        "module": "MCP.Transport.StreamableHTTPStatelessTest",
+        "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test AC7 — non-localhost origin is rejected 403; the identity factory never runs",
+        "test": "test AC7 — non-localhost origin is rejected 403; the identity factory never runs"
+      },
+      "moved_by": "MES-110 (rule A)",
+      "near_miss_tag": "oc:server/dns-rebinding-protection/localhost-host-rebinding-rejected/DNSRebindingRejected",
+      "note": "THE ORDERING HALF, and the half no OC check can reach. It is filed as an edge with a silent axis rather than as bucket 1 because the check's subject IS this member's subject — the rejection of a non-localhost origin — and what differs is the GRAIN: the OC scores the outcome, this claim scores when in the pipeline it is decided. Recorded so that the coverage gap is visible on the check rather than absent from the file. Both of C1c-i's and C1c-ii's bucket-1 rows said this in their near miss; it is preserved here.",
+      "owner": "MES-133 (D1) — rule B (A3 §6, MES-110; PO 2026-09-24)",
+      "search_id": "NAC09",
+      "tag": "oc:none/no-axis-contact/AC7-identity-factory-not-invoked-on-rejected-origin",
+      "the_near_miss_that_is_not_a_counterpart": "`DNSRebindingRejected`. Its one axis scores the HTTP status on the wire for a non-localhost Host/Origin, and this member's OTHER claim is an edge onto it. This claim scores WHEN in the pipeline the rejection is decided, and nothing the harness observes distinguishes a 403 decided before the factory ran from one decided after. Same subject, none of the predicate: no match under rule A, and a claim-level record because the member keeps its edge.",
+      "the_search_that_found_none": "the ORDER of two server-internal events: a non-localhost `Origin` rejected before the per-request identity factory is ever invoked",
+      "until_MES_110": {
+        "axes": [
+          {
+            "axis": "a_non_localhost_host_or_origin_is_rejected_with_4xx",
+            "verdict": "silent"
+          }
+        ],
+        "et_verdict": "green",
+        "was": "an edge onto `near_miss_tag` with every axis silent, escalated as `no_axis_contact`"
+      }
+    }
+  ],
+  "schema": "claim-unmatched-view/1",
+  "title": "claim-unmatched — claims with no counterpart inside edge-bearing members, in NO bucket",
+  "unit": "claims",
+  "what_this_is": "THE TWELFTH VIEW, OUTSIDE THE TEN AND IN NO EQUATION. A3 §6 as amended by rule B (MES-110; PO 2026-09-24) makes an `oc:none` token on an edge-bearing member a claim-level unmatched record: bucket 1 at the grain of one claim. The ten buckets count members, checks or edges, and adding claims to any of them would put two units in one count, so these are listed here with their own count. Every row's member carries an edge, which [claim_unmatched] checks; the rows are the crosswalk's own records, so a reader can check this view against the matrix byte for byte."
+}

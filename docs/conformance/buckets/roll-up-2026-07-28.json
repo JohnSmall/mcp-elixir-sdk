@@ -11,7 +11,7 @@
     },
     {
       "bucket": "1",
-      "count": 186,
+      "count": 195,
       "derivation": "projection",
       "emptiness_code": null,
       "empty": false,
@@ -20,7 +20,7 @@
     },
     {
       "bucket": "2a",
-      "count": 77,
+      "count": 78,
       "derivation": "projection",
       "emptiness_code": null,
       "empty": false,
@@ -29,7 +29,7 @@
     },
     {
       "bucket": "2b",
-      "count": 14,
+      "count": 15,
       "derivation": "projection",
       "emptiness_code": null,
       "empty": false,
@@ -92,12 +92,21 @@
     },
     {
       "bucket": "escalated",
-      "count": 15,
+      "count": 4,
       "derivation": "projection",
       "emptiness_code": null,
       "empty": false,
       "title": "escalated — in NO bucket, outside the ten",
       "universe": "edges"
+    },
+    {
+      "bucket": "claim-unmatched",
+      "count": 9,
+      "derivation": "projection",
+      "emptiness_code": null,
+      "empty": false,
+      "title": "claim-unmatched — in NO bucket, outside the ten, counted in CLAIMS",
+      "universe": "claims"
     }
   ],
   "equations": [
@@ -105,7 +114,7 @@
       "holds": true,
       "measure": "The arithmetic is the VISIBLE half. The evidence is the set comparison in `partition`, both directions with the negatives enumerated — two counts agreeing is not two sets agreeing.",
       "of": "the crosswalk's `cells`",
-      "sum": 174,
+      "sum": 163,
       "terms": [
         {
           "count": 0,
@@ -132,11 +141,11 @@
           "term": "6"
         },
         {
-          "count": 15,
+          "count": 4,
           "term": "escalated"
         }
       ],
-      "total": 174,
+      "total": 163,
       "universe": "edges"
     },
     {
@@ -146,11 +155,11 @@
       "sum": 281,
       "terms": [
         {
-          "count": 186,
+          "count": 195,
           "term": "1"
         },
         {
-          "count": 95,
+          "count": 86,
           "term": "members_with_edges"
         }
       ],
@@ -164,15 +173,15 @@
       "sum": 173,
       "terms": [
         {
-          "count": 77,
+          "count": 78,
           "term": "2a"
         },
         {
-          "count": 14,
+          "count": 15,
           "term": "2b"
         },
         {
-          "count": 82,
+          "count": 80,
           "term": "checks_with_edges"
         }
       ],
@@ -206,6 +215,12 @@
       "equal": true,
       "extra": [],
       "missing": []
+    },
+    "claim_unmatched_members_carry_an_edge": {
+      "claim": "every claim-unmatched record's member carries an edge (rule B, A3 §6). ONE direction by design: a record on an edge-less member is the defect, and an edge-bearing member with no claim-level record is the ordinary case, so only that direction is enumerated",
+      "distinct_members_with_a_claim_level_record": 9,
+      "holds": true,
+      "records_on_a_member_with_no_edge": []
     },
     "declared_checks": {
       "claim": "the bucket 2 these views project equals the bucket 2 the crosswalk stores — a CONSISTENCY pin between two independently produced statements (ruling 9), not a claim that either is right",
@@ -636,9 +651,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 1088933,
+      "bytes": 1106223,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "385524cf0de89eb05df700375d41027b79cf969111cf7f45e6d109ddc7423dc6"
+      "sha256": "447d8651844d4093adf96c8fd73519e1c6e62ebdaa816c092dfdd10c5811118b"
     }
   },
   "residuals": [

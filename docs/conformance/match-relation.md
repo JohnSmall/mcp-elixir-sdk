@@ -137,6 +137,45 @@ not swept until B2a. Stated as provisional because a figure that reads as
 settled when it is contingent is the S5-24 shape. The epic's 12 is superseded
 and the PM corrects the epic body once B2a confirms.
 
+### An all-silent claim is NO MATCH, at any arity  [authored 29283 | ratified 29319]
+
+§2 rules that for a single-axis check, a claim covering zero of its one
+axis "is no match, not a partial one". **The rule does not depend on arity.
+A claim that is `silent` on every axis of a check is not an edge onto that
+check**, however many axes the check has. `:partial` requires at least one
+axis that `agrees` or `contradicts`. Touching none of the predicate is not a
+small amount of coverage. It is no coverage.
+
+This has two consequences. Neither is a loss:
+
+1. **The claim is recorded as unmatched, and its nearest check is named.**
+   If the member has another edge, the claim becomes a **claim-level
+   unmatched** record (§6, claim-level state 3). If the member has no other
+   edge, it becomes a **bucket-1** member declared with the reason slug
+   `no-axis-contact`. In both cases a G23 absence search stands behind the
+   record. Its `kind` is `no-axis-contact`; it searches the declared check
+   population for any predicate the claim touches; and its `near_miss` names
+   the check whose subject the claim shares but whose predicate it does not
+   touch.
+2. **The check is counted with the edges it still has.** A check whose only
+   edges were all-silent has no edge, so by §3's complement rule it is
+   **bucket 2**. That means "write the test", not "extend the assertion",
+   which is what §2 already said of the five single-axis checks.
+
+**Why a shared subject does not keep the edge.** The edges files recorded
+an objection: a check with the same subject as a member *is* that member's
+counterpart, so bucket 1 would falsely say "there is no counterpart". That
+objection is §2's description-versus-predicate error, applied to a claim.
+A check scores its predicate, not its subject. A claim that touches none of
+the predicate is evidence about nothing the check scores. The objection does
+protect one real thing: whoever adjudicates should see what is nearby. The
+near miss keeps that. An edge is not needed for it.
+
+**The generator refuses an all-silent edge record** rather than escalating
+it, and names this rule in the refusal. `no_axis_contact` stops being an
+escalation reason. Escalation held the case while §3 did not decide it,
+and this paragraph decides it.
+
 ---
 
 ## 3. `bucket = f(verdict pair, edge shape)`
@@ -180,10 +219,41 @@ D4b's to disposition — but it is **flagged, not counted silently**.
 *This case was implicit in the ratified table and is made explicit here; it is
 a completion of the rule, not a departure from it.*
 
-**`(green, green)` with a `:contradicting` edge.** Our claim contradicts the
-check on some axis, yet both passed. Against one build that is impossible, so
-the *input* is wrong — mismatched provenance, or a mis-recorded axis. Bucketing
-it would launder a data defect into a finding.
+**`(green, green)` with a `:contradicting` edge. Standing escalation, owner
+D4a.**  [authored 29285 | ratified 29319]
+
+This paragraph first reasoned that a contradiction under two greens is
+"impossible against one build", so the *input* must be wrong. That cause
+stays possible, and it is kept as `provenance`. **But all four live
+instances were measured, and in none of them is the input wrong**: the
+provenance matches and the axes are read correctly. There is a third cause,
+**an unexercised input**: the OC verdict was taken on inputs where the
+contradiction does not arise. Two forms are live:
+
+- `check_defect_unexercised`. The check's predicate would fail a
+  conformant implementation, and the fixture never sends the input that
+  triggers it. Instance: `ClientMcpNameHeader_tools_call`, 3 edges (a tool
+  name that is missing, non-ASCII, or contains CRLF). This is an upstream
+  suite defect, recorded on MES-124.
+- `adapter_path_unexercised`. The accepted run went through a different
+  code path from the one the claim is about. Instance: server
+  `WireSchemaValid`, 1 edge. The conformance adapter sends `inputRequests`
+  as an object. The unit asserts that the SDK's own path puts an array on
+  the wire.
+
+**The edge stays escalated, and the escalation now has an owner.** It is
+not put in a bucket. 4a is defined on a red OC verdict, and filing a green
+one there would give "4a" two meanings. It is not dropped either. A latent
+contradiction is among the most valuable things a crosswalk can find,
+because no run will ever report it. So every row carries a `cause` (one of
+the three above) and **owner MES-126 (D4a)**, the contradiction
+adjudicator. Deciding whose defect the contradiction is (ours or the
+suite's) is D4a's job. This paragraph only gives the edge a place.
+
+`(red, green, :full)` (`divergent_despite_agreement`) does not change: it
+is a standing escalation with **owner MES-127 (D4b)**, as the first
+paragraph already says ("D4b's to disposition"). It has zero live instances
+(measured at 5f2f2f7).
 
 ---
 
@@ -297,7 +367,7 @@ reserve as a leg because the leg vocabulary is **measured-exhaustive** at
 | --- | --- | --- |
 | 1 | `oc:<leg>/…` that **resolves** in A1 | a matched edge |
 | 2 | `oc:<leg>/…` that **does not resolve** | **FAIL** — a typo, or a key gone stale against a harness bump |
-| 3 | `oc:none/…` | a declared bucket-1 member; the guard asserts it does **not** resolve as an oc key, and that the native id is registered with D1 |
+| 3 | `oc:none/…` | a declared non-match, read **per token**: on a member with no resolving token, a declared bucket-1 member; on an edge-bearing member, a **claim-level unmatched** record (see *Claim-level state 3* below). Either way the guard asserts it does **not** resolve as an oc key, and that the native id is registered with D1. [consequential to B, 29284 \| ratified 29319; PM ruling 29327] |
 | 4 | an ET-CC member carrying **neither** | **FAIL** — the completeness half |
 
 Separating the four **lexically, before any lookup** is what makes a stale key
@@ -325,6 +395,45 @@ ET-CC units** that the suite's fixture never exercises. A slot holding `CG7`
 names all three of those claims at once, and a register keyed on it cannot tell
 them apart — the S5-31 two-indexes hazard, arriving through the slot that
 exists to prevent it.
+
+### Claim-level state 3: a declared non-match on an edge-bearing member  [authored 29284 | ratified 29319 | PO 2026-09-24, relayed in 29319]
+
+**State 3 is decided for each token separately. A member's bucket is
+decided by all of its tokens together.** Since MES-77 the native id names a
+claim. What this section did not say is what an `oc:none/...` token means on
+a member that also carries a resolving `oc:<leg>/...` token. It means **this
+claim was adjudicated and has no counterpart, and the member's other claims
+do.**
+
+| the member carries | member-level | claim-level |
+| --- | --- | --- |
+| only resolving `oc:<leg>/...` tokens | edge-bearing | none |
+| only `oc:none/...` tokens | **bucket 1** | none |
+| both | edge-bearing | each `oc:none/...` claim is a **claim-level unmatched** record |
+
+The member-level reconciliation (*edge-bearing OR declared_unmatched, never
+both*) does not change. It is now enforced instead of assumed: a member is
+in bucket 1 if and only if it has no edge. A claim-level record on a member
+with no edge is **refused**. That member belongs in bucket 1 and must be
+filed there.
+
+**The records go in a named view outside the ten, not in a bucket.**
+Buckets 0 to 6 count members, checks or edges. Adding claims to any of them
+would put two units in one count, which is §5's *rows lost / rows involved*
+hazard. So claim-level records are listed in their own view,
+`claim-unmatched`, with their own count. They are **owned by MES-133 (D1)**,
+the bucket-1 adjudication. They are bucket 1 at the grain of a single
+claim, and D1 asks of each one the same question it asks of a bucket-1
+member: is this coverage the suite lacks, or coverage we should not have?
+
+Each record carries a token `oc:none/<reason-slug>/<origin-id>-<claim-slug>`
+built by `none/3`, and must pass the same guards as a bucket-1 row:
+
+- it is state 3 when read lexically;
+- `declared_claim_index/1` runs over the bucket-1 ids and the claim-level
+  ids **together**, so one native id cannot name two claims across the two
+  sets;
+- a G23 absence search stands behind it.
 
 So the slot carries:
 
@@ -390,9 +499,14 @@ compared in the unit this document already uses.
 
 ### A requirement with NO ET-CC member is OUT of the tag system, by rule
 
-**State 3 is a property of a MEMBER.** It says *"this member was adjudicated and
-there is no OC counterpart"*. A requirement that nothing implements has no
-member to carry it, so it has no token of either kind — and the
+**State 3 is read per token, and a member's bucket from all of its tokens
+together** [consequential to B, 29284 | ratified 29319; PM ruling 29327]. An
+`oc:none/…` token says *"this claim was adjudicated and there is no OC
+counterpart"*: on a member with no resolving token that makes the member
+bucket 1, and on an edge-bearing member it is a claim-level unmatched record
+(see *Claim-level state 3* above). Either way a member carries the token. A
+requirement that nothing implements has no member to carry it, so it has no
+token of either kind — and the
 "matched → alias, unmatched → native id" split has no cell for it. Left
 unstated, such a requirement reads as adjudicated when it was never in this
 system's domain.
@@ -452,7 +566,10 @@ applied in one direction only.
    axis is a spec **SHOULD** rather than a **MUST** is a divergence at all.
    **Escalates per case.**
 3. **The `(red, green, :full)` and `(green, green, :contradicting)` edges** —
-   §3. Both escalate by construction rather than being bucketed.
+   §3. Both escalate by construction rather than being bucketed, and both are
+   **standing** escalations with the owner named in §3 (MES-110). The
+   all-silent edge that the crosswalk once escalated as a third case is no
+   longer escalated. §2 decides it: it is no match.
 4. **Axis staleness against a harness bump** — §2. Detectable by comparing the
    recorded sha; not detected automatically.
 5. **A native id's registration with D1 is asserted, not checked** (MES-77).

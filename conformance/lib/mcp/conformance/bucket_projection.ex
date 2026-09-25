@@ -56,11 +56,23 @@ defmodule MCP.Conformance.BucketProjection do
 
   ## An escalation is not a bucket
 
-  Four cells carry `bucket: null` and an `escalation`. The crosswalk's own rule
-  is that *"an escalation is NOT a bucket and is never counted as one"*, so they
-  are enumerated in a named **eleventh** view outside the ten, each with its
-  reason. Rendering them into a bucket would launder a PM escalation into an
-  adjudication.
+  The cells carrying `bucket: null` and an `escalation`. The crosswalk's own
+  rule is that *"an escalation is NOT a bucket and is never counted as one"*, so
+  they are enumerated in a named **eleventh** view outside the ten, each with
+  its reason and — since MES-110's rule C — the owner A3 §3 names and, for an
+  `inconsistent_verdict_pair`, its cause. Rendering them into a bucket would
+  launder a standing escalation into an adjudication.
+
+  ## A claim is not a member — the claim-unmatched view (rule B, MES-110)
+
+  A3 §6 as amended by rule B makes an `oc:none` token on an EDGE-BEARING member
+  a claim-level unmatched record. The buckets count members, checks or edges,
+  and a claim is none of them, so the crosswalk's `claim_level_unmatched` rows
+  are projected into a **twelfth** view, `claim-unmatched`, outside the ten and
+  in no equation. `:claim_unmatched` holds the one property rule B states about
+  them that this module can check without re-deciding anything: every such
+  record's member is among the members carrying an edge. A record on an
+  edge-less member is a bucket-1 member filed in the wrong place.
   """
 
   alias MCP.Conformance.{Crosswalk, MatchKey}
@@ -76,6 +88,7 @@ defmodule MCP.Conformance.BucketProjection do
     :edge_partition,
     :member_partition,
     :check_partition,
+    :claim_unmatched,
     :population_statement
   ]
 
@@ -500,6 +513,7 @@ defmodule MCP.Conformance.BucketProjection do
     base
     |> Map.put(:rows, rows)
     |> Map.put(:escalated, Enum.filter(cells, &(&1["bucket"] == nil)))
+    |> Map.put(:claim_unmatched, get_in(crosswalk, ["claim_level_unmatched", "rows"]) || [])
     |> Map.put(:figures, figures(crosswalk, bucket_zero))
     |> partitions()
   end
@@ -613,6 +627,15 @@ defmodule MCP.Conformance.BucketProjection do
       # right.
       checks: Crosswalk.set_compare(stored_bucket_2(ctx.crosswalk), bucket_2),
       checks_reach_a_view: Crosswalk.set_compare(ctx.checks, bucket_2 ++ ctx.checks_with_edges),
+      # RULE B, one direction by design: every claim-unmatched record's member
+      # carries an edge. The converse (every edge-bearing member has a claim-level
+      # record) is not a property anyone asserted, so only `extra` can be a defect
+      # and the comparison is read that way in `:claim_unmatched`.
+      claim_unmatched:
+        Crosswalk.set_compare(
+          ctx.members_with_edges,
+          Enum.map(ctx.claim_unmatched, &get_in(&1, ["member", "register_key"]))
+        ),
       pairwise: pairwise(ctx)
     })
   end
@@ -749,6 +772,21 @@ defmodule MCP.Conformance.BucketProjection do
          Enum.map_join(r.missing, "\n", &"    #{&1}") <>
          "\n  in a view, not a declared check (#{length(r.extra)}):\n" <>
          Enum.map_join(r.extra, "\n", &"    #{&1}")}
+    end
+  end
+
+  defp guard(:claim_unmatched, ctx) do
+    case ctx.partition.claim_unmatched.extra do
+      [] ->
+        nil
+
+      strays ->
+        {:claim_unmatched,
+         "CLAIM-UNMATCHED — #{length(strays)} claim-level unmatched records name a member that " <>
+           "carries NO edge. Rule B (A3 §6, MES-110) makes a claim-level record an `oc:none` " <>
+           "token on an EDGE-BEARING member; on an edge-less member it is a bucket-1 member " <>
+           "filed in the wrong place, and bucket 1 and the member equation would both miss it:\n" <>
+           Enum.map_join(strays, "\n", &"    #{&1}")}
     end
   end
 
@@ -986,6 +1024,7 @@ defmodule MCP.Conformance.BucketProjection do
 
     views
     |> Map.put("escalated-#{@revision}.json", escalated_view(ctx))
+    |> Map.put("claim-unmatched-#{@revision}.json", claim_unmatched_view(ctx))
     |> Map.put("roll-up-#{@revision}.json", roll_up(ctx))
   end
 
@@ -1135,9 +1174,12 @@ defmodule MCP.Conformance.BucketProjection do
       "generated_by" => "mix conformance.buckets",
       "owner" => "MES-98 (C2)",
       "bucket" => nil,
-      "title" => "escalated — routed to the PM, in NO bucket",
+      "title" => "escalated — standing and owned, in NO bucket",
       "derivation" => "projection",
-      "predicate" => "`cells` where the stored `bucket` is null and an `escalation` is recorded.",
+      "predicate" =>
+        "`cells` where the stored `bucket` is null and an `escalation` is recorded. Each row " <>
+          "carries the `escalation_owner` A3 §3 names and, for an inconsistent_verdict_pair, its " <>
+          "`escalation_cause` (rule C, MES-110).",
       "universe" => universe("edges", ctx),
       "population_banner" => banner(ctx.figures),
       "projected_from" => ctx.sources,
@@ -1153,6 +1195,37 @@ defmodule MCP.Conformance.BucketProjection do
       "count" => length(ctx.escalated),
       "emptiness_reason" => nil,
       "rows" => ctx.escalated
+    }
+  end
+
+  defp claim_unmatched_view(ctx) do
+    cl = ctx.crosswalk["claim_level_unmatched"] || %{}
+
+    %{
+      "schema" => "claim-unmatched-view/1",
+      "revision" => @revision,
+      "generated_by" => "mix conformance.buckets",
+      "owner" => "MES-98 (C2); the view added by MES-110 (rule B)",
+      "bucket" => nil,
+      "title" =>
+        "claim-unmatched — claims with no counterpart inside edge-bearing members, in NO bucket",
+      "derivation" => "projection",
+      "predicate" => "the crosswalk's `claim_level_unmatched.rows`, verbatim.",
+      "unit" => "claims",
+      "adjudication_owner" => cl["owner"],
+      "population_banner" => banner(ctx.figures),
+      "projected_from" => ctx.sources,
+      "what_this_is" =>
+        "THE TWELFTH VIEW, OUTSIDE THE TEN AND IN NO EQUATION. A3 §6 as amended by rule B " <>
+          "(MES-110; PO 2026-09-24) makes an `oc:none` token on an edge-bearing member a " <>
+          "claim-level unmatched record: bucket 1 at the grain of one claim. The ten buckets " <>
+          "count members, checks or edges, and adding claims to any of them would put two units " <>
+          "in one count, so these are listed here with their own count. Every row's member " <>
+          "carries an edge, which [claim_unmatched] checks; the rows are the crosswalk's own " <>
+          "records, so a reader can check this view against the matrix byte for byte.",
+      "count" => length(ctx.claim_unmatched),
+      "emptiness_reason" => nil,
+      "rows" => ctx.claim_unmatched
     }
   end
 
@@ -1202,6 +1275,15 @@ defmodule MCP.Conformance.BucketProjection do
           "universe" => "edges",
           "count" => length(ctx.escalated),
           "empty" => ctx.escalated == [],
+          "emptiness_code" => nil
+        },
+        %{
+          "bucket" => "claim-unmatched",
+          "title" => "claim-unmatched — in NO bucket, outside the ten, counted in CLAIMS",
+          "derivation" => "projection",
+          "universe" => "claims",
+          "count" => length(ctx.claim_unmatched),
+          "empty" => ctx.claim_unmatched == [],
           "emptiness_code" => nil
         }
       ]
@@ -1293,6 +1375,20 @@ defmodule MCP.Conformance.BucketProjection do
         ),
       "declared_members" =>
         direction_report(p.members, "every declared member is in bucket 1 or carries an edge"),
+      "claim_unmatched_members_carry_an_edge" => %{
+        "claim" =>
+          "every claim-unmatched record's member carries an edge (rule B, A3 §6). ONE " <>
+            "direction by design: a record on an edge-less member is the defect, and an " <>
+            "edge-bearing member with no claim-level record is the ordinary case, so only that " <>
+            "direction is enumerated",
+        "holds" => ctx.partition.claim_unmatched.extra == [],
+        "records_on_a_member_with_no_edge" => ctx.partition.claim_unmatched.extra,
+        "distinct_members_with_a_claim_level_record" =>
+          ctx.claim_unmatched
+          |> Enum.map(&get_in(&1, ["member", "register_key"]))
+          |> Enum.uniq()
+          |> length()
+      },
       "bucket_1_is_the_declared_unmatched_set" =>
         direction_report(
           p.member_records,

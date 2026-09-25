@@ -5,6 +5,54 @@
       "class": "measured",
       "file": "conformance/data/crosswalk-edges-client.json",
       "nth": 1,
+      "path": "absence_searches[CLV01].population.why",
+      "phrase": "ALL 175 manifest rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "conformance/data/crosswalk-edges-client.json",
+      "nth": 1,
+      "path": "absence_searches[CLV02].population.why",
+      "phrase": "ALL 175 manifest rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "conformance/data/crosswalk-edges-client.json",
+      "nth": 1,
+      "path": "absence_searches[CLV03].population.why",
+      "phrase": "ALL 175 manifest rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "conformance/data/crosswalk-edges-client.json",
+      "nth": 1,
+      "path": "absence_searches[CLV04].population.why",
+      "phrase": "ALL 175 manifest rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "file": "conformance/data/crosswalk-edges-client.json",
+      "nth": 1,
+      "path": "absence_searches[S03].near_miss",
+      "phrase": "THREE members",
+      "class": "historical",
+      "as_of": "MES-110"
+    },
+    {
+      "class": "measured",
+      "file": "conformance/data/crosswalk-edges-client.json",
+      "nth": 1,
+      "path": "absence_searches[S05].near_miss",
+      "phrase": "two carry edges",
+      "quantity": "client_capabilities_row_declares_checks"
+    },
+    {
+      "class": "measured",
+      "file": "conformance/data/crosswalk-edges-client.json",
+      "nth": 1,
       "path": "absence_searches_note",
       "phrase": "26 `declared_unmatched` rows",
       "quantity": "client_du_no_search_id"
@@ -30,7 +78,7 @@
       "file": "conformance/data/crosswalk-edges-client.json",
       "nth": 1,
       "path": "absence_searches_note",
-      "phrase": "39 rows",
+      "phrase": "45 rows",
       "quantity": "client_du_with_search_id"
     },
     {
@@ -61,7 +109,7 @@
       "class": "measured",
       "file": "conformance/data/crosswalk-edges-client.json",
       "nth": 1,
-      "path": "claims_without_an_edge[MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept | the exclusion is logged naming the tool and the reason (client_tool_schemas_test.exs:107-108 — `assert log =~ ~s(EXCLUDING tool \"bad\" from tools/list)` and `assert log =~ \"only string, integer and boolean are permitted\"`)].the_search_that_found_none",
+      "path": "claims_without_an_edge[MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept | the exclusion is logged naming the tool and the reason (client_tool_schemas_test.exs:107-108 — `assert log =~ ~s(EXCLUDING tool \"bad\" from tools/list)` and `assert log =~ \"only string, integer and boolean are permitted\"`) | oc:none/no-oc-scenario/CG7-exclusion-is-logged].the_search_as_first_recorded",
       "phrase": "All 29 CG7 checks",
       "quantity": "cg7_checks"
     },
@@ -70,22 +118,30 @@
       "class": "historical",
       "file": "conformance/data/crosswalk-edges-client.json",
       "nth": 1,
-      "path": "claims_without_an_edge[MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept | the exclusion is logged naming the tool and the reason (client_tool_schemas_test.exs:107-108 — `assert log =~ ~s(EXCLUDING tool \"bad\" from tools/list)` and `assert log =~ \"only string, integer and boolean are permitted\"`)].the_search_that_found_none",
+      "path": "claims_without_an_edge[MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept | the exclusion is logged naming the tool and the reason (client_tool_schemas_test.exs:107-108 — `assert log =~ ~s(EXCLUDING tool \"bad\" from tools/list)` and `assert log =~ \"only string, integer and boolean are permitted\"`) | oc:none/no-oc-scenario/CG7-exclusion-is-logged].the_search_as_first_recorded",
       "phrase": "four cache members"
     },
     {
       "class": "measured",
       "file": "conformance/data/crosswalk-edges-client.json",
       "nth": 1,
-      "path": "claims_without_an_edge[MCP.ClientToolSchemasTest/test the transport seam a tools/call for a known tool carries :headers; other methods carry none | a NON-tools/call request carries no :headers at all (client_tool_schemas_test.exs:395 — `assert Enum.at(MockTransport.sent_opts(transport), 0) == []`, the tools/list)].the_search_that_found_none",
+      "path": "claims_without_an_edge[MCP.ClientToolSchemasTest/test the transport seam a tools/call for a known tool carries :headers; other methods carry none | a NON-tools/call request carries no :headers at all (client_tool_schemas_test.exs:395 — `assert Enum.at(MockTransport.sent_opts(transport), 0) == []`, the tools/list) | oc:none/no-oc-scenario/CG7-non-tools-call-carries-no-headers-opt].the_search_as_first_recorded",
       "phrase": "All 29 CG7 checks",
       "quantity": "cg7_checks"
+    },
+    {
+      "class": "historical",
+      "file": "conformance/data/crosswalk-edges-client.json",
+      "nth": 1,
+      "path": "claims_without_an_edge[MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON | an undeclared `elicitation` capability is omitted from the encoding entirely | oc:none/no-axis-contact/SEP-2575-undeclared-elicitation-omitted].note",
+      "phrase": "one edge",
+      "as_of": "MES-110"
     },
     {
       "class": "measured",
       "file": "conformance/data/crosswalk-edges-client.json",
       "nth": 1,
-      "path": "claims_without_an_edge[MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method | an annotated parameter cannot forge the Mcp-Method ROUTING header (header_mirror_test.exs:416 — `refute Map.has_key?(headers, \"mcp-method\")`)].resolved_by",
+      "path": "claims_without_an_edge[MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method | an annotated parameter cannot forge the Mcp-Method ROUTING header (header_mirror_test.exs:416 — `refute Map.has_key?(headers, \"mcp-method\")`) | oc:none/no-oc-scenario/CG7-annotation-cannot-forge-mcp-method].resolved_by",
       "phrase": "9 in-denominator `http-standard-headers` checks",
       "quantity": "locator_http_standard_headers"
     },
@@ -93,7 +149,7 @@
       "class": "measured",
       "file": "conformance/data/crosswalk-edges-client.json",
       "nth": 1,
-      "path": "claims_without_an_edge[MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method | an annotated parameter cannot forge the Mcp-Method ROUTING header (header_mirror_test.exs:416 — `refute Map.has_key?(headers, \"mcp-method\")`)].resolved_by",
+      "path": "claims_without_an_edge[MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method | an annotated parameter cannot forge the Mcp-Method ROUTING header (header_mirror_test.exs:416 — `refute Map.has_key?(headers, \"mcp-method\")`) | oc:none/no-oc-scenario/CG7-annotation-cannot-forge-mcp-method].resolved_by",
       "phrase": "six `ClientMcpMethodHeader_*` checks",
       "quantity": "locator_mcp_method_header"
     },
@@ -101,7 +157,7 @@
       "class": "measured",
       "file": "conformance/data/crosswalk-edges-client.json",
       "nth": 1,
-      "path": "claims_without_an_edge[MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method | an annotated parameter cannot forge the Mcp-Method ROUTING header (header_mirror_test.exs:416 — `refute Map.has_key?(headers, \"mcp-method\")`)].the_search_that_found_none",
+      "path": "claims_without_an_edge[MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method | an annotated parameter cannot forge the Mcp-Method ROUTING header (header_mirror_test.exs:416 — `refute Map.has_key?(headers, \"mcp-method\")`) | oc:none/no-oc-scenario/CG7-annotation-cannot-forge-mcp-method].the_search_as_first_recorded",
       "phrase": "All 29 CG7 checks",
       "quantity": "cg7_checks"
     },
@@ -109,7 +165,7 @@
       "class": "measured",
       "file": "conformance/data/crosswalk-edges-client.json",
       "nth": 1,
-      "path": "claims_without_an_edge[MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name | a method with no name target carries NO `mcp-name` (routing_headers_test.exs:182 — `refute Map.has_key?(headers, \"mcp-name\")`, on a tools/list)].the_search_that_found_none",
+      "path": "claims_without_an_edge[MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name | a method with no name target carries NO `mcp-name` (routing_headers_test.exs:182 — `refute Map.has_key?(headers, \"mcp-name\")`, on a tools/list) | oc:none/no-oc-scenario/CG1-no-mcp-name-without-a-name-target].the_search_as_first_recorded",
       "phrase": "six `ClientMcpMethodHeader_*` checks",
       "quantity": "locator_mcp_method_header"
     },
@@ -117,7 +173,7 @@
       "class": "measured",
       "file": "conformance/data/crosswalk-edges-client.json",
       "nth": 1,
-      "path": "claims_without_an_edge[MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name | a method with no name target carries NO `mcp-name` (routing_headers_test.exs:182 — `refute Map.has_key?(headers, \"mcp-name\")`, on a tools/list)].the_search_that_found_none",
+      "path": "claims_without_an_edge[MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name | a method with no name target carries NO `mcp-name` (routing_headers_test.exs:182 — `refute Map.has_key?(headers, \"mcp-name\")`, on a tools/list) | oc:none/no-oc-scenario/CG1-no-mcp-name-without-a-name-target].the_search_as_first_recorded",
       "phrase": "three `ClientMcpNameHeader_*` checks",
       "quantity": "locator_mcp_name_header"
     },
@@ -125,7 +181,7 @@
       "class": "measured",
       "file": "conformance/data/crosswalk-edges-client.json",
       "nth": 1,
-      "path": "claims_without_an_edge[MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name | a method with no name target carries NO `mcp-name` (routing_headers_test.exs:182 — `refute Map.has_key?(headers, \"mcp-name\")`, on a tools/list)].the_search_that_found_none",
+      "path": "claims_without_an_edge[MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name | a method with no name target carries NO `mcp-name` (routing_headers_test.exs:182 — `refute Map.has_key?(headers, \"mcp-name\")`, on a tools/list) | oc:none/no-oc-scenario/CG1-no-mcp-name-without-a-name-target].the_search_as_first_recorded",
       "phrase": "three declared",
       "quantity": "manifest_mcp_name_rows"
     },
@@ -136,6 +192,46 @@
       "nth": 1,
       "path": "claims_without_an_edge_note",
       "phrase": "TWO became real edges"
+    },
+    {
+      "class": "measured",
+      "file": "conformance/data/crosswalk-edges-client.json",
+      "nth": 1,
+      "path": "declared_unmatched[MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 handles experimental capabilities | oc:none/no-oc-scenario/server-capabilities-experimental].the_near_miss_that_is_not_a_counterpart",
+      "phrase": "two carry edges",
+      "quantity": "client_capabilities_row_declares_checks"
+    },
+    {
+      "class": "measured",
+      "file": "conformance/data/crosswalk-edges-client.json",
+      "nth": 1,
+      "path": "declared_unmatched[MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 handles missing capabilities | oc:none/no-oc-scenario/server-capabilities-missing-keys].the_near_miss_that_is_not_a_counterpart",
+      "phrase": "two carry edges",
+      "quantity": "client_capabilities_row_declares_checks"
+    },
+    {
+      "class": "measured",
+      "file": "conformance/data/crosswalk-edges-client.json",
+      "nth": 1,
+      "path": "declared_unmatched[MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 parses full capabilities | oc:none/no-oc-scenario/server-capabilities-full-map].the_near_miss_that_is_not_a_counterpart",
+      "phrase": "two carry edges",
+      "quantity": "client_capabilities_row_declares_checks"
+    },
+    {
+      "file": "conformance/data/crosswalk-edges-client.json",
+      "nth": 1,
+      "path": "declared_unmatched[MCP.ProtocolTest/test decode/1 decodes a success response | oc:none/no-oc-scenario/jsonrpc-decode-success-response].the_near_miss_that_is_not_a_counterpart",
+      "phrase": "THREE members",
+      "class": "historical",
+      "as_of": "MES-110"
+    },
+    {
+      "file": "conformance/data/crosswalk-edges-client.json",
+      "nth": 1,
+      "path": "declared_unmatched[MCP.ProtocolTest/test decode/1 decodes an error response | oc:none/no-oc-scenario/jsonrpc-decode-error-response].the_near_miss_that_is_not_a_counterpart",
+      "phrase": "THREE members",
+      "class": "historical",
+      "as_of": "MES-110"
     },
     {
       "class": "measured",
@@ -154,28 +250,28 @@
       "phrase": "18 client rows"
     },
     {
-      "class": "not_a_count",
-      "file": "conformance/data/crosswalk-edges-client.json",
-      "nth": 1,
-      "path": "the_all_silent_case",
-      "phrase": "Four edges",
-      "reason": "R5"
-    },
-    {
       "class": "measured",
       "file": "conformance/data/crosswalk-edges-client.json",
       "nth": 1,
       "path": "the_all_silent_case",
-      "phrase": "Seven edges",
+      "phrase": "ZERO all-silent edges",
       "quantity": "client_all_silent_edges"
     },
     {
-      "class": "measured",
+      "as_of": "MES-110",
+      "class": "historical",
       "file": "conformance/data/crosswalk-edges-client.json",
       "nth": 1,
       "path": "the_all_silent_case",
-      "phrase": "over four distinct checks",
-      "quantity": "client_all_silent_checks"
+      "phrase": "over four distinct checks"
+    },
+    {
+      "class": "historical",
+      "file": "conformance/data/crosswalk-edges-client.json",
+      "nth": 1,
+      "path": "the_all_silent_case",
+      "phrase": "seven such edges",
+      "as_of": "MES-110"
     },
     {
       "as_of": "C1b-ii",
@@ -410,12 +506,28 @@
       "reason": "R4"
     },
     {
+      "as_of": "MES-110",
+      "class": "historical",
+      "file": "conformance/data/crosswalk-edges-client.json",
+      "nth": 1,
+      "path": "what_a_record_carries_and_why.authored_by",
+      "phrase": "four C1a rows"
+    },
+    {
       "as_of": "C1b-iii",
       "class": "historical",
       "file": "conformance/data/crosswalk-edges-client.json",
       "nth": 1,
       "path": "what_a_record_carries_and_why.authored_by",
       "phrase": "four inherited C1a rows"
+    },
+    {
+      "class": "measured",
+      "file": "conformance/data/crosswalk-edges-client.json",
+      "nth": 1,
+      "path": "what_a_record_carries_and_why.authored_by",
+      "phrase": "one edge",
+      "quantity": "client_edges_retry_supported_version"
     },
     {
       "class": "not_a_count",
@@ -525,6 +637,38 @@
       "class": "measured",
       "file": "conformance/data/crosswalk-edges-server.json",
       "nth": 1,
+      "path": "absence_searches[CLV05].population.why",
+      "phrase": "ALL 175 manifest rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "conformance/data/crosswalk-edges-server.json",
+      "nth": 1,
+      "path": "absence_searches[CLV06].population.why",
+      "phrase": "119 SERVER rows",
+      "quantity": "manifest_server"
+    },
+    {
+      "class": "measured",
+      "file": "conformance/data/crosswalk-edges-server.json",
+      "nth": 1,
+      "path": "absence_searches[CLV07].population.why",
+      "phrase": "ALL 175 manifest rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "not_a_count",
+      "file": "conformance/data/crosswalk-edges-server.json",
+      "nth": 1,
+      "path": "absence_searches[NAC06].near_miss",
+      "phrase": "one of its axes",
+      "reason": "R4"
+    },
+    {
+      "class": "measured",
+      "file": "conformance/data/crosswalk-edges-server.json",
+      "nth": 1,
       "path": "absence_searches[SRV01].near_miss",
       "phrase": "eighteen `http-custom-headers` rows",
       "quantity": "locator_http_custom_headers"
@@ -558,7 +702,7 @@
       "file": "conformance/data/crosswalk-edges-server.json",
       "nth": 1,
       "path": "absence_searches_note",
-      "phrase": "100 bucket-1 rows",
+      "phrase": "103 bucket-1 rows",
       "quantity": "server_du"
     },
     {
@@ -578,11 +722,19 @@
       "quantity": "server_du_kind_srvchk"
     },
     {
+      "as_of": "C1c-iii",
+      "class": "historical",
+      "file": "conformance/data/crosswalk-edges-server.json",
+      "nth": 1,
+      "path": "absence_searches_note",
+      "phrase": "34 DECLARED"
+    },
+    {
       "class": "measured",
       "file": "conformance/data/crosswalk-edges-server.json",
       "nth": 1,
       "path": "absence_searches_note",
-      "phrase": "27 entries",
+      "phrase": "34 entries",
       "quantity": "server_as"
     },
     {
@@ -590,16 +742,8 @@
       "file": "conformance/data/crosswalk-edges-server.json",
       "nth": 2,
       "path": "absence_searches_note",
-      "phrase": "27 entries",
+      "phrase": "34 entries",
       "quantity": "server_as"
-    },
-    {
-      "as_of": "C1c-iii",
-      "class": "historical",
-      "file": "conformance/data/crosswalk-edges-server.json",
-      "nth": 1,
-      "path": "absence_searches_note",
-      "phrase": "34 DECLARED"
     },
     {
       "class": "not_a_count",
@@ -714,14 +858,6 @@
       "quantity": "server_as_kind_nocheck"
     },
     {
-      "class": "measured",
-      "file": "conformance/data/crosswalk-edges-server.json",
-      "nth": 1,
-      "path": "absence_searches_note",
-      "phrase": "over 2 entries",
-      "quantity": "server_as_kind_srvchk"
-    },
-    {
       "as_of": "C1c-iii-b",
       "class": "historical",
       "file": "conformance/data/crosswalk-edges-server.json",
@@ -734,8 +870,16 @@
       "file": "conformance/data/crosswalk-edges-server.json",
       "nth": 1,
       "path": "absence_searches_note",
-      "phrase": "over 25 entries",
+      "phrase": "over 27 entries",
       "quantity": "server_as_kind_scen"
+    },
+    {
+      "class": "measured",
+      "file": "conformance/data/crosswalk-edges-server.json",
+      "nth": 1,
+      "path": "absence_searches_note",
+      "phrase": "over 3 entries",
+      "quantity": "server_as_kind_srvchk"
     },
     {
       "class": "not_a_count",
@@ -789,7 +933,7 @@
       "class": "measured",
       "file": "conformance/data/crosswalk-edges-server.json",
       "nth": 1,
-      "path": "claims_without_an_edge[MCP.Server.JsonSchema202012Test/test W-4 — no $ref is ever dereferenced: a canary listener is never connected to | a $ref in a tool inputSchema that resolves to a network URI is never dereferenced by this SERVER — measured against a live TCP listener the test owns, on both the tools/list and the tools/call paths, and required to time out].the_search_that_found_none",
+      "path": "claims_without_an_edge[MCP.Server.JsonSchema202012Test/test W-4 — no $ref is ever dereferenced: a canary listener is never connected to | a $ref in a tool inputSchema that resolves to a network URI is never dereferenced by this SERVER — measured against a live TCP listener the test owns, on both the tools/list and the tools/call paths, and required to time out | oc:none/no-oc-server-check/SEP-2106-server-never-dereferences-a-network-ref].the_search_as_first_recorded",
       "phrase": "119 server rows",
       "quantity": "manifest_server"
     },
@@ -797,7 +941,7 @@
       "class": "measured",
       "file": "conformance/data/crosswalk-edges-server.json",
       "nth": 1,
-      "path": "claims_without_an_edge[MCP.Server.JsonSchema202012Test/test W-4 — no $ref is ever dereferenced: a canary listener is never connected to | a $ref in a tool inputSchema that resolves to a network URI is never dereferenced by this SERVER — measured against a live TCP listener the test owns, on both the tools/list and the tools/call paths, and required to time out].the_search_that_found_none",
+      "path": "claims_without_an_edge[MCP.Server.JsonSchema202012Test/test W-4 — no $ref is ever dereferenced: a canary listener is never connected to | a $ref in a tool inputSchema that resolves to a network URI is never dereferenced by this SERVER — measured against a live TCP listener the test owns, on both the tools/list and the tools/call paths, and required to time out | oc:none/no-oc-server-check/SEP-2106-server-never-dereferences-a-network-ref].the_search_as_first_recorded",
       "phrase": "all 175 manifest rows",
       "quantity": "manifest_rows"
     },
@@ -805,7 +949,7 @@
       "class": "measured",
       "file": "conformance/data/crosswalk-edges-server.json",
       "nth": 1,
-      "path": "claims_without_an_edge[MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0) | the values a deployment gets when it configures NO caching policy are the DEFAULTS — `ttlMs` 0 and `cacheScope` `public` — rather than settings someone chose (streamable_http_ac_test.exs:271 — the server under test is started with no `cache_defaults`)].owner",
+      "path": "claims_without_an_edge[MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0) | the values a deployment gets when it configures NO caching policy are the DEFAULTS — `ttlMs` 0 and `cacheScope` `public` — rather than settings someone chose (streamable_http_ac_test.exs:271 — the server under test is started with no `cache_defaults`) | oc:none/no-oc-scenario/MES-117-default-caching-policy-values].owner",
       "phrase": "all eight `caching` checks",
       "quantity": "locator_caching"
     },
@@ -813,7 +957,7 @@
       "class": "measured",
       "file": "conformance/data/crosswalk-edges-server.json",
       "nth": 1,
-      "path": "claims_without_an_edge[MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0) | the values a deployment gets when it configures NO caching policy are the DEFAULTS — `ttlMs` 0 and `cacheScope` `public` — rather than settings someone chose (streamable_http_ac_test.exs:271 — the server under test is started with no `cache_defaults`)].why_it_is_recorded_here_and_not_in_bucket_1",
+      "path": "claims_without_an_edge[MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0) | the values a deployment gets when it configures NO caching policy are the DEFAULTS — `ttlMs` 0 and `cacheScope` `public` — rather than settings someone chose (streamable_http_ac_test.exs:271 — the server under test is started with no `cache_defaults`) | oc:none/no-oc-scenario/MES-117-default-caching-policy-values].why_it_is_recorded_here_and_not_in_bucket_1",
       "phrase": "four edges",
       "quantity": "server_edges_actest_caching"
     },
@@ -821,14 +965,30 @@
       "class": "measured",
       "file": "conformance/data/crosswalk-edges-server.json",
       "nth": 1,
-      "path": "claims_without_an_edge[MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh | the identity the completion reports is the RETRY request's re-resolved identity — neither the first request's, nor the one planted inside `inputResponses` (streamable_http_ac_test.exs:264 — `assert tool_text(final) == \"REVIEWER\"`, where the first call ran as `PM` and the planted value was `PM-SPOOF`)].the_search_that_found_none",
+      "path": "claims_without_an_edge[MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh | the identity the completion reports is the RETRY request's re-resolved identity — neither the first request's, nor the one planted inside `inputResponses` (streamable_http_ac_test.exs:264 — `assert tool_text(final) == \"REVIEWER\"`, where the first call ran as `PM` and the planted value was `PM-SPOOF`) | oc:none/no-oc-scenario/MES-115-retry-identity-re-resolved].the_search_as_first_recorded",
       "phrase": "All 36 checks",
       "quantity": "locator_irr"
     },
     {
+      "class": "not_a_count",
+      "file": "conformance/data/crosswalk-edges-server.json",
+      "nth": 1,
+      "path": "claims_without_an_edge[MCP.Transport.StreamableHTTPStatelessTest/test AC7 — non-localhost origin is rejected 403; the identity factory never runs | the per-request identity factory is never invoked for a rejected non-localhost `Origin` | oc:none/no-axis-contact/AC7-identity-factory-not-invoked-on-rejected-origin].note",
+      "phrase": "1 because the check",
+      "reason": "R4"
+    },
+    {
       "class": "enumerated",
       "file": "conformance/data/crosswalk-edges-server.json",
-      "list": "/claims_without_an_edge",
+      "nth": 1,
+      "path": "claims_without_an_edge_note",
+      "phrase": "FOUR rows",
+      "list": "/claims_without_an_edge"
+    },
+    {
+      "as_of": "C1c-iv-a",
+      "class": "historical",
+      "file": "conformance/data/crosswalk-edges-server.json",
       "nth": 1,
       "path": "claims_without_an_edge_note",
       "phrase": "THREE rows"
@@ -882,6 +1042,38 @@
       "quantity": "manifest_http_standard_headers"
     },
     {
+      "class": "not_a_count",
+      "file": "conformance/data/crosswalk-edges-server.json",
+      "nth": 1,
+      "path": "declared_unmatched[MCP.Server.CapabilityHonestyTest/test a listChanged claim needs a channel to honour it on absent, not present-and-false: the key never reaches the wire | oc:none/no-axis-contact/SEP-2575-listchanged-absent-without-a-channel].evidence",
+      "phrase": "two axes",
+      "reason": "R6"
+    },
+    {
+      "class": "not_a_count",
+      "file": "conformance/data/crosswalk-edges-server.json",
+      "nth": 1,
+      "path": "declared_unmatched[MCP.Server.CapabilityHonestyTest/test a listChanged claim needs a channel to honour it on absent, not present-and-false: the key never reaches the wire | oc:none/no-axis-contact/SEP-2575-listchanged-absent-without-a-channel].note",
+      "phrase": "1 because the check",
+      "reason": "R4"
+    },
+    {
+      "class": "not_a_count",
+      "file": "conformance/data/crosswalk-edges-server.json",
+      "nth": 1,
+      "path": "declared_unmatched[MCP.Server.DispatchTest/test old-shape (2025-11-25) version fails fast (-32022) | oc:none/no-axis-contact/SEP-2575-old-version-rejected-32022].evidence",
+      "phrase": "all three of the check",
+      "reason": "R6"
+    },
+    {
+      "class": "not_a_count",
+      "file": "conformance/data/crosswalk-edges-server.json",
+      "nth": 1,
+      "path": "declared_unmatched[MCP.Server.DispatchTest/test old-shape (2025-11-25) version fails fast (-32022) | oc:none/no-axis-contact/SEP-2575-old-version-rejected-32022].the_near_miss_that_is_not_a_counterpart",
+      "phrase": "one of its axes",
+      "reason": "R4"
+    },
+    {
       "class": "measured",
       "file": "conformance/data/crosswalk-edges-server.json",
       "nth": 1,
@@ -944,6 +1136,14 @@
       "path": "declared_unmatched[MCP.Transport.SelfCompatibilityTest/test a sentinel-shaped header that is not valid Base64 is compared as-is, not crashed on | oc:none/no-oc-server-check/mcp-name-malformed-sentinel-compared-as-is].the_near_miss_that_is_not_a_counterpart",
       "phrase": "eleven `http-standard-headers` rows",
       "quantity": "manifest_http_standard_headers"
+    },
+    {
+      "class": "measured",
+      "file": "conformance/data/crosswalk-edges-server.json",
+      "nth": 1,
+      "path": "declared_unmatched[MCP.Transport.StreamableHTTPStatelessTest/test MC-6 — a factory that raises fails cleanly (-32603) with no handler invoked | oc:none/no-oc-scenario/identity-factory-raises-yields-500].why_no_counterpart",
+      "phrase": "all 175 rows",
+      "quantity": "manifest_rows"
     },
     {
       "class": "measured",
@@ -1006,7 +1206,7 @@
       "file": "conformance/data/crosswalk-edges-server.json",
       "nth": 1,
       "path": "declared_unmatched_note",
-      "phrase": "65 rows",
+      "phrase": "71 rows",
       "quantity": "client_du"
     },
     {
@@ -1278,56 +1478,24 @@
       "file": "conformance/data/crosswalk-edges-server.json",
       "nth": 1,
       "path": "the_all_silent_case",
-      "phrase": "FOUR edges",
+      "phrase": "ZERO all-silent edges",
       "quantity": "server_all_silent_edges"
     },
     {
-      "as_of": "MES-117",
       "class": "historical",
       "file": "conformance/data/crosswalk-edges-server.json",
       "nth": 1,
       "path": "the_all_silent_case",
-      "phrase": "Four edges"
+      "phrase": "four such edges",
+      "as_of": "MES-110"
     },
     {
-      "class": "measured",
+      "class": "historical",
       "file": "conformance/data/crosswalk-edges-server.json",
       "nth": 1,
       "path": "the_all_silent_case",
-      "phrase": "SEVEN all-silent edges",
-      "quantity": "client_all_silent_edges"
-    },
-    {
-      "class": "measured",
-      "file": "conformance/data/crosswalk-edges-server.json",
-      "nth": 1,
-      "path": "the_all_silent_case",
-      "phrase": "four THIS SLICE",
-      "quantity": "server_all_silent_edges"
-    },
-    {
-      "class": "measured",
-      "file": "conformance/data/crosswalk-edges-server.json",
-      "nth": 1,
-      "path": "the_all_silent_case",
-      "phrase": "four was the CHECK",
-      "quantity": "client_all_silent_checks"
-    },
-    {
-      "class": "measured",
-      "file": "conformance/data/crosswalk-edges-server.json",
-      "nth": 1,
-      "path": "the_all_silent_case",
-      "phrase": "over FOUR distinct checks",
-      "quantity": "client_all_silent_checks"
-    },
-    {
-      "class": "measured",
-      "file": "conformance/data/crosswalk-edges-server.json",
-      "nth": 1,
-      "path": "the_all_silent_case",
-      "phrase": "over THREE distinct checks",
-      "quantity": "server_all_silent_checks"
+      "phrase": "over three distinct checks",
+      "as_of": "MES-110"
     },
     {
       "class": "not_a_count",
@@ -4400,12 +4568,6 @@
       "file": "conformance/data/crosswalk-edges-client.json",
       "nth": 1,
       "path": "absence_searches[S03].near_miss",
-      "phrase": "THREE members"
-    },
-    {
-      "file": "conformance/data/crosswalk-edges-client.json",
-      "nth": 1,
-      "path": "absence_searches[S03].near_miss",
       "phrase": "two `encode/1` claims"
     },
     {
@@ -5630,12 +5792,6 @@
       "file": "conformance/data/crosswalk-edges-client.json",
       "nth": 1,
       "path": "declared_unmatched[MCP.ProtocolTest/test decode/1 decodes a success response | oc:none/no-oc-scenario/jsonrpc-decode-success-response].the_near_miss_that_is_not_a_counterpart",
-      "phrase": "THREE members"
-    },
-    {
-      "file": "conformance/data/crosswalk-edges-client.json",
-      "nth": 1,
-      "path": "declared_unmatched[MCP.ProtocolTest/test decode/1 decodes a success response | oc:none/no-oc-scenario/jsonrpc-decode-success-response].the_near_miss_that_is_not_a_counterpart",
       "phrase": "two `encode/1` claims"
     },
     {
@@ -5643,12 +5799,6 @@
       "nth": 1,
       "path": "declared_unmatched[MCP.ProtocolTest/test decode/1 decodes a success response | oc:none/no-oc-scenario/jsonrpc-decode-success-response].why_this_search_is_this_claims_search",
       "phrase": "one check"
-    },
-    {
-      "file": "conformance/data/crosswalk-edges-client.json",
-      "nth": 1,
-      "path": "declared_unmatched[MCP.ProtocolTest/test decode/1 decodes an error response | oc:none/no-oc-scenario/jsonrpc-decode-error-response].the_near_miss_that_is_not_a_counterpart",
-      "phrase": "THREE members"
     },
     {
       "file": "conformance/data/crosswalk-edges-client.json",
@@ -5901,12 +6051,6 @@
       "nth": 1,
       "path": "edges[MCP.ClientTest/test requests call_tool sends name and arguments | `call_tool/3` issues a `tools/call` request carrying the tool name and the argument map it was given | oc:client/tools_call/tool-add-numbers/ToolAddNumbers].evidence",
       "phrase": "two axes"
-    },
-    {
-      "file": "conformance/data/crosswalk-edges-client.json",
-      "nth": 1,
-      "path": "edges[MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON | an undeclared `elicitation` capability is omitted from the encoding entirely | oc:client/request-metadata/sep-2575-client-declares-elicitation-capability/ClientDeclaresElicitationCapability].note",
-      "phrase": "one edge"
     },
     {
       "file": "conformance/data/crosswalk-edges-client.json",
@@ -8419,12 +8563,6 @@
     {
       "file": "conformance/data/crosswalk-edges-server.json",
       "nth": 1,
-      "path": "declared_unmatched[MCP.Transport.StreamableHTTPStatelessTest/test MC-6 — a factory that raises fails cleanly (-32603) with no handler invoked | oc:none/no-oc-scenario/identity-factory-raises].why_no_counterpart",
-      "phrase": "all 175 rows"
-    },
-    {
-      "file": "conformance/data/crosswalk-edges-server.json",
-      "nth": 1,
       "path": "declared_unmatched[MCP.Transport.StreamableHTTPStatelessTest/test Mcp-Name mismatch against params.name is rejected (-32020) | oc:none/no-oc-server-check/McpName-vs-params-name].why_no_counterpart",
       "phrase": "119 server rows"
     },
@@ -8773,24 +8911,6 @@
     {
       "file": "conformance/data/crosswalk-edges-server.json",
       "nth": 1,
-      "path": "edges[MCP.Server.CapabilityHonestyTest/test a listChanged claim needs a channel to honour it on absent, not present-and-false: the key never reaches the wire | a listChanged claim the deployment has no channel to honour never reaches the wire as `false` — the key is absent | oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers].evidence",
-      "phrase": "two axes"
-    },
-    {
-      "file": "conformance/data/crosswalk-edges-server.json",
-      "nth": 1,
-      "path": "edges[MCP.Server.CapabilityHonestyTest/test a listChanged claim needs a channel to honour it on absent, not present-and-false: the key never reaches the wire | a listChanged claim the deployment has no channel to honour never reaches the wire as `false` — the key is absent | oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers].note",
-      "phrase": "1 because the check"
-    },
-    {
-      "file": "conformance/data/crosswalk-edges-server.json",
-      "nth": 1,
-      "path": "edges[MCP.Server.DispatchTest/test old-shape (2025-11-25) version fails fast (-32022) | a request whose _meta names a real but unsupported earlier version is rejected with -32022 | oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError].evidence",
-      "phrase": "all three of the check"
-    },
-    {
-      "file": "conformance/data/crosswalk-edges-server.json",
-      "nth": 1,
       "path": "edges[MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601) | a dispatched `logging/setLevel` is answered with -32601 method-not-found | oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel].evidence",
       "phrase": "one edge"
     },
@@ -8937,12 +9057,6 @@
       "nth": 1,
       "path": "edges[MCP.Transport.StreamableHTTPStatelessTest/test AC7 — non-localhost origin is rejected 403; the identity factory never runs | a request whose `Origin` is not localhost is answered HTTP 403 | oc:server/dns-rebinding-protection/localhost-host-rebinding-rejected/DNSRebindingRejected].note",
       "phrase": "TWO THINGS THIS EDGE"
-    },
-    {
-      "file": "conformance/data/crosswalk-edges-server.json",
-      "nth": 1,
-      "path": "edges[MCP.Transport.StreamableHTTPStatelessTest/test AC7 — non-localhost origin is rejected 403; the identity factory never runs | the per-request identity factory is never invoked for a rejected non-localhost `Origin` | oc:server/dns-rebinding-protection/localhost-host-rebinding-rejected/DNSRebindingRejected].note",
-      "phrase": "1 because the check"
     },
     {
       "file": "conformance/data/crosswalk-edges-server.json",
@@ -14111,6 +14225,41 @@
             {
               "field": "key",
               "starts_with": "MCP.Transport.SelfCompatibilityTest/"
+            }
+          ]
+        }
+      }
+    },
+    "client_capabilities_row_declares_checks": {
+      "means": "Client*Capability checks the ClientCapabilities row carries an edge onto",
+      "query": {
+        "count": {
+          "at": "edges[]",
+          "distinct": "tag",
+          "in": "conformance/data/crosswalk-edges-client.json",
+          "where": [
+            {
+              "eq": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON",
+              "field": "member.register_key"
+            },
+            {
+              "field": "tag",
+              "matches": "/ClientDeclares(Roots|Sampling|Elicitation)Capability$"
+            }
+          ]
+        }
+      }
+    },
+    "client_edges_retry_supported_version": {
+      "means": "client edges onto ClientRetrySupportedVersion",
+      "query": {
+        "count": {
+          "at": "edges[]",
+          "in": "conformance/data/crosswalk-edges-client.json",
+          "where": [
+            {
+              "field": "tag",
+              "matches": "/ClientRetrySupportedVersion$"
             }
           ]
         }

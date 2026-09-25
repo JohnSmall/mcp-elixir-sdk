@@ -1,6 +1,6 @@
 {
   "bucket": "2a",
-  "count": 77,
+  "count": 78,
   "derivation": "projection",
   "emptiness_reason": null,
   "generated_by": "mix conformance.buckets",
@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 1088933,
+      "bytes": 1106223,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "385524cf0de89eb05df700375d41027b79cf969111cf7f45e6d109ddc7423dc6"
+      "sha256": "447d8651844d4093adf96c8fd73519e1c6e62ebdaa816c092dfdd10c5811118b"
     }
   },
   "revision": "2026-07-28",
@@ -300,6 +300,10 @@
     {
       "leg": "server",
       "tag": "oc:server/server-stateless/sep-2575-server-sends-tools-list-changed-on-subscription/ServerSendsToolsListChangedOnSubscription"
+    },
+    {
+      "leg": "server",
+      "tag": "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError"
     },
     {
       "leg": "server",

@@ -9,9 +9,9 @@
   "why_one_file_per_leg": "PM composition ruling on MES-104 (comment 28287). C1a's file declared 21 members, 18 of them client, so C1b-i could not declare the client leg without deciding what happened to the overlap: leaving it would make G15a red in both files. (C1b-i) The 18 moved here, `crosswalk-edges.json` re-declared to its 3 non-client rows, and `--edges` became repeatable. C1b-ii and C1b-iii have both APPENDED to this file, which now declares the whole client leg; C1c (MES-105) absorbs the server one.",
   "the_population_this_file_declares": {
     "members": 107,
-    "members_with_edges": 42,
-    "members_declared_unmatched": 65,
-    "checks_addressed": 40,
+    "members_with_edges": 36,
+    "members_declared_unmatched": 71,
+    "checks_addressed": 39,
     "rule": "Every ET-CC member B2b attributes to the CLIENT leg. The leg is reached as the UNION of the four ticket slices that adjudicated it — CG7 (C1b-i), CG1/CG2/CG4 (C1b-ii), NO CG AT ALL (C1b-iii), and whatever C1a had already tagged — and the union is now the whole leg: every client row in B2b carries a `cg` in {CG7, CG1, CG2, CG4} or carries none, so the four limbs are exhaustive over it. NOTHING outside the client leg is adjudicated here.",
     "selector": {
       "what_this_is": "The EXECUTABLE half of `rule`. The generator evaluates it against the source named below and requires the result to be SET-EQUAL, in both directions, to the population this file derives. Prose only becomes a guard when something can run it.",
@@ -140,12 +140,12 @@
     "cg": "On a `declared_unmatched` row, B2b's `cg` for that member, carried verbatim so the row says which slice of the cover it came in through. C1b-iii's rows carry `null`, which is not an omission — it is the value B2b holds, and it is what the `cg is_null` selector limb denotes on.",
     "search_id": "On a `declared_unmatched` row C1b-iii authored or backfilled: the `absence_searches` entry whose measurement stands behind this row's zero. The prose `the_search_that_found_none` stays beside it — it is what a reviewer reads — and the id is what a control re-runs.",
     "why_this_search_is_this_claims_search": "The one JUDGEMENT the registry cannot make. A registry entry is a measurement over a population; that THIS member's claim is about what THAT search looked for is a reading, and it is written out per row so it can be disagreed with. Without it a shared search would let a member hide behind a measurement that was never about it.",
-    "authored_by": "The ticket that AUTHORED this record, on every record MES-109 added. It exists because the citation audit had been scoping itself to `this ticket's rows` by GUESSING from the tag, and that stopped working here: C1b-iii's `a non-32022 error is never retried` edge carries the same `ClientRetrySupportedVersion` tag as four inherited C1a rows, so no tag predicate can separate them. A field the author writes is the honest way to say who wrote a row; the inherited rows do not carry it and the audit still reports on them rather than going red over work it is not adjudicating."
+    "authored_by": "The ticket that AUTHORED this record, on every record MES-109 added. It exists because the citation audit had been scoping itself to `this ticket's rows` by GUESSING from the tag, and that stopped working here: C1b-iii's `a non-32022 error is never retried` edge carried the same `ClientRetrySupportedVersion` tag as four inherited C1a rows, so no tag predicate could separate them. That was the state until MES-110: rule A (A3 §2) has since made that edge and three of the four C1a rows `no-axis-contact` bucket-1 rows (under NAC01, and NAC02 for the re-stamp row), and the tag is on one edge now. A field the author writes is the honest way to say who wrote a row; the inherited rows do not carry it and the audit still reports on them rather than going red over work it is not adjudicating."
   },
   "how_a_silent_axis_was_decided": "Conservatively, and the rule is stated rather than applied case by case: a claim counts as covering an axis only when an assertion's SUBJECT is the behaviour that axis names. A test asserting a tool's RESULT does not cover an axis about the ARGUMENTS' wire type, and a test asserting that a capability is ABSENT does not cover an axis about the SHAPE of a present one. This is match-relation.md §6's CG5 rule — a mention is not a discharge — turned on our own side of the relation. Where it was a judgement rather than a reading, the edge's `evidence` says so in those words.",
-  "the_all_silent_case": "Seven edges have EVERY axis silent, over four distinct checks — this field read `Four edges` until MES-120, which is the CHECK count spent as an EDGE count (measured on MES-117). They are recorded and ESCALATED, never bucketed. A3 §2 rules that covering zero of one axis 'is no match, not a partial one'; generalised to N axes that is exactly this case, and A3 §3's table has no row for it — `shape_from_axes/1` would call it `:partial` and bucket 5 would swallow it. Dropping the edges instead would be worse: the member would then look edge-less and therefore bucket-1, asserting 'we looked and there is no counterpart' where the truth is 'there is a counterpart and our claim does not touch its predicate'. Escalation is A3 §7's own mechanism for a case the rule does not decide.",
+  "the_all_silent_case": "ZERO all-silent edges, and zero by RULE rather than by chance. MES-110 ruled the case (rule A, A3 §2: an all-silent claim is NO MATCH at any arity; authored 29283, ratified 29319), and the generator now REFUSES an all-silent edge record, naming the rule, where it used to escalate one as `no_axis_contact`. Until MES-110 this file held seven such edges over four distinct checks. MES-110 moved every one of them out of `edges`: a member with no other edge is now a `declared_unmatched` row under the reason slug `no-axis-contact`, and the member that keeps other edges carries its claim as a `claims_without_an_edge` row. Each names the check it shares a subject with as its search's `near_miss_tag`, and each keeps its old axes and evidence under `until_MES_110`.\n\nTHE STANCE THIS FIELD TOOK UNTIL MES-110 IS REVERSED, and the reversal is quoted rather than erased. It said that dropping such an edge 'would be worse: the member would then look edge-less and therefore bucket-1, asserting \"we looked and there is no counterpart\" where the truth is \"there is a counterpart and our claim does not touch its predicate\"'. Rule A answers that a check scores its PREDICATE, not its subject, so a claim that touches none of the predicate has no counterpart in the sense bucket 1 denies. What the old stance protected, an adjudicator seeing what is nearby, is kept by the near miss rather than by an edge.",
   "what_unmatched_means_in_a_file_that_declares_its_own_checks": "A3 §6 state 3 reads absolutely — the member has NO OC counterpart. In a file whose check population is a declared subset it can only mean 'no counterpart among the checks this file declares', and the difference is not pedantic. C1b-i recorded two CG7 members whose claims' counterparts lived in CG1's `http-standard-headers`, outside its population; C1b-ii declares CG1, so those are now real edges — which is the mechanism working, and the reason the two kinds of absence were kept apart rather than collapsed. What remains genuinely absent is recorded as such, with the search.",
-  "claims_without_an_edge_note": "A3's state 3 is a property of a MEMBER, and a member is either edge-bearing or declared unmatched — the generator's bucket-1 reconciliation requires exactly that. So a member that matches on some claims and not on others has nowhere to put the unmatched ones. C1b-i found five and ESCALATED them; whether A3 §6 should gain a claim-level state 3 is MES-110's, not this file's. C1b-ii's disposition of those five, and its own finding, are: TWO became real edges — the tools_call Method and Name claims C1b-i routed here by name, whose counterparts are inside this file's declared 10 now that CG1 is declared. Their claim-level RECORDS were REMOVED, not left beside the new edges: a claim that is both an edge and a claim-without-an-edge is a contradiction in the file, and nothing guards it — `claims_without_an_edge` is reported by count and by row, and a duplicate would have inflated the escalation figure while the edge quietly discharged the same claim. The removal is the completion of C1b-i's routing, and the rows are recoverable from C1b-i's commit (545f48b). TWO were `unowned — recommend it to C1b-ii with CG1`, and C1b-ii ran the search over the real 10 and CONFIRMED both, recording WHY in `resolved_by` rather than passing the recommendation on again; a recommendation no later ticket answers is how these rot. ONE — the SEP-2243 SHOULD-log with no OC check on either leg — is untouched and remains a MES-110 case. C1b-ii adds ONE new case of its own, the no-Mcp-Name-on-a-non-name-bearing-method claim, escalated the same way and not force-bucketed.",
+  "claims_without_an_edge_note": "Until MES-110, A3's state 3 was read as a property of a MEMBER, and a member is either edge-bearing or declared unmatched — the generator's bucket-1 reconciliation requires exactly that. So a member that matches on some claims and not on others had nowhere to put the unmatched ones. C1b-i found five and ESCALATED them; whether A3 §6 should gain a claim-level state 3 was MES-110's, not this file's. MES-110 ruled that it does (rule B, A3 §6): state 3 is read per token, and these rows are claim-level unmatched records in the `claim-unmatched` view, owned by MES-133 (D1), not escalations. C1b-ii's disposition of those five, and its own finding, are: TWO became real edges — the tools_call Method and Name claims C1b-i routed here by name, whose counterparts are inside this file's declared 10 now that CG1 is declared. Their claim-level RECORDS were REMOVED, not left beside the new edges: a claim that is both an edge and a claim-without-an-edge is a contradiction in the file, and nothing guards it — `claims_without_an_edge` is reported by count and by row, and a duplicate would have inflated the escalation figure while the edge quietly discharged the same claim. The removal is the completion of C1b-i's routing, and the rows are recoverable from C1b-i's commit (545f48b). TWO were `unowned — recommend it to C1b-ii with CG1`, and C1b-ii ran the search over the real 10 and CONFIRMED both, recording WHY in `resolved_by` rather than passing the recommendation on again; a recommendation no later ticket answers is how these rot. ONE — the SEP-2243 SHOULD-log with no OC check on either leg — was untouched by C1b-ii and remained a MES-110 case until MES-110 ruled it (rule B). C1b-ii added ONE new case of its own, the no-Mcp-Name-on-a-non-name-bearing-method claim, escalated the same way until MES-110 and not force-bucketed.",
   "edges": [
     {
       "member": {
@@ -222,70 +222,6 @@
       ],
       "et_verdict": "green",
       "evidence": "client_defects_test.exs:308-309 — `assert retry[\"params\"][\"_meta\"][\"io.modelcontextprotocol/protocolVersion\"] == \"2026-07-28\"`. Driven through MockTransport, which has no HTTP layer, so the header axis is not merely unasserted — it is unreachable from this member."
-    },
-    {
-      "member": {
-        "module": "MCP.ClientDefectsTest",
-        "test": "test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 offering only versions we do not support is surfaced, never retried",
-        "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 offering only versions we do not support is surfaced, never retried"
-      },
-      "claim": "a -32022 offering no version we support is surfaced to the caller and produces no retry at all",
-      "tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
-      "axes": [
-        {
-          "axis": "retry_meta_version_is_supported",
-          "verdict": "silent"
-        },
-        {
-          "axis": "retry_header_version_is_supported",
-          "verdict": "silent"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "client_defects_test.exs:345-346 — asserts the error surfaces and `length(MockTransport.sent_messages(transport)) == 1`. There is no retry, so neither axis — both of which are predicates ON a retry — is touched."
-    },
-    {
-      "member": {
-        "module": "MCP.ClientDefectsTest",
-        "test": "test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 with no usable data is surfaced, never retried",
-        "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 with no usable data is surfaced, never retried"
-      },
-      "claim": "a -32022 carrying no usable `supported` data is surfaced and produces no retry",
-      "tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
-      "axes": [
-        {
-          "axis": "retry_meta_version_is_supported",
-          "verdict": "silent"
-        },
-        {
-          "axis": "retry_header_version_is_supported",
-          "verdict": "silent"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "client_defects_test.exs:362-363 — same shape as the row above, a different malformed input."
-    },
-    {
-      "member": {
-        "module": "MCP.ClientDefectsTest",
-        "test": "test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) the retry re-stamps the version chosen from `supported`",
-        "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) the retry re-stamps the version chosen from `supported`"
-      },
-      "claim": "the retry completes after a -32022 whose `supported` names the configured version",
-      "tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
-      "axes": [
-        {
-          "axis": "retry_meta_version_is_supported",
-          "verdict": "silent"
-        },
-        {
-          "axis": "retry_header_version_is_supported",
-          "verdict": "silent"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "client_defects_test.exs:376 — the ONLY version assertion in this test is on `first`, the request BEFORE the rejection; the retry's own `_meta` is never asserted. The member's name says 're-stamps' and its assertions do not check it. Recorded as S9-17; not fixed here (epic ruling 3).",
-      "note": "The name promises more than the assertions deliver. Left standing and routed."
     },
     {
       "member": {
@@ -430,24 +366,6 @@
       ],
       "et_verdict": "green",
       "evidence": "capabilities_test.exs:99 — `assert decoded[\"sampling\"] == %{}`. An empty map is a non-null, non-array object; equality with `%{}` establishes the type as well as the contents."
-    },
-    {
-      "member": {
-        "module": "MCP.Protocol.CapabilitiesTest",
-        "test": "test ClientCapabilities round-trips through JSON",
-        "register_key": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON"
-      },
-      "claim": "an undeclared `elicitation` capability is omitted from the encoding entirely",
-      "tag": "oc:client/request-metadata/sep-2575-client-declares-elicitation-capability/ClientDeclaresElicitationCapability",
-      "axes": [
-        {
-          "axis": "capability_value_is_a_plain_object",
-          "verdict": "silent"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "capabilities_test.exs:100 — `refute Map.has_key?(decoded, \"elicitation\")`. This addresses the check's PRECONDITION (`d&&e in d`), not its axis: it asserts the branch on which the check SKIPS. A precondition is not an axis and a claim about one is neither agreement nor contradiction.",
-      "note": "The one edge in this population whose claim lands on a precondition rather than on an axis."
     },
     {
       "member": {
@@ -933,24 +851,6 @@
     {
       "member": {
         "module": "MCP.ClientToolSchemasTest",
-        "test": "test W6 — SEP-2243 tool exclusion an excluded tool leaves no annotations behind, so calling it mirrors nothing",
-        "register_key": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an excluded tool leaves no annotations behind, so calling it mirrors nothing"
-      },
-      "claim": "a tool excluded for an invalid annotation leaves no annotations behind, so calling it anyway mirrors nothing",
-      "tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header",
-      "axes": [
-        {
-          "axis": "invalid_tool_is_not_called",
-          "verdict": "silent"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "client_tool_schemas_test.exs:125-146. The member's `invalid_tool/1` helper (client_tool_schemas_test.exs:55-63) builds exactly the fixture's `invalid_object_header` class — an `x-mcp-header` on a property of `\"type\" => \"object\"` — so the counterpart check is unambiguous. The single axis is SILENT: the check's subject is whether the client CALLED the tool, and this member deliberately calls it, asserting instead that the call carries no headers (`assert [] = Enum.at(MockTransport.sent_opts(transport), 1) |> Keyword.get(:headers, [])`). The two are not in conflict — the call here is the TEST's choice through `Client.call_tool/3`, not the client's own selection — but the assertion's subject is the headers, not the calling.",
-      "note": "ALL AXES SILENT. Recorded and ESCALATED, never bucketed, per this file's all-silent rule. The question for the PM is narrow and worth asking: our client excludes the tool from tools/list and drops its annotations, but does not refuse a direct `call_tool/3` on the name. Whether SEP-2243's `MUST reject (exclude) such tools` reaches that far is a requirement reading, not an adjudication this file can make."
-    },
-    {
-      "member": {
-        "module": "MCP.ClientToolSchemasTest",
         "test": "test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept",
         "register_key": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept"
       },
@@ -1326,7 +1226,8 @@
       ],
       "et_verdict": "green",
       "evidence": "routing_headers_test.exs:193-200 — the send is `\"method\" => \"tools/call\"` with `\"params\" => %{}`, and routing_headers_test.exs:200 asserts `refute Map.has_key?(headers_of(agent, 0), \"mcp-name\")`. The axis's SUBJECT is exactly this header's presence on a tools/call, so match-relation.md §6's mention-is-not-a-discharge rule does NOT make this silent — the two are about the same behaviour and they disagree. The check is not conditional on the field existing: the addressed `dispatch_site` excerpt shows `handlePost` calling `this.checkMcpNameHeader(e,n,`params.name`)` on every tools/call, and with no `params.name` the predicate binds `i` and `a` undefined, takes the falsy arm and pushes `Missing Mcp-Name header on ${r} request. Clients MUST include the Mcp-Name header for ${r} requests.` — i.e. FAILURE. So a client doing what this member asserts would be scored FAILURE by this check on this input. It runs green only because the scenario's fixture never sends a nameless tools/call. The match axis is silent: with no source field there is nothing to match.",
-      "note": "Escalates as `inconsistent_verdict_pair` (green OC, green ET, contradicting shape). Not bucketed, by A3 §3's own table."
+      "note": "Escalates as `inconsistent_verdict_pair` (green OC, green ET, contradicting shape). Not bucketed, by A3 §3's own table.",
+      "escalation_cause": "check_defect_unexercised"
     },
     {
       "member": {
@@ -1348,7 +1249,8 @@
       ],
       "et_verdict": "green",
       "evidence": "routing_headers_test.exs:211 binds `name = \"天気_get\"`; routing_headers_test.exs:222 asserts `assert String.starts_with?(header, \"=?base64?\")` and routing_headers_test.exs:223 asserts `assert HeaderMirror.decode_value(header) == name`, with routing_headers_test.exs:226 confirming the BODY still carries the plain name. Presence agrees: routing_headers_test.exs:222's subject is a property OF the header's value, which a missing header could not satisfy. The MATCH axis contradicts: the check's `a!==i` is a raw string comparison of the header against `t.params?.name`, and nothing on the client leg's `mcp-name` path decodes the sentinel — the only `=?base64?` handling in the build is SERVER-leg (`sep-2243-server-decode-base64` and siblings, a different scenario, measured by search over the build's seven occurrences of that literal). So the encoded header is not `===` the plain body name and the check pushes a mismatch error. A conformant client — streamable-http.mdx requires the encoding — is scored FAILURE here; it runs green only because the fixture's tool names are plain ASCII.",
-      "note": "Escalates as `inconsistent_verdict_pair`. The disagreement is the OC check's, not ours, and it is the same root cause as the row below."
+      "note": "Escalates as `inconsistent_verdict_pair`. The disagreement is the OC check's, not ours, and it is the same root cause as the row below.",
+      "escalation_cause": "check_defect_unexercised"
     },
     {
       "member": {
@@ -1391,7 +1293,8 @@
       ],
       "et_verdict": "green",
       "evidence": "routing_headers_test.exs:250 binds the hostile name; routing_headers_test.exs:261 asserts `assert HeaderMirror.decode_value(headers[\"mcp-name\"]) == hostile`, routing_headers_test.exs:262 asserts `refute headers[\"mcp-name\"] =~ \"\\r\"` and routing_headers_test.exs:263 asserts `refute Map.has_key?(headers, \"x-injected\")`. Presence agrees — routing_headers_test.exs:261's assertion decodes the header's value. The match axis contradicts for the same reason as the non-ASCII row: the check compares the RAW header against `t.params?.name` with `a!==i`, and the encoded form is not the hostile literal. Here the disagreement has a security shape: satisfying the check literally would mean putting a CRLF-bearing value on the wire unencoded.",
-      "note": "Escalates as `inconsistent_verdict_pair`. Same root cause as the non-ASCII row."
+      "note": "Escalates as `inconsistent_verdict_pair`. Same root cause as the non-ASCII row.",
+      "escalation_cause": "check_defect_unexercised"
     },
     {
       "member": {
@@ -1516,48 +1419,6 @@
       "et_verdict": "green",
       "evidence": "protocol_test.exs:29-36 — `Request.new(1, \"ping\")` encoded, re-decoded, and then `assert decoded[\"method\"] == \"ping\"` and, the load-bearing one, `refute Map.has_key?(decoded, \"params\")`. A null `params` is a schema violation where an ABSENT key is not, so this is the sharper of the two encode claims against the same axis: it asserts the one thing about an outbound request a naive encoder gets wrong, and it is the case the `o.length===0` verdict would catch.",
       "note": "A second edge to WireSchemaValid from the same module. Two members discharging one check is not a duplicate — G14 keys on (member, claim, tag) and these differ in both member and claim — and the two claims are different constraints the same axis covers.",
-      "authored_by": "MES-109 (C1b-iii)"
-    },
-    {
-      "member": {
-        "module": "MCP.ProtocolTest",
-        "test": "test encode!/1 returns JSON string",
-        "register_key": "MCP.ProtocolTest/test encode!/1 returns JSON string"
-      },
-      "claim": "`encode!/1` returns the JSON string bare rather than wrapped in an `{:ok, _}` tuple",
-      "tag": "oc:client/tools_call/wire-schema-valid/WireSchemaValid",
-      "axes": [
-        {
-          "axis": "no_schema_violation_in_a_message_the_implementation_sent",
-          "verdict": "silent"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "protocol_test.exs:182-185 — `json = Protocol.encode!(request)`, then `assert is_binary(json)` and `assert Jason.decode!(json)[\"method\"] == \"ping\"`. The subject is the BANG VARIANT'S RETURN TYPE: that encode!/1 hands back the binary its non-bang sibling wraps in a tuple. The second assert reads one field to show the binary is the right message, which is a sanity check on the test rather than a claim about wire validity — and how_a_silent_axis_was_decided is conservative by rule, so an incidental assertion is not coverage.",
-      "note": "ALL AXES SILENT, so this escalates as `no_axis_contact` and is not bucketed. Dropping the edge instead would make the member look edge-less and therefore bucket 1, which asserts `we looked and there is no counterpart` — false here: the counterpart is WireSchemaValid, the same check its two siblings above match, and what is true is that this claim does not touch its predicate. That is the distinction `the_all_silent_case` was written for, and this is its fifth instance.",
-      "authored_by": "MES-109 (C1b-iii)"
-    },
-    {
-      "member": {
-        "module": "MCP.ClientDefectsTest",
-        "test": "test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a non-32022 error is never retried",
-        "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a non-32022 error is never retried"
-      },
-      "claim": "an error whose code is not -32022 produces no retry at all",
-      "tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
-      "axes": [
-        {
-          "axis": "retry_meta_version_is_supported",
-          "verdict": "silent"
-        },
-        {
-          "axis": "retry_header_version_is_supported",
-          "verdict": "silent"
-        }
-      ],
-      "et_verdict": "green",
-      "evidence": "client_defects_test.exs:412-413 — `assert {:error, %MCP.Protocol.Error{code: -32_601}} = Task.await(task)` and `assert length(MockTransport.sent_messages(transport)) == 1`. There is no retry, so neither axis — both of which are predicates ON a retry, decided where the excerpt writes `p.status=` after one has happened — is touched.",
-      "note": "ALL AXES SILENT, escalated as `no_axis_contact`. This is the FOURTH member of the D-3 block and it lands exactly where its three siblings did: C1b-i recorded `a -32022 offering only versions we do not support is surfaced, never retried` and two others as all-silent edges against this same check, on this same reasoning. It carried no CG, so it fell to C1b-iii while its siblings went with C1a's tokens — a split by the accident of tagging, not by anything about the claims, and the adjudication is the same one.",
       "authored_by": "MES-109 (C1b-iii)"
     }
   ],
@@ -2089,7 +1950,7 @@
       "why_no_counterpart": "`no-oc-scenario` — no check on either leg scores a client's handling of a message it RECEIVED; `wire-schema-valid` scores only messages the implementation SENT, and its `origin===`harness`` sibling is a harness bug report. The search is therefore over all 175.",
       "why_this_search_is_this_claims_search": "The claim is about DECODING an inbound response. S03's subject is that decode, and its near miss is the one check that validates JSON-RPC messages — resolved against the addressed bytes that scope it to the OUTBOUND direction. The member's claim and the search's subject are the same act.",
       "the_search_that_found_none": "a client DECODING an INBOUND JSON-RPC response — classifying a `result` message and an `error` message and building the struct the caller receives",
-      "the_near_miss_that_is_not_a_counterpart": "`wire-schema-valid` / WireSchemaValid, and it is the sharpest near miss in this file because it is IN this file's declared check population and THREE members of this very ticket carry an edge to it — two agreeing (`MCP.ProtocolTest`'s two `encode/1` claims) and one all-silent and escalated. It validates JSON-RPC messages against the spec schema — but `o=t.filter(e=>e.origin===` implementation, at [325325,325367], scopes it to the messages the implementation SENT, and its sibling `wire-schema-harness-error` takes the harness-origin half and reports it as a BUG IN THE HARNESS rather than as a score of our parsing. So the suite validates messages in BOTH directions and scores our handling of neither inbound one. The scope is read off the addressed bytes — oc-axes-c1.json's `harness_origin_sibling` excerpt — and not off the check's description.",
+      "the_near_miss_that_is_not_a_counterpart": "`wire-schema-valid` / WireSchemaValid, and it is the sharpest near miss in this file because it is IN this file's declared check population and, until MES-110, THREE members of this very ticket carried an edge to it — two agreeing (`MCP.ProtocolTest`'s two `encode/1` claims) and one all-silent and escalated. Since MES-110 (rule A, A3 §2) TWO do: the third, `encode!/1 returns JSON string`, is a `no-axis-contact` bucket-1 row under NAC05 that names this check as its near miss. It validates JSON-RPC messages against the spec schema — but `o=t.filter(e=>e.origin===` implementation, at [325325,325367], scopes it to the messages the implementation SENT, and its sibling `wire-schema-harness-error` takes the harness-origin half and reports it as a BUG IN THE HARNESS rather than as a score of our parsing. So the suite validates messages in BOTH directions and scores our handling of neither inbound one. The scope is read off the addressed bytes — oc-axes-c1.json's `harness_origin_sibling` excerpt — and not off the check's description.",
       "authored_by": "MES-109 (C1b-iii)"
     },
     {
@@ -2105,7 +1966,7 @@
       "why_no_counterpart": "`no-oc-scenario` — as above; the direction is read off `o=t.filter(e=>e.origin===`implementation`)` at [325325,325367], not off the check's description.",
       "why_this_search_is_this_claims_search": "The claim is about DECODING an inbound response. S03's subject is that decode, and its near miss is the one check that validates JSON-RPC messages — resolved against the addressed bytes that scope it to the OUTBOUND direction. The member's claim and the search's subject are the same act.",
       "the_search_that_found_none": "a client DECODING an INBOUND JSON-RPC response — classifying a `result` message and an `error` message and building the struct the caller receives",
-      "the_near_miss_that_is_not_a_counterpart": "`wire-schema-valid` / WireSchemaValid, and it is the sharpest near miss in this file because it is IN this file's declared check population and THREE members of this very ticket carry an edge to it — two agreeing (`MCP.ProtocolTest`'s two `encode/1` claims) and one all-silent and escalated. It validates JSON-RPC messages against the spec schema — but `o=t.filter(e=>e.origin===` implementation, at [325325,325367], scopes it to the messages the implementation SENT, and its sibling `wire-schema-harness-error` takes the harness-origin half and reports it as a BUG IN THE HARNESS rather than as a score of our parsing. So the suite validates messages in BOTH directions and scores our handling of neither inbound one. The scope is read off the addressed bytes — oc-axes-c1.json's `harness_origin_sibling` excerpt — and not off the check's description.",
+      "the_near_miss_that_is_not_a_counterpart": "`wire-schema-valid` / WireSchemaValid, and it is the sharpest near miss in this file because it is IN this file's declared check population and, until MES-110, THREE members of this very ticket carried an edge to it — two agreeing (`MCP.ProtocolTest`'s two `encode/1` claims) and one all-silent and escalated. Since MES-110 (rule A, A3 §2) TWO do: the third, `encode!/1 returns JSON string`, is a `no-axis-contact` bucket-1 row under NAC05 that names this check as its near miss. It validates JSON-RPC messages against the spec schema — but `o=t.filter(e=>e.origin===` implementation, at [325325,325367], scopes it to the messages the implementation SENT, and its sibling `wire-schema-harness-error` takes the harness-origin half and reports it as a BUG IN THE HARNESS rather than as a score of our parsing. So the suite validates messages in BOTH directions and scores our handling of neither inbound one. The scope is read off the addressed bytes — oc-axes-c1.json's `harness_origin_sibling` excerpt — and not off the check's description.",
       "authored_by": "MES-109 (C1b-iii)"
     },
     {
@@ -2153,7 +2014,7 @@
       "why_no_counterpart": "`no-oc-scenario` — 12 rows mention a capability and not one is about a client PARSING the server's map: the client-leg three score the shape of the capability the CLIENT declares, and `ServerDeclaresPromptsInDiscover` is server-leg.",
       "why_this_search_is_this_claims_search": "The claim is about reading the SERVER's capabilities map. S05's subject is that read, and its near miss is the three client-capability checks this file already matches — same word, opposite direction, which is precisely why the member needs the search rather than the word.",
       "the_search_that_found_none": "a client decoding the SERVER's advertised capabilities map into a struct — a full map, a map with capabilities missing, and an `experimental` key preserved",
-      "the_near_miss_that_is_not_a_counterpart": "`ClientDeclaresRootsCapability` / `ClientDeclaresSamplingCapability` / `ClientDeclaresElicitationCapability`, which are in this file's declared check population and already carry edges from `MCP.Protocol.CapabilitiesTest`'s ClientCapabilities row. They point the OTHER WAY: their single axis is `capability_value_is_a_plain_object` over the capability the CLIENT declares in its own `_meta`. `ServerDeclaresPromptsInDiscover` is the server-side mirror and is SERVER-leg. So `capabilit` returns 12 rows and not one of them is about what a client makes of a server's map — the same word, the opposite direction.",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientDeclaresRootsCapability` / `ClientDeclaresSamplingCapability` / `ClientDeclaresElicitationCapability`, which are in this file's declared check population. The first two carry edges from `MCP.Protocol.CapabilitiesTest`'s ClientCapabilities row, and until MES-110 the third did too; since MES-110 (rule A, A3 §2) that claim is a claim-level `no-axis-contact` row under NAC03 that names `ClientDeclaresElicitationCapability` as its near miss. They point the OTHER WAY: their single axis is `capability_value_is_a_plain_object` over the capability the CLIENT declares in its own `_meta`. `ServerDeclaresPromptsInDiscover` is the server-side mirror and is SERVER-leg. So `capabilit` returns 12 rows and not one of them is about what a client makes of a server's map — the same word, the opposite direction.",
       "authored_by": "MES-109 (C1b-iii)"
     },
     {
@@ -2169,7 +2030,7 @@
       "why_no_counterpart": "`no-oc-scenario` — 12 rows mention a capability and not one is about a client PARSING the server's map: the client-leg three score the shape of the capability the CLIENT declares, and `ServerDeclaresPromptsInDiscover` is server-leg.",
       "why_this_search_is_this_claims_search": "The claim is about reading the SERVER's capabilities map. S05's subject is that read, and its near miss is the three client-capability checks this file already matches — same word, opposite direction, which is precisely why the member needs the search rather than the word.",
       "the_search_that_found_none": "a client decoding the SERVER's advertised capabilities map into a struct — a full map, a map with capabilities missing, and an `experimental` key preserved",
-      "the_near_miss_that_is_not_a_counterpart": "`ClientDeclaresRootsCapability` / `ClientDeclaresSamplingCapability` / `ClientDeclaresElicitationCapability`, which are in this file's declared check population and already carry edges from `MCP.Protocol.CapabilitiesTest`'s ClientCapabilities row. They point the OTHER WAY: their single axis is `capability_value_is_a_plain_object` over the capability the CLIENT declares in its own `_meta`. `ServerDeclaresPromptsInDiscover` is the server-side mirror and is SERVER-leg. So `capabilit` returns 12 rows and not one of them is about what a client makes of a server's map — the same word, the opposite direction.",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientDeclaresRootsCapability` / `ClientDeclaresSamplingCapability` / `ClientDeclaresElicitationCapability`, which are in this file's declared check population. The first two carry edges from `MCP.Protocol.CapabilitiesTest`'s ClientCapabilities row, and until MES-110 the third did too; since MES-110 (rule A, A3 §2) that claim is a claim-level `no-axis-contact` row under NAC03 that names `ClientDeclaresElicitationCapability` as its near miss. They point the OTHER WAY: their single axis is `capability_value_is_a_plain_object` over the capability the CLIENT declares in its own `_meta`. `ServerDeclaresPromptsInDiscover` is the server-side mirror and is SERVER-leg. So `capabilit` returns 12 rows and not one of them is about what a client makes of a server's map — the same word, the opposite direction.",
       "authored_by": "MES-109 (C1b-iii)"
     },
     {
@@ -2185,7 +2046,7 @@
       "why_no_counterpart": "`no-oc-scenario` — 12 rows mention a capability and not one is about a client PARSING the server's map: the client-leg three score the shape of the capability the CLIENT declares, and `ServerDeclaresPromptsInDiscover` is server-leg.",
       "why_this_search_is_this_claims_search": "The claim is about reading the SERVER's capabilities map. S05's subject is that read, and its near miss is the three client-capability checks this file already matches — same word, opposite direction, which is precisely why the member needs the search rather than the word.",
       "the_search_that_found_none": "a client decoding the SERVER's advertised capabilities map into a struct — a full map, a map with capabilities missing, and an `experimental` key preserved",
-      "the_near_miss_that_is_not_a_counterpart": "`ClientDeclaresRootsCapability` / `ClientDeclaresSamplingCapability` / `ClientDeclaresElicitationCapability`, which are in this file's declared check population and already carry edges from `MCP.Protocol.CapabilitiesTest`'s ClientCapabilities row. They point the OTHER WAY: their single axis is `capability_value_is_a_plain_object` over the capability the CLIENT declares in its own `_meta`. `ServerDeclaresPromptsInDiscover` is the server-side mirror and is SERVER-leg. So `capabilit` returns 12 rows and not one of them is about what a client makes of a server's map — the same word, the opposite direction.",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientDeclaresRootsCapability` / `ClientDeclaresSamplingCapability` / `ClientDeclaresElicitationCapability`, which are in this file's declared check population. The first two carry edges from `MCP.Protocol.CapabilitiesTest`'s ClientCapabilities row, and until MES-110 the third did too; since MES-110 (rule A, A3 §2) that claim is a claim-level `no-axis-contact` row under NAC03 that names `ClientDeclaresElicitationCapability` as its near miss. They point the OTHER WAY: their single axis is `capability_value_is_a_plain_object` over the capability the CLIENT declares in its own `_meta`. `ServerDeclaresPromptsInDiscover` is the server-side mirror and is SERVER-leg. So `capabilit` returns 12 rows and not one of them is about what a client makes of a server's map — the same word, the opposite direction.",
       "authored_by": "MES-109 (C1b-iii)"
     },
     {
@@ -2507,6 +2368,196 @@
       "the_search_that_found_none": "a client surviving a MALFORMED `tools/list` result — a `result` that is `null` or a string reaching the caller as an error, with the client process and its other pending requests still alive",
       "the_near_miss_that_is_not_a_counterpart": "`ToolsList` — `Server lists available tools with VALID STRUCTURE` — and `wire-schema-valid`. 44 rows carry `valid`. Every one of them asks whether a message IS well-formed; none asks what the peer does when it is not. The suite validates structure and stops there, which is reasonable for a conformance suite and is exactly why a robustness claim of this shape has no counterpart in it.",
       "authored_by": "MES-109 (C1b-iii)"
+    },
+    {
+      "member": {
+        "module": "MCP.ClientDefectsTest",
+        "test": "test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 offering only versions we do not support is surfaced, never retried",
+        "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 offering only versions we do not support is surfaced, never retried"
+      },
+      "tag": "oc:none/no-axis-contact/D-3-no-retry-when-no-offered-version-is-supported",
+      "cg": null,
+      "search_id": "NAC01",
+      "near_miss_tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
+      "claim_the_slot_names": "a -32022 offering no version we support is surfaced to the caller and produces no retry at all",
+      "why_no_counterpart": "`no-axis-contact` — rule A (A3 §2, MES-110; authored 29283, ratified 29319): the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge, so it is bucket 1.",
+      "why_this_search_is_this_claims_search": "The claim is about the version-negotiation retry, and so is `near_miss_tag`; the search asks whether ANY predicate in this file's declared check population scores what the claim asserts, over the predicates themselves rather than their descriptions.",
+      "the_search_that_found_none": "a client NOT retrying: an error from which it cannot negotiate a version (a -32022 offering no version it supports, a -32022 with no usable `supported` data, or an error that is not -32022 at all) surfaced to the caller with no second request sent",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientRetrySupportedVersion`, and it shares this claim's SUBJECT, the version-negotiation retry, while touching none of its PREDICATE: both of its axes (`retry_header_version_is_supported`, `retry_meta_version_is_supported`) are predicates ON a retry, and this claim is that there is none. Until MES-110 that was an all-silent edge onto it; rule A makes it no match. A broader first pattern, `no retry`, came back with `DefaultResultTypeComplete`'s `no_retry_when_the_result_states_no_result_type` and was narrowed rather than accepted: that axis is the MRTR retry after a result with no `resultType`, a different retry with a different trigger, and it is named here so the narrowing is visible rather than convenient.",
+      "until_MES_110": {
+        "was": "an edge onto `near_miss_tag` with every axis silent, escalated as `no_axis_contact`",
+        "axes": [
+          {
+            "axis": "retry_meta_version_is_supported",
+            "verdict": "silent"
+          },
+          {
+            "axis": "retry_header_version_is_supported",
+            "verdict": "silent"
+          }
+        ],
+        "et_verdict": "green"
+      },
+      "evidence": "client_defects_test.exs:345-346 — asserts the error surfaces and `length(MockTransport.sent_messages(transport)) == 1`. There is no retry, so neither axis — both of which are predicates ON a retry — is touched.",
+      "moved_by": "MES-110 (rule A)"
+    },
+    {
+      "member": {
+        "module": "MCP.ClientDefectsTest",
+        "test": "test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 with no usable data is surfaced, never retried",
+        "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 with no usable data is surfaced, never retried"
+      },
+      "tag": "oc:none/no-axis-contact/D-3-no-retry-when-supported-data-is-unusable",
+      "cg": null,
+      "search_id": "NAC01",
+      "near_miss_tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
+      "claim_the_slot_names": "a -32022 carrying no usable `supported` data is surfaced and produces no retry",
+      "why_no_counterpart": "`no-axis-contact` — rule A (A3 §2, MES-110; authored 29283, ratified 29319): the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge, so it is bucket 1.",
+      "why_this_search_is_this_claims_search": "The claim is about the version-negotiation retry, and so is `near_miss_tag`; the search asks whether ANY predicate in this file's declared check population scores what the claim asserts, over the predicates themselves rather than their descriptions.",
+      "the_search_that_found_none": "a client NOT retrying: an error from which it cannot negotiate a version (a -32022 offering no version it supports, a -32022 with no usable `supported` data, or an error that is not -32022 at all) surfaced to the caller with no second request sent",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientRetrySupportedVersion`, and it shares this claim's SUBJECT, the version-negotiation retry, while touching none of its PREDICATE: both of its axes (`retry_header_version_is_supported`, `retry_meta_version_is_supported`) are predicates ON a retry, and this claim is that there is none. Until MES-110 that was an all-silent edge onto it; rule A makes it no match. A broader first pattern, `no retry`, came back with `DefaultResultTypeComplete`'s `no_retry_when_the_result_states_no_result_type` and was narrowed rather than accepted: that axis is the MRTR retry after a result with no `resultType`, a different retry with a different trigger, and it is named here so the narrowing is visible rather than convenient.",
+      "until_MES_110": {
+        "was": "an edge onto `near_miss_tag` with every axis silent, escalated as `no_axis_contact`",
+        "axes": [
+          {
+            "axis": "retry_meta_version_is_supported",
+            "verdict": "silent"
+          },
+          {
+            "axis": "retry_header_version_is_supported",
+            "verdict": "silent"
+          }
+        ],
+        "et_verdict": "green"
+      },
+      "evidence": "client_defects_test.exs:362-363 — same shape as the row above, a different malformed input.",
+      "moved_by": "MES-110 (rule A)"
+    },
+    {
+      "member": {
+        "module": "MCP.ClientDefectsTest",
+        "test": "test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) the retry re-stamps the version chosen from `supported`",
+        "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) the retry re-stamps the version chosen from `supported`"
+      },
+      "tag": "oc:none/no-axis-contact/D-3-retry-completes-after-32022",
+      "cg": null,
+      "search_id": "NAC02",
+      "near_miss_tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
+      "claim_the_slot_names": "the retry completes after a -32022 whose `supported` names the configured version",
+      "why_no_counterpart": "`no-axis-contact` — rule A (A3 §2, MES-110; authored 29283, ratified 29319): the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge, so it is bucket 1.",
+      "why_this_search_is_this_claims_search": "The claim is about the version-negotiation retry, and so is `near_miss_tag`; the search asks whether ANY predicate in this file's declared check population scores what the claim asserts, over the predicates themselves rather than their descriptions.",
+      "the_search_that_found_none": "the version-negotiation retry COMPLETING: after a -32022 whose `supported` names the configured version, the retried call returns its result to the caller",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientRetrySupportedVersion`. Same subject, the retry after a -32022; its axes score what the RETRY carries (the header and the `_meta` version), and this member asserts neither: its only version assertion is on the request BEFORE the rejection (S9-17). So it touches none of the predicate and rule A makes it no match. `(?i)complete` reaches `DefaultResultTypeComplete`, whose axis reads a result with no `resultType` as `complete`. That is MRTR completion, not a version retry, and it is not this claim.",
+      "until_MES_110": {
+        "was": "an edge onto `near_miss_tag` with every axis silent, escalated as `no_axis_contact`",
+        "axes": [
+          {
+            "axis": "retry_meta_version_is_supported",
+            "verdict": "silent"
+          },
+          {
+            "axis": "retry_header_version_is_supported",
+            "verdict": "silent"
+          }
+        ],
+        "et_verdict": "green"
+      },
+      "evidence": "client_defects_test.exs:376 — the ONLY version assertion in this test is on `first`, the request BEFORE the rejection; the retry's own `_meta` is never asserted. The member's name says 're-stamps' and its assertions do not check it. Recorded as S9-17; not fixed here (epic ruling 3).",
+      "note": "The name promises more than the assertions deliver. Left standing and routed.",
+      "moved_by": "MES-110 (rule A)"
+    },
+    {
+      "member": {
+        "module": "MCP.ClientDefectsTest",
+        "test": "test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a non-32022 error is never retried",
+        "register_key": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a non-32022 error is never retried"
+      },
+      "tag": "oc:none/no-axis-contact/D-3-no-retry-on-a-non-32022-error",
+      "cg": null,
+      "search_id": "NAC01",
+      "near_miss_tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
+      "claim_the_slot_names": "an error whose code is not -32022 produces no retry at all",
+      "why_no_counterpart": "`no-axis-contact` — rule A (A3 §2, MES-110; authored 29283, ratified 29319): the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge, so it is bucket 1.",
+      "why_this_search_is_this_claims_search": "The claim is about the version-negotiation retry, and so is `near_miss_tag`; the search asks whether ANY predicate in this file's declared check population scores what the claim asserts, over the predicates themselves rather than their descriptions.",
+      "the_search_that_found_none": "a client NOT retrying: an error from which it cannot negotiate a version (a -32022 offering no version it supports, a -32022 with no usable `supported` data, or an error that is not -32022 at all) surfaced to the caller with no second request sent",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientRetrySupportedVersion`, and it shares this claim's SUBJECT, the version-negotiation retry, while touching none of its PREDICATE: both of its axes (`retry_header_version_is_supported`, `retry_meta_version_is_supported`) are predicates ON a retry, and this claim is that there is none. Until MES-110 that was an all-silent edge onto it; rule A makes it no match. A broader first pattern, `no retry`, came back with `DefaultResultTypeComplete`'s `no_retry_when_the_result_states_no_result_type` and was narrowed rather than accepted: that axis is the MRTR retry after a result with no `resultType`, a different retry with a different trigger, and it is named here so the narrowing is visible rather than convenient.",
+      "until_MES_110": {
+        "was": "an edge onto `near_miss_tag` with every axis silent, escalated as `no_axis_contact`",
+        "axes": [
+          {
+            "axis": "retry_meta_version_is_supported",
+            "verdict": "silent"
+          },
+          {
+            "axis": "retry_header_version_is_supported",
+            "verdict": "silent"
+          }
+        ],
+        "et_verdict": "green"
+      },
+      "evidence": "client_defects_test.exs:412-413 — `assert {:error, %MCP.Protocol.Error{code: -32_601}} = Task.await(task)` and `assert length(MockTransport.sent_messages(transport)) == 1`. There is no retry, so neither axis — both of which are predicates ON a retry, decided where the excerpt writes `p.status=` after one has happened — is touched.",
+      "note": "Until MES-110: ALL AXES SILENT, escalated as `no_axis_contact`. This is the FOURTH member of the D-3 block and it landed exactly where its three siblings did: C1b-i recorded `a -32022 offering only versions we do not support is surfaced, never retried` and two others as all-silent edges against this same check, on this same reasoning. It carried no CG, so it fell to C1b-iii while its siblings went with C1a's tokens — a split by the accident of tagging, not by anything about the claims, and the adjudication was the same one. Rule A (A3 §2, MES-110) now makes the record bucket 1: the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge; the near miss, `ClientRetrySupportedVersion`, is kept and named in `the_near_miss_that_is_not_a_counterpart`.",
+      "authored_by": "MES-109 (C1b-iii)",
+      "moved_by": "MES-110 (rule A)"
+    },
+    {
+      "member": {
+        "module": "MCP.ClientToolSchemasTest",
+        "test": "test W6 — SEP-2243 tool exclusion an excluded tool leaves no annotations behind, so calling it mirrors nothing",
+        "register_key": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an excluded tool leaves no annotations behind, so calling it mirrors nothing"
+      },
+      "tag": "oc:none/no-axis-contact/CG7-excluded-tool-called-anyway-mirrors-nothing",
+      "cg": "CG7",
+      "search_id": "NAC04",
+      "near_miss_tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header",
+      "claim_the_slot_names": "a tool excluded for an invalid annotation leaves no annotations behind, so calling it anyway mirrors nothing",
+      "why_no_counterpart": "`no-axis-contact` — rule A (A3 §2, MES-110; authored 29283, ratified 29319): the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge, so it is bucket 1.",
+      "why_this_search_is_this_claims_search": "The claim shares `near_miss_tag`'s subject, and the search asks whether ANY predicate in this file's declared check population scores what the claim actually asserts, reading the predicates rather than their descriptions, which would find the near miss by construction.",
+      "the_search_that_found_none": "a tool the client EXCLUDED for an invalid annotation, called anyway by the test, carrying no mirrored headers because its annotations were dropped with it",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientRejectsInvalidTool_invalid_object_header`. Its one axis, `invalid_tool_is_not_called`, scores whether the client CALLED the tool; this member deliberately calls it through `Client.call_tool/3` and asserts only that the call carries no headers. Same subject, the excluded `invalid_object_header` tool, and none of the predicate: no match under rule A. Whether SEP-2243's `MUST reject (exclude)` reaches a direct `call_tool/3` on the name is the requirement-reading question the edge's note routed, and it is untouched by moving the record.",
+      "until_MES_110": {
+        "was": "an edge onto `near_miss_tag` with every axis silent, escalated as `no_axis_contact`",
+        "axes": [
+          {
+            "axis": "invalid_tool_is_not_called",
+            "verdict": "silent"
+          }
+        ],
+        "et_verdict": "green"
+      },
+      "evidence": "client_tool_schemas_test.exs:125-146. The member's `invalid_tool/1` helper (client_tool_schemas_test.exs:55-63) builds exactly the fixture's `invalid_object_header` class — an `x-mcp-header` on a property of `\"type\" => \"object\"` — so the counterpart check is unambiguous. The single axis is SILENT: the check's subject is whether the client CALLED the tool, and this member deliberately calls it, asserting instead that the call carries no headers (`assert [] = Enum.at(MockTransport.sent_opts(transport), 1) |> Keyword.get(:headers, [])`). The two are not in conflict — the call here is the TEST's choice through `Client.call_tool/3`, not the client's own selection — but the assertion's subject is the headers, not the calling.",
+      "note": "Until MES-110: ALL AXES SILENT, recorded and ESCALATED, never bucketed, per this file's all-silent rule as it then stood. Rule A (A3 §2, MES-110) now makes the record bucket 1: the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge; the near miss, `ClientRejectsInvalidTool_invalid_object_header`, is kept and named in `the_near_miss_that_is_not_a_counterpart`. The question the escalation put to the PM is narrow and is untouched by moving the record: our client excludes the tool from tools/list and drops its annotations, but does not refuse a direct `call_tool/3` on the name. Whether SEP-2243's `MUST reject (exclude) such tools` reaches that far is a requirement reading, not an adjudication this file can make.",
+      "moved_by": "MES-110 (rule A)"
+    },
+    {
+      "member": {
+        "module": "MCP.ProtocolTest",
+        "test": "test encode!/1 returns JSON string",
+        "register_key": "MCP.ProtocolTest/test encode!/1 returns JSON string"
+      },
+      "tag": "oc:none/no-axis-contact/MES-109-encode-bang-returns-bare-json",
+      "cg": null,
+      "search_id": "NAC05",
+      "near_miss_tag": "oc:client/tools_call/wire-schema-valid/WireSchemaValid",
+      "claim_the_slot_names": "`encode!/1` returns the JSON string bare rather than wrapped in an `{:ok, _}` tuple",
+      "why_no_counterpart": "`no-axis-contact` — rule A (A3 §2, MES-110; authored 29283, ratified 29319): the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge, so it is bucket 1.",
+      "why_this_search_is_this_claims_search": "The claim shares `near_miss_tag`'s subject, and the search asks whether ANY predicate in this file's declared check population scores what the claim actually asserts, reading the predicates rather than their descriptions, which would find the near miss by construction.",
+      "the_search_that_found_none": "the BANG encoder's return type: `encode!/1` handing back the JSON binary bare, where its non-bang sibling wraps it in an `{:ok, _}` tuple",
+      "the_near_miss_that_is_not_a_counterpart": "`WireSchemaValid` (client, `tools_call`). Its one axis scores that every message the implementation put on the wire validates against the spec schema. This member's subject is an SDK function's return shape, and its one incidental field read is a sanity check on the test, not a claim about wire validity. It is a near miss because the member's two siblings in the same module ARE edges onto this check.",
+      "until_MES_110": {
+        "was": "an edge onto `near_miss_tag` with every axis silent, escalated as `no_axis_contact`",
+        "axes": [
+          {
+            "axis": "no_schema_violation_in_a_message_the_implementation_sent",
+            "verdict": "silent"
+          }
+        ],
+        "et_verdict": "green"
+      },
+      "evidence": "protocol_test.exs:182-185 — `json = Protocol.encode!(request)`, then `assert is_binary(json)` and `assert Jason.decode!(json)[\"method\"] == \"ping\"`. The subject is the BANG VARIANT'S RETURN TYPE: that encode!/1 hands back the binary its non-bang sibling wraps in a tuple. The second assert reads one field to show the binary is the right message, which is a sanity check on the test rather than a claim about wire validity — and how_a_silent_axis_was_decided is conservative by rule, so an incidental assertion is not coverage.",
+      "note": "Until MES-110: ALL AXES SILENT, so this escalated as `no_axis_contact` and was not bucketed. The note argued that dropping the edge instead would make the member look edge-less and therefore bucket 1, which asserts `we looked and there is no counterpart` — false here, it said: the counterpart is WireSchemaValid, the same check its two siblings above match, and what is true is that this claim does not touch its predicate. That was the distinction `the_all_silent_case` was written for, and this was its fifth instance. Rule A (A3 §2, MES-110) now makes the record bucket 1: the claim is silent on every axis of its near miss, so it is no match at any arity, and the member carries no other edge; the near miss, `WireSchemaValid`, is kept and named in `the_near_miss_that_is_not_a_counterpart`.",
+      "authored_by": "MES-109 (C1b-iii)",
+      "moved_by": "MES-110 (rule A)"
     }
   ],
   "declared_unmatched_note": "A3 §6 state 3 — members adjudicated as having NO OC counterpart. They are bucket 1 over this population. The generator asserts each tag guard-checks to state 3 (decodes as `oc:none`, does NOT resolve as an oc key) before counting it.",
@@ -2518,10 +2569,13 @@
         "register_key": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method"
       },
       "claim": "an annotated parameter cannot forge the Mcp-Method ROUTING header (header_mirror_test.exs:416 — `refute Map.has_key?(headers, \"mcp-method\")`)",
+      "tag": "oc:none/no-oc-scenario/CG7-annotation-cannot-forge-mcp-method",
+      "search_id": "CLV01",
       "disposition": "no counterpart in this file's declared check population",
-      "owner": "unowned — CONFIRMED by C1b-ii from INSIDE a declared CG1 population. No counterpart in CG1 either.",
-      "the_search_that_found_none": "All 29 CG7 checks were read: none has `mcp-method` as its subject. The check that does is `ClientMcpMethodHeader_tools_call` (`oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_call`), which is CG1's and outside this file's declared check population — but it asserts the header is PRESENT and correct, not that it is not forged by a mirrored parameter. So this claim has no counterpart in CG1 either, and is recorded rather than deferred.",
-      "resolved_by": "MES-108 (C1b-ii), 2026-09-21. C1b-i could only argue this from OUTSIDE a declared CG1 check population; C1b-ii has one — the 9 in-denominator `http-standard-headers` checks — and re-ran the search over it. CONFIRMED, and the reason is sharper than 'none has it as its subject': the `headers` map at header_mirror_test.exs:416 is `HeaderMirror`'s MIRRORING OUTPUT, not a request's header set. CG1's six `ClientMcpMethodHeader_*` checks take the ROUTING header on a real POST as their subject, which is a different object produced further down the stack. So this is not merely unmatched in CG1 — it could not be matched by a CG1 check, and the recommendation is answered rather than forwarded again."
+      "owner": "MES-133 (D1) — rule B (A3 §6, MES-110; PO 2026-09-24). Before MES-110: unowned — CONFIRMED by C1b-ii from INSIDE a declared CG1 population. No counterpart in CG1 either.",
+      "the_search_that_found_none": "an annotated parameter FORGING the Mcp-Method routing header: a mirrored `x-mcp-header` named `Method` producing `Mcp-Method` rather than `Mcp-Param-Method`",
+      "resolved_by": "MES-108 (C1b-ii), 2026-09-21. C1b-i could only argue this from OUTSIDE a declared CG1 check population; C1b-ii has one — the 9 in-denominator `http-standard-headers` checks — and re-ran the search over it. CONFIRMED, and the reason is sharper than 'none has it as its subject': the `headers` map at header_mirror_test.exs:416 is `HeaderMirror`'s MIRRORING OUTPUT, not a request's header set. CG1's six `ClientMcpMethodHeader_*` checks take the ROUTING header on a real POST as their subject, which is a different object produced further down the stack. So this is not merely unmatched in CG1 — it could not be matched by a CG1 check, and the recommendation is answered rather than forwarded again.",
+      "the_search_as_first_recorded": "All 29 CG7 checks were read: none has `mcp-method` as its subject. The check that does is `ClientMcpMethodHeader_tools_call` (`oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_call`), which is CG1's and outside this file's declared check population — but it asserts the header is PRESENT and correct, not that it is not forged by a mirrored parameter. So this claim has no counterpart in CG1 either, and is recorded rather than deferred."
     },
     {
       "member": {
@@ -2530,9 +2584,12 @@
         "register_key": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept"
       },
       "claim": "the exclusion is logged naming the tool and the reason (client_tool_schemas_test.exs:107-108 — `assert log =~ ~s(EXCLUDING tool \"bad\" from tools/list)` and `assert log =~ \"only string, integer and boolean are permitted\"`)",
+      "tag": "oc:none/no-oc-scenario/CG7-exclusion-is-logged",
+      "search_id": "CLV02",
       "disposition": "no counterpart in this file's declared check population",
-      "owner": "unowned — SEP-2243's SHOULD-log has no OC check on either leg",
-      "the_search_that_found_none": "All 29 CG7 checks were read for one whose subject is a diagnostic: none is. (C1b-i) A log line is invisible on the wire, so the harness cannot observe it at all — the same reason the four cache members above are `no-oc-scenario`."
+      "owner": "MES-133 (D1) — rule B (A3 §6, MES-110; PO 2026-09-24). Before MES-110: unowned — SEP-2243's SHOULD-log has no OC check on either leg",
+      "the_search_that_found_none": "a DIAGNOSTIC for a SEP-2243 exclusion: the client logging which tool it excluded from tools/list and why",
+      "the_search_as_first_recorded": "All 29 CG7 checks were read for one whose subject is a diagnostic: none is. (C1b-i) A log line is invisible on the wire, so the harness cannot observe it at all — the same reason the four cache members above are `no-oc-scenario`."
     },
     {
       "member": {
@@ -2541,10 +2598,13 @@
         "register_key": "MCP.ClientToolSchemasTest/test the transport seam a tools/call for a known tool carries :headers; other methods carry none"
       },
       "claim": "a NON-tools/call request carries no :headers at all (client_tool_schemas_test.exs:395 — `assert Enum.at(MockTransport.sent_opts(transport), 0) == []`, the tools/list)",
+      "tag": "oc:none/no-oc-scenario/CG7-non-tools-call-carries-no-headers-opt",
+      "search_id": "CLV03",
       "disposition": "no counterpart in this file's declared check population",
-      "owner": "unowned — CONFIRMED by C1b-ii from INSIDE a declared CG1 population. No counterpart in CG1 either.",
-      "the_search_that_found_none": "All 29 CG7 checks are emitted from `handleToolsCall`, so every one of them is conditioned on a tools/call having arrived; none has a non-tools/call request as its subject. The scenario's `handlePost` was read too: it emits no check on the tools/list path other than `http-invalid-tool-headers`'s gate, whose subject is that tools/list was SENT.",
-      "resolved_by": "MES-108 (C1b-ii), 2026-09-21. Re-run over the real 10. CONFIRMED — and the check matters, because the naive reading makes this look like a CONTRADICTION of `ClientMcpMethodHeader_tools_list` and it is not. `Enum.at(MockTransport.sent_opts(transport), 0) == []` is about the `:headers` OPT `MCP.Client` hands the transport, and the routing headers are added BELOW that seam by `MCP.Transport.StreamableHTTP.Client`, which MockTransport does not have. So a tools/list with no `:headers` opt still carries `mcp-method` on the wire, and the two statements are about different layers. Recorded rather than left implicit: a later ticket re-reading this row would otherwise have to re-derive the non-contradiction."
+      "owner": "MES-133 (D1) — rule B (A3 §6, MES-110; PO 2026-09-24). Before MES-110: unowned — CONFIRMED by C1b-ii from INSIDE a declared CG1 population. No counterpart in CG1 either.",
+      "the_search_that_found_none": "the `:headers` TRANSPORT OPT `MCP.Client` hands its transport being empty for every request that is not a tools/call",
+      "resolved_by": "MES-108 (C1b-ii), 2026-09-21. Re-run over the real 10. CONFIRMED — and the check matters, because the naive reading makes this look like a CONTRADICTION of `ClientMcpMethodHeader_tools_list` and it is not. `Enum.at(MockTransport.sent_opts(transport), 0) == []` is about the `:headers` OPT `MCP.Client` hands the transport, and the routing headers are added BELOW that seam by `MCP.Transport.StreamableHTTP.Client`, which MockTransport does not have. So a tools/list with no `:headers` opt still carries `mcp-method` on the wire, and the two statements are about different layers. Recorded rather than left implicit: a later ticket re-reading this row would otherwise have to re-derive the non-contradiction.",
+      "the_search_as_first_recorded": "All 29 CG7 checks are emitted from `handleToolsCall`, so every one of them is conditioned on a tools/call having arrived; none has a non-tools/call request as its subject. The scenario's `handlePost` was read too: it emits no check on the tools/list path other than `http-invalid-tool-headers`'s gate, whose subject is that tools/list was SENT."
     },
     {
       "member": {
@@ -2553,15 +2613,46 @@
         "register_key": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name"
       },
       "claim": "a method with no name target carries NO `mcp-name` (routing_headers_test.exs:182 — `refute Map.has_key?(headers, \"mcp-name\")`, on a tools/list)",
+      "tag": "oc:none/no-oc-scenario/CG1-no-mcp-name-without-a-name-target",
+      "search_id": "CLV04",
       "disposition": "no counterpart in this file's declared check population",
-      "owner": "unowned — ESCALATED to MES-110 (A3 §6 claim-level state 3). NEW case, found by C1b-ii.",
-      "the_search_that_found_none": "All 10 of this file's declared checks were read. The three `ClientMcpNameHeader_*` checks exist only for `tools/call`, `resources/read` and `prompts/get`: the addressed `dispatch_site` excerpt shows `handlePost` calling `checkMcpNameHeader` on those three branches and on no other, so there is no check whose subject is the header's ABSENCE on a non-name-bearing method. The six `ClientMcpMethodHeader_*` checks have the Mcp-METHOD header as their subject. Widened to all 175: `/Mcp-Name/i` over the whole row returns exactly 3, and they ARE the three declared rows — there is no fourth check anywhere in the suite, on either leg, whose subject is that header.",
-      "why_it_is_recorded_here": "This is the A3 §6 claim-level-state gap MES-110 was raised for, found again by C1b-ii and NOT force-bucketed. The member is edge-bearing — its other claim carries a full edge to `ClientMcpMethodHeader_tools_list` — so it cannot go in `declared_unmatched` without making it both edge-bearing and bucket 1; and dropping this claim would report the member as fully matched, which is the failure C1b-i's `claims_without_an_edge_note` describes. No bucket is invented for it."
+      "owner": "MES-133 (D1) — rule B (A3 §6, MES-110; PO 2026-09-24). Before MES-110: unowned — ESCALATED to MES-110 (A3 §6 claim-level state 3). NEW case, found by C1b-ii.",
+      "the_search_that_found_none": "the ABSENCE of `Mcp-Name` on a method with no name target (a tools/list carrying `Mcp-Method` and no `Mcp-Name`)",
+      "why_it_is_recorded_here": "This was the A3 §6 claim-level-state gap MES-110 was raised for, found again by C1b-ii and NOT force-bucketed; since MES-110, rule B (A3 §6) makes it a claim-level unmatched record. The member is edge-bearing — its other claim carries a full edge to `ClientMcpMethodHeader_tools_list` — so it cannot go in `declared_unmatched` without making it both edge-bearing and bucket 1; and dropping this claim would report the member as fully matched, which is the failure C1b-i's `claims_without_an_edge_note` describes. No bucket is invented for it.",
+      "the_search_as_first_recorded": "All 10 of this file's declared checks were read. The three `ClientMcpNameHeader_*` checks exist only for `tools/call`, `resources/read` and `prompts/get`: the addressed `dispatch_site` excerpt shows `handlePost` calling `checkMcpNameHeader` on those three branches and on no other, so there is no check whose subject is the header's ABSENCE on a non-name-bearing method. The six `ClientMcpMethodHeader_*` checks have the Mcp-METHOD header as their subject. Widened to all 175: `/Mcp-Name/i` over the whole row returns exactly 3, and they ARE the three declared rows — there is no fourth check anywhere in the suite, on either leg, whose subject is that header."
+    },
+    {
+      "member": {
+        "module": "MCP.Protocol.CapabilitiesTest",
+        "test": "test ClientCapabilities round-trips through JSON",
+        "register_key": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON"
+      },
+      "claim": "an undeclared `elicitation` capability is omitted from the encoding entirely",
+      "tag": "oc:none/no-axis-contact/SEP-2575-undeclared-elicitation-omitted",
+      "search_id": "NAC03",
+      "near_miss_tag": "oc:client/request-metadata/sep-2575-client-declares-elicitation-capability/ClientDeclaresElicitationCapability",
+      "disposition": "no axis contact with the near miss — rule A (A3 §2, MES-110; authored 29283, ratified 29319). The member keeps its other edge(s), so this is a claim-level record (rule B, A3 §6), not bucket 1.",
+      "owner": "MES-133 (D1) — rule B (A3 §6, MES-110; PO 2026-09-24)",
+      "the_search_that_found_none": "an UNDECLARED capability omitted from the encoding entirely: the key absent, not present with an empty or false value",
+      "the_near_miss_that_is_not_a_counterpart": "`ClientDeclaresElicitationCapability`. Its one axis, `capability_value_is_a_plain_object`, is a predicate on a DECLARED capability's value; the case this claim asserts, an undeclared one being absent, is the check's PRECONDITION (`d&&e in d`, the branch on which it skips), and a precondition is not an axis. So the claim shares the check's subject and touches none of its predicate: no match under rule A. A sweep for `omit`/`absent`/`missing` alone returns the SEP-2243 header rows (`ClientCustomHeaderOmitNull`, the `Missing Mcp-Method header` rows). They are about headers, not capabilities, and the pattern keeps the two words together for that reason.",
+      "until_MES_110": {
+        "was": "an edge onto `near_miss_tag` with every axis silent, escalated as `no_axis_contact`",
+        "axes": [
+          {
+            "axis": "capability_value_is_a_plain_object",
+            "verdict": "silent"
+          }
+        ],
+        "et_verdict": "green"
+      },
+      "evidence": "capabilities_test.exs:100 — `refute Map.has_key?(decoded, \"elicitation\")`. This addresses the check's PRECONDITION (`d&&e in d`), not its axis: it asserts the branch on which the check SKIPS. A precondition is not an axis and a claim about one is neither agreement nor contradiction.",
+      "note": "Until MES-110, the one edge in this population whose claim lands on a precondition rather than on an axis.",
+      "moved_by": "MES-110 (rule A)"
     }
   ],
   "the_contradicting_edges": "THREE edges carry a `contradicts` axis verdict, all on `ClientMcpNameHeader_*`, and all escalate as `inconsistent_verdict_pair` (green OC, green ET, contradicting shape) rather than being bucketed — A3 §3's table has no row for that pair and `MatchKey.bucket/1` escalates it by design. They are ONE finding with two faces, and it is the substantive result of this ticket. (1) `checkMcpNameHeader` compares the header to the body value with a RAW `a!==i`, and nothing on the client leg decodes SEP-2243's `=?base64?…?=` sentinel — the only sentinel handling in the build is server-leg, in another scenario. So a client that correctly encodes a non-header-safe name, which streamable-http.mdx REQUIRES, is scored FAILURE by this check. T-CG1c's non-ASCII and CRLF-injection members each assert exactly that encoding. (2) `handlePost` calls `checkMcpNameHeader` on EVERY tools/call with no guard on whether `params.name` exists, so a nameless tools/call is scored FAILURE for omitting a header that has nothing to carry. All three run green today only because the fixture sends one plain-ASCII, named tools/call. The fourth T-CG1c member — the internal-space URI, which stays PLAIN — agrees on both axes, and it is the control that shows the contradiction is about the SENTINEL and not about T-CG1c or about this file's reading of the axis.",
   "why_contradicts_and_not_silent": "`how_a_silent_axis_was_decided` is conservative about claiming COVERAGE — a claim covers an axis only when an assertion's SUBJECT is the behaviour that axis names. It is NOT a rule for suppressing disagreement, and reading it that way would make it a rule for hiding exactly what a crosswalk exists to find. In all three rows the subject matches: the axis is about the `mcp-name` header's presence or its equality with the body value, and so is the assertion. They disagree. The conservative direction here is to record the contradiction, because silence would assert of these members that they say nothing about the check's predicate, which is false.",
-  "the_contradicting_edges_are_this_rules_first_live_instance": "`MatchKey.bucket/1`'s `(green, green, :contradicting) -> {:escalate, :inconsistent_verdict_pair}` clause has been implemented and unit-tested since A3 (test/conformance/match_key_test.exs:394 and the exhaustive domain table at :1105; test/conformance/crosswalk_test.exs:92), and until MES-108 it fired on ZERO rows of live data — C1a's and C1b-i's five escalations are all `no_axis_contact`. It is now three. This is said for the same reason the generator says it of the WARNING mapping: a rule with no live instance reads as exercised when it is not, and the difference between 'unit-tested' and 'has ever decided anything' is worth one sentence. No decision LOGIC was added by this ticket — no `lib/` change at all (ruling 3) — so there is nothing new for gate 5 to cover; what changed is that an existing path now has data.",
+  "the_contradicting_edges_are_this_rules_first_live_instance": "`MatchKey.bucket/1`'s `(green, green, :contradicting) -> {:escalate, :inconsistent_verdict_pair}` clause has been implemented and unit-tested since A3 (test/conformance/match_key_test.exs:394 and the exhaustive domain table at :1105; test/conformance/crosswalk_test.exs:92), and until MES-108 it fired on ZERO rows of live data — C1a's and C1b-i's five escalations were all `no_axis_contact`, and since MES-110 (rule A, A3 §2) no edge escalates under that class. It is now three. This is said for the same reason the generator says it of the WARNING mapping: a rule with no live instance reads as exercised when it is not, and the difference between 'unit-tested' and 'has ever decided anything' is worth one sentence. No decision LOGIC was added by this ticket — no `lib/` change at all (ruling 3) — so there is nothing new for gate 5 to cover; what changed is that an existing path now has data.",
   "the_sub_populations_this_file_records": {
     "what_this_is": "One entry per TICKET that adjudicated part of this leg, each with a runnable selector against the same external anchor. The generator evaluates all four and set-compares their UNION with the members this file derives (G22a), then evaluates `leg equals client` fresh and set-compares THAT (G22b). Together they are the client-leg totality assertion, built as a GENERATOR REFUSAL rather than as prose: a client member in neither an edge nor a declared_unmatched record refuses the build.",
     "it_is_a_COVER_and_not_a_PARTITION": "The four entries OVERLAP and the overlap is DERIVED by the generator rather than asserted here. Eighteen members sit in two entries at once: the 13 of C1b-iii's 55 and the 3 of C1b-ii's 23 that carry C1a `oc:` tokens, plus the 2 of C1b-i's 29 that did — the same shape three times over, and each of those members keeps ONE home. Calling this a partition and adding the four counts would give 18 + 29 + 23 + 55 = 125 against a leg of 107, and 125 - 107 is exactly the overlap because every overlapping member is counted precisely twice. The cover is the honest shape; the generator derives the overlap and reports its members by name, so nobody has to take this paragraph's word for its size.",
@@ -2749,7 +2840,7 @@
           "hits": 44
         }
       ],
-      "near_miss": "`wire-schema-valid` / WireSchemaValid, and it is the sharpest near miss in this file because it is IN this file's declared check population and THREE members of this very ticket carry an edge to it — two agreeing (`MCP.ProtocolTest`'s two `encode/1` claims) and one all-silent and escalated. It validates JSON-RPC messages against the spec schema — but `o=t.filter(e=>e.origin===` implementation, at [325325,325367], scopes it to the messages the implementation SENT, and its sibling `wire-schema-harness-error` takes the harness-origin half and reports it as a BUG IN THE HARNESS rather than as a score of our parsing. So the suite validates messages in BOTH directions and scores our handling of neither inbound one. The scope is read off the addressed bytes — oc-axes-c1.json's `harness_origin_sibling` excerpt — and not off the check's description.",
+      "near_miss": "`wire-schema-valid` / WireSchemaValid, and it is the sharpest near miss in this file because it is IN this file's declared check population and, until MES-110, THREE members of this very ticket carried an edge to it — two agreeing (`MCP.ProtocolTest`'s two `encode/1` claims) and one all-silent and escalated. Since MES-110 (rule A, A3 §2) TWO do: the third, `encode!/1 returns JSON string`, is a `no-axis-contact` bucket-1 row under NAC05 that names this check as its near miss. It validates JSON-RPC messages against the spec schema — but `o=t.filter(e=>e.origin===` implementation, at [325325,325367], scopes it to the messages the implementation SENT, and its sibling `wire-schema-harness-error` takes the harness-origin half and reports it as a BUG IN THE HARNESS rather than as a score of our parsing. So the suite validates messages in BOTH directions and scores our handling of neither inbound one. The scope is read off the addressed bytes — oc-axes-c1.json's `harness_origin_sibling` excerpt — and not off the check's description.",
       "hits": 0,
       "population": {
         "kind": "manifest_rows",
@@ -2801,7 +2892,7 @@
           "hits": 4
         }
       ],
-      "near_miss": "`ClientDeclaresRootsCapability` / `ClientDeclaresSamplingCapability` / `ClientDeclaresElicitationCapability`, which are in this file's declared check population and already carry edges from `MCP.Protocol.CapabilitiesTest`'s ClientCapabilities row. They point the OTHER WAY: their single axis is `capability_value_is_a_plain_object` over the capability the CLIENT declares in its own `_meta`. `ServerDeclaresPromptsInDiscover` is the server-side mirror and is SERVER-leg. So `capabilit` returns 12 rows and not one of them is about what a client makes of a server's map — the same word, the opposite direction.",
+      "near_miss": "`ClientDeclaresRootsCapability` / `ClientDeclaresSamplingCapability` / `ClientDeclaresElicitationCapability`, which are in this file's declared check population. The first two carry edges from `MCP.Protocol.CapabilitiesTest`'s ClientCapabilities row, and until MES-110 the third did too; since MES-110 (rule A, A3 §2) that claim is a claim-level `no-axis-contact` row under NAC03 that names `ClientDeclaresElicitationCapability` as its near miss. They point the OTHER WAY: their single axis is `capability_value_is_a_plain_object` over the capability the CLIENT declares in its own `_meta`. `ServerDeclaresPromptsInDiscover` is the server-side mirror and is SERVER-leg. So `capabilit` returns 12 rows and not one of them is about what a client makes of a server's map — the same word, the opposite direction.",
       "hits": 0,
       "population": {
         "kind": "manifest_rows",
@@ -3193,7 +3284,265 @@
         "what": "both CG7 scenario classes — `http-custom-headers` and `http-invalid-tool-headers` — from the first to the start of `json-schema-ref-no-deref`. Their tool definitions are the fixture: 55 `x-mcp-header` annotations across 14 `properties:{` blocks.",
         "bytes": 14027
       }
+    },
+    {
+      "id": "NAC01",
+      "kind": "no-axis-contact",
+      "subject": "a client NOT retrying: an error from which it cannot negotiate a version (a -32022 offering no version it supports, a -32022 with no usable `supported` data, or an error that is not -32022 at all) surfaced to the caller with no second request sent",
+      "pattern": "(?i)32022|unsupported|surfac|no second request|sent_messages|error[^|]{0,40}retr",
+      "positive_controls": [
+        {
+          "term": "(?i)retry",
+          "hits": 6
+        },
+        {
+          "term": "(?i)version",
+          "hits": 6
+        }
+      ],
+      "near_miss": "`ClientRetrySupportedVersion`, and it shares this claim's SUBJECT, the version-negotiation retry, while touching none of its PREDICATE: both of its axes (`retry_header_version_is_supported`, `retry_meta_version_is_supported`) are predicates ON a retry, and this claim is that there is none. Until MES-110 that was an all-silent edge onto it; rule A makes it no match. A broader first pattern, `no retry`, came back with `DefaultResultTypeComplete`'s `no_retry_when_the_result_states_no_result_type` and was narrowed rather than accepted: that axis is the MRTR retry after a result with no `resultType`, a different retry with a different trigger, and it is named here so the narrowing is visible rather than convenient.",
+      "near_miss_tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
+      "hits": 0,
+      "population": {
+        "kind": "axis_rows",
+        "artefacts": [
+          "docs/conformance/oc-axes-2026-07-28.json",
+          "conformance/data/oc-axes-c1.json"
+        ],
+        "checks": "the_check_population_this_file_declares",
+        "fields": "axis | expr | requires, joined",
+        "rows": 83,
+        "why": "THE PREDICATES, not the descriptions, and that is what rule A asks for (A3 §2, MES-110): the search is for any predicate the claim touches. A description-level sweep would find the near miss every time, because rule A's near miss shares the claim's subject by definition. The population is the axis rows of every check in this file's own declared check population, read out of the two axis artefacts, so it cannot drift from the declaration it is taken within."
+      }
+    },
+    {
+      "id": "NAC02",
+      "kind": "no-axis-contact",
+      "subject": "the version-negotiation retry COMPLETING: after a -32022 whose `supported` names the configured version, the retried call returns its result to the caller",
+      "pattern": "(?i)32022|retry (completes|succeeds)|after (the|a) retry|completes after",
+      "positive_controls": [
+        {
+          "term": "(?i)retry",
+          "hits": 6
+        },
+        {
+          "term": "(?i)complete",
+          "hits": 1
+        }
+      ],
+      "near_miss": "`ClientRetrySupportedVersion`. Same subject, the retry after a -32022; its axes score what the RETRY carries (the header and the `_meta` version), and this member asserts neither: its only version assertion is on the request BEFORE the rejection (S9-17). So it touches none of the predicate and rule A makes it no match. `(?i)complete` reaches `DefaultResultTypeComplete`, whose axis reads a result with no `resultType` as `complete`. That is MRTR completion, not a version retry, and it is not this claim.",
+      "near_miss_tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion",
+      "hits": 0,
+      "population": {
+        "kind": "axis_rows",
+        "artefacts": [
+          "docs/conformance/oc-axes-2026-07-28.json",
+          "conformance/data/oc-axes-c1.json"
+        ],
+        "checks": "the_check_population_this_file_declares",
+        "fields": "axis | expr | requires, joined",
+        "rows": 83,
+        "why": "THE PREDICATES, not the descriptions, and that is what rule A asks for (A3 §2, MES-110): the search is for any predicate the claim touches. A description-level sweep would find the near miss every time, because rule A's near miss shares the claim's subject by definition. The population is the axis rows of every check in this file's own declared check population, read out of the two axis artefacts, so it cannot drift from the declaration it is taken within."
+      }
+    },
+    {
+      "id": "NAC03",
+      "kind": "no-axis-contact",
+      "subject": "an UNDECLARED capability omitted from the encoding entirely: the key absent, not present with an empty or false value",
+      "pattern": "(?i)capabilit[^|]*(omit|absent|undeclared|not declared|missing)|(omit|absent|undeclared|not declared)[^|]*capabilit|\\bin d\\b|has_key",
+      "positive_controls": [
+        {
+          "term": "(?i)elicitation",
+          "hits": 1
+        },
+        {
+          "term": "(?i)capabilit",
+          "hits": 4
+        }
+      ],
+      "near_miss": "`ClientDeclaresElicitationCapability`. Its one axis, `capability_value_is_a_plain_object`, is a predicate on a DECLARED capability's value; the case this claim asserts, an undeclared one being absent, is the check's PRECONDITION (`d&&e in d`, the branch on which it skips), and a precondition is not an axis. So the claim shares the check's subject and touches none of its predicate: no match under rule A. A sweep for `omit`/`absent`/`missing` alone returns the SEP-2243 header rows (`ClientCustomHeaderOmitNull`, the `Missing Mcp-Method header` rows). They are about headers, not capabilities, and the pattern keeps the two words together for that reason.",
+      "near_miss_tag": "oc:client/request-metadata/sep-2575-client-declares-elicitation-capability/ClientDeclaresElicitationCapability",
+      "hits": 0,
+      "population": {
+        "kind": "axis_rows",
+        "artefacts": [
+          "docs/conformance/oc-axes-2026-07-28.json",
+          "conformance/data/oc-axes-c1.json"
+        ],
+        "checks": "the_check_population_this_file_declares",
+        "fields": "axis | expr | requires, joined",
+        "rows": 83,
+        "why": "THE PREDICATES, not the descriptions, and that is what rule A asks for (A3 §2, MES-110): the search is for any predicate the claim touches. A description-level sweep would find the near miss every time, because rule A's near miss shares the claim's subject by definition. The population is the axis rows of every check in this file's own declared check population, read out of the two axis artefacts, so it cannot drift from the declaration it is taken within."
+      }
+    },
+    {
+      "id": "NAC04",
+      "kind": "no-axis-contact",
+      "subject": "a tool the client EXCLUDED for an invalid annotation, called anyway by the test, carrying no mirrored headers because its annotations were dropped with it",
+      "pattern": "(?i)no (x-mcp-|mcp-)?headers?|mirrors? nothing|without (any )?headers?|headers? (is|are) (absent|omitted|empty)",
+      "positive_controls": [
+        {
+          "term": "(?i)invalid_object_header",
+          "hits": 1
+        },
+        {
+          "term": "(?i)calledTools",
+          "hits": 11
+        }
+      ],
+      "near_miss": "`ClientRejectsInvalidTool_invalid_object_header`. Its one axis, `invalid_tool_is_not_called`, scores whether the client CALLED the tool; this member deliberately calls it through `Client.call_tool/3` and asserts only that the call carries no headers. Same subject, the excluded `invalid_object_header` tool, and none of the predicate: no match under rule A. Whether SEP-2243's `MUST reject (exclude)` reaches a direct `call_tool/3` on the name is the requirement-reading question the edge's note routed, and it is untouched by moving the record.",
+      "near_miss_tag": "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_object_header",
+      "hits": 0,
+      "population": {
+        "kind": "axis_rows",
+        "artefacts": [
+          "docs/conformance/oc-axes-2026-07-28.json",
+          "conformance/data/oc-axes-c1.json"
+        ],
+        "checks": "the_check_population_this_file_declares",
+        "fields": "axis | expr | requires, joined",
+        "rows": 83,
+        "why": "THE PREDICATES, not the descriptions, and that is what rule A asks for (A3 §2, MES-110): the search is for any predicate the claim touches. A description-level sweep would find the near miss every time, because rule A's near miss shares the claim's subject by definition. The population is the axis rows of every check in this file's own declared check population, read out of the two axis artefacts, so it cannot drift from the declaration it is taken within."
+      }
+    },
+    {
+      "id": "NAC05",
+      "kind": "no-axis-contact",
+      "subject": "the BANG encoder's return type: `encode!/1` handing back the JSON binary bare, where its non-bang sibling wraps it in an `{:ok, _}` tuple",
+      "pattern": "(?i)encode|tuple|bang|return type|\\{:ok",
+      "positive_controls": [
+        {
+          "term": "(?i)schema",
+          "hits": 1
+        },
+        {
+          "term": "(?i)wire",
+          "hits": 1
+        }
+      ],
+      "near_miss": "`WireSchemaValid` (client, `tools_call`). Its one axis scores that every message the implementation put on the wire validates against the spec schema. This member's subject is an SDK function's return shape, and its one incidental field read is a sanity check on the test, not a claim about wire validity. It is a near miss because the member's two siblings in the same module ARE edges onto this check.",
+      "near_miss_tag": "oc:client/tools_call/wire-schema-valid/WireSchemaValid",
+      "hits": 0,
+      "population": {
+        "kind": "axis_rows",
+        "artefacts": [
+          "docs/conformance/oc-axes-2026-07-28.json",
+          "conformance/data/oc-axes-c1.json"
+        ],
+        "checks": "the_check_population_this_file_declares",
+        "fields": "axis | expr | requires, joined",
+        "rows": 83,
+        "why": "THE PREDICATES, not the descriptions, and that is what rule A asks for (A3 §2, MES-110): the search is for any predicate the claim touches. A description-level sweep would find the near miss every time, because rule A's near miss shares the claim's subject by definition. The population is the axis rows of every check in this file's own declared check population, read out of the two axis artefacts, so it cannot drift from the declaration it is taken within."
+      }
+    },
+    {
+      "id": "CLV01",
+      "kind": "no-oc-scenario",
+      "subject": "an annotated parameter FORGING the Mcp-Method routing header: a mirrored `x-mcp-header` named `Method` producing `Mcp-Method` rather than `Mcp-Param-Method`",
+      "pattern": "(?i)forg|spoof|(must not|never|cannot|\\bnot\\b)[^|]{0,40}mcp-method|mcp-method[^|]{0,40}(\\bnot\\b|never|forg)",
+      "positive_controls": [
+        {
+          "term": "(?i)mcp-method",
+          "hits": 8
+        },
+        {
+          "term": "(?i)x-mcp-header",
+          "hits": 13
+        }
+      ],
+      "near_miss": "The `ClientMcpMethodHeader_*` rows, which score that the routing header is PRESENT and correct on a real POST, and the `http-custom-headers` rows, which score the mirrored `Mcp-Param-*` headers. Neither asks whether a mirrored parameter can forge the routing header. A first cut of the pattern matched `Mcp-Method header on notifications` through the substring `not`, and the word boundary was added rather than the hit argued away.",
+      "hits": 0,
+      "population": {
+        "kind": "manifest_rows",
+        "artefact": "docs/conformance/in-scope-2026-07-28.json",
+        "rows_at": "scenarios[].checks[]",
+        "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+        "rows": 175,
+        "restrict": null,
+        "why": "ALL 175 manifest rows, unrestricted. The row recorded that no check anywhere in the suite scores this, so the zero is taken where the record claims it, not over a slice where it would be easier."
+      }
+    },
+    {
+      "id": "CLV02",
+      "kind": "no-oc-scenario",
+      "subject": "a DIAGNOSTIC for a SEP-2243 exclusion: the client logging which tool it excluded from tools/list and why",
+      "pattern": "(?i)exclu[^|]{0,60}\\blog|\\blog[^|]{0,60}exclu|diagnostic|\\blog(s|ged)? (a |the )?(warning|reason)",
+      "positive_controls": [
+        {
+          "term": "(?i)exclu",
+          "hits": 1
+        },
+        {
+          "term": "(?i)\\blog",
+          "hits": 2
+        }
+      ],
+      "near_miss": "`ClientKeepsValidTool` (`Client MUST keep valid tools while excluding invalid ones`), the only row about exclusion, which scores the tools that survive, not a log line. The `log` rows are server-side `logging/setLevel` and `notifications/message` checks, a different peer and a different log. A log line is invisible on the wire, so the harness cannot observe this at all.",
+      "hits": 0,
+      "population": {
+        "kind": "manifest_rows",
+        "artefact": "docs/conformance/in-scope-2026-07-28.json",
+        "rows_at": "scenarios[].checks[]",
+        "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+        "rows": 175,
+        "restrict": null,
+        "why": "ALL 175 manifest rows, unrestricted. The row recorded that no check anywhere in the suite scores this, so the zero is taken where the record claims it, not over a slice where it would be easier."
+      }
+    },
+    {
+      "id": "CLV03",
+      "kind": "no-oc-scenario",
+      "subject": "the `:headers` TRANSPORT OPT `MCP.Client` hands its transport being empty for every request that is not a tools/call",
+      "pattern": "(?i)transport opt|:headers|sent_opts|non-tools/call|other methods|every (other )?method|all (other )?methods",
+      "positive_controls": [
+        {
+          "term": "(?i)tools/list",
+          "hits": 2
+        },
+        {
+          "term": "(?i)header",
+          "hits": 45
+        }
+      ],
+      "near_miss": "`ClientMcpMethodHeader_tools_list`, which a naive reading takes for a CONTRADICTION: it scores the routing header ON THE WIRE for a tools/list, and that header is added below the seam this claim is about, by the HTTP transport client MockTransport does not have. The two statements are about different layers.",
+      "hits": 0,
+      "population": {
+        "kind": "manifest_rows",
+        "artefact": "docs/conformance/in-scope-2026-07-28.json",
+        "rows_at": "scenarios[].checks[]",
+        "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+        "rows": 175,
+        "restrict": null,
+        "why": "ALL 175 manifest rows, unrestricted. The row recorded that no check anywhere in the suite scores this, so the zero is taken where the record claims it, not over a slice where it would be easier."
+      }
+    },
+    {
+      "id": "CLV04",
+      "kind": "no-oc-scenario",
+      "subject": "the ABSENCE of `Mcp-Name` on a method with no name target (a tools/list carrying `Mcp-Method` and no `Mcp-Name`)",
+      "pattern": "(?i)mcp-name[^|]{0,60}(absent|\\bnot\\b|\\bno\\b|omit|never)|(absent|omit|without|\\bno\\b)[^|]{0,30}mcp-name|tools/list[^|]*mcp-name",
+      "positive_controls": [
+        {
+          "term": "(?i)mcp-name",
+          "hits": 3
+        },
+        {
+          "term": "(?i)tools/list",
+          "hits": 2
+        }
+      ],
+      "near_miss": "The `ClientMcpNameHeader_*` rows. They exist only for tools/call, resources/read and prompts/get, and each scores the header's PRESENCE and value on its own method; no row, on either leg, scores its absence elsewhere.",
+      "hits": 0,
+      "population": {
+        "kind": "manifest_rows",
+        "artefact": "docs/conformance/in-scope-2026-07-28.json",
+        "rows_at": "scenarios[].checks[]",
+        "fields": "leg | scenario | check_id | name | description | discriminator, joined",
+        "rows": 175,
+        "restrict": null,
+        "why": "ALL 175 manifest rows, unrestricted. The row recorded that no check anywhere in the suite scores this, so the zero is taken where the record claims it, not over a slice where it would be easier."
+      }
     }
   ],
-  "absence_searches_note": "The SEARCH REGISTRY. Every `declared_unmatched` row C1b-iii authored, and the two CG7 rows it backfilled, names one of these by `search_id`; the generator refuses a row whose id does not resolve, an entry that records anything but `hits: 0`, an entry with no near miss, and an entry no row names (G23). Each entry carries the SUBJECT searched for at CLAIM granularity, a machine-readable `pattern`, the POPULATION it was run over, the `hits` (0, always — an entry is by definition a search that found none), POSITIVE CONTROLS proving the sweep reached the population, and the NEAR MISS. `crosswalk_controls.exs absence` re-runs every entry's own pattern over its own named population and requires 0, requires each positive control to be non-zero, and requires the `/./s` mutation to match the whole population — so the matcher is shown able to fire rather than assumed to be.\n\n(C1b-iii) WHAT IT TRADES, stated because it is the reason 37 members fit in one ticket. One measurement covers as many as seven members. The per-member statement `my claim's subject is this search's subject` is a JUDGEMENT, not a measurement, and a wrong one hides a member behind a search that was never about it. Two things bound it: the subject is stated at the granularity of the CLAIM (`decode_event/1` field parsing, never `SSE`), and the near miss is per-search — so a member whose nearest check differs from its group's cannot share the group's search and gets its own. That is why S01 and S02 are separate over one pair of SSE rows, and why S13 and S14 are separate inside one `describe` block. The judgement is carried VISIBLY on every row, in `why_this_search_is_this_claims_search`, so it is reviewable rather than implicit.\n\nWHAT IT DOES NOT COVER. The 26 `declared_unmatched` rows C1b-i and C1b-ii authored carry a prose `the_search_that_found_none` and NO `search_id`: their searches were run, and recorded, but not registered in a re-runnable form. Registering them would mean either re-running 26 searches C1b-iii did not run, or writing a `hits: 0` nobody re-measured — the invented-field defect C1b-i refused. So G23's PROSE limb is leg-wide with no exception, and its REGISTRY limb reaches the 39 rows that carry an id. Stated as a residual; C1c faces the same choice on the server leg and should settle it there rather than inherit it silently."
+  "absence_searches_note": "The SEARCH REGISTRY. Every `declared_unmatched` row C1b-iii authored, and the two CG7 rows it backfilled, names one of these by `search_id`; the generator refuses a row whose id does not resolve, an entry that records anything but `hits: 0`, an entry with no near miss, and an entry no row names (G23). Each entry carries the SUBJECT searched for at CLAIM granularity, a machine-readable `pattern`, the POPULATION it was run over, the `hits` (0, always — an entry is by definition a search that found none), POSITIVE CONTROLS proving the sweep reached the population, and the NEAR MISS. `crosswalk_controls.exs absence` re-runs every entry's own pattern over its own named population and requires 0, requires each positive control to be non-zero, and requires the `/./s` mutation to match the whole population — so the matcher is shown able to fire rather than assumed to be.\n\n(C1b-iii) WHAT IT TRADES, stated because it is the reason 37 members fit in one ticket. One measurement covers as many as seven members. The per-member statement `my claim's subject is this search's subject` is a JUDGEMENT, not a measurement, and a wrong one hides a member behind a search that was never about it. Two things bound it: the subject is stated at the granularity of the CLAIM (`decode_event/1` field parsing, never `SSE`), and the near miss is per-search — so a member whose nearest check differs from its group's cannot share the group's search and gets its own. That is why S01 and S02 are separate over one pair of SSE rows, and why S13 and S14 are separate inside one `describe` block. The judgement is carried VISIBLY on every row, in `why_this_search_is_this_claims_search`, so it is reviewable rather than implicit.\n\nWHAT IT DOES NOT COVER. The 26 `declared_unmatched` rows C1b-i and C1b-ii authored carry a prose `the_search_that_found_none` and NO `search_id`: their searches were run, and recorded, but not registered in a re-runnable form. Registering them would mean either re-running 26 searches C1b-iii did not run, or writing a `hits: 0` nobody re-measured — the invented-field defect C1b-i refused. So G23's PROSE limb is leg-wide with no exception, and its REGISTRY limb reaches the 45 rows that carry an id. Stated as a residual; C1c faces the same choice on the server leg and should settle it there rather than inherit it silently."
 }

@@ -69,7 +69,7 @@ defmodule MCP.Conformance.BucketProjectionTest do
       cell(id: "D", bucket: "5", leg: "server"),
       cell(id: "E", bucket: "5"),
       cell(id: "F", bucket: "6", et: "red"),
-      cell(id: "G", bucket: nil, escalation: "no_axis_contact — every axis silent")
+      cell(id: "G", bucket: nil, escalation: ":inconsistent_verdict_pair — match-relation.md §3")
     ]
 
     members = Enum.map(cells, &get_in(&1, ["member", "register_key"])) ++ ["MCP.HTest/test H"]
@@ -87,7 +87,18 @@ defmodule MCP.Conformance.BucketProjectionTest do
         # cells address: the bucket-2 universe is the first, never the second.
         "declared_checks" => Enum.sort(checks)
       },
-      "declared_unmatched" => [unmatched("H")]
+      "declared_unmatched" => [unmatched("H")],
+      # Rule B (MES-110): a claim-level record, on an EDGE-BEARING member (E).
+      "claim_level_unmatched" => %{
+        "owner" => "MES-133 (D1)",
+        "rows" => [
+          %{
+            "member" => %{"register_key" => "MCP.ETest/test E"},
+            "claim" => "an unmatched claim of E",
+            "tag" => "oc:none/no-axis-contact/E-unmatched"
+          }
+        ]
+      }
     }
     |> Map.merge(overrides)
     |> with_stored_bucket_2()
@@ -223,6 +234,24 @@ defmodule MCP.Conformance.BucketProjectionTest do
       refute Enum.any?(BucketProjection.bucket_ids(), fn id ->
                ids(view(files, id)) == ids(escalated)
              end)
+    end
+
+    test "claim-level records are a twelfth view, counted in CLAIMS and in no equation (rule B)",
+         %{files: files} do
+      v = Map.fetch!(files, "claim-unmatched-#{@rev}.json")
+      r = Map.fetch!(files, "roll-up-#{@rev}.json")
+
+      assert v["bucket"] == nil
+      assert v["unit"] == "claims"
+      assert v["adjudication_owner"] == "MES-133 (D1)"
+      assert Enum.map(v["rows"], & &1["tag"]) == ["oc:none/no-axis-contact/E-unmatched"]
+
+      # In no equation: a claim is not a member, a check or an edge.
+      refute Enum.any?(r["equations"], fn e ->
+               Enum.any?(e["terms"], &(&1["term"] == "claim-unmatched"))
+             end)
+
+      assert r["partition"]["claim_unmatched_members_carry_an_edge"]["holds"]
     end
 
     # REWRITTEN BY CR-1 ON MES-104. This used to assert
@@ -405,6 +434,27 @@ defmodule MCP.Conformance.BucketProjectionTest do
       assert message =~ "outside the declared population (1)"
     end
 
+    test "claim_unmatched — a claim-level record on a member with NO edge (rule B)" do
+      doc =
+        put_in(
+          fixture(),
+          ["claim_level_unmatched", "rows", Access.at(0), "member", "register_key"],
+          "MCP.HTest/test H"
+        )
+
+      assert {:error, {:claim_unmatched, message}} =
+               BucketProjection.project(doc, bucket_zero(), %{})
+
+      assert message =~ "CLAIM-UNMATCHED"
+      assert message =~ "MCP.HTest/test H"
+    end
+
+    test "claim_unmatched — a crosswalk with no claim-level block projects an EMPTY view" do
+      doc = Map.delete(fixture(), "claim_level_unmatched")
+      assert {:ok, files} = BucketProjection.project(doc, bucket_zero(), %{})
+      assert Map.fetch!(files, "claim-unmatched-#{@rev}.json")["count"] == 0
+    end
+
     test "member_partition — a bucket-1 member with no declared_unmatched record" do
       doc = Map.put(fixture(), "declared_unmatched", [])
 
@@ -566,6 +616,7 @@ defmodule MCP.Conformance.BucketProjectionTest do
                  :edge_partition,
                  :member_partition,
                  :check_partition,
+                 :claim_unmatched,
                  :population_statement
                ]
     end
@@ -602,6 +653,16 @@ defmodule MCP.Conformance.BucketProjectionTest do
       crosswalk: c
     } do
       assert Map.fetch!(files, "escalated-#{@rev}.json")["count"] == c["escalations"]["count"]
+    end
+
+    test "the claim-unmatched view holds exactly the crosswalk's claim-level rows, verbatim", %{
+      files: files,
+      crosswalk: c
+    } do
+      v = Map.fetch!(files, "claim-unmatched-#{@rev}.json")
+      assert v["rows"] == c["claim_level_unmatched"]["rows"]
+      assert v["count"] == c["claim_level_unmatched"]["count"]
+      assert v["adjudication_owner"] == c["claim_level_unmatched"]["owner"]
     end
 
     test "each view's rows are the crosswalk's records verbatim", %{files: files, crosswalk: c} do
