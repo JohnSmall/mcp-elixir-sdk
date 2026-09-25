@@ -78,8 +78,8 @@ it is an address of whatever the file happens to put there today.
 
 * **A — membership.** Every row key written in a code span below must be a key
   `etcc-register.json` carries. A unit that is **renamed or deleted** fails loudly; a
-  unit that merely **moves** cannot break it, which is the whole point. **75 distinct
-  keys, 158 occurrences** at the delivered tip.
+  unit that merely **moves** cannot break it, which is the whole point. **83 distinct
+  keys, 166 occurrences** at MES-111's delivered tip (75 and 158 before §12 cited eight).
 * **B — the ratchet, keyed on the OCCURRENCE.** A line-shaped citation is permitted
   only where `permitted_line_citations/0` grandfathers **that occurrence** — the pair
   *(§ section, citation text)*, carrying how many times it may stand there and the
@@ -1763,3 +1763,136 @@ ticket that needed it.
   Part A **amendment candidates** in `docs/sprint_7_issues.md` S7-14, not applied
   here. Neither are §11's two non-reproducing sub-figures (S7-12): correcting the
   working of a ratified worked example is still editing a ratified document.
+
+---
+
+## §12 MES-111 — the nine `ClientRejectsInvalidTool_*` checks: ET-ADJ, correctly untagged
+
+**Added on MES-111, Sprint 12, 2026-09-25, at `241d89a`.** This section **applies** Part A
+of `etcc-membership.md` to six rows already in `etcc-register.json` and **amends nothing**:
+no criterion text, no label, no register row moves. Section references in it are to
+`etcc-membership.md`, per §0, except §12 itself.
+
+**The question it answers.** MES-104's close-out found C1b-i's bucket 2b holding nine
+`ClientRejectsInvalidTool_*` checks, and observed that `MCP.Protocol.HeaderMirrorTest`
+names every one of their fixture classes in a test with no `:etcc` tag. So is that a
+MES-84 tagging gap, or are those units correctly outside ET-CC?
+
+### The ruling
+
+`[authored 29391 | ratified 29392]`
+
+> MES-111 ruling. The six `MCP.Protocol.HeaderMirrorTest` units in describe
+> "annotation validity — the ten classes the alpha.11 fixture exercises"
+> stay ET-ADJ and stay untagged. Each asserts an `{:error, reason}` tuple from
+> `HeaderMirror.validate_schema/1`: a value the SDK invents, with no wire value to
+> be verbatim to (§2.5(a)), and one SDK step -- `partition_tools/1`'s use of the
+> verdict -- lies between it and the wire (§2.2). §2.1 returns YES, measured:
+> a client that ignores the verdict leaves all six green. Their missing `:etcc`
+> is therefore not a tagging gap -- the tag is derived from the register
+> (MES-84) and `mix conformance.etcc_tags --check` agrees both ways. Bucket
+> 2b's nine `ClientRejectsInvalidTool_*` checks are correctly unmatched, and
+> unmatched is not untested: each is covered at the validation step by the
+> ET-ADJ unit the table below names.
+
+### Part A, applied unit by unit
+
+All six units have the same shape, so one application holds for each of them, and the
+register already records it: every one of the six rows carries `label` `ET-ADJ`,
+`excluding_gate` 2, and a `consumed_at` naming `MCP.Client.partition_tools/1`.
+
+* **§2.5(a) — the asserted value is invented.** Each unit asserts only an
+  `{:error, {reason_atom, value}}` returned by `MCP.Protocol.HeaderMirror.validate_schema/1`.
+  No wire message carries that tuple, so there is nothing for it to be verbatim to.
+* **§2.2 — there is a step, and it is free to be wrong.** Between that verdict and the
+  wire sits `MCP.Client.partition_tools/1`, at `case HeaderMirror.validate_tool(tool) do`,
+  choosing whether to drop the tool. A step there can ignore the verdict and none of the
+  six units would notice.
+* **§2.1 — answered by MEASUREMENT, not by reading.** *Would an SDK that got the
+  ClientRejectsInvalidTool behaviour arbitrarily wrong still pass these units?* **Yes.**
+  With the client made to ignore the verdict, all six stay green (the control below).
+  Gate 2 fails.
+* **§5 — ET-ADJ, not ET-OUT.** The artefact is consumed at a named `lib/` call site,
+  `MCP.Client.partition_tools/1`, on the path that decides whether the tool's
+  `Mcp-Param-*` headers are ever emitted. Gate 3 is not reached.
+* **The tag follows the label, and never leads it.** MES-84 derives `@tag :etcc` from
+  this register (`MCP.Conformance.ETCCTags`). A hand-applied tag on an ET-ADJ unit
+  would be a second record of membership, and `mix conformance.etcc_tags --check`
+  would go red on it. The only route to TAG is to relabel in
+  `conformance/data/etcc-decisions.json`, and that needs gates 2 and 3 to pass. They do not.
+
+### The nine checks, the six units, and the tenth class
+
+The describe says TEN because the alpha.11 fixture ships ten invalid tools. It holds
+**six** runtime units because two of them loop over several classes inside one body,
+and a loop inside a body is one unit under §0.
+
+| bucket-2b check | covering ET-ADJ unit (row key) |
+| --- | --- |
+| `ClientRejectsInvalidTool_invalid_empty_header` | `MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_empty_header: an empty value is rejected` |
+| `ClientRejectsInvalidTool_invalid_array_header` | `MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_object_header / invalid_array_header / invalid_null_header: non-primitive types` |
+| `ClientRejectsInvalidTool_invalid_null_header` | the same unit, same loop |
+| `ClientRejectsInvalidTool_invalid_duplicate_same_case` | `MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_duplicate_same_case: the same value twice is rejected` |
+| `ClientRejectsInvalidTool_invalid_duplicate_diff_case` | `MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_duplicate_diff_case: values differing only in case are rejected` |
+| `ClientRejectsInvalidTool_invalid_space_in_name` | `MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_space_in_name / invalid_colon_in_name / invalid_non_ascii_name: not 1*tchar` |
+| `ClientRejectsInvalidTool_invalid_colon_in_name` | the same unit, same loop |
+| `ClientRejectsInvalidTool_invalid_non_ascii_name` | the same unit, same loop |
+| `ClientRejectsInvalidTool_invalid_control_char_name` | `MCP.Protocol.HeaderMirrorTest/test annotation validity — the ten classes the alpha.11 fixture exercises invalid_control_char_name: a control character is named as such, not as a grammar miss` |
+
+**The tenth class, `invalid_object_header`, is not in bucket 2b because it IS matched.**
+`MCP.ClientToolSchemasTest`'s `invalid_tool/1` helper builds exactly that class: an
+`x-mcp-header` on a `"type" => "object"` property. So the ET-CC member
+`MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept`
+carries its edge, in bucket 5b on axis `invalid_tool_is_not_called`. The same helper
+backs
+`MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an excluded tool leaves no annotations behind, so calling it mirrors nothing`
+in bucket 1.
+
+**That asymmetry is the finding this section leaves open.** The wire-level exclusion is
+tested at ET-CC for **one** fixture class. For the other **nine**, only the validation
+step is tested, at ET-ADJ. Whether to close that gap is a remediation build decision
+and belongs to **MES-128 (D2b)**. It is not decided here. One candidate remedy is to
+drive the W6 exclusion over all ten fixture classes at MockTransport level, which would
+add ET-CC members the crosswalk could match. That is a `test/` change and would move the
+unit population.
+
+### The counterfactual, committed so it can be re-run
+
+    MIX_ENV=test mix run conformance/controls/invalid_tool_counterfactual_controls.exs
+
+The control runs both test modules inside one VM, four times over, and exits 0 only if
+all four limbs hold. The six subjects and the witnesses are taken from
+`etcc-register.json`, not from the control file: the subjects are the six ET-ADJ rows,
+and the witnesses are the ET-CC rows in describe "W6 — SEP-2243 tool exclusion". Both
+sets are checked against the run in both directions.
+
+| limb | client | the six subjects | the two W6 ET-CC witnesses |
+| --- | --- | --- | --- |
+| P1 | unmutated | 6 passed | 2 passed |
+| M1 | the verdict is ignored: `{:error, _}` is rewritten to `{:ok, []}` at the site above, by in-VM `Code.compile_string` | **6 passed** (the §2.1 YES) | **1 failed** (`…an invalid tool is dropped and the valid ones are kept`), which is the potency limb |
+| N1 | the original source, recompiled through the same path | 6 passed | 2 passed. M1's adjudicator must **refuse** this as `{:refused, :not_potent}`, which shows the potency limb can fire |
+| R1 | the compiled `.beam` reloaded, md5 equal to P1's | 6 passed | 2 passed |
+
+Measured on MES-111, over `lib/` and `test/` byte-identical to `241d89a`: exit 0, about
+1.9 s. **Nothing is written into `lib/`.** The control reads `lib/mcp/client.ex`,
+asserts its sha256 is unchanged at the end, and leaves no mutated module anywhere but in
+its own VM. **It is not in gate 5.** Wiring it in would mean a new `test/` unit, and
+that unit would itself be a new member of the population this register totals.
+
+### What this section does not do
+
+* It **does not re-derive the six labels.** They were set on MES-81 and are only
+  re-examined here against the question MES-104 raised. The register rows are
+  byte-unchanged.
+* It **does not render bucket 2b.** The rule that bucket 2b's population sentence is its
+  predicate verbatim (*"OC check with no ET-CC member match"*), and never "untested",
+  belongs to MES-128.
+* It **does not show the W6 witness failing for all nine classes.** M1 shows the
+  mutation is potent against the one class W6 exercises. That is enough to establish
+  that the six stayed green under a real behavioural change. It says nothing about the
+  other nine at the wire, which is exactly the asymmetry above.
+* It **does not show the adjudicator's second refusal, `{:refused, :subject_went_red}`,
+  firing.** That refusal is unreachable by construction: the six subjects call
+  `HeaderMirror.validate_schema/1` directly and never reference `MCP.Client`, so no
+  mutation of the client can redden them. M1 still fails closed if one ever did, because
+  its `:ok` requires every subject to pass.
