@@ -28,24 +28,66 @@ defmodule Mix.Tasks.Conformance.Adjudications do
     Argv.parse!("conformance.adjudications", argv, strict: [], usage: @usage)
 
     %{report: r, defects: defects} = Adjudications.load() |> Adjudications.audit()
+    Mix.shell().info(render(r, defects))
 
-    Mix.shell().info("""
+    if defects != [], do: Mix.raise("G32 refused: #{length(defects)} defect(s) above.")
+  end
 
-    G32 — D-group adjudication records against their views
+  @doc """
+  The universe line: how many views are owed a record, how many a closed
+  section closes, and each pending view with the ticket that closes it.
+  """
+  def views(r) do
+    pending =
+      r["pending"]
+      |> Enum.sort()
+      |> Enum.map_join(", ", fn {v, t} -> "#{short(v)} (#{t})" end)
 
-      records       #{r["records_visited"]}   (#{r["sections"]} sections over #{r["views_bound"]} views)
-      rows          #{r["rows_visited"]}
-      dispositions  #{inspect(r["dispositions"])}
-      citations     #{r["citations_verified"]} repository citations verified at the tip; #{r["harness_citations_not_verified_in_gate_5"]} harness citations NOT verified here (control `harness` mode)
-    """)
+    "owed #{r["owed"]} — closed #{length(r["closed"])}, pending #{map_size(r["pending"])}: #{pending}"
+  end
 
-    case defects do
-      [] ->
-        Mix.shell().info("  CLEAN — every bound view is adjudicated, both ways.\n")
+  defp short(view),
+    do: view |> Path.basename(".json") |> String.replace(~r/-\d{4}-\d{2}-\d{2}$/, "")
 
-      _ ->
-        Enum.each(defects, &Mix.shell().info("  " <> Adjudications.format_defect(&1)))
-        Mix.raise("G32 refused: #{length(defects)} defect(s) above.")
-    end
+  @doc """
+  The printed report. A count of citations VERIFIED is printed only on a clean
+  audit: a refused run verifies nothing, so it prints what it found and how
+  many drifted instead (MES-135 K5).
+  """
+  def render(r, defects) do
+    citations =
+      case defects do
+        [] ->
+          "#{r["repo_citations_holding"]} repository citations verified at the tip; " <>
+            "#{r["harness_citations_not_verified_in_gate_5"]} harness citations NOT verified here (control `harness` mode)"
+
+        _ ->
+          "#{r["repo_citations_found"]} repository citations found, " <>
+            "#{r["repo_citations_found"] - r["repo_citations_holding"]} drifted; " <>
+            "#{r["harness_citations_not_verified_in_gate_5"]} harness citations — a refused run verifies nothing"
+      end
+
+    verdict =
+      case defects do
+        [] -> ["  CLEAN — every bound view is adjudicated, both ways.\n"]
+        _ -> Enum.map(defects, &("  " <> Adjudications.format_defect(&1)))
+      end
+
+    Enum.join(
+      [
+        """
+
+        G32 — D-group adjudication records against their views
+
+          views         #{views(r)}
+          records       #{r["records_visited"]}   (#{r["sections"]} sections over #{r["views_bound"]} views)
+          rows          #{r["rows_visited"]}
+          dispositions  #{inspect(r["dispositions"])}
+          citations     #{citations}
+        """
+        | verdict
+      ],
+      "\n"
+    )
   end
 end

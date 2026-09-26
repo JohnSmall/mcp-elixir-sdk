@@ -54,6 +54,29 @@
 # check cut out: the missing-level plant audits CLEAN. (6) SDK_GAP_MISSING.
 # Likewise with the sdk_gap check cut out: the missing-gap plant audits CLEAN.
 #
+# MES-135 hardened G32 before its reuse by the D block. `refusals` gains W3
+# (K3, exclusive closure); the F7 attribution checks; a table of plants, one
+# per new kind (`plants/1`), for the universe of owed views (K2), the ties of a
+# row's content to its key (K1: W6, an unnamed-position plant on D2a-ii's last
+# row, and bucket-5a- and bucket-1-shaped rows built from the real views),
+# recurring citation bytes (Q3) and top-level citations (Q4); and W1 and W5
+# as planted on 4a's initialize row (W1 with RequestMetaInvalid's content),
+# which more than one tie refuses. That is a claim about those two plants, not
+# about member rows. Two rows' contents exchange unseen iff their check ties
+# are mutual and the et_test tie does not separate them (both member-less, or
+# the same member test): 481 of the 5778 pairs of committed rows at MES-135,
+# 477 bucket-2 and 4 member (the moduledoc names them). Two of those pairs are
+# shown CLEAN as KNOWN RESIDUALS: CR's bucket-2 plant (K1-R, CR 29672) and
+# the cross-record D4a initialize / D4b ping member pair (K1-R2, CR 29680).
+# `mutation` gains (7) closure_not_exclusive cut; (8) each new kind's clause
+# neutralised alone, with its plant then CLEAN; (9) W1 and W5 on the member
+# row still refused under any one neutralisation and CLEAN only under all of
+# theirs; (10) the walk narrowed back to rows. A narrowed
+# walk (2) is no longer a silent pass: G32 refuses it as owed_unadjudicated.
+# Plants that need files (outside the walk, a stray) use a tree copy under
+# the system tmp dir, never the clone, made a git work tree of its own because
+# the outside-the-walk scan lists the files git would commit (MES-135 B1).
+#
 # `harness` verifies every harness citation in EVERY record against the pinned
 # conformance build: sha256 first, then each byte span. Gate 5 cannot do this,
 # because the build is not in this repository. It FAILS CLOSED when the build
@@ -78,6 +101,25 @@ defmodule AdjudicationsControls do
   @d2ai "docs/conformance/adjudications/adjudication-D2a-i-2026-07-28.json"
   @v2a "docs/conformance/buckets/bucket-2a-2026-07-28.json"
   @d2aii "docs/conformance/adjudications/adjudication-D2a-ii-2026-07-28.json"
+  @w3 "docs/conformance/adjudications/adjudication-W3-plant.json"
+  @v1 "docs/conformance/buckets/bucket-1-2026-07-28.json"
+  # The arity of each clause `mutation` neutralises (MES-135).
+  @arity %{
+    "owed_defects" => 1,
+    "pending_closed_defects" => 1,
+    "catalogue_defects" => 1,
+    "excluded_defects" => 1,
+    "outside_anchor_defects" => 1,
+    "owner_defects" => 1,
+    "empty_closure_defects" => 1,
+    "outside_defects" => 1,
+    "stray_defects" => 1,
+    "et_test_defects" => 4,
+    "check_defects" => 4,
+    "root_cause_defects" => 4,
+    "echo_defects" => 4,
+    "ambiguous_defects" => 2
+  }
   @source "conformance/lib/mcp/conformance/adjudications.ex"
   @default_dist "/tmp/conf11/node_modules/@modelcontextprotocol/conformance/dist/index.js"
   @tcg1c_ascii "a non-ASCII tool name rides `mcp-name` as the Base64 sentinel and decodes back to the body value"
@@ -139,9 +181,10 @@ defmodule AdjudicationsControls do
 
     phantom = Map.put(first_4a, "tag", "oc:server/no-such-scenario/no-such-check/NoSuchCheck")
 
+    # Since MES-135 K1 a planted tag also unties the check: check_foreign co-fires.
     expect(
       "(b) phantom: a row keyed to an edge the view does not project",
-      [:phantom],
+      [:check_foreign, :phantom],
       A.key(phantom),
       update_rows(base, @v4a, &(&1 ++ [phantom]))
     )
@@ -176,10 +219,41 @@ defmodule AdjudicationsControls do
       update_rows(base, @v4a, fn [_ | rest] -> [stale | rest] end)
     )
 
+    # K5 (MES-135): the refused run above must not print a verified count.
+    %{report: sr, defects: sd} =
+      A.audit(update_rows(base, @v4a, fn [_ | rest] -> [stale | rest] end))
+
+    out = Mix.Tasks.Conformance.Adjudications.render(sr, sd)
+
+    check(
+      "  … K5: the task's report for that refused run makes no verified-count claim " <>
+        "(#{sr["repo_citations_found"]} found, #{sr["repo_citations_found"] - sr["repo_citations_holding"]} drifted)",
+      not String.contains?(out, "verified") and
+        sr["repo_citations_found"] - sr["repo_citations_holding"] == 1,
+      String.split(out, "\n")
+    )
+
+    %{report: cr, defects: []} = A.audit(base)
+
+    check(
+      "  … K5: and the clean tree's report does: #{cr["repo_citations_holding"]} verified",
+      Mix.Tasks.Conformance.Adjudications.render(cr, []) =~
+        "#{cr["repo_citations_holding"]} repository citations verified" and
+        cr["repo_citations_holding"] == cr["repo_citations_found"]
+    )
+
+    # On D2a-i's open section, whose view D2a-ii closes. (Opening D4a's 4a
+    # section, the plant before MES-135, now also leaves 4a owed_unadjudicated.)
     expect(
-      "open_without_owner",
+      "open_without_owner: D2a-i's open section with its owner removed",
       [:open_without_owner],
       nil,
+      update_section(base, @v2a, &Map.delete(&1, "owner"), @d2ai)
+    )
+
+    expect_kinds(
+      "  … and D4a's 4a section opened without an owner: open_without_owner AND owed_unadjudicated",
+      [:open_without_owner, :owed_unadjudicated],
       update_section(base, @v4a, &(&1 |> Map.put("closure", "open") |> Map.delete("owner")))
     )
 
@@ -258,7 +332,7 @@ defmodule AdjudicationsControls do
 
     expect(
       "(D2b) phantom: a 2b row keyed to a check bucket-2b does not project",
-      [:phantom],
+      [:check_foreign, :phantom],
       A.key(phantom_2b),
       update_rows(base, @v2b, &(&1 ++ [phantom_2b]), @d2b)
     )
@@ -315,7 +389,7 @@ defmodule AdjudicationsControls do
 
     expect(
       "(D2a-i) phantom: a row keyed to a check bucket-2a does not project, in an OPEN section",
-      [:phantom],
+      [:check_foreign, :phantom],
       A.key(phantom_2a),
       update_rows(base, @v2a, &(&1 ++ [phantom_2a]), @d2ai)
     )
@@ -352,10 +426,15 @@ defmodule AdjudicationsControls do
     planted = update_rows(base, @v2a, &(&1 ++ [foreign]), @d2ai)
 
     expect(
-      "(D2a-i) a real 2a row from OUTSIDE the slice: duplicate, D2a-ii adjudicates it",
-      [:duplicate],
+      "(D2a-i) a real 2a row from OUTSIDE the slice: duplicate, D2a-ii adjudicates it (and its check ties to another token)",
+      [:check_foreign, :duplicate, :duplicate],
       A.key(foreign),
       planted
+    )
+
+    check(
+      "  … F7: the duplicate is attributed to BOTH files holding the key",
+      for(%{kind: :duplicate, file: f} <- A.audit(planted).defects, do: f) == [@d2ai, @d2aii]
     )
 
     check(
@@ -382,10 +461,14 @@ defmodule AdjudicationsControls do
       selector_diff(base, view_rows) == {[], []}
     )
 
+    # The catalogue as it stood before MES-130 closed the view: 2a pending on it.
+    pre_mes130 = %{A.policy() | pending: Map.put(A.pending(), @v2a, "MES-130")}
+
     check(
-      "  … and with D2a-ii's section removed, G32 admits both again: the refusals are the closure's",
-      A.audit(drop_record(planted, @d2aii)).defects == [] and
-        A.audit(drop_record(dropped, @d2aii)).defects == []
+      "  … and with D2a-ii's section removed (2a pending on MES-130 again), no duplicate or missing remains: those refusals are the closure's (the foreign row's check_foreign is K1's, and stays)",
+      Enum.map(A.audit(drop_record(planted, @d2aii), pre_mes130).defects, & &1.kind) ==
+        [:check_foreign] and
+        A.audit(drop_record(dropped, @d2aii), pre_mes130).defects == []
     )
 
     # --- D2a-ii's record: a CLOSED section on bucket-2a ---
@@ -397,23 +480,57 @@ defmodule AdjudicationsControls do
 
     expect(
       "(D2a-ii) phantom: a row keyed to a check bucket-2a does not project",
-      [:phantom],
+      [:check_foreign, :phantom],
       A.key(phantom_ii),
       update_rows(base, @v2a, &(&1 ++ [phantom_ii]), @d2aii)
     )
+
+    gap = update_rows(base, @v2a, &tl/1, @d2aii)
 
     expect(
       "(D2a-ii) a GAP, one view row in neither slice: missing",
       [:missing],
       A.key(first_ii),
-      update_rows(base, @v2a, &tl/1, @d2aii)
+      gap
     )
 
+    check(
+      "  … F7: the missing row is reported against D2a-ii, the closing record (was D2a-i, the view's first section)",
+      Enum.map(A.audit(gap).defects, & &1.file) == [@d2aii]
+    )
+
+    overlap = update_rows(base, @v2a, &(&1 ++ [first_ii]), @d2ai)
+
     expect(
-      "(D2a-ii) an OVERLAP, one D2a-ii row planted into D2a-i too: duplicate",
-      [:duplicate],
+      "(D2a-ii) an OVERLAP, one D2a-ii row planted into D2a-i too: duplicate, in both files",
+      [:duplicate, :duplicate],
       A.key(first_ii),
-      update_rows(base, @v2a, &(&1 ++ [first_ii]), @d2ai)
+      overlap
+    )
+
+    check(
+      "  … F7: attributed to D2a-i and D2a-ii",
+      Enum.map(A.audit(overlap).defects, & &1.file) == [@d2ai, @d2aii]
+    )
+
+    # --- K3 (MES-135): W3, exclusive closure ---
+    w3 = split_closed(base, @v4a, @record, 2)
+
+    expect_kinds(
+      "(K3) W3: 4a's rows split across two CLOSED sections in two records",
+      [:closure_not_exclusive],
+      w3
+    )
+
+    check(
+      "  … one refusal per closing file, each naming both",
+      Enum.map(A.audit(w3).defects, & &1.file) == [@record, @w3] and
+        Enum.all?(A.audit(w3).defects, &(&1.detail =~ @record and &1.detail =~ @w3))
+    )
+
+    check(
+      "  … and with the second half's section OPEN (owned), the split is admitted: the refusal is the closure's",
+      A.audit(split_closed(base, @v4a, @record, 2, "open")).defects == []
     )
 
     blocked_ii = Enum.find(d2aii, &(&1["disposition"] == "blocked_on_sdk_gap"))
@@ -428,10 +545,509 @@ defmodule AdjudicationsControls do
     bound0 = bind(base, @v0)
 
     expect_kinds(
-      "view_key_collision: bucket-0 cannot be keyed by the triple",
-      [:view_key_collision],
+      "view_key_collision: bucket-0 cannot be keyed by the triple (and, since MES-135, is not owed a record)",
+      [:bound_to_excluded, :view_key_collision],
       bound0
     )
+
+    # --- K1 (MES-135): W1 and W5 as planted on 4a's initialize row, each
+    # refused by more than one tie. Not every pair of rows is refused: the
+    # K1-R and K1-R2 residuals below exchange CLEAN. ---
+    {w1, w5} = {w1(base), w5(base)}
+
+    expect_kinds(
+      "(K1) W1: 4a's initialize row keeps its key and echo, and carries RequestMetaInvalid's et_test, check, root cause and disposition",
+      [:check_foreign, :et_test_foreign],
+      w1
+    )
+
+    expect_kinds(
+      "(K1) W5: every citation in 4a's initialize row replaced by prose",
+      [:check_foreign, :et_test_foreign, :root_cause_foreign],
+      w5
+    )
+
+    # K1-R (MES-135, CR 29672): a KNOWN RESIDUAL, shown rather than claimed away.
+    check(
+      "(K1-R) KNOWN RESIDUAL: D2a-ii's caching and tools-call-with-progress WireSchemaValid rows exchange every field but the key and echo, and audit CLEAN (bucket-2: the check tie is the only tie, and it accepts a shared site)",
+      A.audit(k1r_swap(base)).defects == []
+    )
+
+    # K1-R2 (MES-135, CR 29680): the member half. One member test carries both
+    # rows, and their check ties are mutual, so the et_test tie cannot tell them
+    # apart. The no-op guard: the two rows differ on disposition, and the plant
+    # changes both records.
+    {k1r2, {da, db}} = k1r2_swap(base)
+
+    check(
+      "(K1-R2) KNOWN RESIDUAL: D4a's initialize row and D4b's ping row, on one member test (StreamableHTTPStatelessTest), exchange every field but the key and echo across records, and audit CLEAN",
+      {da, db} == {"fix_sdk", "extend_test"} and k1r2.records[@record] != base.records[@record] and
+        k1r2.records[@d4b] != base.records[@d4b] and A.audit(k1r2).defects == []
+    )
+
+    # --- Q4 (MES-135, 29433(a)): top-level citations are walked by G32 ---
+    for {label, inputs} <- q4_plants(base) do
+      expect("(Q4) #{label}", [:citation_drift], nil, inputs)
+    end
+
+    # --- the table of plants for each new kind (MES-135), shared with `mutation` ---
+    for {kind, label, inputs, policy} <- plants(base) do
+      %{defects: ds} = A.audit(inputs, policy)
+      lines = Enum.map(ds, &A.format_defect/1)
+
+      check(
+        "(#{kind}) #{label}",
+        ds != [] and Enum.all?(ds, &(&1.kind == kind)),
+        lines
+      )
+
+      named(lines)
+    end
+
+    # --- B2 (MES-135, CR 29672): the owed_unadjudicated refusal names the fix ---
+    b7 = "docs/conformance/buckets/bucket-7-2026-07-28.json"
+    %{defects: owed} = A.audit(Map.update!(base, :anchor, &Enum.sort([b7 | &1])))
+
+    check(
+      "(B2) a bucket-7 view added to the anchor: owed_unadjudicated names @pending, @not_owed and the file to edit",
+      match?([%{kind: :owed_unadjudicated, file: ^b7}], owed) and
+        hd(owed).detail =~
+          "To fix: add the view to @pending (with the ticket that closes it) or to @not_owed (with a reason) in conformance/lib/mcp/conformance/adjudications.ex" and
+        File.regular?(A.source_path()),
+      Enum.map(owed, &A.format_defect/1)
+    )
+  end
+
+  # {kind, label, inputs, policy}: each plant is on the REAL records and views,
+  # and is refused by exactly `kind` (every defect it yields is of that kind).
+  # `mutation` neutralises each kind's clause and requires the plant to pass.
+  def plants(base) do
+    policy = A.policy()
+    {:ok, d4a} = base.records[@record]
+    esc_rows = rows(base, @ves)
+
+    copy_view = "docs/conformance/escalated-copy-2026-07-28.json"
+
+    copy_record =
+      {:ok,
+       %{
+         "schema" => A.schema(),
+         "authored_by_hand" => true,
+         "ticket" => "MES-126",
+         "sections" => [%{"view" => copy_view, "closure" => "closed", "rows" => esc_rows}]
+       }}
+
+    v3 = "docs/conformance/buckets/bucket-3-2026-07-28.json"
+    {:ok, v3_doc} = v3 |> File.read!() |> Jason.decode()
+
+    empty_record =
+      {:ok,
+       %{
+         "schema" => A.schema(),
+         "authored_by_hand" => true,
+         "ticket" => "MES-144",
+         "sections" => [%{"view" => v3, "closure" => "closed", "rows" => []}]
+       }}
+
+    closes_3 =
+      base
+      |> add_record(@w3, empty_record)
+      |> put_in([:views, v3], {:ok, Map.delete(v3_doc, "emptiness_reason")})
+
+    check(
+      "  (positive) bucket-3 closed empty over its committed view, which states count 0 and why: CLEAN",
+      A.audit(put_in(closes_3, [:views, v3], {:ok, v3_doc}), %{
+        policy
+        | pending: Map.delete(policy.pending, v3)
+      }).defects == []
+    )
+
+    tmp = tree_copy()
+
+    outside =
+      tree_load(tmp, fn root ->
+        File.cp!(
+          Path.join(root, @record),
+          Path.join(root, "docs/conformance/adjudication-copy.json")
+        )
+      end)
+
+    stray =
+      tree_load(tmp, fn root ->
+        File.cp!(
+          Path.join(root, @record),
+          Path.join(root, "docs/conformance/adjudications/adjudication-copy.jsn")
+        )
+      end)
+
+    check(
+      "  (positive) the unplanted tree copy audits CLEAN",
+      A.audit(tree_load(tmp, fn _ -> :ok end)).defects == []
+    )
+
+    File.rm_rf!(tmp)
+
+    [
+      {:owed_unadjudicated, "W2: D4a's escalated section dropped",
+       update_in(base, [:records, @record], fn _ ->
+         {:ok, Map.update!(d4a, "sections", &Enum.reject(&1, fn s -> s["view"] == @ves end))}
+       end), policy},
+      {:owed_unadjudicated, "UNNAMED POSITION: a bucket-7 view file added to the anchor",
+       Map.update!(
+         base,
+         :anchor,
+         &Enum.sort(["docs/conformance/buckets/bucket-7-2026-07-28.json" | &1])
+       ), policy},
+      {:pending_but_closed, "@pending still names bucket-4a, which D4a closes", base,
+       %{policy | pending: Map.put(policy.pending, @v4a, "MES-126")}},
+      {:catalogue_names_absent_view,
+       "bucket-5a's view file removed from the anchor while @pending names it",
+       Map.update!(base, :anchor, &List.delete(&1, @v5a)), policy},
+      {:catalogue_names_absent_view,
+       "roll-up's view file removed from the anchor while @not_owed names it",
+       Map.update!(
+         base,
+         :anchor,
+         &List.delete(&1, "docs/conformance/buckets/roll-up-2026-07-28.json")
+       ), policy},
+      {:bound_to_excluded, "@not_owed widened to exclude bucket-4b, which D4b's record binds",
+       base, %{policy | not_owed: Map.put(policy.not_owed, @v4b, "control")}},
+      {:bound_outside_anchor,
+       "the escalated rows closed again over a copy of the view outside the buckets directory",
+       base |> add_record(@w3, copy_record) |> put_in([:views, copy_view], base.views[@ves]),
+       policy},
+      {:owner_mismatch,
+       "D2a-i's open section on bucket-2a owned by MES-129, not MES-130 (D2a-ii's ticket)",
+       update_section(base, @v2a, &Map.put(&1, "owner", "MES-129"), @d2ai), policy},
+      {:empty_closure_unwarranted,
+       "bucket-3 closed empty (as MES-144 would) over a view stripped of its emptiness_reason",
+       closes_3, %{policy | pending: Map.delete(policy.pending, v3)}},
+      {:record_outside_walk,
+       "a copy of D4a's record under docs/conformance/ (in a tree copy outside the clone)",
+       outside, policy},
+      {:stray_in_walk_root, "a copy of D4a's record as .jsn in the walk root (tree copy)", stray,
+       policy}
+    ] ++ k1_plants(base, policy) ++ q3_plants(base, policy)
+  end
+
+  # Q4: the first repository citation outside the sections of D4a (its
+  # decision_row) and of D4b (its a3_ruling), shifted by one line.
+  def q4_plants(base) do
+    for record <- [@record, @d4b] do
+      {:ok, doc} = base.records[record]
+
+      [c | _] =
+        doc |> Map.delete("sections") |> A.collect() |> Enum.filter(&Map.has_key?(&1, "lines"))
+
+      at = {c["file"], c["lines"]}
+
+      {"#{Path.basename(record)}'s top-level #{c["file"]}:#{inspect(c["lines"])} shifted by one line",
+       map_citation(
+         base,
+         record,
+         elem(at, 0),
+         elem(at, 1),
+         &Map.update!(&1, "lines", fn [a, b] -> [a + 1, b + 1] end)
+       )}
+    end
+  end
+
+  # Q3 (MES-135, 29451): recurring bytes need a verified occurrence.
+  defp q3_plants(base, policy) do
+    [
+      {:citation_ambiguous,
+       "D2b's capabilities_test.exs:64 citation (recurs at :8) with its occurrence removed",
+       map_citation(
+         base,
+         @d2b,
+         "test/mcp/protocol/capabilities_test.exs",
+         [64, 64],
+         &Map.delete(&1, "occurrence")
+       ), policy},
+      {:citation_ambiguous,
+       "D4b's subscriptions_dispatch_test.exs:389 citation claiming occurrence 2 (it is 1)",
+       map_citation(
+         base,
+         @d4b,
+         "test/mcp/server/subscriptions_dispatch_test.exs",
+         [389, 389],
+         &Map.put(&1, "occurrence", 2)
+       ), policy}
+    ]
+  end
+
+  # Applies `fun` to the repository citation of `file` at `lines` inside `record`.
+  defp map_citation(inputs, record, file, lines, fun) do
+    update_in(inputs, [:records, record], fn {:ok, doc} ->
+      {:ok, map_cites(doc, {file, lines}, fun)}
+    end)
+  end
+
+  defp map_cites(%{"file" => f, "lines" => l, "bytes" => b} = c, {f, l}, fun) when is_binary(b),
+    do: fun.(c)
+
+  defp map_cites(m, at, fun) when is_map(m),
+    do: Map.new(m, fn {k, v} -> {k, map_cites(v, at, fun)} end)
+
+  defp map_cites(l, at, fun) when is_list(l), do: Enum.map(l, &map_cites(&1, at, fun))
+  defp map_cites(x, _at, _fun), do: x
+
+  # --- K1 (MES-135): content tied to the key, on the real records ------------------
+
+  # CR 29672's plant: in D2a-ii's section, two bucket-2 rows exchange every
+  # field except member, claim, tag and echo.
+  # {inputs, {disposition_a, disposition_b}}: D4a's initialize row and D4b's
+  # ping row on the same member test, each carrying the other's content.
+  def k1r2_swap(base) do
+    member =
+      "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601"
+
+    nf = "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-"
+    keep = ~w(member claim tag echo)
+
+    find = fn file, tag ->
+      {:ok, doc} = base.records[file]
+
+      [r] =
+        for s <- doc["sections"], r <- s["rows"], r["member"] == member, r["tag"] == tag, do: r
+
+      r
+    end
+
+    a = find.(@record, nf <> "initialize/HttpServerMethodNotFound404initialize")
+    b = find.(@d4b, nf <> "ping/HttpServerMethodNotFound404ping")
+    swap = fn x, y -> Map.merge(y, Map.take(x, keep)) end
+
+    put = fn inputs, file, from, to ->
+      update_in(inputs, [:records, file], fn {:ok, doc} ->
+        sections =
+          Enum.map(doc["sections"], fn s ->
+            %{s | "rows" => Enum.map(s["rows"], &if(&1 == from, do: to, else: &1))}
+          end)
+
+        {:ok, %{doc | "sections" => sections}}
+      end)
+    end
+
+    {base |> put.(@record, a, swap.(a, b)) |> put.(@d4b, b, swap.(b, a)),
+     {a["disposition"], b["disposition"]}}
+  end
+
+  def k1r_swap(base) do
+    file = "docs/conformance/adjudications/adjudication-D2a-ii-2026-07-28.json"
+    tags = ~w(oc:server/caching/wire-schema-valid/WireSchemaValid
+              oc:server/tools-call-with-progress/wire-schema-valid/WireSchemaValid)
+    keep = ~w(member claim tag echo)
+
+    update_in(base, [:records, file], fn {:ok, doc} ->
+      [section | rest] = doc["sections"]
+      [a, b] = Enum.map(tags, fn t -> Enum.find(section["rows"], &(&1["tag"] == t)) end)
+      swap = fn x, y -> Map.merge(y, Map.take(x, keep)) end
+
+      rows =
+        Enum.map(section["rows"], fn
+          ^a -> swap.(a, b)
+          ^b -> swap.(b, a)
+          r -> r
+        end)
+
+      {:ok, %{doc | "sections" => [%{section | "rows" => rows} | rest]}}
+    end)
+  end
+
+  # Edge A (4a's first row) keeps its key and echo; the rest is edge B's (the
+  # first 4a row on another check).
+  def w1(base) do
+    [a | _] = rs = rows(base, @v4a)
+    b = Enum.find(rs, &(&1["tag"] != a["tag"]))
+    swapped = Map.merge(a, Map.take(b, ~w(et_test check root_cause disposition rationale)))
+    update_rows(base, @v4a, fn [_ | rest] -> [swapped | rest] end)
+  end
+
+  def w5(base) do
+    [a | rest] = rows(base, @v4a)
+    update_rows(base, @v4a, fn _ -> [prose(a) | rest] end)
+  end
+
+  defp prose(%{"bytes" => b}) when is_binary(b), do: "prose: " <> String.slice(b, 0, 40)
+  defp prose(m) when is_map(m), do: Map.new(m, fn {k, v} -> {k, prose(v)} end)
+  defp prose(l) when is_list(l), do: Enum.map(l, &prose/1)
+  defp prose(x), do: x
+
+  defp k1_plants(base, policy) do
+    [a | _] = rows(base, @v4a)
+    r6 = Enum.find(rows(base, @v4a), &(get_in(&1, ["root_cause", "id"]) == "R6"))
+    [prev, last] = rows(base, @v2a, @d2aii) |> Enum.take(-2)
+
+    b5 = open_over(base, @v5a, "MES-148", 12)
+    b1 = open_over(base, @v1, "MES-143", 1)
+    [r5 | rest5] = rows(b5, @v5a, @w3)
+    other5 = Enum.find(rest5, &(&1["tag"] != r5["tag"] and &1["et_test"] != r5["et_test"]))
+    [r1] = rows(b1, @v1, @w3)
+
+    check(
+      "  (positive) twelve bucket-5a rows, tied, in an open section owned by MES-148: CLEAN",
+      A.audit(b5, policy).defects == [],
+      Enum.map(A.audit(b5, policy).defects, &A.format_defect/1)
+    )
+
+    check(
+      "  (positive) a bucket-1 row, tied, in an open section owned by MES-143: CLEAN",
+      A.audit(b1, policy).defects == [],
+      Enum.map(A.audit(b1, policy).defects, &A.format_defect/1)
+    )
+
+    check(
+      "  … a second 5a row on another check and another test is found: #{other5 && other5["tag"]}",
+      other5 != nil
+    )
+
+    [
+      {:root_cause_foreign, "W6: 4a's R6 root cause relabelled R1, stated_at unchanged",
+       update_rows(
+         base,
+         @v4a,
+         &Enum.map(&1, fn r ->
+           if r == r6, do: put_in(r, ["root_cause", "id"], "R1"), else: r
+         end)
+       ), policy},
+      {:check_foreign, "UNNAMED POSITION: D2a-ii's LAST row carries the row before it's check",
+       update_rows(
+         base,
+         @v2a,
+         &Enum.map(&1, fn r ->
+           if r == last, do: Map.put(r, "check", prev["check"]), else: r
+         end),
+         @d2aii
+       ), policy},
+      {:check_foreign, "bucket-5a-shaped (edge-keyed) row whose check is another 5a check's site",
+       update_rows(
+         b5,
+         @v5a,
+         fn [_ | rest] -> [Map.put(r5, "check", other5["check"]) | rest] end,
+         @w3
+       ), policy},
+      {:et_test_foreign, "bucket-5a-shaped (edge-keyed) row whose et_test is its sibling's test",
+       update_rows(
+         b5,
+         @v5a,
+         fn [_ | rest] -> [Map.put(r5, "et_test", other5["et_test"]) | rest] end,
+         @w3
+       ), policy},
+      {:check_foreign, "bucket-1-shaped (oc:none/) row that cites a harness span under check",
+       update_rows(
+         b1,
+         @v1,
+         fn _ -> [put_in(r1, ["check", "predicate"], a["check"]["predicate"])] end,
+         @w3
+       ), policy},
+      {:echo_drift, "bucket-1-shaped row whose view re-projects its cg under an unchanged key",
+       update_view_row(b1, @v1, A.key(r1), &Map.put(&1, "cg", "CG-moved")), policy}
+    ]
+  end
+
+  # An OPEN section, owned by the view's pending ticket, over the first `n` rows
+  # of a real view, each row complete and tied: the member's own test line as
+  # et_test, and (for an OC tag) the locator's first site as check.
+  defp open_over(base, view, owner, n) do
+    {:ok, v} = view |> File.read!() |> Jason.decode()
+
+    record =
+      {:ok,
+       %{
+         "schema" => A.schema(),
+         "authored_by_hand" => true,
+         "ticket" => owner,
+         "sections" => [
+           %{
+             "view" => view,
+             "closure" => "open",
+             "owner" => owner,
+             "rows" => tied_rows(Enum.take(v["rows"], n))
+           }
+         ]
+       }}
+
+    base |> add_record(@w3, record) |> put_in([:views, view], {:ok, v})
+  end
+
+  # Complete rows for real view rows, each tied (K1): the member's own test
+  # line as et_test, and for an OC tag the locator's first site under check.
+  defp tied_rows(view_rows) do
+    {:ok, loc} = A.read_locator(".")
+    source_fun = A.load().source_fun
+    index = test_line_index()
+
+    for vr <- view_rows do
+      member = vr["member"]["register_key"]
+
+      check =
+        case loc[vr["tag"]] do
+          [span | _] ->
+            %{
+              "requires" => "control",
+              "emitted_at" => %{
+                "harness_sha256" => "control",
+                "byte_span" => span,
+                "bytes" => "control"
+              }
+            }
+
+          nil ->
+            %{"requires" => "control"}
+        end
+
+      %{
+        "member" => member,
+        "claim" => vr["claim"],
+        "tag" => vr["tag"],
+        "echo" => A.echo(vr),
+        "et_test" => own_test_line(member, index, source_fun),
+        "check" => check,
+        "root_cause" => %{"statement" => "control"},
+        "if_conformance_fixed" => [],
+        "disposition" => "extend_test",
+        "rationale" => "control"
+      }
+    end
+  end
+
+  # module => [candidate et_test citation], over every test file, read once.
+  defp test_line_index do
+    for file <- Path.wildcard("test/**/*_test.exs"),
+        src = File.read!(file),
+        [_, module] <- Regex.scan(~r/^defmodule (\S+) do/m, src),
+        reduce: %{} do
+      acc ->
+        lines =
+          for {l, i} <- src |> String.split("\n") |> Enum.with_index(1),
+              l =~ ~r/^\s*test "/,
+              do: %{"file" => file, "lines" => [i, i], "bytes" => l}
+
+        Map.update(acc, module, lines, &(&1 ++ lines))
+    end
+  end
+
+  # The member's own test line: the candidate in its module's file that G32's
+  # own ownership check accepts.
+  defp own_test_line(member, index, source_fun) do
+    [module, _] = String.split(member, "/", parts: 2)
+
+    index
+    |> Map.get(module, [])
+    |> Enum.find(&(A.et_test_owner(%{"member" => member, "et_test" => &1}, source_fun) == :ok))
+    |> with_occurrence(source_fun)
+  end
+
+  # A test line that recurs in its file carries its measured occurrence, as a
+  # committed record must (citation_ambiguous).
+  defp with_occurrence(nil, _source_fun), do: nil
+
+  defp with_occurrence(%{"lines" => [from, _]} = c, source_fun) do
+    case A.occurrences(c, source_fun) do
+      [_] -> c
+      starts -> Map.put(c, "occurrence", Enum.find_index(starts, &(&1 == from)) + 1)
+    end
   end
 
   # --- mutation --------------------------------------------------------------------
@@ -445,9 +1061,17 @@ defmodule AdjudicationsControls do
     # removal, not the key, that the unmodified plant would trip on.
     unremoved = A.load() |> bind_complete(@v4b) |> bind_complete(@v5a)
 
+    # bucket-5a is pending on MES-148 (MES-135): a closed synthetic section over
+    # it is the state MES-148 lands in, with its @pending line deleted.
+    key_policy = %{A.policy() | pending: Map.delete(A.pending(), @v5a)}
+
     check(
-      "(1) without removing D4b's section, the synthetic 4b section is a duplicate",
-      A.audit(unremoved).defects |> Enum.map(& &1.kind) |> Enum.uniq() == [:duplicate]
+      "(1) without removing D4b's section, the synthetic 4b section is a duplicate (and a second closure)",
+      A.audit(unremoved, key_policy).defects |> Enum.map(& &1.kind) |> Enum.uniq() |> Enum.sort() ==
+        [:closure_not_exclusive, :duplicate],
+      A.audit(unremoved, key_policy).defects
+      |> Enum.map(&A.format_defect/1)
+      |> Enum.reject(&(&1 =~ ~r/G32 (duplicate|closure_not_exclusive)/))
     )
 
     real =
@@ -458,7 +1082,7 @@ defmodule AdjudicationsControls do
       |> bind_complete(@v4b)
       |> bind_complete(@v5a)
 
-    %{defects: ds, report: r} = A.audit(real)
+    %{defects: ds, report: r} = A.audit(real, key_policy)
 
     check(
       "(1) the real guard keys the real 4b and 5a views: clean over #{r["rows_visited"]} rows",
@@ -480,7 +1104,7 @@ defmodule AdjudicationsControls do
       check("(1) the #{label} mutant differs from the source", mutant != src)
 
       with_module(mutant, fn ->
-        %{defects: ds} = A.audit(real)
+        %{defects: ds} = A.audit(real, key_policy)
 
         collided =
           for %{kind: :view_key_collision, detail: det} <- ds,
@@ -510,13 +1134,20 @@ defmodule AdjudicationsControls do
     with_module(narrowed, fn ->
       %{report: r, defects: ds} = A.audit(A.load())
 
+      # Before MES-135 this audited CLEAN over zero records, the silent pass the
+      # gate-5 walk-root pin existed to catch. The universe (K2) now refuses it
+      # itself: every view the unseen records closed is owed and unadjudicated.
       check(
-        "(2) a narrowed walk audits CLEAN over zero records — the silent pass",
-        ds == [] and r["records_visited"] == 0
+        "(2) a narrowed walk sees zero records and is REFUSED: owed_unadjudicated on the 5 closed views",
+        r["records_visited"] == 0 and
+          Enum.sort(for(%{kind: :owed_unadjudicated, file: f} <- ds, do: f)) ==
+            Enum.sort([@v2a, @v2b, @v4a, @v4b, @ves]) and
+          Enum.all?(ds, &(&1.kind == :owed_unadjudicated)),
+        Enum.map(ds, &A.format_defect/1)
       )
 
       check(
-        "(2) … and the gate-5 pin refuses it",
+        "(2) … and the gate-5 pin on walk_root/0, now a backstop, refuses it too",
         A.walk_root() != {"docs/conformance/adjudications", "*.json"}
       )
     end)
@@ -587,13 +1218,109 @@ defmodule AdjudicationsControls do
       )
     end)
 
+    call = "    closure_not_exclusive(view, closed) ++ phantom ++"
+    unexclusive = String.replace(src, call, "    phantom ++")
+    check("(7) the no-closure_not_exclusive mutant differs from the source", unexclusive != src)
+
+    with_module(unexclusive, fn ->
+      check(
+        "(7) with closure_not_exclusive cut, W3 (4a split over two closed sections) audits CLEAN — the refusal is the check's",
+        A.audit(split_closed(base, @v4a, @record, 2)).defects == []
+      )
+    end)
+
+    # (8) MES-135's universe clauses: each neutralised alone, its plant passes.
+    clauses = %{
+      owed_unadjudicated: "owed_defects",
+      pending_but_closed: "pending_closed_defects",
+      catalogue_names_absent_view: "catalogue_defects",
+      bound_to_excluded: "excluded_defects",
+      bound_outside_anchor: "outside_anchor_defects",
+      owner_mismatch: "owner_defects",
+      empty_closure_unwarranted: "empty_closure_defects",
+      record_outside_walk: "outside_defects",
+      stray_in_walk_root: "stray_defects",
+      et_test_foreign: "et_test_defects",
+      check_foreign: "check_defects",
+      root_cause_foreign: "root_cause_defects",
+      echo_drift: "echo_defects",
+      citation_ambiguous: "ambiguous_defects"
+    }
+
+    for {kind, label, inputs, policy} <- plants(base) do
+      fun = Map.fetch!(clauses, kind)
+      mutant = neutralise(src, [fun])
+      check("(8) the no-#{fun} mutant differs from the source", mutant != src)
+
+      with_module(mutant, fn ->
+        %{defects: ds} = A.audit(inputs, policy)
+
+        check(
+          "(8) with #{kind} neutralised, \"#{label}\" audits CLEAN — the refusal is the clause's",
+          ds == [],
+          Enum.map(ds, &A.format_defect/1)
+        )
+      end)
+    end
+
+    # (10) Q4: with the walk narrowed back to rows, the top-level plants pass.
+    rows_only = String.replace(src, "c <- collect(outside_rows(doc))", "c <- []")
+    check("(10) the rows-only-walk mutant differs from the source", rows_only != src)
+
+    with_module(rows_only, fn ->
+      for {label, inputs} <- q4_plants(base) do
+        check(
+          "(10) with the walk narrowed to rows, \"#{label}\" audits CLEAN",
+          A.audit(inputs).defects == []
+        )
+      end
+    end)
+
+    # (9) W1 and W5 on the member row are refused by more than one tie: each tie
+    # alone still refuses, and only with every named tie neutralised do they
+    # pass. On the 481 pairs the K1-R/K1-R2 predicate admits, a W1-shaped
+    # exchange passes with nothing neutralised.
+    for {label, inputs, funs} <- [
+          {"W1", w1(base), ~w(et_test_defects check_defects)},
+          {"W5", w5(base), ~w(et_test_defects check_defects root_cause_defects)}
+        ] do
+      for f <- funs do
+        with_module(neutralise(src, [f]), fn ->
+          check(
+            "(9) #{label} with only #{f} neutralised is still refused",
+            A.audit(inputs).defects != []
+          )
+        end)
+      end
+
+      with_module(neutralise(src, funs), fn ->
+        ds = A.audit(inputs).defects
+
+        check(
+          "(9) #{label} with #{Enum.join(funs, " + ")} neutralised audits CLEAN",
+          ds == [],
+          Enum.map(ds, &A.format_defect/1)
+        )
+      end)
+    end
+
     %{defects: ds} = A.audit(A.load())
     check("restored: the real guard is back and the tree is clean", ds == [])
   end
 
+  # Each named clause answers []: a catch-all first clause of the same arity is
+  # inserted before the function's first clause, which it then shadows.
+  defp neutralise(src, funs) do
+    Enum.reduce(funs, src, fn fun, acc ->
+      stub = "  defp #{fun}(#{List.duplicate("_", @arity[fun]) |> Enum.join(", ")}), do: []\n\n"
+      String.replace(acc, "\n  defp #{fun}(", "\n" <> stub <> "  defp #{fun}(", global: false)
+    end)
+  end
+
   defp with_module(source, fun) do
     Code.compiler_options(ignore_module_conflict: true)
-    Code.compile_string(source, @source)
+    # A shadowed clause warns; the warning is the mutation, not news.
+    Code.with_diagnostics(fn -> Code.compile_string(source, @source) end)
     fun.()
   after
     Code.compile_string(File.read!(@source), @source)
@@ -618,7 +1345,8 @@ defmodule AdjudicationsControls do
           Map.has_key?(c, "harness_sha256"),
           do: c
 
-    for f <- [@record, @d4b, @d2b, @d2ai, @d2aii] do
+    # Every record the walk finds, not a hand-held list (MES-135 N3).
+    for f <- A.load().walk do
       {:ok, rec} = records[f]
       n = rec |> A.collect() |> Enum.count(&Map.has_key?(&1, "harness_sha256"))
       check("  … #{Path.basename(f)} carries #{n} harness citations", n > 0)
@@ -718,6 +1446,59 @@ defmodule AdjudicationsControls do
     {got -- want, want -- got}
   end
 
+  # Moves all but the first `keep` rows of `record`'s section on `view` into a
+  # new record, @w3, whose section on the same view has `closure`.
+  defp split_closed(inputs, view, record, keep, closure \\ "closed") do
+    moved = rows(inputs, view, record) |> Enum.drop(keep)
+
+    section =
+      %{"view" => view, "closure" => closure, "rows" => moved}
+      |> then(&if closure == "open", do: Map.put(&1, "owner", "MES-126"), else: &1)
+
+    inputs
+    |> update_rows(view, &Enum.take(&1, keep), record)
+    |> Map.update!(:walk, &Enum.sort([@w3 | &1]))
+    |> put_in(
+      [:records, @w3],
+      {:ok, %{"schema" => A.schema(), "authored_by_hand" => true, "sections" => [section]}}
+    )
+  end
+
+  defp add_record(inputs, file, record) do
+    inputs
+    |> Map.update!(:walk, &Enum.sort([file | &1]))
+    |> put_in([:records, file], record)
+  end
+
+  # A copy of the adjudications and buckets directories, the locator and the
+  # .gitignore, OUTSIDE the clone (seats share one checkout), loaded with the
+  # real source reader.
+  defp tree_copy do
+    tmp = Path.join(System.tmp_dir!(), "mes135-g32-ctl-#{System.unique_integer([:positive])}")
+
+    for d <- ["docs/conformance/adjudications", "docs/conformance/buckets"] do
+      File.mkdir_p!(Path.join(tmp, d))
+      File.cp_r!(d, Path.join(tmp, d))
+    end
+
+    File.cp!(A.locator_path(), Path.join(tmp, A.locator_path()))
+    # A git work tree of its own (MES-135 B1): the outside-the-walk scan lists
+    # the files git would commit, and refuses a root git cannot list.
+    File.cp!(".gitignore", Path.join(tmp, ".gitignore"))
+    {_, 0} = System.cmd("git", ["init", "-q", tmp])
+    tmp
+  end
+
+  # Loads a FRESH copy of `tmp`, with `plant` applied to it, then removes it.
+  defp tree_load(tmp, plant) do
+    root = tmp <> "-#{System.unique_integer([:positive])}"
+    File.cp_r!(tmp, root)
+    plant.(root)
+    inputs = %{A.load(root: root) | source_fun: A.load().source_fun}
+    File.rm_rf!(root)
+    inputs
+  end
+
   defp drop_record(inputs, record) do
     %{inputs | walk: inputs.walk -- [record], records: Map.delete(inputs.records, record)}
   end
@@ -744,26 +1525,11 @@ defmodule AdjudicationsControls do
     |> put_in([:views, view], {:ok, v})
   end
 
-  # A complete, citation-free closed section over `view`, built from the view's
-  # own rows: every required field present, so only the KEY can refuse it.
+  # A complete closed section over `view`, built from the view's own rows: every
+  # required field present and every K1 tie held, so only the KEY can refuse it.
   defp bind_complete(inputs, view) do
     {:ok, v} = view |> File.read!() |> Jason.decode()
-
-    rows =
-      for vr <- v["rows"] do
-        %{
-          "member" => get_in(vr, ["member", "register_key"]),
-          "claim" => vr["claim"],
-          "tag" => vr["tag"],
-          "echo" => A.echo(vr),
-          "et_test" => %{},
-          "check" => %{},
-          "root_cause" => %{},
-          "if_conformance_fixed" => [],
-          "disposition" => "fix_sdk",
-          "rationale" => "control"
-        }
-      end
+    rows = tied_rows(v["rows"])
 
     inputs
     |> update_in([:records, @record], fn {:ok, r} ->

@@ -629,7 +629,8 @@
                 389
               ],
               "bytes": "      assert {:reply, %{\"error\" => %{\"code\" => -32_601}}, _} =",
-              "breaks": "Does NOT break: the dispatch's -32601 is unchanged by an HTTP status mapping."
+              "breaks": "Does NOT break: the dispatch's -32601 is unchanged by an HTTP status mapping.",
+              "occurrence": 1
             }
           ],
           "disposition": "accept_bound",

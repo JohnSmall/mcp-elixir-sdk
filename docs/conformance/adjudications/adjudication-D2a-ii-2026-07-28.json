@@ -762,6 +762,14 @@
               ],
               "bytes": "let s=Xn(t)",
               "reading": "s is the server URL's own host and port, sent as Host and as Origin http://<s>."
+            },
+            "emitted_at": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                468189,
+                468363
+              ],
+              "bytes": "{id:`localhost-host-valid-accepted`,name:`LocalhostHostAccepted`,description:`Server accepts requests with valid localhost Host/Origin headers`,timestamp:i,specReferences:Jn}"
             }
           },
           "covered_elsewhere": {
@@ -1002,6 +1010,14 @@
                 460667
               ],
               "bytes": "r=await n.request(`prompts/get`,{name:`test_prompt_with_arguments`,arguments:{arg1:`testValue1`,arg2:`testValue2`}})"
+            },
+            "emitted_at": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                460942,
+                461388
+              ],
+              "bytes": "t.push({id:`prompts-get-with-args`,name:`PromptsGetWithArgs`,description:`Get parameterized prompt with argument substitution`,status:i.length===0?`SUCCESS`:`FAILURE`,timestamp:new Date().toISOString(),errorMessage:i.length>0?i.join(`; `):void 0,specReferences:[{id:`MCP-Prompts-Get`,url:`https://modelcontextprotocol.io/specification/2025-06-18/server/prompts#getting-prompts`}],details:{messageCount:r.messages?.length||0,messages:r.messages}})"
             }
           },
           "covered_elsewhere": {
@@ -1383,6 +1399,14 @@
                 447416
               ],
               "bytes": "r=await n.request(`resources/read`,{uri:`test://static-binary`})"
+            },
+            "emitted_at": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                447678,
+                448109
+              ],
+              "bytes": "t.push({id:`resources-read-binary`,name:`ResourcesReadBinary`,description:`Read binary resource successfully`,status:i.length===0?`SUCCESS`:`FAILURE`,timestamp:new Date().toISOString(),errorMessage:i.length>0?i.join(`; `):void 0,specReferences:[{id:`MCP-Resources-Read`,url:`https://modelcontextprotocol.io/specification/2025-06-18/server/resources#reading-resources`}],details:{uri:a?.uri,mimeType:a?.mimeType,hasBlob:!!a?.blob}})"
             }
           },
           "covered_elsewhere": {
@@ -1603,6 +1627,14 @@
                 449279
               ],
               "bytes": "r=await n.request(`resources/read`,{uri:`test://template/123/data`})"
+            },
+            "emitted_at": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                449656,
+                450123
+              ],
+              "bytes": "t.push({id:`resources-templates-read`,name:`ResourcesTemplateRead`,description:`Read resource from template with parameter substitution`,status:i.length===0?`SUCCESS`:`FAILURE`,timestamp:new Date().toISOString(),errorMessage:i.length>0?i.join(`; `):void 0,specReferences:[{id:`MCP-Resources-Templates`,url:`https://modelcontextprotocol.io/specification/2025-06-18/server/resources#resource-templates`}],details:{uri:a?.uri,content:a?`text`in a?a.text:a.blob:void 0}})"
             }
           },
           "covered_elsewhere": {
@@ -1833,6 +1865,14 @@
               ],
               "bytes": "o=await i.request(`resources/read`,{uri:n})",
               "reading": "resources/read of test://nonexistent-resource-for-conformance-testing."
+            },
+            "emitted_at": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                453478,
+                453970
+              ],
+              "bytes": "t.push({id:`sep-2164-no-empty-contents`,name:`ResourcesNotFoundNoEmptyContents`,description:`Server does not return an empty contents array for a non-existent resource`,status:s?`FAILURE`:`SUCCESS`,timestamp:new Date().toISOString(),errorMessage:s?`Server returned a result with an empty contents array. Servers MUST NOT return an empty contents array for non-existent resources.`:void 0,specReferences:r,details:{requestedUri:n,receivedResult:o!==void 0,contentsLength:o?.contents?.length}})"
             }
           },
           "covered_elsewhere": {
@@ -1994,6 +2034,14 @@
               ],
               "bytes": "for(let n=0;n<3;n++){let r=fetch(t,{method:`POST`,headers:e,body:JSON.stringify({jsonrpc:`2.0`,id:1e3+n,method:`tools/list`,params:l})});d.push(r)}",
               "reading": "Three concurrent tools/list POSTs, each accepting text/event-stream or application/json."
+            },
+            "emitted_at": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                441060,
+                441621
+              ],
+              "bytes": "r.push({id:`server-accepts-multiple-post-streams`,name:`ServerAcceptsMultiplePostStreams`,description:`Server allows multiple concurrent POST requests (each may return SSE or JSON)`,status:p?`SUCCESS`:`FAILURE`,timestamp:new Date().toISOString(),specReferences:[{id:`SEP-1699`,url:`https://github.com/modelcontextprotocol/modelcontextprotocol/issues/1699`}],details:{numStreamsAttempted:3,numStreamsAccepted:m.filter(e=>e===200).length,numSseStreams:g,statuses:m,contentTypes:h},errorMessage:p?void 0:`Server rejected some requests. Statuses: ${m.join(`, `)}`})"
             }
           },
           "covered_elsewhere": {
@@ -3910,6 +3958,14 @@
                 400980
               ],
               "bytes": "r=await n.request(`tools/call`,{name:`test_tool_with_progress`,arguments:{},_meta:{progressToken:`progress-test-1`}})"
+            },
+            "emitted_at": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                401382,
+                401811
+              ],
+              "bytes": "t.push({id:`tools-call-with-progress`,name:`ToolsCallWithProgress`,description:`Tool reports progress notifications`,status:a.length===0?`SUCCESS`:`FAILURE`,timestamp:new Date().toISOString(),errorMessage:a.length>0?a.join(`; `):void 0,specReferences:[{id:`MCP-Progress`,url:`https://modelcontextprotocol.io/specification/2025-06-18/server/utilities/progress`}],details:{progressCount:i.length,progressNotifications:i,result:r}})"
             }
           },
           "covered_elsewhere": {
@@ -4046,6 +4102,14 @@
               ],
               "bytes": "t.push(mn(r.tools))",
               "reading": "Emitted only after tools/list resolves."
+            },
+            "emitted_at": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                389123,
+                389297
+              ],
+              "bytes": "{id:`tools-name-format`,name:`ToolsNameFormat`,description:`Tool names are 1-64 characters and match ^[A-Za-z0-9_./-]+$`,specReferences:fn,timestamp:new Date().toISOString()}"
             }
           },
           "covered_elsewhere": {

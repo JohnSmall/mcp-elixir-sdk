@@ -893,7 +893,8 @@
                 433,
                 445
               ],
-              "bytes": "  def handle_call_tool(\"test_input_required_result_capabilities\", _args, ctx, state) do\n    mrtr(ctx, state, \"capabilities\", fn\n      :first ->\n        # Only ask for what the client said it can do. The requests map is\n        # built from the DECLARED capabilities rather than filtered afterwards,\n        # so there is no branch in which an undeclared method survives.\n        {:request, declared_input_requests(ctx), %{}}\n\n      {:retry, _responses, _carried} ->\n        {:complete, [text(\"capabilities honoured\")]}\n    end)\n  end\n"
+              "bytes": "  def handle_call_tool(\"test_input_required_result_capabilities\", _args, ctx, state) do\n    mrtr(ctx, state, \"capabilities\", fn\n      :first ->\n        # Only ask for what the client said it can do. The requests map is\n        # built from the DECLARED capabilities rather than filtered afterwards,\n        # so there is no branch in which an undeclared method survives.\n        {:request, declared_input_requests(ctx), %{}}\n\n      {:retry, _responses, _carried} ->\n        {:complete, [text(\"capabilities honoured\")]}\n    end)\n  end\n",
+              "occurrence": 2
             }
           },
           "remedy": "Send the retry unit's first call with clientCapabilities {sampling: {}} in _meta, have its handler build input requests from the caps it reads off ctx.meta, and refute any elicitation/create entry.",

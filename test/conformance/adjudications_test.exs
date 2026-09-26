@@ -17,6 +17,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
   use ExUnit.Case, async: true
 
   alias MCP.Conformance.Adjudications, as: A
+  alias Mix.Tasks.Conformance.Adjudications, as: Render
 
   @d4a "docs/conformance/adjudications/adjudication-D4a-2026-07-28.json"
   @d4b "docs/conformance/adjudications/adjudication-D4b-2026-07-28.json"
@@ -47,6 +48,141 @@ defmodule MCP.Conformance.AdjudicationsTest do
   # The predicate bucket 2b's population sentence must be, verbatim (MES-111
   # point 1; the anchor is etcc-register.md §12, cited in the D2b record).
   @population_sentence "OC check with no ET-CC member match"
+
+  # MES-135 K1-R2 (CR 29680): the AUDITED set of row pairs whose contents (every
+  # field but member, claim, tag and echo) exchange and still audit CLEAN. CR
+  # ran all 5778 pairs of the 108 committed rows through A.audit (28-way, 0
+  # no-ops) and listed 481 CLEAN pairs in /tmp/cr135sweep/clean.tsv; its row
+  # indices were re-keyed to the stable ids below, `{record basename, member,
+  # tag}`, and the 481 pairs are exactly the pairs within these 8 cliques
+  # (30, 9, 3, 3, 2, 2, 2, 2 rows: 435 + 36 + 3 + 3 + 4 * 1 = 481). A stable key
+  # list, not a fixture file: the cliques are the set, written compactly.
+  @k1r_stateless "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601"
+  @k1r_dispatch "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)"
+  @k1r_clean_cliques [
+    [
+      {"adjudication-D2a-i-2026-07-28.json", nil,
+       "oc:server/input-required-result-basic-elicitation/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-i-2026-07-28.json", nil,
+       "oc:server/input-required-result-basic-list-roots/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-i-2026-07-28.json", nil,
+       "oc:server/input-required-result-basic-sampling/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-i-2026-07-28.json", nil,
+       "oc:server/input-required-result-capability-check/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-i-2026-07-28.json", nil,
+       "oc:server/input-required-result-ignore-extra-params/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-i-2026-07-28.json", nil,
+       "oc:server/input-required-result-missing-input-response/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-i-2026-07-28.json", nil,
+       "oc:server/input-required-result-multi-round/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-i-2026-07-28.json", nil,
+       "oc:server/input-required-result-multiple-input-requests/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-i-2026-07-28.json", nil,
+       "oc:server/input-required-result-non-tool-request/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-i-2026-07-28.json", nil,
+       "oc:server/input-required-result-result-type/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-i-2026-07-28.json", nil,
+       "oc:server/input-required-result-tampered-state/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-i-2026-07-28.json", nil,
+       "oc:server/input-required-result-unsupported-methods/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-i-2026-07-28.json", nil,
+       "oc:server/input-required-result-validate-input/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/caching/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/completion-complete/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/prompts-get-embedded-resource/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/prompts-get-simple/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/prompts-get-with-args/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/prompts-get-with-image/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/prompts-list/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/resources-list/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/resources-read-binary/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/resources-read-text/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/resources-templates-read/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/sep-2164-resource-not-found/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/tools-call-audio/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/tools-call-error/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/tools-call-mixed-content/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/tools-call-with-progress/wire-schema-valid/WireSchemaValid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/tools-list/wire-schema-valid/WireSchemaValid"}
+    ],
+    [
+      {"adjudication-D2b-2026-07-28.json", nil,
+       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_colon_in_name"},
+      {"adjudication-D2b-2026-07-28.json", nil,
+       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_control_char_name"},
+      {"adjudication-D2b-2026-07-28.json", nil,
+       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_non_ascii_name"},
+      {"adjudication-D2b-2026-07-28.json", nil,
+       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_space_in_name"},
+      {"adjudication-D2b-2026-07-28.json", nil,
+       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-not-empty/ClientRejectsInvalidTool_invalid_empty_header"},
+      {"adjudication-D2b-2026-07-28.json", nil,
+       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_array_header"},
+      {"adjudication-D2b-2026-07-28.json", nil,
+       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_null_header"},
+      {"adjudication-D2b-2026-07-28.json", nil,
+       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_diff_case"},
+      {"adjudication-D2b-2026-07-28.json", nil,
+       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_same_case"}
+    ],
+    [
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-meta"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-protocol-version"}
+    ],
+    [
+      {"adjudication-D4a-2026-07-28.json", @k1r_stateless,
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize"},
+      {"adjudication-D4b-2026-07-28.json", @k1r_stateless,
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping"},
+      {"adjudication-D4b-2026-07-28.json", @k1r_stateless,
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel"}
+    ],
+    [
+      {"adjudication-D4b-2026-07-28.json", @k1r_dispatch,
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping"},
+      {"adjudication-D4b-2026-07-28.json", @k1r_dispatch,
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel"}
+    ],
+    [
+      {"adjudication-D2b-2026-07-28.json", nil,
+       "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_get"},
+      {"adjudication-D2b-2026-07-28.json", nil,
+       "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_read"}
+    ],
+    [
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-protocol-version/RequestMetaInvalid"}
+    ],
+    [
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-resources-subscribe/HttpServerMethodNotFound404resourcessubscribe"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-resources-unsubscribe/HttpServerMethodNotFound404resourcesunsubscribe"}
+    ]
+  ]
   @crosswalk "docs/conformance/crosswalk-2026-07-28.json"
 
   setup_all do
@@ -89,6 +225,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
       if r["records_visited"] > 0, do: assert(r["rows_visited"] > 0)
     end
 
+    # MES-126's per-ticket pin (cited in MES-135's body as :63-70; at :92-98 by
+    # 91a3320). Since MES-135 a dropped section is refused by G32 itself
+    # (owed_unadjudicated); this stays as the literal of D4a's two closures.
     test "D4a's record closes bucket 4a and the escalated view", %{inputs: inputs} do
       {:ok, record} = inputs.records[@d4a]
 
@@ -1446,7 +1585,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       }
 
       checked =
-        for f <- [@d4a, @d4b, @d2b, @d2ai, @d2aii], into: %{} do
+        for f <- records_in_dir("."), into: %{} do
           {:ok, record} = inputs.records[f]
 
           gapped =
@@ -1481,7 +1620,11 @@ defmodule MCP.Conformance.AdjudicationsTest do
           end
         end
 
-      assert checked == %{@d4a => 0, @d4b => 0, @d2b => 0, @d2ai => 8, @d2aii => 13}
+      # Pinned for the records that carry landing conditions; every other record
+      # is walked with no edit here and must check nothing (MES-135 N3).
+      assert Map.take(checked, [@d2ai, @d2aii]) == %{@d2ai => 8, @d2aii => 13}
+      assert checked |> Map.drop([@d2ai, @d2aii]) |> Map.values() |> Enum.uniq() == [0]
+      assert Map.keys(checked) == inputs.walk
     end
 
     # Deliverable (4): each new catalogue entry is refused once removed, and the
@@ -1695,7 +1838,14 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
     # MES-120's K1: a record under docs/conformance/ is inside G31, and a file
     # added after G31's baseline may carry no pending figure.
-    for record <- [@d4a, @d4b, @d2b, @d2ai, @d2aii] do
+    # MES-135 N3: derived from the directory, so a new record is walked here
+    # without anyone editing a list.
+    for record <-
+          "docs/conformance/adjudications"
+          |> File.ls!()
+          |> Enum.filter(&String.ends_with?(&1, ".json"))
+          |> Enum.map(&("docs/conformance/adjudications/" <> &1))
+          |> Enum.sort() do
       test "#{Path.basename(record)} is hand_authored to G31 and has no pending figure" do
         universe = "conformance/figures/universe.json" |> File.read!() |> Jason.decode!()
         ledger = "conformance/figures/ledger.json" |> File.read!() |> Jason.decode!()
@@ -1710,60 +1860,258 @@ defmodule MCP.Conformance.AdjudicationsTest do
       end
     end
 
-    # G32 verifies the citations inside SECTIONS. A record's top-level
-    # citations (D4a's decision_row, D4b's a3_ruling) are held here instead.
-    test "every repository citation outside a record's sections holds its bytes",
-         %{inputs: inputs} do
-      found =
-        for {file, {:ok, doc}} <- inputs.records,
-            c <- A.collect(Map.delete(doc, "sections")),
-            do: {file, c}
+    # MES-135 (29433(a); PM Q4) moved this into G32: it now walks every
+    # citation in the whole record, so the gate-5 unit that held the top-level
+    # ones (MES-127) is entailed and re-cut. What stays is the population.
+    test "G32 walks the citations outside the rows: 9 repository and 8 harness at this tip",
+         %{inputs: inputs, result: %{report: r}} do
+      outside =
+        for {_, {:ok, doc}} <- inputs.records,
+            c <-
+              A.collect(%{doc | "sections" => Enum.map(doc["sections"], &Map.delete(&1, "rows"))}),
+            do: c
 
-      assert found != []
+      assert Enum.count(outside, &Map.has_key?(&1, "lines")) == 9
+      assert Enum.count(outside, &Map.has_key?(&1, "harness_sha256")) == 8
 
-      for {file, c} <- found,
-          do: assert(A.verify(c, inputs.source_fun) == :ok, "#{file}: #{inspect(c["file"])}")
+      assert r["repo_citations_found"] == 417 and
+               r["harness_citations_not_verified_in_gate_5"] == 260
     end
 
-    # A partial answer to MES-135's K1 (G32 binds a row's KEY, not its content).
-    # This ties each row's et_test to the row's member: the cited window lies
-    # inside the member's own test in the member's own module. It does NOT tie
-    # the check citation to the tag.
-    #
-    # Scoped to rows with a member (PM ratification on MES-128, 29444, Q3): a
-    # bucket-2 row has no member and no et_test. The pin after it holds the
-    # scoping: the rows it skips are EXACTLY bucket 2b's and, since MES-129, the
-    # rows of bucket 2a that D2a-i's selector admits, each in its own record, so
-    # no bucket-4 row can be skipped silently.
-    test "every row's et_test lies inside the member's own test", %{inputs: inputs} do
-      {owned, _skipped} = ownership_split(inputs.records)
-      assert owned != []
+    test "G32 refuses a drifted top-level citation, with no edge key", %{inputs: inputs} do
+      {:ok, doc} = inputs.records[@d4a]
+      [c | _] = A.collect(Map.delete(doc, "sections")) |> Enum.filter(&Map.has_key?(&1, "lines"))
+      shifted = %{c | "lines" => Enum.map(c["lines"], &(&1 + 1))}
 
-      for {_, _, r} <- owned,
-          do: assert(et_test_owner(r, inputs.source_fun) == :ok, inspect(A.key(r)))
-    end
-
-    test "the rows the ownership check skips are exactly bucket 2b's and both bucket-2a slices, each in its own record",
-         %{inputs: inputs} do
-      assert skip_pin(inputs.records) == :ok
-      {_, skipped} = ownership_split(inputs.records)
-      assert length(skipped) == 15 + 30 + 48
-    end
-
-    test "the skip pin refuses a member-less row planted into D4a's section", %{inputs: inputs} do
       planted =
-        update_in(inputs.records[@d4a], fn {:ok, doc} ->
+        put_in(
+          inputs.records[@d4a],
+          {:ok, Map.new(doc, fn {k, v} -> {k, replace_citation(v, c, shifted)} end)}
+        )
+
+      assert [%{kind: :citation_drift, file: @d4a, key: nil}] = A.audit(planted).defects
+    end
+
+    # MES-135 K1 moved MES-127's gate-5 ownership check into G32
+    # (et_test_foreign), so the gate-5 copy and its skip pin are re-cut: G32
+    # now requires, of EVERY row, that a member row's et_test lies inside the
+    # member's own test and that a member-less row carries `et_test: null`.
+    # What stays here is the population the tie runs over, at this tip.
+    test "the et_test tie's population: 15 member rows, 93 member-less rows with et_test null",
+         %{inputs: inputs} do
+      rows = for {_, {:ok, doc}} <- inputs.records, s <- doc["sections"], r <- s["rows"], do: r
+      {owned, memberless} = Enum.split_with(rows, &is_binary(&1["member"]))
+
+      assert length(owned) == 15 and length(memberless) == 93
+      assert Enum.all?(memberless, &is_nil(&1["et_test"]))
+      assert Enum.all?(owned, &(A.et_test_owner(&1, inputs.source_fun) == :ok))
+    end
+
+    # MES-135 K1-R (CR 29672): a KNOWN RESIDUAL, pinned so that a later
+    # tightening of the check tie turns this unit red and is seen. On a
+    # bucket-2 row the check tie is the only tie (no member, so et_test null;
+    # echo {}; no R<n> root cause), and check_foreign accepts ANY locator site
+    # of the token, which sites are shared. So two D2a-ii rows can exchange
+    # every field but member, claim, tag and echo, and G32 audits CLEAN.
+    test "KNOWN RESIDUAL: two bucket-2 rows exchanging every field but the key and echo audit CLEAN",
+         %{inputs: inputs} do
+      tags = ~w(oc:server/caching/wire-schema-valid/WireSchemaValid
+                oc:server/tools-call-with-progress/wire-schema-valid/WireSchemaValid)
+
+      keep = ~w(member claim tag echo)
+      rows = d2aii_rows(inputs)
+      [a, b] = Enum.map(tags, fn t -> Enum.find(rows, &(&1["tag"] == t)) end)
+
+      # Not a no-op: the two rows differ on what is exchanged.
+      assert {a["disposition"], b["disposition"]} == {"extend_to_match", "build_test"}
+      differs = for k <- Map.keys(a) -- keep, a[k] != b[k], do: k
+
+      assert differs ==
+               ~w(check disposition extend_target null_passability oc_status_at_accepted_run remedy root_cause why_green)
+
+      assert Enum.all?(
+               [a, b],
+               &(is_nil(&1["member"]) and is_nil(&1["et_test"]) and &1["echo"] == %{})
+             )
+
+      swap = fn x, y -> Map.merge(y, Map.take(x, keep)) end
+
+      planted =
+        update_in(inputs.records[@d2aii], fn {:ok, doc} ->
           {:ok,
-           update_in(doc, ["sections", Access.at(0), "rows"], fn [r | _] = rows ->
-             rows ++ [Map.put(r, "member", nil)]
+           update_in(doc, ["sections", Access.at(0), "rows"], fn rs ->
+             Enum.map(rs, fn
+               ^a -> swap.(a, b)
+               ^b -> swap.(b, a)
+               r -> r
+             end)
            end)}
         end)
 
-      assert {:error, {:skipped_rows_differ, extra, []}} = skip_pin(planted.records)
-      assert [{@d4a, _, [nil | _]}] = extra
+      assert planted.records[@d2aii] != inputs.records[@d2aii]
+      assert A.audit(planted).defects == []
     end
 
-    # The ownership check above supersedes this one (it requires the window to
+    # The figures the moduledoc's K1-R/K1-R2 residual states, measured here so
+    # that they cannot go stale silently: a moved figure means the moduledoc
+    # moves. The CLEAN-swap set is computed by its predicate, over EVERY
+    # committed row: (a) the two rows' check ties are mutual (each row's check
+    # spans overlap a site of the other's token), and (b) the et_test tie does
+    # not separate them (the same member, or both nil). It is asserted EQUAL,
+    # as a set of pairs, to the audited set @k1r_clean_cliques records. Auditing
+    # each exchange here instead (all 5778 pairs) takes tens of minutes, so that
+    # sweep was run off gate 5, by CR on MES-135 (29679/29680), and the predicate
+    # is what gate 5 re-runs. Any row, tie or wording change that moves the set
+    # turns this red, whichever side it moves.
+    test "K1-R/K1-R2's figures: 11 of 143 sites shared, 82 of 173 tokens only on shared sites, 60 rows (48 bucket-2) tie only through one; the CLEAN-swap set equals the audited 481 pairs (477 bucket-2 + 4 member)",
+         %{inputs: inputs} do
+      {:ok, loc} = inputs.locator
+      ov = fn [p, q], [r, t] -> max(p, r) < min(q, t) end
+
+      by_site =
+        for {t, ss} <- loc, s <- ss, reduce: %{} do
+          acc -> Map.update(acc, s, MapSet.new([t]), &MapSet.put(&1, t))
+        end
+
+      shared = for {s, ts} <- by_site, MapSet.size(ts) > 1, into: MapSet.new(), do: s
+      assert {MapSet.size(shared), map_size(by_site)} == {11, 143}
+
+      assert {Enum.count(loc, fn {_, ss} -> ss != [] and Enum.all?(ss, &(&1 in shared)) end),
+              map_size(loc)} == {82, 173}
+
+      spans = fn r ->
+        for c <- A.collect(r["check"]), Map.has_key?(c, "harness_sha256"), do: c["byte_span"]
+      end
+
+      ties? = fn r, tag ->
+        Enum.any?(spans.(r), fn s -> Enum.any?(Map.get(loc, tag, []), &ov.(s, &1)) end)
+      end
+
+      rows =
+        for {f, {:ok, doc}} <- inputs.records,
+            s <- doc["sections"],
+            r <- s["rows"],
+            do: {s["view"], {Path.basename(f), r["member"], r["tag"]}, r}
+
+      only_shared =
+        for {v, _, r} <- rows,
+            sites = Enum.filter(loc[r["tag"]], fn st -> Enum.any?(spans.(r), &ov.(&1, st)) end),
+            sites != [] and Enum.all?(sites, &(&1 in shared)),
+            do: v
+
+      assert length(rows) == 108 and Enum.count(rows, &(elem(&1, 0) =~ "/bucket-2")) == 93
+      assert {length(only_shared), Enum.count(only_shared, &(&1 =~ "/bucket-2"))} == {60, 48}
+
+      # The ids name rows uniquely, so a pair of ids is a pair of rows.
+      ids = Enum.map(rows, &elem(&1, 1))
+      assert length(Enum.uniq(ids)) == 108
+
+      mutual =
+        for {{_, i, x}, n} <- Enum.with_index(rows),
+            {{_, j, y}, m} <- Enum.with_index(rows),
+            n < m,
+            ties?.(x, y["tag"]) and ties?.(y, x["tag"]),
+            do: {MapSet.new([i, j]), x["member"] == y["member"]}
+
+      computed = for {pair, true} <- mutual, into: MapSet.new(), do: pair
+
+      audited =
+        for clique <- @k1r_clean_cliques,
+            i <- clique,
+            j <- clique,
+            i < j,
+            into: MapSet.new(),
+            do: MapSet.new([i, j])
+
+      # Every audited id is a committed row: a typo cannot shrink the set silently.
+      assert Enum.all?(List.flatten(@k1r_clean_cliques), &(&1 in ids))
+      assert MapSet.size(audited) == 481
+      assert {length(mutual), length(mutual) - MapSet.size(computed)} == {551, 70}
+      assert MapSet.equal?(computed, audited)
+
+      member_pairs = Enum.filter(computed, fn p -> Enum.all?(p, &is_binary(elem(&1, 1))) end)
+
+      assert {MapSet.size(computed) - length(member_pairs), length(member_pairs)} == {477, 4}
+      member_rows = member_pairs |> Enum.flat_map(&MapSet.to_list/1) |> Enum.uniq()
+
+      assert {length(member_rows), Enum.frequencies(Enum.map(member_rows, &elem(&1, 0))),
+              member_rows |> Enum.map(&elem(&1, 1)) |> Enum.uniq() |> Enum.sort()} ==
+               {5,
+                %{
+                  "adjudication-D4a-2026-07-28.json" => 1,
+                  "adjudication-D4b-2026-07-28.json" => 4
+                }, Enum.sort([@k1r_stateless, @k1r_dispatch])}
+    end
+
+    # MES-135 K1-R2 (CR 29680): the member half of the residual, pinned like
+    # K1-R's. The et_test tie asks only that the window lie in the row's OWN
+    # member's test; D4a's initialize row and D4b's ping row share one member
+    # test, and their check ties are mutual, so the cross-record exchange of
+    # every field but the key and echo audits CLEAN.
+    test "KNOWN RESIDUAL: D4a's initialize row and D4b's ping row, on one member test, exchange every field but the key and echo across records and audit CLEAN",
+         %{inputs: inputs} do
+      keep = ~w(member claim tag echo)
+
+      init =
+        "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize"
+
+      ping =
+        "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping"
+
+      find = fn file, tag ->
+        {:ok, doc} = inputs.records[file]
+
+        [r] =
+          for s <- doc["sections"],
+              r <- s["rows"],
+              r["member"] == @k1r_stateless and r["tag"] == tag,
+              do: r
+
+        r
+      end
+
+      {a, b} = {find.(@d4a, init), find.(@d4b, ping)}
+
+      # Not a no-op: the two rows differ on what is exchanged.
+      assert {a["disposition"], b["disposition"]} == {"fix_sdk", "extend_test"}
+      differs = for k <- Enum.uniq(Map.keys(a) ++ Map.keys(b)) -- keep, a[k] != b[k], do: k
+      assert Enum.all?(~w(check disposition et_test root_cause), &(&1 in differs))
+
+      swap = fn x, y -> Map.merge(y, Map.take(x, keep)) end
+
+      put = fn inputs, file, from, to ->
+        update_in(inputs.records[file], fn {:ok, doc} ->
+          {:ok,
+           update_in(doc["sections"], fn ss ->
+             Enum.map(ss, fn s ->
+               Map.update!(s, "rows", fn rs -> Enum.map(rs, &if(&1 == from, do: to, else: &1)) end)
+             end)
+           end)}
+        end)
+      end
+
+      planted = inputs |> put.(@d4a, a, swap.(a, b)) |> put.(@d4b, b, swap.(b, a))
+
+      assert planted.records[@d4a] != inputs.records[@d4a]
+      assert planted.records[@d4b] != inputs.records[@d4b]
+      assert A.audit(planted).defects == []
+    end
+
+    test "G32 refuses a member-less row that keeps an et_test, planted into D4a (et_test_foreign)",
+         %{inputs: inputs} do
+      planted =
+        update_in(inputs.records[@d4a], fn {:ok, doc} ->
+          {:ok,
+           update_in(doc, ["sections", Access.at(0), "rows"], fn [r | rest] ->
+             [Map.put(r, "member", nil) | rest]
+           end)}
+        end)
+
+      kinds = planted |> A.audit() |> Map.fetch!(:defects) |> Enum.map(& &1.kind)
+      assert :et_test_foreign in kinds
+    end
+
+    # G32's et_test_foreign supersedes this one (it requires the window to
     # lie inside the member's own test, compared by equality on the qualified
     # name). Kept as the literal form of the ratified wording, D4b only; its
     # `ends_with?` is a suffix match, not equality (CR N1).
@@ -1782,11 +2130,11 @@ defmodule MCP.Conformance.AdjudicationsTest do
       {:ok, record} = inputs.records[@d4b]
       [%{"rows" => [r1, _, r3 | _]}] = record["sections"]
 
-      assert et_test_owner(r1, inputs.source_fun) == :ok
+      assert A.et_test_owner(r1, inputs.source_fun) == :ok
       swapped = Map.put(r1, "member", r3["member"])
-      assert {:error, _} = et_test_owner(swapped, inputs.source_fun)
+      assert {:error, _} = A.et_test_owner(swapped, inputs.source_fun)
       renamed = Map.update!(r1, "member", &(&1 <> " (renamed)"))
-      assert {:error, _} = et_test_owner(renamed, inputs.source_fun)
+      assert {:error, _} = A.et_test_owner(renamed, inputs.source_fun)
     end
 
     # CR's P5 probe (MES-127 review 29435, B1): a window past the owning test's
@@ -1806,7 +2154,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
         refute bytes =~ ~r/^\s*test "/m
         plant = put_in(r, ["et_test"], %{"file" => file, "lines" => [from, to], "bytes" => bytes})
 
-        assert {:error, {:window_outside_test, last}} = et_test_owner(plant, inputs.source_fun)
+        assert {:error, {:window_outside_test, last}} = A.et_test_owner(plant, inputs.source_fun)
         assert last < to
       end
     end
@@ -1816,7 +2164,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       [%{"rows" => [r1 | _]}] = record["sections"]
       plant = put_in(r1, ["et_test", "lines"], [88, 100])
 
-      assert et_test_owner(plant, inputs.source_fun) == {:error, :window_crosses_a_test}
+      assert A.et_test_owner(plant, inputs.source_fun) == {:error, :window_crosses_a_test}
     end
 
     test "the et_test self-check ends a nested test at its own `end`, a one-line test at its line" do
@@ -1836,10 +2184,10 @@ defmodule MCP.Conformance.AdjudicationsTest do
       source_fun = fn "test/src.exs" -> {:ok, src} end
 
       at = fn member, lines ->
-        et_test_owner(
+        A.et_test_owner(
           %{
             "member" => "M/" <> member,
-            "et_test" => %{"file" => "test/src.exs", "lines" => lines}
+            "et_test" => %{"file" => "test/src.exs", "lines" => lines, "bytes" => ""}
           },
           source_fun
         )
@@ -1862,68 +2210,235 @@ defmodule MCP.Conformance.AdjudicationsTest do
     end
   end
 
-  # The innermost `test "…"` at or above the window's first line owns the
-  # window. No other test line may start inside the window, and the owner's own
-  # closing line must be at or after the window's last line: for a block test
-  # that is the first later line equal to the test's indent followed by `end`
-  # (so a nested `describe`'s shallower `end`, and any deeper `end` inside the
-  # body, are not taken for it); for a one-line `, do:` test it is the test line
-  # itself, so a window reaching past that line is refused (fail-closed, even
-  # for a `do:` body continued onto later lines). The owner must be the
-  # member's test (qualified by its `describe` when nested), in a file that
-  # defines the member's module.
-  @test_line ~r/^(\s*)test "((?:[^"\\]|\\.)*)"/
-  @one_line_test ~r/,\s*do:/
-  @describe_line ~r/^  describe "((?:[^"\\]|\\.)*)"/
+  # MES-135 K2 + N3: the universe of views owed a record, declared from the
+  # bucket views directory, never from the records.
+  describe "the universe of views owed a record" do
+    @owed_views ~w(bucket-1 bucket-2a bucket-2b bucket-3 bucket-4a bucket-4b bucket-5a bucket-5b bucket-6 claim-unmatched escalated)
+    @closed_views ~w(bucket-2a bucket-2b bucket-4a bucket-4b escalated)
 
-  defp et_test_owner(row, source_fun) do
-    %{"file" => file, "lines" => [from, to]} = row["et_test"]
-    [module, member_test] = String.split(row["member"], "/", parts: 2)
-    {:ok, src} = source_fun.(file)
-    lines = src |> String.split("\n") |> Enum.with_index(1)
-    tests = for {l, i} <- lines, m = Regex.run(@test_line, l), do: {i, m}
+    test "the anchor, the exclusions, the pending catalogue and the scan skip are pinned" do
+      assert A.anchor() == {"docs/conformance/buckets", "*.json"}
 
-    with {i, [_, indent, name]} <- tests |> Enum.filter(&(elem(&1, 0) <= from)) |> List.last(),
-         true <- Enum.all?(tests, fn {j, _} -> j <= i or j > to end) || :window_crosses_a_test,
-         last when is_integer(last) <- test_end(lines, i, indent) || :test_end_not_found,
-         true <- to <= last || {:window_outside_test, last},
-         describe <- describe_above(lines, i, indent),
-         expected = Enum.join(["test", describe, unescape(name)] |> Enum.reject(&is_nil/1), " "),
-         true <- expected == member_test || {:names, expected},
-         true <- String.contains?(src, "defmodule #{module} do") || :module do
-      :ok
-    else
-      other -> {:error, other}
+      assert A.not_owed() |> Map.keys() |> Enum.sort() == [
+               "docs/conformance/buckets/bucket-0-2026-07-28.json",
+               "docs/conformance/buckets/roll-up-2026-07-28.json"
+             ]
+
+      assert Enum.all?(Map.values(A.not_owed()), &(is_binary(&1) and &1 != ""))
+
+      assert A.pending() == %{
+               "docs/conformance/buckets/bucket-1-2026-07-28.json" => "MES-143",
+               "docs/conformance/buckets/bucket-3-2026-07-28.json" => "MES-144",
+               "docs/conformance/buckets/bucket-5a-2026-07-28.json" => "MES-148",
+               "docs/conformance/buckets/bucket-5b-2026-07-28.json" => "MES-146",
+               "docs/conformance/buckets/bucket-6-2026-07-28.json" => "MES-144",
+               "docs/conformance/buckets/claim-unmatched-2026-07-28.json" => "MES-138"
+             }
+
+      assert A.scan_population() == ~w(ls-files -z --cached --others --exclude-standard)
+      # The file owed_unadjudicated's message tells an adding ticket to edit (B2).
+      assert File.regular?(A.source_path())
+
+      assert A.module_info(:compile)[:source]
+             |> to_string()
+             |> String.ends_with?("/" <> A.source_path())
+
+      assert A.policy() == %{not_owed: A.not_owed(), pending: A.pending()}
+    end
+
+    test "the anchor listing is the directory, read independently of the guard",
+         %{inputs: inputs} do
+      {:ok, names} = File.ls("docs/conformance/buckets")
+
+      independent =
+        names
+        |> Enum.filter(&String.ends_with?(&1, ".json"))
+        |> Enum.map(&("docs/conformance/buckets/" <> &1))
+        |> Enum.sort()
+
+      assert inputs.anchor == independent
+      assert length(independent) == 13
+    end
+
+    # Held both ways: the listing minus the exclusions EQUALS closed ∪ pending,
+    # and the two are disjoint.
+    test "owed = listing − exclusions = closed ⊔ pending, at this tip",
+         %{inputs: inputs, result: %{report: r}} do
+      short = fn v -> v |> Path.basename("-2026-07-28.json") end
+      owed = inputs.anchor -- Map.keys(A.not_owed())
+
+      assert Enum.map(owed, short) == @owed_views
+      assert r["owed"] == length(owed)
+      assert Enum.map(r["closed"], short) == @closed_views
+      assert r["pending"] == A.pending()
+      assert MapSet.disjoint?(MapSet.new(r["closed"]), MapSet.new(Map.keys(r["pending"])))
+      assert Enum.sort(r["closed"] ++ Map.keys(r["pending"])) == owed
+    end
+
+    # The printed figure is asserted, not just printed.
+    test "the task prints owed 11 — closed 5, pending 6, with each pending view's ticket",
+         %{result: %{report: r}} do
+      assert Render.views(r) ==
+               "owed 11 — closed 5, pending 6: bucket-1 (MES-143), bucket-3 (MES-144), bucket-5a (MES-148), bucket-5b (MES-146), bucket-6 (MES-144), claim-unmatched (MES-138)"
+
+      assert Render.render(r, []) =~ "views         " <> Render.views(r)
+    end
+
+    test "no record lies outside the walk and nothing strays in the walk root",
+         %{inputs: inputs} do
+      assert inputs.outside == {:ok, []}
+      assert inputs.strays == []
+    end
+
+    test "in a copied tree: a sixth record is walked; a dropped section, a record outside the walk, a wrong schema and a stray are refused",
+         %{} do
+      tmp = copied_tree()
+      on_exit(fn -> File.rm_rf!(tmp) end)
+
+      real = A.load().source_fun
+      load = fn -> %{A.load(root: tmp) | source_fun: real} end
+
+      kinds = fn ->
+        load.() |> A.audit() |> Map.fetch!(:defects) |> Enum.map(&{&1.kind, &1.file})
+      end
+
+      assert kinds.() == []
+      assert records_in_dir(tmp) == records_in_dir(".")
+
+      sixth = "docs/conformance/adjudications/adjudication-Z-2026-07-28.json"
+
+      File.write!(
+        Path.join(tmp, sixth),
+        Jason.encode!(%{
+          "schema" => A.schema(),
+          "authored_by_hand" => true,
+          "ticket" => "MES-148",
+          "sections" => [
+            %{
+              "view" => "docs/conformance/buckets/bucket-5a-2026-07-28.json",
+              "closure" => "open",
+              "owner" => "MES-148",
+              "rows" => []
+            }
+          ]
+        })
+      )
+
+      assert kinds.() == []
+      assert load.() |> A.audit() |> get_in([:report, "records_visited"]) == 6
+      assert sixth in records_in_dir(tmp)
+      File.rm!(Path.join(tmp, sixth))
+
+      # W2: D4a's escalated section dropped.
+      d4a = Path.join(tmp, @d4a)
+      original = File.read!(d4a)
+      doc = Jason.decode!(original)
+
+      File.write!(
+        d4a,
+        Jason.encode!(
+          Map.update!(doc, "sections", &Enum.reject(&1, fn s -> s["view"] =~ "escalated" end))
+        )
+      )
+
+      assert kinds.() == [{:owed_unadjudicated, @ves}]
+      File.write!(d4a, original)
+
+      outside = "docs/conformance/adjudication-D4a-copy.json"
+      File.write!(Path.join(tmp, outside), original)
+      assert kinds.() == [{:record_outside_walk, outside}]
+      File.rm!(Path.join(tmp, outside))
+
+      wrong = "docs/conformance/adjudications/adjudication-W-2026-07-28.json"
+
+      File.write!(
+        Path.join(tmp, wrong),
+        Jason.encode!(Map.put(doc, "schema", "adjudication-record/0"))
+      )
+
+      assert kinds.() == [{:bad_record, wrong}]
+      File.rm!(Path.join(tmp, wrong))
+
+      nested = "docs/conformance/adjudications/nested"
+      File.mkdir_p!(Path.join(tmp, nested))
+      File.write!(Path.join([tmp, nested, "adjudication-N.json"]), original)
+      stray = "docs/conformance/adjudications/adjudication-S.jsn"
+      File.write!(Path.join(tmp, stray), original)
+
+      assert kinds.() == [
+               {:stray_in_walk_root, "docs/conformance/adjudications/adjudication-S.jsn"},
+               {:stray_in_walk_root, nested},
+               {:record_outside_walk, nested <> "/adjudication-N.json"}
+             ]
+    end
+
+    # MES-135 B1: the scan population is the files git would commit. A record
+    # under a git-ignored path is not committed unless force-added, so while it
+    # is only ignored it is not refused (CR 29671's plant, which went red at one
+    # seat only); force-added, it is tracked, and scanned and refused. An
+    # untracked-and-not-ignored record, and a tracked one, are still refused.
+    # A root git cannot list is refused, not skipped.
+    test "record_outside_walk scans the files git would commit: ignored is not scanned, untracked and tracked are refused, no work tree is refused",
+         %{} do
+      tmp = copied_tree()
+      on_exit(fn -> File.rm_rf!(tmp) end)
+      real = A.load().source_fun
+      kinds = fn root -> %{A.load(root: root) | source_fun: real} |> A.audit() |> kinds_of() end
+      {:ok, d4b} = File.read(@d4b)
+
+      assert kinds.(tmp) == []
+
+      ignored = "tmp/MCP.Conformance.SomeTest/leftover/record.json"
+      File.mkdir_p!(Path.join(tmp, Path.dirname(ignored)))
+      File.write!(Path.join(tmp, ignored), d4b)
+      assert {"", 0} = System.cmd("git", ["-C", tmp, "check-ignore", "-q", ignored])
+      assert kinds.(tmp) == []
+
+      untracked = "docs/conformance/adjudication-D4b-copy.json"
+      File.write!(Path.join(tmp, untracked), d4b)
+      assert kinds.(tmp) == [{:record_outside_walk, untracked}]
+
+      {_, 0} = System.cmd("git", ["-C", tmp, "add", untracked])
+
+      assert {^untracked <> "\n", 0} =
+               System.cmd("git", ["-C", tmp, "ls-files", "--cached", untracked])
+
+      assert kinds.(tmp) == [{:record_outside_walk, untracked}]
+
+      File.rm_rf!(Path.join(tmp, ".git"))
+
+      assert [%{kind: :record_outside_walk, file: ".", detail: detail}] =
+               %{A.load(root: tmp) | source_fun: real} |> A.audit() |> Map.fetch!(:defects)
+
+      assert detail =~ "cannot be listed"
+      assert detail =~ "refused, not skipped"
+
+      sub = Path.join(tmp, "docs")
+      {_, 0} = System.cmd("git", ["init", "-q", tmp])
+      assert {:error, why} = A.outside(sub)
+      assert why =~ "is not the top level of a git work tree"
     end
   end
 
-  # {owned, skipped}, each a list of {record, view, row}: a row with no member
-  # has no test to own its et_test.
-  defp ownership_split(records) do
-    all =
-      for {file, {:ok, doc}} <- records,
-          s <- doc["sections"],
-          r <- s["rows"],
-          do: {file, s["view"], r}
+  # A copy of the adjudications and buckets directories, the locator and the
+  # .gitignore, OUTSIDE the clone (seats share one checkout), made a git work
+  # tree of its own with nothing committed: the committed tree's files are
+  # untracked-and-not-ignored there, which the scan population includes.
+  defp copied_tree do
+    tmp = Path.join(System.tmp_dir!(), "mes135-g32-#{System.unique_integer([:positive])}")
 
-    Enum.split_with(all, fn {_, _, r} -> not is_nil(r["member"]) end)
+    for d <- ["docs/conformance/adjudications", "docs/conformance/buckets"] do
+      File.mkdir_p!(Path.join(tmp, d))
+      File.cp_r!(d, Path.join(tmp, d))
+    end
+
+    File.cp!(A.locator_path(), Path.join(tmp, A.locator_path()))
+    File.cp!(".gitignore", Path.join(tmp, ".gitignore"))
+    {_, 0} = System.cmd("git", ["init", "-q", tmp])
+    tmp
   end
 
-  defp skip_pin(records) do
-    {_, skipped} = ownership_split(records)
-    got = Enum.sort(for {f, v, r} <- skipped, do: {f, v, A.key(r)})
-
-    want =
-      Enum.sort(
-        for(vr <- json(@v2b)["rows"], do: {@d2b, @v2b, A.key(vr)}) ++
-          for(vr <- selected(json(@v2a)["rows"], @d2ai_selector), do: {@d2ai, @v2a, A.key(vr)}) ++
-          for(vr <- selected(json(@v2a)["rows"], @d2aii_selector), do: {@d2aii, @v2a, A.key(vr)})
-      )
-
-    if got == want,
-      do: :ok,
-      else: {:error, {:skipped_rows_differ, got -- want, want -- got}}
-  end
+  defp kinds_of(%{defects: ds}), do: Enum.map(ds, &{&1.kind, &1.file})
 
   defp d2b_rows(inputs) do
     {:ok, record} = inputs.records[@d2b]
@@ -2235,42 +2750,52 @@ defmodule MCP.Conformance.AdjudicationsTest do
   defp prose_leaves(_), do: []
 
   defp json(path), do: path |> File.read!() |> Jason.decode!()
+
+  defp replace_citation(c, c, new), do: new
+
+  defp replace_citation(m, c, new) when is_map(m),
+    do: Map.new(m, fn {k, v} -> {k, replace_citation(v, c, new)} end)
+
+  defp replace_citation(l, c, new) when is_list(l), do: Enum.map(l, &replace_citation(&1, c, new))
+  defp replace_citation(x, _c, _new), do: x
+
+  # Every record in the directory, listed independently of the guard's walk
+  # (MES-135 N3). The per-record G31 units list it inline, at compile time.
+  defp records_in_dir(root) do
+    dir = Path.join(root, "docs/conformance/adjudications")
+
+    dir
+    |> File.ls!()
+    |> Enum.filter(&String.ends_with?(&1, ".json"))
+    |> Enum.map(&("docs/conformance/adjudications/" <> &1))
+    |> Enum.sort()
+  end
+
   defp client?(tag), do: String.starts_with?(tag, "oc:client/")
-
-  defp test_end(lines, i, indent) do
-    {head, _} = Enum.at(lines, i - 1)
-
-    if Regex.match?(@one_line_test, head) do
-      i
-    else
-      lines
-      |> Enum.drop(i)
-      |> Enum.find_value(fn {l, j} -> String.trim_trailing(l) == indent <> "end" && j end)
-    end
-  end
-
-  defp describe_above(_lines, _i, "  "), do: nil
-
-  defp describe_above(lines, i, "    ") do
-    lines
-    |> Enum.take(i - 1)
-    |> Enum.reverse()
-    |> Enum.find_value(fn {l, _} ->
-      case Regex.run(@describe_line, l),
-        do: (
-          [_, d] -> unescape(d)
-          nil -> nil
-        )
-    end)
-  end
-
-  defp unescape(s), do: String.replace(s, ~S(\"), ~S("))
 
   # --- synthetic inputs ---------------------------------------------------------
 
   @view "docs/conformance/buckets/bucket-x.json"
   @rec "docs/conformance/adjudications/adjudication-X.json"
   @src "test/src.exs"
+  # The members' own tests, for K1's et_test tie: "M/test a" and "M/test e".
+  @owner_src "test/owner.exs"
+  @owner_body """
+  defmodule M do
+    test "a" do
+      assert x == 1
+    end
+
+    test "e" do
+      assert e == 1
+    end
+  end
+  """
+  @owner_lines %{"M/test a" => [3, 3], "M/test e" => [7, 7]}
+  @owner_bytes %{"M/test a" => "assert x == 1", "M/test e" => "assert e == 1"}
+  # The synthetic locator: each synthetic tag is emitted at [0, 10].
+  @locator %{"oc:t1" => [[0, 10]], "oc:e" => [[0, 10]]}
+  @harness %{"harness_sha256" => "abc", "byte_span" => [0, 5], "bytes" => "x"}
 
   defp view_row(member, claim, tag, extra \\ %{}) do
     Map.merge(
@@ -2293,8 +2818,12 @@ defmodule MCP.Conformance.AdjudicationsTest do
         "claim" => vr["claim"],
         "tag" => vr["tag"],
         "echo" => A.echo(vr),
-        "et_test" => %{"file" => @src, "lines" => [2, 2], "bytes" => "assert x == 1"},
-        "check" => %{"requires" => "x"},
+        "et_test" => %{
+          "file" => @owner_src,
+          "lines" => @owner_lines[vr["member"]["register_key"]],
+          "bytes" => @owner_bytes[vr["member"]["register_key"]]
+        },
+        "check" => %{"requires" => "x", "predicate" => @harness},
         "root_cause" => "R0",
         "if_conformance_fixed" => [],
         "disposition" => "fix_sdk",
@@ -2316,10 +2845,15 @@ defmodule MCP.Conformance.AdjudicationsTest do
              %{
                "schema" => "adjudication-record/1",
                "authored_by_hand" => true,
+               "ticket" => "MES-1",
                "sections" => sections
              }}
           )
       },
+      anchor: [@view],
+      strays: [],
+      outside: {:ok, []},
+      locator: {:ok, @locator},
       views: %{
         @view =>
           {:ok,
@@ -2327,22 +2861,57 @@ defmodule MCP.Conformance.AdjudicationsTest do
       },
       source_fun: fn
         @src -> {:ok, "line one\n  assert   x == 1\nline three\n"}
+        @owner_src -> {:ok, @owner_body}
         _ -> {:error, :enoent}
       end
     }
   end
 
+  @rec2 "docs/conformance/adjudications/adjudication-Y.json"
+
+  defp two_records(view_rows, sections1, sections2) do
+    base = inputs(view_rows, sections1)
+
+    rec = fn ss ->
+      {:ok,
+       %{
+         "schema" => "adjudication-record/1",
+         "authored_by_hand" => true,
+         "ticket" => "MES-1",
+         "sections" => ss
+       }}
+    end
+
+    %{base | walk: [@rec, @rec2], records: %{@rec => rec.(sections1), @rec2 => rec.(sections2)}}
+  end
+
   defp section(rows, closure \\ "closed", extra \\ %{}),
     do: Map.merge(%{"view" => @view, "closure" => closure, "rows" => rows}, extra)
 
-  defp kinds(inputs), do: inputs |> A.audit() |> Map.fetch!(:defects) |> Enum.map(& &1.kind)
+  # The synthetic view is owed. Unless a closed section binds it, it is pending
+  # on MES-1, the synthetic records' ticket, so the units below exercise the
+  # set and row clauses and the universe clauses have units of their own.
+  defp audit(inputs) do
+    closed? =
+      Enum.any?(inputs.records, fn
+        {_, {:ok, %{"sections" => ss}}} when is_list(ss) ->
+          Enum.any?(ss, &(is_map(&1) and &1["view"] == @view and &1["closure"] == "closed"))
 
-  defp a, do: view_row("M/a", "claim a", "oc:t1")
-  defp b, do: view_row("M/a", "claim b", "oc:t1")
+        _ ->
+          false
+      end)
+
+    A.audit(inputs, %{not_owed: %{}, pending: if(closed?, do: %{}, else: %{@view => "MES-1"})})
+  end
+
+  defp kinds(inputs), do: inputs |> audit() |> Map.fetch!(:defects) |> Enum.map(& &1.kind)
+
+  defp a, do: view_row("M/test a", "claim a", "oc:t1")
+  defp b, do: view_row("M/test a", "claim b", "oc:t1")
 
   describe "the key" do
     test "is the same triple from a view row and from a record row" do
-      assert A.key(a()) == ["M/a", "claim a", "oc:t1"]
+      assert A.key(a()) == ["M/test a", "claim a", "oc:t1"]
       assert A.key(row(a())) == A.key(a())
     end
 
@@ -2378,17 +2947,62 @@ defmodule MCP.Conformance.AdjudicationsTest do
       ghost = row(a(), %{"claim" => "no such claim"})
 
       assert :phantom in kinds(
-               inputs([a()], [section([row(a()), ghost], "open", %{"owner" => "M"})])
+               inputs([a()], [section([row(a()), ghost], "open", %{"owner" => "MES-1"})])
              )
     end
 
     test "duplicate: one edge adjudicated twice across sections" do
       sections = [
-        section([row(a())], "open", %{"owner" => "M"}),
-        section([row(a())], "open", %{"owner" => "N"})
+        section([row(a())], "open", %{"owner" => "MES-1"}),
+        section([row(a())], "open", %{"owner" => "MES-1"})
       ]
 
       assert kinds(inputs([a()], sections)) == [:duplicate]
+    end
+
+    # MES-135 K3: two records each closing a disjoint half of one view pass
+    # duplicate (the halves are disjoint) and missing (the union is complete).
+    test "closure_not_exclusive: two closed sections over disjoint halves, naming both files" do
+      two = two_records([a(), b()], [section([row(a())])], [section([row(b())])])
+      %{defects: ds} = audit(two)
+
+      assert Enum.map(ds, &{&1.kind, &1.file}) == [
+               {:closure_not_exclusive, @rec},
+               {:closure_not_exclusive, @rec2}
+             ]
+
+      assert Enum.all?(ds, &(&1.detail =~ @rec and &1.detail =~ @rec2))
+    end
+
+    test "closure_not_exclusive: one closed section and an open one is the split view, clean" do
+      two =
+        two_records([a(), b()], [section([row(a())], "open", %{"owner" => "MES-1"})], [
+          section([row(b())])
+        ])
+
+      assert audit(two).defects == []
+    end
+
+    # MES-135 F7: set defects were attributed to the view's FIRST section's file.
+    test "missing is attributed to the closing section's file, not the first section's" do
+      two =
+        two_records([a(), b()], [section([row(a())], "open", %{"owner" => "MES-1"})], [
+          section([])
+        ])
+
+      assert [%{kind: :missing, file: @rec2}] = audit(two).defects
+    end
+
+    test "duplicate is attributed to every file holding the key" do
+      two =
+        two_records([a()], [section([row(a())], "open", %{"owner" => "MES-1"})], [
+          section([row(a())])
+        ])
+
+      assert Enum.map(audit(two).defects, &{&1.kind, &1.file}) == [
+               {:duplicate, @rec},
+               {:duplicate, @rec2}
+             ]
     end
 
     test "view_key_collision: a view whose rows do not key uniquely is refused" do
@@ -2399,6 +3013,240 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert kinds(inputs([a()], [section([row(a())])], view_schema: "other/1")) == [
                :unknown_view
              ]
+    end
+  end
+
+  describe "the universe, unit by unit (MES-135 K2)" do
+    @v0 "docs/conformance/buckets/bucket-0.json"
+    @vo "docs/conformance/buckets/bucket-o.json"
+    @none %{not_owed: %{}, pending: %{}}
+
+    defp u_kinds(inputs, policy),
+      do: inputs |> A.audit(policy) |> Map.fetch!(:defects) |> Enum.map(&{&1.kind, &1.file})
+
+    test "owed_unadjudicated: an owed view no closed section binds, not pending" do
+      i = %{inputs([a()], [section([row(a())])]) | anchor: [@view, @vo]}
+      assert u_kinds(i, @none) == [{:owed_unadjudicated, @vo}]
+      assert u_kinds(i, %{@none | pending: %{@vo => "MES-9"}}) == []
+      assert u_kinds(i, %{@none | not_owed: %{@vo => "why"}}) == []
+    end
+
+    test "an owed view bound only by an OPEN section is still owed" do
+      i = inputs([a()], [section([row(a())], "open", %{"owner" => "MES-1"})])
+      assert u_kinds(i, @none) == [{:owed_unadjudicated, @view}]
+    end
+
+    test "pending_but_closed: a closed view still named in @pending" do
+      i = inputs([a()], [section([row(a())])])
+      assert u_kinds(i, %{@none | pending: %{@view => "MES-1"}}) == [{:pending_but_closed, @rec}]
+    end
+
+    test "catalogue_names_absent_view: either catalogue naming a view the listing lacks" do
+      i = inputs([a()], [section([row(a())])])
+
+      assert u_kinds(i, %{@none | not_owed: %{@v0 => "why"}}) == [
+               {:catalogue_names_absent_view, @v0}
+             ]
+
+      assert u_kinds(i, %{@none | pending: %{@v0 => "MES-9"}}) == [
+               {:catalogue_names_absent_view, @v0}
+             ]
+    end
+
+    test "catalogue_names_absent_view: @pending naming an excluded view" do
+      i = %{inputs([a()], [section([row(a())])]) | anchor: [@view, @v0]}
+      policy = %{not_owed: %{@v0 => "why"}, pending: %{@v0 => "MES-9"}}
+      assert u_kinds(i, policy) == [{:catalogue_names_absent_view, @v0}]
+    end
+
+    test "bound_to_excluded: a section binding a view that is not owed" do
+      i = inputs([a()], [section([row(a())])])
+      assert u_kinds(i, %{@none | not_owed: %{@view => "why"}}) == [{:bound_to_excluded, @rec}]
+    end
+
+    test "bound_outside_anchor: a section binding a view the listing lacks" do
+      i = %{inputs([a()], [section([row(a())])]) | anchor: [@vo]}
+      policy = %{@none | pending: %{@vo => "MES-9"}}
+      assert u_kinds(i, policy) == [{:bound_outside_anchor, @rec}]
+    end
+
+    test "owner_mismatch: an open section owned by a ticket that does not close its view" do
+      open = fn owner -> section([row(a())], "open", %{"owner" => owner}) end
+      pending = %{@none | pending: %{@view => "MES-1"}}
+
+      assert u_kinds(inputs([a()], [open.("MES-1")]), pending) == []
+      assert u_kinds(inputs([a()], [open.("MES-2")]), pending) == [{:owner_mismatch, @rec}]
+
+      # Once closed, the owner is the closing record's ticket.
+      closed = two_records([a(), b()], [open.("MES-1")], [section([row(b())])])
+      assert u_kinds(closed, @none) == []
+
+      assert u_kinds(
+               put_in(
+                 closed.records[@rec2],
+                 {:ok, put_in(elem(closed.records[@rec2], 1), ["ticket"], "MES-7")}
+               ),
+               @none
+             ) ==
+               [{:owner_mismatch, @rec}]
+    end
+
+    test "owner_mismatch: a closing record with no ticket is judged, not skipped" do
+      closed =
+        two_records([a(), b()], [section([row(a())], "open", %{"owner" => "MES-1"})], [
+          section([row(b())])
+        ])
+
+      {:ok, doc} = closed.records[@rec2]
+      untick = put_in(closed.records[@rec2], {:ok, Map.delete(doc, "ticket")})
+      assert u_kinds(untick, @none) == [{:owner_mismatch, @rec}]
+    end
+
+    test "empty_closure_unwarranted: a closed empty section over an empty view that does not say why" do
+      empty = fn view -> put_in(inputs([], [section([])]).views[@view], {:ok, view}) end
+
+      stated = %{
+        "schema" => "bucket-view/1",
+        "rows" => [],
+        "count" => 0,
+        "emptiness_reason" => %{"code" => "by_construction"}
+      }
+
+      # A zero-row closure is still a visited record with no rows, so reach fires too.
+      assert u_kinds(empty.(stated), @none) == [{:reach, ""}]
+
+      for bad <- [
+            Map.delete(stated, "emptiness_reason"),
+            %{stated | "emptiness_reason" => %{}},
+            %{stated | "count" => 3}
+          ] do
+        assert u_kinds(empty.(bad), @none) == [{:empty_closure_unwarranted, @rec}, {:reach, ""}]
+      end
+    end
+
+    test "stray_in_walk_root and record_outside_walk are refused from the inputs" do
+      i = %{
+        inputs([a()], [section([row(a())])])
+        | strays: ["x/y.jsn"],
+          outside: {:ok, ["z.json"]}
+      }
+
+      assert u_kinds(i, @none) == [
+               {:stray_in_walk_root, "x/y.jsn"},
+               {:record_outside_walk, "z.json"}
+             ]
+    end
+  end
+
+  describe "content tied to the key, unit by unit (MES-135 K1)" do
+    test "et_test_foreign: a member row citing another test, or no citation" do
+      other =
+        row(a(), %{
+          "et_test" => %{"file" => @owner_src, "lines" => [7, 7], "bytes" => "assert e == 1"}
+        })
+
+      assert kinds(inputs([a()], [section([other])])) == [:et_test_foreign]
+
+      prose = row(a(), %{"et_test" => "the test that sends x"})
+      assert kinds(inputs([a()], [section([prose])])) == [:et_test_foreign]
+
+      none = row(a(), %{"et_test" => nil})
+      assert kinds(inputs([a()], [section([none])])) == [:et_test_foreign]
+    end
+
+    test "et_test_foreign: a member-less row must carry et_test null" do
+      m = view_row(nil, nil, "oc:t1") |> Map.delete("member")
+      ok = row(m, %{"member" => nil, "et_test" => nil})
+      assert kinds(inputs([m], [section([ok])])) == []
+
+      kept =
+        row(m, %{
+          "member" => nil,
+          "et_test" => %{"file" => @owner_src, "lines" => [3, 3], "bytes" => "assert x == 1"}
+        })
+
+      assert kinds(inputs([m], [section([kept])])) == [:et_test_foreign]
+    end
+
+    test "check_foreign: no harness span under check overlaps the tag's own sites" do
+      far = row(a(), %{"check" => %{"predicate" => %{@harness | "byte_span" => [20, 30]}}})
+      assert kinds(inputs([a()], [section([far])])) == [:check_foreign]
+
+      prose = row(a(), %{"check" => %{"requires" => "x", "predicate" => "the validator"}})
+      assert kinds(inputs([a()], [section([prose])])) == [:check_foreign]
+
+      # Touching is not overlapping: spans are half-open.
+      touch = row(a(), %{"check" => %{"predicate" => %{@harness | "byte_span" => [10, 12]}}})
+      assert kinds(inputs([a()], [section([touch])])) == [:check_foreign]
+    end
+
+    test "check_foreign: a tag that is not a locator token" do
+      t = view_row("M/test a", "claim a", "oc:t9")
+      assert kinds(inputs([t], [section([row(t)])])) == [:check_foreign]
+    end
+
+    test "check_foreign: an oc:none/ row cites no harness span under check" do
+      n = view_row("M/test a", "claim a", "oc:none/x/CG1")
+      assert kinds(inputs([n], [section([row(n, %{"check" => %{"requires" => "x"}})])])) == []
+      assert kinds(inputs([n], [section([row(n)])])) == [:check_foreign]
+    end
+
+    test "root_cause_foreign: an R<n> whose stated_at does not carry **R<n>**" do
+      cite = fn b -> %{"file" => @src, "lines" => [2, 2], "bytes" => b} end
+      stated = %{"file" => @src, "lines" => [2, 2], "bytes" => "assert x == 1"}
+      src = fn -> {:ok, "line one\n| **R6** the cause |\nline three\n"} end
+
+      i = fn rc ->
+        base = inputs([a()], [section([row(a(), %{"root_cause" => rc})])])
+
+        %{
+          base
+          | source_fun: fn
+              @src -> src.()
+              f -> base.source_fun.(f)
+            end
+        }
+      end
+
+      assert kinds(i.(%{"id" => "R6", "stated_at" => cite.("| **R6** the cause |")})) == []
+
+      assert kinds(i.(%{"id" => "R1", "stated_at" => cite.("| **R6** the cause |")})) == [
+               :root_cause_foreign
+             ]
+
+      assert kinds(i.(%{"id" => "R1"})) == [:root_cause_foreign]
+
+      assert kinds(i.(%{"id" => "R1", "stated_at" => "the report says so"})) == [
+               :root_cause_foreign
+             ]
+
+      # A cause that is not an R<n> has nothing to tie to.
+      assert kinds(i.(%{"id" => "suite_slug", "stated_at" => stated})) == [:citation_drift]
+      assert kinds(i.(%{"id" => "suite_slug"})) == []
+    end
+
+    test "the ties' anchors are pinned" do
+      assert A.locator_path() == "docs/conformance/oc-emitting-sites-2026-07-28.json"
+      assert A.no_oc_prefix() == "oc:none/"
+      assert Regex.source(A.r_id()) == "\\AR[0-9]+\\z"
+
+      assert A.echo(%{"cg" => "CG1", "tag" => "t", "shape" => "s"}) == %{
+               "cg" => "CG1",
+               "shape" => "s"
+             }
+    end
+
+    test "echo holds cg: a bucket-1-shaped view row re-projected under an unchanged key" do
+      n = view_row("M/test a", "claim a", "oc:none/x/CG1", %{"cg" => "CG1"})
+      r = row(n, %{"check" => %{"requires" => "x"}})
+      moved = %{n | "cg" => "CG2"}
+      assert kinds(inputs([n], [section([r])])) == []
+      assert kinds(inputs([moved], [section([r])])) == [:echo_drift]
+    end
+
+    test "an unreadable locator is refused, and every OC row fails to tie" do
+      i = %{inputs([a()], [section([row(a())])]) | locator: {:error, "gone"}}
+      assert kinds(i) == [:unreadable, :check_foreign]
     end
   end
 
@@ -2578,7 +3426,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
     test "bad_row: a missing field is named" do
       [d] =
         inputs([a()], [section([Map.delete(row(a()), "rationale")])])
-        |> A.audit()
+        |> audit()
         |> Map.get(:defects)
 
       assert d.kind == :bad_row and d.detail =~ "rationale"
@@ -2591,7 +3439,10 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
     test "an escalated row needs whose_defect and a cause_slug naming the view's cause" do
       esc =
-        view_row("M/e", "c", "oc:e", %{"escalation_reason" => "r", "escalation_cause" => "slug"})
+        view_row("M/test e", "c", "oc:e", %{
+          "escalation_reason" => "r",
+          "escalation_cause" => "slug"
+        })
 
       ok =
         row(esc, %{
@@ -2634,19 +3485,115 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
     test "citation_drift names the row; a malformed citation is refused, not uncounted" do
       stale =
-        row(a(), %{"et_test" => %{"file" => @src, "lines" => [3, 3], "bytes" => "assert x == 1"}})
+        row(a(), %{
+          "if_conformance_fixed" => [
+            %{"file" => @src, "lines" => [3, 3], "bytes" => "assert x == 1"}
+          ]
+        })
 
       assert kinds(inputs([a()], [section([stale])])) == [:citation_drift]
 
-      odd = row(a(), %{"et_test" => %{"bytes" => "assert x == 1"}})
+      odd = row(a(), %{"if_conformance_fixed" => [%{"bytes" => "assert x == 1"}]})
       assert kinds(inputs([a()], [section([odd])])) == [:citation_drift]
+    end
+
+    # MES-135 (29451; PM 29663 Q3): bytes that recur in the file.
+    test "citation_ambiguous: recurring bytes need a verified occurrence" do
+      twice = "defmodule M do\n  x = 1\n  y = 2\n  x = 1\nend\n"
+
+      at = fn cite ->
+        base = inputs([a()], [section([row(a(), %{"if_conformance_fixed" => [cite]})])])
+
+        kinds(%{
+          base
+          | source_fun: fn
+              "test/twice.exs" -> {:ok, twice}
+              f -> base.source_fun.(f)
+            end
+        })
+      end
+
+      c = fn line, extra ->
+        Map.merge(
+          %{"file" => "test/twice.exs", "lines" => [line, line], "bytes" => "x = 1"},
+          extra
+        )
+      end
+
+      assert A.occurrences(c.(4, %{}), fn _ -> {:ok, twice} end) == [2, 4]
+      assert at.(c.(4, %{})) == [:citation_ambiguous]
+      assert at.(c.(4, %{"occurrence" => 2})) == []
+      assert at.(c.(4, %{"occurrence" => 1})) == [:citation_ambiguous]
+      assert at.(c.(2, %{"occurrence" => 1})) == []
+
+      # Unique bytes need no occurrence, but one that is carried is held.
+      unique = %{"file" => "test/twice.exs", "lines" => [3, 3], "bytes" => "y = 2"}
+      assert at.(unique) == []
+      assert at.(Map.put(unique, "occurrence", 2)) == [:citation_ambiguous]
+    end
+
+    test "citation_ambiguous: a window that recurs only by a blank-line shift is still ambiguous" do
+      src = "a\n\nb\n\n"
+      cite = %{"file" => "f", "lines" => [2, 3], "bytes" => "b"}
+      assert A.occurrences(cite, fn _ -> {:ok, src} end) == [2, 3]
+    end
+
+    test "the three committed occurrence citations are the pinned ones", %{inputs: inputs} do
+      got =
+        for {f, {:ok, doc}} <- inputs.records,
+            c <- A.collect(doc),
+            Map.has_key?(c, "occurrence"),
+            do: {Path.basename(f), c["file"], c["lines"], c["occurrence"]}
+
+      assert Enum.sort(got) == [
+               {"adjudication-D2a-i-2026-07-28.json", "conformance/server_handler.ex", [433, 445],
+                2},
+               {"adjudication-D2b-2026-07-28.json", "test/mcp/protocol/capabilities_test.exs",
+                [64, 64], 2},
+               {"adjudication-D4b-2026-07-28.json",
+                "test/mcp/server/subscriptions_dispatch_test.exs", [389, 389], 1}
+             ]
     end
 
     test "a harness citation is counted, not verified, in gate 5" do
       h = %{"harness_sha256" => "abc", "byte_span" => [1, 2], "bytes" => "x"}
-      %{report: r, defects: []} = A.audit(inputs([a()], [section([row(a(), %{"check" => h})])]))
+      %{report: r, defects: []} = audit(inputs([a()], [section([row(a(), %{"check" => h})])]))
       assert r["harness_citations_not_verified_in_gate_5"] == 1
-      assert r["citations_verified"] == 1
+      assert r["repo_citations_found"] == 1 and r["repo_citations_holding"] == 1
+    end
+
+    # MES-135 K5: `citations_verified` counted citations FOUND, so a refused run
+    # still printed "N repository citations verified". The report now counts
+    # found and holding apart, and the task prints a verified count only when the
+    # audit is clean.
+    test "a refused run prints no verified-count claim; a clean one does" do
+      clean = audit(inputs([a()], [section([row(a())])]))
+      assert clean.defects == []
+      assert Render.render(clean.report, clean.defects) =~ "1 repository citations verified"
+
+      drifted =
+        row(a(), %{
+          "if_conformance_fixed" => [%{"file" => @src, "lines" => [1, 1], "bytes" => "x"}]
+        })
+
+      refused = audit(inputs([a()], [section([drifted])]))
+      assert Enum.map(refused.defects, & &1.kind) == [:citation_drift]
+      # The row's own et_test holds; the planted one drifts.
+      assert refused.report["repo_citations_found"] == 2
+      assert refused.report["repo_citations_holding"] == 1
+
+      out = Render.render(refused.report, refused.defects)
+      refute out =~ "verified"
+      assert out =~ "2 repository citations found, 1 drifted"
+      assert out =~ "a refused run verifies nothing"
+      assert out =~ "G32 citation_drift"
+    end
+
+    test "a malformed citation is refused but is not counted as a repository citation" do
+      odd = row(a(), %{"if_conformance_fixed" => [%{"bytes" => "assert x == 1"}]})
+      %{report: r} = audit(inputs([a()], [section([odd])]))
+      # One: the row's own et_test. The malformed one is in neither count.
+      assert r["repo_citations_found"] == 1 and r["repo_citations_holding"] == 1
     end
   end
 
@@ -2657,14 +3604,45 @@ defmodule MCP.Conformance.AdjudicationsTest do
     end
 
     test "a visited record with zero rows is refused" do
-      assert kinds(inputs([], [section([], "open", %{"owner" => "M"})])) == [:reach]
+      assert kinds(inputs([], [section([], "open", %{"owner" => "MES-1"})])) == [:reach]
     end
 
     test "an empty directory reports zero and refuses nothing" do
       %{report: r, defects: []} =
-        A.audit(%{walk: [], records: %{}, views: %{}, source_fun: fn _ -> {:error, :x} end})
+        A.audit(
+          %{
+            walk: [],
+            records: %{},
+            views: %{},
+            anchor: [],
+            strays: [],
+            outside: {:ok, []},
+            locator: {:ok, %{}},
+            source_fun: fn _ -> {:error, :x} end
+          },
+          %{not_owed: %{}, pending: %{}}
+        )
 
       assert r["records_visited"] == 0 and r["rows_visited"] == 0
+    end
+
+    # MES-135 K2: with an owed view in the anchor, an empty directory is refused.
+    test "an empty directory with an owed, unpending view is refused, naming the view" do
+      empty = %{
+        walk: [],
+        records: %{},
+        views: %{},
+        anchor: [@view],
+        strays: [],
+        outside: {:ok, []},
+        locator: {:ok, %{}},
+        source_fun: fn _ -> {:error, :x} end
+      }
+
+      assert [%{kind: :owed_unadjudicated, file: @view}] =
+               A.audit(empty, %{not_owed: %{}, pending: %{}}).defects
+
+      assert A.audit(empty, %{not_owed: %{}, pending: %{@view => "MES-1"}}).defects == []
     end
   end
 

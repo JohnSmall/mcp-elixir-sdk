@@ -77,7 +77,62 @@ defmodule MCP.Conformance.Adjudications do
       bound to the view is `closed`. When every bound section is `open`, a
       missing key is allowed, which is the state of a split view before its
       closing ticket lands. An `open` section must name an `owner`.
-    * **duplicate**: one key adjudicated twice, including across records.
+    * **duplicate**: one key adjudicated twice, including across records. It is
+      reported against EVERY file holding the key.
+    * **closure_not_exclusive**: more than one `closed` section bound to one
+      view. A view is closed by ONE section; any other section binding it is
+      `open`. Two closed sections over disjoint halves of a view pass
+      `duplicate` (the halves are disjoint) and `missing` (the union is
+      complete), so neither entails this (MES-135 K3).
+
+  A `missing` edge is reported against the closing section's file, the section
+  that owes it. Until MES-135 (F7) every set defect was reported against the
+  view's FIRST section, so a row dropped from D2a-ii was named against D2a-i.
+
+  ## The universe: which views are owed a record (MES-135 K2)
+
+  The views owed a record are declared from an anchor that is NOT the records:
+  the listing of `docs/conformance/buckets/*.json`, read by `anchor/1`. Every
+  view there is owed a closing section except those `@not_owed` names, each with
+  its reason (bucket-0, whose rows the triple cannot key, and the roll-up, which
+  projects no rows). A universe derived from the records would be vacuous, since
+  a record left out would take its view out with it.
+
+  An owed view is either CLOSED (a closed section binds it) or PENDING: named in
+  `@pending` with the ticket that closes it. Pending is reported, never refused
+  and never silent. The closing ticket deletes its `@pending` line in the change
+  that closes the view (PM ratification, MES-135 29663, Q2). Both catalogues
+  live here, in the guard, and are pinned in gate 5.
+
+    * **owed_unadjudicated**: an owed view that no closed section binds and that
+      is not pending. Reported against the view. A dropped section (CR's W2 on
+      MES-126) is refused here, and so is a narrowed walk that sees no records.
+    * **pending_but_closed**: a pending view that a closed section closes; the
+      catalogue is stale.
+    * **catalogue_names_absent_view**: an `@not_owed` entry the listing lacks,
+      or an `@pending` entry that is not owed.
+    * **bound_to_excluded**: a section binding a view `@not_owed` names.
+    * **bound_outside_anchor**: a section binding a view outside the listing.
+    * **owner_mismatch**: an open section whose `owner` is not the ticket that
+      closes its view (the `@pending` ticket while pending, the closing
+      record's `ticket` once closed).
+    * **empty_closure_unwarranted**: a closed section with no rows over a view
+      that projects none, where the view does not state `count: 0` and an
+      `emptiness_reason`. (Over a view that projects rows, `missing` fires.)
+    * **record_outside_walk**: a `*.json` that git would commit (tracked, or
+      untracked and not ignored: `@scan_population`, run at the repository
+      root) whose `schema` is the record schema, outside the walk root. A
+      git-ignored file (`./tmp`, `doc/`, `cover/`) is not committed unless it
+      is force-added (`git add -f`), so while it is only ignored it is not
+      scanned (MES-135 B1). Once force-added it is tracked, so it IS scanned,
+      and refused (CR 29679, probe iv).
+      Fail-closed: when git cannot be run, or the root is not the top level of
+      a git work tree, the scan is refused under this kind, never skipped.
+    * **stray_in_walk_root**: an entry of the walk root that is not a regular
+      `*.json` file (a subdirectory, a `.jsn`), which the walk would not read.
+
+  `audit/2` takes the catalogues as `policy`, defaulting to the pinned ones, so
+  a control can plant a stale catalogue without editing this file.
 
   ## The key: the edge triple, derived by ONE function from both sides
 
@@ -109,17 +164,96 @@ defmodule MCP.Conformance.Adjudications do
   (`echo_drift`), rather than leaving an adjudication standing over a fact
   that has changed.
 
-  **Echo is vacuous on bucket-2 views.** A bucket-2 (and bucket-1) view row
-  carries only `leg` and `tag`, none of the echoed fields, so its echo is `{}`
-  and `echo_drift` cannot fire there (CR K4 on MES-126). `leg` and `tag` are
-  both inside the key, so there is nothing a view row could change under an
-  unchanged key. What such a record can still hold is its PREMISE: D2b's rows
-  cite each check's status at the accepted run as a repository citation, and
-  gate 5 requires it to be SUCCESS. The hardening is MES-135's.
+  **Echo is vacuous on bucket-2 views.** A bucket-2 view row carries only
+  `leg` and `tag`, both inside the key, so its echo is `{}` and `echo_drift`
+  cannot fire there (CR K4 on MES-126): there is nothing a view row could
+  change under an unchanged key. A bucket-1 view row carries `cg`, which
+  MES-135 added to the echoed fields, so its echo is no longer vacuous.
+
+  ## Content ties (MES-135 K1)
+
+  The key and the echo bind a row to its edge. They say nothing of the row's
+  CONTENT: CR's W1 on MES-126 gave edge A's key and echo edge B's `et_test`,
+  `check`, root cause and disposition, and it passed. Three ties now check the
+  content, each against an anchor outside the record. They do NOT separate
+  every pair of rows: the pairs whose content can be exchanged unseen are
+  stated by predicate, and audited, under "What the ties do NOT hold" below.
+
+    * **et_test_foreign**: a row with a `member` carries `et_test` as a
+      repository citation whose window lies inside the member's OWN test, in a
+      file defining the member's module (`et_test_owner/2`, moved here from the
+      gate-5 check MES-127 added). A row with no member carries
+      `et_test: null`.
+    * **check_foreign**: a row whose tag is an OC token carries, somewhere
+      under `check`, a harness citation whose `byte_span` overlaps a site that
+      the OC locator (`docs/conformance/oc-emitting-sites-2026-07-28.json`) records for that token. A token is
+      `oc:<leg>/<scenario>/<check id>/<name>`, plus `#<discriminator>` when the
+      locator row has one. A row on no OC check (`oc:none/`, bucket-1 and
+      claim-unmatched) cites no harness span under `check`, and that absence is
+      its premise: there is no check to tie to.
+    * **root_cause_foreign**: a root cause whose `id` is `R<n>` carries
+      `stated_at`, a repository citation whose bytes contain `**R<n>**`: the
+      report row stating it. A root cause that is not an `R<n>` (a suite slug,
+      or a bucket-2 statement with no id) has no such anchor, and is not tied.
+
+  Per shape, which ties apply. Member-keyed bucket-1 rows carry the `et_test`
+  tie and the `oc:none/` form of the `check` tie. Edge-keyed bucket-5 rows
+  carry all three. **Bucket-2 rows carry the `check` tie ALONE**: they have no
+  member, so `et_test` is `null`; their echo is `{}` (above); and their root
+  causes are not `R<n>`. Bucket-2 is the dominant shape: 93 of the 108
+  committed rows at MES-135. An empty view has no rows, so the ties are vacuous
+  there, and that is stated rather than claimed as coverage. Which ties apply
+  to a row does not say which pairs of rows they separate; the next paragraph
+  does.
+
+  What the ties do NOT hold:
+
+    * **Which of two rows' content is whose, for the pairs this predicate
+      admits (MES-135 K1-R and K1-R2; CR 29672, 29680).** Two rows' contents
+      (every field but `member`, `claim`, `tag` and `echo`) can be exchanged
+      and still audit CLEAN if and only if BOTH:
+      (a) their `check` ties are MUTUAL: each row's harness span overlaps a
+      locator site of the OTHER row's token, which happens where the two
+      tokens share a site; and (b) the `et_test` tie does not separate them:
+      both rows are member-less, or both carry the SAME member test (the tie
+      asks only that the window lie in the row's own member's test).
+      `root_cause_foreign` separates no pair, because `stated_at` travels with
+      the root cause. `check_foreign` accepts a span overlapping ANY locator
+      site of the token, and sites are shared: measured at MES-135, 11 of the
+      locator's 143 distinct sites are sites of more than one token, 82 of its
+      173 tokens have ONLY shared sites, and 60 of the 108 committed rows tie
+      their check only through a shared site (48 bucket-2, 12 member rows).
+      **The audited set.** CR exchanged every pair of the 108 committed rows
+      (5778 pairs) and ran each through `audit/2`: **481 pairs audit CLEAN at
+      this tip, 477 between bucket-2 rows and 4 between member rows**. Of the
+      551 pairs whose `check` ties are mutual, the `et_test` tie refuses 70.
+      The 4 member pairs are over 5 rows (1 in D4a, 4 in D4b) and 2 member
+      tests. On `StreamableHTTPStatelessTest` "initialize is gone → -32022;
+      ping/logging.setLevel → -32601": D4a's `initialize` row (`fix_sdk`) with
+      D4b's `ping` row and with D4b's `logging-setlevel` row (both
+      `extend_test`), which cross records and exchange disposition, check and
+      root cause; and those two D4b rows with each other. On `DispatchTest`
+      "ping and logging/setLevel are removed → method not found (-32601)":
+      D4b's `ping` and `logging-setlevel` rows (both `accept_bound`). The 481
+      pairs form 8 cliques, of 30, 9, 3, 3, 2, 2, 2 and 2 rows; the 30 span
+      D2a-i and D2a-ii. Gate 5 computes the set by (a) and (b) over every
+      committed row and asserts it EQUALS the audited set pair for pair, and
+      pins two pairs CLEAN as known residuals: CR's bucket-2 plant (D2a-ii's
+      `caching` and `tools-call-with-progress` `WireSchemaValid` rows, which
+      differ on `check`, `disposition`, `extend_target`, `remedy`,
+      `root_cause` and three more fields) and the cross-record member pair
+      (D4a's `initialize`, D4b's `ping`). So a row, a tie, or this paragraph
+      moving the set shows up red there. For a token whose sites are all
+      shared, the `check` tie cannot be narrowed: any site the row cites is a
+      site of another token too.
+    * That a slug root cause names the right cause.
+    * That a harness citation's bytes are right (gate 5 cannot read the build;
+      the control's `harness` mode checks both sha and bytes).
 
   ## Citations: an address AND the bytes at it (ruling 7)
 
-  Anywhere in a row, a map carrying `file`, `lines` (`[from, to]`, 1-based,
+  Anywhere in a record (in a row, a section, or at the top level: MES-135
+  extended the walk from rows to the whole record), a map carrying `file`, `lines` (`[from, to]`, 1-based,
   inclusive) and `bytes` is a **repository citation**. The guard reads that
   line window at the tip and requires it to EQUAL `bytes` once whitespace runs
   are squashed. The test is equality, not containment, so a quote cannot hide a
@@ -129,37 +263,58 @@ defmodule MCP.Conformance.Adjudications do
   report and verified by the control's `harness` mode against the pinned build.
   That split is a stated residual, not a pass.
 
+  A repository citation can be right on its BYTES and wrong on its UNIT when
+  those bytes recur in the file (MES-128: `capabilities_test.exs:8` and `:64`
+  both read `test "from_map/1 parses full capabilities" do`). So when the
+  squashed bytes EQUAL some other window of the same length in the same file,
+  the citation must carry `occurrence: n`, and n must be the cited window's
+  1-based index among the equal windows. A citation that carries `occurrence`
+  is held to it even where the bytes are unique (n = 1). Otherwise it is
+  refused as `citation_ambiguous` (MES-135, 29451).
+
   ## What is refused
 
   `unreadable`, `bad_record`, `bad_section`, `unknown_view`,
   `view_key_collision`, `open_without_owner`, `bad_row`,
   `disposition_outside_set`, `bound_missing`, `build_level_missing`, `sdk_gap_missing`,
   `phantom`, `missing`,
-  `duplicate`, `echo_drift`, `citation_drift`, and `reach`. Every refusal names the guard, the kind, the
+  `duplicate`, `closure_not_exclusive`, `owed_unadjudicated`, `pending_but_closed`,
+  `catalogue_names_absent_view`, `bound_to_excluded`, `bound_outside_anchor`,
+  `owner_mismatch`, `empty_closure_unwarranted`, `record_outside_walk`,
+  `stray_in_walk_root`, `et_test_foreign`, `check_foreign`, `root_cause_foreign`,
+  `citation_ambiguous`, `echo_drift`, `citation_drift`, and `reach`. Every refusal names the guard, the kind, the
   record file and the edge key.
 
   ## Reach, and what the guard reports over an empty directory
 
-  The report states `records_visited`, `rows_visited`, `views_bound` and the
-  citations verified. Over an EMPTY adjudications directory the guard reports
-  `records_visited: 0, rows_visited: 0` and refuses nothing: no view is bound,
-  so no view is owed an adjudication. That is the state before the first record,
-  and it is why the walk root is pinned by gate 5
-  (`test/conformance/adjudications_test.exs`): a narrowed walk that sees no
-  record would otherwise pass silently. Once any record is visited, a run that
-  visited zero rows is refused (`reach`).
+  The report states `records_visited`, `rows_visited`, `views_bound`, the
+  universe (`owed`, `closed`, `pending`), and two citation counts:
+  `repo_citations_found`, every repository citation the walk found, and
+  `repo_citations_holding`, those whose bytes held. Neither count claims that
+  anything was verified: a refused run verifies nothing, so the task prints a
+  VERIFIED count only when the audit is clean (MES-135 K5; before it,
+  `citations_verified` counted citations found, and a refusing run still
+  printed "N repository citations verified").
+
+  Over an EMPTY adjudications directory no view is closed, so every owed view
+  that is not pending is refused (`owed_unadjudicated`). Before MES-135 that
+  state audited clean, and only the gate-5 pin on the walk root caught a
+  narrowed walk; the pin remains, as a backstop. Once any record is visited, a
+  run that visited zero rows is refused (`reach`).
 
   ## What it does NOT establish
 
     * That a disposition is RIGHT. The guard holds the record's shape against
       the view. The judgement is the author's, and the reviewer's to check.
-    * That a view is owed a record. A view no section binds is not examined.
-      Which views a ticket must close is the ticket's acceptance, not this
-      guard's.
+    * That `@pending` names the RIGHT ticket, or that `@not_owed`'s reasons are
+      true. Both are reviewed changes to this file, pinned in gate 5.
+    * That a record with a schema OTHER than `adjudication-record/1` outside
+      the walk root is a record. The scan keys on the schema.
     * Harness bytes in gate 5 (see above).
   """
 
   @guard "G32"
+  @source "conformance/lib/mcp/conformance/adjudications.ex"
   @walk_root "docs/conformance/adjudications"
   @walk_glob "*.json"
   @schema "adjudication-record/1"
@@ -184,13 +339,65 @@ defmodule MCP.Conformance.Adjudications do
   @escalated_fields ~w(whose_defect cause_slug)
   @whose ~w(ours suite)
   @slug_verdicts ~w(confirmed corrected)
-  @echo_fields ~w(shape verdicts bucket escalation_reason escalation_cause)
+  # `cg` since MES-135: a bucket-1 view row carries none of the others, so its
+  # echo was vacuous (CR K4 on MES-126). Only bucket-1 rows carry `cg`.
+  @echo_fields ~w(shape verdicts bucket escalation_reason escalation_cause cg)
+
+  # The OC locator: each OC token's emitting sites in the pinned harness build.
+  # A row's `check` is tied to its tag through it (MES-135 K1).
+  @locator "docs/conformance/oc-emitting-sites-2026-07-28.json"
+  @no_oc_prefix "oc:none/"
+  @r_id ~r/\AR[0-9]+\z/
+
+  # --- the universe of views owed a record (MES-135 K2) ------------------------
+  #
+  # Declared from an anchor that is NOT the records: the listing of the bucket
+  # views directory. Every view there is owed a closing section, except the
+  # named exclusions below. A view owed and not yet closed must be named in
+  # @pending with the ticket that closes it, and that ticket deletes its line
+  # in the change that closes the view (PM ratification, MES-135 29663, Q2).
+  @anchor_root "docs/conformance/buckets"
+  @anchor_glob "*.json"
+
+  @not_owed %{
+    "docs/conformance/buckets/bucket-0-2026-07-28.json" =>
+      "the skip-gate rows: keyed by `token`, not `tag`, so the edge triple cannot key them (view_key_collision); no D ticket adjudicates them",
+    "docs/conformance/buckets/roll-up-2026-07-28.json" =>
+      "the roll-up of the other views (schema bucket-roll-up/1): it projects no rows of its own"
+  }
+
+  @pending %{
+    "docs/conformance/buckets/bucket-1-2026-07-28.json" => "MES-143",
+    "docs/conformance/buckets/bucket-3-2026-07-28.json" => "MES-144",
+    "docs/conformance/buckets/bucket-5a-2026-07-28.json" => "MES-148",
+    "docs/conformance/buckets/bucket-5b-2026-07-28.json" => "MES-146",
+    "docs/conformance/buckets/bucket-6-2026-07-28.json" => "MES-144",
+    "docs/conformance/buckets/claim-unmatched-2026-07-28.json" => "MES-138"
+  }
+
+  # A record is found OUTSIDE the walk by scanning the files git would commit
+  # (tracked, plus untracked and not ignored) for a *.json carrying the record
+  # schema. A git-ignored file is not committed unless force-added (`git add
+  # -f`), and a force-added one is tracked, so it is in `--cached`, scanned and
+  # refused (CR 29679, probe iv). Scanning a merely ignored file made gate 5 a
+  # function of one seat's scratch state (MES-135 B1, CR 29671). Run at the
+  # repository root.
+  @scan_population ~w(ls-files -z --cached --others --exclude-standard)
 
   def guard, do: @guard
+  def anchor, do: {@anchor_root, @anchor_glob}
+  def not_owed, do: @not_owed
+  def pending, do: @pending
+  def scan_population, do: @scan_population
+  def source_path, do: @source
+  def policy, do: %{not_owed: @not_owed, pending: @pending}
   def walk_root, do: {@walk_root, @walk_glob}
   def dispositions, do: @dispositions
   def build_levels, do: @build_levels
   def schema, do: @schema
+  def locator_path, do: @locator
+  def no_oc_prefix, do: @no_oc_prefix
+  def r_id, do: @r_id
 
   # --- the key -------------------------------------------------------------
 
@@ -229,7 +436,126 @@ defmodule MCP.Conformance.Adjudications do
       |> Enum.uniq()
       |> Map.new(&{&1, read_json(Path.join(root, &1))})
 
-    %{walk: walk, records: records, views: views, source_fun: &read_source(root, &1)}
+    %{
+      walk: walk,
+      records: records,
+      views: views,
+      locator: read_locator(root),
+      anchor: anchor(root),
+      strays: strays(root),
+      outside: outside(root),
+      source_fun: &read_source(root, &1)
+    }
+  end
+
+  @doc """
+  The locator as `{:ok, %{token => [byte_span]}}`. A token is
+  `oc:<leg>/<scenario>/<check id>/<name>`, with `#<discriminator>` when the row
+  has one. A duplicate token makes the locator unusable.
+  """
+  def read_locator(root) do
+    with {:ok, %{"rows" => rows}} when is_list(rows) <- read_json(Path.join(root, @locator)),
+         tokens =
+           Enum.map(rows, &{token(&1), Enum.map(&1["sites"] || [], fn s -> s["byte_span"] end)}),
+         [] <- tokens |> Enum.frequencies_by(&elem(&1, 0)) |> Enum.filter(&(elem(&1, 1) > 1)) do
+      {:ok, Map.new(tokens)}
+    else
+      {:error, why} ->
+        {:error, why}
+
+      {:ok, _} ->
+        {:error, "has no `rows` list"}
+
+      dups when is_list(dups) ->
+        {:error, "tokens recur: #{inspect(Enum.map(dups, &elem(&1, 0)))}"}
+    end
+  end
+
+  defp token(%{"key" => [leg, scenario, id, name, _description, disc]}),
+    do: "oc:#{leg}/#{scenario}/#{id}/#{name}" <> if(disc in [nil, ""], do: "", else: "#" <> disc)
+
+  defp token(other), do: {:malformed, other}
+
+  @doc "The anchor listing: every `*.json` directly under the bucket views directory, sorted."
+  def anchor(root) do
+    root
+    |> Path.join(@anchor_root)
+    |> Path.join(@anchor_glob)
+    |> Path.wildcard()
+    |> Enum.filter(&File.regular?/1)
+    |> Enum.map(&Path.join(@anchor_root, Path.basename(&1)))
+    |> Enum.sort()
+  end
+
+  @doc "Entries of the walk root the walk does not read: anything but a regular `*.json` file."
+  def strays(root) do
+    dir = Path.join(root, @walk_root)
+
+    case File.ls(dir) do
+      {:ok, names} ->
+        names
+        |> Enum.reject(&(String.ends_with?(&1, ".json") and File.regular?(Path.join(dir, &1))))
+        |> Enum.map(&Path.join(@walk_root, &1))
+        |> Enum.sort()
+
+      {:error, _} ->
+        []
+    end
+  end
+
+  @doc """
+  `{:ok, paths}`: every `*.json` git would commit (`scan_population/0`, run at
+  `root`), outside the walk root, whose top-level `schema` is the record
+  schema. `{:error, why}` when that population cannot be established: git
+  cannot be run, or `root` is not the top level of a git work tree. The caller
+  refuses on an error; there is no fallback to a directory walk.
+  """
+  def outside(root) do
+    with {:ok, files} <- committable(root) do
+      {:ok,
+       files
+       |> Enum.filter(&String.ends_with?(&1, ".json"))
+       |> Enum.reject(&(Path.dirname(&1) == @walk_root))
+       |> Enum.filter(&record_file?(root, &1))
+       |> Enum.sort()}
+    end
+  end
+
+  defp record_file?(root, rel) do
+    with {:ok, bin} <- File.read(Path.join(root, rel)),
+         true <- String.contains?(bin, @schema),
+         {:ok, %{"schema" => @schema}} <- Jason.decode(bin) do
+      true
+    else
+      _ -> false
+    end
+  end
+
+  # The files git would commit at `root`: tracked, plus untracked and not
+  # ignored. `root` must be the work tree's top level (an empty
+  # `--show-prefix`), so the paths are relative to the repository root.
+  defp committable(root) do
+    with {:ok, prefix} <- git(root, ~w(rev-parse --show-prefix)),
+         :ok <- top_level(root, prefix),
+         {:ok, out} <- git(root, @scan_population) do
+      {:ok, out |> String.split(<<0>>, trim: true) |> Enum.uniq()}
+    end
+  end
+
+  defp top_level(_root, prefix) when prefix in ["", "\n"], do: :ok
+
+  defp top_level(root, prefix),
+    do:
+      {:error,
+       "#{root} is not the top level of a git work tree (prefix #{inspect(String.trim(prefix))})"}
+
+  defp git(root, args) do
+    case System.cmd("git", ["-C", root | args], stderr_to_stdout: true) do
+      {out, 0} -> {:ok, out}
+      {out, n} -> {:error, "git #{Enum.join(args, " ")} exited #{n}: #{String.trim(out)}"}
+    end
+  rescue
+    e in ErlangError -> {:error, "git could not be run: #{Exception.message(e)}"}
   end
 
   @doc "The derived walk: every `*.json` directly under the walk root, relative to `root`, sorted."
@@ -267,37 +593,244 @@ defmodule MCP.Conformance.Adjudications do
   Returns `%{report: map, defects: [defect]}`. A defect is
   `%{kind, file, key, detail}`.
   """
-  def audit(inputs) do
+  def audit(inputs, policy \\ policy()) do
     {sections, record_defects} = sections(inputs.records)
     {view_keys, view_defects} = view_index(sections, inputs.views)
 
     rows = for s <- sections, r <- s.rows, do: {s, r}
 
-    row_defects = Enum.flat_map(rows, fn {s, r} -> row_defects(s, r, view_keys) end)
-    {citations, citation_defects} = citations(rows, inputs.source_fun)
+    {locator, locator_defects} =
+      case inputs.locator do
+        {:ok, loc} -> {loc, []}
+        {:error, why} -> {%{}, [d(:unreadable, @locator, nil, why)]}
+      end
+
+    ties = %{locator: locator, source_fun: inputs.source_fun}
+    row_defects = Enum.flat_map(rows, fn {s, r} -> row_defects(s, r, view_keys, ties) end)
+    {citations, citation_defects} = citations(rows, inputs.records, inputs.source_fun)
 
     set_defects =
       sections
       |> Enum.group_by(& &1.view)
       |> Enum.flat_map(fn {view, ss} -> set_defects(view, ss, view_keys[view]) end)
 
+    {universe, universe_defects} = universe(inputs, sections, policy)
+
     report = %{
       "guard" => @guard,
+      "owed" => universe.owed,
+      "closed" => universe.closed,
+      "pending" => universe.pending,
       "records_visited" => map_size(inputs.records),
       "sections" => length(sections),
       "rows_visited" => length(rows),
       "views_bound" => sections |> Enum.map(& &1.view) |> Enum.uniq() |> length(),
-      "citations_verified" => citations.repo,
+      "repo_citations_found" => citations.repo,
+      "repo_citations_holding" => citations.repo - citations.drifted,
       "harness_citations_not_verified_in_gate_5" => citations.harness,
       "dispositions" => rows |> Enum.map(fn {_, r} -> r["disposition"] end) |> Enum.frequencies()
     }
 
     defects =
       record_defects ++
-        view_defects ++ row_defects ++ set_defects ++ citation_defects ++ reach(report)
+        locator_defects ++
+        view_defects ++
+        row_defects ++ set_defects ++ citation_defects ++ universe_defects ++ reach(report)
 
     %{report: report, defects: defects}
   end
+
+  # --- the universe (MES-135 K2) ---------------------------------------------------
+  #
+  # One function per refusal kind, each taking the same context, so the control's
+  # mutation mode can neutralise each clause alone.
+
+  defp universe(inputs, sections, %{not_owed: not_owed, pending: pending}) do
+    owed = Enum.reject(inputs.anchor, &Map.has_key?(not_owed, &1))
+    closing = sections |> Enum.filter(&(&1.closure == "closed")) |> Enum.group_by(& &1.view)
+
+    ctx = %{
+      inputs: inputs,
+      sections: sections,
+      anchor: inputs.anchor,
+      owed: owed,
+      closing: closing,
+      not_owed: not_owed,
+      pending: pending
+    }
+
+    defects =
+      stray_defects(ctx) ++
+        outside_defects(ctx) ++
+        catalogue_defects(ctx) ++
+        owed_defects(ctx) ++
+        pending_closed_defects(ctx) ++
+        excluded_defects(ctx) ++
+        outside_anchor_defects(ctx) ++
+        owner_defects(ctx) ++
+        empty_closure_defects(ctx)
+
+    pending_open =
+      for v <- owed,
+          not Map.has_key?(closing, v),
+          Map.has_key?(pending, v),
+          into: %{},
+          do: {v, pending[v]}
+
+    {%{
+       owed: length(owed),
+       closed: Enum.filter(owed, &Map.has_key?(closing, &1)),
+       pending: pending_open
+     }, defects}
+  end
+
+  defp stray_defects(ctx) do
+    for f <- ctx.inputs.strays,
+        do:
+          d(
+            :stray_in_walk_root,
+            f,
+            nil,
+            "the walk reads only regular *.json files directly under #{@walk_root}, so this entry would escape G32"
+          )
+  end
+
+  defp outside_defects(ctx) do
+    case ctx.inputs.outside do
+      {:ok, files} ->
+        for f <- files,
+            do:
+              d(
+                :record_outside_walk,
+                f,
+                nil,
+                "carries schema #{inspect(@schema)} outside #{@walk_root}, where G32 does not walk"
+              )
+
+      {:error, why} ->
+        [
+          d(
+            :record_outside_walk,
+            ".",
+            nil,
+            "the files git would commit (git #{Enum.join(@scan_population, " ")}) cannot be listed, so no record outside #{@walk_root} can be ruled out; refused, not skipped: #{why}"
+          )
+        ]
+    end
+  end
+
+  defp catalogue_defects(ctx) do
+    for {catalogue, entries, universe, not_what} <- [
+          {"@not_owed", ctx.not_owed, ctx.anchor, "in the anchor listing of #{@anchor_root}"},
+          {"@pending", ctx.pending, ctx.owed,
+           "owed (absent from the anchor listing of #{@anchor_root}, or excluded)"}
+        ],
+        v <- entries |> Map.keys() |> Enum.sort(),
+        v not in universe,
+        do:
+          d(
+            :catalogue_names_absent_view,
+            v,
+            nil,
+            "#{catalogue} names a view that is not #{not_what}"
+          )
+  end
+
+  defp owed_defects(ctx) do
+    for v <- ctx.owed,
+        not Map.has_key?(ctx.closing, v),
+        not Map.has_key?(ctx.pending, v),
+        do:
+          d(
+            :owed_unadjudicated,
+            v,
+            nil,
+            "owed a record (in #{@anchor_root}, not excluded), no closed section binds it, and it is not pending on a named ticket. To fix: add the view to @pending (with the ticket that closes it) or to @not_owed (with a reason) in #{@source}"
+          )
+  end
+
+  defp pending_closed_defects(ctx) do
+    for v <- ctx.owed,
+        Map.has_key?(ctx.pending, v),
+        s <- Map.get(ctx.closing, v, []),
+        do:
+          d(
+            :pending_but_closed,
+            s.file,
+            nil,
+            "#{v} is closed here and still pending on #{ctx.pending[v]}: the closing ticket deletes its @pending line"
+          )
+  end
+
+  defp excluded_defects(ctx) do
+    for s <- ctx.sections,
+        Map.has_key?(ctx.not_owed, s.view),
+        do:
+          d(
+            :bound_to_excluded,
+            s.file,
+            nil,
+            "a section binds #{s.view}, which is not owed a record: #{ctx.not_owed[s.view]}"
+          )
+  end
+
+  defp outside_anchor_defects(ctx) do
+    for s <- ctx.sections,
+        s.view not in ctx.anchor,
+        do:
+          d(
+            :bound_outside_anchor,
+            s.file,
+            nil,
+            "a section binds #{s.view}, which is not in the anchor listing of #{@anchor_root}"
+          )
+  end
+
+  # An open section's owner is the ticket that closes its view: the pending
+  # ticket while the view is pending, the closing record's ticket once closed.
+  # An unstated owner is open_without_owner's, and a view neither pending nor
+  # closed is owed_unadjudicated's, so neither is judged here.
+  defp owner_defects(ctx) do
+    for %{closure: "open", owner: owner} = s <- ctx.sections,
+        # A generator, not `want = …`: a binding filters on truthiness, and a
+        # closing record with no `ticket` gives nil, which must be judged.
+        want <- [owner_wanted(s.view, ctx)],
+        want != :unjudged and stated?(owner) and owner != want,
+        do:
+          d(
+            :owner_mismatch,
+            s.file,
+            nil,
+            "the open section on #{s.view} names owner #{inspect(owner)}; the ticket that closes the view is #{inspect(want)}"
+          )
+  end
+
+  defp owner_wanted(view, ctx) do
+    case {ctx.pending[view], ctx.closing[view]} do
+      {t, _} when is_binary(t) -> t
+      {_, [c | _]} -> c.ticket
+      _ -> :unjudged
+    end
+  end
+
+  # A closed section with no rows closes only a view that projects none AND
+  # says why. Over a view that projects rows, `missing` already fires, so that
+  # case is not judged here.
+  defp empty_closure_defects(ctx) do
+    for %{closure: "closed", rows: []} = s <- ctx.sections,
+        {:ok, %{"rows" => []} = v} <- [ctx.inputs.views[s.view]],
+        not (v["count"] == 0 and stated_reason?(v["emptiness_reason"])),
+        do:
+          d(
+            :empty_closure_unwarranted,
+            s.file,
+            nil,
+            "a closed section with no rows over #{s.view}, which does not state `count: 0` and an `emptiness_reason`"
+          )
+  end
+
+  defp stated_reason?(r) when is_map(r), do: map_size(r) > 0
+  defp stated_reason?(r), do: stated?(r)
 
   defp reach(%{"records_visited" => n, "rows_visited" => 0}) when n > 0,
     do: [
@@ -343,7 +876,17 @@ defmodule MCP.Conformance.Adjudications do
       end
 
     parsed =
-      Enum.map(ok, &%{file: file, view: &1["view"], closure: &1["closure"], rows: &1["rows"]})
+      Enum.map(
+        ok,
+        &%{
+          file: file,
+          ticket: doc["ticket"],
+          view: &1["view"],
+          closure: &1["closure"],
+          owner: &1["owner"],
+          rows: &1["rows"]
+        }
+      )
 
     {parsed, bad_defects ++ owner_defects}
   end
@@ -411,7 +954,7 @@ defmodule MCP.Conformance.Adjudications do
      ]}
   end
 
-  defp row_defects(section, row, view_keys) when is_map(row) do
+  defp row_defects(section, row, view_keys, ties) when is_map(row) do
     k = key(row)
     view_row = view_row(view_keys[section.view], k)
     escalated? = is_map(view_row) and Map.has_key?(view_row, "escalation_reason")
@@ -422,11 +965,211 @@ defmodule MCP.Conformance.Adjudications do
       build_defects(section.file, k, row) ++
       sdk_gap_defects(section.file, k, row) ++
       echo_defects(section.file, k, row, view_row) ++
+      et_test_defects(section.file, k, row, ties) ++
+      check_defects(section.file, k, row, ties) ++
+      root_cause_defects(section.file, k, row, ties) ++
       if(escalated?, do: escalation_defects(section.file, k, row, view_row), else: [])
   end
 
-  defp row_defects(section, row, _),
+  defp row_defects(section, row, _, _),
     do: [d(:bad_row, section.file, nil, "a row must be an object: #{inspect(row, limit: 3)}")]
+
+  # --- content tied to the key (MES-135 K1) ----------------------------------------
+  #
+  # The key and echo bind a row to its edge; these bind the row's CONTENT to the
+  # key, each on an anchor outside the record: the member's own test, the OC
+  # locator, and the report row that states a root cause. One function per
+  # kind, taking the same arguments, so the control can neutralise each alone.
+
+  # A member row's et_test is a repository citation whose window lies inside the
+  # member's own test; a row with no member carries `et_test: null`.
+  defp et_test_defects(file, k, %{"member" => member} = row, ties) when is_binary(member) do
+    case et_test_owner(row, ties.source_fun) do
+      :ok ->
+        []
+
+      {:error, why} ->
+        [
+          d(
+            :et_test_foreign,
+            file,
+            k,
+            "et_test is not inside #{member}'s own test: #{inspect(why)}"
+          )
+        ]
+    end
+  end
+
+  defp et_test_defects(file, k, row, _ties) do
+    if is_nil(row["et_test"]),
+      do: [],
+      else: [
+        d(
+          :et_test_foreign,
+          file,
+          k,
+          "a row with no member carries `et_test: null`, not #{inspect(row["et_test"], limit: 3)}"
+        )
+      ]
+  end
+
+  # A row on an OC check cites, under `check`, a harness span overlapping a site
+  # the locator records for the row's own token. A row on no OC check
+  # (`oc:none/`) cites none: there is no check to tie to.
+  defp check_defects(file, k, row, ties) do
+    tag = row["tag"]
+    spans = for c <- collect(row["check"]), Map.has_key?(c, "harness_sha256"), do: c["byte_span"]
+
+    cond do
+      is_binary(tag) and String.starts_with?(tag, @no_oc_prefix) ->
+        if spans == [],
+          do: [],
+          else: [
+            d(
+              :check_foreign,
+              file,
+              k,
+              "an #{@no_oc_prefix} row is on no OC check, so its `check` cites no harness span"
+            )
+          ]
+
+      not Map.has_key?(ties.locator, tag) ->
+        [
+          d(
+            :check_foreign,
+            file,
+            k,
+            "the tag is not a token of #{@locator}, so `check` cannot be tied to it"
+          )
+        ]
+
+      Enum.any?(spans, fn s -> Enum.any?(ties.locator[tag], &overlap?(s, &1)) end) ->
+        []
+
+      true ->
+        [
+          d(
+            :check_foreign,
+            file,
+            k,
+            "no harness span under `check` (#{inspect(spans)}) overlaps a site #{@locator} records for this tag (#{inspect(ties.locator[tag])})"
+          )
+        ]
+    end
+  end
+
+  defp overlap?([a, b], [c, e])
+       when is_integer(a) and is_integer(b) and is_integer(c) and is_integer(e),
+       do: max(a, c) < min(b, e)
+
+  defp overlap?(_, _), do: false
+
+  # A root cause named R<n> cites, in `stated_at`, a repository window whose
+  # bytes carry **R<n>**: the report row that states it.
+  defp root_cause_defects(file, k, %{"root_cause" => %{"id" => id} = rc}, _ties)
+       when is_binary(id) do
+    if id =~ @r_id, do: stated_at_defects(file, k, id, rc["stated_at"]), else: []
+  end
+
+  defp root_cause_defects(_file, _k, _row, _ties), do: []
+
+  defp stated_at_defects(file, k, id, %{"file" => _, "lines" => [_, _], "bytes" => b})
+       when is_binary(b) do
+    if String.contains?(b, "**#{id}**"),
+      do: [],
+      else: [d(:root_cause_foreign, file, k, "stated_at's bytes do not carry **#{id}**")]
+  end
+
+  defp stated_at_defects(file, k, id, other),
+    do: [
+      d(
+        :root_cause_foreign,
+        file,
+        k,
+        "#{id} needs `stated_at`, a repository citation, not #{inspect(other, limit: 3)}"
+      )
+    ]
+
+  @test_line ~r/^(\s*)test "((?:[^"\\]|\\.)*)"/
+  @one_line_test ~r/,\s*do:/
+  @describe_line ~r/^  describe "((?:[^"\\]|\\.)*)"/
+
+  @doc """
+  `:ok` when `row["et_test"]` is a repository citation whose window lies inside
+  the member's own test (moved here from gate 5 by MES-135 K1). The innermost
+  `test "…"` at or above the window's first line owns the window. No other test
+  line may start inside the window, and the owner's closing line must be at or
+  after the window's last line: for a block test, the first later line equal to
+  the test's indent followed by `end` (so a nested `describe`'s shallower `end`,
+  and any deeper `end` in the body, are not taken for it); for a one-line
+  `, do:` test, the test line itself, so a window reaching past it is refused
+  (fail-closed, even for a `do:` body continued onto later lines). The owner
+  must be the member's test (qualified by its `describe` when nested), in a
+  file that defines the member's module.
+  """
+  def et_test_owner(%{"member" => member, "et_test" => et}, source_fun) when is_binary(member) do
+    with %{"file" => file, "lines" => [from, to], "bytes" => b}
+         when is_binary(file) and is_integer(from) and is_integer(to) and is_binary(b) <-
+           et || :not_a_citation,
+         [module, member_test] <- String.split(member, "/", parts: 2),
+         {:ok, src} <- source_fun.(file) do
+      owner(src, from, to, module, member_test)
+    else
+      {:error, why} -> {:error, {:unreadable, why}}
+      other -> {:error, other}
+    end
+  end
+
+  def et_test_owner(_row, _source_fun), do: {:error, :no_member}
+
+  defp owner(src, from, to, module, member_test) do
+    lines = src |> String.split("\n") |> Enum.with_index(1)
+    tests = for {l, i} <- lines, m <- [Regex.run(@test_line, l)], m != nil, do: {i, m}
+
+    with {i, [_, indent, name]} <-
+           tests |> Enum.filter(&(elem(&1, 0) <= from)) |> List.last() || :no_test_above,
+         true <- Enum.all?(tests, fn {j, _} -> j <= i or j > to end) || :window_crosses_a_test,
+         last when is_integer(last) <- test_end(lines, i, indent) || :test_end_not_found,
+         true <- to <= last || {:window_outside_test, last},
+         describe = describe_above(lines, i, indent),
+         expected = Enum.join(Enum.reject(["test", describe, unescape(name)], &is_nil/1), " "),
+         true <- expected == member_test || {:names, expected},
+         true <- String.contains?(src, "defmodule #{module} do") || :module do
+      :ok
+    else
+      other -> {:error, other}
+    end
+  end
+
+  defp test_end(lines, i, indent) do
+    {head, _} = Enum.at(lines, i - 1)
+
+    if Regex.match?(@one_line_test, head) do
+      i
+    else
+      lines
+      |> Enum.drop(i)
+      |> Enum.find_value(fn {l, j} -> String.trim_trailing(l) == indent <> "end" && j end)
+    end
+  end
+
+  defp describe_above(_lines, _i, "  "), do: nil
+
+  defp describe_above(lines, i, "    ") do
+    lines
+    |> Enum.take(i - 1)
+    |> Enum.reverse()
+    |> Enum.find_value(fn {l, _} ->
+      case Regex.run(@describe_line, l) do
+        [_, d] -> unescape(d)
+        nil -> nil
+      end
+    end)
+  end
+
+  defp describe_above(_lines, _i, _indent), do: :unsupported_nesting
+
+  defp unescape(s), do: String.replace(s, ~S(\"), ~S("))
 
   defp view_row(index, k) when is_map(index), do: index[k]
   defp view_row(_unusable, _k), do: nil
@@ -590,10 +1333,9 @@ defmodule MCP.Conformance.Adjudications do
   end
 
   defp set_defects(view, sections, keys) when is_map(keys) do
-    file = hd(sections).file
     adjudicated = for s <- sections, r <- s.rows, is_map(r), do: {s.file, key(r)}
     counts = Enum.frequencies_by(adjudicated, &elem(&1, 1))
-    closed? = Enum.any?(sections, &(&1.closure == "closed"))
+    closed = for %{closure: "closed", file: f} <- sections, do: f
 
     phantom =
       for {f, k} <- adjudicated,
@@ -606,52 +1348,152 @@ defmodule MCP.Conformance.Adjudications do
               "adjudicated in a section bound to #{view}, which projects no such edge"
             )
 
+    # Attributed to EVERY file holding the key, not to the view's first section
+    # (MES-135 F7).
     duplicate =
       for {k, n} <- counts,
           n > 1,
-          do:
-            d(:duplicate, file, k, "adjudicated #{n} times across the sections bound to #{view}")
+          f <-
+            adjudicated
+            |> Enum.filter(&(elem(&1, 1) == k))
+            |> Enum.map(&elem(&1, 0))
+            |> Enum.uniq(),
+          do: d(:duplicate, f, k, "adjudicated #{n} times across the sections bound to #{view}")
 
+    # Attributed to the closing section's file: the section that owes the edge.
     missing =
-      if closed?,
-        do:
-          for(
-            k <- Map.keys(keys),
-            not Map.has_key?(counts, k),
-            do:
-              d(
-                :missing,
-                file,
-                k,
-                "#{view} projects this edge and a closed section bound to it does not adjudicate it"
-              )
-          ),
-        else: []
+      case closed do
+        [] ->
+          []
 
-    phantom ++ duplicate ++ Enum.sort_by(missing, & &1.key)
+        [f | _] ->
+          for k <- Map.keys(keys),
+              not Map.has_key?(counts, k),
+              do:
+                d(
+                  :missing,
+                  f,
+                  k,
+                  "#{view} projects this edge and a closed section bound to it does not adjudicate it"
+                )
+      end
+
+    closure_not_exclusive(view, closed) ++ phantom ++ duplicate ++ Enum.sort_by(missing, & &1.key)
   end
 
-  defp set_defects(_view, _sections, _unusable), do: []
+  defp set_defects(view, sections, _unusable),
+    do: closure_not_exclusive(view, for(%{closure: "closed", file: f} <- sections, do: f))
+
+  # A view is closed by ONE section (MES-135 K3). Two closed sections over
+  # disjoint halves of a view each pass duplicate and, jointly, missing, so
+  # neither of those entails this.
+  defp closure_not_exclusive(_view, [_]), do: []
+  defp closure_not_exclusive(_view, []), do: []
+
+  defp closure_not_exclusive(view, closed) do
+    for f <- closed do
+      d(
+        :closure_not_exclusive,
+        f,
+        nil,
+        "#{view} is closed by #{length(closed)} sections (#{Enum.join(closed, ", ")}); a view is closed by one section, and any other binding it must be open"
+      )
+    end
+  end
 
   # --- citations ---------------------------------------------------------------
 
-  defp citations(rows, source_fun) do
-    found = for {s, r} <- rows, is_map(r), c <- collect(r), do: {s.file, key(r), c}
+  # Every citation in the WHOLE record: a row's, attributed to its key, and
+  # every other (top-level, or a section's outside its rows) with no key
+  # (MES-135, 29433(a); PM 29663 Q4).
+  defp citations(rows, records, source_fun) do
+    found =
+      for({s, r} <- rows, is_map(r), c <- collect(r), do: {s.file, key(r), c}) ++
+        for {file, {:ok, doc}} <- Enum.sort(records),
+            c <- collect(outside_rows(doc)),
+            do: {file, nil, c}
+
     forms = Enum.frequencies_by(found, fn {_, _, c} -> citation_form(c) end)
 
-    defects =
-      Enum.flat_map(found, fn {f, k, c} ->
-        case verify(c, source_fun) do
-          :ok ->
-            []
+    failed =
+      for {f, k, c} <- found,
+          {:error, why} <- [verify(c, source_fun)],
+          do: {c, d(:citation_drift, f, k, "#{c["file"]}:#{inspect(c["lines"])} #{why}")}
 
-          {:error, why} ->
-            [d(:citation_drift, f, k, "#{c["file"]}:#{inspect(c["lines"])} #{why}")]
-        end
-      end)
+    counts = %{
+      repo: Map.get(forms, :repo, 0),
+      harness: Map.get(forms, :harness, 0),
+      drifted: Enum.count(failed, fn {c, _} -> citation_form(c) == :repo end)
+    }
 
-    {%{repo: Map.get(forms, :repo, 0), harness: Map.get(forms, :harness, 0)}, defects}
+    held =
+      for {_, _, c} = x <- found, citation_form(c) == :repo, verify(c, source_fun) == :ok, do: x
+
+    {counts, Enum.map(failed, &elem(&1, 1)) ++ ambiguous_defects(held, source_fun)}
   end
+
+  # A citation whose bytes recur, at an equal window elsewhere in the file, is
+  # right on its bytes and may be wrong on its unit (MES-128's capabilities_test
+  # :8 and :64). It must say WHICH occurrence it means, and G32 checks that the
+  # n-th equal window is the one cited (MES-135, 29451; PM 29663 Q3).
+  defp ambiguous_defects(held, source_fun) do
+    # Each cited file is read and squashed once per audit.
+    squashed =
+      held
+      |> Enum.map(fn {_, _, c} -> c["file"] end)
+      |> Enum.uniq()
+      |> Map.new(fn f -> {f, squashed_lines(f, source_fun)} end)
+
+    for {f, k, %{"lines" => [from, _]} = c} <- held,
+        starts <- [occurrences_in(c, squashed[c["file"]])],
+        n <- [Enum.find_index(starts, &(&1 == from)) + 1],
+        (length(starts) > 1 or Map.has_key?(c, "occurrence")) and c["occurrence"] != n,
+        do:
+          d(
+            :citation_ambiguous,
+            f,
+            k,
+            "#{c["file"]}:#{inspect(c["lines"], charlists: :as_lists)} — its bytes recur at lines #{inspect(starts, charlists: :as_lists)}; it is occurrence #{n}, and carries `occurrence: #{inspect(c["occurrence"])}`"
+          )
+  end
+
+  @doc """
+  The first lines of every window of `c`'s length in `c`'s file whose squashed
+  text equals the squashed `bytes`, in order. A held citation's own `from` is
+  among them.
+  """
+  def occurrences(%{"file" => f} = c, source_fun),
+    do: occurrences_in(c, squashed_lines(f, source_fun))
+
+  defp squashed_lines(f, source_fun) do
+    {:ok, src} = source_fun.(f)
+    src |> String.split("\n") |> Enum.map(&squash/1) |> List.to_tuple()
+  end
+
+  defp occurrences_in(%{"lines" => [from, to], "bytes" => b}, lines) do
+    len = to - from + 1
+    want = squash(b)
+
+    # A window equal to `want` starts on a blank line or on a line `want`
+    # starts with; only those are joined and compared.
+    for i <- 0..(tuple_size(lines) - len)//1,
+        head <- [elem(lines, i)],
+        head == "" or String.starts_with?(want, head),
+        window(lines, i, len) == want,
+        do: i + 1
+  end
+
+  defp window(lines, i, len) do
+    i..(i + len - 1)
+    |> Enum.map(&elem(lines, &1))
+    |> Enum.reject(&(&1 == ""))
+    |> Enum.join(" ")
+  end
+
+  defp outside_rows(%{"sections" => ss} = doc) when is_list(ss),
+    do: %{doc | "sections" => Enum.map(ss, &if(is_map(&1), do: Map.delete(&1, "rows"), else: &1))}
+
+  defp outside_rows(doc), do: doc
 
   defp citation_form(%{"file" => _, "lines" => _}), do: :repo
   defp citation_form(%{"harness_sha256" => _, "byte_span" => _}), do: :harness

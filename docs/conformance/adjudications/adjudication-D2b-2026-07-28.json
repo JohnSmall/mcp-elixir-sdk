@@ -1230,7 +1230,8 @@
                     64,
                     64
                   ],
-                  "bytes": "    test \"from_map/1 parses full capabilities\" do"
+                  "bytes": "    test \"from_map/1 parses full capabilities\" do",
+                  "occurrence": 2
                 },
                 "why_not": "It DECODES a declared elicitation map into the struct. The check is about what the client ENCODES and sends."
               },
