@@ -1057,13 +1057,13 @@ at all, and six of those nine are wrong. **Guard 20** now makes that unrepresent
 A **DEAD** verdict additionally requires the mutation to be **potent** — to have
 reddened at least one of that direction's own units. It does for all 19.
 
-**The live column's exclusion set, and the hole round 4 closed.** A unit is excluded
-from a direction's live count when it lies in the own-tests of a direction recorded
-DEAD. The exclusion is **file-level** where every direction on that file is dead and
-**unit-level** where the file is shared with a live one — otherwise excluding
-`tool_test.exs` for the dead decode side would silence the live encode side too.
-Both sets are enumerated in `etcc-boundaries.json` rather than described (27 units
-at unit level; at file level:
+**The live column's exclusion set, and the hole round 4 closed.** A unit is excluded from a
+direction's live count when it lies in the own-tests of a direction recorded DEAD. The exclusion
+is **file-level** where every direction on that file is dead and **unit-level** where the file is
+shared with a live one — otherwise excluding `tool_test.exs` for the dead decode side would silence
+the live encode side too. (A third exclusion, by directory, keeps every `test/conformance/` unit
+out of every live count: **§13**, MES-137.) Both sets are enumerated in `etcc-boundaries.json`
+rather than described (27 units at unit level; at file level:
 
 * `test/mcp/protocol/messages/initialize_test.exs` — every boundary-direction on it is dead
 * `test/mcp/protocol/messages/resources_test.exs` — every boundary-direction on it is dead
@@ -1084,12 +1084,12 @@ boundaries in their own right, so guard 20 reaches them. See **S7-21**.
 ### Step 3 — the whole table, live boundaries included
 
 Epic ruling 4: negatives enumerated. **50 boundary-directions, 19 dead.** `outside`
-excludes the direction's own tests; **`live`** additionally applies the exclusion set
-above and is the column ruling A turns on. The `L2` column says what the byte probe
-did: *moved N* means N of the 15 scenarios changed under the mutation, so the
-direction is live; *silent* means none did, and for a DEAD row the verdict then rests
-on the call-site enumeration recorded beside it in `etcc-boundaries.json`. A dash is a
-direction live by L1 with a wide margin, where L2's trigger never fired.
+excludes the direction's own tests; **`live`** additionally applies the exclusion set above,
+with §13's `test/conformance/` rule, and is the column ruling A turns on. The `L2` column says
+what the byte probe did: *moved N* means N of the 15 scenarios changed under the mutation, so
+the direction is live; *silent* means none did, and for a DEAD row the verdict then rests on
+the call-site enumeration recorded beside it in `etcc-boundaries.json`. A dash is a direction
+live by L1 with a wide margin, where L2's trigger never fired.
 
 | boundary-direction | reddened | outside | live | verdict | L2 | ET-CC rows still naming it |
 | --- | ---: | ---: | ---: | --- | --- | ---: |
@@ -1896,3 +1896,91 @@ that unit would itself be a new member of the population this register totals.
   `HeaderMirror.validate_schema/1` directly and never reference `MCP.Client`, so no
   mutation of the client can redden them. M1 still fails closed if one ever did, because
   its `:ok` requires every subject to pass.
+
+## §13 MES-137 — the third live-column exclusion: `test/conformance/`, by directory
+
+**Why this section exists.** The Sprint 12 end-of-sprint sweep (`mix conformance.sweep
+--check` at `5047a0e`) reported one drift, with `lib/` byte-unchanged:
+`MCP.Protocol.Error (encode)` **dead → live**, `established_by` L2 → L1, on a live count of
+one. That is the test-only move §2.3(e) as extended on MES-88 predicts. The unit carrying it
+does not execute the encoder, so the verdict it produced was wrong, and the fix is to the
+**criterion** rather than to the table: `etcc-membership.md` §2.3(d), L1 as amended on
+MES-137, `[authored 29618 | ratified 29619]`.
+
+### The rule
+
+**L1 counts units that EXECUTE `lib/`, never units that READ it.** Every unit in a file under
+`test/conformance/` is outside every direction's live count. This is **not a new boundary**:
+it is the population gate 1 already rules `OUT-OF-SCOPE` as instrument tests
+(`etcc-membership.md` §1 and §10, category 1), applied to L1. Those units test the conformance
+instrument, whose inputs include `lib/` source **as bytes** — a citation is a file, a line
+window and verbatim bytes — so a mutation that rewrites or merely **shifts** cited bytes
+reddens them whether or not the mutated code is on any path. The rule is keyed on the
+directory, so a file added there later is covered without an edit. It is recorded in
+`etcc-boundaries.json` as `live_column_excluded_prefixes` and applied by
+`MCP.Conformance.BoundarySweep.excluded_by_prefix?/2`.
+
+### The unit, found by measurement
+
+Mutating `Error (encode)` and re-running the suite at seed 0 at both ends of the interval:
+
+| tip | suite | reddened, by module | outside own | live | verdict |
+| --- | --- | --- | ---: | ---: | --- |
+| `1a38f0c` (last sweep) | 24 doctests, 1304 tests, 3 failures | `ErrorTest` 2, `ProtocolTest` 1 | 1 | 0 | dead (L2, probe silent) |
+| `5047a0e` (Sprint 12 close) | 24 doctests, 1466 tests, 4 failures | the same, plus `Conformance.AdjudicationsTest` 1 | 2 | 1 | live (L1) |
+
+The new live unit is *"MCP.Conformance.AdjudicationsTest/test every repository citation
+outside a record's sections holds its bytes"*. **Two commits, both inside the interval.** It
+was **added** by `a68b28b` (MES-127). It went **red under this mutation** from `5794619`
+(MES-130), which added the top-level citation `F5` to
+`adjudication-D2a-ii-2026-07-28.json`: a line window in `lib/mcp/protocol/error.ex` holding
+the bytes of `MCP.Protocol.Error.resource_not_found/1`, the constructor, not the encoder. The
+mutation replaces two lines (the `@derive Jason.Encoder` and the `defstruct`) with seven (a
+`defstruct`, a blank line and a five-line `defimpl`), so every later line of the file moves
+down five and the window no longer holds the cited bytes. Reproduced directly: with the mutation applied by hand the
+unit fails naming `lib/mcp/protocol/error.ex`; reverted, it passes.
+
+### Reach across all fifty directions, and what moves
+
+A full sweep at `5047a0e` finds `test/conformance/` units reddening in **exactly two**
+directions, three units in total, **all three citation checks**: the one above under
+`Error (encode)`, and under `MCP.Server.Dispatch` the units *"MCP.Conformance.AdjudicationsTest/test
+audits clean"* (G32 verifying section citations) and *"MCP.Conformance.AdjudicationsTest/test
+D2a-i's non-tool pair lands on Gap 1, not on the resultType overwrite"* (an `A.verify` of a
+`root_cause_record` citation). Excluding them:
+
+* **`Error (encode)`** — live count 1 → 0, L2 fires at its mechanical trigger, the byte probe
+  is silent (0 of 15 moved), and the verdict is **DEAD**, as the §6a Step 3 table records.
+* **`MCP.Server.Dispatch`** — live count at `5047a0e` 86 → 84, still positive, verdict
+  **live** by L1. The Step 3 row keeps its recorded 86: that is the 1021-unit measurement,
+  and the per-row measurements are **not regenerated** (PM ruling Q2 at `29619`; §2.3(e)
+  reports them as a stated delta). Both rows' `note`s in `etcc-boundaries.json` name the
+  excluded units.
+* **Every other direction** — no `test/conformance/` unit reddens, so nothing changes.
+
+**Figures.** Under this rule **none** of the table's figures move: the tally stays 50
+boundary-directions, 19 dead, 31 live, and §6a Step 3's rows stand as recorded. **ET-CC
+rows moved: 0** — no row names `Error (encode)` (Step 3, last column), and
+`etcc-register.json` is byte-identical across the ticket.
+
+### Evidence
+
+* `test/conformance/boundary_sweep_prefix_test.exs` — the predicate both ways (in the
+  directory excluded; `test/mcp/`, a sibling `test/conformance_x/` and a file named
+  `test/conformance.exs` kept), the refusal of a prefix not ending in `/`, and a pin that
+  the committed set is exactly `["test/conformance/"]`. In gate 5.
+* `mix run conformance/controls/etcc_boundary_sweep_controls.exs prefix` — the wiring, end to
+  end. **Positive:** at the tip `Error (encode)` reads DEAD by L2 with an
+  `AdjudicationsTest` unit among what reddened, `Dispatch` stays live with none of its
+  `test/conformance/` units in `live_units`, and `--check` reports no verdict diff.
+  **Mutation:** with the prefix removed from a copy of the table, `--check` reports the
+  Sprint 12 drift again, `Error (encode)` dead → live, carried by the unit above.
+
+### What this section does not do
+
+* It **does not regenerate §6a Step 3 or `etcc-boundaries.json`'s measurements.** Ruled at
+  `29619` (Q2).
+* It **does not build an execute-only L1** (mutation by in-VM recompile, nothing on disk to
+  shift). The residual is stated in the criterion instead: a `test/conformance/` unit that
+  really executes `lib/` is excluded too, but it is already an instrument test by gate 1, so
+  the two rules fail together. Ruled at `29619` (Q3); no ticket raised.

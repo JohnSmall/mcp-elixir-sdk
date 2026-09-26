@@ -6,6 +6,7 @@
 #     mix run conformance/controls/etcc_boundary_sweep_controls.exs host
 #     mix run conformance/controls/etcc_boundary_sweep_controls.exs drift
 #     mix run conformance/controls/etcc_boundary_sweep_controls.exs register
+#     mix run conformance/controls/etcc_boundary_sweep_controls.exs prefix
 #
 # WHY A SCRIPT AND NOT AN ExUnit TEST. Same reason as `etcc_register_controls.exs`: a
 # test file added here lands in the very suite the sweep measures. Under `test/mcp/` it
@@ -38,9 +39,10 @@ defmodule ETCCBoundarySweepControls do
   def run(["host"]), do: host()
   def run(["drift"]), do: drift()
   def run(["register"]), do: register()
+  def run(["prefix"]), do: prefix()
 
   def run(_) do
-    IO.puts("usage: guards | prose | harness | host | drift | register")
+    IO.puts("usage: guards | prose | harness | host | drift | register | prefix")
     System.halt(2)
   end
 
@@ -509,6 +511,100 @@ defmodule ETCCBoundarySweepControls do
 
     if Enum.any?(results, &(&1 == :error)), do: System.halt(1)
   end
+
+  # --- prefix: the directory exclusion, end to end, both ways (MES-137) ---
+
+  # §2.3(d) as amended on MES-137 (`[authored 29618 | ratified 29619]`) keeps every unit
+  # under `test/conformance/` out of the live count. The units in
+  # `test/conformance/boundary_sweep_prefix_test.exs` hold the predicate; this holds the
+  # WIRING, which only a real mutation cycle can show.
+  #
+  #   * POSITIVE — the committed table, unmutated. `Error (encode)` must come back DEAD by
+  #     L2 while a `test/conformance/` unit is among what reddened (so the exclusion did
+  #     work, rather than having nothing to exclude), and Dispatch must stay LIVE with its
+  #     `test/conformance/` units reddened and none of them in `live_units`.
+  #   * MUTATION — the same table with the prefix REMOVED. `--check` must report the
+  #     Sprint 12 drift again, `Error (encode)` dead -> live, by name. Without this limb
+  #     the positive is also what a sweep that never read the prefix would print.
+  @prefix_subject "MCP.Protocol.Error (encode)"
+  @prefix_neighbour "MCP.Server.Dispatch"
+  @instrument_module "MCP.Conformance.AdjudicationsTest"
+
+  defp prefix do
+    header(
+      "PREFIX — test/conformance/ is out of every live count, and removing it brings the drift back"
+    )
+
+    doc = read(@paths.boundaries)
+    IO.puts("  committed prefixes: #{inspect(doc["live_column_excluded_prefixes"])}\n")
+
+    IO.puts("  POSITIVE — the committed table, #{@prefix_subject} and #{@prefix_neighbour}:")
+    out = Sweep.sweep(only: [@prefix_subject, @prefix_neighbour], log: &IO.puts("    " <> &1))
+    pos = Sweep.check(out, doc)
+    subject = row(out, @prefix_subject)
+    neighbour = row(out, @prefix_neighbour)
+
+    positive = [
+      {"#{@prefix_subject} reads DEAD by L2",
+       subject["verdict"] == "dead" and subject["established_by"] == "L2"},
+      {"#{@prefix_subject}: #{@instrument_module} reddened (#{instrument(subject)})",
+       instrument(subject) >= 1},
+      {"#{@prefix_neighbour} stays LIVE (live count #{Sweep.live_count(neighbour)})",
+       neighbour["verdict"] == "live" and Sweep.live_count(neighbour) > 0},
+      {"#{@prefix_neighbour}: #{@instrument_module} reddened (#{instrument(neighbour)})",
+       instrument(neighbour) >= 1},
+      {"no test/conformance/ unit in either live_units",
+       Enum.all?([subject, neighbour], &(conformance_units(&1) == []))},
+      {"--check against the committed table: #{length(pos.verdict_diffs)} verdict diff(s)",
+       pos.verdict_diffs == []}
+    ]
+
+    IO.puts("")
+    Enum.each(positive, &report_limb/1)
+
+    IO.puts("\n  MUTATION — the prefix removed from a copy of the table:")
+    path = write_tmp(Map.delete(doc, "live_column_excluded_prefixes"))
+
+    mut =
+      try do
+        Sweep.sweep(boundaries: path, only: [@prefix_subject], log: &IO.puts("    " <> &1))
+      after
+        File.rm(path)
+      end
+
+    diffs = Sweep.check(mut, doc).verdict_diffs
+    drifted = Enum.find(diffs, &(&1["id"] == @prefix_subject))
+    verdict = drifted && Enum.find(drifted["fields"], &(&1["field"] == "verdict"))
+
+    for d <- diffs,
+        f <- d["fields"],
+        do:
+          IO.puts(
+            "    DRIFTED  #{d["id"]}  #{f["field"]}: #{inspect(f["was"])} -> #{inspect(f["now"])}"
+          )
+
+    IO.puts("")
+
+    mutation = [
+      {"--check names #{@prefix_subject} as drifted, dead -> live",
+       verdict != nil and verdict["was"] == "dead" and verdict["now"] == "live"},
+      {"the drift is carried by a test/conformance/ unit (#{inspect(conformance_units(row(mut, @prefix_subject)))})",
+       conformance_units(row(mut, @prefix_subject)) != []}
+    ]
+
+    Enum.each(mutation, &report_limb/1)
+
+    if Enum.any?(positive ++ mutation, fn {_, ok} -> not ok end), do: System.halt(1)
+  end
+
+  defp row(doc, id), do: Enum.find(doc["boundaries"], &(&1["id"] == id))
+  defp instrument(b), do: Map.get(b["reddened_by_module"] || %{}, @instrument_module, 0)
+
+  defp conformance_units(b),
+    do: Enum.filter(b["live_units"] || [], &String.starts_with?(&1, "test/conformance/"))
+
+  defp report_limb({name, true}), do: IO.puts("  HOLDS   #{name}")
+  defp report_limb({name, false}), do: IO.puts("  FAILS   #{name}   <-- ")
 
   # --- helpers ---
 

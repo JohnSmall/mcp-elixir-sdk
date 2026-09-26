@@ -451,6 +451,7 @@
           "to": "  defstruct [:code, :message, :data]\n\n  defimpl Jason.Encoder, for: MCP.Protocol.Error do\n    def encode(s, opts) do\n      Jason.Encode.map(%{ZZcode: s.code, ZZmessage: s.message, ZZdata: s.data}, opts)\n    end\n  end"
         }
       ],
+      "note": "MES-137, Sprint 13: the Sprint 12 end-of-sprint --check at 5047a0e read this direction LIVE by L1 on a single unit, test/conformance/adjudications_test.exs:1715 (MCP.Conformance.AdjudicationsTest), \"every repository citation outside a record's sections holds its bytes\". That unit was ADDED by a68b28b (MES-127) and turned red under this mutation by 5794619 (MES-130), which added the top-level citation finding_citations/F5 to adjudication-D2a-ii-2026-07-28.json: lib/mcp/protocol/error.ex, line 130, the bytes of the resource_not_found/1 constructor. The mutation replaces the derive and the defstruct with a defstruct and a defimpl, which pushes every later line of error.ex down, so the cited bytes are no longer at line 130. The unit never runs the derived encoder; it reads error.ex as text. It is excluded from the live column by live_column_excluded_prefixes, per etcc-membership.md section 2.3(d) as amended on MES-137 [authored 29618 | ratified 29619]. With it excluded the live count is zero, L2 fires at its mechanical trigger and the byte probe is silent, so the verdict stays DEAD. The recorded measurements on this row are not regenerated (section 2.3(e); PM ruling on Q2 at 29619).",
       "own_tests": [
         "test/mcp/protocol/error_test.exs"
       ],
@@ -3392,7 +3393,7 @@
           "to": "\"jsonrpc\" => \"2.0\", \"id\" => id, \"errorX\" => error"
         }
       ],
-      "note": "",
+      "note": "MES-137, Sprint 13: at 5047a0e this direction's mutation also reddens two units under test/conformance/, adjudications_test.exs:58 (\"audits clean\", G32 verifying section citations) and adjudications_test.exs:700 (a root_cause_record citation), both byte-verification of lib/ citations and neither an execution of Dispatch. live_column_excluded_prefixes excludes them, and the live count measured at 5047a0e falls from 86 to 84 on MES-137: still positive, so the verdict stays LIVE by L1. The recorded measurements on this row are the 1021-unit ones and are not regenerated (PM ruling on Q2 at 29619).",
       "own_tests": [
         "test/mcp/server/dispatch_test.exs"
       ],
@@ -3784,6 +3785,9 @@
     "test/mcp/protocol/messages/sampling_test.exs",
     "test/mcp/protocol/messages/tools_test.exs"
   ],
+  "live_column_excluded_prefixes": [
+    "test/conformance/"
+  ],
   "live_column_excluded_units": [
     "test/mcp/protocol/capabilities_test.exs:169 (MCP.Protocol.CapabilitiesTest)",
     "test/mcp/protocol/capabilities_test.exs:64 (MCP.Protocol.CapabilitiesTest)",
@@ -3824,6 +3828,7 @@
     "live_units": "COMPLETE on every row from MES-88 onward, and the completion is a disclosed byte change to six rows. Schema 2 capped it at 8 on the six single-direction boundaries the round-4 direction split did not re-measure — Meta 98/8, Dispatch 86/8, decode_message/1 64/8, Request 34/8, Notification 14/8, Client 12/8 — while every other row listed all of them. That was a round-3 residue, not a design choice, and under epic ruling 4 a field that reads as an enumeration and is a sample is the wrong shape. No verdict turned on it.",
     "mutation_spec": "SCHEMA 3. Each `mutation` prose line is `FILE: FROM  ->  TO` (the separator is exactly two spaces, an arrow, two spaces), and `mutation_spec` is its applicable reading: {file, from, to, occurrences, replace}. `occurrences` is how many times FROM occurs in FILE and is ASSERTED before anything is written (guard 26) — a different count means lib/ moved under the spec, and the sweep must fail LOUD rather than mutate something else. `replace` is \"all\" everywhere, and that is a MEASURED answer rather than a reading of the record: 16 of the 194 lines have a FROM occurring 2-6 times and nothing in the record said whether the sweeper replaced one or all. MES-88 ran BOTH readings on all 11 affected directions (`mix conformance.sweep --disambiguate`) and compared each against the committed `reddened_by_module`. \"all\" reproduced on 11 of 11; \"first\" reproduced on 6 and DIFFERED on 5 — Extensions 4 failures -> 0, Meta 135 -> 0, decode_message/1 69 -> 0, Types.Content (decode) 13 -> 9. That is S7-19 exactly: the narrow reading returns the reassuring 'dead'.",
     "potency": "A DEAD verdict additionally requires the mutation to have reddened at least one of that boundary-direction's own units. A mutation that reddens nothing proves nothing.",
+    "the_live_column_exclusion_prefixes": "L1 counts units that EXECUTE lib/, never units that READ it (etcc-membership.md section 2.3(d) as amended on MES-137, [authored 29618 | ratified 29619]). Every unit whose file path begins with an entry of live_column_excluded_prefixes is outside every direction's live count. The only entry is test/conformance/, which is the population gate 1 already rules OUT-OF-SCOPE as instrument tests, so this is that boundary applied to L1 and not a new one. Those units test the conformance instrument, whose inputs include lib/ source as bytes, so a mutation that shifts cited bytes reddens them whether or not the mutated code is on any path. The key is a DIRECTORY, not a list of files, so a file added there later is covered without an edit; each entry must end in a slash, so a sibling directory whose name merely shares the prefix is not matched. Residual: a unit there that really executes lib/ is excluded too, but it is already an instrument test by gate 1, so the two rules fail together.",
     "the_live_column_exclusion_set": "`reddened_outside_own_and_dead` excludes a unit that lies in the own-tests of a boundary-direction recorded DEAD. The exclusion is FILE-level where every boundary-direction on that file is dead, and UNIT-level where the file is shared with a live one — otherwise excluding tool_test.exs for the dead decode side would also silence the live encode side. Both sets are listed below rather than described. THE UNIT-LEVEL FORM IS NEW AT ROUND 4 AND IT IS WHAT CATCHES THE DEAD NEIGHBOUR: a module lib/ never uses acquires no ET-CC row, so it never became a boundary, so its own-tests were never excluded, so its redness read as live-path evidence for whatever it happened to call. That is how ClientCapabilities (decode) read live at round 3 on two units in initialize_test.exs. Every one of the 21 test files contributing to a live count was checked for this and initialize_test.exs is the only one that was missing — a checked result, not a spot fix. See S7-21."
   },
   "schema": "etcc-boundaries/3",

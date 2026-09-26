@@ -57,6 +57,19 @@ already decided this way and the decisions file is not touched. That zero is mea
 ratification `27820`–`27821`, ticket in Sprint 9. The element is authored at `27584` and
 ratified at `27820`.
 
+**AMENDED on MES-137, Sprint 13, 2026-09-25 — §2.3(d)'s L1 only.** The Sprint 12
+end-of-sprint sweep found `MCP.Protocol.Error (encode)` drifted dead → live with `lib/`
+byte-unchanged, on the strength of one new unit that reads `lib/` as text and never runs
+the encoder. **One new element is added under §2.3(d); no existing element of Part A is
+edited**, and the L1 bullet as first ratified is left standing above it. The amendment
+moves **0 register rows** — no `ET-CC` row names the direction — and it returns the one
+drifted verdict to the DEAD it was recorded as. Working in **Part F**.
+
+**The fifth ratification record is
+[MES-137](https://vidhya-trading.atlassian.net/browse/MES-137)** — plan `29617`–`29618`,
+ratification `29619`, ticket in Sprint 13. The element is authored at `29618` and ratified
+at `29619`; the ratification added its grounding in gate 1, which is part of the element.
+
 ---
 
 ## How to read this file
@@ -94,6 +107,10 @@ is now a rule — **each ticket's working gets its own fenced part**.
 the paragraph above states, not by a fresh decision. It carries the promotion of §2.5: what
 was promoted and what deliberately was not, the quantification behind the *0 rows moved*
 claim with its no-op control, the S7-15 matrix, and three findings.
+
+**Part F is MES-137's own output and is NOT criterion either** — a sixth part, by the same
+rule. It carries the measurement that found the unit, the two commits behind it, the
+figures the amendment does and does not move, and what MES-137 deliberately did not do.
 
 **Amendments carry `26xxx` ids; MES-67's elements carry `25xxx` ids.** The two-id scheme is
 what makes an amendment auditable rather than a silent edit: an element with a `26737`
@@ -198,6 +215,27 @@ grep.**
 - **L1 — the redness proxy.** Mutate the boundary-direction widely, re-run the suite at
   a fixed seed, and count what reddens **outside its own tests and outside the units of
   directions already recorded dead**. At least one such unit means **LIVE**.
+
+  **(d) L1 AMENDED on MES-137, Sprint 13, 2026-09-25.** `[authored 29618 | ratified 29619]`
+  **L1 counts units that EXECUTE `lib/`, never units that READ it.** Every unit in a file
+  under `test/conformance/` is outside every direction's live count. **This is not a new
+  boundary: it is the same population gate 1 already excludes.** §1 says *"`test/conformance/`
+  (285 units) is the Sprint-5 instrument — it tests our tooling, not the protocol — and is
+  out **by rule**, not re-derived"*, and §10's first negative category is *"**Instrument
+  tests** — the 285 under `test/conformance/`. Gate 1. `OUT-OF-SCOPE`."* L1's exclusion is
+  that population and no other, so L1 never counts as evidence of a live path a unit the
+  criterion has already ruled is not about the protocol. Those units test the conformance
+  instrument, whose inputs include `lib/` source as BYTES (a citation is a file, a line
+  window and verbatim bytes). A mutation that rewrites or shifts cited bytes reddens them
+  whether or not the mutated code is on any path, so their redness is evidence about a
+  citation, not about a producer. The rule is keyed on the DIRECTORY, not on a list of
+  files, so a file added there later is covered without an edit — which is also how gate 1
+  is keyed. Measured at `5047a0e`: 3 such units redden across all 50 directions, in 2
+  directions, all citation checks; excluding them moves no verdict except
+  `Error (encode)`'s, back to the DEAD it was recorded as. **The residual, stated:** a
+  `test/conformance/` unit that really executes `lib/` would be excluded from L1 too — but
+  it would already be an instrument test by gate 1, so the two rules fail together, and
+  where such a unit belongs is a membership question, not a liveness one.
 - **L2 — direct establishment, in two conjuncts.** **(i)** a byte probe through real
   `lib/` entry points, whose output is diffed against an unmutated baseline; **(ii)** an
   **alias-aware** call-site enumeration — calls, captures and dynamic dispatch — each
@@ -1956,3 +1994,69 @@ artefact.
 7. **Did not correct `match-relation.md:8`** — A3's artefact, per MES-80.
 8. **Did not re-run the boundary-liveness sweep.** `lib/` is byte-unchanged on this
    branch, and the sweep is the end-of-sprint cadence check, not this ticket's evidence.
+
+---
+
+# PART F — MES-137's OWN OUTPUT
+
+**This part is NOT criterion.** It is MES-137's working behind the one element it added to
+Part A, §2.3(d)'s L1 amendment `[authored 29618 | ratified 29619]`: how the unit was found,
+what the amendment moves, and what MES-137 deliberately did not do. The full account of the
+sweep side is `etcc-register.md` §13; this part does not restate it.
+
+## §F.0 How the amendment was found
+
+The Sprint 12 end-of-sprint sweep (`CLAUDE.md`, End-of-Sprint Procedure step 4) was owed —
+condition (b) was dirty — and reported one verdict drift at `5047a0e` with `lib/`
+byte-unchanged since the last sweep tip `1a38f0c`: `MCP.Protocol.Error (encode)` dead → live.
+That is exactly the *dead → live* consequence §2.3(e) as extended on MES-88 names, and it is
+the first time it has been observed rather than predicted.
+
+The unit was found **by measurement**, not by reading the diff: the direction's mutation was
+run at both tips and the reddened sets compared. The one new live unit is a
+`test/conformance/` citation check that reads `lib/mcp/protocol/error.ex` as bytes. It turned
+red because the mutation **shifts** the cited line, not because anything it runs encodes an
+`%Error{}`. So the verdict was a true measurement of a proxy that had stopped measuring the
+thing it proxies — which is why the remedy is to L1's definition and not to the table.
+
+## §F.1 Why the directory, and why gate 1 is the ground
+
+A rule keyed on a file list would need an edit every time a citation-checking test file is
+added, and the next one would flip a verdict first and be listed afterwards. The directory is
+the key gate 1 already uses (§1; §10, category 1), so the amendment adds **no new boundary to
+the criterion**: it says L1 excludes the population the criterion has already excluded. The
+PM's ratification at `29619` made that grounding part of the element.
+
+**Checked in both directions at `5047a0e`.** *Reach* — every unit that reads `lib/` as bytes
+is under `test/conformance/`: the PM's byte-reader search finds 15 such files inside it and 0
+outside. *Precision* — every `test/conformance/` unit that reddens under any of the fifty
+mutations is a citation check: three units, in two directions. Neither half is a proof over
+future tests; the residual is stated in the element itself.
+
+## §F.2 What moves
+
+* **One verdict, back to its recorded value.** `Error (encode)` reads DEAD at the tip, as the
+  committed table records. No other verdict moves.
+* **No figure in the table.** The tally stays 50 boundary-directions, 19 dead, 31 live. The
+  one per-row consequence, `MCP.Server.Dispatch`'s live count 86 → 84 at `5047a0e`, is
+  recorded in that row's `note` and not written into the row (PM ruling Q2 at `29619`).
+* **0 register rows.** No `ET-CC` row names `Error (encode)`; `etcc-register.json` is
+  byte-identical across the ticket.
+
+## §F.3 A figure in the plan that was wrong
+
+The plan at `29617` said the mutation replaces two lines with **eight** and shifts later
+lines by **six**. Measured at the tip, it is **seven** lines and a shift of **five** (the cited
+line moves from 130 to 135). The mechanism is unchanged — any shift at all empties the cited
+window — and no rule or verdict rests on the number. `etcc-register.md` §13 carries the
+measured figures.
+
+## §F.4 What MES-137 did NOT do
+
+1. **Did not edit any existing element of Part A.** The L1 bullet as first ratified stands;
+   the amendment is a new element beneath it with its own two ids.
+2. **Did not regenerate the committed measurements** (Q2 at `29619`). `--check` reports them
+   as a stated delta, per §2.3(e).
+3. **Did not build an execute-only L1** (Q3 at `29619`) and raised no ticket for it.
+4. **Did not change `lib/`.** The sweep's mutations are transient and reverted; `lib/` is
+   byte-identical to `main` across the ticket.

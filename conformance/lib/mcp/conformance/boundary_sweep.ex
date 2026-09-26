@@ -31,7 +31,7 @@ defmodule MCP.Conformance.BoundarySweep do
   * **Measured** — `suite_summary`, `unlocated_failures`, `reddened_total`,
     `reddened_by_module`, `reddened_outside_own`, `reddened_outside_own_and_dead`,
     `live_units`, and the L2 byte probe's `scenarios_run` / `scenarios_moved`.
-  * **Consumed as recorded** — `own_tests`, the two live-column exclusion sets, and L2
+  * **Consumed as recorded** — `own_tests`, the three live-column exclusions, and L2
     conjunct (ii), the alias-aware call-site enumeration. (ii) is a judgement about
     `lib/`, and a script that pretended to derive it would be the S7-16 error over again;
     what IS mechanised is that it must be **present** on every dead row (guard 25).
@@ -743,13 +743,7 @@ defmodule MCP.Conformance.BoundarySweep do
     own = MapSet.new(b["own_tests"] || [])
     outside = Enum.reject(run.units, &(file_of(&1) in own))
 
-    excl_files = MapSet.new(doc["live_column_excluded_files"] || [])
-    excl_units = MapSet.new(doc["live_column_excluded_units"] || [])
-
-    live =
-      Enum.reject(outside, fn u ->
-        file_of(u) in excl_files or u in excl_units
-      end)
+    live = Enum.reject(outside, live_column_excluded(doc))
 
     l2 =
       if live == [] do
@@ -815,6 +809,43 @@ defmodule MCP.Conformance.BoundarySweep do
       "byte_probe" => probe_block,
       "verdict" => if(moved != [], do: "live", else: prior["verdict"] || "dead")
     })
+  end
+
+  # The third exclusion, by DIRECTORY (§2.3(d) as amended on MES-137,
+  # `[authored 29618 | ratified 29619]`): L1 counts units that EXECUTE `lib/`, never units
+  # that READ it. `test/conformance/` is the population gate 1 already rules out as
+  # instrument tests, and those units read `lib/` as cited bytes — so a mutation that only
+  # SHIFTS lines reddens them with no path to the wire in sight. Measured on MES-137:
+  # `adjudications_test.exs:1715` flipped `Error (encode)` dead -> live that way.
+
+  @doc """
+  The live column's directory exclusions, as committed in the boundaries document.
+
+  Refuses an entry that does not end in `/`: a bare `test/conformance` would also match
+  `test/conformance_x/`, silently widening the exclusion to a directory nobody ruled on.
+  """
+  def live_column_prefixes!(doc) do
+    prefixes = doc["live_column_excluded_prefixes"] || []
+
+    for p <- prefixes, not (is_binary(p) and p != "/" and String.ends_with?(p, "/")) do
+      raise "REFUSING live_column_excluded_prefixes entry #{inspect(p)}: an entry must be " <>
+              "a directory ending in \"/\", or it matches every sibling sharing its prefix."
+    end
+
+    prefixes
+  end
+
+  @doc "Whether a unit (`file:line (Module)`) lies under one of the directory `prefixes`."
+  def excluded_by_prefix?(unit, prefixes),
+    do: Enum.any?(prefixes, &String.starts_with?(file_of(unit), &1))
+
+  # All three live-column exclusions, as one predicate over a unit.
+  defp live_column_excluded(doc) do
+    files = MapSet.new(doc["live_column_excluded_files"] || [])
+    units = MapSet.new(doc["live_column_excluded_units"] || [])
+    prefixes = live_column_prefixes!(doc)
+
+    fn u -> file_of(u) in files or u in units or excluded_by_prefix?(u, prefixes) end
   end
 
   defp verdict_for([], l2), do: (l2 || %{})["verdict"] || "dead"
