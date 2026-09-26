@@ -137,6 +137,7 @@ defmodule AdjudicationsControls do
   @v2a "docs/conformance/buckets/bucket-2a-2026-07-28.json"
   @d2aii "docs/conformance/adjudications/adjudication-D2a-ii-2026-07-28.json"
   @w3 "docs/conformance/adjudications/adjudication-W3-plant.json"
+  @d1siii "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json"
   @v1 "docs/conformance/buckets/bucket-1-2026-07-28.json"
   @vcu "docs/conformance/buckets/claim-unmatched-2026-07-28.json"
   @d1 "docs/conformance/adjudications/adjudication-D1-nd-CU-2026-07-28.json"
@@ -810,11 +811,11 @@ defmodule AdjudicationsControls do
   end
 
   # MES-138 (authored 29691, ratified 29693): one plant per D1 refusal, on a
-  # bucket-1-shaped row in an open section over the REAL bucket-1 view (its
-  # first row, a client-leg member no committed record adjudicates), and a
+  # bucket-1-shaped row in an open section over the REAL bucket-1 view (a row
+  # released from the D1-server-iii record, open_over_bucket1/1), and a
   # D1 code planted on D4a's first row, outside a D1 view.
   def d1_plants(base, policy) do
-    b1 = open_over(base, @v1, "MES-143", 1)
+    b1 = open_over_bucket1(base)
     [r1] = rows(b1, @v1, @w3)
     {:ok, loc} = A.read_locator(".")
     {token, [span | _]} = loc |> Enum.sort() |> Enum.find(fn {_, ss} -> ss != [] end)
@@ -1075,7 +1076,7 @@ defmodule AdjudicationsControls do
     [prev, last] = rows(base, @v2a, @d2aii) |> Enum.take(-2)
 
     b5 = open_over(base, @v5a, "MES-148", 12)
-    b1 = open_over(base, @v1, "MES-143", 1)
+    b1 = open_over_bucket1(base)
     [r5 | rest5] = rows(b5, @v5a, @w3)
     other5 = Enum.find(rest5, &(&1["tag"] != r5["tag"] and &1["et_test"] != r5["et_test"]))
     [r1] = rows(b1, @v1, @w3)
@@ -1146,8 +1147,12 @@ defmodule AdjudicationsControls do
   # et_test, and (for an OC tag) the locator's first site as check.
   # The first n view rows that NO committed record adjudicates yet, so the plant
   # is a new binding and not a duplicate: bucket-1's first row was free until
-  # MES-140 adjudicated it. When MES-143 closes bucket-1 none is free, and this
-  # control needs another view.
+  # MES-140 adjudicated it. Since MES-143 none is free (open_over_bucket1/1).
+  # MES-143 adjudicated bucket-1's last free rows, so the bucket-1 plants first
+  # release the D1-server-iii record's first row, in memory, and plant that.
+  defp open_over_bucket1(base),
+    do: base |> update_rows(@v1, &tl/1, @d1siii) |> open_over(@v1, "MES-143", 1)
+
   defp open_over(base, view, owner, n) do
     {:ok, v} = view |> File.read!() |> Jason.decode()
 
@@ -1357,10 +1362,10 @@ defmodule AdjudicationsControls do
       # gate-5 walk-root pin existed to catch. The universe (K2) now refuses it
       # itself: every view the unseen records closed is owed and unadjudicated.
       check(
-        "(2) a narrowed walk sees zero records and is REFUSED: owed_unadjudicated on the 6 closed views",
+        "(2) a narrowed walk sees zero records and is REFUSED: owed_unadjudicated on the 7 closed views",
         r["records_visited"] == 0 and
           Enum.sort(for(%{kind: :owed_unadjudicated, file: f} <- ds, do: f)) ==
-            Enum.sort([@v2a, @v2b, @v4a, @v4b, @vcu, @ves]) and
+            Enum.sort([@v1, @v2a, @v2b, @v4a, @v4b, @vcu, @ves]) and
           Enum.all?(ds, &(&1.kind == :owed_unadjudicated)),
         Enum.map(ds, &A.format_defect/1)
       )

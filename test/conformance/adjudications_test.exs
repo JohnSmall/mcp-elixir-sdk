@@ -1928,8 +1928,11 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # 1 repository (known_limits.at) and 8 harness (unscored_server_scenarios.sites);
     # inside them, 37 et_test (repository) and 100 harness (94 in oc_counterpart:
     # 22 sites, 22 predicates, 20 probes and 30 inside `also`; 4 in oc_unscored;
-    # 2 near misses).
-    test "G32 walks the citations outside the rows: 12 repository and 28 harness at this tip",
+    # 2 near misses). MES-143 adds, outside the rows, 2 harness
+    # (unscored_server_scenarios.sites); inside them, 27 et_test (repository) and
+    # 80 harness (62 in oc_counterpart: 14 sites, 14 predicates, 10 probes and 24
+    # inside `also`; 5 near misses; 13 in unscored_near_miss).
+    test "G32 walks the citations outside the rows: 12 repository and 30 harness at this tip",
          %{inputs: inputs, result: %{report: r}} do
       outside =
         for {_, {:ok, doc}} <- inputs.records,
@@ -1938,10 +1941,10 @@ defmodule MCP.Conformance.AdjudicationsTest do
             do: c
 
       assert Enum.count(outside, &Map.has_key?(&1, "lines")) == 12
-      assert Enum.count(outside, &Map.has_key?(&1, "harness_sha256")) == 28
+      assert Enum.count(outside, &Map.has_key?(&1, "harness_sha256")) == 30
 
-      assert r["repo_citations_found"] == 600 and
-               r["harness_citations_not_verified_in_gate_5"] == 629
+      assert r["repo_citations_found"] == 627 and
+               r["harness_citations_not_verified_in_gate_5"] == 711
     end
 
     test "G32 refuses a drifted top-level citation, with no edge key", %{inputs: inputs} do
@@ -1965,13 +1968,14 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # What stays here is the population the tie runs over, at this tip.
     # MES-138 added 30 member rows (21 bucket-1, 9 claim-unmatched); MES-139
     # adds 35 (bucket-1); MES-140 adds 36 (bucket-1); MES-141 adds 39 (bucket-1,
-    # eleven of them for-generated, owned under Q-C); MES-142 adds 37 (bucket-1).
-    test "the et_test tie's population: 192 member rows, 93 member-less rows with et_test null",
+    # eleven of them for-generated, owned under Q-C); MES-142 adds 37 (bucket-1);
+    # MES-143 adds 27 (bucket-1).
+    test "the et_test tie's population: 219 member rows, 93 member-less rows with et_test null",
          %{inputs: inputs} do
       rows = for {_, {:ok, doc}} <- inputs.records, s <- doc["sections"], r <- s["rows"], do: r
       {owned, memberless} = Enum.split_with(rows, &is_binary(&1["member"]))
 
-      assert length(owned) == 192 and length(memberless) == 93
+      assert length(owned) == 219 and length(memberless) == 93
       assert Enum.all?(memberless, &is_nil(&1["et_test"]))
       assert Enum.all?(owned, &(A.et_test_owner(&1, inputs.source_fun) == :ok))
     end
@@ -2073,12 +2077,12 @@ defmodule MCP.Conformance.AdjudicationsTest do
             sites != [] and Enum.all?(sites, &(&1 in shared)),
             do: v
 
-      assert length(rows) == 285 and Enum.count(rows, &(elem(&1, 0) =~ "/bucket-2")) == 93
+      assert length(rows) == 312 and Enum.count(rows, &(elem(&1, 0) =~ "/bucket-2")) == 93
       assert {length(only_shared), Enum.count(only_shared, &(&1 =~ "/bucket-2"))} == {60, 48}
 
       # The ids name rows uniquely, so a pair of ids is a pair of rows.
       ids = Enum.map(rows, &elem(&1, 1))
-      assert length(Enum.uniq(ids)) == 285
+      assert length(Enum.uniq(ids)) == 312
 
       # (a) the check tie does not separate them: mutual through the locator, or
       # both rows on no OC check (`oc:none/`, no span either way; MES-138).
@@ -2139,8 +2143,11 @@ defmodule MCP.Conformance.AdjudicationsTest do
       # separates all but the 55 within the eleven for-generated W-1 rows, which
       # share one window (482 -> 537). MES-142's 37 add 37 * 140 + C(37, 2) = 5846
       # more (10281 -> 16127), every one separated by the et_test tie (no two of
-      # its members share a test window), so the CLEAN set stays 537.
-      assert {length(mutual), length(mutual) - MapSet.size(computed)} == {16_127, 15_590}
+      # its members share a test window), so the CLEAN set stays 537. MES-143's 27
+      # add 27 * 177 + C(27, 2) = 5130 more (16127 -> 21257), every one separated
+      # by the et_test tie (no two of its members share a test window), so the
+      # CLEAN set stays 537.
+      assert {length(mutual), length(mutual) - MapSet.size(computed)} == {21_257, 20_720}
 
       member_pairs = Enum.filter(computed, fn p -> Enum.all?(p, &is_binary(elem(&1, 1))) end)
 
@@ -2485,8 +2492,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
   # bucket views directory, never from the records.
   describe "the universe of views owed a record" do
     @owed_views ~w(bucket-1 bucket-2a bucket-2b bucket-3 bucket-4a bucket-4b bucket-5a bucket-5b bucket-6 claim-unmatched escalated)
-    # MES-138 closed claim-unmatched and deleted its @pending line.
-    @closed_views ~w(bucket-2a bucket-2b bucket-4a bucket-4b claim-unmatched escalated)
+    # MES-138 closed claim-unmatched and deleted its @pending line; MES-143
+    # closed bucket-1 and deleted its.
+    @closed_views ~w(bucket-1 bucket-2a bucket-2b bucket-4a bucket-4b claim-unmatched escalated)
 
     test "the anchor, the exclusions, the pending catalogue and the scan skip are pinned" do
       assert A.anchor() == {"docs/conformance/buckets", "*.json"}
@@ -2499,7 +2507,6 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert Enum.all?(Map.values(A.not_owed()), &(is_binary(&1) and &1 != ""))
 
       assert A.pending() == %{
-               "docs/conformance/buckets/bucket-1-2026-07-28.json" => "MES-143",
                "docs/conformance/buckets/bucket-3-2026-07-28.json" => "MES-144",
                "docs/conformance/buckets/bucket-5a-2026-07-28.json" => "MES-148",
                "docs/conformance/buckets/bucket-5b-2026-07-28.json" => "MES-146",
@@ -2547,10 +2554,10 @@ defmodule MCP.Conformance.AdjudicationsTest do
     end
 
     # The printed figure is asserted, not just printed.
-    test "the task prints owed 11 — closed 6, pending 5, with each pending view's ticket",
+    test "the task prints owed 11 — closed 7, pending 4, with each pending view's ticket",
          %{result: %{report: r}} do
       assert Render.views(r) ==
-               "owed 11 — closed 6, pending 5: bucket-1 (MES-143), bucket-3 (MES-144), bucket-5a (MES-148), bucket-5b (MES-146), bucket-6 (MES-144)"
+               "owed 11 — closed 7, pending 4: bucket-3 (MES-144), bucket-5a (MES-148), bucket-5b (MES-146), bucket-6 (MES-144)"
 
       assert Render.render(r, []) =~ "views         " <> Render.views(r)
     end
@@ -2561,7 +2568,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert inputs.strays == []
     end
 
-    test "in a copied tree: an eleventh record is walked; a dropped section, a record outside the walk, a wrong schema and a stray are refused",
+    test "in a copied tree: a twelfth record is walked; a dropped section, a record outside the walk, a wrong schema and a stray are refused",
          %{} do
       tmp = copied_tree()
       on_exit(fn -> File.rm_rf!(tmp) end)
@@ -2596,7 +2603,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       )
 
       assert kinds.() == []
-      assert load.() |> A.audit() |> get_in([:report, "records_visited"]) == 11
+      assert load.() |> A.audit() |> get_in([:report, "records_visited"]) == 12
       assert sixth in records_in_dir(tmp)
       File.rm!(Path.join(tmp, sixth))
 
@@ -3745,6 +3752,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
   @d1cii "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json"
   @d1si "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json"
   @d1sii "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json"
+  @d1siii "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json"
   @v1 "docs/conformance/buckets/bucket-1-2026-07-28.json"
   @vcu "docs/conformance/buckets/claim-unmatched-2026-07-28.json"
   @assert_word ~r/\b(assert|refute|assert_receive|refute_receive)\b/
@@ -5516,6 +5524,772 @@ defmodule MCP.Conformance.AdjudicationsTest do
     end
   end
 
+  # --- the D1-server-iii record (MES-143; plan 29987/29989/29990, ratified 29991) --
+  #
+  # The third and last server-leg slice, declared by the complement selector
+  # MES-141 pinned for it (@d1siii_selector). Verdicts as measured at hop A
+  # and made the hop-B contract by 30000 (QA1, QA2): 14 redundant,
+  # 6 genuine_extra_coverage, 7 not_a_conformance_claim, 0 wrong_against_spec.
+  # Correction round 1 (CR 30023 B2, ruled to stand by PM 30028, superseding
+  # QA2) moved the two decoder rows to not_a_conformance_claim: 14 / 4 / 9 / 0.
+
+  defp d1siii_rows(inputs) do
+    {:ok, record} = inputs.records[@d1siii]
+    [section] = record["sections"]
+    section["rows"]
+  end
+
+  # "<basename>:N" from a mutation's `reddens` entry, dropping any
+  # "(reported at ...)" suffix.
+  defp reddened_line(entry) do
+    [at] = Regex.run(~r/\A[\w-]+_test\.exs:\d+/, entry)
+    at
+  end
+
+  describe "the D1-server-iii record (MES-143)" do
+    test "the section EQUALS the join selector's rows, both ways, over all 195; the 168 others carry a leg and module",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1siii]
+      [section] = record["sections"]
+      {:ok, view} = inputs.views[@v1]
+      assert length(view["rows"]) == 195
+
+      # The closing section (hop C): closed, owner the record's own ticket.
+      assert {section["view"], section["closure"], section["owner"]} == {@v1, "closed", "MES-143"}
+      assert record["ticket"] == "MES-143"
+      assert section["slice"]["selector"] == @d1siii_selector
+      assert join_equality(section["rows"], view["rows"], @d1siii_selector) == :ok
+      assert length(section["rows"]) == 27 and section["slice"]["rows"] == 27
+      refute Map.has_key?(record, "not_yet_held")
+
+      legs = leg_of()
+      inside = join_selected(view["rows"], legs, @d1siii_selector)
+      others = view["rows"] -- inside
+
+      assert Enum.frequencies_by(inside, & &1["member"]["module"]) == %{
+               "MCP.Server.ToolOrderTest" => 6,
+               "MCP.Transport.SelfCompatibilityTest" => 4,
+               "MCP.Protocol.Types.ToolTest" => 3,
+               "MCP.Protocol.CapabilitiesTest" => 2,
+               "MCP.Protocol.MetaTest" => 2,
+               "MCP.ProtocolTest" => 2,
+               "MCP.Transport.StreamableHTTP.ACTest" => 2,
+               "MCP.Protocol.HeaderMirrorTest" => 1,
+               "MCP.Protocol.Types.ContentTest" => 1,
+               "MCP.Server.CapabilityHonestyTest" => 1,
+               "MCP.Server.DispatchTest" => 1,
+               "MCP.Server.NotificationCollectorTest" => 1,
+               "MCP.Transport.StreamableHTTPCacheScopeWarningTest" => 1
+             }
+
+      assert Enum.frequencies_by(others, &legs[&1["member"]["register_key"]]) ==
+               %{"server" => 76, "none_determinable" => 21, "client" => 71}
+    end
+
+    test "the join equality refuses one added non-slice row and one dropped slice row",
+         %{inputs: inputs} do
+      {:ok, view} = inputs.views[@v1]
+      rows = d1siii_rows(inputs)
+      inside = join_selected(view["rows"], leg_of(), @d1siii_selector)
+
+      # A server row of MES-142's slice: the kind a leg-only selector would admit.
+      [other | _] = join_selected(view["rows"], leg_of(), @d1sii_selector)
+      refute other in inside
+
+      assert {:error, {added, none}} =
+               join_equality(
+                 rows ++ [%{other | "member" => other["member"]["register_key"]}],
+                 view["rows"],
+                 @d1siii_selector
+               )
+
+      assert {MapSet.to_list(added), none} == {[A.key(other)], MapSet.new()}
+
+      [first | rest] = rows
+      assert {:error, {none, dropped}} = join_equality(rest, view["rows"], @d1siii_selector)
+      assert {none, MapSet.to_list(dropped)} == {MapSet.new(), [A.key(first)]}
+    end
+
+    # The Q2 partition unit (MES-141) holds the three SELECTORS; this holds the
+    # three committed SECTIONS, so the server leg is covered by records.
+    test "the three committed server sections partition the view's 103 server-leg rows",
+         %{inputs: inputs} do
+      {:ok, view} = inputs.views[@v1]
+      server = server_rows(view["rows"], leg_of())
+      slices = [d1si_rows(inputs), d1sii_rows(inputs), d1siii_rows(inputs)]
+
+      assert Enum.map(slices, &length/1) == [39, 37, 27]
+      assert partition(slices, server) == :ok
+
+      # Positive limb above; a dropped row of this section is a gap.
+      [y | rest] = d1siii_rows(inputs)
+
+      assert partition([d1si_rows(inputs), d1sii_rows(inputs), rest], server) ==
+               {:error, {:gap, MapSet.new([A.key(y)])}}
+    end
+
+    test "every row is one of the D1 family; the counts are the rows' enumeration, negatives included",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1siii]
+      rows = d1siii_rows(inputs)
+      assert Enum.all?(rows, &(&1["disposition"] in A.d1_dispositions()))
+
+      enumerated =
+        Map.new(A.d1_dispositions(), fn d ->
+          tags = for r <- rows, r["disposition"] == d, do: r["tag"]
+          {d, %{"count" => length(tags), "tags" => tags}}
+        end)
+
+      assert record["counts"] == %{"bucket_1_server_iii" => enumerated}
+
+      assert Map.new(enumerated, fn {d, v} -> {d, v["count"]} end) == %{
+               "genuine_extra_coverage" => 4,
+               "redundant" => 14,
+               "not_a_conformance_claim" => 9,
+               "wrong_against_spec" => 0
+             }
+
+      # The readings that do not fire are exactly the genuine rows, and only
+      # they say what they protect.
+      assert for(r <- rows, !r["counterfactual"]["conforming_sdk_can_fail"], do: r["tag"]) ==
+               enumerated["genuine_extra_coverage"]["tags"]
+
+      for r <- rows do
+        genuine? = r["disposition"] == "genuine_extra_coverage"
+        assert is_binary(r["protects"]) == genuine?, r["tag"]
+      end
+    end
+
+    # CR 30023 B2, ruled to stand by PM 30028 (superseding QA2 of 30000): the
+    # decoder rows fire under M30', a decoder that enforces
+    # basic/index.mdx:380-382 and keeps the id, the #5/M19 standard. The
+    # id-losing M30 that QA2 rested on is gone from the record.
+    test "the two decoder rows fire under M30' and are not a conformance claim; M30 is dropped",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1siii]
+
+      for {tag, sdk} <- [
+            {"oc:none/no-oc-scenario/decode-request", "-32022"},
+            {"oc:none/no-oc-scenario/decode-request-string-id", "-32601"}
+          ] do
+        [r] = Enum.filter(d1siii_rows(inputs), &(&1["tag"] == tag))
+        reading = r["counterfactual"]["reading"]
+        assert r["disposition"] == "not_a_conformance_claim"
+        assert r["counterfactual"]["conforming_sdk_can_fail"]
+        refute Map.has_key?(r, "protects")
+
+        for phrase <- ["basic/index.mdx:380-382", "basic/index.mdx:103", "M30'", sdk],
+            do: assert(reading =~ phrase, "#{tag}: #{phrase}")
+
+        assert r["rationale"] =~ "[CR 30023 B2 | PM 30028, superseding QA2 of 30000]"
+        refute reading =~ "is not conforming"
+      end
+
+      assert for(m <- record["mutations"], m["id"] == "M30", do: m) == []
+    end
+
+    test "the routes equal the routed rows, both ways, numbered in record order; no genuine row is routed",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1siii]
+      rows = d1siii_rows(inputs)
+      routed = Enum.filter(rows, &Map.has_key?(&1, "routed_to"))
+
+      assert Enum.filter(rows, &Map.has_key?(A.routes(), &1["disposition"])) == routed
+
+      assert Enum.reject(rows, &(&1 in routed)) |> Enum.map(& &1["disposition"]) |> Enum.uniq() ==
+               ["genuine_extra_coverage"]
+
+      by_owner = Enum.frequencies_by(routed, &{&1["routed_to"]["owner"], &1["routed_to"]["to"]})
+      assert by_owner == Map.new(record["routing"], &{{&1["owner"], &1["to"]}, &1["rows"]})
+      assert by_owner == %{{"MES-152", "A3"} => 14, {"MES-153", "A2"} => 9}
+      assert record["unused_routes"] == []
+
+      # The PM's routing comments (30012): MES-152 comment 30010 lists the 14
+      # redundant rows as items 1-14 and MES-153 comment 30011 the 7
+      # not-a-claim rows as items 1-7, each in record order. Correction round 1
+      # (PM 30028) adds MES-153 comment 30027, items 1-2: the decoder rows.
+      assert Enum.map(record["routing"], &{&1["owner"], &1["condition"]}) == [
+               {"MES-152",
+                "The PM posted the MES-152 routing comment for MES-143 after hop B: " <>
+                  "MES-152 comment 30010, items 1 to 14, the redundant rows in record order. " <>
+                  "Each routed row's owner_record names that comment and its item."},
+               {"MES-153",
+                "The PM posted the MES-153 routing comments for MES-143: comment 30011, " <>
+                  "items 1 to 7, the not_a_conformance_claim rows adjudicated at hop B, in " <>
+                  "record order; and comment 30027, items 1 to 2, the rows re-verdicted by " <>
+                  "correction round 1 [CR 30023 B2 | PM 30028], in record order. Each routed " <>
+                  "row's owner_record names its comment and item."}
+             ]
+
+      a3 = &"MES-152 comment 30010, item #{&1}"
+      a2 = &"MES-153 comment 30011, item #{&1}"
+      b2 = &"MES-153 comment 30027, item #{&1}"
+
+      assert Enum.map(routed, &{&1["tag"], &1["routed_to"]["owner_record"]}) == [
+               {"oc:none/no-oc-scenario/extensions-vs-experimental-encoding", a2.(1)},
+               {"oc:none/no-oc-server-check/sentinel-decode-server-side", a2.(2)},
+               {"oc:none/no-axis-contact/SEP-2575-validate-classifies-earlier-version-unsupported",
+                a2.(3)},
+               {"oc:none/no-oc-scenario/tool-optional-field-omission", a2.(4)},
+               {"oc:none/no-oc-server-check/tool-input-schema-keyword-preservation", a2.(5)},
+               {"oc:none/no-oc-scenario/decode-request", b2.(1)},
+               {"oc:none/no-oc-scenario/decode-request-string-id", b2.(2)},
+               {"oc:none/no-axis-contact/SEP-2575-listchanged-absent-without-a-channel", a2.(6)},
+               {"oc:none/no-axis-contact/SEP-2575-old-version-rejected-32022", a3.(1)},
+               {"oc:none/no-oc-scenario/collector-drain-wire-maps", a2.(7)},
+               {"oc:none/no-oc-scenario/tools-list-order-pagination-bound", a3.(2)},
+               {"oc:none/no-oc-scenario/tools-list-curated-order-escape-hatch", a3.(3)},
+               {"oc:none/no-oc-scenario/tools-list-order-control-vacuous", a3.(4)},
+               {"oc:none/no-oc-scenario/tools-list-order-across-requests", a3.(5)},
+               {"oc:none/no-oc-scenario/tools-list-default-order-and-set", a3.(6)},
+               {"oc:none/no-oc-scenario/tools-list-order-across-instances", a3.(7)},
+               {"oc:none/no-oc-server-check/mcp-name-plain-mismatch-32020", a3.(8)},
+               {"oc:none/no-oc-server-check/mcp-name-encoded-mismatch-32020", a3.(9)},
+               {"oc:none/no-oc-server-check/mcp-name-plain-match-passes", a3.(10)},
+               {"oc:none/no-oc-server-check/mcp-name-malformed-sentinel-compared-as-is", a3.(11)},
+               {"oc:none/no-oc-scenario/identity-factory-raises", a3.(12)},
+               {"oc:none/no-oc-scenario/identity-factory-wrong-shape", a3.(13)},
+               {"oc:none/no-oc-scenario/cache-scope-warning-once-per-configuration", a3.(14)}
+             ]
+    end
+
+    test "every assert a row says it read is an assert at that line, and each window lists them all",
+         %{inputs: inputs} do
+      for r <- d1siii_rows(inputs) do
+        %{"file" => f, "lines" => [from, to]} = r["et_test"]
+        {:ok, src} = inputs.source_fun.(f)
+        lines = String.split(src, "\n")
+
+        read =
+          for entry <- r["asserts_read"],
+              [_, file, line, text] <- [Regex.run(~r/\A(test\/[^:]+):(\d+) — (.*)\z/s, entry)] do
+            at = lines |> Enum.at(String.to_integer(line) - 1) |> String.trim()
+            assert file == f and at == text and at =~ @d1sii_assert_word, entry
+            {file, String.to_integer(line)}
+          end
+
+        in_window =
+          for {line, i} <- Enum.with_index(lines, 1),
+              i in from..to,
+              line =~ @d1sii_assert_word,
+              not String.starts_with?(String.trim_leading(line), "#"),
+              do: {f, i}
+
+        assert length(read) == length(r["asserts_read"]) and read != [], r["tag"]
+        assert read == in_window, r["tag"]
+      end
+    end
+
+    # Every firing line was MEASURED: the one line a firing reading names is
+    # an assert in the row's window and among the lines a mutation reddened.
+    # #27's assert runs in a `for` inside a capture_log, and ExUnit reports the
+    # capture_log call (measured under M9h): the row says so in exunit_frame.
+    test "each firing line is an assert its mutation reddened; the one enclosed-frame row says so",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1siii]
+      rows = d1siii_rows(inputs)
+      firing = Enum.filter(rows, & &1["counterfactual"]["conforming_sdk_can_fail"])
+      assert length(firing) == 23
+
+      reddened =
+        for m <- record["mutations"],
+            l <- (m["reddens"] || []) ++ (m["also_reddens_in_slice"] || []),
+            into: MapSet.new(),
+            do: reddened_line(l)
+
+      enclosed =
+        for r <- firing, into: %{} do
+          %{"file" => f, "lines" => [from, to]} = r["et_test"]
+          {:ok, src} = inputs.source_fun.(f)
+          lines = String.split(src, "\n")
+          [_, n] = String.split(fired_at(r), ":")
+          n = String.to_integer(n)
+
+          # An assert, or (the ToolOrder rows) a call of the helper that
+          # raises, which the rationale names as the (test) frame.
+          at = Enum.at(lines, n - 1)
+          assert n in from..to, r["tag"]
+
+          if r["rationale"] =~ "the (test) frame, inside `list_tool_names/2`" do
+            assert at =~ "list_tool_names(", r["tag"]
+          else
+            assert at =~ @d1sii_assert_word, r["tag"]
+          end
+
+          assert fired_at(r) in reddened,
+                 "#{r["tag"]}: #{fired_at(r)} was reddened by no mutation"
+
+          {r["tag"], {enclosing_block(lines, from, n), at =~ @d1sii_assert_word}}
+        end
+
+      said =
+        for r <- firing, f = r["counterfactual"]["exunit_frame"], into: %{} do
+          {r["tag"], {f["enclosing"], f["reported_at"], f["failing_assert"]}}
+        end
+
+      tag = "oc:none/no-oc-scenario/cache-scope-warning-once-per-configuration"
+      assert said == %{tag => {"capture_log", 98, 116}}
+      refute Enum.any?(rows, &Map.has_key?(&1, "exunit_frame"))
+
+      # The detector finds the rows with an enclosing block: only #27, whose
+      # innermost opener is the `for` (:106), itself inside the capture_log (:98).
+      assert Map.reject(enclosed, fn {_, {at, _}} -> is_nil(at) end) == %{tag => {106, true}}
+
+      # The firing lines that are not asserts: three ToolOrder members, whose
+      # assert-free line calls the helper that raises over a nil `tools`.
+      assert for({t, {_, false}} <- enclosed, do: t) |> Enum.sort() == [
+               "oc:none/no-oc-scenario/tools-list-curated-order-escape-hatch",
+               "oc:none/no-oc-scenario/tools-list-default-order-and-set",
+               "oc:none/no-oc-scenario/tools-list-order-pagination-bound"
+             ]
+
+      {:ok, src} =
+        inputs.source_fun.("test/mcp/transport/streamable_http_cache_scope_warning_test.exs")
+
+      lines = String.split(src, "\n")
+      assert enclosing_block(lines, 96, 106) == 98
+      assert Enum.at(lines, 97) =~ "capture_log(fn ->"
+      # :120 is after the capture_log closes at :118.
+      assert enclosing_block(lines, 96, 120) == nil
+    end
+
+    # PM 29945 Q2, applied here: each of the M9 family cited under its own
+    # name, and its figures equal the rows whose firing line it reddened.
+    test "the M9 family's measured figures equal the rows whose firing line each reddened",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1siii]
+      rows = d1siii_rows(inputs)
+      [m9, m9h, m9f, m10] = Enum.map(~w(M9 M9h M9f M10), &d1sii_mutation(record, &1))
+
+      red_under = fn m ->
+        lines = Enum.map(m["reddens"], &reddened_line/1)
+
+        for r <- rows,
+            r["counterfactual"]["conforming_sdk_can_fail"],
+            r["counterfactual"]["reading"] =~ "basic/index.mdx:380-382",
+            fired_at(r) in lines,
+            do: r["tag"]
+      end
+
+      for {m, n} <- [{m9, 7}, {m9h, 11}, {m9f, 14}] do
+        assert length(red_under.(m)) == n and m["measured"]["slice_members_red"] == n, m["id"]
+        assert length(m["reddens"]) == n, m["id"]
+      end
+
+      assert Enum.sort(m9["measured"]["slice_members_not_red"]) ==
+               Enum.sort(Enum.map(rows, & &1["tag"]) -- red_under.(m9))
+
+      # M9 < M9h < M9f; the widening adds the HTTP members, then the three
+      # two-defect -32020 members.
+      assert red_under.(m9) -- red_under.(m9h) == []
+      assert red_under.(m9h) -- red_under.(m9f) == []
+
+      assert red_under.(m9h) -- red_under.(m9) == [
+               "oc:none/no-oc-server-check/mcp-name-plain-match-passes",
+               "oc:none/no-oc-scenario/identity-factory-raises",
+               "oc:none/no-oc-scenario/identity-factory-wrong-shape",
+               "oc:none/no-oc-scenario/cache-scope-warning-once-per-configuration"
+             ]
+
+      assert red_under.(m9f) -- red_under.(m9h) == [
+               "oc:none/no-oc-server-check/mcp-name-plain-mismatch-32020",
+               "oc:none/no-oc-server-check/mcp-name-encoded-mismatch-32020",
+               "oc:none/no-oc-server-check/mcp-name-malformed-sentinel-compared-as-is"
+             ]
+
+      # The M9f family IS the redundant set.
+      assert Enum.sort(red_under.(m9f)) ==
+               Enum.sort(for r <- rows, r["disposition"] == "redundant", do: r["tag"])
+
+      # M10 (Q3): a second reading on exactly the rows it reddens, owned by
+      # MES-155, and every one of them already redundant.
+      m10_rows =
+        for r <- rows, s <- r["second_readings"] || [], s["mutation"] == "M10", do: {r, s}
+
+      assert length(m10_rows) == 3 and m10["measured"]["slice_members_red"] == 3
+
+      assert Enum.sort(
+               for {r, s} <- m10_rows,
+                   do: "#{Path.basename(r["et_test"]["file"])}:#{s["fails_at"]}"
+             ) ==
+               Enum.sort(Enum.map(m10["reddens"], &reddened_line/1))
+
+      assert Enum.all?(m10_rows, fn {r, s} ->
+               r["disposition"] == "redundant" and s["remediation_owner"] == "MES-155"
+             end)
+    end
+
+    # The firing mutations M19-M25 and M30' cover the not-a-claim rows, each
+    # reddening its rows' firing lines in the slice (M30' the two decoder
+    # rows, correction round 1; every other one row); anything else they
+    # redden is a redundant row's firing line.
+    test "M19-M25 and M30' are the not-a-claim rows' firing mutations, one per row, both ways",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1siii]
+      rows = d1siii_rows(inputs)
+      m9 = d1sii_mutation(record, "M9")
+      ids = ~w(M19 M20 M21 M22 M23 M24 M25 M30')
+
+      redundant_line = fn l ->
+        [r] =
+          Enum.filter(
+            rows,
+            &(&1["counterfactual"]["conforming_sdk_can_fail"] and fired_at(&1) == reddened_line(l))
+          )
+
+        r["disposition"] == "redundant"
+      end
+
+      pairs =
+        for id <- ids, line <- d1sii_mutation(record, id)["reddens"] do
+          m = d1sii_mutation(record, id)
+          assert m["used_by"] =~ "the firing reading of", id
+          refute Map.has_key?(m, "not_conforming"), id
+
+          [r] =
+            Enum.filter(
+              rows,
+              &(&1["counterfactual"]["conforming_sdk_can_fail"] and fired_at(&1) == line)
+            )
+
+          assert r["disposition"] == "not_a_conformance_claim", id
+          assert m["used_by"] =~ r["tag"], id
+
+          for l <- m["also_reddens_in_slice"] || [], do: assert(redundant_line.(l), "#{id} #{l}")
+
+          {r["tag"], id}
+        end
+
+      firing_of = Map.new(pairs)
+      assert map_size(firing_of) == length(pairs)
+
+      assert Enum.frequencies(Map.values(firing_of)) ==
+               Map.new(ids, &{&1, if(&1 == "M30'", do: 2, else: 1)})
+
+      assert Enum.sort(Map.keys(firing_of)) ==
+               Enum.sort(
+                 for r <- rows, r["disposition"] == "not_a_conformance_claim", do: r["tag"]
+               )
+
+      assert firing_of[
+               "oc:none/no-axis-contact/SEP-2575-validate-classifies-earlier-version-unsupported"
+             ] ==
+               "M19"
+
+      assert d1sii_mutation(record, "M19")["also_reddens_in_slice"] == m9["reddens"]
+
+      # CR 30022 B1 (PM 30028): M25 keeps progress order, which
+      # basic/patterns/progress.mdx:53 fixes, and #14's reading scopes its
+      # order-freedom to log notifications.
+      m25 = d1sii_mutation(record, "M25")
+      [r14] = Enum.filter(rows, &(firing_of[&1["tag"]] == "M25"))
+      assert m25["change"] =~ "basic/patterns/progress.mdx:53"
+      assert m25["note"] =~ "progress [0, 50, 100]"
+      assert r14["counterfactual"]["reading"] =~ "basic/patterns/progress.mdx:53"
+      refute r14["counterfactual"]["reading"] =~ "states no delivery order for notifications"
+
+      refute record["counterfactual"]["equivalent_forms"]["rule"] =~
+               "notifications drained in another order (M25)"
+
+      # CR 30044 B3 (PM 30045): the order-freedom is notifications/message
+      # AMONG THEMSELVES. Other statements do order notifications (the
+      # acknowledgement first, request-scoped notifications before the final
+      # response, progress stopping at completion), and M25 keeps each.
+      ef = record["counterfactual"]["equivalent_forms"]
+      scoped = "orders notifications/message among themselves"
+
+      texts = [
+        r14["counterfactual"]["reading"],
+        r14["rationale"],
+        ef["rule"],
+        record["delta_from_plan"]
+      ]
+
+      for t <- Enum.take(texts, 3), do: assert(t =~ scoped)
+      assert record["delta_from_plan"] =~ "orders log notifications among themselves"
+
+      for t <- texts,
+          dropped <- [
+            "the one delivery order",
+            "no other ordering statement",
+            "progress notifications only",
+            "nothing fixes",
+            "fixes only progress order",
+            "states no delivery order"
+          ],
+          do: refute(t =~ dropped, dropped)
+
+      # The search's hits are partitioned: each is an ordering statement's or
+      # a named non-ordering hit, exactly once.
+      nos = ef["notification_ordering_statements"]
+      searched = nos["search"]["primary_hits"] ++ nos["search"]["supplementary_hits"]
+
+      classified =
+        Enum.flat_map(nos["statements"], & &1["hits"]) ++
+          Enum.map(nos["hits_not_ordering_a_notification"], & &1["at"])
+
+      assert Enum.sort(classified) == Enum.sort(Enum.uniq(searched))
+      assert Enum.map(nos["statements"], & &1["id"]) == ~w(P1 P2 R A C)
+      assert Enum.all?(nos["statements"], &(&1["m25_keeps"] != ""))
+    end
+
+    # 30000: the discrimination controls are shown NOT conforming. Each
+    # reddens an assert inside its genuine row's window, names that row, and
+    # states, with a spec citation, why the alternative is not conforming.
+    # M30 went with correction round 1 (PM 30028): the decoder rows fire.
+    test "M26-M29 are the genuine rows' discrimination controls, each NOT conforming, one per row",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1siii]
+      rows = d1siii_rows(inputs)
+      genuine = Enum.filter(rows, &(&1["disposition"] == "genuine_extra_coverage"))
+      ids = ~w(M26 M27 M28 M29)
+
+      control_of =
+        for id <- ids, l <- d1sii_mutation(record, id)["reddens"], into: %{} do
+          m = d1sii_mutation(record, id)
+          assert m["used_by"] =~ "the discrimination control of", id
+          assert m["not_conforming"] =~ ~r/(\.mdx|\.ts):\d+/, id
+          [base, n] = String.split(l, ":")
+          n = String.to_integer(n)
+
+          [r] =
+            Enum.filter(genuine, fn r ->
+              %{"file" => f, "lines" => [from, to]} = r["et_test"]
+              Path.basename(f) == base and n in from..to
+            end)
+
+          {:ok, src} = inputs.source_fun.(r["et_test"]["file"])
+          assert src |> String.split("\n") |> Enum.at(n - 1) =~ @d1sii_assert_word, l
+          assert m["used_by"] =~ r["tag"], id
+          {r["tag"], id}
+        end
+
+      assert Enum.sort(Map.keys(control_of)) == Enum.sort(Enum.map(genuine, & &1["tag"]))
+
+      assert control_of == %{
+               "oc:none/no-oc-scenario/tool-absent-output-schema" => "M26",
+               "oc:none/no-oc-scenario/extensions-and-experimental-carried-together" => "M27",
+               "oc:none/no-oc-scenario/resource-link-round-trip" => "M28",
+               "oc:none/no-oc-scenario/meta-field-extraction" => "M29"
+             }
+
+      # No other mutation claims non-conformance.
+      assert for(m <- record["mutations"], Map.has_key?(m, "not_conforming"), do: m["id"]) == ids
+    end
+
+    test "every recorded mutation carries its exact edits, and the M9 family's are MES-142's byte for byte",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1siii]
+      {:ok, sii} = inputs.records[@d1sii]
+      ms = record["mutations"]
+
+      assert Enum.map(ms, & &1["id"]) ==
+               ~w(M9 M9h M9f M10 M19 M20 M21 M22 M23 M24 M25 M26 M27 M28 M29 M30')
+
+      for m <- ms do
+        assert m["edits"] != [], m["id"]
+
+        for %{"file" => f, "old" => old, "new" => new} = e <- m["edits"] do
+          assert map_size(e) == 3 and String.starts_with?(f, "lib/"), m["id"]
+          assert old != new, m["id"]
+          assert String.contains?(m["lib"], f), m["id"]
+          {:ok, src} = inputs.source_fun.(f)
+          assert length(String.split(src, old)) == 2, "#{m["id"]}: #{f}"
+        end
+      end
+
+      for id <- ~w(M9 M9h M9f M10) do
+        assert d1sii_mutation(record, id)["edits"] == d1sii_mutation(sii, id)["edits"], id
+      end
+
+      assert d1sii_mutation(record, "M9")["edits"] == @mes141_m9_edits
+    end
+  end
+
+  # --- the bucket-1 view, whole (MES-143, the closing slice; PM 30012 item 3) --
+  #
+  # Re-derived from the records the walk finds (MES-135: no hand-held record
+  # list), never summed from close-outs. The six D1 records' bucket-1 sections
+  # together adjudicate the view's 195 rows; D1-nd+CU's claim-unmatched section
+  # the 9 claims.
+
+  # The route's owner by route (the A3 and A2 tickets every D1 record names).
+  @whole_route_owner %{"A3" => "MES-152", "A2" => "MES-153"}
+
+  # The PM's routing comments, by the adjudicating record's ticket and the
+  # route owner: the catalogue every routed row's owner_record must name.
+  @bucket1_routing_comments %{
+    {"MES-138", "MES-153"} => ["29700", "29716"],
+    {"MES-139", "MES-152"} => ["29747"],
+    {"MES-139", "MES-153"} => ["29748"],
+    {"MES-140", "MES-152"} => ["29774"],
+    {"MES-140", "MES-153"} => ["29775", "29798"],
+    {"MES-141", "MES-152"} => ["29887"],
+    {"MES-141", "MES-153"} => ["29888"],
+    {"MES-142", "MES-152"} => ["29954"],
+    {"MES-142", "MES-153"} => ["29973"],
+    {"MES-143", "MES-152"} => ["30010"],
+    {"MES-143", "MES-153"} => ["30011", "30027"]
+  }
+
+  # The wrong_against_spec rows, for the PM's register.
+  @bucket1_wrong [
+    {"MES-139", "oc:none/no-oc-scenario/client-sends-cancelled-notification"},
+    {"MES-140", "oc:none/no-oc-scenario/CG1-methodless-carries-no-routing-headers"},
+    {"MES-141", "oc:none/no-oc-scenario/extensions-offer-result-identical"}
+  ]
+
+  # MES-154 re-verdicts these 4 (PM 29984, Q4 of 29990): counted under their
+  # CURRENT verdicts, and held here by view and tag so a move is seen.
+  @mes154_pending_reverdict [
+    {"bucket-1", "oc:none/no-oc-fixture-case/routing-header-decoded-before-comparison",
+     "genuine_extra_coverage"},
+    {"claim-unmatched", "oc:none/no-oc-scenario/MES-115-retry-identity-re-resolved",
+     "not_a_conformance_claim"},
+    {"claim-unmatched",
+     "oc:none/no-oc-server-check/SEP-2106-server-never-dereferences-a-network-ref",
+     "genuine_extra_coverage"},
+    {"claim-unmatched", "oc:none/no-oc-scenario/MES-117-default-caching-policy-values",
+     "not_a_conformance_claim"}
+  ]
+
+  # {ticket, closure, row} for every row of every section on `view`, walking
+  # the directory in its order and each section in record order.
+  defp whole_view_rows(inputs, view) do
+    for path <- inputs.walk,
+        {:ok, rec} <- [inputs.records[path]],
+        s <- rec["sections"],
+        s["view"] == view,
+        r <- s["rows"],
+        do: {rec["ticket"], s["closure"], r}
+  end
+
+  defp whole_view_counts(rows),
+    do: Enum.frequencies_by(rows, fn {_, _, r} -> r["disposition"] end)
+
+  describe "the bucket-1 view, whole (MES-143)" do
+    test "the bucket-1 sections found by the walk EQUAL the view's 195 keys, both ways, and the claim-unmatched sections its 9",
+         %{inputs: inputs} do
+      for {view, n, tickets} <- [
+            {@v1, 195, ~w(MES-138 MES-139 MES-140 MES-141 MES-142 MES-143)},
+            {@vcu, 9, ~w(MES-138)}
+          ] do
+        rows = whole_view_rows(inputs, view)
+        keys = Enum.map(rows, fn {_, _, r} -> A.key(r) end)
+        {:ok, v} = inputs.views[view]
+        view_keys = Enum.map(v["rows"], &A.key/1)
+
+        assert length(view_keys) == n and length(Enum.uniq(view_keys)) == n
+        # No key adjudicated twice, none missing, none extra.
+        assert length(keys) == n and length(Enum.uniq(keys)) == n
+        assert MapSet.new(keys) == MapSet.new(view_keys)
+        assert rows |> Enum.map(&elem(&1, 0)) |> Enum.uniq() |> Enum.sort() == tickets
+      end
+
+      # Exactly one closed section on bucket-1, and it is this ticket's.
+      closed = for {t, "closed", _} <- whole_view_rows(inputs, @v1), uniq: true, do: t
+      assert closed == ["MES-143"]
+    end
+
+    test "per-verdict counts: 53 / 86 / 53 / 3 over the 195, and 3 / 6 over the 9 claims, per record",
+         %{inputs: inputs} do
+      rows = whole_view_rows(inputs, @v1)
+
+      assert whole_view_counts(rows) == %{
+               "genuine_extra_coverage" => 53,
+               "redundant" => 86,
+               "not_a_conformance_claim" => 53,
+               "wrong_against_spec" => 3
+             }
+
+      per_record =
+        rows
+        |> Enum.group_by(&elem(&1, 0))
+        |> Map.new(fn {t, rs} -> {t, whole_view_counts(rs)} end)
+
+      g = "genuine_extra_coverage"
+      rd = "redundant"
+      nc = "not_a_conformance_claim"
+      w = "wrong_against_spec"
+
+      assert per_record == %{
+               "MES-138" => %{g => 17, nc => 4},
+               "MES-139" => %{g => 9, rd => 12, nc => 13, w => 1},
+               "MES-140" => %{g => 21, rd => 3, nc => 11, w => 1},
+               "MES-141" => %{g => 2, rd => 35, nc => 1, w => 1},
+               "MES-142" => %{rd => 22, nc => 15},
+               "MES-143" => %{g => 4, rd => 14, nc => 9}
+             }
+
+      assert whole_view_counts(whole_view_rows(inputs, @vcu)) == %{g => 3, nc => 6}
+    end
+
+    test "every routed row's route and owner follow its disposition, and no other row is routed",
+         %{inputs: inputs} do
+      rows = whole_view_rows(inputs, @v1) ++ whole_view_rows(inputs, @vcu)
+
+      for {t, _, r} <- rows do
+        case A.routes()[r["disposition"]] do
+          nil ->
+            refute Map.has_key?(r, "routed_to"), "#{t} #{r["tag"]}"
+
+          route ->
+            assert Map.take(r["routed_to"], ~w(to owner)) ==
+                     %{"to" => route, "owner" => @whole_route_owner[route]},
+                   "#{t} #{r["tag"]}"
+        end
+      end
+
+      routed = for {_, _, %{"routed_to" => rt}} <- rows, do: rt["to"]
+      assert Enum.frequencies(routed) == %{"A3" => 86, "A2" => 59}
+    end
+
+    test "every owner_record names a comment from the pinned catalogue, which is used both ways, items 1..n in record order",
+         %{inputs: inputs} do
+      rows = whole_view_rows(inputs, @v1) ++ whole_view_rows(inputs, @vcu)
+
+      cited =
+        for {t, _, %{"routed_to" => rt} = r} <- rows do
+          [_, owner, comment, item] =
+            Regex.run(~r/\A(MES-\d+) comment (\d+), item (\d+)\z/, rt["owner_record"]) ||
+              flunk("#{t} #{r["tag"]}: #{inspect(rt["owner_record"])}")
+
+          assert owner == rt["owner"], "#{t} #{r["tag"]}"
+          assert comment in Map.get(@bucket1_routing_comments, {t, owner}, []), "#{t} #{r["tag"]}"
+          {{t, owner, comment}, String.to_integer(item)}
+        end
+
+      by_comment = Enum.group_by(cited, &elem(&1, 0), &elem(&1, 1))
+
+      for {c, items} <- by_comment,
+          do: assert(items == Enum.to_list(1..length(items)), inspect(c))
+
+      used = by_comment |> Map.keys() |> Enum.group_by(&{elem(&1, 0), elem(&1, 1)}, &elem(&1, 2))
+      assert Map.new(used, fn {k, cs} -> {k, Enum.sort(cs)} end) == @bucket1_routing_comments
+      assert length(cited) == 145
+    end
+
+    test "the wrong_against_spec rows are the three for the register",
+         %{inputs: inputs} do
+      rows = whole_view_rows(inputs, @v1) ++ whole_view_rows(inputs, @vcu)
+
+      assert for({t, _, %{"disposition" => "wrong_against_spec"} = r} <- rows, do: {t, r["tag"]}) ==
+               @bucket1_wrong
+    end
+
+    test "MES-154's 4 rows are held by key, under their current verdicts, as pending re-verdict",
+         %{inputs: inputs} do
+      held =
+        for {short, view} <- [{"bucket-1", @v1}, {"claim-unmatched", @vcu}],
+            {"MES-138", _, r} <- whole_view_rows(inputs, view),
+            {^short, tag, _} <- @mes154_pending_reverdict,
+            r["tag"] == tag,
+            do: {short, tag, r["disposition"]}
+
+      assert Enum.sort(held) == Enum.sort(@mes154_pending_reverdict)
+    end
+  end
+
   # --- every D1 record in the directory (MES-139; authored 29729, ratified 29731) --
   #
   # MES-138's both-ways unit, generalised: it runs over every record the walk
@@ -5570,8 +6344,8 @@ defmodule MCP.Conformance.AdjudicationsTest do
       rows = for {_, _, ss} <- recs, s <- ss, r <- s["rows"], do: r
 
       # Reach, so the unit cannot pass over an empty set.
-      assert Enum.map(recs, &elem(&1, 0)) == [@d1ci, @d1cii, @d1, @d1si, @d1sii]
-      assert length(rows) == 177
+      assert Enum.map(recs, &elem(&1, 0)) == [@d1ci, @d1cii, @d1, @d1si, @d1sii, @d1siii]
+      assert length(rows) == 204
 
       # Independently of d1_records/1: every row of every record bound to a D1
       # view carries a D1 disposition, and every D1 disposition sits in one.

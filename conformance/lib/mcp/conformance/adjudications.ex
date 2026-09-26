@@ -486,7 +486,6 @@ defmodule MCP.Conformance.Adjudications do
   }
 
   @pending %{
-    "docs/conformance/buckets/bucket-1-2026-07-28.json" => "MES-143",
     "docs/conformance/buckets/bucket-3-2026-07-28.json" => "MES-144",
     "docs/conformance/buckets/bucket-5a-2026-07-28.json" => "MES-148",
     "docs/conformance/buckets/bucket-5b-2026-07-28.json" => "MES-146",
