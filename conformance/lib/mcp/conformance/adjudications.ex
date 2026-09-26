@@ -17,7 +17,9 @@ defmodule MCP.Conformance.Adjudications do
   family, `genuine_extra_coverage`, `redundant`, `not_a_conformance_claim` and
   `wrong_against_spec`, with the `protects_missing`, `counterpart_missing`,
   `routed_to_missing`, `spec_citation_missing` and `disposition_outside_view`
-  refusals [authored 29691 | ratified 29693] (Q1 to Q3).
+  refusals [authored 29691 | ratified 29693] (Q1 to Q3). MES-139
+  (D1-client-i) added the `counterfactual_missing` refusal [authored 29729 |
+  ratified 29731] (Q1).
 
   ## The dispositions
 
@@ -98,8 +100,17 @@ defmodule MCP.Conformance.Adjudications do
   that makes it so [authored 29707 N5 | ratified 29708]. The unit is the
   view's: on bucket 1 the member, on the claim-unmatched view the claim
   alone, so a member's other asserts are not part of it [authored 29721 B-A |
-  ratified 29723]. The guard holds none of this: which way a reading goes is
-  the reviewer's check.
+  ratified 29723].
+
+  Every D1 row records that reading as `counterfactual`: a boolean
+  `conforming_sdk_can_fail` and a one-line `reading`. A reading that fires
+  names the test line a conforming SDK would fail, as `<name>_test.exs:N`;
+  a reading that does not opens `None can: ` and cites the specification
+  text that requires the asserted meaning (a `.mdx` or `.ts` file, or a §).
+  Otherwise the row is refused (`counterfactual_missing`) [authored 29729 |
+  ratified 29731]. Like the others, this refusal checks SHAPE only: which way
+  a reading goes, and whether its citation says what it is cited for, is the
+  reviewer's check.
 
   A `redundant` or `not_a_conformance_claim` row carries `routed_to`, in the
   `sdk_gap` shape: `to`, which must be the disposition's route (`A3` for
@@ -294,7 +305,8 @@ defmodule MCP.Conformance.Adjudications do
       locator's 143 distinct sites are sites of more than one token, 82 of its
       173 tokens have ONLY shared sites, and 60 of the 108 committed rows tie
       their check only through a shared site (48 bucket-2, 12 member rows);
-      still 60 of 138 at MES-138, since an `oc:none/` row cites no site.
+      still 60 of 138 at MES-138, and of 173 at MES-139, since an `oc:none/`
+      row cites no site.
       **The audited set.** At MES-135, CR exchanged every pair of the 108
       committed rows (5778 pairs) and ran each through `audit/2`: 481 pairs
       audited CLEAN, 477 bucket-2 and 4 member; of 551 pairs whose `check`
@@ -307,7 +319,12 @@ defmodule MCP.Conformance.Adjudications do
       exactly ONE CLEAN pair: `ExtensionsTest`'s doctests `from_meta/1 (8)`
       and `(9)` in the bucket-1 section, both `genuine_extra_coverage`, which
       share the `doctest MCP.Protocol.Extensions` line as their one-line
-      window (MES-138 S2a, [authored 29695 | ratified 29702]). The 4 older member pairs are over 5 rows (1 in
+      window (MES-138 S2a, [authored 29695 | ratified 29702]). **At MES-139
+      the `swap-audit touching` mode exchanges every pair with a row in its
+      record (5425 pairs of the 173 rows, 0 no-ops): none audits CLEAN, so
+      the set stays 482.** Of the 2631 pairs the `check` tie now leaves
+      unseparated (551 mutual, plus 2080 between the 65 `oc:none/` rows),
+      the `et_test` tie refuses 2149. The 4 older member pairs are over 5 rows (1 in
       D4a, 4 in D4b) and 2 member tests. On `StreamableHTTPStatelessTest`
       "initialize is gone → -32022; ping/logging.setLevel → -32601": D4a's
       `initialize` row (`fix_sdk`) with D4b's `ping` row and with D4b's `logging-setlevel` row (both
@@ -358,7 +375,7 @@ defmodule MCP.Conformance.Adjudications do
   `view_key_collision`, `open_without_owner`, `bad_row`,
   `disposition_outside_set`, `bound_missing`, `build_level_missing`, `sdk_gap_missing`,
   `disposition_outside_view`, `protects_missing`, `counterpart_missing`,
-  `routed_to_missing`, `spec_citation_missing`,
+  `routed_to_missing`, `spec_citation_missing`, `counterfactual_missing`,
   `phantom`, `missing`,
   `duplicate`, `closure_not_exclusive`, `owed_unadjudicated`, `pending_but_closed`,
   `catalogue_names_absent_view`, `bound_to_excluded`, `bound_outside_anchor`,
@@ -420,6 +437,11 @@ defmodule MCP.Conformance.Adjudications do
                docs/conformance/buckets/claim-unmatched-2026-07-28.json)
   @routes %{"redundant" => "A3", "not_a_conformance_claim" => "A2"}
   @spec_url ~r{\Ahttps://modelcontextprotocol\.io/specification/2026-07-28(/|#|\z)}
+  # A D1 row's counterfactual reading (MES-139; authored 29729, ratified 29731):
+  # one that fires names a test file's line; one that does not opens "None can: "
+  # and cites spec text. `_test.exs:N`, not `test:N` (MES-138 N7).
+  @fires_cite ~r/\b[\w-]+_test\.exs:\d+\b/
+  @none_can ~r/\ANone can: .*(\.mdx|\.ts|§)/u
 
   # The build levels an extend_to_match, build_test or blocked_on_sdk_gap row may
   # name (MES-128, 29444; MES-129, 29460).
@@ -1070,6 +1092,7 @@ defmodule MCP.Conformance.Adjudications do
       counterpart_defects(section.file, k, row, ties) ++
       routed_to_defects(section.file, k, row) ++
       spec_defects(section.file, k, row) ++
+      counterfactual_defects(section.file, k, row) ++
       echo_defects(section.file, k, row, view_row) ++
       et_test_defects(section.file, k, row, ties) ++
       check_defects(section.file, k, row, ties) ++
@@ -1538,6 +1561,34 @@ defmodule MCP.Conformance.Adjudications do
   end
 
   defp spec_defects(_file, _k, _row), do: []
+
+  # Every D1 row records one counterfactual reading: could a conforming SDK
+  # fail this unit? A firing reading names the test line; a reading that does
+  # not fire opens "None can: " and cites spec text. Shape only: which way it
+  # goes is the reviewer's.
+  defp counterfactual_defects(file, k, %{"disposition" => disp} = row)
+       when disp in @d1_dispositions do
+    cf = row["counterfactual"]
+    fires = is_map(cf) && cf["conforming_sdk_can_fail"]
+    reading = is_map(cf) && cf["reading"]
+
+    ok? =
+      is_boolean(fires) and one_line?(reading) and
+        if(fires, do: reading =~ @fires_cite, else: reading =~ @none_can)
+
+    if ok?,
+      do: [],
+      else: [
+        d(
+          :counterfactual_missing,
+          file,
+          k,
+          "a #{disp} row needs `counterfactual` with a boolean `conforming_sdk_can_fail` and a one-line `reading` that, when it fires, names `<name>_test.exs:N`, and otherwise opens `None can: ` citing a `.mdx` or `.ts` file or a §, not #{inspect(cf, limit: 3)}"
+        )
+      ]
+  end
+
+  defp counterfactual_defects(_file, _k, _row), do: []
 
   defp repo_citation?(%{"file" => f, "lines" => [_, _], "bytes" => b})
        when is_binary(f) and is_binary(b),

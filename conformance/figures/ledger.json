@@ -4784,6 +4784,246 @@
       "path": "sections[#0].rows[MCP.ProtocolTest/test encode/1 encodes a notification with params | oc:none/no-oc-scenario/notification-framing-encode-with-params].rationale",
       "phrase": "35 in-scope WireSchemaValid checks",
       "quantity": "manifest_wire_schema_valid"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "method",
+      "phrase": "56 client-leg checks",
+      "quantity": "manifest_client"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — a non-struct :client_capabilities is discarded, not passed through | oc:none/no-oc-scenario/CG2-non-struct-caps-discarded].echo.the_search_that_found_none",
+      "phrase": "all 175 manifest checks",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — a non-struct :client_capabilities is discarded, not passed through | oc:none/no-oc-scenario/CG2-non-struct-caps-discarded].echo.the_search_that_found_none",
+      "phrase": "175 rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — and the first request no longer kills the client | oc:none/no-oc-scenario/CG2-bad-caps-does-not-kill-client].echo.the_search_that_found_none",
+      "phrase": "all 175 manifest checks",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — and the first request no longer kills the client | oc:none/no-oc-scenario/CG2-bad-caps-does-not-kill-client].echo.the_search_that_found_none",
+      "phrase": "175 rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T15 — a server's advertised extensions are surfaced, not discarded | oc:none/no-oc-scenario/CG2-server-extensions-surfaced].echo.the_search_that_found_none",
+      "phrase": "all 175 manifest checks",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T15 — a server's advertised extensions are surfaced, not discarded | oc:none/no-oc-scenario/CG2-server-extensions-surfaced].echo.the_search_that_found_none",
+      "phrase": "175 rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — a declared extension is stamped into every request's _meta | oc:none/no-oc-scenario/CG2-declared-extension-stamped].echo.the_search_that_found_none",
+      "phrase": "all 175 manifest checks",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — a declared extension is stamped into every request's _meta | oc:none/no-oc-scenario/CG2-declared-extension-stamped].echo.the_search_that_found_none",
+      "phrase": "175 rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — and into the server/discover probe itself | oc:none/no-oc-scenario/CG2-stamped-into-discover-probe].echo.the_search_that_found_none",
+      "phrase": "all 175 manifest checks",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — and into the server/discover probe itself | oc:none/no-oc-scenario/CG2-stamped-into-discover-probe].echo.the_search_that_found_none",
+      "phrase": "175 rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T5 — the key is omitted entirely when nothing is declared | oc:none/no-oc-scenario/CG2-key-omitted-when-nothing-declared].echo.the_search_that_found_none",
+      "phrase": "all 175 manifest checks",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T5 — the key is omitted entirely when nothing is declared | oc:none/no-oc-scenario/CG2-key-omitted-when-nothing-declared].echo.the_search_that_found_none",
+      "phrase": "175 rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 a server's malformed advertisement is reported verbatim, not rewritten | oc:none/no-oc-scenario/CG2-malformed-advertisement-verbatim].echo.the_search_that_found_none",
+      "phrase": "all 175 manifest checks",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 a server's malformed advertisement is reported verbatim, not rewritten | oc:none/no-oc-scenario/CG2-malformed-advertisement-verbatim].echo.the_search_that_found_none",
+      "phrase": "175 rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an invalid identifier is dropped on the way out; an all-invalid declaration vanishes | oc:none/no-oc-scenario/CG2-invalid-identifier-dropped].echo.the_search_that_found_none",
+      "phrase": "all 175 manifest checks",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an invalid identifier is dropped on the way out; an all-invalid declaration vanishes | oc:none/no-oc-scenario/CG2-invalid-identifier-dropped].echo.the_search_that_found_none",
+      "phrase": "175 rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an unencodable settings value never reaches the wire (dropped at start_link) | oc:none/no-oc-scenario/CG2-unencodable-settings-dropped].echo.the_search_that_found_none",
+      "phrase": "all 175 manifest checks",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an unencodable settings value never reaches the wire (dropped at start_link) | oc:none/no-oc-scenario/CG2-unencodable-settings-dropped].echo.the_search_that_found_none",
+      "phrase": "175 rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientTest/test pagination list_all_tools paginates through pages | oc:none/no-oc-scenario/client-follows-next-cursor].protects",
+      "phrase": "seven client-leg scenario",
+      "quantity": "locator_client_scenarios"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy M-2: the warn-once record shares the cache's GENERATION — a reset re-arms it | oc:none/no-oc-scenario/CG7-cache-miss-warn-once].echo.the_search_that_found_none",
+      "phrase": "All 173 in-denominator check",
+      "quantity": "locator_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy M-2: the warn-once record shares the cache's GENERATION — a reset re-arms it | oc:none/no-oc-scenario/CG7-cache-miss-warn-once].echo.the_search_that_found_none",
+      "phrase": "two bucket-0 checks",
+      "quantity": "bucket_0_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a -32020 triggers a tools/list refresh and ONE retry, which then mirrors | oc:none/no-oc-fixture-case/CG7-header-mismatch-recovery].echo.the_search_that_found_none",
+      "phrase": "29 CG7 check",
+      "quantity": "cg7_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientToolSchemasTest/test M-1 — a malformed tools/list result fails the REQUEST, not the client a string result likewise, and it leaves the tool caches untouched | oc:none/no-oc-scenario/CG7-malformed-tools-list-result].echo.the_search_that_found_none",
+      "phrase": "All 173 in-denominator check",
+      "quantity": "locator_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientToolSchemasTest/test M-1 — a malformed tools/list result fails the REQUEST, not the client a string result likewise, and it leaves the tool caches untouched | oc:none/no-oc-scenario/CG7-malformed-tools-list-result].echo.the_search_that_found_none",
+      "phrase": "two bucket-0 checks",
+      "quantity": "bucket_0_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientToolSchemasTest/test M-5 — a malformed REFRESH result fails the call, not the client a null refresh result returns the ORIGINAL -32020 alongside the malformed term | oc:none/no-oc-scenario/CG7-malformed-refresh-result].echo.the_search_that_found_none",
+      "phrase": "All 173 in-denominator check",
+      "quantity": "locator_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientToolSchemasTest/test M-5 — a malformed REFRESH result fails the call, not the client a null refresh result returns the ORIGINAL -32020 alongside the malformed term | oc:none/no-oc-scenario/CG7-malformed-refresh-result].echo.the_search_that_found_none",
+      "phrase": "two bucket-0 checks",
+      "quantity": "bucket_0_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-BEARING page MERGES, so paging does not discard earlier pages | oc:none/no-oc-fixture-case/CG7-tools-list-pagination].echo.the_search_that_found_none",
+      "phrase": "29 CG7 check",
+      "quantity": "cg7_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-LESS listing RESETS, so a removed tool does not linger | oc:none/no-oc-fixture-case/CG7-tools-list-pagination].echo.the_search_that_found_none",
+      "phrase": "29 CG7 check",
+      "quantity": "cg7_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].slice.statement",
+      "phrase": "35 rows",
+      "quantity": "d1_client_i_rows"
     }
   ],
   "guard": "G31 — MCP.Conformance.InputFigures (MES-120)",
@@ -14798,6 +15038,49 @@
               "field": "name"
             }
           ]
+        }
+      }
+    },
+    "d1_client_i_rows": {
+      "means": "bucket-1 view rows whose member is client-leg and in MCP.ClientTest or MCP.ClientToolSchemasTest (MES-139's slice)",
+      "query": {
+        "count": {
+          "at": "rows[]",
+          "in": "docs/conformance/buckets/bucket-1-2026-07-28.json",
+          "where": [
+            {
+              "field": "member.register_key",
+              "in_set": {
+                "count": {
+                  "at": "rows[]",
+                  "distinct": "key",
+                  "in": "docs/conformance/etcc-attribution.json",
+                  "where": [
+                    {
+                      "eq": "client",
+                      "field": "leg"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "field": "member.module",
+              "in": [
+                "MCP.ClientTest",
+                "MCP.ClientToolSchemasTest"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "bucket_0_checks": {
+      "means": "bucket-0 view rows (the two checks outside the denominator)",
+      "query": {
+        "count": {
+          "at": "rows[]",
+          "in": "docs/conformance/buckets/bucket-0-2026-07-28.json"
         }
       }
     }

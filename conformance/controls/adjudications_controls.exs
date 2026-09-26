@@ -12,12 +12,19 @@
 #     mix run conformance/controls/adjudications_controls.exs harness
 #     mix run conformance/controls/adjudications_controls.exs all
 #     mix run conformance/controls/adjudications_controls.exs swap-audit
+#     mix run conformance/controls/adjudications_controls.exs swap-audit touching <record basename>
 #
 # `swap-audit` (MES-138, R3-1) is NOT part of `all`: it exchanges the contents
 # of every pair of committed rows through A.audit (9453 pairs, about 14 minutes
 # at 32-way at MES-138). It is the source of gate 5's @k1r_clean_cliques
 # fixture, which is pasted from its printed literal and never from the unit's
 # computed set, and it prints the difference both ways against that fixture.
+# `swap-audit touching <record>` (MES-139) audits only the pairs with at least
+# one row in the named record, and compares them with the fixture's pairs that
+# touch it. A pair of two OTHER rows is not re-audited: its rows are unchanged,
+# and the guard is too, except S1's counterfactual_missing, a per-row SHAPE
+# check that an exchange carries with the rest of the row. The full audit is
+# quadratic; the touching one is linear in the committed rows.
 #
 # WHAT G32 CLAIMS. Every edge a bound view projects is adjudicated exactly once
 # by a record row with a disposition from the closed set, and every repository
@@ -102,6 +109,15 @@
 # the plants table, so `mutation` (8) neutralises each clause alone and
 # requires its plant CLEAN.
 #
+# MES-139 added the `counterfactual_missing` refusal (authored 29729, ratified
+# 29731). `refusals` gains `cf_cases/0`: two more positives (a firing reading
+# at `x_test.exs:12`; a non-firing one citing a §), seven plants in the table
+# (the counterfactual absent, its boolean a string, a two-line reading, a
+# firing `test:12` that MES-138's gate-5 regex admitted (N7), a firing
+# `my_test:12`, a "None can:" reading citing no spec text, and a spec-citing
+# reading not opening "None can: "), and a check on each plant's MESSAGE.
+# `mutation` (8) neutralises the clause and requires each plant CLEAN.
+#
 # WHY IN MEMORY. Every plant mutates decoded data inside this VM. Nothing in the
 # clone is written, because seats share one checkout.
 
@@ -144,9 +160,15 @@ defmodule AdjudicationsControls do
     "counterpart_defects" => 4,
     "routed_to_defects" => 3,
     "spec_defects" => 3,
+    "counterfactual_defects" => 3,
     "ambiguous_defects" => 2
   }
   @source "conformance/lib/mcp/conformance/adjudications.ex"
+  # A D1 row's counterfactual that audits clean: it does not fire, and cites spec text.
+  @control_reading %{
+    "conforming_sdk_can_fail" => false,
+    "reading" => "None can: control (schema.ts:1)"
+  }
   @default_dist "/tmp/conf11/node_modules/@modelcontextprotocol/conformance/dist/index.js"
   @tcg1c_ascii "a non-ASCII tool name rides `mcp-name` as the Base64 sentinel and decodes back to the body value"
   @tcg1c_crlf "a CRLF-bearing tool name is neutralised — it rides `mcp-name` encoded, carries no raw CR, and injects no header"
@@ -154,6 +176,11 @@ defmodule AdjudicationsControls do
   def run(["swap-audit"]) do
     swap_audit()
     IO.puts("\nPASS swap-audit")
+  end
+
+  def run(["swap-audit", "touching", record]) do
+    swap_audit(record)
+    IO.puts("\nPASS swap-audit touching #{record}")
   end
 
   def run([mode]) when mode in ~w(positive refusals mutation harness) do
@@ -636,6 +663,26 @@ defmodule AdjudicationsControls do
       named(lines)
     end
 
+    # --- MES-139 (29731, Q1): each counterfactual_missing plant's MESSAGE ---
+    for {kind, label, inputs, policy} <- plants(base), kind == :counterfactual_missing do
+      lines = inputs |> A.audit(policy) |> Map.fetch!(:defects) |> Enum.map(&A.format_defect/1)
+
+      check(
+        "(counterfactual_missing, message) #{label}: names G32, the kind, the record and the rule",
+        match?([_], lines) and
+          hd(lines) =~
+            ~r/^G32 counterfactual_missing — .*adjudication-W3-plant\.json.*needs `counterfactual` with a boolean `conforming_sdk_can_fail` and a one-line `reading` that, when it fires, names `<name>_test\.exs:N`, and otherwise opens `None can: `/,
+        lines
+      )
+    end
+
+    # N7 (MES-138): the regex MES-138's gate-5 unit used admits "test:12"; G32's does not.
+    check(
+      "(N7) MES-138's gate-5 regex admits \"fails test:12\"; the tightened one refuses it",
+      "fails test:12." =~ ~r/(test|test\.exs):\d+/ and
+        not ("fails test:12." =~ ~r/\b[\w-]+_test\.exs:\d+\b/)
+    )
+
     # --- B2 (MES-135, CR 29672): the owed_unadjudicated refusal names the fix ---
     b7 = "docs/conformance/buckets/bucket-7-2026-07-28.json"
     %{defects: owed} = A.audit(Map.update!(base, :anchor, &Enum.sort([b7 | &1])))
@@ -796,6 +843,13 @@ defmodule AdjudicationsControls do
              "disposition" => "not_a_conformance_claim",
              "routed_to" => routed.("A2")
            })},
+          {"genuine_extra_coverage, its counterfactual FIRING at x_test.exs:12",
+           put_in(r1, ["counterfactual"], %{
+             "conforming_sdk_can_fail" => true,
+             "reading" => "An SDK may choose otherwise, and fails x_test.exs:12."
+           })},
+          {"genuine_extra_coverage, its counterfactual not firing, citing a §",
+           put_in(r1, ["counterfactual", "reading"], "None can: §2.2 requires it.")},
           {"wrong_against_spec, with a 2026-07-28 URL and a quote",
            Map.merge(r1, %{
              "disposition" => "wrong_against_spec",
@@ -826,15 +880,48 @@ defmodule AdjudicationsControls do
       {:spec_citation_missing, "bucket-1 row, wrong_against_spec, with no `spec`",
        as.(Map.put(r1, "disposition", "wrong_against_spec")), policy},
       {:disposition_outside_view, "bucket-1 row carrying fix_sdk",
-       as.(Map.put(r1, "disposition", "fix_sdk")), policy},
-      {:disposition_outside_view,
-       "D4a's first 4a row carrying genuine_extra_coverage (with protects)",
-       update_rows(base, @v4a, fn [_ | rest] ->
-         [
-           Map.merge(a, %{"disposition" => "genuine_extra_coverage", "protects" => "control"})
-           | rest
-         ]
-       end), policy}
+       as.(Map.put(r1, "disposition", "fix_sdk")), policy}
+    ] ++
+      for({label, cf} <- cf_cases(), do: {:counterfactual_missing, label, as.(cf.(r1)), policy}) ++
+      [
+        {:disposition_outside_view,
+         "D4a's first 4a row carrying genuine_extra_coverage (with protects and a counterfactual)",
+         update_rows(base, @v4a, fn [_ | rest] ->
+           [
+             Map.merge(a, %{
+               "disposition" => "genuine_extra_coverage",
+               "protects" => "control",
+               "counterfactual" => @control_reading
+             })
+             | rest
+           ]
+         end), policy}
+      ]
+  end
+
+  # MES-139 (authored 29729, ratified 29731): one plant per counterfactual_missing
+  # case, each a function of the well-formed bucket-1 row. The "test:12" case is
+  # admitted by MES-138's gate-5 regex `(test|test\.exs):\d+` and refused by the
+  # tightened one (N7).
+  def cf_cases do
+    firing = fn r, reading ->
+      put_in(r, ["counterfactual"], %{"conforming_sdk_can_fail" => true, "reading" => reading})
+    end
+
+    [
+      {"bucket-1 row, its `counterfactual` removed", &Map.delete(&1, "counterfactual")},
+      {"bucket-1 row, its `conforming_sdk_can_fail` the string \"false\"",
+       &put_in(&1, ["counterfactual", "conforming_sdk_can_fail"], "false")},
+      {"bucket-1 row, its reading on two lines",
+       &put_in(&1, ["counterfactual", "reading"], "None can: schema.ts:1\nsays so.")},
+      {"bucket-1 row, a firing reading citing test:12 (N7: the old regex admits it)",
+       &firing.(&1, "An SDK may choose otherwise, and fails test:12.")},
+      {"bucket-1 row, a firing reading citing my_test:12 (no .exs)",
+       &firing.(&1, "An SDK may choose otherwise, and fails my_test:12.")},
+      {"bucket-1 row, a \"None can:\" reading citing no spec text",
+       &put_in(&1, ["counterfactual", "reading"], "None can: it is obviously required.")},
+      {"bucket-1 row, a spec-citing reading that does not OPEN \"None can: \"",
+       &put_in(&1, ["counterfactual", "reading"], "Required by schema.ts:1. None can: fail.")}
     ]
   end
 
@@ -1120,7 +1207,11 @@ defmodule AdjudicationsControls do
       }
       |> Map.merge(
         if view in A.d1_views(),
-          do: %{"disposition" => "genuine_extra_coverage", "protects" => "control"},
+          do: %{
+            "disposition" => "genuine_extra_coverage",
+            "protects" => "control",
+            "counterfactual" => @control_reading
+          },
           else: %{"disposition" => "extend_test"}
       )
     end
@@ -1269,26 +1360,20 @@ defmodule AdjudicationsControls do
     base = A.load()
     d4b_rows = rows(base, @v4b, @d4b)
 
-    all_rows =
-      d4b_rows ++
-        rows(base, @v2b, @d2b) ++
-        rows(base, @v2a, @d2ai) ++
-        rows(base, @v2a, @d2aii) ++ rows(base, @v1, @d1) ++ rows(base, @vcu, @d1)
+    # Every row of every record the walk finds (MES-139): a hand-held list of
+    # records dropped a new record's rows from `expected` without a sound.
+    all_rows = for {_, {:ok, doc}} <- base.records, s <- doc["sections"], r <- s["rows"], do: r
 
     set_def =
       ~s|suite_defect_upstream extend_test accept_bound\n                   extend_to_match build_test blocked_on_sdk_gap\n                   genuine_extra_coverage redundant not_a_conformance_claim wrong_against_spec)|
 
     check("(3) the closed-set definition is found in the source", String.contains?(src, set_def))
 
-    # MES-138's D1 codes on its committed rows. `redundant` and
-    # `wrong_against_spec` are in the set but no committed row carries either
-    # (no redundant row was found, and under the N5 ruling no row asserts what
-    # the spec forbids or contradicts), so neither has rows to refuse; their
-    # admission is shown by d1_plants' positive controls instead ("redundant,
-    # its counterpart tied to ..." and "wrong_against_spec, with a 2026-07-28
-    # URL and a quote").
+    # The D1 codes on the committed rows. Since MES-139 every one of the four
+    # has rows (12 redundant, 1 wrong_against_spec there), so each is cut and
+    # must refuse exactly its rows.
     for code <-
-          ~w(extend_test accept_bound extend_to_match build_test blocked_on_sdk_gap genuine_extra_coverage not_a_conformance_claim) do
+          ~w(extend_test accept_bound extend_to_match build_test blocked_on_sdk_gap genuine_extra_coverage redundant not_a_conformance_claim wrong_against_spec) do
       cut = String.replace(set_def, ~r/(?<=\s)#{code}(?=[\s)])\s?/, "")
       mutant = String.replace(src, set_def, cut)
       check("(3) the no-#{code} mutant differs from the source", mutant != src)
@@ -1374,7 +1459,8 @@ defmodule AdjudicationsControls do
       protects_missing: "protects_defects",
       counterpart_missing: "counterpart_defects",
       routed_to_missing: "routed_to_defects",
-      spec_citation_missing: "spec_defects"
+      spec_citation_missing: "spec_defects",
+      counterfactual_missing: "counterfactual_defects"
     }
 
     for {kind, label, inputs, policy} <- plants(base) do
@@ -1468,8 +1554,15 @@ defmodule AdjudicationsControls do
   @k1r_test "test/conformance/adjudications_test.exs"
   @k1r_keep ~w(member claim tag echo)
 
-  def swap_audit do
-    header("swap-audit — every pair of committed rows, contents exchanged, through A.audit")
+  def swap_audit(touching \\ nil) do
+    header(
+      "swap-audit — " <>
+        if(touching,
+          do: "every pair of committed rows touching #{touching}",
+          else: "every pair of committed rows"
+        ) <> ", contents exchanged, through A.audit"
+    )
+
     base = A.load()
     check("the committed tree is clean before any exchange", A.audit(base).defects == [])
 
@@ -1500,7 +1593,21 @@ defmodule AdjudicationsControls do
 
     swap = fn x, y -> Map.merge(y, Map.take(x, @k1r_keep)) end
     indexed = Enum.with_index(rows)
-    pairs = for {x, i} <- indexed, {y, j} <- indexed, i < j, do: {x, y}
+    touches? = fn {i, j} -> touching in [elem(i, 0), elem(j, 0)] end
+
+    if touching,
+      do:
+        check(
+          "#{touching} has rows among the committed rows",
+          Enum.any?(ids, &(elem(&1, 0) == touching))
+        )
+
+    pairs =
+      for {x, i} <- indexed,
+          {y, j} <- indexed,
+          i < j,
+          is_nil(touching) or touches?.({x.id, y.id}),
+          do: {x, y}
 
     results =
       pairs
@@ -1538,9 +1645,31 @@ defmodule AdjudicationsControls do
       "        CLEAN pairs: #{MapSet.size(clean)}; cliques by size: #{inspect(Enum.map(cliques, &length/1))}"
     )
 
-    fixture = k1r_fixture()
+    committed = k1r_fixture()
+
+    # Touching: the fixture's pairs that touch the record are the comparand, and
+    # the refreshed fixture is the untouched rest plus the audited touching set.
+    {fixture, clean} =
+      if touching do
+        {kept, touched} =
+          Enum.split_with(committed, &(not touches?.(List.to_tuple(Enum.sort(&1)))))
+
+        IO.puts(
+          "        fixture pairs not touching #{touching} (kept, not re-audited): #{length(kept)}"
+        )
+
+        {MapSet.new(touched), clean}
+      else
+        {committed, clean}
+      end
+
     missing = MapSet.difference(clean, fixture)
     extra = MapSet.difference(fixture, clean)
+
+    cliques =
+      if touching,
+        do: cliques(MapSet.union(clean, MapSet.difference(committed, fixture))),
+        else: cliques
 
     IO.puts(
       "        audited − fixture (#{MapSet.size(missing)}): #{inspect(MapSet.to_list(missing), limit: :infinity)}"
