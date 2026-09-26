@@ -5288,6 +5288,30 @@
       "path": "sections[#0].slice.statement",
       "phrase": "103 server-leg rows",
       "quantity": "bucket_1_server_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "method",
+      "phrase": "119 server-leg checks",
+      "quantity": "manifest_server"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].slice.statement",
+      "phrase": "37 rows",
+      "quantity": "d1_server_ii_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].slice.statement",
+      "phrase": "103 server-leg rows",
+      "quantity": "bucket_1_server_rows"
     }
   ],
   "guard": "G31 — MCP.Conformance.InputFigures (MES-120)",
@@ -15518,6 +15542,42 @@
               "in": [
                 "MCP.Server.ExtensionsNegotiationTest",
                 "MCP.Server.JsonSchema202012Test"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "d1_server_ii_rows": {
+      "means": "bucket-1 view rows whose member is server-leg and in MCP.Server.SubscriptionsDispatchTest, MCP.Transport.SSETest, MCP.Transport.StreamableHTTPStatelessTest or MCP.Transport.SubscriptionsStreamTest (MES-142's selector)",
+      "query": {
+        "count": {
+          "at": "rows[]",
+          "in": "docs/conformance/buckets/bucket-1-2026-07-28.json",
+          "where": [
+            {
+              "field": "member.register_key",
+              "in_set": {
+                "count": {
+                  "at": "rows[]",
+                  "distinct": "key",
+                  "in": "docs/conformance/etcc-attribution.json",
+                  "where": [
+                    {
+                      "eq": "server",
+                      "field": "leg"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "field": "member.module",
+              "in": [
+                "MCP.Server.SubscriptionsDispatchTest",
+                "MCP.Transport.SSETest",
+                "MCP.Transport.StreamableHTTPStatelessTest",
+                "MCP.Transport.SubscriptionsStreamTest"
               ]
             }
           ]
