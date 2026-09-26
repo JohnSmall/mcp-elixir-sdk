@@ -1931,8 +1931,11 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # 2 near misses). MES-143 adds, outside the rows, 2 harness
     # (unscored_server_scenarios.sites); inside them, 27 et_test (repository) and
     # 80 harness (62 in oc_counterpart: 14 sites, 14 predicates, 10 probes and 24
-    # inside `also`; 5 near misses; 13 in unscored_near_miss).
-    test "G32 walks the citations outside the rows: 12 repository and 30 harness at this tip",
+    # inside `also`; 5 near misses; 13 in unscored_near_miss). MES-144 has no
+    # rows and adds, outside them, 13 repository (question: 2 asked, 2 answer
+    # and 2 premise; mechanism: 2 gate_5.exclusion_site and 2
+    # stored_et_verdict.read_at; excluded_tests.tagged: 3) and no harness.
+    test "G32 walks the citations outside the rows: 25 repository and 30 harness at this tip",
          %{inputs: inputs, result: %{report: r}} do
       outside =
         for {_, {:ok, doc}} <- inputs.records,
@@ -1940,10 +1943,10 @@ defmodule MCP.Conformance.AdjudicationsTest do
               A.collect(%{doc | "sections" => Enum.map(doc["sections"], &Map.delete(&1, "rows"))}),
             do: c
 
-      assert Enum.count(outside, &Map.has_key?(&1, "lines")) == 12
+      assert Enum.count(outside, &Map.has_key?(&1, "lines")) == 25
       assert Enum.count(outside, &Map.has_key?(&1, "harness_sha256")) == 30
 
-      assert r["repo_citations_found"] == 627 and
+      assert r["repo_citations_found"] == 640 and
                r["harness_citations_not_verified_in_gate_5"] == 711
     end
 
@@ -2493,8 +2496,8 @@ defmodule MCP.Conformance.AdjudicationsTest do
   describe "the universe of views owed a record" do
     @owed_views ~w(bucket-1 bucket-2a bucket-2b bucket-3 bucket-4a bucket-4b bucket-5a bucket-5b bucket-6 claim-unmatched escalated)
     # MES-138 closed claim-unmatched and deleted its @pending line; MES-143
-    # closed bucket-1 and deleted its.
-    @closed_views ~w(bucket-1 bucket-2a bucket-2b bucket-4a bucket-4b claim-unmatched escalated)
+    # closed bucket-1 and deleted its; MES-144 closed bucket-3 and bucket-6.
+    @closed_views ~w(bucket-1 bucket-2a bucket-2b bucket-3 bucket-4a bucket-4b bucket-6 claim-unmatched escalated)
 
     test "the anchor, the exclusions, the pending catalogue and the scan skip are pinned" do
       assert A.anchor() == {"docs/conformance/buckets", "*.json"}
@@ -2507,10 +2510,8 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert Enum.all?(Map.values(A.not_owed()), &(is_binary(&1) and &1 != ""))
 
       assert A.pending() == %{
-               "docs/conformance/buckets/bucket-3-2026-07-28.json" => "MES-144",
                "docs/conformance/buckets/bucket-5a-2026-07-28.json" => "MES-148",
-               "docs/conformance/buckets/bucket-5b-2026-07-28.json" => "MES-146",
-               "docs/conformance/buckets/bucket-6-2026-07-28.json" => "MES-144"
+               "docs/conformance/buckets/bucket-5b-2026-07-28.json" => "MES-146"
              }
 
       assert A.scan_population() == ~w(ls-files -z --cached --others --exclude-standard)
@@ -2554,10 +2555,10 @@ defmodule MCP.Conformance.AdjudicationsTest do
     end
 
     # The printed figure is asserted, not just printed.
-    test "the task prints owed 11 — closed 7, pending 4, with each pending view's ticket",
+    test "the task prints owed 11 — closed 9, pending 2, with each pending view's ticket",
          %{result: %{report: r}} do
       assert Render.views(r) ==
-               "owed 11 — closed 7, pending 4: bucket-3 (MES-144), bucket-5a (MES-148), bucket-5b (MES-146), bucket-6 (MES-144)"
+               "owed 11 — closed 9, pending 2: bucket-5a (MES-148), bucket-5b (MES-146)"
 
       assert Render.render(r, []) =~ "views         " <> Render.views(r)
     end
@@ -2568,7 +2569,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert inputs.strays == []
     end
 
-    test "in a copied tree: a twelfth record is walked; a dropped section, a record outside the walk, a wrong schema and a stray are refused",
+    test "in a copied tree: a thirteenth record is walked; a dropped section, a record outside the walk, a wrong schema and a stray are refused",
          %{} do
       tmp = copied_tree()
       on_exit(fn -> File.rm_rf!(tmp) end)
@@ -2603,7 +2604,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       )
 
       assert kinds.() == []
-      assert load.() |> A.audit() |> get_in([:report, "records_visited"]) == 12
+      assert load.() |> A.audit() |> get_in([:report, "records_visited"]) == 13
       assert sixth in records_in_dir(tmp)
       File.rm!(Path.join(tmp, sixth))
 
@@ -3381,7 +3382,13 @@ defmodule MCP.Conformance.AdjudicationsTest do
     end
 
     test "empty_closure_unwarranted: a closed empty section over an empty view that does not say why" do
-      empty = fn view -> put_in(inputs([], [section([])]).views[@view], {:ok, view}) end
+      # Each echoed faithfully (MES-144), so the echo is not what refuses.
+      empty = fn view ->
+        put_in(
+          inputs([], [section([], "closed", %{"emptiness" => A.emptiness(view)})]).views[@view],
+          {:ok, view}
+        )
+      end
 
       stated = %{
         "schema" => "bucket-view/1",
@@ -3400,6 +3407,120 @@ defmodule MCP.Conformance.AdjudicationsTest do
           ] do
         assert u_kinds(empty.(bad), @none) == [{:empty_closure_unwarranted, @rec}, {:reach, ""}]
       end
+    end
+
+    # MES-144 (authored 30052, ratified 30055, Q1 and Q2).
+    @stated_empty %{
+      "schema" => "bucket-view/1",
+      "rows" => [],
+      "count" => 0,
+      "emptiness_reason" => %{"code" => "by_construction", "measured" => "0 of 163"},
+      "universe" => %{"count" => 163, "name" => "edges"},
+      "projected_from" => %{"crosswalk" => %{"sha256" => "aa"}}
+    }
+
+    defp closed_empty(view, extra),
+      do: put_in(inputs([], [section([], "closed", extra)]).views[@view], {:ok, view})
+
+    test "the emptiness echo is count, emptiness_reason and universe; not projected_from" do
+      assert A.emptiness_fields() == ~w(count emptiness_reason universe)
+      assert A.emptiness(@stated_empty) == Map.drop(@stated_empty, ~w(schema rows projected_from))
+    end
+
+    test "emptiness_unechoed: a closed empty section over an empty view with no echo" do
+      assert u_kinds(closed_empty(@stated_empty, %{}), @none) == [
+               {:emptiness_unechoed, @rec},
+               {:reach, ""}
+             ]
+
+      echoed = %{"emptiness" => A.emptiness(@stated_empty)}
+      assert u_kinds(closed_empty(@stated_empty, echoed), @none) == [{:reach, ""}]
+    end
+
+    test "emptiness_unechoed is not judged over a view that projects rows" do
+      # A split view's closing section with no rows of its own claims no zero.
+      two =
+        two_records([a()], [section([row(a())], "open", %{"owner" => "MES-1"})], [section([])])
+
+      assert u_kinds(two, @none) == []
+      # A lone closed empty section over a view with a row is missing's.
+      assert u_kinds(inputs([a()], [section([])]), @none) == [{:missing, @rec}, {:reach, ""}]
+    end
+
+    test "emptiness_drift: each echoed field moved in the view, alone" do
+      echoed = %{"emptiness" => A.emptiness(@stated_empty)}
+
+      drift = [{:emptiness_drift, @rec}, {:reach, ""}]
+
+      for {moved, want} <- [
+            # a rows-less view whose count is not 0 is empty_closure_unwarranted's too
+            {%{@stated_empty | "count" => 1}, [{:empty_closure_unwarranted, @rec} | drift]},
+            {put_in(@stated_empty, ["emptiness_reason", "measured"], "0 of 170"), drift},
+            {put_in(@stated_empty, ["universe", "count"], 170), drift},
+            {Map.delete(@stated_empty, "universe"), drift}
+          ] do
+        assert u_kinds(closed_empty(moved, echoed), @none) == want
+      end
+
+      # projected_from is not echoed: moving it alone is clean.
+      pf = put_in(@stated_empty, ["projected_from", "crosswalk", "sha256"], "bb")
+      assert u_kinds(closed_empty(pf, echoed), @none) == [{:reach, ""}]
+    end
+
+    test "emptiness_drift: an echo with a field the view lacks, or not a map" do
+      extra = %{"emptiness" => Map.put(A.emptiness(@stated_empty), "bucket", "3")}
+
+      assert u_kinds(closed_empty(@stated_empty, extra), @none) == [
+               {:emptiness_drift, @rec},
+               {:reach, ""}
+             ]
+
+      for junk <- ["0", nil, []] do
+        assert u_kinds(closed_empty(@stated_empty, %{"emptiness" => junk}), @none) == [
+                 {:emptiness_drift, @rec},
+                 {:reach, ""}
+               ]
+      end
+    end
+
+    test "emptiness_drift: an echo on a section that claims no zero" do
+      echo = %{"emptiness" => A.emptiness(@stated_empty)}
+      open = inputs([a()], [section([row(a())], "open", Map.put(echo, "owner", "MES-1"))])
+      assert u_kinds(open, %{@none | pending: %{@view => "MES-1"}}) == [{:emptiness_drift, @rec}]
+
+      assert u_kinds(inputs([a()], [section([row(a())], "closed", echo)]), @none) == [
+               {:emptiness_drift, @rec}
+             ]
+    end
+
+    test "a row re-projected into a closed empty view: missing AND emptiness_drift" do
+      echoed = %{"emptiness" => A.emptiness(@stated_empty)}
+      grown = %{@stated_empty | "rows" => [a()], "count" => 1}
+
+      assert grown
+             |> closed_empty(echoed)
+             |> A.audit(@none)
+             |> Map.fetch!(:defects)
+             |> Enum.map(& &1.kind) ==
+               [:missing, :emptiness_drift, :reach]
+    end
+
+    test "not entailed, both ways: each case is caught by exactly one clause" do
+      # A view contradicting itself, echoed faithfully: empty_closure_unwarranted alone.
+      bad = %{@stated_empty | "count" => 3}
+
+      assert u_kinds(closed_empty(bad, %{"emptiness" => A.emptiness(bad)}), @none) == [
+               {:empty_closure_unwarranted, @rec},
+               {:reach, ""}
+             ]
+
+      # The premise moved at zero rows: emptiness_drift alone.
+      r2 = put_in(@stated_empty, ["emptiness_reason", "measured"], "0 of 170")
+
+      assert u_kinds(closed_empty(r2, %{"emptiness" => A.emptiness(@stated_empty)}), @none) == [
+               {:emptiness_drift, @rec},
+               {:reach, ""}
+             ]
     end
 
     test "stray_in_walk_root and record_outside_walk are refused from the inputs" do
@@ -6335,6 +6456,519 @@ defmodule MCP.Conformance.AdjudicationsTest do
         sections = Enum.filter(rec["sections"], &(&1["view"] in A.d1_views())),
         sections != [],
         do: {path, rec, sections}
+  end
+
+  # MES-144 (D3+D6): buckets 3 and 6, CLOSED over empty views. Every list the
+  # record carries is recomputed here from its inputs, over the whole
+  # population, and held EQUAL to the record's, both ways, with a planted
+  # limb each way (MES-129 rule 1). The live criterion (a run of the ET-CC
+  # members) cannot run inside gate 5, which would run itself; it is
+  # `conformance/controls/bucket_3_6_controls.exs` [authored 30054 | ratified
+  # 30055, Q3]. What is held here is that the record's per-member statuses,
+  # red members and red cells are consistent with each other and with the
+  # crosswalk.
+  @d3d6 "docs/conformance/adjudications/adjudication-D3-D6-2026-07-28.json"
+  @v3 "docs/conformance/buckets/bucket-3-2026-07-28.json"
+  @v6 "docs/conformance/buckets/bucket-6-2026-07-28.json"
+  @crosswalk "docs/conformance/crosswalk-2026-07-28.json"
+  @edges_files ~w(conformance/data/crosswalk-edges.json conformance/data/crosswalk-edges-client.json
+                  conformance/data/crosswalk-edges-server.json)
+  # Spelled in two halves so this file is not a hit of the search it pins.
+  @live_tag "requires_live" <> "_harness"
+
+  defp d3d6(inputs) do
+    {:ok, record} = inputs.records[@d3d6]
+    record
+  end
+
+  # :ok, or {:error, {measured-only, recorded-only}}. Lengths are compared too,
+  # so a duplicate on one side is not absorbed by the set.
+  defp both_ways(measured, recorded) do
+    {m, r} = {MapSet.new(measured), MapSet.new(recorded)}
+
+    if m == r and length(measured) == length(recorded),
+      do: :ok,
+      else: {:error, {MapSet.difference(m, r), MapSet.difference(r, m)}}
+  end
+
+  defp oc_token([leg, scenario, id, name, _description, disc]),
+    do: "oc:#{leg}/#{scenario}/#{id}/#{name}" <> if(disc in [nil, ""], do: "", else: "#" <> disc)
+
+  defp cell_key(c), do: [c["member"]["register_key"], c["claim"], c["tag"]]
+
+  # The cells whose member did not pass, given a member => status map. A member
+  # the map does not carry is not passed: absence is not a pass.
+  defp red_cells(cells, statuses),
+    do: for(c <- cells, statuses[c["member"]["register_key"]] != "passed", do: cell_key(c))
+
+  defp in_scope_checks, do: for(s <- json(@in_scope)["scenarios"], c <- s["checks"], do: c)
+
+  describe "the D3+D6 record (MES-144)" do
+    test "two closed sections with no rows, each echoing its view, each view empty",
+         %{inputs: inputs} do
+      record = d3d6(inputs)
+      assert record["ticket"] == "MES-144"
+
+      assert for(s <- record["sections"], do: {s["view"], s["closure"], s["rows"]}) ==
+               [{@v3, "closed", []}, {@v6, "closed", []}]
+
+      for {s, q} <- Enum.zip(record["sections"], ~w(bucket_3 bucket_6)) do
+        {:ok, v} = inputs.views[s["view"]]
+        assert {v["rows"], v["count"]} == {[], 0}
+        assert s["emptiness"] == A.emptiness(v)
+        assert record["question"][q]["result"] == v["count"]
+        assert record["question"][q]["answer"]["file"] == s["view"]
+        assert record["question"][q]["asked"]["file"] == s["view"]
+      end
+    end
+
+    test "the 19: the criterion over all 175 in-scope checks EQUALS the record's list" do
+      a = d3d6(A.load())["asymmetry_bucket_6"]
+      checks = in_scope_checks()
+      assert length(checks) == 175
+      failing = for c <- checks, c["status"] == "FAILURE", do: c
+      measured = Enum.map(failing, &oc_token(&1["key"]))
+
+      assert both_ways(measured, a["failure_checks"]) == :ok
+      assert length(measured) == 19
+      assert a["by_leg"] == %{"server" => 19, "client" => 0}
+      assert a["by_scenario"] == Enum.frequencies_by(failing, &Enum.at(&1["key"], 1))
+
+      # Planted limbs: one recorded check dropped, one ghost added.
+      [x | rest] = a["failure_checks"]
+      assert both_ways(measured, rest) == {:error, {MapSet.new([x]), MapSet.new()}}
+      ghost = "oc:server/no-such/no-such/NoSuch"
+
+      assert both_ways(measured, [ghost | a["failure_checks"]]) ==
+               {:error, {MapSet.new(), MapSet.new([ghost])}}
+    end
+
+    test "the 19 partition by edge: 5 checks with 11 edges (4a 5, 4b 6), 14 without, all in bucket 2a" do
+      a = d3d6(A.load())["asymmetry_bucket_6"]
+      cells = json(@crosswalk)["cells"]
+      by_tag = Enum.group_by(cells, & &1["tag"])
+
+      measured =
+        for t <- a["failure_checks"], Map.has_key?(by_tag, t) do
+          %{
+            "tag" => t,
+            "edges" =>
+              for(
+                c <- by_tag[t],
+                do: %{
+                  "member" => c["member"]["register_key"],
+                  "claim" => c["claim"],
+                  "bucket" => c["bucket"],
+                  "et" => c["verdicts"]["et"]
+                }
+              )
+          }
+        end
+
+      without = for t <- a["failure_checks"], not Map.has_key?(by_tag, t), do: t
+
+      assert measured == a["with_an_et_edge"]
+      assert without == a["without_an_edge_in_bucket_2a"]
+      assert {length(measured), length(without)} == {5, 14}
+      edges = for w <- measured, e <- w["edges"], do: e
+      assert Enum.frequencies_by(edges, & &1["bucket"]) == %{"4a" => 5, "4b" => 6}
+      assert Enum.reject(edges, &(&1["et"] == "green")) == a["et_red_counterparts"]
+      assert a["et_red_counterparts"] == []
+
+      # Every edge onto a red OC check is one of the 11: the partition's other
+      # side, measured over all 163 cells.
+      red_oc = for c <- cells, c["verdicts"]["oc"] == "red", do: c["tag"]
+      assert both_ways(Enum.uniq(red_oc), Enum.map(measured, & &1["tag"])) == :ok
+      assert length(red_oc) == 11
+
+      b2a = MapSet.new(json(@v2a)["rows"], & &1["tag"])
+      assert Enum.all?(without, &(&1 in b2a))
+      # Planted: a with-edge check is not in bucket 2a, so the test can fail.
+      refute hd(measured)["tag"] in b2a
+    end
+
+    test "the stored et verdict: red over all 163 cells EQUALS the record's (none); the edges files sum to the cells" do
+      m = d3d6(A.load())["mechanism"]
+      cells = json(@crosswalk)["cells"]
+      assert length(cells) == 163
+      stored_red = for c <- cells, c["verdicts"]["et"] != "green", do: cell_key(c)
+      assert both_ways(stored_red, m["stored_et_verdict"]["stored_red_cells"]) == :ok
+      assert stored_red == []
+
+      by_file =
+        Map.new(@edges_files, fn f ->
+          es = json(f)["edges"]
+
+          {f,
+           %{
+             "edges" => length(es),
+             "by_et_verdict" => Enum.frequencies_by(es, & &1["et_verdict"])
+           }}
+        end)
+
+      assert m["stored_et_verdict"]["edges_by_file"] == by_file
+      assert by_file |> Map.values() |> Enum.map(& &1["edges"]) |> Enum.sum() == length(cells)
+
+      # Planted: one cell's stored verdict red is seen.
+      [c | rest] = cells
+      flipped = [put_in(c, ["verdicts", "et"], "red") | rest]
+      red = for x <- flipped, x["verdicts"]["et"] != "green", do: cell_key(x)
+      assert both_ways(red, []) == {:error, {MapSet.new([cell_key(c)]), MapSet.new()}}
+    end
+
+    test "the run as recorded: 281 statuses over EXACTLY the register's ET-CC members; red members and red cells follow from them" do
+      m = d3d6(A.load())["mechanism"]
+      run = m["criterion_run"]
+
+      etcc =
+        for r <- json("docs/conformance/etcc-register.json")["rows"],
+            r["label"] == "ET-CC",
+            do: r["key"]
+
+      statuses = Map.new(run["statuses"], &{&1["member"], &1["status"]})
+
+      assert both_ways(Enum.map(run["statuses"], & &1["member"]), etcc) == :ok
+      assert {run["selected"], run["expected_from_register"]} == {281, 281}
+      assert run["by_status"] == Enum.frequencies(Map.values(statuses))
+
+      assert run["red_members"] ==
+               for(s <- run["statuses"], s["status"] != "passed", do: s["member"])
+
+      assert run["red_members"] == []
+
+      cells = json(@crosswalk)["cells"]
+      j = m["joined_to_the_crosswalk"]
+      members = cells |> Enum.map(& &1["member"]["register_key"]) |> Enum.uniq()
+      assert {j["cells"], j["distinct_members"]} == {length(cells), length(members)}
+      assert j["members_outside_etcc"] == Enum.reject(members, &Map.has_key?(statuses, &1))
+      assert j["red_cells"] == red_cells(cells, statuses)
+      assert j["red_cells"] == []
+
+      # Planted: an edged member failed puts its cells in; an edgeless one does
+      # not, though it is a red member. The two sets are different claims.
+      edged = hd(members)
+      edgeless = Enum.find(etcc, &(&1 not in members))
+      assert red_cells(cells, %{statuses | edged => "failed"}) != []
+      assert red_cells(cells, %{statuses | edgeless => "failed"}) == []
+      # And a member the run did not carry is not a pass.
+      assert red_cells(cells, Map.delete(statuses, edged)) != []
+    end
+
+    test "the excluded tests: the search over test/ EQUALS the record's hits; no tagged test is a register row" do
+      e = d3d6(A.load())["excluded_tests"]
+
+      hits =
+        for f <- Path.wildcard("test/**/*", match_dot: true),
+            File.regular?(f),
+            {line, n} <- f |> File.read!() |> String.split("\n") |> Enum.with_index(1),
+            String.contains?(line, @live_tag),
+            do: {"#{f}:#{n}", String.trim(line)}
+
+      assert both_ways(Enum.map(hits, &elem(&1, 0)), Enum.map(e["search"]["hits"], & &1["at"])) ==
+               :ok
+
+      tagged = for {at, "@tag :" <> tag} <- hits, tag == @live_tag, do: at
+      assert length(tagged) == 3
+
+      assert both_ways(tagged, Enum.map(e["tagged"], &"#{&1["file"]}:#{hd(&1["lines"])}")) ==
+               :ok
+
+      rows = json("docs/conformance/etcc-register.json")["rows"]
+      assert e["register_rows"] == length(rows)
+
+      assert e["register_rows_under_test_conformance"] ==
+               Enum.count(rows, &String.starts_with?(&1["file"], "test/conformance/"))
+
+      assert e["register_rows_under_test_conformance"] == 0
+      assert e["counts_as_red_here"] == false
+      # Planted: a register row at a tagged test's file would be counted.
+      assert Enum.count(
+               [%{"file" => "test/conformance/classification_test.exs"} | rows],
+               &String.starts_with?(&1["file"], "test/conformance/")
+             ) == 1
+    end
+
+    test "the D1 M9 union: derived from every record in the directory that measured M9 on bucket 1" do
+      d = d3d6(A.load())["asymmetry_bucket_6"]["d1_contradicting_units"]
+
+      derived =
+        for path <- Path.wildcard("docs/conformance/adjudications/*.json") |> Enum.sort(),
+            rec = json(path),
+            m9 = Enum.find(rec["mutations"] || [], &(&1["id"] == "M9")),
+            is_map(m9["measured"]),
+            s <- Enum.filter(rec["sections"], &(&1["view"] == @v1)) do
+          not_red = m9["measured"]["slice_members_not_red"]
+          ms = Map.new(rec["mutations"], &{&1["id"], &1})
+
+          %{
+            "record" => path,
+            "ticket" => rec["ticket"],
+            "slice_members" => length(s["rows"]),
+            "M9_reddened" => for(r <- s["rows"], r["tag"] not in not_red, do: r["tag"])
+          }
+          |> Map.merge(
+            for id <- ~w(M9h M9f),
+                Map.has_key?(ms, id),
+                into: %{},
+                do: {id <> "_slice_members_red", ms[id]["measured"]["slice_members_red"]}
+          )
+        end
+
+      assert derived == d["per_record"]
+      assert Enum.map(derived, & &1["ticket"]) == ~w(MES-141 MES-142 MES-143)
+
+      for r <- derived do
+        m9 = Enum.find(json(r["record"])["mutations"], &(&1["id"] == "M9"))["measured"]
+        assert length(r["M9_reddened"]) == m9["slice_members_red"]
+      end
+
+      union = derived |> Enum.flat_map(& &1["M9_reddened"]) |> Enum.uniq() |> Enum.sort()
+      assert union == d["M9_union"]
+      assert length(union) == 54
+    end
+
+    # CR 30063 B1 / PM 30067: the MES-152 landing is stated BY SHAPE, and the
+    # table is held to A3 §3's own function, not to a copy of it.
+    test "the MES-152 landing by shape EQUALS MatchKey.bucket/1 over every (oc, shape)" do
+      entry = d3d6(A.load())["fill_conditions"]["what_moves_rows_when_remediation_lands"] |> hd()
+      assert entry["ticket"] == "MES-152"
+
+      render = fn
+        {:ok, b, _} -> b
+        {:escalate, reason} -> "escalated (#{reason})"
+      end
+
+      measured =
+        for oc <- [:red, :green], shape <- [:contradicting, :partial, :full] do
+          %{
+            "oc" => Atom.to_string(oc),
+            "shape" => Atom.to_string(shape),
+            "lands" =>
+              render.(
+                MCP.Conformance.MatchKey.bucket(%{verdicts: %{oc: oc, et: :green}, shape: shape})
+              )
+          }
+        end
+
+      assert both_ways(measured, entry["landing_by_shape"]) == :ok
+      # The sentence that B1 falsified is not restated as present tense.
+      refute entry["moves"] =~ ~r/^An edge onto a red check/
+
+      # Planted limb: the falsified reading (full agreement onto red lands 4a).
+      wrong =
+        Enum.map(entry["landing_by_shape"], fn
+          %{"oc" => "red", "shape" => "full"} = r -> %{r | "lands" => "4a"}
+          r -> r
+        end)
+
+      assert {:error, {_, only_recorded}} = both_ways(measured, wrong)
+
+      assert MapSet.to_list(only_recorded) == [
+               %{"oc" => "red", "shape" => "full", "lands" => "4a"}
+             ]
+    end
+
+    test "the MES-152 classification: derived over every record in the directory EQUALS the record's, both ways" do
+      c =
+        d3d6(A.load())["fill_conditions"]["what_moves_rows_when_remediation_lands"]
+        |> hd()
+        |> Map.fetch!("classification")
+
+      status =
+        for c <- in_scope_checks(), into: %{}, do: {oc_token(c["key"]), c["status"]}
+
+      lands = fn
+        "FAILURE", "contradicts" -> "4a"
+        "FAILURE", "agrees" -> "4b if partial; escalated (divergent_despite_agreement) if full"
+        "SUCCESS", "contradicts" -> "escalated (inconsistent_verdict_pair)"
+        "SUCCESS", v when v in ["agrees", nil] -> "5"
+      end
+
+      item = fn path, row, oc ->
+        s = Map.fetch!(status, oc["token"])
+
+        %{
+          "record" => path,
+          "member" => row["member"],
+          "token" => oc["token"],
+          "verdict" => oc["verdict"],
+          "check_status" => s,
+          "lands" => lands.(s, oc["verdict"])
+        }
+      end
+
+      routed =
+        for path <- Path.wildcard("docs/conformance/adjudications/*.json") |> Enum.sort(),
+            s <- json(path)["sections"],
+            row <- s["rows"],
+            match?(%{"owner" => "MES-152"}, row["routed_to"]),
+            do: {path, row}
+
+      primary = for {p, r} <- routed, do: item.(p, r, r["oc_counterpart"])
+      also = for {p, r} <- routed, a <- r["oc_counterpart"]["also"] || [], do: item.(p, r, a)
+
+      assert both_ways(primary, c["primary"]) == :ok
+      assert both_ways(also, c["also"]) == :ok
+      assert primary == c["primary"] and also == c["also"]
+
+      tally = fn xs ->
+        xs
+        |> Enum.frequencies_by(&{&1["verdict"] || "none", &1["check_status"]})
+        |> Enum.sort()
+        |> Enum.map(fn {{v, s}, n} -> %{"verdict" => v, "check_status" => s, "count" => n} end)
+      end
+
+      assert c["primary_by_record"] == Enum.frequencies_by(primary, & &1["record"])
+      assert c["primary_by_verdict_and_status"] == tally.(primary)
+      assert c["also_by_verdict_and_status"] == tally.(also)
+
+      red? = &(&1["check_status"] == "FAILURE")
+
+      agree_red = fn xs ->
+        for x <- xs, red?.(x), x["verdict"] == "agrees", do: Map.take(x, ~w(record member token))
+      end
+
+      assert c["primary_agreeing_with_a_red_check"] == agree_red.(primary)
+      assert c["also_agreeing_with_a_red_check"] == agree_red.(also)
+
+      assert c["primary_contradicting_a_red_check_by_check"] ==
+               for(x <- primary, red?.(x), x["verdict"] == "contradicts", do: x["token"])
+               |> Enum.frequencies_by(
+                 &(&1
+                   |> String.split("/")
+                   |> List.last()
+                   |> String.split("#")
+                   |> hd())
+               )
+
+      # The figures the correction round names, measured (PM 30067, B1).
+      assert length(primary) == 86
+
+      assert c["primary_contradicting_a_red_check_by_check"] ==
+               %{"HttpServerMetaInvalid400" => 5, "RequestMetaInvalid" => 61}
+
+      assert Enum.count(primary, &(&1["check_status"] == "SUCCESS")) == 19
+
+      assert [%{"member" => "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes" <> _}] =
+               c["primary_agreeing_with_a_red_check"]
+
+      # No routed counterpart, primary or secondary, is onto a check that is
+      # neither FAILURE nor SUCCESS, and none lands in 3 or 6.
+      assert Enum.all?(primary ++ also, &(&1["check_status"] in ["FAILURE", "SUCCESS"]))
+      refute Enum.any?(primary ++ also, &(&1["lands"] in ["3", "6"]))
+
+      # ...because every routed member passed in the recorded run (the premise
+      # of "nothing lands in 3 or 6"), and no client row without a verdict
+      # says "contradict" (the premise of classing it as not contradicting).
+      passed =
+        for s <- d3d6(A.load())["mechanism"]["criterion_run"]["statuses"],
+            into: %{},
+            do: {s["member"], s["status"]}
+
+      assert (primary ++ also) |> Enum.map(&passed[&1["member"]]) |> Enum.uniq() == ["passed"]
+
+      for {_, r} <- routed, r["oc_counterpart"]["verdict"] == nil do
+        refute String.downcase(Jason.encode!([r["oc_counterpart"], r["rationale"]])) =~
+                 "contradict",
+               r["member"]
+      end
+
+      # Planted limbs: an item dropped, and one verdict flipped (so its landing moves).
+      [x | rest] = c["primary"]
+      assert both_ways(primary, rest) == {:error, {MapSet.new([x]), MapSet.new()}}
+      [a | _] = agree_red_items = for y <- c["primary"], red?.(y), y["verdict"] == "agrees", do: y
+      assert length(agree_red_items) == 1
+      flipped = %{a | "verdict" => "contradicts", "lands" => "4a"}
+
+      assert both_ways(primary, [flipped | c["primary"] -- [a]]) ==
+               {:error, {MapSet.new([a]), MapSet.new([flipped])}}
+    end
+
+    # PM 30067, N3: the negative under the stub's literal predicate, measured.
+    test "the census negative: scored FAILURE per leg, and every client one is out_of_scope_adr_003" do
+      n = d3d6(A.load())["asymmetry_bucket_6"]["census_negative"]
+
+      for {leg, at} <- n["census_scored_failure"] do
+        census = json(at["file"])
+        assert at["at"] == "totals.checks.scored.FAILURE"
+        assert at["value"] == census["totals"]["checks"]["scored"]["FAILURE"], leg
+
+        # The total equals the per-scenario sum over the scored scenarios.
+        assert at["value"] ==
+                 census["scenarios"]
+                 |> Enum.filter(& &1["scored"])
+                 |> Enum.map(& &1["checks"]["FAILURE"])
+                 |> Enum.sum()
+      end
+
+      client = json(n["census_scored_failure"]["client"]["file"])
+      failing = for s <- client["scenarios"], s["scored"], s["checks"]["FAILURE"] > 0, do: s
+
+      assert n["client_failures_by_classification"] ==
+               failing
+               |> Enum.group_by(& &1["classification"]["class"], & &1["checks"]["FAILURE"])
+               |> Map.new(fn {k, v} -> {k, Enum.sum(v)} end)
+
+      assert both_ways(
+               Enum.map(failing, & &1["id"]),
+               n["client_failing_scenarios_out_of_scope_adr_003"]
+             ) == :ok
+
+      assert Enum.all?(failing, &(&1["classification"]["class"] == "out_of_scope_adr_003"))
+
+      # None of them is in the in-scope set, which is why by_leg's client figure differs.
+      in_scope_scenarios = MapSet.new(in_scope_checks(), &Enum.at(&1["key"], 1))
+
+      assert Enum.filter(
+               n["client_failing_scenarios_out_of_scope_adr_003"],
+               &(&1 in in_scope_scenarios)
+             ) == []
+
+      assert {n["census_scored_failure"]["server"]["value"],
+              n["census_scored_failure"]["client"]["value"]} == {19, 46}
+
+      assert length(failing) == 24
+    end
+
+    # PM 30067, N4: the dispositions and the construction wording of the M9 union, measured.
+    test "the M9 union's dispositions and construction wording EQUAL the D1 records', both ways" do
+      d = d3d6(A.load())["asymmetry_bucket_6"]["d1_contradicting_units"]
+      union = MapSet.new(d["M9_union"])
+
+      rows =
+        for r0 <- d["per_record"],
+            s <- json(r0["record"])["sections"],
+            row <- s["rows"],
+            row["tag"] in union,
+            do: {r0["record"], row}
+
+      assert length(rows) == MapSet.size(union)
+
+      assert d["disposition_split"]["by_disposition"] ==
+               Enum.frequencies_by(rows, fn {_, r} -> r["disposition"] end)
+
+      assert d["disposition_split"]["not_redundant"] ==
+               for(
+                 {p, r} <- rows,
+                 r["disposition"] != "redundant",
+                 do: %{"record" => p, "tag" => r["tag"], "disposition" => r["disposition"]}
+               )
+
+      phrase = "only through the construction"
+      said = for {_, r} <- rows, Jason.encode!(r) =~ phrase, do: r["tag"]
+      assert both_ways(said, d["construction_wording"]["tags"]) == :ok
+
+      assert d["disposition_split"]["by_disposition"] == %{
+               "redundant" => 53,
+               "wrong_against_spec" => 1
+             }
+
+      assert length(said) == 37
+
+      # Planted limb: a tag that does not say it, added.
+      [ghost | _] = Enum.map(rows, fn {_, r} -> r["tag"] end) -- said
+      assert both_ways(said, [ghost | said]) == {:error, {MapSet.new(), MapSet.new([ghost])}}
+    end
   end
 
   describe "every D1 record in the directory (MES-139)" do

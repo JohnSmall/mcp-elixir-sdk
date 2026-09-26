@@ -1,0 +1,2959 @@
+{
+  "schema": "adjudication-record/1",
+  "authored_by_hand": true,
+  "ticket": "MES-144",
+  "revision": "2026-07-28",
+  "what_this_is": "The D3+D6 adjudication record: buckets 3 (OC green, ET-CC red) and 6 (red in both), each CLOSED over an empty view. Checked, and zero: the record states the question, the measured answer, the mechanism of the emptiness, what an excluded test counts as, what would fill each bucket, and for bucket 6 the asymmetry against the red OC checks. It is normative; Confluence pages 277774465 (bucket 3) and 277741669 (bucket 6) mirror it. Each section echoes its view's count, emptiness_reason and universe under `emptiness`, which G32 holds for equality (MES-144 C1), so a re-projected view that gains a row, or whose premise moves, refuses. It adjudicates no row: there are none.",
+  "provenance": "[authored 30052, 30053, 30054 | ratified 30055]; brief: the MES-144 body; epic MES-96 rulings bind (PO ruling 29609).",
+  "measured_at": {
+    "main_base": "4756fcb",
+    "tree": "the final tip of branch MES-144, whose tree the squash-merge keeps; a branch sha is not cited, because the merge does not keep it",
+    "etcc_inputs": "The ET-CC run's inputs, lib/ and the register's test files under test/mcp/, are unchanged on this branch from main 4756fcb (git diff --name-only 4756fcb...MES-144 -- lib/ test/mcp/ is empty), so the run measures main's members. conformance/controls/bucket_3_6_controls.exs re-runs it live at whatever tip it runs on.",
+    "gate_5": "Run last, at the final tip, with this record in the tree: the record's own text moves no test, so the count holds at the tree it is written into. The close-out re-runs it."
+  },
+  "sections": [
+    {
+      "view": "docs/conformance/buckets/bucket-3-2026-07-28.json",
+      "closure": "closed",
+      "rows": [],
+      "emptiness": {
+        "count": 0,
+        "emptiness_reason": {
+          "code": "by_construction",
+          "measured": "cells whose stored et verdict is `red`: 0 of 163. Buckets 3 and 6 both require one.",
+          "result": "CHECKED, AND ZERO — within the declared slice. Not 'never asked'.",
+          "ticket_that_would_fill_it": "Remediation — an ET-CC member that fails. Not reachable while gate 5 is green.",
+          "what_would_fill_it": "an ET-CC member that FAILS against a check the harness passes. Not reachable while gate 5 is green — every declared member's et verdict is green."
+        },
+        "universe": {
+          "count": 163,
+          "name": "edges",
+          "of": "the crosswalk's `cells`"
+        }
+      }
+    },
+    {
+      "view": "docs/conformance/buckets/bucket-6-2026-07-28.json",
+      "closure": "closed",
+      "rows": [],
+      "emptiness": {
+        "count": 0,
+        "emptiness_reason": {
+          "code": "by_construction",
+          "measured": "cells whose stored et verdict is `red`: 0 of 163. Buckets 3 and 6 both require one.",
+          "result": "CHECKED, AND ZERO — within the declared slice. Not 'never asked'.",
+          "ticket_that_would_fill_it": "Remediation — an ET-CC member that fails. Not reachable while gate 5 is green.",
+          "what_would_fill_it": "an ET-CC member that fails against a check the harness also fails. Not reachable while gate 5 is green — every declared member's et verdict is green."
+        },
+        "universe": {
+          "count": 163,
+          "name": "edges",
+          "of": "the crosswalk's `cells`"
+        }
+      }
+    }
+  ],
+  "question": {
+    "bucket_3": {
+      "asked": {
+        "file": "docs/conformance/buckets/bucket-3-2026-07-28.json",
+        "lines": [
+          15,
+          15
+        ],
+        "bytes": "  \"predicate\": \"`cells` where the stored `bucket` == \\\"3\\\". Universe: the crosswalk's edges.\","
+      },
+      "answer": {
+        "file": "docs/conformance/buckets/bucket-3-2026-07-28.json",
+        "lines": [
+          3,
+          3
+        ],
+        "bytes": "  \"count\": 0,"
+      },
+      "result": 0,
+      "command": "mix conformance.buckets --check (the view is the crosswalk's projection, byte for byte); mix conformance.adjudications (G32 holds this section's echo against the view)"
+    },
+    "bucket_6": {
+      "asked": {
+        "file": "docs/conformance/buckets/bucket-6-2026-07-28.json",
+        "lines": [
+          15,
+          15
+        ],
+        "bytes": "  \"predicate\": \"`cells` where the stored `bucket` == \\\"6\\\". Universe: the crosswalk's edges.\","
+      },
+      "answer": {
+        "file": "docs/conformance/buckets/bucket-6-2026-07-28.json",
+        "lines": [
+          3,
+          3
+        ],
+        "bytes": "  \"count\": 0,"
+      },
+      "result": 0,
+      "command": "mix conformance.buckets --check; mix conformance.adjudications"
+    },
+    "premise_as_the_views_state_it": [
+      {
+        "file": "docs/conformance/buckets/bucket-3-2026-07-28.json",
+        "lines": [
+          7,
+          7
+        ],
+        "bytes": "    \"measured\": \"cells whose stored et verdict is `red`: 0 of 163. Buckets 3 and 6 both require one.\","
+      },
+      {
+        "file": "docs/conformance/buckets/bucket-6-2026-07-28.json",
+        "lines": [
+          7,
+          7
+        ],
+        "bytes": "    \"measured\": \"cells whose stored et verdict is `red`: 0 of 163. Buckets 3 and 6 both require one.\","
+      }
+    ]
+  },
+  "mechanism": {
+    "statement": "No red ET-CC member exists. Measured by the criterion (does the member fail when the suite runs it?) over the whole ET-CC population, not read from the stored verdict: the stored verdict is an input to the crosswalk, and this is the measurement.",
+    "gate_5": {
+      "command": "mix test",
+      "at": "the final tip of branch MES-144 (measured_at.gate_5)",
+      "result": "24 doctests, 1623 tests, 0 failures",
+      "excluded": 0,
+      "node_on_path": "v24.13.0 (/home/dev/.nvm/versions/node/v24.13.0/bin/node)",
+      "why_node_matters": "test/test_helper.exs excludes the :requires_live_harness tests where node or the pinned harness is absent, so the suite's size varies with the host. This run excluded none.",
+      "exclusion_site": [
+        {
+          "file": "test/test_helper.exs",
+          "lines": [
+            64,
+            64
+          ],
+          "bytes": "    EXCLUDING :requires_live_harness — #{why}."
+        },
+        {
+          "file": "test/test_helper.exs",
+          "lines": [
+            70,
+            70
+          ],
+          "bytes": "    ExUnit.start(exclude: [:requires_live_harness], formatters: etcc_formatters)"
+        }
+      ]
+    },
+    "criterion_run": {
+      "command": "mix test.etcc --rows <capture>",
+      "at": "the final tip of branch MES-144 (measured_at.etcc_inputs)",
+      "selected": 281,
+      "expected_from_register": 281,
+      "missing": 0,
+      "stray": 0,
+      "by_status": {
+        "passed": 281
+      },
+      "red_members": [],
+      "statuses": [
+        {
+          "member": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientConformanceTest/test CG4 / T-CG4 — the client MUST NOT dereference a network $ref listing and calling a tool whose inputSchema $refs a network URI never fetches it",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) a server requestState is echoed verbatim on the retry (control)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an absent server requestState produces a retry with NO requestState key",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) an explicit null server requestState also produces NO requestState key",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 naming a version we support is retried exactly once",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 offering only versions we do not support is surfaced, never retried",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 with no usable data is surfaced, never retried",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a non-32022 error is never retried",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) the retry re-stamps the version chosen from `supported`",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) it falls back to its configured default when the message carries no _meta version",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) the transport derives mcp-protocol-version from the message's own _meta",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test MRTR client retry an input_required result is transparently completed via :on_input_required",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test MRTR client retry without a resolver the input_required result is returned as-is",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test cancel/3 sends a cancellation notification",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test concurrent requests handles multiple concurrent requests",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test connect/1 (server/discover) probes capabilities and returns server info",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test connect/1 (server/discover) returns error on discover failure",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — a non-struct :client_capabilities is discarded, not passed through",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — and the first request no longer kills the client",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T15 — a server's advertised extensions are surfaced, not discarded",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — a declared extension is stamped into every request's _meta",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — and into the server/discover probe itself",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T5 — the key is omitted entirely when nothing is declared",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 a server's malformed advertisement is reported verbatim, not rewritten",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an invalid identifier is dropped on the way out; an all-invalid declaration vanishes",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an unencodable settings value never reaches the wire (dropped at start_link)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test lifecycle notifies pending requests when the transport closes",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test lifecycle times out a pending request",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test notifications dispatches to a function handler",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test notifications dispatches to a pid handler",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test pagination list_all_tools paginates through pages",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test per-request _meta every request carries protocolVersion + client identity/capabilities",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test requests call_tool sends name and arguments",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test requests call_tool surfaces an error response",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test requests get_prompt sends name and arguments",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test requests list_tools returns tools",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test requests read_resource sends the uri",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientTest/test server_capabilities/1 and server_info/1 returns discovered capabilities and info",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy M-2: the warn-once record shares the cache's GENERATION — a reset re-arms it",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a -32020 on a NON-tools/call request is not retried",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a -32020 triggers a tools/list refresh and ONE retry, which then mirrors",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a FAILED refresh surfaces the ORIGINAL -32020, not the refresh's error",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a SECOND -32020 is surfaced — the recovery is one-shot, not a loop",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientToolSchemasTest/test M-1 — a malformed tools/list result fails the REQUEST, not the client a null result is reported to the caller and the client survives",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientToolSchemasTest/test M-1 — a malformed tools/list result fails the REQUEST, not the client a string result likewise, and it leaves the tool caches untouched",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientToolSchemasTest/test M-5 — a malformed REFRESH result fails the call, not the client a null refresh result returns the ORIGINAL -32020 alongside the malformed term",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-BEARING page MERGES, so paging does not discard earlier pages",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-LESS listing RESETS, so a removed tool does not linger",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an excluded tool leaves no annotations behind, so calling it mirrors nothing",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ClientToolSchemasTest/test the transport seam a tools/call for a known tool carries :headers; other methods carry none",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.IntegrationTest/test MRTR: call_tool transparently completes an input-required round-trip",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.IntegrationTest/test completion/complete round-trips",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.IntegrationTest/test connect discovers server capabilities via server/discover (no handshake)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.IntegrationTest/test prompts: list, get, unknown",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.IntegrationTest/test resources: list, read, unknown, templates",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.IntegrationTest/test tools: list, echo, add, isError, unknown",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 handles experimental capabilities",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 handles missing capabilities",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 parses full capabilities",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.CapabilitiesTest/test ServerCapabilities round-trips through JSON",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T6 — ServerCapabilities encode keeps the two apart",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T8 — ClientCapabilities encode keeps the two apart",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) both may be carried at once, each under its own key",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) neither is emitted when unset",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.ErrorTest/test from_map/1 parses error from wire format",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.ErrorTest/test from_map/1 parses error without data",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (8)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (9)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) a peer's `{}` and an omitted key collapse to the same %{} (deliberately)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) caches nothing between calls",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) does NOT validate: a malformed identifier reaches the caller verbatim",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) reads the peer's declared extensions",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) returns %{} for nil, an absent key, or an absent extensions field",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (1)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (2)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (3)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (4)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) a NESTED object property IS reachable — every step is a `properties` key",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) an integer outside the IEEE 754 safe range is not mirrored, and says so",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a non-map arguments value yields no headers rather than raising",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a null value omits the header; so does an absent one",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a plain-ASCII value that LOOKS like a sentinel is itself encoded",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule decode leaves a plain value alone and survives a malformed sentinel",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule the exact property path is read — a same-named key elsewhere is not",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector INTERNAL spaces stay plain — only leading/trailing whitespace forces encoding",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an EMPTY string is present with an empty value, not omitted",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector no header carries a raw CR or LF — injection is closed by construction",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector plain ASCII is sent as-is",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector unannotated parameters are NOT mirrored",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.Messages.DiscoverTest/test from_map/1 round-trips the schema shape",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.Messages.DiscoverTest/test to_map/1 produces the schema shape",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.MetaTest/test from_params/1 extracts the io.modelcontextprotocol/* keys",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.MetaTest/test validate_protocol_version/2 mismatched (e.g. legacy 2025-11-25) → {:error, {:unsupported, got}}",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.Types.ContentTest/test AudioContent round-trips through JSON",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.Types.ContentTest/test EmbeddedResource round-trips through JSON",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.Types.ContentTest/test ImageContent round-trips through JSON",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.Types.ContentTest/test ResourceLink round-trips through JSON",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.Types.ContentTest/test TextContent round-trips through JSON",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.Types.ResourceTest/test JSON encoding round-trips with camelCase keys",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.Types.ToolTest/test JSON encoding omits nil fields",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.Types.ToolTest/test JSON encoding round-trips through JSON with camelCase keys",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.Types.ToolTest/test inputSchema keywords beyond `type` are carried verbatim, including `not` and `$anchor`",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Protocol.Types.ToolTest/test outputSchema is carried verbatim, and false is not an absence an absent outputSchema is still absent",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ProtocolTest/test decode/1 decodes a notification",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ProtocolTest/test decode/1 decodes a request",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ProtocolTest/test decode/1 decodes a request with string id",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ProtocolTest/test decode/1 decodes a success response",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ProtocolTest/test decode/1 decodes an error response",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ProtocolTest/test encode!/1 returns JSON string",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ProtocolTest/test encode/1 encodes a notification",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ProtocolTest/test encode/1 encodes a notification with params",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ProtocolTest/test encode/1 encodes a request",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.ProtocolTest/test encode/1 encodes a request without params",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.CapabilityHonestyTest/test a listChanged claim needs a channel to honour it on absent, not present-and-false: the key never reaches the wire",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.DispatchTest/test old-shape (2025-11-25) version fails fast (-32022)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.DispatchTest/test request without a protocolVersion _meta fails fast (-32022)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.DispatchTest/test server/discover: schema shape (supportedVersions + CacheableResult fields; serverInfo in _meta)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) T10 — the result is identical to the same call without extensions",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) T10 — tools/call succeeds normally; no error, no -32021",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) T11 — resources/list and prompts/list are unaffected",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) T11 — server/discover is unaffected, and still advertises nothing",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) T11 — tools/list is unaffected",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) a malformed or non-object extensions declaration still breaks nothing",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a non-object :extensions value leaves build/2 successful and the wire silent",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a settings value that cannot be encoded is dropped at launch, not raised at request time",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a settings value that encodes to a non-object is dropped, never advertised",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a valid declaration is advertised and warns about nothing",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ExtensionsNegotiationTest/test the handler-visible read a handler can read the client's declaration off ctx.meta",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) T1 — `extensions` is absent from a default server/discover result",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) T2 — an empty or fully-invalid declaration is absent, not `{}`",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) T3 — a declared extension appears verbatim under capabilities.extensions",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) an invalid identifier is dropped from the declaration, valid ones kept",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) the server's declaration is fixed at build time, not per request",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test C-2 — SEP-2106's TextContent fallback is noticed, not injected the content list is never modified — the SDK notices, it does not inject",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named a keyword list, an empty list, an atom and a string are each named",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named the legacy boolean slot 3 still works, in both directions, and warns about nothing",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test F-9 — the struct warning describes what the code did, not the opposite a struct carrying one of the two fields names that one, and only that one",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test F-9 — the struct warning describes what the code did, not the opposite a struct that DOES carry the fields has them read, and the warning says so",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a camelCase key is named, and the call still succeeds",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a non-boolean :is_error is named, and no isError reaches the wire",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a struct in slot 3 is named by its module, and nothing is raised",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value a present nil key emits JSON null — null is not absent",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value an absent key omits the field entirely — absent is not null",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value array survives to the wire",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty array survives to the wire",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty object survives to the wire",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty string survives to the wire",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value false survives to the wire",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value float survives to the wire",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value null survives to the wire",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value object survives to the wire",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value string survives to the wire",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value the extras map also carries isError, and false does not become absent",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value the pre-SEP-2106 return shapes still work unchanged",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value true survives to the wire",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value zero survives to the wire",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list an explicit non-default dialect is carried, not coerced or refused",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list composition keywords survive: allOf, anyOf",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list conditional keywords survive: if, then, else",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list reference keywords survive: $schema, $defs, $anchor, $ref",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list the whole fixture arrives intact — decoded-map equality, not bytes",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list validation keywords survive: enum, const, additionalProperties",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-4 — no $ref is ever dereferenced: a canary listener is never connected to",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test arguments reach the handler unchanged — nothing is coerced, defaulted or expanded",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.NotificationCollectorTest/test drain returns pushed notifications as wire maps, in emission order (G3)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) a resources/updated frame matches the pinned notification example",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) an absent notifications object is -32602, not a silently empty stream",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) notifications is required; {} is legal and means subscribe to nothing",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) the acknowledgment matches the pinned SubscriptionsAcknowledgedNotification example",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) the graceful-close response matches the pinned example exactly",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) the id is echoed, never coerced — RequestId is string OR integer",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) the request parses as the pinned SubscriptionsListenRequest example",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.SubscriptionsDispatchTest/test T-2 the acknowledgment reports what was honoured a requested-but-refused type is absent from the ack",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.SubscriptionsDispatchTest/test T-2 the acknowledgment reports what was honoured the ack carries this subscription's id in _meta",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.SubscriptionsDispatchTest/test T-2 the acknowledgment reports what was honoured the ack is built from the same value the stream enforces",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.SubscriptionsDispatchTest/test T-3 MUST NOT send an unrequested notification type the URI filter reads either key style, so nothing is dropped for writing %{uri: ...}",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.SubscriptionsDispatchTest/test T-5 JSON mode refuses the method outright a handler with no handle_listen/3 also gets -32601",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.SubscriptionsDispatchTest/test T-5 JSON mode refuses the method outright a non-streaming driver gets -32601, never a silent black hole",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset a URI this principal may not observe is absent from the ack",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset a handler may refuse the subscription outright",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset the two refusals that never reach the handler stay {:reply, ...}",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ToolOrderTest/test BOUND — sorting is per RESPONSE; a paginated listing is not made deterministic",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ToolOrderTest/test CONTROL-1 — :tool_order = :handler keeps a curated non-alphabetical order verbatim",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ToolOrderTest/test CONTROL-2 (discriminates nothing) — an already-deterministic handler is unaffected",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ToolOrderTest/test SUBJECT — one instance answers in the same order on every request",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ToolOrderTest/test SUBJECT — the default order is by name, and the tool SET is untouched",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Server.ToolOrderTest/test SUBJECT — two instances holding the same tool set answer in the same order",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a NOTIFICATION carries it too — the spec says all requests, not all responses-bearing ones",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a message with no method carries no routing headers",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a request carries the body method",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a tools/call whose params carry no name emits no Mcp-Name rather than an empty one",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a name that would inject a header is neutralised",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a non-ASCII tool name is encoded, and decodes back to the body value",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a resource URI with a space is encoded",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client a null argument omits its header",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client with no prior tools/list, nothing is mirrored and the client says so",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test the version header rides the message (D-4), on the wire it matches the body _meta, not the transport's configured default",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test decode_event/1 decodes event with JSON data",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test decode_event/1 decodes event with all fields",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test decode_event/1 decodes event with only data",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test decode_event/1 handles fields without space after colon",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test decode_event/1 ignores comment lines",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test decode_event/1 ignores unknown fields",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test decode_event/1 joins multiple data lines with newlines",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test encode_event/1 encodes event with all fields",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test encode_event/1 encodes event with empty data",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test encode_event/1 encodes event with event type and data",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test encode_event/1 encodes event with only data",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test encode_event/1 encodes multi-line data as multiple data fields",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test encode_message/2 encodes a JSON-RPC message as SSE event",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test encode_message/2 includes event ID when provided",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test encode_message/2 uses custom event type",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test stream parser buffers incomplete events",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test stream parser handles multiple chunks",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test stream parser parses complete events",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SSETest/test stream parser round-trip encode then decode",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SelfCompatibilityTest/test END TO END: our client calls our server's non-header-safe tool over real HTTP",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: a PLAIN mismatched header is still -32020",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: an encoded header naming a DIFFERENT tool is still -32020",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SelfCompatibilityTest/test REACHABILITY CONTROL: an encoded Mcp-Name is decoded before comparison, so our own client is not self-rejected",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SelfCompatibilityTest/test a plain header matching a plain name still passes — decoding leaves it alone",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SelfCompatibilityTest/test a sentinel-shaped header that is not valid Base64 is compared as-is, not crashed on",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StdioTest/test client mode with echo server handles multiple requests sequentially",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StdioTest/test client mode with echo server handles request without params",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StdioTest/test client mode with echo server notifications get no response",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StdioTest/test client mode with echo server sends a request and receives echo response",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StdioTest/test line buffering handles rapid sequential messages",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTP.ACTest/test AC7 — non-localhost origin is rejected 403 (acceptance parity)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that raises fails cleanly (-32603); the secret never leaks",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that returns a non-keyword fails cleanly (-32603)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPCacheScopeWarningTest/test AC7(c): N requests against a warned configuration produce exactly ONE line",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test AC7 — non-localhost origin is rejected 403; the identity factory never runs",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test GET and DELETE are not allowed (405), and allow names only POST",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test MC-6 — a collector that fails to start fails cleanly (-32603), no handler invoked",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test MC-6 — a factory that raises fails cleanly (-32603) with no handler invoked",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test Mcp-Name mismatch against params.name is rejected (-32020)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test a malformed body is a parse error → -32700",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test a raising handler leaves no notification residue for the next request (SSE)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test a request without a protocolVersion _meta fails fast (-32022)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test list/read results carry caching hints (ttlMs/cacheScope)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test matching Mcp-Method routes normally; a mismatch is rejected (-32020)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test resources/read — Mcp-Name is validated against params.uri (mismatch → -32020)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test server/discover returns the schema-shaped result with no version gate",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test tools/list then tools/call work directly, no initialize first",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test two-instance / no-affinity smoke (DoD) interleaving requests round-robin across two stateless instances succeeds identically",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test MC-6 a stream that cannot start fails cleanly controlled -32603, nothing streamed, and the handler is told",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test T-10 the documented multi-instance boundary a change on instance B does not reach a stream held by instance A",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test T-12 the close asymmetry a client depends on lifetime expiry sends the listen response, then closes",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test T-12 the close asymmetry a client depends on the close-frame decision refuses to write after a peer close",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test T-8 keep-alive comment lines an idle stream actually emits comment frames, and stays open",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test T-8 keep-alive comment lines our parser ignores a comment line arriving between two events",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test T-8 keep-alive comment lines the encoder emits a bare comment line",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test delivery over the wire an opted-in notification arrives, stamped with the subscription id",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test delivery over the wire an unrequested type never reaches the wire",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test every exit from a listen runs teardown a REFUSED listen tells the handler and kills the sink (F1)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test the collector's lifetime ends strictly before the stream's the collector is gone by the time the stream is live",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test the exits that raise before a branch is chosen a handler-side exit in teardown does not replace the refusal response (R3)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test the exits that raise before a branch is chosen a listen answered ABOVE the handler is owed no teardown callback",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test the obligation is armed off the decoded message a second client cannot tear down a live subscription it does not own (R4)",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment nothing bearing this subscription's id precedes its acknowledgment",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the first message is notifications/subscriptions/acknowledged",
+          "status": "passed"
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the response carries the SSE headers the spec SHOULDs",
+          "status": "passed"
+        }
+      ]
+    },
+    "joined_to_the_crosswalk": {
+      "cells": 163,
+      "distinct_members": 86,
+      "members_outside_etcc": [],
+      "red_cells": []
+    },
+    "stored_et_verdict": {
+      "what_it_is": "A hand-entered input: each edge's `et_verdict` in the edges files, which the crosswalk reads and checks only for being green or red. Nothing ties it to a run. The committed capture docs/conformance/etcc-exunit-rows.json is an earlier run's output and is not read by the crosswalk. Noted for the PO register (ratification 30055, Q4/Q7).",
+      "read_at": [
+        {
+          "file": "conformance/lib/mcp/conformance/crosswalk.ex",
+          "lines": [
+            154,
+            154
+          ],
+          "bytes": "         {:ok, et} <- et_verdict(edge[\"et_verdict\"]),"
+        },
+        {
+          "file": "conformance/lib/mcp/conformance/crosswalk.ex",
+          "lines": [
+            284,
+            286
+          ],
+          "bytes": "  defp et_verdict(\"green\"), do: {:ok, :green}\n  defp et_verdict(\"red\"), do: {:ok, :red}\n  defp et_verdict(other), do: {:error, {:bad_et_verdict, other}}"
+        }
+      ],
+      "edges_by_file": {
+        "conformance/data/crosswalk-edges.json": {
+          "edges": 19,
+          "by_et_verdict": {
+            "green": 19
+          }
+        },
+        "conformance/data/crosswalk-edges-client.json": {
+          "edges": 64,
+          "by_et_verdict": {
+            "green": 64
+          }
+        },
+        "conformance/data/crosswalk-edges-server.json": {
+          "edges": 80,
+          "by_et_verdict": {
+            "green": 80
+          }
+        }
+      },
+      "stored_red_cells": [],
+      "plan_correction": "Plan part 2 (30053) gave 71 client and 84 server et_verdicts. Those were text counts that include the files' non-edge `until_MES_110` blocks and prose; over `edges[]` it is the figures in edges_by_file, which sum to the crosswalk's cells."
+    }
+  },
+  "excluded_tests": {
+    "search": {
+      "command": "grep -rn requires_live_harness test/",
+      "hits": [
+        {
+          "at": "test/conformance/classification_test.exs:47",
+          "what": "tag"
+        },
+        {
+          "at": "test/conformance/classification_test.exs:136",
+          "what": "tag"
+        },
+        {
+          "at": "test/conformance/requirement_set_test.exs:357",
+          "what": "tag"
+        },
+        {
+          "at": "test/test_helper.exs:64",
+          "what": "the exclusion's notice"
+        },
+        {
+          "at": "test/test_helper.exs:70",
+          "what": "the exclusion"
+        },
+        {
+          "at": "test/conformance/exunit_rows_test.exs:144",
+          "what": "a fixture tag in a formatter unit, not a tag on a test"
+        },
+        {
+          "at": "test/conformance/exunit_rows_test.exs:151",
+          "what": "that fixture's assertion"
+        },
+        {
+          "at": "test/support/conformance_test_harness.ex:66",
+          "what": "a moduledoc sentence (plan part 2 missed this hit)"
+        }
+      ]
+    },
+    "tagged": [
+      {
+        "file": "test/conformance/classification_test.exs",
+        "lines": [
+          47,
+          48
+        ],
+        "bytes": "    @tag :requires_live_harness\n    test \"every reason the frozen set can carry maps to a class\" do"
+      },
+      {
+        "file": "test/conformance/classification_test.exs",
+        "lines": [
+          136,
+          137
+        ],
+        "bytes": "    @tag :requires_live_harness\n    test \"names a scenario the frozen 2026-07-28 set actually contains\" do"
+      },
+      {
+        "file": "test/conformance/requirement_set_test.exs",
+        "lines": [
+          357,
+          358
+        ],
+        "bytes": "    @tag :requires_live_harness\n    test \"the frozen 2026-07-28 set parses, and both derivations agree\" do"
+      }
+    ],
+    "register_rows_under_test_conformance": 0,
+    "register_rows": 579,
+    "counts_as_red_here": false,
+    "why": "An excluded test is outside ET-CC (A2): none of the tagged tests is a register row, so none is an ET-CC member, so none keys a crosswalk cell, and buckets 3 and 6 are sets of cells. Whether it ran or not moves no cell. Separately, and unchanged: a gate-5 run that reports excluded tests is not a complete gate 5, and the run above excluded none."
+  },
+  "fill_conditions": {
+    "bucket_3": "an edge whose OC check is green and whose ET-CC member is red: a stricter ET assertion going red while OC stays green.",
+    "bucket_6": "an edge whose OC check and ET-CC member are both red: for example a unit landed against behaviour not yet fixed, red on arrival.",
+    "on_main": "UNREACHABLE while DoD gate 5 requires 0 failures: a red ET-CC member cannot merge, so no committed crosswalk can carry a red et verdict that a run confirms. A member here is therefore never a regression on main. It can appear (a) in a crosswalk regenerated on a branch mid-remediation, before the unit is updated; (b) where a stored et_verdict is wrong, which bucket_3_6_controls.exs catches by joining a live run; or (c) under a future ruling that admits known-red members. Route (c) does not exist today.",
+    "superseded_stub_sentence": "The stubs said bucket 6 fills as Sprint 7 lands tests from bucket 2a, red on arrival by design. Under gate 5 such a test cannot land red, so that route is unavailable as written (ratification 30055, Q4). Raised for the PO register (Q7), not acted on here.",
+    "what_moves_rows_when_remediation_lands": [
+      {
+        "ticket": "MES-152",
+        "what": "the A3 findings routed by the D1 records: edges added for ET-green members",
+        "moves": "By shape, as A3 §3 decides it (MCP.Conformance.MatchKey.bucket/1, conformance/lib/mcp/conformance/match_key.ex; the escalations at crosswalk.ex:57): an edge onto a red check lands in 4a if it is contradicting, in 4b if it is partial, and escalates as divergent_despite_agreement, in no bucket, if it is full; an edge onto a green check lands in 5, or escalates as inconsistent_verdict_pair if it is contradicting. The shape is fixed by A3 when it builds the edge, so a recorded verdict bounds the landing without deciding it: a counterpart recorded as contradicting a red check lands in 4a, and one recorded as agreeing with a red check lands in 4b or escalates, and cannot land in 4a. The classification below enumerates the routed counterparts by that rule. It supersedes this entry's earlier sentence, \"An edge onto a red check (RequestMetaInvalid, HttpServerMetaInvalid400) lands in 4a\", which was false for the agreeing counterpart it names (CR 30063, B1). Nothing lands in 3 or 6. Both need a red ET verdict, and the members are ET-green: mechanism.criterion_run.",
+        "landing_by_shape": [
+          {
+            "oc": "red",
+            "shape": "contradicting",
+            "lands": "4a"
+          },
+          {
+            "oc": "red",
+            "shape": "partial",
+            "lands": "4b"
+          },
+          {
+            "oc": "red",
+            "shape": "full",
+            "lands": "escalated (divergent_despite_agreement)"
+          },
+          {
+            "oc": "green",
+            "shape": "contradicting",
+            "lands": "escalated (inconsistent_verdict_pair)"
+          },
+          {
+            "oc": "green",
+            "shape": "partial",
+            "lands": "5"
+          },
+          {
+            "oc": "green",
+            "shape": "full",
+            "lands": "5"
+          }
+        ],
+        "classification": {
+          "population": "every row, in every record of docs/conformance/adjudications/, whose routed_to.owner is MES-152; per row, its oc_counterpart (the primary counterpart) and, separately, each entry of its oc_counterpart.also (the secondary counterparts). A counterpart's check status is its token's status in docs/conformance/in-scope-2026-07-28.json. Re-derived from the D1 records, not copied from the review.",
+          "rule": "lands = f(check status, recorded verdict): FAILURE and contradicts gives 4a; FAILURE and agrees gives 4b or an escalation (the shape decides); SUCCESS and contradicts gives an escalation; SUCCESS with agrees or with no verdict recorded gives 5. The client-leg records carry no verdict field on the counterpart. None of those rows' counterpart or rationale text says \"contradict\" (a text measure), so they are classed as not contradicting.",
+          "primary": [
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+              "member": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 R-8 — a non-struct :client_capabilities is discarded, not passed through",
+              "token": "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta",
+              "verdict": null,
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+              "member": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — a declared extension is stamped into every request's _meta",
+              "token": "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta",
+              "verdict": null,
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+              "member": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T4 — and into the server/discover probe itself",
+              "token": "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta",
+              "verdict": null,
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+              "member": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 T5 — the key is omitted entirely when nothing is declared",
+              "token": "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta",
+              "verdict": null,
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+              "member": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an invalid identifier is dropped on the way out; an all-invalid declaration vanishes",
+              "token": "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta",
+              "verdict": null,
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+              "member": "MCP.ClientTest/test extensions negotiation (SEP-2133) — T4, T5, T15 an unencodable settings value never reaches the wire (dropped at start_link)",
+              "token": "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta",
+              "verdict": null,
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+              "member": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy M-2: the warn-once record shares the cache's GENERATION — a reset re-arms it",
+              "token": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+              "verdict": null,
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+              "member": "MCP.ClientToolSchemasTest/test C-2 — the cache-miss and staleness policy a -32020 triggers a tools/list refresh and ONE retry, which then mirrors",
+              "token": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+              "verdict": null,
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+              "member": "MCP.ClientToolSchemasTest/test M-1 — a malformed tools/list result fails the REQUEST, not the client a string result likewise, and it leaves the tool caches untouched",
+              "token": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+              "verdict": null,
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+              "member": "MCP.ClientToolSchemasTest/test M-5 — a malformed REFRESH result fails the call, not the client a null refresh result returns the ORIGINAL -32020 alongside the malformed term",
+              "token": "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+              "verdict": null,
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+              "member": "MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-BEARING page MERGES, so paging does not discard earlier pages",
+              "token": "oc:client/http-custom-headers/sep-2243-client-supports-custom-headers/ClientSupportsCustomHeaders",
+              "verdict": null,
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json",
+              "member": "MCP.ClientToolSchemasTest/test W5 — the cache's reset/merge rule (the pagination trap) a cursor-LESS listing RESETS, so a removed tool does not linger",
+              "token": "oc:client/http-custom-headers/sep-2243-client-supports-custom-headers/ClientSupportsCustomHeaders",
+              "verdict": null,
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+              "member": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
+              "token": "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta",
+              "verdict": null,
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+              "member": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) the retry re-stamps the version chosen from `supported`",
+              "token": "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta",
+              "verdict": null,
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+              "member": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client with no prior tools/list, nothing is mirrored and the client says so",
+              "token": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+              "verdict": null,
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) T10 — tools/call succeeds normally; no error, no -32021",
+              "token": "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) T11 — server/discover is unaffected, and still advertises nothing",
+              "token": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test a client offering unsupported extensions (T10, T11) T11 — tools/list is unaffected",
+              "token": "oc:server/tools-list/tools-list/ToolsList",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a non-object :extensions value leaves build/2 successful and the wire silent",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a settings value that cannot be encoded is dropped at launch, not raised at request time",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a settings value that encodes to a non-object is dropped, never advertised",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a valid declaration is advertised and warns about nothing",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) T1 — `extensions` is absent from a default server/discover result",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) T2 — an empty or fully-invalid declaration is absent, not `{}`",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) T3 — a declared extension appears verbatim under capabilities.extensions",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) an invalid identifier is dropped from the declaration, valid ones kept",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) the server's declaration is fixed at build time, not per request",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test C-2 — SEP-2106's TextContent fallback is noticed, not injected the content list is never modified — the SDK notices, it does not inject",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a camelCase key is named, and the call still succeeds",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a non-boolean :is_error is named, and no isError reaches the wire",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value a present nil key emits JSON null — null is not absent",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value an absent key omits the field entirely — absent is not null",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value array survives to the wire",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty array survives to the wire",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty object survives to the wire",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty string survives to the wire",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value false survives to the wire",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value float survives to the wire",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value null survives to the wire",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value object survives to the wire",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value string survives to the wire",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value true survives to the wire",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value zero survives to the wire",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list an explicit non-default dialect is carried, not coerced or refused",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list composition keywords survive: allOf, anyOf",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list conditional keywords survive: if, then, else",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list reference keywords survive: $schema, $defs, $anchor, $ref",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list the whole fixture arrives intact — decoded-map equality, not bytes",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list validation keywords survive: enum, const, additionalProperties",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test arguments reach the handler unchanged — nothing is coerced, defaulted or expanded",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) an absent notifications object is -32602, not a silently empty stream",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "agrees",
+              "check_status": "FAILURE",
+              "lands": "4b if partial; escalated (divergent_despite_agreement) if full"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) the id is echoed, never coerced — RequestId is string OR integer",
+              "token": "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Server.SubscriptionsDispatchTest/test T-2 the acknowledgment reports what was honoured a requested-but-refused type is absent from the ack",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Server.SubscriptionsDispatchTest/test T-2 the acknowledgment reports what was honoured the ack is built from the same value the stream enforces",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Server.SubscriptionsDispatchTest/test T-3 MUST NOT send an unrequested notification type the URI filter reads either key style, so nothing is dropped for writing %{uri: ...}",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset a URI this principal may not observe is absent from the ack",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset a handler may refuse the subscription outright",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset the two refusals that never reach the handler stay {:reply, ...}",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTPStatelessTest/test MC-6 — a collector that fails to start fails cleanly (-32603), no handler invoked",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTPStatelessTest/test MC-6 — a factory that raises fails cleanly (-32603) with no handler invoked",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTPStatelessTest/test Mcp-Name mismatch against params.name is rejected (-32020)",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTPStatelessTest/test a raising handler leaves no notification residue for the next request (SSE)",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTPStatelessTest/test matching Mcp-Method routes normally; a mismatch is rejected (-32020)",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTPStatelessTest/test resources/read — Mcp-Name is validated against params.uri (mismatch → -32020)",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTPStatelessTest/test two-instance / no-affinity smoke (DoD) interleaving requests round-robin across two stateless instances succeeds identically",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test MC-6 a stream that cannot start fails cleanly controlled -32603, nothing streamed, and the handler is told",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test T-10 the documented multi-instance boundary a change on instance B does not reach a stream held by instance A",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test T-12 the close asymmetry a client depends on lifetime expiry sends the listen response, then closes",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test T-8 keep-alive comment lines an idle stream actually emits comment frames, and stays open",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test the collector's lifetime ends strictly before the stream's the collector is gone by the time the stream is live",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test the exits that raise before a branch is chosen a listen answered ABOVE the handler is owed no teardown callback",
+              "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the response carries the SSE headers the spec SHOULDs",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Server.DispatchTest/test old-shape (2025-11-25) version fails fast (-32022)",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Server.ToolOrderTest/test BOUND — sorting is per RESPONSE; a paginated listing is not made deterministic",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Server.ToolOrderTest/test CONTROL-1 — :tool_order = :handler keeps a curated non-alphabetical order verbatim",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Server.ToolOrderTest/test CONTROL-2 (discriminates nothing) — an already-deterministic handler is unaffected",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Server.ToolOrderTest/test SUBJECT — one instance answers in the same order on every request",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Server.ToolOrderTest/test SUBJECT — the default order is by name, and the tool SET is untouched",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Server.ToolOrderTest/test SUBJECT — two instances holding the same tool set answer in the same order",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: a PLAIN mismatched header is still -32020",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: an encoded header naming a DIFFERENT tool is still -32020",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Transport.SelfCompatibilityTest/test a plain header matching a plain name still passes — decoding leaves it alone",
+              "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Transport.SelfCompatibilityTest/test a sentinel-shaped header that is not valid Base64 is compared as-is, not crashed on",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that raises fails cleanly (-32603); the secret never leaks",
+              "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that returns a non-keyword fails cleanly (-32603)",
+              "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTPCacheScopeWarningTest/test AC7(c): N requests against a warned configuration produce exactly ONE line",
+              "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            }
+          ],
+          "primary_by_record": {
+            "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json": 12,
+            "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json": 3,
+            "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json": 35,
+            "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json": 22,
+            "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json": 14
+          },
+          "primary_by_verdict_and_status": [
+            {
+              "verdict": "agrees",
+              "check_status": "FAILURE",
+              "count": 1
+            },
+            {
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "count": 4
+            },
+            {
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "count": 66
+            },
+            {
+              "verdict": "none",
+              "check_status": "SUCCESS",
+              "count": 15
+            }
+          ],
+          "primary_contradicting_a_red_check_by_check": {
+            "HttpServerMetaInvalid400": 5,
+            "RequestMetaInvalid": 61
+          },
+          "primary_agreeing_with_a_red_check": [
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) an absent notifications object is -32602, not a silently empty stream",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid"
+            }
+          ],
+          "also": [
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a non-object :extensions value leaves build/2 successful and the wire silent",
+              "token": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a settings value that cannot be encoded is dropped at launch, not raised at request time",
+              "token": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a settings value that encodes to a non-object is dropped, never advertised",
+              "token": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test nothing in `:extensions` can fail later than Config.build/2 (R-2) a valid declaration is advertised and warns about nothing",
+              "token": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) T1 — `extensions` is absent from a default server/discover result",
+              "token": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) T2 — an empty or fully-invalid declaration is absent, not `{}`",
+              "token": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) T3 — a declared extension appears verbatim under capabilities.extensions",
+              "token": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) an invalid identifier is dropped from the declaration, valid ones kept",
+              "token": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) the server's declaration is fixed at build time, not per request",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-protocol-version/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.ExtensionsNegotiationTest/test what the server advertises (T1, T2, T3) the server's declaration is fixed at build time, not per request",
+              "token": "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list an explicit non-default dialect is carried, not coerced or refused",
+              "token": "oc:server/tools-list/tools-list/ToolsList",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list composition keywords survive: allOf, anyOf",
+              "token": "oc:server/tools-list/tools-list/ToolsList",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list conditional keywords survive: if, then, else",
+              "token": "oc:server/tools-list/tools-list/ToolsList",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list reference keywords survive: $schema, $defs, $anchor, $ref",
+              "token": "oc:server/tools-list/tools-list/ToolsList",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list the whole fixture arrives intact — decoded-map equality, not bytes",
+              "token": "oc:server/tools-list/tools-list/ToolsList",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test W-3 — 2020-12 keyword preservation through a real tools/list validation keywords survive: enum, const, additionalProperties",
+              "token": "oc:server/tools-list/tools-list/ToolsList",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+              "member": "MCP.Server.JsonSchema202012Test/test arguments reach the handler unchanged — nothing is coerced, defaulted or expanded",
+              "token": "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset the two refusals that never reach the handler stay {:reply, ...}",
+              "token": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404",
+              "verdict": "agrees",
+              "check_status": "FAILURE",
+              "lands": "4b if partial; escalated (divergent_despite_agreement) if full"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTPStatelessTest/test MC-6 — a collector that fails to start fails cleanly (-32603), no handler invoked",
+              "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTPStatelessTest/test MC-6 — a factory that raises fails cleanly (-32603) with no handler invoked",
+              "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTPStatelessTest/test a raising handler leaves no notification residue for the next request (SSE)",
+              "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTPStatelessTest/test matching Mcp-Method routes normally; a mismatch is rejected (-32020)",
+              "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTPStatelessTest/test resources/read — Mcp-Name is validated against params.uri (mismatch → -32020)",
+              "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTPStatelessTest/test two-instance / no-affinity smoke (DoD) interleaving requests round-robin across two stateless instances succeeds identically",
+              "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-meta",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTPStatelessTest/test two-instance / no-affinity smoke (DoD) interleaving requests round-robin across two stateless instances succeeds identically",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test MC-6 a stream that cannot start fails cleanly controlled -32603, nothing streamed, and the handler is told",
+              "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test T-10 the documented multi-instance boundary a change on instance B does not reach a stream held by instance A",
+              "token": "oc:server/server-stateless/sep-2575-server-sends-tools-list-changed-on-subscription/ServerSendsToolsListChangedOnSubscription",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test T-12 the close asymmetry a client depends on lifetime expiry sends the listen response, then closes",
+              "token": "oc:server/server-stateless/sep-2575-server-sends-subscription-ack/ServerSendsSubscriptionAck",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test T-8 keep-alive comment lines an idle stream actually emits comment frames, and stays open",
+              "token": "oc:server/server-stateless/sep-2575-server-sends-tools-list-changed-on-subscription/ServerSendsToolsListChangedOnSubscription",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test the collector's lifetime ends strictly before the stream's the collector is gone by the time the stream is live",
+              "token": "oc:server/server-stateless/sep-2575-server-sends-subscription-ack/ServerSendsSubscriptionAck",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test the exits that raise before a branch is chosen a listen answered ABOVE the handler is owed no teardown callback",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "agrees",
+              "check_status": "FAILURE",
+              "lands": "4b if partial; escalated (divergent_despite_agreement) if full"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Server.ToolOrderTest/test BOUND — sorting is per RESPONSE; a paginated listing is not made deterministic",
+              "token": "oc:server/tools-list/tools-list/ToolsList",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Server.ToolOrderTest/test CONTROL-1 — :tool_order = :handler keeps a curated non-alphabetical order verbatim",
+              "token": "oc:server/tools-list/tools-list/ToolsList",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Server.ToolOrderTest/test CONTROL-2 (discriminates nothing) — an already-deterministic handler is unaffected",
+              "token": "oc:server/tools-list/tools-list/ToolsList",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Server.ToolOrderTest/test SUBJECT — one instance answers in the same order on every request",
+              "token": "oc:server/tools-list/tools-list/ToolsList",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Server.ToolOrderTest/test SUBJECT — the default order is by name, and the tool SET is untouched",
+              "token": "oc:server/tools-list/tools-list/ToolsList",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Server.ToolOrderTest/test SUBJECT — two instances holding the same tool set answer in the same order",
+              "token": "oc:server/tools-list/tools-list/ToolsList",
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "lands": "5"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: a PLAIN mismatched header is still -32020",
+              "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities",
+              "verdict": "agrees",
+              "check_status": "FAILURE",
+              "lands": "4b if partial; escalated (divergent_despite_agreement) if full"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: an encoded header naming a DIFFERENT tool is still -32020",
+              "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities",
+              "verdict": "agrees",
+              "check_status": "FAILURE",
+              "lands": "4b if partial; escalated (divergent_despite_agreement) if full"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Transport.SelfCompatibilityTest/test a sentinel-shaped header that is not valid Base64 is compared as-is, not crashed on",
+              "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities",
+              "verdict": "agrees",
+              "check_status": "FAILURE",
+              "lands": "4b if partial; escalated (divergent_despite_agreement) if full"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that raises fails cleanly (-32603); the secret never leaks",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that returns a non-keyword fails cleanly (-32603)",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "lands": "4a"
+            }
+          ],
+          "also_by_verdict_and_status": [
+            {
+              "verdict": "agrees",
+              "check_status": "FAILURE",
+              "count": 5
+            },
+            {
+              "verdict": "agrees",
+              "check_status": "SUCCESS",
+              "count": 26
+            },
+            {
+              "verdict": "contradicts",
+              "check_status": "FAILURE",
+              "count": 11
+            }
+          ],
+          "also_agreeing_with_a_red_check": [
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Server.SubscriptionsDispatchTest/test open-time authorization via the honoured subset the two refusals that never reach the handler stay {:reply, ...}",
+              "token": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+              "member": "MCP.Transport.SubscriptionsStreamTest/test the exits that raise before a branch is chosen a listen answered ABOVE the handler is owed no teardown callback",
+              "token": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: a PLAIN mismatched header is still -32020",
+              "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: an encoded header naming a DIFFERENT tool is still -32020",
+              "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities"
+            },
+            {
+              "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+              "member": "MCP.Transport.SelfCompatibilityTest/test a sentinel-shaped header that is not valid Base64 is compared as-is, not crashed on",
+              "token": "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities"
+            }
+          ],
+          "note": "The review's figure (CR 30063/30065/30066) is over the primary counterparts only, and it reproduces: one of them agrees with a red check, SubscriptionsDispatchTest T-1 in D1-server-ii. The secondary counterparts are a separate population, measured here because an edge A3 builds from one of them lands by the same rule: among them, further counterparts agree with red checks (also_agreeing_with_a_red_check). Every edge from either population is onto an ET-green member, so none lands in 3 or 6."
+        }
+      },
+      {
+        "ticket": "the D4a fix_sdk for the _meta gate (and MES-155's header rules)",
+        "what": "a lib/ fix",
+        "moves": "The OC checks turn green and the units that assert the opposite turn red. On a branch, one of them that carries an edge is bucket 3 until the same change updates it, which gate 5 forces before merge, so on main such an edge moves 4a to 5. MES-155's scenario, http-header-validation, is not scored, so no in-scope cell moves."
+      },
+      {
+        "ticket": "MES-157",
+        "what": "HttpServerErrorJsonrpcId",
+        "moves": "The check is SUCCESS at the accepted run. A unit asserting an id-less error body would go red on the fixing branch only (bucket 3 there). Not measured here: MES-157 owns the search for such units."
+      }
+    ]
+  },
+  "asymmetry_bucket_6": {
+    "predicate": "in-scope OC checks (docs/conformance/in-scope-2026-07-28.json) whose status at the accepted runs is FAILURE, both legs",
+    "inherited_figure": "The stub says 19 scored OC failures. Re-measured here by the predicate above, it reproduces: 19 checks, of which 5 checks carry an ET edge (11 edges, all ET green) and 14 checks carry none and sit in bucket 2a.",
+    "by_leg": {
+      "server": 19,
+      "client": 0
+    },
+    "by_scenario": {
+      "input-required-result-non-tool-request": 2,
+      "server-stateless": 17
+    },
+    "failure_checks": [
+      "oc:server/input-required-result-non-tool-request/sep-2322-non-tool-incomplete/InputRequiredResultNonToolIncomplete",
+      "oc:server/input-required-result-non-tool-request/wire-schema-valid/WireSchemaValid",
+      "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+      "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-meta",
+      "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-protocol-version/RequestMetaInvalid",
+      "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-protocol-version",
+      "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+      "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities",
+      "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError",
+      "oc:server/server-stateless/sep-2575-http-server-unsupported-version-400/HttpServerUnsupportedVersion400",
+      "oc:server/server-stateless/sep-2575-http-server-header-mismatch-400/HttpServerHeaderMismatch400",
+      "oc:server/server-stateless/sep-2575-server-rejects-undeclared-capability/ServerRejectsUndeclaredCapability",
+      "oc:server/server-stateless/sep-2575-missing-capability-http-400/MissingCapabilityHttp400",
+      "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
+      "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping",
+      "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel",
+      "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-resources-subscribe/HttpServerMethodNotFound404resourcessubscribe",
+      "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-resources-unsubscribe/HttpServerMethodNotFound404resourcesunsubscribe",
+      "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404"
+    ],
+    "with_an_et_edge": [
+      {
+        "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+        "edges": [
+          {
+            "member": "MCP.Server.DispatchTest/test request without a protocolVersion _meta fails fast (-32022)",
+            "claim": "a tools/call carrying no _meta at all is rejected with -32022, not -32602",
+            "bucket": "4a",
+            "et": "green"
+          },
+          {
+            "member": "MCP.Transport.StreamableHTTPStatelessTest/test a request without a protocolVersion _meta fails fast (-32022)",
+            "claim": "a tools/call over real HTTP carrying no _meta is rejected with -32022, not -32602",
+            "bucket": "4a",
+            "et": "green"
+          }
+        ]
+      },
+      {
+        "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
+        "edges": [
+          {
+            "member": "MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)",
+            "claim": "a removed `initialize` yields JSON-RPC error -32022",
+            "bucket": "4a",
+            "et": "green"
+          },
+          {
+            "member": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
+            "claim": "a removed `initialize` over HTTP yields JSON-RPC error -32022",
+            "bucket": "4a",
+            "et": "green"
+          }
+        ]
+      },
+      {
+        "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping",
+        "edges": [
+          {
+            "member": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
+            "claim": "a removed `ping` over HTTP yields JSON-RPC error -32601",
+            "bucket": "4b",
+            "et": "green"
+          },
+          {
+            "member": "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)",
+            "claim": "a dispatched `ping` is answered with -32601 method-not-found",
+            "bucket": "4b",
+            "et": "green"
+          }
+        ]
+      },
+      {
+        "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel",
+        "edges": [
+          {
+            "member": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
+            "claim": "a removed `logging/setLevel` over HTTP yields JSON-RPC error -32601",
+            "bucket": "4b",
+            "et": "green"
+          },
+          {
+            "member": "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)",
+            "claim": "a dispatched `logging/setLevel` is answered with -32601 method-not-found",
+            "bucket": "4b",
+            "et": "green"
+          }
+        ]
+      },
+      {
+        "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404",
+        "edges": [
+          {
+            "member": "MCP.Server.SubscriptionsDispatchTest/test T-5 JSON mode refuses the method outright a non-streaming driver gets -32601, never a silent black hole",
+            "claim": "a deployment that cannot serve subscriptions/listen answers it with -32601, never a silent black hole",
+            "bucket": "4b",
+            "et": "green"
+          },
+          {
+            "member": "MCP.Server.SubscriptionsDispatchTest/test T-5 JSON mode refuses the method outright a handler with no handle_listen/3 also gets -32601",
+            "claim": "a handler that implements no handle_listen/3 likewise yields -32601 for subscriptions/listen",
+            "bucket": "4b",
+            "et": "green"
+          },
+          {
+            "member": "MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream",
+            "claim": "in JSON mode subscriptions/listen is refused with -32601 inside an HTTP 200 response",
+            "bucket": "4a",
+            "et": "green"
+          }
+        ]
+      }
+    ],
+    "without_an_edge_in_bucket_2a": [
+      "oc:server/input-required-result-non-tool-request/sep-2322-non-tool-incomplete/InputRequiredResultNonToolIncomplete",
+      "oc:server/input-required-result-non-tool-request/wire-schema-valid/WireSchemaValid",
+      "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-meta",
+      "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-protocol-version/RequestMetaInvalid",
+      "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-protocol-version",
+      "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid",
+      "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities",
+      "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError",
+      "oc:server/server-stateless/sep-2575-http-server-unsupported-version-400/HttpServerUnsupportedVersion400",
+      "oc:server/server-stateless/sep-2575-http-server-header-mismatch-400/HttpServerHeaderMismatch400",
+      "oc:server/server-stateless/sep-2575-server-rejects-undeclared-capability/ServerRejectsUndeclaredCapability",
+      "oc:server/server-stateless/sep-2575-missing-capability-http-400/MissingCapabilityHttp400",
+      "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-resources-subscribe/HttpServerMethodNotFound404resourcessubscribe",
+      "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-resources-unsubscribe/HttpServerMethodNotFound404resourcesunsubscribe"
+    ],
+    "et_red_counterparts": [],
+    "d1_contradicting_units": {
+      "what": "The D1 records of Sprint 13 measured, by mutation of lib/, ET-CC units that contradict red OC checks, mostly through request construction: the member's own request, built by a test helper, carries an incomplete _meta, and M9 (a -32602 gate on a request whose _meta is incomplete, what RequestMetaInvalid requires) turns the member red. The bucket-1 members listed below pass today and go red under M9. Read from the merged records' mutations; not re-adjudicated here. The records' dispositions for them are in disposition_split: all but one are redundant, and one is wrong_against_spec.",
+      "per_record": [
+        {
+          "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+          "ticket": "MES-141",
+          "slice_members": 39,
+          "M9_reddened": [
+            "oc:none/no-oc-scenario/extensions-offer-result-identical",
+            "oc:none/no-oc-scenario/extensions-config-non-object-value",
+            "oc:none/no-oc-scenario/extensions-config-unencodable-dropped",
+            "oc:none/no-oc-scenario/extensions-config-non-object-encoding-dropped",
+            "oc:none/no-oc-scenario/extensions-config-valid-declaration-silent",
+            "oc:none/no-oc-scenario/extensions-absent-by-default",
+            "oc:none/no-oc-scenario/extensions-empty-declaration-absent",
+            "oc:none/no-oc-scenario/extensions-declared-appears-verbatim",
+            "oc:none/no-oc-scenario/extensions-invalid-identifier-dropped",
+            "oc:none/no-oc-scenario/extensions-declaration-fixed-at-build",
+            "oc:none/no-oc-scenario/content-list-is-never-injected-into",
+            "oc:none/no-oc-scenario/extras-camelcase-key-named-not-silent",
+            "oc:none/no-oc-scenario/extras-non-boolean-is-error-named",
+            "oc:none/no-oc-scenario/structured-content-present-nil-is-json-null",
+            "oc:none/no-oc-scenario/structured-content-absent-stays-absent",
+            "oc:none/no-oc-scenario/structured-content-array-survives",
+            "oc:none/no-oc-scenario/structured-content-empty-array-survives",
+            "oc:none/no-oc-scenario/structured-content-empty-object-survives",
+            "oc:none/no-oc-scenario/structured-content-empty-string-survives",
+            "oc:none/no-oc-scenario/structured-content-false-survives",
+            "oc:none/no-oc-scenario/structured-content-float-survives",
+            "oc:none/no-oc-scenario/structured-content-null-survives",
+            "oc:none/no-oc-scenario/structured-content-object-survives",
+            "oc:none/no-oc-scenario/structured-content-string-survives",
+            "oc:none/no-oc-scenario/structured-content-true-survives",
+            "oc:none/no-oc-scenario/structured-content-zero-survives",
+            "oc:none/no-oc-server-check/schema-2020-12-explicit-dialect-carried",
+            "oc:none/no-oc-server-check/schema-2020-12-composition-keywords",
+            "oc:none/no-oc-server-check/schema-2020-12-conditional-keywords",
+            "oc:none/no-oc-server-check/schema-2020-12-reference-keywords",
+            "oc:none/no-oc-server-check/schema-2020-12-whole-fixture-intact",
+            "oc:none/no-oc-server-check/schema-2020-12-validation-keywords",
+            "oc:none/no-oc-scenario/tool-arguments-delivered-unchanged"
+          ]
+        },
+        {
+          "record": "docs/conformance/adjudications/adjudication-D1-server-ii-2026-07-28.json",
+          "ticket": "MES-142",
+          "slice_members": 37,
+          "M9_reddened": [
+            "oc:none/no-oc-scenario/ack-omits-refused-type",
+            "oc:none/no-oc-scenario/ack-equals-enforced-set",
+            "oc:none/no-oc-scenario/uri-filter-key-style",
+            "oc:none/no-oc-scenario/ack-omits-unauthorized-uri",
+            "oc:none/no-oc-scenario/handler-refusal--32603",
+            "oc:none/no-oc-scenario/refusals-above-the-handler",
+            "oc:none/no-oc-scenario/no-residue-after-raise",
+            "oc:none/no-oc-server-check/McpName-vs-params-uri",
+            "oc:none/no-oc-scenario/stream-start-failure",
+            "oc:none/no-oc-scenario/no-cross-instance-delivery",
+            "oc:none/no-oc-scenario/close-asymmetry-response-first",
+            "oc:none/no-oc-scenario/idle-stream-emits-comments",
+            "oc:none/no-oc-scenario/collector-lifetime-ends-first",
+            "oc:none/no-oc-scenario/sse-response-headers"
+          ],
+          "M9h_slice_members_red": 19,
+          "M9f_slice_members_red": 20
+        },
+        {
+          "record": "docs/conformance/adjudications/adjudication-D1-server-iii-2026-07-28.json",
+          "ticket": "MES-143",
+          "slice_members": 27,
+          "M9_reddened": [
+            "oc:none/no-axis-contact/SEP-2575-old-version-rejected-32022",
+            "oc:none/no-oc-scenario/tools-list-order-pagination-bound",
+            "oc:none/no-oc-scenario/tools-list-curated-order-escape-hatch",
+            "oc:none/no-oc-scenario/tools-list-order-control-vacuous",
+            "oc:none/no-oc-scenario/tools-list-order-across-requests",
+            "oc:none/no-oc-scenario/tools-list-default-order-and-set",
+            "oc:none/no-oc-scenario/tools-list-order-across-instances"
+          ],
+          "M9h_slice_members_red": 11,
+          "M9f_slice_members_red": 14
+        }
+      ],
+      "M9_union": [
+        "oc:none/no-axis-contact/SEP-2575-old-version-rejected-32022",
+        "oc:none/no-oc-scenario/ack-equals-enforced-set",
+        "oc:none/no-oc-scenario/ack-omits-refused-type",
+        "oc:none/no-oc-scenario/ack-omits-unauthorized-uri",
+        "oc:none/no-oc-scenario/close-asymmetry-response-first",
+        "oc:none/no-oc-scenario/collector-lifetime-ends-first",
+        "oc:none/no-oc-scenario/content-list-is-never-injected-into",
+        "oc:none/no-oc-scenario/extensions-absent-by-default",
+        "oc:none/no-oc-scenario/extensions-config-non-object-encoding-dropped",
+        "oc:none/no-oc-scenario/extensions-config-non-object-value",
+        "oc:none/no-oc-scenario/extensions-config-unencodable-dropped",
+        "oc:none/no-oc-scenario/extensions-config-valid-declaration-silent",
+        "oc:none/no-oc-scenario/extensions-declaration-fixed-at-build",
+        "oc:none/no-oc-scenario/extensions-declared-appears-verbatim",
+        "oc:none/no-oc-scenario/extensions-empty-declaration-absent",
+        "oc:none/no-oc-scenario/extensions-invalid-identifier-dropped",
+        "oc:none/no-oc-scenario/extensions-offer-result-identical",
+        "oc:none/no-oc-scenario/extras-camelcase-key-named-not-silent",
+        "oc:none/no-oc-scenario/extras-non-boolean-is-error-named",
+        "oc:none/no-oc-scenario/handler-refusal--32603",
+        "oc:none/no-oc-scenario/idle-stream-emits-comments",
+        "oc:none/no-oc-scenario/no-cross-instance-delivery",
+        "oc:none/no-oc-scenario/no-residue-after-raise",
+        "oc:none/no-oc-scenario/refusals-above-the-handler",
+        "oc:none/no-oc-scenario/sse-response-headers",
+        "oc:none/no-oc-scenario/stream-start-failure",
+        "oc:none/no-oc-scenario/structured-content-absent-stays-absent",
+        "oc:none/no-oc-scenario/structured-content-array-survives",
+        "oc:none/no-oc-scenario/structured-content-empty-array-survives",
+        "oc:none/no-oc-scenario/structured-content-empty-object-survives",
+        "oc:none/no-oc-scenario/structured-content-empty-string-survives",
+        "oc:none/no-oc-scenario/structured-content-false-survives",
+        "oc:none/no-oc-scenario/structured-content-float-survives",
+        "oc:none/no-oc-scenario/structured-content-null-survives",
+        "oc:none/no-oc-scenario/structured-content-object-survives",
+        "oc:none/no-oc-scenario/structured-content-present-nil-is-json-null",
+        "oc:none/no-oc-scenario/structured-content-string-survives",
+        "oc:none/no-oc-scenario/structured-content-true-survives",
+        "oc:none/no-oc-scenario/structured-content-zero-survives",
+        "oc:none/no-oc-scenario/tool-arguments-delivered-unchanged",
+        "oc:none/no-oc-scenario/tools-list-curated-order-escape-hatch",
+        "oc:none/no-oc-scenario/tools-list-default-order-and-set",
+        "oc:none/no-oc-scenario/tools-list-order-across-instances",
+        "oc:none/no-oc-scenario/tools-list-order-across-requests",
+        "oc:none/no-oc-scenario/tools-list-order-control-vacuous",
+        "oc:none/no-oc-scenario/tools-list-order-pagination-bound",
+        "oc:none/no-oc-scenario/uri-filter-key-style",
+        "oc:none/no-oc-server-check/McpName-vs-params-uri",
+        "oc:none/no-oc-server-check/schema-2020-12-composition-keywords",
+        "oc:none/no-oc-server-check/schema-2020-12-conditional-keywords",
+        "oc:none/no-oc-server-check/schema-2020-12-explicit-dialect-carried",
+        "oc:none/no-oc-server-check/schema-2020-12-reference-keywords",
+        "oc:none/no-oc-server-check/schema-2020-12-validation-keywords",
+        "oc:none/no-oc-server-check/schema-2020-12-whole-fixture-intact"
+      ],
+      "note": "The union is taken over tags. The slices are disjoint, so it is also their sum. M9h and M9f figures are quoted per record, not summed: they were not measured on MES-141's slice.",
+      "disposition_split": {
+        "by_disposition": {
+          "redundant": 53,
+          "wrong_against_spec": 1
+        },
+        "not_redundant": [
+          {
+            "record": "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json",
+            "tag": "oc:none/no-oc-scenario/extensions-offer-result-identical",
+            "disposition": "wrong_against_spec"
+          }
+        ]
+      },
+      "construction_wording": {
+        "what": "The M9_union rows whose own record text says, in terms, that the contradiction is \"only through the construction\". A text measure, not a re-reading: the rows outside this list do not use the phrase, and whether their contradiction also runs through construction is not re-adjudicated here.",
+        "tags": [
+          "oc:none/no-axis-contact/SEP-2575-old-version-rejected-32022",
+          "oc:none/no-oc-scenario/ack-equals-enforced-set",
+          "oc:none/no-oc-scenario/ack-omits-refused-type",
+          "oc:none/no-oc-scenario/ack-omits-unauthorized-uri",
+          "oc:none/no-oc-scenario/close-asymmetry-response-first",
+          "oc:none/no-oc-scenario/collector-lifetime-ends-first",
+          "oc:none/no-oc-scenario/content-list-is-never-injected-into",
+          "oc:none/no-oc-scenario/extras-camelcase-key-named-not-silent",
+          "oc:none/no-oc-scenario/extras-non-boolean-is-error-named",
+          "oc:none/no-oc-scenario/handler-refusal--32603",
+          "oc:none/no-oc-scenario/idle-stream-emits-comments",
+          "oc:none/no-oc-scenario/no-cross-instance-delivery",
+          "oc:none/no-oc-scenario/no-residue-after-raise",
+          "oc:none/no-oc-scenario/refusals-above-the-handler",
+          "oc:none/no-oc-scenario/sse-response-headers",
+          "oc:none/no-oc-scenario/stream-start-failure",
+          "oc:none/no-oc-scenario/structured-content-absent-stays-absent",
+          "oc:none/no-oc-scenario/structured-content-array-survives",
+          "oc:none/no-oc-scenario/structured-content-empty-array-survives",
+          "oc:none/no-oc-scenario/structured-content-empty-object-survives",
+          "oc:none/no-oc-scenario/structured-content-empty-string-survives",
+          "oc:none/no-oc-scenario/structured-content-false-survives",
+          "oc:none/no-oc-scenario/structured-content-float-survives",
+          "oc:none/no-oc-scenario/structured-content-null-survives",
+          "oc:none/no-oc-scenario/structured-content-object-survives",
+          "oc:none/no-oc-scenario/structured-content-present-nil-is-json-null",
+          "oc:none/no-oc-scenario/structured-content-string-survives",
+          "oc:none/no-oc-scenario/structured-content-true-survives",
+          "oc:none/no-oc-scenario/structured-content-zero-survives",
+          "oc:none/no-oc-scenario/tools-list-curated-order-escape-hatch",
+          "oc:none/no-oc-scenario/tools-list-default-order-and-set",
+          "oc:none/no-oc-scenario/tools-list-order-across-instances",
+          "oc:none/no-oc-scenario/tools-list-order-across-requests",
+          "oc:none/no-oc-scenario/tools-list-order-control-vacuous",
+          "oc:none/no-oc-scenario/tools-list-order-pagination-bound",
+          "oc:none/no-oc-scenario/uri-filter-key-style",
+          "oc:none/no-oc-server-check/McpName-vs-params-uri"
+        ]
+      }
+    },
+    "what_it_implies": "The suite is not independent of the implementation. Where lib/ diverges from the specification, ET-CC does not detect the divergence: it encodes it as a green assertion. So red OC checks sit against zero red ET members, and the contradicting units are green by construction. Bucket 6 being empty is evidence of that coupling, not evidence of agreement.",
+    "census_negative": {
+      "what": "The in-scope predicate above is the ratified one (ratification 30055, Q6). The stub's literal predicate, the census's scored FAILURE total per leg, gives a different client figure, and the difference is named here so that the client figure of by_leg is not read as a census figure.",
+      "census_scored_failure": {
+        "server": {
+          "file": "docs/conformance/server-2026-07-28.json",
+          "at": "totals.checks.scored.FAILURE",
+          "value": 19
+        },
+        "client": {
+          "file": "docs/conformance/client-2026-07-28.json",
+          "at": "totals.checks.scored.FAILURE",
+          "value": 46
+        }
+      },
+      "client_failures_by_classification": {
+        "out_of_scope_adr_003": 46
+      },
+      "client_failing_scenarios_out_of_scope_adr_003": [
+        "auth/authorization-server-migration",
+        "auth/basic-cimd",
+        "auth/iss-normalized",
+        "auth/iss-not-advertised",
+        "auth/iss-supported",
+        "auth/iss-supported-missing",
+        "auth/iss-unexpected",
+        "auth/iss-wrong-issuer",
+        "auth/metadata-default",
+        "auth/metadata-issuer-mismatch",
+        "auth/metadata-var1",
+        "auth/metadata-var2",
+        "auth/metadata-var3",
+        "auth/offline-access-not-supported",
+        "auth/offline-access-scope",
+        "auth/pre-registration",
+        "auth/scope-from-scopes-supported",
+        "auth/scope-from-www-authenticate",
+        "auth/scope-omitted-when-undefined",
+        "auth/scope-retry-limit",
+        "auth/scope-step-up",
+        "auth/token-endpoint-auth-basic",
+        "auth/token-endpoint-auth-none",
+        "auth/token-endpoint-auth-post"
+      ],
+      "reading": "Every scored client FAILURE sits in a scenario classified out_of_scope_adr_003 (the authorization profile, excluded from 2.0.0 by ADR-003), which the in-scope set does not carry. So by the in-scope predicate the client leg contributes no failing check, and by the census's scored totals it contributes the ADR-003 ones. The server figure is the same under both."
+    }
+  },
+  "swap_audit": "Not run: this record has no rows, so it adds no pair to the content-exchange population (G32 moduledoc, What the ties do NOT hold)."
+}

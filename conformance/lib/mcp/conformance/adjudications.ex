@@ -191,6 +191,11 @@ defmodule MCP.Conformance.Adjudications do
     * **empty_closure_unwarranted**: a closed section with no rows over a view
       that projects none, where the view does not state `count: 0` and an
       `emptiness_reason`. (Over a view that projects rows, `missing` fires.)
+    * **emptiness_unechoed**: a closed section with no rows over a view that
+      projects none, carrying no `emptiness` echo (below).
+    * **emptiness_drift**: a section's `emptiness` echo is not the view's
+      current `count`, `emptiness_reason` and `universe`, or it sits on a
+      section that claims no zero (an open one, or one with rows).
     * **record_outside_walk**: a `*.json` that git would commit (tracked, or
       untracked and not ignored: `@scan_population`, run at the repository
       root) whose `schema` is the record schema, outside the walk root. A
@@ -205,6 +210,28 @@ defmodule MCP.Conformance.Adjudications do
 
   `audit/2` takes the catalogues as `policy`, defaulting to the pinned ones, so
   a control can plant a stale catalogue without editing this file.
+
+  ## An empty view, closed: the zero is echoed (MES-144)
+
+  A closed section with `rows: []` claims the view projects nothing. Before
+  MES-144 that claim was only implied, and `empty_closure_unwarranted` held
+  the view's `emptiness_reason` for being non-empty, not for what it says: a
+  view re-projected at zero rows over a different universe, or with a
+  different measured premise, left the closure standing unseen. So such a
+  section carries `emptiness`, a verbatim copy of the view's `count`,
+  `emptiness_reason` and `universe` (`emptiness/1`), and the guard requires
+  the copy to EQUAL the view [authored 30052 | ratified 30055, Q1].
+  `projected_from` is not echoed (Q2): a crosswalk regenerated for an
+  unrelated reason would otherwise force a re-echo, and a row the view gains
+  is `missing`'s.
+
+  A re-projection with a row fires `missing` AND `emptiness_drift` (the count
+  moved). A premise that moves at zero rows fires `emptiness_drift` alone. A
+  view that contradicts itself (`rows: []`, `count: 3`), echoed faithfully,
+  passes the echo and is `empty_closure_unwarranted`'s. Neither kind entails
+  the other; the controls show each on its own plant. What the echo does NOT
+  establish: that the view's premise is TRUE. The view states it; the record
+  that closes the view measures it.
 
   ## The key: the edge triple, derived by ONE function from both sides
 
@@ -379,7 +406,8 @@ defmodule MCP.Conformance.Adjudications do
   `phantom`, `missing`,
   `duplicate`, `closure_not_exclusive`, `owed_unadjudicated`, `pending_but_closed`,
   `catalogue_names_absent_view`, `bound_to_excluded`, `bound_outside_anchor`,
-  `owner_mismatch`, `empty_closure_unwarranted`, `record_outside_walk`,
+  `owner_mismatch`, `empty_closure_unwarranted`, `emptiness_unechoed`,
+  `emptiness_drift`, `record_outside_walk`,
   `stray_in_walk_root`, `et_test_foreign`, `check_foreign`, `root_cause_foreign`,
   `citation_ambiguous`, `echo_drift`, `citation_drift`, and `reach`. Every refusal names the guard, the kind, the
   record file and the edge key.
@@ -461,6 +489,9 @@ defmodule MCP.Conformance.Adjudications do
   # carry them.
   @echo_fields ~w(shape verdicts bucket escalation_reason escalation_cause cg search_id
                   the_search_that_found_none)
+  # A closed section over an empty view echoes these (MES-144; authored 30052,
+  # ratified 30055, Q1 and Q2). Not `projected_from`.
+  @emptiness_fields ~w(count emptiness_reason universe)
 
   # The OC locator: each OC token's emitting sites in the pinned harness build.
   # A row's `check` is tied to its tag through it (MES-135 K1).
@@ -486,10 +517,8 @@ defmodule MCP.Conformance.Adjudications do
   }
 
   @pending %{
-    "docs/conformance/buckets/bucket-3-2026-07-28.json" => "MES-144",
     "docs/conformance/buckets/bucket-5a-2026-07-28.json" => "MES-148",
-    "docs/conformance/buckets/bucket-5b-2026-07-28.json" => "MES-146",
-    "docs/conformance/buckets/bucket-6-2026-07-28.json" => "MES-144"
+    "docs/conformance/buckets/bucket-5b-2026-07-28.json" => "MES-146"
   }
 
   # A record is found OUTSIDE the walk by scanning the files git would commit
@@ -515,6 +544,7 @@ defmodule MCP.Conformance.Adjudications do
   def d1_views, do: @d1_views
   def routes, do: @routes
   def echo_fields, do: @echo_fields
+  def emptiness_fields, do: @emptiness_fields
   def view_schemas, do: @view_schemas
   def schema, do: @schema
   def locator_path, do: @locator
@@ -536,6 +566,9 @@ defmodule MCP.Conformance.Adjudications do
 
   @doc "The fields of a view row a record row must echo verbatim."
   def echo(view_row) when is_map(view_row), do: Map.take(view_row, @echo_fields)
+
+  @doc "The fields of an empty view a closed empty section must echo verbatim, as `emptiness`."
+  def emptiness(view) when is_map(view), do: Map.take(view, @emptiness_fields)
 
   # --- loading --------------------------------------------------------------
 
@@ -790,7 +823,9 @@ defmodule MCP.Conformance.Adjudications do
         excluded_defects(ctx) ++
         outside_anchor_defects(ctx) ++
         owner_defects(ctx) ++
-        empty_closure_defects(ctx)
+        empty_closure_defects(ctx) ++
+        emptiness_unechoed_defects(ctx) ++
+        emptiness_drift_defects(ctx)
 
     pending_open =
       for v <- owed,
@@ -951,6 +986,52 @@ defmodule MCP.Conformance.Adjudications do
           )
   end
 
+  # MES-144 (authored 30052, ratified 30055). The same domain as
+  # empty_closure_defects: over a view that projects rows, `missing` fires, and
+  # a closed empty section beside an open one with rows is a split view's
+  # closing section, which claims no zero.
+  defp emptiness_unechoed_defects(ctx) do
+    for %{closure: "closed", rows: [], emptiness: :error} = s <- ctx.sections,
+        {:ok, %{"rows" => []}} <- [ctx.inputs.views[s.view]],
+        do:
+          d(
+            :emptiness_unechoed,
+            s.file,
+            nil,
+            "a closed section with no rows over #{s.view} carries no `emptiness`, so the zero it claims is implied, not stated: copy the view's #{Enum.join(@emptiness_fields, ", ")} into it verbatim"
+          )
+  end
+
+  defp emptiness_drift_defects(ctx) do
+    for %{emptiness: {:ok, echo}} = s <- ctx.sections,
+        why <- [emptiness_drift(s, echo, ctx.inputs.views[s.view])],
+        is_binary(why),
+        do: d(:emptiness_drift, s.file, nil, why)
+  end
+
+  defp emptiness_drift(%{closure: c, rows: rows} = s, _echo, _view)
+       when c != "closed" or rows != [],
+       do:
+         "an `emptiness` echo on a section of #{s.view} that claims no zero (closure #{c}, #{length(rows)} rows): only a closed section with no rows carries one"
+
+  defp emptiness_drift(s, echo, {:ok, v}) when is_map(v) do
+    want = emptiness(v)
+    echoed = if is_map(echo), do: echo, else: %{}
+
+    moved =
+      (Map.keys(echoed) ++ @emptiness_fields)
+      |> Enum.uniq()
+      |> Enum.sort()
+      |> Enum.reject(&(is_map(echo) and Map.fetch(echoed, &1) == Map.fetch(want, &1)))
+
+    if moved != [],
+      do:
+        "the `emptiness` echo is not #{s.view}'s current #{Enum.join(@emptiness_fields, ", ")}; it differs at #{inspect(moved)} (echoed #{inspect(Map.take(echoed, moved), limit: 4, printable_limit: 120)}, view #{inspect(Map.take(want, moved), limit: 4, printable_limit: 120)})"
+  end
+
+  # An unreadable view is unknown_view's.
+  defp emptiness_drift(_s, _echo, _view), do: nil
+
   defp stated_reason?(r) when is_map(r), do: map_size(r) > 0
   defp stated_reason?(r), do: stated?(r)
 
@@ -1006,7 +1087,8 @@ defmodule MCP.Conformance.Adjudications do
           view: &1["view"],
           closure: &1["closure"],
           owner: &1["owner"],
-          rows: &1["rows"]
+          rows: &1["rows"],
+          emptiness: Map.fetch(&1, "emptiness")
         }
       )
 

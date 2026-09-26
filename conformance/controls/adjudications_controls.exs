@@ -118,6 +118,23 @@
 # reading not opening "None can: "), and a check on each plant's MESSAGE.
 # `mutation` (8) neutralises the clause and requires each plant CLEAN.
 #
+# MES-144 added the emptiness echo (authored 30052, ratified 30055, Q1 and Q2).
+# `refusals` gains, in the plants table: `emptiness_unechoed` (bucket-3 closed
+# empty with no echo); `emptiness_drift` twice (the measured premise, and the
+# universe, moved at zero rows: R2); and `empty_closure_unwarranted` over a view
+# claiming count 3 with no rows, echoed faithfully. The last two are the
+# NOT-ENTAILED pair: each is caught by exactly one clause. Plus R1, the brief's
+# plant: one real bucket-5a row re-projected into bucket-3 under a closure
+# claiming zero, refused by `missing` AND `emptiness_drift`, with each message
+# checked. `mutation` (8) neutralises each clause alone with its plants CLEAN,
+# and (11) shows R1 still refused with either of its two clauses cut. Every
+# plant first removes, in memory, any section already binding the view
+# (`close_empty/4`), so it runs the same once MES-144's own record is committed.
+# `harness` exempts from its per-record "carries n > 0" reach check only a
+# record with no rows, at least one section, and every section closing an empty
+# view with its echo: MES-144's, which has no row to tie to a harness site. It
+# prints the exemption, and plants H0-H3 hold its boundary (H3: sections: []).
+#
 # WHY IN MEMORY. Every plant mutates decoded data inside this VM. Nothing in the
 # clone is written, because seats share one checkout.
 
@@ -141,6 +158,9 @@ defmodule AdjudicationsControls do
   @v1 "docs/conformance/buckets/bucket-1-2026-07-28.json"
   @vcu "docs/conformance/buckets/claim-unmatched-2026-07-28.json"
   @d1 "docs/conformance/adjudications/adjudication-D1-nd-CU-2026-07-28.json"
+  @d3d6 "docs/conformance/adjudications/adjudication-D3-D6-2026-07-28.json"
+  @v3 "docs/conformance/buckets/bucket-3-2026-07-28.json"
+  @v6 "docs/conformance/buckets/bucket-6-2026-07-28.json"
   # The arity of each clause `mutation` neutralises (MES-135).
   @arity %{
     "owed_defects" => 1,
@@ -150,6 +170,8 @@ defmodule AdjudicationsControls do
     "outside_anchor_defects" => 1,
     "owner_defects" => 1,
     "empty_closure_defects" => 1,
+    "emptiness_unechoed_defects" => 1,
+    "emptiness_drift_defects" => 1,
     "outside_defects" => 1,
     "stray_defects" => 1,
     "et_test_defects" => 4,
@@ -215,6 +237,7 @@ defmodule AdjudicationsControls do
     check("the D2a-i record is visited", @d2ai in A.load().walk)
     check("the D2a-ii record is visited", @d2aii in A.load().walk)
     check("the D1-nd+CU record is visited", @d1 in A.load().walk)
+    check("the D3+D6 record is visited", @d3d6 in A.load().walk)
 
     check(
       "reach: #{r["rows_visited"]} rows over #{r["views_bound"]} views",
@@ -677,6 +700,41 @@ defmodule AdjudicationsControls do
       )
     end
 
+    # --- MES-144 (30055, Q1): a view with one row under a record that claims zero ---
+    {r1, r1_policy, r1_key} = one_row_under_zero(base)
+    r1_lines = r1 |> A.audit(r1_policy) |> Map.fetch!(:defects) |> Enum.map(&A.format_defect/1)
+
+    check(
+      "(MES-144 R1) one bucket-5a row re-projected into bucket-3 under a closure claiming zero: G32 missing AND emptiness_drift, each naming the guard, the kind and the record",
+      match?([_, _], r1_lines) and
+        Enum.at(r1_lines, 0) =~
+          ~r/^G32 missing — .*adjudication-W3-plant\.json @ .*bucket-3-2026-07-28\.json projects this edge/ and
+        Enum.at(r1_lines, 0) =~ inspect(r1_key) and
+        Enum.at(r1_lines, 1) =~
+          ~r/^G32 emptiness_drift — .*adjudication-W3-plant\.json: the `emptiness` echo is not .*bucket-3-2026-07-28\.json's current count, emptiness_reason, universe; it differs at \["count"\] \(echoed %\{"count" => 0\}, view %\{"count" => 1\}\)/,
+      r1_lines
+    )
+
+    # --- MES-144 AC: on the REAL record, each bucket re-projected with one row ---
+    row = @v5a |> File.read!() |> Jason.decode!() |> Map.fetch!("rows") |> hd()
+
+    for v <- [@v3, @v6] do
+      {:ok, doc} = base.views[v]
+      grown = put_in(base, [:views, v], {:ok, %{doc | "rows" => [row], "count" => 1}})
+      ds = A.audit(grown).defects
+      lines = Enum.map(ds, &A.format_defect/1)
+
+      check(
+        "(MES-144 AC) #{Path.basename(v)} re-projected with one row under the committed D3+D6 record: G32 missing AND emptiness_drift, both against that record",
+        Enum.map(ds, &{&1.kind, &1.file}) == [{:missing, @d3d6}, {:emptiness_drift, @d3d6}] and
+          Enum.at(lines, 1) =~ ~r/differs at \["count"\]/ and
+          Enum.at(lines, 1) =~ Path.basename(v),
+        lines
+      )
+
+      named(lines)
+    end
+
     # N7 (MES-138): the regex MES-138's gate-5 unit used admits "test:12"; G32's does not.
     check(
       "(N7) MES-138's gate-5 regex admits \"fails test:12\"; the tightened one refuses it",
@@ -720,26 +778,16 @@ defmodule AdjudicationsControls do
     v3 = "docs/conformance/buckets/bucket-3-2026-07-28.json"
     {:ok, v3_doc} = v3 |> File.read!() |> Jason.decode()
 
-    empty_record =
-      {:ok,
-       %{
-         "schema" => A.schema(),
-         "authored_by_hand" => true,
-         "ticket" => "MES-144",
-         "sections" => [%{"view" => v3, "closure" => "closed", "rows" => []}]
-       }}
-
-    closes_3 =
-      base
-      |> add_record(@w3, empty_record)
-      |> put_in([:views, v3], {:ok, Map.delete(v3_doc, "emptiness_reason")})
+    no_3 = %{policy | pending: Map.delete(policy.pending, v3)}
+    # MES-144: bucket-3 closed empty by a W3 record, over the view `view_fun`
+    # makes of the committed one, echoing `echo_fun` of it.
+    closes_3 = fn view_fun, echo_fun -> close_empty(base, v3, view_fun.(v3_doc), echo_fun) end
+    faithful = &A.emptiness/1
+    unmoved = &Function.identity/1
 
     check(
-      "  (positive) bucket-3 closed empty over its committed view, which states count 0 and why: CLEAN",
-      A.audit(put_in(closes_3, [:views, v3], {:ok, v3_doc}), %{
-        policy
-        | pending: Map.delete(policy.pending, v3)
-      }).defects == []
+      "  (positive) bucket-3 closed empty over its committed view, which states count 0 and why, echoed: CLEAN",
+      A.audit(closes_3.(unmoved, faithful), no_3).defects == []
     )
 
     tmp = tree_copy()
@@ -800,8 +848,27 @@ defmodule AdjudicationsControls do
        "D2a-i's open section on bucket-2a owned by MES-129, not MES-130 (D2a-ii's ticket)",
        update_section(base, @v2a, &Map.put(&1, "owner", "MES-129"), @d2ai), policy},
       {:empty_closure_unwarranted,
-       "bucket-3 closed empty (as MES-144 would) over a view stripped of its emptiness_reason",
-       closes_3, %{policy | pending: Map.delete(policy.pending, v3)}},
+       "bucket-3 closed empty over a view stripped of its emptiness_reason, echoed faithfully",
+       closes_3.(&Map.delete(&1, "emptiness_reason"), faithful), no_3},
+      {:empty_closure_unwarranted,
+       "NOT ENTAILED: bucket-3 closed empty over a view claiming count 3 with no rows, echoed faithfully (the echo holds; the view contradicts itself)",
+       closes_3.(&Map.put(&1, "count", 3), faithful), no_3},
+      {:emptiness_unechoed,
+       "bucket-3 closed empty over its committed view, with no `emptiness` echo (the zero implied, not stated)",
+       closes_3.(unmoved, nil), no_3},
+      {:emptiness_drift,
+       "NOT ENTAILED (R2): bucket-3's measured premise moved at zero rows, under the committed view's echo",
+       closes_3.(
+         &put_in(
+           &1,
+           ["emptiness_reason", "measured"],
+           "cells whose stored et verdict is `red`: 0 of 170."
+         ),
+         fn _ -> A.emptiness(v3_doc) end
+       ), no_3},
+      {:emptiness_drift,
+       "bucket-3's universe re-counted at zero rows, under the committed view's echo",
+       closes_3.(&put_in(&1, ["universe", "count"], 170), fn _ -> A.emptiness(v3_doc) end), no_3},
       {:record_outside_walk,
        "a copy of D4a's record under docs/conformance/ (in a tree copy outside the clone)",
        outside, policy},
@@ -1362,10 +1429,10 @@ defmodule AdjudicationsControls do
       # gate-5 walk-root pin existed to catch. The universe (K2) now refuses it
       # itself: every view the unseen records closed is owed and unadjudicated.
       check(
-        "(2) a narrowed walk sees zero records and is REFUSED: owed_unadjudicated on the 7 closed views",
+        "(2) a narrowed walk sees zero records and is REFUSED: owed_unadjudicated on the 9 closed views",
         r["records_visited"] == 0 and
           Enum.sort(for(%{kind: :owed_unadjudicated, file: f} <- ds, do: f)) ==
-            Enum.sort([@v1, @v2a, @v2b, @v4a, @v4b, @vcu, @ves]) and
+            Enum.sort([@v1, @v2a, @v2b, @v3, @v4a, @v4b, @v6, @vcu, @ves]) and
           Enum.all?(ds, &(&1.kind == :owed_unadjudicated)),
         Enum.map(ds, &A.format_defect/1)
       )
@@ -1467,6 +1534,8 @@ defmodule AdjudicationsControls do
       bound_outside_anchor: "outside_anchor_defects",
       owner_mismatch: "owner_defects",
       empty_closure_unwarranted: "empty_closure_defects",
+      emptiness_unechoed: "emptiness_unechoed_defects",
+      emptiness_drift: "emptiness_drift_defects",
       record_outside_walk: "outside_defects",
       stray_in_walk_root: "stray_defects",
       et_test_foreign: "et_test_defects",
@@ -1497,6 +1566,34 @@ defmodule AdjudicationsControls do
         )
       end)
     end
+
+    # (11) MES-144: R1 is refused by two clauses, so neither alone is load-bearing
+    # for it: each neutralised, the other still refuses; the echo's clause cut,
+    # only `missing` is left.
+    {r1, r1_policy, _} = one_row_under_zero(base)
+
+    with_module(neutralise(src, ["emptiness_drift_defects"]), fn ->
+      kinds = r1 |> A.audit(r1_policy) |> Map.fetch!(:defects) |> Enum.map(& &1.kind)
+
+      check(
+        "(11) R1 with emptiness_drift neutralised is still refused, by missing alone",
+        kinds == [:missing],
+        [inspect(kinds)]
+      )
+    end)
+
+    no_missing = String.replace(src, "Enum.sort_by(missing, & &1.key)", "[]")
+    check("(11) the no-missing mutant differs from the source", no_missing != src)
+
+    with_module(no_missing, fn ->
+      kinds = r1 |> A.audit(r1_policy) |> Map.fetch!(:defects) |> Enum.map(& &1.kind)
+
+      check(
+        "(11) R1 with missing cut is still refused, by emptiness_drift alone",
+        kinds == [:emptiness_drift],
+        [inspect(kinds)]
+      )
+    end)
 
     # (10) Q4: with the walk narrowed back to rows, the top-level plants pass.
     rows_only = String.replace(src, "c <- collect(outside_rows(doc))", "c <- []")
@@ -1778,7 +1875,33 @@ defmodule AdjudicationsControls do
     for f <- A.load().walk do
       {:ok, rec} = records[f]
       n = rec |> A.collect() |> Enum.count(&Map.has_key?(&1, "harness_sha256"))
-      check("  … #{Path.basename(f)} carries #{n} harness citations", n > 0)
+
+      if n == 0 and owes_no_harness_citation?(rec),
+        do:
+          check(
+            "  … #{Path.basename(f)} carries 0 harness citations: it has no rows and every section closes an empty view, so none is owed",
+            true
+          ),
+        else: check("  … #{Path.basename(f)} carries #{n} harness citations", n > 0)
+    end
+
+    # The exemption's boundary, planted (MES-144 N1). H0 is the committed D3+D6
+    # record, the one shape exempt; H1-H3 are each one step outside it, and H3
+    # (no sections at all) was exempt until `sections != []` was added, because
+    # Enum.all?/2 over [] is true.
+    {:ok, d3d6} = records[@d3d6]
+    [s3 | _] = d3d6["sections"]
+
+    for {id, label, rec, exempt?} <- [
+          {"H0", "the committed D3+D6 record", d3d6, true},
+          {"H1", "a section with a row", %{"sections" => [%{s3 | "rows" => [%{}]}]}, false},
+          {"H2", "one section open", %{"sections" => [%{s3 | "closure" => "open"}]}, false},
+          {"H3", "sections: []", %{"sections" => []}, false}
+        ] do
+      check(
+        "  #{id} #{label}: #{if exempt?, do: "exempt", else: "NOT exempt"} from the harness-citation reach check",
+        owes_no_harness_citation?(rec) == exempt?
+      )
     end
 
     shas = cites |> Enum.map(& &1["harness_sha256"]) |> Enum.uniq()
@@ -1972,6 +2095,52 @@ defmodule AdjudicationsControls do
     |> put_in([:views, view], {:ok, v})
   end
 
+  # MES-144 (30055, Q1): bucket-3 closed empty and echoed faithfully, then one
+  # real bucket-5a row put into the view (count 1), as a re-projection would.
+  def one_row_under_zero(base) do
+    v3 = "docs/conformance/buckets/bucket-3-2026-07-28.json"
+    {:ok, v3_doc} = v3 |> File.read!() |> Jason.decode()
+    row = @v5a |> File.read!() |> Jason.decode!() |> Map.fetch!("rows") |> hd()
+
+    inputs =
+      base
+      |> close_empty(v3, v3_doc, &A.emptiness/1)
+      |> put_in([:views, v3], {:ok, %{v3_doc | "rows" => [row], "count" => 1}})
+
+    {inputs, %{A.policy() | pending: Map.delete(A.pending(), v3)}, A.key(row)}
+  end
+
+  # MES-144: `view` closed empty by a W3 record, with every section already
+  # binding it removed IN MEMORY first (MES-144's own record, once committed),
+  # so the plant is the view's only closure. `echo_fun` nil: no `emptiness`.
+  def close_empty(base, view, view_doc, echo_fun) do
+    section =
+      %{"view" => view, "closure" => "closed", "rows" => []}
+      |> then(&if(echo_fun, do: Map.put(&1, "emptiness", echo_fun.(view_doc)), else: &1))
+
+    base
+    |> Map.update!(:records, fn records ->
+      Map.new(records, fn
+        {f, {:ok, %{"sections" => ss} = r}} ->
+          {f, {:ok, %{r | "sections" => Enum.reject(ss, &(&1["view"] == view))}}}
+
+        other ->
+          other
+      end)
+    end)
+    |> add_record(
+      @w3,
+      {:ok,
+       %{
+         "schema" => A.schema(),
+         "authored_by_hand" => true,
+         "ticket" => "MES-144",
+         "sections" => [section]
+       }}
+    )
+    |> put_in([:views, view], {:ok, view_doc})
+  end
+
   defp expect(label, kinds, key, inputs) do
     %{defects: ds} = A.audit(inputs)
     lines = Enum.map(ds, &A.format_defect/1)
@@ -1996,6 +2165,18 @@ defmodule AdjudicationsControls do
     for l <- lines do
       check("  … names G32: #{String.slice(l, 0, 150)}", String.starts_with?(l, "G32 "))
     end
+  end
+
+  # MES-144: a record with NO rows, at least one section, and every section
+  # closing an empty view with its emptiness echo has no row to tie to a harness
+  # site, so it is owed none. `sections != []` is load-bearing: Enum.all?/2 is
+  # vacuously true over [] (N1, plant H3).
+  defp owes_no_harness_citation?(rec) do
+    rec["sections"] != [] and
+      Enum.all?(
+        rec["sections"],
+        &(&1["rows"] == [] and &1["closure"] == "closed" and Map.has_key?(&1, "emptiness"))
+      )
   end
 
   defp check(label, ok?, detail \\ []) do

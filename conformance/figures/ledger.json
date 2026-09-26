@@ -5336,6 +5336,46 @@
       "path": "sections[#0].slice.statement",
       "phrase": "103 server-leg rows",
       "quantity": "bucket_1_server_rows"
+    },
+    {
+      "class": "enumerated",
+      "file": "docs/conformance/adjudications/adjudication-D3-D6-2026-07-28.json",
+      "list": "/mechanism.criterion_run.red_members",
+      "nth": 1,
+      "path": "asymmetry_bucket_6.what_it_implies",
+      "phrase": "zero red ET members"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D3-D6-2026-07-28.json",
+      "nth": 1,
+      "path": "asymmetry_bucket_6.inherited_figure",
+      "phrase": "19 checks",
+      "quantity": "in_scope_failure"
+    },
+    {
+      "class": "enumerated",
+      "file": "docs/conformance/adjudications/adjudication-D3-D6-2026-07-28.json",
+      "list": "/asymmetry_bucket_6.with_an_et_edge",
+      "nth": 1,
+      "path": "asymmetry_bucket_6.inherited_figure",
+      "phrase": "5 checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D3-D6-2026-07-28.json",
+      "nth": 1,
+      "path": "asymmetry_bucket_6.inherited_figure",
+      "phrase": "11 edges",
+      "quantity": "d4a_oc_red_edges"
+    },
+    {
+      "class": "enumerated",
+      "file": "docs/conformance/adjudications/adjudication-D3-D6-2026-07-28.json",
+      "list": "/asymmetry_bucket_6.without_an_edge_in_bucket_2a",
+      "nth": 1,
+      "path": "asymmetry_bucket_6.inherited_figure",
+      "phrase": "14 checks"
     }
   ],
   "guard": "G31 — MCP.Conformance.InputFigures (MES-120)",
@@ -15654,6 +15694,21 @@
             {
               "field": "member.module",
               "ne": "MCP.Transport.SubscriptionsStreamTest"
+            }
+          ]
+        }
+      }
+    },
+    "in_scope_failure": {
+      "means": "in-scope OC checks FAILURE at the accepted runs, both legs (MES-144's bucket-6 asymmetry)",
+      "query": {
+        "count": {
+          "at": "scenarios[].checks[]",
+          "in": "docs/conformance/in-scope-2026-07-28.json",
+          "where": [
+            {
+              "eq": "FAILURE",
+              "field": "status"
             }
           ]
         }
