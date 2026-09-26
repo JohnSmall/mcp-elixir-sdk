@@ -4752,6 +4752,38 @@
       "path": "null_control_statement.supersedes",
       "phrase": "5 recomputes both slices",
       "reason": "R4"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-nd-CU-2026-07-28.json",
+      "nth": 1,
+      "path": "method",
+      "phrase": "all 175 checks",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-nd-CU-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].slice.statement",
+      "phrase": "21 rows",
+      "quantity": "d1_bucket1_nd_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-nd-CU-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].slice.statement",
+      "phrase": "29 none_determinable members",
+      "quantity": "attr_nd"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-nd-CU-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ProtocolTest/test encode/1 encodes a notification with params | oc:none/no-oc-scenario/notification-framing-encode-with-params].rationale",
+      "phrase": "35 in-scope WireSchemaValid checks",
+      "quantity": "manifest_wire_schema_valid"
     }
   ],
   "guard": "G31 — MCP.Conformance.InputFigures (MES-120)",
@@ -14725,6 +14757,48 @@
             }
           }
         ]
+      }
+    },
+    "d1_bucket1_nd_rows": {
+      "means": "bucket-1 view rows whose member is none_determinable (MES-138's slice)",
+      "query": {
+        "count": {
+          "at": "rows[]",
+          "in": "docs/conformance/buckets/bucket-1-2026-07-28.json",
+          "where": [
+            {
+              "field": "member.register_key",
+              "in_set": {
+                "count": {
+                  "at": "rows[]",
+                  "distinct": "key",
+                  "in": "docs/conformance/etcc-attribution.json",
+                  "where": [
+                    {
+                      "eq": "none_determinable",
+                      "field": "leg"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "manifest_wire_schema_valid": {
+      "means": "A1's manifest rows whose check is the generic validator WireSchemaValid (one per scenario that runs it, both legs)",
+      "query": {
+        "count": {
+          "at": "scenarios[].checks[]",
+          "in": "docs/conformance/in-scope-2026-07-28.json",
+          "where": [
+            {
+              "eq": "WireSchemaValid",
+              "field": "name"
+            }
+          ]
+        }
       }
     }
   },

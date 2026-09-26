@@ -1,0 +1,1315 @@
+{
+  "schema": "adjudication-record/1",
+  "authored_by_hand": true,
+  "ticket": "MES-138",
+  "revision": "2026-07-28",
+  "what_this_is": "The D1-nd+CU adjudication record: bucket 1's none_determinable slice (an OPEN section, owned by MES-143, which closes the view) and the claim-unmatched view (CLOSED here). It is normative for the members and claims it adjudicates; Confluence page 277741649 mirrors it. Guard G32 holds its rows equal to the views in both directions, with dispositions from the D1 family (authored 29691, ratified 29693).",
+  "harness": {
+    "version": "0.2.0-alpha.11",
+    "sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae"
+  },
+  "spec": {
+    "commit": "5f5440bb",
+    "schema_ts_md5": "48a009165e07f6732e38baf91291de87",
+    "streamable_http_mdx_md5": "63f792fddd2a9d81026ebafe6930ff87",
+    "note": "Fetched at the pinned commit for this ticket; both md5s match etcc-membership.md §B.2. Not committed, so gate 5 holds no spec bytes (the stated residual of wrong_against_spec)."
+  },
+  "method": "Each member's (or claim's) asserts were read in full and listed in asserts_read. Each was searched against all 175 checks of docs/conformance/in-scope-2026-07-28.json by predicate, and against the pinned harness where a near miss exists (near_miss, a harness citation). A check whose predicate a member asserts would make the row redundant (the MES-119 shape), leg notwithstanding (the MES-116 case). None was found. Every row then takes ONE counterfactual, recorded in `counterfactual` [authored 29707 N5 | ratified 29708]: could a conforming SDK fail this unit? The unit is the view's: the member on bucket 1, the claim on the claim-unmatched view [authored 29721 B-A | ratified 29723]. If one can, the asserted behaviour has no normative anchor and the row is not_a_conformance_claim, routed to A2; if none can, the reading names the spec text that makes it so, and the row is genuine extra coverage. wrong_against_spec is reserved for a unit asserting what the spec forbids or contradicts; no row does.",
+  "routing": [
+    {
+      "owner": "MES-153",
+      "to": "A2",
+      "rows": 10,
+      "condition": "The PM posts the MES-153 routing comments for MES-138, copied from the routed rows, before the merge. The first is MES-153 comment 29700 (items 1 to 4, the rows routed at a361a0f, in record order). The second is MES-153 comment 29716 (items 1 to 6, the rows the N5 ruling re-routed (29708), in record order); its item 7 (SEP-2106-server-never-dereferences-a-network-ref) was WITHDRAWN by MES-153 comment 29722, when the claim-grain ruling [authored 29721 B-A | ratified 29723] made that row genuine. Each routed row's owner_record names its comment and item."
+    }
+  ],
+  "unused_routes": [
+    {
+      "owner": "MES-152",
+      "to": "A3",
+      "why": "No row is redundant, so nothing is routed to A3; per 29693 Q6 the PM closes an unused route."
+    }
+  ],
+  "counts": {
+    "bucket_1_none_determinable": {
+      "genuine_extra_coverage": {
+        "count": 17,
+        "tags": [
+          "oc:none/no-oc-scenario/capabilities-object-encoding",
+          "oc:none/no-oc-scenario/extensions-doctest-inbound-read",
+          "oc:none/no-oc-scenario/extensions-doctest-nil-envelope",
+          "oc:none/no-oc-scenario/extensions-empty-and-omitted-collapse",
+          "oc:none/no-oc-scenario/extensions-no-inference-between-calls",
+          "oc:none/no-oc-scenario/extensions-inbound-read",
+          "oc:none/no-oc-scenario/extensions-absent-envelope",
+          "oc:none/no-oc-fixture-case/sentinel-shaped-literal-is-itself-encoded",
+          "oc:none/no-oc-scenario/notification-framing-decode",
+          "oc:none/no-oc-scenario/notification-framing-encode-with-params",
+          "oc:none/no-oc-fixture-case/routing-header-decoded-before-comparison",
+          "oc:none/no-oc-scenario/stdio-sequential-multiplexing",
+          "oc:none/no-oc-scenario/stdio-request-without-params",
+          "oc:none/no-oc-scenario/stdio-notification-draws-no-response",
+          "oc:none/no-oc-scenario/stdio-request-response",
+          "oc:none/no-oc-scenario/stdio-line-buffering",
+          "oc:none/no-oc-scenario/sse-comment-line-ignored"
+        ]
+      },
+      "not_a_conformance_claim": {
+        "count": 4,
+        "tags": [
+          "oc:none/no-oc-scenario/extensions-and-experimental-stay-separate",
+          "oc:none/no-oc-scenario/extensions-inbound-not-validated",
+          "oc:none/no-oc-scenario/notification-framing-encode",
+          "oc:none/no-oc-scenario/sse-codec-round-trip"
+        ]
+      }
+    },
+    "claim_unmatched": {
+      "genuine_extra_coverage": {
+        "count": 3,
+        "tags": [
+          "oc:none/no-oc-scenario/CG7-annotation-cannot-forge-mcp-method",
+          "oc:none/no-axis-contact/SEP-2575-undeclared-elicitation-omitted",
+          "oc:none/no-oc-server-check/SEP-2106-server-never-dereferences-a-network-ref"
+        ]
+      },
+      "not_a_conformance_claim": {
+        "count": 6,
+        "tags": [
+          "oc:none/no-oc-scenario/CG7-exclusion-is-logged",
+          "oc:none/no-oc-scenario/CG7-non-tools-call-carries-no-headers-opt",
+          "oc:none/no-oc-scenario/CG1-no-mcp-name-without-a-name-target",
+          "oc:none/no-oc-scenario/MES-115-retry-identity-re-resolved",
+          "oc:none/no-oc-scenario/MES-117-default-caching-policy-values",
+          "oc:none/no-axis-contact/AC7-identity-factory-not-invoked-on-rejected-origin"
+        ]
+      }
+    }
+  },
+  "sections": [
+    {
+      "view": "docs/conformance/buckets/bucket-1-2026-07-28.json",
+      "closure": "open",
+      "owner": "MES-143",
+      "slice": {
+        "criterion": "the view rows whose member's `leg` in docs/conformance/etcc-attribution.json is `none_determinable`",
+        "statement": "This section adjudicates 21 rows of the view: those whose member is one of the 29 none_determinable members of the attribution. A none_determinable member that carries an edge is not in bucket 1.",
+        "rows": 21
+      },
+      "rows": [
+        {
+          "member": "MCP.Protocol.CapabilitiesTest/test ServerCapabilities round-trips through JSON",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/capabilities-object-encoding",
+          "echo": {
+            "cg": null,
+            "search_id": "ND05",
+            "the_search_that_found_none": "the ENCODING of a capabilities object — which sub-capability keys appear under it, the camelCase spelling of the flags inside them, and a sub-capability the implementation left unset being ABSENT from the encoded object rather than present as null"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/capabilities_test.exs",
+            "lines": [
+              46,
+              60
+            ],
+            "bytes": "    test \"round-trips through JSON\" do\n      map = %{\n        \"tools\" => %{\"listChanged\" => true},\n        \"resources\" => %{\"subscribe\" => true}\n      }\n\n      caps = ServerCapabilities.from_map(map)\n      json = Jason.encode!(caps)\n      decoded = Jason.decode!(json)\n\n      assert decoded[\"tools\"][\"listChanged\"] == true\n      assert decoded[\"resources\"][\"subscribe\"] == true\n      refute Map.has_key?(decoded, \"prompts\")\n      refute Map.has_key?(decoded, \"logging\")\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/capabilities_test.exs:56 — assert decoded[\"tools\"][\"listChanged\"] == true",
+            "test/mcp/protocol/capabilities_test.exs:57 — assert decoded[\"resources\"][\"subscribe\"] == true",
+            "test/mcp/protocol/capabilities_test.exs:58 — refute Map.has_key?(decoded, \"prompts\")",
+            "test/mcp/protocol/capabilities_test.exs:59 — refute Map.has_key?(decoded, \"logging\")"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "near_miss": {
+            "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+            "byte_span": [
+              369629,
+              369746
+            ],
+            "bytes": "if(h.tools){if(!Array.isArray(e?.result?.tools))return{error:`Advertised tools capability but tools/list call failed`"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "The server capabilities encoder keeps each declared capability's sub-flags verbatim (tools.listChanged, resources.subscribe) and omits the undeclared ones (prompts, logging) entirely; OC reads only whether `tools` is truthy against a tools/list probe, and whether `prompts` is declared when prompts/list is handled.",
+          "rationale": "Every assert read (each listed in asserts_read). The nearest in-scope checks are DiscoverCapabilitiesMatchHandlers and ServerDeclaresPromptsInDiscover (near_miss). The first tests `h.tools` for truthiness against a tools/list probe; the second fails only when prompts are handled but NOT declared, which is the opposite direction to this member's `refute prompts`. Neither reads a sub-flag's value, and neither sees an undeclared capability emitted as `{}`. So no check's predicate is asserted here, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: presence of a capability declares support (schema.ts:799, :817, :832, :857) and each sub-flag states it (:848, :867), so the declared tools.listChanged and resources.subscribe must be encoded as declared, and `prompts: {}` or `logging: {}` would declare support the server lacks."
+          }
+        },
+        {
+          "member": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) neither is emitted when unset",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/extensions-and-experimental-stay-separate",
+          "echo": {
+            "cg": "CG2",
+            "search_id": "ND02",
+            "the_search_that_found_none": "SEP-2133 capability EXTENSIONS — a peer's declared extensions read back out of a request's `_meta` client-capabilities envelope, and the rule that keeps `extensions` and `experimental` separate fields on the wire rather than one reused one"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/capabilities_test.exs",
+            "lines": [
+              191,
+              199
+            ],
+            "bytes": "    test \"neither is emitted when unset\" do\n      decoded = %ServerCapabilities{} |> Jason.encode!() |> Jason.decode!()\n      refute Map.has_key?(decoded, \"extensions\")\n      refute Map.has_key?(decoded, \"experimental\")\n\n      decoded = %ClientCapabilities{} |> Jason.encode!() |> Jason.decode!()\n      refute Map.has_key?(decoded, \"extensions\")\n      refute Map.has_key?(decoded, \"experimental\")\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/capabilities_test.exs:193 — refute Map.has_key?(decoded, \"extensions\")",
+            "test/mcp/protocol/capabilities_test.exs:194 — refute Map.has_key?(decoded, \"experimental\")",
+            "test/mcp/protocol/capabilities_test.exs:197 — refute Map.has_key?(decoded, \"extensions\")",
+            "test/mcp/protocol/capabilities_test.exs:198 — refute Map.has_key?(decoded, \"experimental\")"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "rationale": "Every assert read (each listed in asserts_read). The counterfactual fires (see `counterfactual`), so by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. The asserts (capabilities_test.exs:193-198) refute a key whose empty value would mean what its absence means, so each holds one conforming encoding. What the unit protects stands: no in-scope check's predicate reads a capabilities object's `extensions` or `experimental` key. Nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "An SDK may emit `extensions: {}` or `experimental: {}` for 'none': an empty map names no identifier (versioning.mdx:84-85; schema.ts:720, :785, :797, :882), which means what absence means, so the refutes at capabilities_test.exs:193-198 hold one conforming form of two."
+          },
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29716, item 1"
+          }
+        },
+        {
+          "member": "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (8)",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/extensions-doctest-inbound-read",
+          "echo": {
+            "cg": null,
+            "search_id": "ND02",
+            "the_search_that_found_none": "SEP-2133 capability EXTENSIONS — a peer's declared extensions read back out of a request's `_meta` client-capabilities envelope, and the rule that keeps `extensions` and `experimental` separate fields on the wire rather than one reused one"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/extensions_test.exs",
+            "lines": [
+              35,
+              35
+            ],
+            "bytes": "  doctest MCP.Protocol.Extensions"
+          },
+          "doctest_body": {
+            "file": "lib/mcp/protocol/extensions.ex",
+            "lines": [
+              413,
+              416
+            ],
+            "bytes": "      iex> meta = %{\"io.modelcontextprotocol/clientCapabilities\" =>\n      ...>   %{\"extensions\" => %{\"io.modelcontextprotocol/tasks\" => %{}}}}\n      iex> MCP.Protocol.Extensions.from_meta(meta)\n      %{\"io.modelcontextprotocol/tasks\" => %{}}"
+          },
+          "asserts_read": [
+            "lib/mcp/protocol/extensions.ex:413-416 — the doctest example (its expected value is the assertion)"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "The handler-facing read of a peer's declared extensions returns the wire map verbatim (doctest at extensions.ex:413-416); OC has no SEP-2133 extension-negotiation check on either leg, and `from_meta/1` has no lib/ call site (A2 §11.1), so no OC run can reach it.",
+          "rationale": "A doctest: its body is the @doc example at lib/mcp/protocol/extensions.ex:413-416 (doctest_body), its et_test the `doctest MCP.Protocol.Extensions` directive (the register's address). A2 §11.1 rules it ET-CC; the decode is the whole of the interpretation. No in-scope check reads the extensions map.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: a well-formed declaration `{\"io.modelcontextprotocol/tasks\": {}}` has one meaning, support with no settings (versioning.mdx:84-85, :118-119), and a receiver must know it to meet :121-123."
+          }
+        },
+        {
+          "member": "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (9)",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/extensions-doctest-nil-envelope",
+          "echo": {
+            "cg": null,
+            "search_id": "ND02",
+            "the_search_that_found_none": "SEP-2133 capability EXTENSIONS — a peer's declared extensions read back out of a request's `_meta` client-capabilities envelope, and the rule that keeps `extensions` and `experimental` separate fields on the wire rather than one reused one"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/extensions_test.exs",
+            "lines": [
+              35,
+              35
+            ],
+            "bytes": "  doctest MCP.Protocol.Extensions"
+          },
+          "doctest_body": {
+            "file": "lib/mcp/protocol/extensions.ex",
+            "lines": [
+              418,
+              419
+            ],
+            "bytes": "      iex> MCP.Protocol.Extensions.from_meta(nil)\n      %{}"
+          },
+          "asserts_read": [
+            "lib/mcp/protocol/extensions.ex:418-419 — the doctest example (its expected value is the assertion)"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "An absent `_meta` decodes to no declared extensions (`from_meta(nil)` is `%{}`, extensions.ex:418-419); OC has no SEP-2133 extension-negotiation check on either leg, and `from_meta/1` has no lib/ call site (A2 §11.1), so no OC run can reach it.",
+          "rationale": "A doctest: its body is the @doc example at lib/mcp/protocol/extensions.ex:418-419 (doctest_body), its et_test the directive. A2 §2.4 names this exact value as the verbatim decode of an absent optional field; §11.1 records it falsifiable: undetermined, a gate-4 weakness and not a verdict here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: an envelope with no clientCapabilities advertises no extension, and support exists only as advertised (versioning.mdx:82-85), so 'none declared' is the only conforming reading; `%{}` is that absence's verbatim decode (A2 §2.4)."
+          }
+        },
+        {
+          "member": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) a peer's `{}` and an omitted key collapse to the same %{} (deliberately)",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/extensions-empty-and-omitted-collapse",
+          "echo": {
+            "cg": null,
+            "search_id": "ND02",
+            "the_search_that_found_none": "SEP-2133 capability EXTENSIONS — a peer's declared extensions read back out of a request's `_meta` client-capabilities envelope, and the rule that keeps `extensions` and `experimental` separate fields on the wire rather than one reused one"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/extensions_test.exs",
+            "lines": [
+              408,
+              411
+            ],
+            "bytes": "    test \"a peer's `{}` and an omitted key collapse to the same %{} (deliberately)\" do\n      assert Extensions.from_meta(%{@key => %{\"extensions\" => %{}}}) == %{}\n      assert Extensions.from_meta(%{@key => %{}}) == %{}\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/extensions_test.exs:409 — assert Extensions.from_meta(%{@key => %{\"extensions\" => %{}}}) == %{}",
+            "test/mcp/protocol/extensions_test.exs:410 — assert Extensions.from_meta(%{@key => %{}}) == %{}"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "A peer's `extensions: {}` and an omitted `extensions` both read back as no extensions, as schema.ts:785 makes them mean the same; OC has no SEP-2133 extension-negotiation check on either leg, and `from_meta/1` has no lib/ call site (A2 §11.1), so no OC run can reach it.",
+          "rationale": "Every assert read (each listed in asserts_read). Anchor per the register: schema.ts:785. No in-scope check reads an extensions map, so no check's predicate is asserted.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: `extensions: {}` names no identifier, and an omitted `extensions` declares none (schema.ts:95, an empty capabilities object 'supports no optional capabilities'), so both must read as none; the test comment's 'deliberately' (extensions_test.exs:400-404) is the host value, which this grain does not count."
+          }
+        },
+        {
+          "member": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) caches nothing between calls",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/extensions-no-inference-between-calls",
+          "echo": {
+            "cg": null,
+            "search_id": "ND02",
+            "the_search_that_found_none": "SEP-2133 capability EXTENSIONS — a peer's declared extensions read back out of a request's `_meta` client-capabilities envelope, and the rule that keeps `extensions` and `experimental` separate fields on the wire rather than one reused one"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/extensions_test.exs",
+            "lines": [
+              440,
+              446
+            ],
+            "bytes": "    test \"caches nothing between calls\" do\n      declared = %{@key => %{\"extensions\" => %{\"com.example/thing\" => %{}}}}\n\n      assert Extensions.from_meta(declared) == %{\"com.example/thing\" => %{}}\n      assert Extensions.from_meta(%{}) == %{}\n      assert Extensions.from_meta(nil) == %{}\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/extensions_test.exs:443 — assert Extensions.from_meta(declared) == %{\"com.example/thing\" => %{}}",
+            "test/mcp/protocol/extensions_test.exs:444 — assert Extensions.from_meta(%{}) == %{}",
+            "test/mcp/protocol/extensions_test.exs:445 — assert Extensions.from_meta(nil) == %{}"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "Nothing a peer declared on one request survives to the next read (schema.ts:96, \"Servers MUST NOT infer capabilities from prior requests\"); OC has no SEP-2133 extension-negotiation check on either leg, and `from_meta/1` has no lib/ call site (A2 §11.1), so no OC run can reach it.",
+          "rationale": "Every assert read (each listed in asserts_read). ServerRejectsUndeclaredCapability is the nearest in-scope check that reads what a request declares, and its subject is a -32021 error for a capability a request needs, not what the extensions read carries between calls. So no check's predicate is asserted.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: a read that reported an earlier request's declaration on a later empty one would infer capabilities from a prior request, which schema.ts:96 forbids (\"Servers MUST NOT infer capabilities from prior requests\")."
+          }
+        },
+        {
+          "member": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) does NOT validate: a malformed identifier reaches the caller verbatim",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/extensions-inbound-not-validated",
+          "echo": {
+            "cg": null,
+            "search_id": "ND02",
+            "the_search_that_found_none": "SEP-2133 capability EXTENSIONS — a peer's declared extensions read back out of a request's `_meta` client-capabilities envelope, and the rule that keeps `extensions` and `experimental` separate fields on the wire rather than one reused one"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/extensions_test.exs",
+            "lines": [
+              427,
+              434
+            ],
+            "bytes": "    test \"does NOT validate: a malformed identifier reaches the caller verbatim\" do\n      malformed = %{\"no-prefix\" => %{}, \"com.example/-bad\" => %{\"x\" => 1}}\n      meta = %{@key => %{\"extensions\" => malformed}}\n\n      assert Extensions.from_meta(meta) == malformed\n      refute Extensions.valid_identifier?(\"no-prefix\")\n      assert Extensions.normalise(malformed) == nil\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/extensions_test.exs:431 — assert Extensions.from_meta(meta) == malformed",
+            "test/mcp/protocol/extensions_test.exs:432 — refute Extensions.valid_identifier?(\"no-prefix\")",
+            "test/mcp/protocol/extensions_test.exs:433 — assert Extensions.normalise(malformed) == nil"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "spec": {
+            "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/versioning#extension-negotiation",
+            "quote": "Extension identifiers **MUST** follow the [`_meta` key naming rules](/specification/2026-07-28/basic/index#meta), with a mandatory prefix."
+          },
+          "rationale": "Every assert read (each listed in asserts_read). The counterfactual fires (see `counterfactual`), so by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. Was wrong_against_spec. Under the amended definition (29708) wrong means forbids or contradicts; the spec forbids neither dropping nor passing through a malformed inbound identifier (the MUST at versioning.mdx:86-87 binds the party that ADVERTISES one), so asserting pass-through asserts one conforming choice: no normative anchor, an A2 gate-3 failure. The spec text read is kept as the row's `spec` citation. Nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "An SDK may drop the non-conforming `no-prefix` identifier (versioning.mdx:121-122 lets a party that does not support an extension 'revert to core protocol behavior') and so fail `from_meta(meta) == malformed` at extensions_test.exs:431; the MUST at :86-87 binds the advertiser, and nothing forbids pass-through."
+          },
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29716, item 2"
+          }
+        },
+        {
+          "member": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) reads the peer's declared extensions",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/extensions-inbound-read",
+          "echo": {
+            "cg": null,
+            "search_id": "ND02",
+            "the_search_that_found_none": "SEP-2133 capability EXTENSIONS — a peer's declared extensions read back out of a request's `_meta` client-capabilities envelope, and the rule that keeps `extensions` and `experimental` separate fields on the wire rather than one reused one"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/extensions_test.exs",
+            "lines": [
+              387,
+              390
+            ],
+            "bytes": "    test \"reads the peer's declared extensions\" do\n      meta = %{@key => %{\"extensions\" => %{\"io.modelcontextprotocol/tasks\" => %{}}}}\n      assert Extensions.from_meta(meta) == %{\"io.modelcontextprotocol/tasks\" => %{}}\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/extensions_test.exs:389 — assert Extensions.from_meta(meta) == %{\"io.modelcontextprotocol/tasks\" => %{}}"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "The handler-facing read of a peer's declared extensions returns the wire map verbatim; OC has no SEP-2133 extension-negotiation check on either leg, and `from_meta/1` has no lib/ call site (A2 §11.1), so no OC run can reach it.",
+          "rationale": "Every assert read (each listed in asserts_read). The same ground as doctest (8) (A2 §11.1), asserted from the test file. No in-scope check reads an extensions map.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: the same well-formed declaration as doctest (8), with one meaning (versioning.mdx:84-85, :118-119)."
+          }
+        },
+        {
+          "member": "MCP.Protocol.ExtensionsTest/test from_meta/1 — the inbound read (T12) returns %{} for nil, an absent key, or an absent extensions field",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/extensions-absent-envelope",
+          "echo": {
+            "cg": null,
+            "search_id": "ND02",
+            "the_search_that_found_none": "SEP-2133 capability EXTENSIONS — a peer's declared extensions read back out of a request's `_meta` client-capabilities envelope, and the rule that keeps `extensions` and `experimental` separate fields on the wire rather than one reused one"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/extensions_test.exs",
+            "lines": [
+              393,
+              398
+            ],
+            "bytes": "    test \"returns %{} for nil, an absent key, or an absent extensions field\" do\n      assert Extensions.from_meta(nil) == %{}\n      assert Extensions.from_meta(%{}) == %{}\n      assert Extensions.from_meta(%{@key => %{}}) == %{}\n      assert Extensions.from_meta(%{\"other\" => \"thing\"}) == %{}\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/extensions_test.exs:394 — assert Extensions.from_meta(nil) == %{}",
+            "test/mcp/protocol/extensions_test.exs:395 — assert Extensions.from_meta(%{}) == %{}",
+            "test/mcp/protocol/extensions_test.exs:396 — assert Extensions.from_meta(%{@key => %{}}) == %{}",
+            "test/mcp/protocol/extensions_test.exs:397 — assert Extensions.from_meta(%{\"other\" => \"thing\"}) == %{}"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "Every absent form (nil, no clientCapabilities key, no extensions field, an unrelated _meta key) reads back as no declared extensions; OC has no SEP-2133 extension-negotiation check on either leg, and `from_meta/1` has no lib/ call site (A2 §11.1), so no OC run can reach it.",
+          "rationale": "Every assert read (each listed in asserts_read). Absence markers (A2 §2.4), falsifiable: undetermined in the register, which is a gate-4 weakness and not a verdict. No in-scope check reads an extensions map.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: each absent form (nil, no clientCapabilities, no extensions field, an unrelated _meta key) advertises no extension (versioning.mdx:82-85; schema.ts:95), so 'none declared' is the only conforming reading of each."
+          }
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a plain-ASCII value that LOOKS like a sentinel is itself encoded",
+          "claim": null,
+          "tag": "oc:none/no-oc-fixture-case/sentinel-shaped-literal-is-itself-encoded",
+          "echo": {
+            "cg": "CG7",
+            "search_id": "ND06",
+            "the_search_that_found_none": "a plain-ASCII parameter value that is ITSELF shaped like the Base64 encoded-word sentinel — the ambiguity case `streamable-http.mdx:508-510` exists for, where a literal must be encoded anyway or a server cannot tell an encoded value from a literal one"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/header_mirror_test.exs",
+            "lines": [
+              438,
+              447
+            ],
+            "bytes": "    test \"a plain-ASCII value that LOOKS like a sentinel is itself encoded\" do\n      # `streamable-http.mdx:508-510`: clients MUST also Base64-encode any\n      # plain-ASCII value matching the sentinel pattern, or a server cannot\n      # tell an encoded value from a literal one.\n      assert HeaderMirror.encode_value(\"=?base64?literal?=\") ==\n               \"=?base64?PT9iYXNlNjQ/bGl0ZXJhbD89?=\"\n\n      assert HeaderMirror.decode_value(\"=?base64?PT9iYXNlNjQ/bGl0ZXJhbD89?=\") ==\n               \"=?base64?literal?=\"\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/header_mirror_test.exs:442 — assert HeaderMirror.encode_value(\"=?base64?literal?=\") ==",
+            "test/mcp/protocol/header_mirror_test.exs:445 — assert HeaderMirror.decode_value(\"=?base64?PT9iYXNlNjQ/bGl0ZXJhbD89?=\") =="
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "near_miss": {
+            "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+            "byte_span": [
+              713922,
+              714076
+            ],
+            "bytes": "c=s?`sep-2243-client-base64-unsafe`:r===`number`||r===`integer`||r===`boolean`?`sep-2243-client-encode-values`:`sep-2243-client-mirrors-designated-params`"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "A plain-ASCII value that looks like the Base64 sentinel is itself encoded, and decodes back (streamable-http.mdx:506-508, a MUST); OC's ClientCustomHeader_* check for a string value would score the case under sep-2243-client-mirrors-designated-params, whose comparison decodes a sentinel-shaped header before comparing (Wa, index.js@704458), but its fixture never presents a sentinel-shaped literal (ND06), so no OC run provokes the case.",
+          "rationale": "Every assert read (each listed in asserts_read). The check whose predicate is nearest is ClientCustomHeader_* under sep-2243-client-mirrors-designated-params (near_miss: `checkParamHeader` picks sep-2243-client-base64-unsafe only when Ga (index.js@704567) finds the value unsafe, and Ga is false for a plain-ASCII value, so Ka falls through to Wa, which decodes and compares). It scores whatever values the fixture sends; ND06 measured 0 sentinel-shaped values in it. This is not a missed edge: the check's predicate would score the case, but no run reaches it, so OC does not cover the same ground.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: a plain-ASCII value matching the sentinel MUST be Base64-encoded (streamable-http.mdx:506-508), the spec's own table gives this exact value's encoding (:518), and decoding it back is the MUST at :501-502."
+          }
+        },
+        {
+          "member": "MCP.ProtocolTest/test decode/1 decodes a notification",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/notification-framing-decode",
+          "echo": {
+            "cg": null,
+            "search_id": "ND03",
+            "the_search_that_found_none": "JSON-RPC NOTIFICATION framing as such — a notification encoded with `jsonrpc` and `method` and NO `id` member, `params` omitted entirely when the notification carries none, and an inbound notification recognised as a notification rather than as a request with a missing id"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol_test.exs",
+            "lines": [
+              125,
+              131
+            ],
+            "bytes": "    test \"decodes a notification\" do\n      json = ~s({\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"})\n      assert {:ok, %Notification{} = notification} = Protocol.decode(json)\n\n      assert notification.method == \"notifications/initialized\"\n      assert notification.params == nil\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol_test.exs:127 — assert {:ok, %Notification{} = notification} = Protocol.decode(json)",
+            "test/mcp/protocol_test.exs:129 — assert notification.method == \"notifications/initialized\"",
+            "test/mcp/protocol_test.exs:130 — assert notification.params == nil"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "Decoding a JSON-RPC notification yields a notification (not a request) with no params when none were sent, on the path both legs use for inbound frames; no in-scope check scores how our code decodes an inbound notification (the in-scope checks whose id, name or description mentions a notification, ServerNoLogWithoutLogLevel, ServerSendsSubscriptionAck, ServerTagsSubscriptionId, ServerHonorsNotificationFilter, ToolsCallWithProgress and ClientMcpMethodHeader_notifications_initialized, each concern one the implementation SENDS).",
+          "rationale": "Every assert read (each listed in asserts_read). A WireSchemaValid check validates, against the schema, the messages the implementation SENT during its own scenario: 34 are server-leg (D2a-ii scopes each to its endpoint) and one is client-leg (tools_call). None reads what the implementation decodes, so none asserts this member's predicate.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: a message with a `method` and no `id` is a notification (basic/index.mdx:159, :172), and absent `params` decodes as absent (A2 §2.4's marker)."
+          }
+        },
+        {
+          "member": "MCP.ProtocolTest/test encode/1 encodes a notification",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/notification-framing-encode",
+          "echo": {
+            "cg": null,
+            "search_id": "ND03",
+            "the_search_that_found_none": "JSON-RPC NOTIFICATION framing as such — a notification encoded with `jsonrpc` and `method` and NO `id` member, `params` omitted entirely when the notification carries none, and an inbound notification recognised as a notification rather than as a request with a missing id"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol_test.exs",
+            "lines": [
+              64,
+              73
+            ],
+            "bytes": "    test \"encodes a notification\" do\n      notification = Notification.new(\"notifications/tools/list_changed\")\n      assert {:ok, json} = Protocol.encode(notification)\n      decoded = Jason.decode!(json)\n\n      assert decoded[\"jsonrpc\"] == \"2.0\"\n      assert decoded[\"method\"] == \"notifications/tools/list_changed\"\n      refute Map.has_key?(decoded, \"id\")\n      refute Map.has_key?(decoded, \"params\")\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol_test.exs:66 — assert {:ok, json} = Protocol.encode(notification)",
+            "test/mcp/protocol_test.exs:69 — assert decoded[\"jsonrpc\"] == \"2.0\"",
+            "test/mcp/protocol_test.exs:70 — assert decoded[\"method\"] == \"notifications/tools/list_changed\"",
+            "test/mcp/protocol_test.exs:71 — refute Map.has_key?(decoded, \"id\")",
+            "test/mcp/protocol_test.exs:72 — refute Map.has_key?(decoded, \"params\")"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "rationale": "Every assert read (each listed in asserts_read). The counterfactual fires (see `counterfactual`), so by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. The jsonrpc, method and no-`id` asserts are anchored (basic/index.mdx:172); the refute of `params` at protocol_test.exs:72 is not, so the unit asserts one conforming form of two. Reach, unchanged: the in-scope checks that read a notifications/tools/list_changed frame (ServerSendsToolsListChangedOnSubscription, index.js@382851; ServerHonorsNotificationFilter, index.js@380579) read only its `method`, and no in-scope WireSchemaValid check's scenario opens subscriptions/listen. Nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "An SDK may send `params: {}` on a parameterless notifications/tools/list_changed: `params` is optional there and `{}` is a valid NotificationParams (schema.ts:196-198, :1897), so the refute at protocol_test.exs:72 holds one conforming form of two."
+          },
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29716, item 3"
+          }
+        },
+        {
+          "member": "MCP.ProtocolTest/test encode/1 encodes a notification with params",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/notification-framing-encode-with-params",
+          "echo": {
+            "cg": null,
+            "search_id": "ND03",
+            "the_search_that_found_none": "JSON-RPC NOTIFICATION framing as such — a notification encoded with `jsonrpc` and `method` and NO `id` member, `params` omitted entirely when the notification carries none, and an inbound notification recognised as a notification rather than as a request with a missing id"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol_test.exs",
+            "lines": [
+              76,
+              82
+            ],
+            "bytes": "    test \"encodes a notification with params\" do\n      notification = Notification.new(\"notifications/resources/updated\", %{\"uri\" => \"file:///a\"})\n      assert {:ok, json} = Protocol.encode(notification)\n      decoded = Jason.decode!(json)\n\n      assert decoded[\"params\"] == %{\"uri\" => \"file:///a\"}\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol_test.exs:78 — assert {:ok, json} = Protocol.encode(notification)",
+            "test/mcp/protocol_test.exs:81 — assert decoded[\"params\"] == %{\"uri\" => \"file:///a\"}"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "An encoded notification carries its params verbatim, for a method (notifications/resources/updated) no in-scope check reads: the harness names it only in its bundled JSON schemas, which WireSchemaValid applies to what its own scenarios send, and none of those scenarios sends it.",
+          "rationale": "Every assert read (each listed in asserts_read). Near miss: the 35 in-scope WireSchemaValid checks (34 server-leg, which D2a-ii scopes each to its endpoint, and one client-leg, in tools_call) validate the messages sent during their own scenario, and none of those scenarios opens a subscriptions/listen stream, the only stream that carries this notification (streamable-http.mdx:127-131; every `subscriptions/listen` in the harness lies in sse-retry, server-stateless or tasks-status-notifications code).",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: the params given are the message's params (schema.ts:1430), and generic serialisation of an already-JSON-shaped value is not a step (A2 §2.2)."
+          }
+        },
+        {
+          "member": "MCP.Transport.SSETest/test stream parser round-trip encode then decode",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/sse-codec-round-trip",
+          "echo": {
+            "cg": null,
+            "search_id": "ND04",
+            "the_search_that_found_none": "the SYNTAX of a Server-Sent-Events frame as our own codec writes and reads it — a message encoded to `event:`/`id:`/`data:` field lines and parsed back to the same message, and a bare `:`-leading comment line arriving between two events being ignored rather than delivered as an event of its own"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/sse_test.exs",
+            "lines": [
+              187,
+              200
+            ],
+            "bytes": "    test \"round-trip encode then decode\" do\n      message = %{\"jsonrpc\" => \"2.0\", \"id\" => 1, \"result\" => %{\"tools\" => []}}\n      encoded = SSE.encode_message(message, id: \"evt-1\")\n\n      parser = SSE.new_parser()\n      {events, _parser} = SSE.feed(parser, encoded)\n      assert length(events) == 1\n      event = Enum.at(events, 0)\n      assert event.event == \"message\"\n      assert event.id == \"evt-1\"\n\n      assert {:ok, decoded} = Jason.decode(event.data)\n      assert decoded == message\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/sse_test.exs:193 — assert length(events) == 1",
+            "test/mcp/transport/sse_test.exs:195 — assert event.event == \"message\"",
+            "test/mcp/transport/sse_test.exs:196 — assert event.id == \"evt-1\"",
+            "test/mcp/transport/sse_test.exs:198 — assert {:ok, decoded} = Jason.decode(event.data)",
+            "test/mcp/transport/sse_test.exs:199 — assert decoded == message"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "near_miss": {
+            "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+            "byte_span": [
+              442171,
+              442233
+            ],
+            "bytes": "v=_.filter(e=>e.type===`sse`).filter(e=>!(`error`in e)).length"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "rationale": "Every assert read (each listed in asserts_read). The counterfactual fires (see `counterfactual`), so by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. The id and data round trip is WHATWG SSE behaviour, but MCP 2026-07-28 gives an event id no role (streamable-http.mdx:157), so an encoder need not write one. Reach, unchanged: no in-scope check scores our SSE parser (server-leg checks read our server's SSE with the harness's own reader, index.js@364363, and the client-leg scenario answering in SSE, json-schema-ref-no-deref, scores only tools/list arrival and the canary, index.js@721700). Nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "An SDK's SSE encoder need not write an `id:` field (streamable-http.mdx:157: resumable streams via Last-Event-ID are not supported, so ids have no role), and one that omits it fails `event.id == \"evt-1\"` at sse_test.exs:196."
+          },
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29716, item 4"
+          }
+        },
+        {
+          "member": "MCP.Transport.SelfCompatibilityTest/test REACHABILITY CONTROL: an encoded Mcp-Name is decoded before comparison, so our own client is not self-rejected",
+          "claim": null,
+          "tag": "oc:none/no-oc-fixture-case/routing-header-decoded-before-comparison",
+          "echo": {
+            "cg": null,
+            "search_id": "ND07",
+            "the_search_that_found_none": "a routing header being DECODED before it is compared to the body value it must agree with — `streamable-http.mdx:501-504`'s server-side MUST, and its client-side counterpart of encoding a non-header-safe `Mcp-Name` in the first place"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/self_compatibility_test.exs",
+            "lines": [
+              97,
+              113
+            ],
+            "bytes": "  test \"REACHABILITY CONTROL: an encoded Mcp-Name is decoded before comparison, so our own client is not self-rejected\" do\n    name = Handler.tool_name()\n    # Exactly what the client now puts on the wire for this name.\n    header = HeaderMirror.encode_value(name)\n    assert String.starts_with?(header, \"=?base64?\")\n\n    conn =\n      post(call_tool_message(name), [\n        {\"mcp-method\", \"tools/call\"},\n        {\"mcp-name\", header},\n        {\"mcp-protocol-version\", @version}\n      ])\n\n    assert conn.status == 200\n    refute Map.has_key?(body(conn), \"error\")\n    assert %{\"content\" => [%{\"text\" => \"sunny\"}]} = body(conn)[\"result\"]\n  end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/self_compatibility_test.exs:101 — assert String.starts_with?(header, \"=?base64?\")",
+            "test/mcp/transport/self_compatibility_test.exs:110 — assert conn.status == 200",
+            "test/mcp/transport/self_compatibility_test.exs:111 — refute Map.has_key?(body(conn), \"error\")",
+            "test/mcp/transport/self_compatibility_test.exs:112 — assert %{\"content\" => [%{\"text\" => \"sunny\"}]} = body(conn)[\"result\"]"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "The server decodes a Base64-encoded `Mcp-Name` before comparing it with `params.name` (streamable-http.mdx:501-502), so our own client's encoded name is accepted; no in-scope server-leg run sends an ENCODED Mcp-Name (the harness's request builder vt, index.js@329932, mirrors the name raw, and the harness code that sends sentinel-encoded values to a server is http-custom-header-server-validation, which is out of scope), and OC's client-leg check on `Mcp-Name` performs no decoding (ND07).",
+          "rationale": "Every assert read (each listed in asserts_read). The member is named a REACHABILITY CONTROL, but its asserts are wire artefacts with spec anchors (the encoded header, the 200, no error, the result), and the register carries it ET-CC, not ET-CTRL. The ClientMcpNameHeader_* checks take the client's header as their subject and do not decode, so their predicate is not what this member asserts.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: this name is non-ASCII, so the client MUST encode it (streamable-http.mdx:295-297), and the server MUST decode it before comparing (:501-502, :627-629); a valid tools/call is then answered with the tool's result."
+          }
+        },
+        {
+          "member": "MCP.Transport.StdioTest/test client mode with echo server handles multiple requests sequentially",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/stdio-sequential-multiplexing",
+          "echo": {
+            "cg": null,
+            "search_id": "ND01",
+            "the_search_that_found_none": "the STDIO transport — newline-delimited JSON-RPC over a child process's stdin/stdout: a request written and its response read back, several requests multiplexed by `id`, a request with no `params`, a notification drawing no response, and a partial line held in a buffer until the newline completing it arrives"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/stdio_test.exs",
+            "lines": [
+              50,
+              71
+            ],
+            "bytes": "    test \"handles multiple requests sequentially\" do\n      transport = start_echo_transport()\n\n      for i <- 1..3 do\n        request = %{\n          \"jsonrpc\" => \"2.0\",\n          \"id\" => i,\n          \"method\" => \"test/echo\",\n          \"params\" => %{\"n\" => i}\n        }\n\n        assert :ok = Stdio.send_message(transport, request)\n      end\n\n      for i <- 1..3 do\n        assert_receive {:mcp_message, response}, 10_000\n        assert response[\"id\"] == i\n        assert response[\"result\"][\"echo\"][\"n\"] == i\n      end\n\n      Stdio.close(transport)\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/stdio_test.exs:61 — assert :ok = Stdio.send_message(transport, request)",
+            "test/mcp/transport/stdio_test.exs:65 — assert_receive {:mcp_message, response}, 10_000",
+            "test/mcp/transport/stdio_test.exs:66 — assert response[\"id\"] == i",
+            "test/mcp/transport/stdio_test.exs:67 — assert response[\"result\"][\"echo\"][\"n\"] == i"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "Over stdio, three requests sent back to back each receive the response carrying their own id; OC runs no stdio scenario at all (ND01: no check in the manifest mentions stdio, stdin, stdout, a subprocess or newline framing), so it cannot drive this transport.",
+          "rationale": "Every assert read (each listed in asserts_read). No in-scope check has a stdio subject.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: the client writes one message per line and reads the server's messages one per line from a single channel (stdio.mdx:10-13, :35-37, :41-42), and each response carries its request's id."
+          }
+        },
+        {
+          "member": "MCP.Transport.StdioTest/test client mode with echo server handles request without params",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/stdio-request-without-params",
+          "echo": {
+            "cg": null,
+            "search_id": "ND01",
+            "the_search_that_found_none": "the STDIO transport — newline-delimited JSON-RPC over a child process's stdin/stdout: a request written and its response read back, several requests multiplexed by `id`, a request with no `params`, a notification drawing no response, and a partial line held in a buffer until the newline completing it arrives"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/stdio_test.exs",
+            "lines": [
+              74,
+              90
+            ],
+            "bytes": "    test \"handles request without params\" do\n      transport = start_echo_transport()\n\n      request = %{\n        \"jsonrpc\" => \"2.0\",\n        \"id\" => 42,\n        \"method\" => \"ping\"\n      }\n\n      assert :ok = Stdio.send_message(transport, request)\n\n      assert_receive {:mcp_message, response}, 10_000\n      assert response[\"id\"] == 42\n      assert response[\"result\"][\"echo\"] == %{}\n\n      Stdio.close(transport)\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/stdio_test.exs:83 — assert :ok = Stdio.send_message(transport, request)",
+            "test/mcp/transport/stdio_test.exs:85 — assert_receive {:mcp_message, response}, 10_000",
+            "test/mcp/transport/stdio_test.exs:86 — assert response[\"id\"] == 42",
+            "test/mcp/transport/stdio_test.exs:87 — assert response[\"result\"][\"echo\"] == %{}"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "Over stdio, a request with no params is framed and answered; OC runs no stdio scenario at all (ND01: no check in the manifest mentions stdio, stdin, stdout, a subprocess or newline framing), so it cannot drive this transport.",
+          "rationale": "Every assert read (each listed in asserts_read). No in-scope check has a stdio subject.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: a request without params is a valid message (`params?`, basic/index.mdx:40), written as one line and its response read as one (stdio.mdx:13, :36, :41); the empty echo is the test server's."
+          }
+        },
+        {
+          "member": "MCP.Transport.StdioTest/test client mode with echo server notifications get no response",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/stdio-notification-draws-no-response",
+          "echo": {
+            "cg": null,
+            "search_id": "ND01",
+            "the_search_that_found_none": "the STDIO transport — newline-delimited JSON-RPC over a child process's stdin/stdout: a request written and its response read back, several requests multiplexed by `id`, a request with no `params`, a notification drawing no response, and a partial line held in a buffer until the newline completing it arrives"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/stdio_test.exs",
+            "lines": [
+              93,
+              111
+            ],
+            "bytes": "    test \"notifications get no response\" do\n      transport = start_echo_transport()\n\n      notification = %{\n        \"jsonrpc\" => \"2.0\",\n        \"method\" => \"notifications/initialized\"\n      }\n\n      assert :ok = Stdio.send_message(transport, notification)\n\n      # Send a request after to confirm the transport is still working\n      request = %{\"jsonrpc\" => \"2.0\", \"id\" => 99, \"method\" => \"test/after\"}\n      assert :ok = Stdio.send_message(transport, request)\n\n      assert_receive {:mcp_message, response}, 10_000\n      assert response[\"id\"] == 99\n\n      Stdio.close(transport)\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/stdio_test.exs:101 — assert :ok = Stdio.send_message(transport, notification)",
+            "test/mcp/transport/stdio_test.exs:105 — assert :ok = Stdio.send_message(transport, request)",
+            "test/mcp/transport/stdio_test.exs:107 — assert_receive {:mcp_message, response}, 10_000",
+            "test/mcp/transport/stdio_test.exs:108 — assert response[\"id\"] == 99"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "Over stdio, our client transport writes a notification and then a request as separate lines, and the next message it delivers is that request's response with its own id (the silence is the test server's, echo_server.exs:53-55, as basic/index.mdx:160 requires of a receiver); OC runs no stdio scenario at all (ND01: no check in the manifest mentions stdio, stdin, stdout, a subprocess or newline framing), so it cannot drive this transport.",
+          "rationale": "Every assert read (each listed in asserts_read). The unit does not refute a response to the notification directly: it asserts the first message received is the later request's response (id 99), which a reply to the notification would violate. No in-scope check has a stdio subject.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: the client writes each message as its own line (stdio.mdx:13, :36), so the notification cannot corrupt the next request, and the receiver MUST NOT answer a notification (basic/index.mdx:160; the test server honours it)."
+          }
+        },
+        {
+          "member": "MCP.Transport.StdioTest/test client mode with echo server sends a request and receives echo response",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/stdio-request-response",
+          "echo": {
+            "cg": null,
+            "search_id": "ND01",
+            "the_search_that_found_none": "the STDIO transport — newline-delimited JSON-RPC over a child process's stdin/stdout: a request written and its response read back, several requests multiplexed by `id`, a request with no `params`, a notification drawing no response, and a partial line held in a buffer until the newline completing it arrives"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/stdio_test.exs",
+            "lines": [
+              28,
+              47
+            ],
+            "bytes": "    test \"sends a request and receives echo response\" do\n      transport = start_echo_transport()\n\n      request = %{\n        \"jsonrpc\" => \"2.0\",\n        \"id\" => 1,\n        \"method\" => \"test/echo\",\n        \"params\" => %{\"hello\" => \"world\"}\n      }\n\n      assert :ok = Stdio.send_message(transport, request)\n\n      assert_receive {:mcp_message, response}, 10_000\n\n      assert response[\"jsonrpc\"] == \"2.0\"\n      assert response[\"id\"] == 1\n      assert response[\"result\"][\"echo\"] == %{\"hello\" => \"world\"}\n\n      Stdio.close(transport)\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/stdio_test.exs:38 — assert :ok = Stdio.send_message(transport, request)",
+            "test/mcp/transport/stdio_test.exs:40 — assert_receive {:mcp_message, response}, 10_000",
+            "test/mcp/transport/stdio_test.exs:42 — assert response[\"jsonrpc\"] == \"2.0\"",
+            "test/mcp/transport/stdio_test.exs:43 — assert response[\"id\"] == 1",
+            "test/mcp/transport/stdio_test.exs:44 — assert response[\"result\"][\"echo\"] == %{\"hello\" => \"world\"}"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "Over stdio, a request is newline-framed out and its response framed back with jsonrpc, id and result intact; OC runs no stdio scenario at all (ND01: no check in the manifest mentions stdio, stdin, stdout, a subprocess or newline framing), so it cannot drive this transport.",
+          "rationale": "Every assert read (each listed in asserts_read). No in-scope check has a stdio subject.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: one request line out and one response line back, with jsonrpc, id and result intact (stdio.mdx:13, :36, :41-42)."
+          }
+        },
+        {
+          "member": "MCP.Transport.StdioTest/test line buffering handles rapid sequential messages",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/stdio-line-buffering",
+          "echo": {
+            "cg": null,
+            "search_id": "ND01",
+            "the_search_that_found_none": "the STDIO transport — newline-delimited JSON-RPC over a child process's stdin/stdout: a request written and its response read back, several requests multiplexed by `id`, a request with no `params`, a notification drawing no response, and a partial line held in a buffer until the newline completing it arrives"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/stdio_test.exs",
+            "lines": [
+              116,
+              140
+            ],
+            "bytes": "    test \"handles rapid sequential messages\" do\n      transport = start_echo_transport()\n\n      # Send 5 messages rapidly\n      for i <- 1..5 do\n        Stdio.send_message(transport, %{\n          \"jsonrpc\" => \"2.0\",\n          \"id\" => i,\n          \"method\" => \"test\",\n          \"params\" => %{\"i\" => i}\n        })\n      end\n\n      # Collect all responses\n      responses =\n        for _ <- 1..5 do\n          assert_receive {:mcp_message, resp}, 10_000\n          resp\n        end\n\n      ids = Enum.map(responses, & &1[\"id\"]) |> Enum.sort()\n      assert ids == [1, 2, 3, 4, 5]\n\n      Stdio.close(transport)\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/stdio_test.exs:132 — assert_receive {:mcp_message, resp}, 10_000",
+            "test/mcp/transport/stdio_test.exs:137 — assert ids == [1, 2, 3, 4, 5]"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "Over stdio, five messages written rapidly are split on newlines into five responses, none lost or merged; OC runs no stdio scenario at all (ND01: no check in the manifest mentions stdio, stdin, stdout, a subprocess or newline framing), so it cannot drive this transport.",
+          "rationale": "Every assert read (each listed in asserts_read). No in-scope check has a stdio subject.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: newline-delimited framing (stdio.mdx:13, :41) yields five messages from five lines, none lost or merged."
+          }
+        },
+        {
+          "member": "MCP.Transport.SubscriptionsStreamTest/test T-8 keep-alive comment lines our parser ignores a comment line arriving between two events",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/sse-comment-line-ignored",
+          "echo": {
+            "cg": null,
+            "search_id": "ND04",
+            "the_search_that_found_none": "the SYNTAX of a Server-Sent-Events frame as our own codec writes and reads it — a message encoded to `event:`/`id:`/`data:` field lines and parsed back to the same message, and a bare `:`-leading comment line arriving between two events being ignored rather than delivered as an event of its own"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/subscriptions_stream_test.exs",
+            "lines": [
+              374,
+              382
+            ],
+            "bytes": "    test \"our parser ignores a comment line arriving between two events\" do\n      first = SSE.encode_message(%{\"jsonrpc\" => \"2.0\", \"method\" => \"one\"})\n      second = SSE.encode_message(%{\"jsonrpc\" => \"2.0\", \"method\" => \"two\"})\n\n      {events, _rest} = SSE.feed(SSE.new_parser(), first <> \":\\n\\n\" <> second)\n\n      methods = Enum.map(events, &Jason.decode!(&1.data)[\"method\"])\n      assert methods == [\"one\", \"two\"]\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/subscriptions_stream_test.exs:381 — assert methods == [\"one\", \"two\"]"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "Our SSE parser ignores a keep-alive comment line between two events and yields both events (streamable-http.mdx:151-153); no in-scope check scores our SSE parser. Server-leg checks read our SERVER's SSE with the harness's own reader (index.js@364363; ServerSendsSubscriptionAck, ServerTagsSubscriptionId and ServerHonorsNotificationFilter score frames read that way). Of the in-scope client-leg scenarios (http-custom-headers, http-invalid-tool-headers, http-standard-headers, json-schema-ref-no-deref, request-metadata, sep-2322-client-request-state, tools_call), only json-schema-ref-no-deref answers our client's POST in SSE (the TS SDK server transport, SSE by default, index.js@721008), and its NoNetworkRefDereference scores only whether tools/list arrived and the canary was fetched (index.js@721700); the http-* servers write SSE only to a GET (index.js@696242), and tools_call's, request-metadata's and sep-2322's answer in JSON. That TS SDK transport writes a comment only on a keep-alive timer, so no OC run scores a comment line reaching our parser.",
+          "rationale": "Every assert read (each listed in asserts_read). No in-scope check scores our parser's output (the reach is measured in protects), so no check's predicate is asserted.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: clients must ignore an SSE comment line and must not treat it as malformed (streamable-http.mdx:151-153, citing the SSE specification), so both events are yielded."
+          }
+        }
+      ]
+    },
+    {
+      "view": "docs/conformance/buckets/claim-unmatched-2026-07-28.json",
+      "closure": "closed",
+      "owner": "MES-138",
+      "handed_over_from": {
+        "ticket": "MES-133",
+        "why": "MES-133 (the D1 parent) was split at Sprint 13 planning; PO ruling 29609 Q4 gives this view to MES-138. The view's adjudication_owner is a crosswalk projection and is left as it is (29693 Q5); the label moves when the crosswalk is next regenerated.",
+        "view_label": {
+          "file": "docs/conformance/buckets/claim-unmatched-2026-07-28.json",
+          "lines": [
+            2,
+            2
+          ],
+          "bytes": "  \"adjudication_owner\": \"MES-133 (D1)\","
+        }
+      },
+      "rows": [
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector the `Method` annotation produces Mcp-Param-Method, never Mcp-Method",
+          "claim": "an annotated parameter cannot forge the Mcp-Method ROUTING header (header_mirror_test.exs:416 — `refute Map.has_key?(headers, \"mcp-method\")`)",
+          "tag": "oc:none/no-oc-scenario/CG7-annotation-cannot-forge-mcp-method",
+          "echo": {
+            "search_id": "CLV01",
+            "the_search_that_found_none": "an annotated parameter FORGING the Mcp-Method routing header: a mirrored `x-mcp-header` named `Method` producing `Mcp-Method` rather than `Mcp-Param-Method`"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/header_mirror_test.exs",
+            "lines": [
+              410,
+              416
+            ],
+            "bytes": "    test \"the `Method` annotation produces Mcp-Param-Method, never Mcp-Method\", %{\n      headers: headers\n    } do\n      # The fixture names this case explicitly: a mirrored parameter must not\n      # be able to forge a routing header.\n      assert headers[\"mcp-param-method\"] == \"test-method\"\n      refute Map.has_key?(headers, \"mcp-method\")"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/header_mirror_test.exs:415 — assert headers[\"mcp-param-method\"] == \"test-method\"",
+            "test/mcp/protocol/header_mirror_test.exs:416 — refute Map.has_key?(headers, \"mcp-method\")"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "near_miss": {
+            "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+            "byte_span": [
+              707951,
+              708102
+            ],
+            "bytes": "method_val:{type:`string`,description:`Value for header named \"Method\" — tests that x-mcp-header \"Method\" produces Mcp-Param-Method (not Mcp-Method)`"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "A parameter annotated `x-mcp-header: Method` mirrors to Mcp-Param-Method and cannot forge the Mcp-Method routing header; OC's http-custom-headers fixture names this case in its schema, but its check (ClientCustomHeader_Method) reads only `mcp-param-method`, and nothing in that scenario reads `mcp-method`.",
+          "rationale": "The claim's assert (header_mirror_test.exs:416) re-read against the harness, since the fixture's own description says the case is tested (near_miss). The scenario's handler was read for every header it takes: `mcp-param-*` only. The ClientMcpMethodHeader_* checks run in http-standard-headers, whose fixture has no annotated parameter. So no check's predicate is this refute. A finding against the suite rather than the crosswalk (the fixture describes a test its check does not make); recorded here, not routed.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: an `x-mcp-header` value names `Mcp-Param-{name}` (streamable-http.mdx:373-374), so `Method` mirrors to Mcp-Param-Method, and Mcp-Method carries the body's `method` (:290), which a mirrored value may not replace."
+          }
+        },
+        {
+          "member": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept",
+          "claim": "the exclusion is logged naming the tool and the reason (client_tool_schemas_test.exs:107-108 — `assert log =~ ~s(EXCLUDING tool \"bad\" from tools/list)` and `assert log =~ \"only string, integer and boolean are permitted\"`)",
+          "tag": "oc:none/no-oc-scenario/CG7-exclusion-is-logged",
+          "echo": {
+            "search_id": "CLV02",
+            "the_search_that_found_none": "a DIAGNOSTIC for a SEP-2243 exclusion: the client logging which tool it excluded from tools/list and why"
+          },
+          "et_test": {
+            "file": "test/mcp/client_tool_schemas_test.exs",
+            "lines": [
+              83,
+              108
+            ],
+            "bytes": "    test \"an invalid tool is dropped and the valid ones are kept\" do\n      {client, transport} = start_client()\n\n      log =\n        capture_log(fn ->\n          assert {:ok, %{\"tools\" => tools}} =\n                   list_tools(client, transport, %{\n                     \"tools\" => [\n                       annotated(\"good\", \"Region\"),\n                       invalid_tool(\"bad\"),\n                       %{\"name\" => \"plain\", \"inputSchema\" => %{\"type\" => \"object\"}}\n                     ]\n                   })\n\n          assert Enum.map(tools, & &1[\"name\"]) == [\"good\", \"plain\"]\n        end)\n\n      # The spec's SHOULD: log the tool name and the reason. Assert the tool\n      # name INSIDE the exclusion phrase, not the bare name: `capture_log/1`\n      # sees the GLOBAL logger and this file is `async: true`, so `=~ \"bad\"` is\n      # three characters matched anywhere in the whole suite's concurrent\n      # output. Measured, so the claim is not hypothetical: make the warning\n      # name a different tool (`\"bad_other\"`) and `=~ \"bad\"` stays GREEN while\n      # this assertion goes red.\n      assert log =~ ~s(EXCLUDING tool \"bad\" from tools/list)\n      assert log =~ \"only string, integer and boolean are permitted\""
+          },
+          "asserts_read": [
+            "test/mcp/client_tool_schemas_test.exs:88 — assert {:ok, %{\"tools\" => tools}} =",
+            "test/mcp/client_tool_schemas_test.exs:97 — assert Enum.map(tools, & &1[\"name\"]) == [\"good\", \"plain\"]",
+            "test/mcp/client_tool_schemas_test.exs:107 — assert log =~ ~s(EXCLUDING tool \"bad\" from tools/list)",
+            "test/mcp/client_tool_schemas_test.exs:108 — assert log =~ \"only string, integer and boolean are permitted\""
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29700, item 1"
+          },
+          "rationale": "The claim is the log line (client_tool_schemas_test.exs:107-108). A log line is not a wire artefact, so the claim read alone fails A2 gate 2 (etcc-membership.md §2): an SDK that got the wire arbitrarily wrong would still pass it. The member stays ET-CC on its other claims (the kept and dropped tools); what is routed to A2 is whether a claim-level record should stand for a claim that fails gate 2. The spec's SHOULD-log is real, and nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "An SDK may word the warning differently or not log at all (streamable-http.mdx:405-407: a SHOULD), and fails the `=~` asserts at client_tool_schemas_test.exs:107-108."
+          }
+        },
+        {
+          "member": "MCP.ClientToolSchemasTest/test the transport seam a tools/call for a known tool carries :headers; other methods carry none",
+          "claim": "a NON-tools/call request carries no :headers at all (client_tool_schemas_test.exs:395 — `assert Enum.at(MockTransport.sent_opts(transport), 0) == []`, the tools/list)",
+          "tag": "oc:none/no-oc-scenario/CG7-non-tools-call-carries-no-headers-opt",
+          "echo": {
+            "search_id": "CLV03",
+            "the_search_that_found_none": "the `:headers` TRANSPORT OPT `MCP.Client` hands its transport being empty for every request that is not a tools/call"
+          },
+          "et_test": {
+            "file": "test/mcp/client_tool_schemas_test.exs",
+            "lines": [
+              389,
+              395
+            ],
+            "bytes": "    test \"a tools/call for a known tool carries :headers; other methods carry none\" do\n      {client, transport} = start_client()\n      {:ok, _} = list_tools(client, transport, %{\"tools\" => [annotated(\"t\", \"Region\")]})\n\n      complete_call(client, transport, \"t\", %{\"region\" => \"us-west1\"})\n\n      assert Enum.at(MockTransport.sent_opts(transport), 0) == []"
+          },
+          "asserts_read": [
+            "test/mcp/client_tool_schemas_test.exs:395 — assert Enum.at(MockTransport.sent_opts(transport), 0) == []",
+            "test/mcp/client_tool_schemas_test.exs:397 — assert Enum.at(MockTransport.sent_opts(transport), 1)[:headers] =="
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29700, item 2"
+          },
+          "rationale": "The claim (client_tool_schemas_test.exs:395) is about the `:headers` OPT MCP.Client hands its transport, and the transport adds the routing headers below that seam (the view's resolved_by says so). That is an SDK step between the asserted value and the wire, so the claim read alone fails A2 gate 2 by §2.2, the ET-ADJ shape. The member stays ET-CC on its other claims; routed to A2 to decide whether a claim-level record should stand for it.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "An SDK has no `:headers` opt at this seam unless it chose one (the opt is this SDK's, appended at lib/mcp/transport/streamable_http/client.ex:321), and :524-525 scopes the header MUST to tools/call without forbidding headers elsewhere; such an SDK fails `sent_opts == []` at client_tool_schemas_test.exs:395."
+          }
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name",
+          "claim": "a method with no name target carries NO `mcp-name` (routing_headers_test.exs:182 — `refute Map.has_key?(headers, \"mcp-name\")`, on a tools/list)",
+          "tag": "oc:none/no-oc-scenario/CG1-no-mcp-name-without-a-name-target",
+          "echo": {
+            "search_id": "CLV04",
+            "the_search_that_found_none": "the ABSENCE of `Mcp-Name` on a method with no name target (a tools/list carrying `Mcp-Method` and no `Mcp-Name`)"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/routing_headers_test.exs",
+            "lines": [
+              166,
+              182
+            ],
+            "bytes": "    test \"a method with no name target carries Mcp-Method but NO Mcp-Name\", %{\n      agent: agent,\n      url: url\n    } do\n      transport = start_transport(url)\n\n      :ok =\n        HTTPClient.send_message(transport, %{\n          \"jsonrpc\" => \"2.0\",\n          \"id\" => 1,\n          \"method\" => \"tools/list\",\n          \"params\" => %{\"cursor\" => \"abc\"}\n        })\n\n      headers = headers_of(agent, 0)\n      assert headers[\"mcp-method\"] == \"tools/list\"\n      refute Map.has_key?(headers, \"mcp-name\")"
+          },
+          "asserts_read": [
+            "test/mcp/transport/routing_headers_test.exs:181 — assert headers[\"mcp-method\"] == \"tools/list\"",
+            "test/mcp/transport/routing_headers_test.exs:182 — refute Map.has_key?(headers, \"mcp-name\")"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "rationale": "The counterfactual fires (see `counterfactual`), so by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. The spec requires Mcp-Name for tools/call, resources/read and prompts/get (streamable-http.mdx:291) and says 'if applicable' (:529); it states no MUST NOT, so the refute (routing_headers_test.exs:182) holds one conforming choice. Reach, unchanged: the three ClientMcpNameHeader_* checks each run on a name-bearing method, and none is a predicate on absence. Nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "An SDK may carry Mcp-Name on a tools/list: streamable-http.mdx:291 requires it for three methods and :529 says 'if applicable', and no text forbids it elsewhere; one that does fails the refute at routing_headers_test.exs:182."
+          },
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29716, item 5"
+          }
+        },
+        {
+          "member": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON",
+          "claim": "an undeclared `elicitation` capability is omitted from the encoding entirely",
+          "tag": "oc:none/no-axis-contact/SEP-2575-undeclared-elicitation-omitted",
+          "echo": {
+            "search_id": "NAC03",
+            "the_search_that_found_none": "an UNDECLARED capability omitted from the encoding entirely: the key absent, not present with an empty or false value"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/capabilities_test.exs",
+            "lines": [
+              88,
+              100
+            ],
+            "bytes": "    test \"round-trips through JSON\" do\n      map = %{\n        \"roots\" => %{\"listChanged\" => true},\n        \"sampling\" => %{}\n      }\n\n      caps = ClientCapabilities.from_map(map)\n      json = Jason.encode!(caps)\n      decoded = Jason.decode!(json)\n\n      assert decoded[\"roots\"][\"listChanged\"] == true\n      assert decoded[\"sampling\"] == %{}\n      refute Map.has_key?(decoded, \"elicitation\")"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/capabilities_test.exs:98 — assert decoded[\"roots\"][\"listChanged\"] == true",
+            "test/mcp/protocol/capabilities_test.exs:99 — assert decoded[\"sampling\"] == %{}",
+            "test/mcp/protocol/capabilities_test.exs:100 — refute Map.has_key?(decoded, \"elicitation\")"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "A client configured without elicitation omits the `elicitation` key entirely rather than declaring it; OC's ClientDeclaresElicitationCapability SKIPS when the key is absent and validates it when present, so a spurious `elicitation: {}` would pass OC.",
+          "rationale": "The claim's refute (capabilities_test.exs:100) addresses the check's PRECONDITION, not its axis, as MES-110's rule A ratified (authored 29283, ratified 29319); that is the crosswalk's ruling and it is not re-opened here. Re-read against the whole request-metadata family: no check's predicate is a capability's absence.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: `elicitation` present declares support (schema.ts:761), so a client configured without it must omit it; `roots` and `sampling` were declared, and present means supported (:722, :734)."
+          }
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
+          "claim": "the identity the completion reports is the RETRY request's re-resolved identity — neither the first request's, nor the one planted inside `inputResponses` (streamable_http_ac_test.exs:264 — `assert tool_text(final) == \"REVIEWER\"`, where the first call ran as `PM` and the planted value was `PM-SPOOF`)",
+          "tag": "oc:none/no-oc-scenario/MES-115-retry-identity-re-resolved",
+          "echo": {
+            "search_id": "CLV05",
+            "the_search_that_found_none": "WHOSE request an MRTR retry is: the identity a completion reports being the retry's re-resolved one, not the first request's and not one planted in `inputResponses`"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/streamable_http_ac_test.exs",
+            "lines": [
+              245,
+              264
+            ],
+            "bytes": "  test \"spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh\",\n       %{std: url} do\n    first = post(url, \"tools/call\", with_meta(%{\"name\" => \"needs_input_id\"}), role: \"PM\")\n    assert result(first)[\"resultType\"] == \"input_required\"\n    assert result(first)[\"requestState\"] == \"rs-token-id\"\n\n    retry_params =\n      with_meta(%{\n        \"name\" => \"needs_input_id\",\n        \"arguments\" => %{},\n        \"requestState\" => result(first)[\"requestState\"],\n        \"inputResponses\" => [%{\"name\" => \"x\", \"identity\" => \"PM-SPOOF\"}]\n      })\n\n    # Retry carries a DIFFERENT authenticated role than the first request:\n    # completion must echo the retry's re-resolved identity (REVIEWER),\n    # neither the first request's PM nor the planted PM-SPOOF.\n    final = post(url, \"tools/call\", retry_params, role: \"REVIEWER\")\n    assert result(final)[\"resultType\"] == \"complete\"\n    assert tool_text(final) == \"REVIEWER\""
+          },
+          "asserts_read": [
+            "test/mcp/transport/streamable_http_ac_test.exs:248 — assert result(first)[\"resultType\"] == \"input_required\"",
+            "test/mcp/transport/streamable_http_ac_test.exs:249 — assert result(first)[\"requestState\"] == \"rs-token-id\"",
+            "test/mcp/transport/streamable_http_ac_test.exs:263 — assert result(final)[\"resultType\"] == \"complete\"",
+            "test/mcp/transport/streamable_http_ac_test.exs:264 — assert tool_text(final) == \"REVIEWER\""
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "rationale": "The counterfactual fires (see `counterfactual`), so by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. Anchor for the planted value: mrtr.mdx:232, \"servers **MUST** treat `requestState` as an attacker-controlled input\" (it does not mention client inputs). For the identity claim the nearest text is mrtr.mdx:234-235, a SHOULD to bind \"the authenticated principal, rejecting state presented by a different principal\"; the unit asserts completion instead. A SHOULD does not forbid, so this is not wrong_against_spec; it is one conforming choice, and the one the spec recommends against. Reach, unchanged: RejectTamperedState's subject is a tampered requestState's rejection, not the identity a completion reports. Nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "A server following mrtr.mdx:234-235 (it SHOULD bind 'the authenticated principal, rejecting state presented by a different principal') rejects PM's requestState presented by REVIEWER, and fails `resultType == \"complete\"` and `tool_text == \"REVIEWER\"` at streamable_http_ac_test.exs:263-264."
+          },
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29716, item 6"
+          }
+        },
+        {
+          "member": "MCP.Server.JsonSchema202012Test/test W-4 — no $ref is ever dereferenced: a canary listener is never connected to",
+          "claim": "a $ref in a tool inputSchema that resolves to a network URI is never dereferenced by this SERVER — measured against a live TCP listener the test owns, on both the tools/list and the tools/call paths, and required to time out",
+          "tag": "oc:none/no-oc-server-check/SEP-2106-server-never-dereferences-a-network-ref",
+          "echo": {
+            "search_id": "CLV06",
+            "the_search_that_found_none": "a SERVER declining to dereference a network-URI `$ref` in a tool inputSchema"
+          },
+          "et_test": {
+            "file": "test/mcp/server/json_schema_2020_12_test.exs",
+            "lines": [
+              149,
+              188
+            ],
+            "bytes": "  test \"W-4 — no $ref is ever dereferenced: a canary listener is never connected to\" do\n    {:ok, listen} = :gen_tcp.listen(0, [:binary, active: false, reuseaddr: true])\n    {:ok, port} = :inet.port(listen)\n    url = \"http://127.0.0.1:#{port}/schema.json\"\n\n    # Drive both directions: listing a tool whose inputSchema $refs the canary,\n    # and calling THAT tool with arguments.\n    #\n    # Round 1 called `\"echo_args\"` here — a tool that is not advertised and\n    # whose schema contains no `$ref` — so the `tools/call` half of the canary\n    # controlled nothing: the reviewer added a resolver on the call path and\n    # the test stayed green. It is `\"network_ref_tool\"`, and the mutation has\n    # now been run against the corrected test (it goes red). One string, and\n    # it is this ticket's own rule landing on it: a stated discriminating\n    # mutation is not evidence until it has been run.\n    assert tool(\"network_ref_tool\", ref_url: url)[\"inputSchema\"][\"properties\"][\"payload\"] ==\n             %{\"$ref\" => url}\n\n    req = %Request{\n      id: 1,\n      method: \"tools/call\",\n      params: %{\n        \"name\" => \"network_ref_tool\",\n        \"arguments\" => %{\"payload\" => %{\"any\" => \"thing\"}},\n        \"_meta\" => meta()\n      }\n    }\n\n    {:reply, resp, _state} =\n      Dispatch.dispatch(req, %ToolContext{request_id: 1}, config(ref_url: url))\n\n    # The call must SUCCEED, or the canary measures a short-circuit rather than\n    # a non-dereference: an error return before the handler runs would let a\n    # resolver on a later line pass unnoticed.\n    refute Map.has_key?(resp, \"error\")\n    assert resp[\"result\"][\"content\"] != []\n\n    # SEP-2106 Security Implications, and `basic/index.mdx:301-302` at the same\n    # pin: a `$ref` that resolves to a network URI MUST NOT be dereferenced.\n    assert {:error, :timeout} = :gen_tcp.accept(listen, 200)"
+          },
+          "asserts_read": [
+            "test/mcp/server/json_schema_2020_12_test.exs:164 — assert tool(\"network_ref_tool\", ref_url: url)[\"inputSchema\"][\"properties\"][\"payload\"] ==",
+            "test/mcp/server/json_schema_2020_12_test.exs:183 — refute Map.has_key?(resp, \"error\")",
+            "test/mcp/server/json_schema_2020_12_test.exs:184 — assert resp[\"result\"][\"content\"] != []",
+            "test/mcp/server/json_schema_2020_12_test.exs:188 — assert {:error, :timeout} = :gen_tcp.accept(listen, 200)"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "near_miss": {
+            "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+            "byte_span": [
+              721738,
+              721761
+            ],
+            "bytes": "NoNetworkRefDereference"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "A SERVER, at its default configuration, never dereferences a tool inputSchema `$ref` that resolves to a network URI, on either the tools/list or the tools/call path; OC's NoNetworkRefDereference (near_miss) scores only the CLIENT, so a server that fetched the canary would pass OC.",
+          "rationale": "The claim is the non-dereference, measured by the canary (json_schema_2020_12_test.exs:188), and on this view the counterfactual is asked of the CLAIM, not of the member's whole unit [authored 29721 B-A | ratified 29723]. basic/index.mdx:301-302 is a MUST NOT, and the only fetching it permits is an opt-in mode that MUST be disabled by default (:304-305), so no conforming server falsifies the claim. The success asserts (:164, :183-184) guard the canary against a short-circuit and are not the claim; that a server following :309-310 would reject the schema and fail them is a reading of the unit, not of the claim. Reach, unchanged: NoNetworkRefDereference, the one in-scope key matching `$ref` or deref, observes our client, not our server. Nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: implementations MUST NOT automatically dereference a `$ref` that resolves to a network URI (basic/index.mdx:301-302), and an opt-in fetching mode MUST be disabled by default (:304-305), so a conforming server at its defaults never connects to the canary; a server that rejects the schema instead (:309-310) still never dereferences it."
+          }
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)",
+          "claim": "the values a deployment gets when it configures NO caching policy are the DEFAULTS — `ttlMs` 0 and `cacheScope` `public` — rather than settings someone chose (streamable_http_ac_test.exs:271 — the server under test is started with no `cache_defaults`)",
+          "tag": "oc:none/no-oc-scenario/MES-117-default-caching-policy-values",
+          "echo": {
+            "search_id": "CLV07",
+            "the_search_that_found_none": "what a server's caching hints are when NO caching policy is configured: the DEFAULT values, as distinct from a setting"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/streamable_http_ac_test.exs",
+            "lines": [
+              271,
+              274
+            ],
+            "bytes": "  test \"default caching policy is no-store (ttlMs 0)\", %{std: url} do\n    r = result(post(url, \"tools/list\", with_meta(%{}), role: \"PM\"))\n    assert r[\"ttlMs\"] == 0\n    assert r[\"cacheScope\"] == \"public\""
+          },
+          "asserts_read": [
+            "test/mcp/transport/streamable_http_ac_test.exs:273 — assert r[\"ttlMs\"] == 0",
+            "test/mcp/transport/streamable_http_ac_test.exs:274 — assert r[\"cacheScope\"] == \"public\""
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29700, item 3"
+          },
+          "rationale": "The claim is that ttlMs 0 and cacheScope public are what a server gets when it configures NO caching policy: a statement about this SDK's configuration default. The wire values are already edges. No spec text names a server's unconfigured default; caching.mdx:56 (\"If `ttlMs` is absent, clients **SHOULD** assume a default of `0`\") is the near miss, and its subject is a CLIENT reading an absent field, which never happens here because the server always sends it. So the claim read alone fails A2 gate 3 (no anchor can be named); routed to A2.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "A server's unconfigured caching defaults are its own choice: no spec text names them (caching.mdx:56 is a CLIENT's default for an absent ttlMs), so an SDK with other defaults fails streamable_http_ac_test.exs:273-274."
+          }
+        },
+        {
+          "member": "MCP.Transport.StreamableHTTPStatelessTest/test AC7 — non-localhost origin is rejected 403; the identity factory never runs",
+          "claim": "the per-request identity factory is never invoked for a rejected non-localhost `Origin`",
+          "tag": "oc:none/no-axis-contact/AC7-identity-factory-not-invoked-on-rejected-origin",
+          "echo": {
+            "search_id": "NAC09",
+            "the_search_that_found_none": "the ORDER of two server-internal events: a non-localhost `Origin` rejected before the per-request identity factory is ever invoked"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/streamable_http_stateless_test.exs",
+            "lines": [
+              128,
+              147
+            ],
+            "bytes": "  test \"AC7 — non-localhost origin is rejected 403; the identity factory never runs\" do\n    test_pid = self()\n\n    plug_opts =\n      opts(\n        handler_opts: fn _conn ->\n          send(test_pid, :factory_ran)\n          [identity: \"PM\"]\n        end\n      )\n\n    conn =\n      :post\n      |> conn(\"http://localhost/\", Jason.encode!(rpc(\"tools/list\", with_meta(%{}))))\n      |> put_req_header(\"content-type\", \"application/json\")\n      |> put_req_header(\"origin\", \"http://evil.example\")\n      |> MCPPlug.call(plug_opts)\n\n    assert conn.status == 403\n    refute_receive :factory_ran, 200"
+          },
+          "asserts_read": [
+            "test/mcp/transport/streamable_http_stateless_test.exs:146 — assert conn.status == 403",
+            "test/mcp/transport/streamable_http_stateless_test.exs:147 — refute_receive :factory_ran, 200"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29700, item 4"
+          },
+          "rationale": "The claim (streamable_http_stateless_test.exs:147, `refute_receive :factory_ran`) is the ORDER of two server-internal events. A message to the test process is not a wire artefact, and the 403 that is one is already an edge (MES-110 rule A, authored 29283, ratified 29319), so the claim read alone fails A2 gate 2. Routed to A2. Keeping the unit is not in question; the question is whether a claim-level CONFORMANCE record should stand for it.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "A server may run its identity factory before its Origin check: the spec fixes the 403 (an edge already), not the order of two internal steps, so such an SDK fails `refute_receive :factory_ran` at streamable_http_stateless_test.exs:147."
+          }
+        }
+      ]
+    }
+  ],
+  "counterfactual": {
+    "question": "could a conforming SDK fail this unit?",
+    "unit": {
+      "docs/conformance/buckets/bucket-1-2026-07-28.json": "the member: that view's unit is the member, so the question is asked of the member's whole test",
+      "docs/conformance/buckets/claim-unmatched-2026-07-28.json": "the claim: that view's unit is the claim, so the question is asked of the claim alone, and a member's other asserts are not part of it"
+    },
+    "unit_provenance": "[authored 29721 B-A | ratified 29723]",
+    "provenance": "[authored 29707 N5 | ratified 29708]",
+    "grain_provenance": "[authored 29713 | ratified 29717]",
+    "grain_ruling": "PM ruling 29717: the grain is WIRE MEANING. The host-value grain fires on every {:ok, _} match, so it separates no row from any other and fails as a discriminator; it is kept below as the recorded alternative.",
+    "grain": "Asked of the wire meaning the asserted value denotes, read as A2 gate 2 reads it (etcc-membership.md §2.2: generic serialisation is not a step; §2.4: a marker returned for an absent optional field is that condition's verbatim decode). Two SDKs that give one wire state the same meaning in different host values (nil or %{}, a struct or a map, {:ok, x} or x) are the same SDK here; asked of host values instead, the question fires on every unit through a public API and separates nothing.",
+    "fires_on_another_grain": {
+      "grain": "host values, as CR 29707 B1 applied it",
+      "additionally_firing": [
+        "oc:none/no-oc-scenario/extensions-doctest-nil-envelope",
+        "oc:none/no-oc-scenario/extensions-empty-and-omitted-collapse",
+        "oc:none/no-oc-scenario/extensions-no-inference-between-calls",
+        "oc:none/no-oc-scenario/extensions-absent-envelope",
+        "oc:none/no-oc-scenario/notification-framing-decode"
+      ],
+      "why_not_adopted": "each asserts a specific marker for an absent wire field (%{} or nil) that another SDK could represent differently with the same meaning; and the same grain also fires on every {:ok, _} or struct match, so it does not stop at these five."
+    }
+  }
+}

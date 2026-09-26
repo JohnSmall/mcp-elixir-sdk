@@ -13,7 +13,11 @@ defmodule MCP.Conformance.Adjudications do
   `extend_to_match` and `build_test`, and the `build_level_missing` refusal with
   them (PM ratification, MES-128 comment 29444, Q1). MES-129 (D2a-i) added
   `blocked_on_sdk_gap`, and the `sdk_gap_missing` refusal with it (PM
-  ratification, MES-129 comment 29460, Q1).
+  ratification, MES-129 comment 29460, Q1). MES-138 (D1-nd+CU) added the D1
+  family, `genuine_extra_coverage`, `redundant`, `not_a_conformance_claim` and
+  `wrong_against_spec`, with the `protects_missing`, `counterpart_missing`,
+  `routed_to_missing`, `spec_citation_missing` and `disposition_outside_view`
+  refusals [authored 29691 | ratified 29693] (Q1 to Q3).
 
   ## The dispositions
 
@@ -50,6 +54,63 @@ defmodule MCP.Conformance.Adjudications do
       this tree (`record`). Otherwise the row is refused (`sdk_gap_missing`).
       Shape only: whether the owning ticket really carries the record is the
       reviewer's check.
+
+  **The D1 family** [authored 29691 | ratified 29693]. For a member, or a
+  claim, with NO OC counterpart (bucket 1 and the claim-unmatched view). Each
+  row gets exactly one of these. The view row's `why_no_counterpart` and
+  `the_search_that_found_none` are inputs to the verdict, not the verdict.
+  Each refusal checks SHAPE only, as `bound_missing` does: whether the verdict
+  is right is the reviewer's check.
+
+    * `genuine_extra_coverage`: the unit asserts something no OC check
+      requires, and it is worth holding. The row states what the unit protects
+      that OC cannot, as one non-empty line in `protects`. Otherwise the row is
+      refused (`protects_missing`).
+    * `redundant`: an OC check covers the same ground, and the match rule (A3,
+      `docs/conformance/match-relation.md`) did not see it. That is a finding
+      against the crosswalk, and it is routed, not fixed. The row carries
+      `oc_counterpart`: a `token` of the OC locator; a `site`, a harness
+      citation whose `byte_span` overlaps a site the locator records for that
+      token; and `why_a3_missed`, one line. Otherwise the row is refused
+      (`counterpart_missing`). The tie shows that the token HAS that site, not
+      that the counterpart is right (K1-R's lesson; 29693, Q2). The site sits
+      under `oc_counterpart`, not under `check`, so `check_foreign`'s `oc:none/`
+      premise (no harness span under `check`) still holds.
+    * `not_a_conformance_claim`: the member is misclassified under A2. The
+      register is not relabelled here; the reading is routed back to A2. This
+      includes a unit that asserts one conforming choice among several, so a
+      conforming SDK could choose otherwise and fail it: the behaviour has no
+      normative anchor, an A2 gate-3 failure [authored 29707 N5 | ratified
+      29708].
+    * `wrong_against_spec`: the unit asserts something the specification
+      forbids, or contradicts [amended from "does not require, or forbids":
+      authored 29707 N5 | ratified 29708]. The row carries `spec`: an https
+      `url` into the 2026-07-28 revision and a one-line verbatim `quote`.
+      Otherwise the row is refused (`spec_citation_missing`). The
+      specification is not in this repository, so gate 5 cannot hold the
+      quote's bytes: the same split as harness citations, and a stated
+      residual.
+
+  One counterfactual separates these last two from `genuine_extra_coverage`,
+  applied to every row: could a conforming SDK fail this unit? If one can,
+  and the specification forbids nothing the unit asserts, the row is
+  `not_a_conformance_claim`; if none can, a genuine row names the spec text
+  that makes it so [authored 29707 N5 | ratified 29708]. The unit is the
+  view's: on bucket 1 the member, on the claim-unmatched view the claim
+  alone, so a member's other asserts are not part of it [authored 29721 B-A |
+  ratified 29723]. The guard holds none of this: which way a reading goes is
+  the reviewer's check.
+
+  A `redundant` or `not_a_conformance_claim` row carries `routed_to`, in the
+  `sdk_gap` shape: `to`, which must be the disposition's route (`A3` for
+  `redundant`, `A2` for `not_a_conformance_claim`), a ticket-key `owner`, and
+  a one-line `owner_record` naming the record that ticket carries. Otherwise
+  the row is refused (`routed_to_missing`).
+
+  The D1 family is admitted ONLY in a section bound to a D1 view (bucket 1 or
+  the claim-unmatched view), and a D1 view admits nothing else. Either way the
+  row is refused (`disposition_outside_view`), so a bucket-1 row carrying
+  `fix_sdk` cannot audit clean (29693, Q3).
 
   An `extend_to_match`, `build_test` or `blocked_on_sdk_gap` row carries `build_level` (one of
   `pure_unit`, `mock_transport`, `plug`, `live_http`) and a one-line `remedy`,
@@ -158,8 +219,8 @@ defmodule MCP.Conformance.Adjudications do
   ## Echo: a regenerated view under an unchanged key is caught
 
   Each row copies its view row's `shape`, `verdicts`, `bucket`,
-  `escalation_reason` and `escalation_cause` (whichever the view row carries)
-  into `echo`. The guard requires `echo` to EQUAL that projection. So a view
+  `escalation_reason`, `escalation_cause`, `cg`, `search_id` and
+  `the_search_that_found_none` (whichever the view row carries) into `echo`. The guard requires `echo` to EQUAL that projection. So a view
   re-projected with a different verdict under the same edge refuses
   (`echo_drift`), rather than leaving an adjudication standing over a fact
   that has changed.
@@ -169,6 +230,10 @@ defmodule MCP.Conformance.Adjudications do
   cannot fire there (CR K4 on MES-126): there is nothing a view row could
   change under an unchanged key. A bucket-1 view row carries `cg`, which
   MES-135 added to the echoed fields, so its echo is no longer vacuous.
+  MES-138 added `search_id` and `the_search_that_found_none` (29693, Q4): the
+  search a D1 verdict re-tests, so a search regenerated under an unchanged key
+  refuses. They also make echo non-vacuous on claim-unmatched rows, which
+  carry none of the other fields.
 
   ## Content ties (MES-135 K1)
 
@@ -201,44 +266,59 @@ defmodule MCP.Conformance.Adjudications do
   carry all three. **Bucket-2 rows carry the `check` tie ALONE**: they have no
   member, so `et_test` is `null`; their echo is `{}` (above); and their root
   causes are not `R<n>`. Bucket-2 is the dominant shape: 93 of the 108
-  committed rows at MES-135. An empty view has no rows, so the ties are vacuous
-  there, and that is stated rather than claimed as coverage. Which ties apply
+  committed rows at MES-135, and 93 of 138 at MES-138 (which adds 30
+  `oc:none/` member rows, 21 bucket-1 and 9 claim-unmatched). An empty
+  view has no rows, so the ties are vacuous there, and that is stated rather
+  than claimed as coverage. Which ties apply
   to a row does not say which pairs of rows they separate; the next paragraph
   does.
 
   What the ties do NOT hold:
 
     * **Which of two rows' content is whose, for the pairs this predicate
-      admits (MES-135 K1-R and K1-R2; CR 29672, 29680).** Two rows' contents
-      (every field but `member`, `claim`, `tag` and `echo`) can be exchanged
-      and still audit CLEAN if and only if BOTH:
-      (a) their `check` ties are MUTUAL: each row's harness span overlaps a
-      locator site of the OTHER row's token, which happens where the two
-      tokens share a site; and (b) the `et_test` tie does not separate them:
-      both rows are member-less, or both carry the SAME member test (the tie
-      asks only that the window lie in the row's own member's test).
+      admits (MES-135 K1-R and K1-R2; CR 29672, 29680; amended at MES-138,
+      R3-1).** Two rows' contents (every field but `member`, `claim`, `tag`
+      and `echo`) can be exchanged and still audit CLEAN if and only if BOTH:
+      (a) the `check` tie does not separate them: their ties are MUTUAL (each
+      row's harness span overlaps a locator site of the OTHER row's token,
+      which happens where the two tokens share a site), OR both rows are
+      `oc:none/` (no span on either side, so nothing to tie); and (b) the
+      `et_test` tie does not separate them: both rows are member-less, or
+      each row's window is owned by the OTHER row's member (the tie asks only
+      that the window lie in the row's own member's test, so the same member
+      test, or two doctests of one `doctest` directive, which share its one
+      line).
       `root_cause_foreign` separates no pair, because `stated_at` travels with
       the root cause. `check_foreign` accepts a span overlapping ANY locator
       site of the token, and sites are shared: measured at MES-135, 11 of the
       locator's 143 distinct sites are sites of more than one token, 82 of its
       173 tokens have ONLY shared sites, and 60 of the 108 committed rows tie
-      their check only through a shared site (48 bucket-2, 12 member rows).
-      **The audited set.** CR exchanged every pair of the 108 committed rows
-      (5778 pairs) and ran each through `audit/2`: **481 pairs audit CLEAN at
-      this tip, 477 between bucket-2 rows and 4 between member rows**. Of the
-      551 pairs whose `check` ties are mutual, the `et_test` tie refuses 70.
-      The 4 member pairs are over 5 rows (1 in D4a, 4 in D4b) and 2 member
-      tests. On `StreamableHTTPStatelessTest` "initialize is gone → -32022;
-      ping/logging.setLevel → -32601": D4a's `initialize` row (`fix_sdk`) with
-      D4b's `ping` row and with D4b's `logging-setlevel` row (both
+      their check only through a shared site (48 bucket-2, 12 member rows);
+      still 60 of 138 at MES-138, since an `oc:none/` row cites no site.
+      **The audited set.** At MES-135, CR exchanged every pair of the 108
+      committed rows (5778 pairs) and ran each through `audit/2`: 481 pairs
+      audited CLEAN, 477 bucket-2 and 4 member; of 551 pairs whose `check`
+      ties were mutual, the `et_test` tie refused 70. **At MES-138 the
+      controls' `swap-audit` mode exchanges every pair of the 138 committed
+      rows (9453 pairs, 0 no-ops): 482 pairs audit CLEAN, 477 between
+      bucket-2 rows and 5 between member rows.** Of the 986 pairs whose
+      `check` tie does not separate them (551 mutual, plus 435 between the 30
+      `oc:none/` rows), the `et_test` tie refuses 504. The 30 D1 rows add
+      exactly ONE CLEAN pair: `ExtensionsTest`'s doctests `from_meta/1 (8)`
+      and `(9)` in the bucket-1 section, both `genuine_extra_coverage`, which
+      share the `doctest MCP.Protocol.Extensions` line as their one-line
+      window (MES-138 S2a, [authored 29695 | ratified 29702]). The 4 older member pairs are over 5 rows (1 in
+      D4a, 4 in D4b) and 2 member tests. On `StreamableHTTPStatelessTest`
+      "initialize is gone → -32022; ping/logging.setLevel → -32601": D4a's
+      `initialize` row (`fix_sdk`) with D4b's `ping` row and with D4b's `logging-setlevel` row (both
       `extend_test`), which cross records and exchange disposition, check and
       root cause; and those two D4b rows with each other. On `DispatchTest`
       "ping and logging/setLevel are removed → method not found (-32601)":
-      D4b's `ping` and `logging-setlevel` rows (both `accept_bound`). The 481
-      pairs form 8 cliques, of 30, 9, 3, 3, 2, 2, 2 and 2 rows; the 30 span
-      D2a-i and D2a-ii. Gate 5 computes the set by (a) and (b) over every
-      committed row and asserts it EQUALS the audited set pair for pair, and
-      pins two pairs CLEAN as known residuals: CR's bucket-2 plant (D2a-ii's
+      D4b's `ping` and `logging-setlevel` rows (both `accept_bound`). The 482
+      pairs form 9 cliques, of 30, 9, 3, 3, 2, 2, 2, 2 and 2 rows; the 30 span
+      D2a-i and D2a-ii (8 cliques and 481 pairs at MES-135). Gate 5 computes
+      the set by (a) and (b) over every committed row and asserts it EQUALS
+      the audited set pair for pair, and pins two pairs CLEAN as known residuals: CR's bucket-2 plant (D2a-ii's
       `caching` and `tools-call-with-progress` `WireSchemaValid` rows, which
       differ on `check`, `disposition`, `extend_target`, `remedy`,
       `root_cause` and three more fields) and the cross-record member pair
@@ -277,6 +357,8 @@ defmodule MCP.Conformance.Adjudications do
   `unreadable`, `bad_record`, `bad_section`, `unknown_view`,
   `view_key_collision`, `open_without_owner`, `bad_row`,
   `disposition_outside_set`, `bound_missing`, `build_level_missing`, `sdk_gap_missing`,
+  `disposition_outside_view`, `protects_missing`, `counterpart_missing`,
+  `routed_to_missing`, `spec_citation_missing`,
   `phantom`, `missing`,
   `duplicate`, `closure_not_exclusive`, `owed_unadjudicated`, `pending_but_closed`,
   `catalogue_names_absent_view`, `bound_to_excluded`, `bound_outside_anchor`,
@@ -318,7 +400,7 @@ defmodule MCP.Conformance.Adjudications do
   @walk_root "docs/conformance/adjudications"
   @walk_glob "*.json"
   @schema "adjudication-record/1"
-  @view_schemas ~w(bucket-view/1 escalated-view/1)
+  @view_schemas ~w(bucket-view/1 escalated-view/1 claim-unmatched-view/1)
   @closures ~w(closed open)
 
   # The dispositions are a CLOSED set here, in the guard, not in the data
@@ -326,7 +408,18 @@ defmodule MCP.Conformance.Adjudications do
   # reviewed change to conformance/lib, proposed at the adding ticket's plan hop.
   @dispositions ~w(fix_sdk fix_conformance_adapter keep_design_publish_bound
                    po_decision_required suite_defect_upstream extend_test accept_bound
-                   extend_to_match build_test blocked_on_sdk_gap)
+                   extend_to_match build_test blocked_on_sdk_gap
+                   genuine_extra_coverage redundant not_a_conformance_claim wrong_against_spec)
+
+  # The D1 family (MES-138; authored 29691, ratified 29693): admitted ONLY in a
+  # section bound to a D1 view, and a D1 view admits nothing else
+  # (disposition_outside_view, both ways). A routed row's `routed_to.to` must
+  # be its disposition's route.
+  @d1_dispositions ~w(genuine_extra_coverage redundant not_a_conformance_claim wrong_against_spec)
+  @d1_views ~w(docs/conformance/buckets/bucket-1-2026-07-28.json
+               docs/conformance/buckets/claim-unmatched-2026-07-28.json)
+  @routes %{"redundant" => "A3", "not_a_conformance_claim" => "A2"}
+  @spec_url ~r{\Ahttps://modelcontextprotocol\.io/specification/2026-07-28(/|#|\z)}
 
   # The build levels an extend_to_match, build_test or blocked_on_sdk_gap row may
   # name (MES-128, 29444; MES-129, 29460).
@@ -341,7 +434,11 @@ defmodule MCP.Conformance.Adjudications do
   @slug_verdicts ~w(confirmed corrected)
   # `cg` since MES-135: a bucket-1 view row carries none of the others, so its
   # echo was vacuous (CR K4 on MES-126). Only bucket-1 rows carry `cg`.
-  @echo_fields ~w(shape verdicts bucket escalation_reason escalation_cause cg)
+  # `search_id` and `the_search_that_found_none` since MES-138 (29693, Q4): the
+  # search each D1 verdict re-tests. Only bucket-1 and claim-unmatched rows
+  # carry them.
+  @echo_fields ~w(shape verdicts bucket escalation_reason escalation_cause cg search_id
+                  the_search_that_found_none)
 
   # The OC locator: each OC token's emitting sites in the pinned harness build.
   # A row's `check` is tied to its tag through it (MES-135 K1).
@@ -371,8 +468,7 @@ defmodule MCP.Conformance.Adjudications do
     "docs/conformance/buckets/bucket-3-2026-07-28.json" => "MES-144",
     "docs/conformance/buckets/bucket-5a-2026-07-28.json" => "MES-148",
     "docs/conformance/buckets/bucket-5b-2026-07-28.json" => "MES-146",
-    "docs/conformance/buckets/bucket-6-2026-07-28.json" => "MES-144",
-    "docs/conformance/buckets/claim-unmatched-2026-07-28.json" => "MES-138"
+    "docs/conformance/buckets/bucket-6-2026-07-28.json" => "MES-144"
   }
 
   # A record is found OUTSIDE the walk by scanning the files git would commit
@@ -394,6 +490,11 @@ defmodule MCP.Conformance.Adjudications do
   def walk_root, do: {@walk_root, @walk_glob}
   def dispositions, do: @dispositions
   def build_levels, do: @build_levels
+  def d1_dispositions, do: @d1_dispositions
+  def d1_views, do: @d1_views
+  def routes, do: @routes
+  def echo_fields, do: @echo_fields
+  def view_schemas, do: @view_schemas
   def schema, do: @schema
   def locator_path, do: @locator
   def no_oc_prefix, do: @no_oc_prefix
@@ -964,6 +1065,11 @@ defmodule MCP.Conformance.Adjudications do
       bound_defects(section.file, k, row) ++
       build_defects(section.file, k, row) ++
       sdk_gap_defects(section.file, k, row) ++
+      view_scope_defects(section.file, k, row, section.view) ++
+      protects_defects(section.file, k, row) ++
+      counterpart_defects(section.file, k, row, ties) ++
+      routed_to_defects(section.file, k, row) ++
+      spec_defects(section.file, k, row) ++
       echo_defects(section.file, k, row, view_row) ++
       et_test_defects(section.file, k, row, ties) ++
       check_defects(section.file, k, row, ties) ++
@@ -1090,6 +1196,9 @@ defmodule MCP.Conformance.Adjudications do
       )
     ]
 
+  # `doctest Target.fun/arity (n)` -> Target.
+  @doctest_member ~r/\Adoctest ((?:[A-Z][A-Za-z0-9_]*\.)*[A-Z][A-Za-z0-9_]*)\.[^.\/]+\/[0-9]+ \([0-9]+\)\z/
+
   @test_line ~r/^(\s*)test "((?:[^"\\]|\\.)*)"/
   @one_line_test ~r/,\s*do:/
   @describe_line ~r/^  describe "((?:[^"\\]|\\.)*)"/
@@ -1106,6 +1215,15 @@ defmodule MCP.Conformance.Adjudications do
   (fail-closed, even for a `do:` body continued onto later lines). The owner
   must be the member's test (qualified by its `describe` when nested), in a
   file that defines the member's module.
+
+  A DOCTEST member (`Mod/doctest Target.fun/arity (n)`, MES-138 S2a,
+  [authored 29695 | ratified 29702]) has no
+  `test "…"` line: its body is the `@doc` of `Target`, in `lib/`. Its window
+  is the ONE line of the `doctest Target` directive (options allowed after a
+  comma), in a file that defines the member's module: the address the
+  register itself gives a doctest. Every doctest of one directive therefore
+  shares that window, so the tie does not separate two of them (stated with
+  the content-exchange residual in the moduledoc).
   """
   def et_test_owner(%{"member" => member, "et_test" => et}, source_fun) when is_binary(member) do
     with %{"file" => file, "lines" => [from, to], "bytes" => b}
@@ -1113,7 +1231,10 @@ defmodule MCP.Conformance.Adjudications do
            et || :not_a_citation,
          [module, member_test] <- String.split(member, "/", parts: 2),
          {:ok, src} <- source_fun.(file) do
-      owner(src, from, to, module, member_test)
+      case Regex.run(@doctest_member, member_test) do
+        [_, target] -> doctest_owner(src, from, to, module, target)
+        nil -> owner(src, from, to, module, member_test)
+      end
     else
       {:error, why} -> {:error, {:unreadable, why}}
       other -> {:error, other}
@@ -1121,6 +1242,20 @@ defmodule MCP.Conformance.Adjudications do
   end
 
   def et_test_owner(_row, _source_fun), do: {:error, :no_member}
+
+  defp doctest_owner(src, from, to, module, target) do
+    directive = ~r/\A\s*doctest\s+#{Regex.escape(target)}\s*(,.*)?\z/
+    line = src |> String.split("\n") |> Enum.at(from - 1)
+
+    with true <- from == to || :doctest_window_is_one_line,
+         true <-
+           (is_binary(line) and Regex.match?(directive, line)) || {:not_the_directive, target},
+         true <- String.contains?(src, "defmodule #{module} do") || :module do
+      :ok
+    else
+      other -> {:error, other}
+    end
+  end
 
   defp owner(src, from, to, module, member_test) do
     lines = src |> String.split("\n") |> Enum.with_index(1)
@@ -1266,6 +1401,143 @@ defmodule MCP.Conformance.Adjudications do
   end
 
   defp sdk_gap_defects(_file, _k, _row), do: []
+
+  # --- the D1 family (MES-138; authored 29691, ratified 29693) ----------------------
+  #
+  # Shape only, as bound_missing: whether a verdict is RIGHT is the reviewer's.
+
+  # A D1 disposition only in a section bound to a D1 view, and a D1 view only
+  # D1 dispositions. A code outside the closed set is disposition_outside_set's.
+  defp view_scope_defects(file, k, %{"disposition" => disp}, view) when disp in @dispositions do
+    case {disp in @d1_dispositions, view in @d1_views} do
+      {same, same} ->
+        []
+
+      {true, false} ->
+        [
+          d(
+            :disposition_outside_view,
+            file,
+            k,
+            "#{disp} is a D1 disposition, admitted only in a section bound to #{Enum.join(@d1_views, " or ")}, not #{view}"
+          )
+        ]
+
+      {false, true} ->
+        [
+          d(
+            :disposition_outside_view,
+            file,
+            k,
+            "#{view} admits only the D1 dispositions #{Enum.join(@d1_dispositions, " ")}, not #{disp}"
+          )
+        ]
+    end
+  end
+
+  defp view_scope_defects(_file, _k, _row, _view), do: []
+
+  # A genuine_extra_coverage row says what it protects that OC cannot.
+  defp protects_defects(file, k, %{"disposition" => "genuine_extra_coverage"} = row) do
+    if one_line?(row["protects"]),
+      do: [],
+      else: [
+        d(
+          :protects_missing,
+          file,
+          k,
+          "a genuine_extra_coverage row must state in `protects`, as one non-empty line, what it protects that OC cannot, not #{inspect(row["protects"], limit: 3)}"
+        )
+      ]
+  end
+
+  defp protects_defects(_file, _k, _row), do: []
+
+  # A redundant row names its OC counterpart: a locator token, a harness site
+  # overlapping a site the locator records for that token, and why A3 missed
+  # it. The tie shows the token HAS that site, not that the counterpart is
+  # right (K1-R's lesson; 29693, Q2).
+  defp counterpart_defects(file, k, %{"disposition" => "redundant"} = row, ties) do
+    oc = row["oc_counterpart"]
+    token = is_map(oc) && oc["token"]
+    site = is_map(oc) && oc["site"]
+
+    wrong =
+      [
+        {is_map(oc), "an `oc_counterpart` map"},
+        {is_binary(token) and Map.has_key?(ties.locator, token),
+         "a `token` of #{@locator}, not #{inspect(token, limit: 3)}"},
+        {harness_site?(site) and is_binary(token) and
+           Enum.any?(Map.get(ties.locator, token, []), &overlap?(site["byte_span"], &1)),
+         "a harness citation `site` whose byte_span overlaps a site the locator records for the token"},
+        {is_map(oc) and one_line?(oc["why_a3_missed"]), "a one-line, non-empty `why_a3_missed`"}
+      ]
+      |> Enum.reject(&elem(&1, 0))
+      |> Enum.map(&elem(&1, 1))
+
+    case wrong do
+      [] -> []
+      ws -> [d(:counterpart_missing, file, k, "a redundant row needs " <> Enum.join(ws, "; "))]
+    end
+  end
+
+  defp counterpart_defects(_file, _k, _row, _ties), do: []
+
+  defp harness_site?(%{"harness_sha256" => h, "byte_span" => [_, _], "bytes" => b})
+       when is_binary(h) and is_binary(b),
+       do: true
+
+  defp harness_site?(_), do: false
+
+  # A redundant or not_a_conformance_claim row is ROUTED, not fixed here: it
+  # names where (A3 or A2, by disposition), the receiving ticket, and one line
+  # naming the record that ticket carries (the sdk_gap shape).
+  defp routed_to_defects(file, k, %{"disposition" => disp} = row)
+       when is_map_key(@routes, disp) do
+    to = @routes[disp]
+    r = row["routed_to"]
+
+    ok? =
+      is_map(r) and r["to"] == to and is_binary(r["owner"]) and r["owner"] =~ @ticket_key and
+        one_line?(r["owner_record"])
+
+    if ok?,
+      do: [],
+      else: [
+        d(
+          :routed_to_missing,
+          file,
+          k,
+          "a #{disp} row needs `routed_to` with `to: #{inspect(to)}`, a ticket-key `owner` and a one-line `owner_record`, not #{inspect(r, limit: 3)}"
+        )
+      ]
+  end
+
+  defp routed_to_defects(_file, _k, _row), do: []
+
+  # A wrong_against_spec row cites the specification: a URL into the
+  # 2026-07-28 revision and a one-line verbatim quote. The specification is not
+  # in this repository, so the quote's bytes are not held (a stated residual).
+  defp spec_defects(file, k, %{"disposition" => "wrong_against_spec"} = row) do
+    spec = row["spec"]
+
+    ok? =
+      is_map(spec) and is_binary(spec["url"]) and spec["url"] =~ @spec_url and
+        one_line?(spec["quote"])
+
+    if ok?,
+      do: [],
+      else: [
+        d(
+          :spec_citation_missing,
+          file,
+          k,
+          "a wrong_against_spec row needs `spec` with a `url` into https://modelcontextprotocol.io/specification/2026-07-28 and a one-line verbatim `quote`, not #{inspect(spec, limit: 3)}"
+        )
+      ]
+  end
+
+  defp spec_defects(_file, _k, _row), do: []
 
   defp repo_citation?(%{"file" => f, "lines" => [_, _], "bytes" => b})
        when is_binary(f) and is_binary(b),

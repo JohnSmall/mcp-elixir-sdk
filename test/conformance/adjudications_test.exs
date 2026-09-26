@@ -50,13 +50,16 @@ defmodule MCP.Conformance.AdjudicationsTest do
   @population_sentence "OC check with no ET-CC member match"
 
   # MES-135 K1-R2 (CR 29680): the AUDITED set of row pairs whose contents (every
-  # field but member, claim, tag and echo) exchange and still audit CLEAN. CR
-  # ran all 5778 pairs of the 108 committed rows through A.audit (28-way, 0
-  # no-ops) and listed 481 CLEAN pairs in /tmp/cr135sweep/clean.tsv; its row
-  # indices were re-keyed to the stable ids below, `{record basename, member,
-  # tag}`, and the 481 pairs are exactly the pairs within these 8 cliques
-  # (30, 9, 3, 3, 2, 2, 2, 2 rows: 435 + 36 + 3 + 3 + 4 * 1 = 481). A stable key
-  # list, not a fixture file: the cliques are the set, written compactly.
+  # field but member, claim, tag and echo) exchange and still audit CLEAN. At
+  # MES-135 CR ran all 5778 pairs of the 108 committed rows through A.audit and
+  # found 481 CLEAN pairs in 8 cliques. At MES-138 (R3-1) the literal below is
+  # pasted from the output of `mix run conformance/controls/adjudications_controls.exs
+  # swap-audit`, never from the unit's own computed set: all 9453 pairs of the
+  # 138 committed rows, 0 no-ops, 482 CLEAN, exactly the pairs within these 9
+  # cliques (30, 9, 3, 3, 2, 2, 2, 2, 2 rows: 435 + 36 + 3 + 3 + 5 * 1 = 482).
+  # The one new pair is D1's two ExtensionsTest doctests of one directive. Ids
+  # are `{record basename, member, tag}`; the cliques are the set, written
+  # compactly.
   @k1r_stateless "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601"
   @k1r_dispatch "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)"
   @k1r_clean_cliques [
@@ -154,21 +157,23 @@ defmodule MCP.Conformance.AdjudicationsTest do
       {"adjudication-D4a-2026-07-28.json", @k1r_stateless,
        "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize"},
       {"adjudication-D4b-2026-07-28.json", @k1r_stateless,
-       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping"},
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel"},
       {"adjudication-D4b-2026-07-28.json", @k1r_stateless,
-       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel"}
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping"}
     ],
     [
-      {"adjudication-D4b-2026-07-28.json", @k1r_dispatch,
-       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping"},
-      {"adjudication-D4b-2026-07-28.json", @k1r_dispatch,
-       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel"}
+      {"adjudication-D1-nd-CU-2026-07-28.json",
+       "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (8)",
+       "oc:none/no-oc-scenario/extensions-doctest-inbound-read"},
+      {"adjudication-D1-nd-CU-2026-07-28.json",
+       "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (9)",
+       "oc:none/no-oc-scenario/extensions-doctest-nil-envelope"}
     ],
     [
-      {"adjudication-D2b-2026-07-28.json", nil,
-       "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_get"},
-      {"adjudication-D2b-2026-07-28.json", nil,
-       "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_read"}
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-resources-subscribe/HttpServerMethodNotFound404resourcessubscribe"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil,
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-resources-unsubscribe/HttpServerMethodNotFound404resourcesunsubscribe"}
     ],
     [
       {"adjudication-D2a-ii-2026-07-28.json", nil,
@@ -177,10 +182,16 @@ defmodule MCP.Conformance.AdjudicationsTest do
        "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-protocol-version/RequestMetaInvalid"}
     ],
     [
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
-       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-resources-subscribe/HttpServerMethodNotFound404resourcessubscribe"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
-       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-resources-unsubscribe/HttpServerMethodNotFound404resourcesunsubscribe"}
+      {"adjudication-D2b-2026-07-28.json", nil,
+       "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_get"},
+      {"adjudication-D2b-2026-07-28.json", nil,
+       "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_read"}
+    ],
+    [
+      {"adjudication-D4b-2026-07-28.json", @k1r_dispatch,
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel"},
+      {"adjudication-D4b-2026-07-28.json", @k1r_dispatch,
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping"}
     ]
   ]
   @crosswalk "docs/conformance/crosswalk-2026-07-28.json"
@@ -1863,7 +1874,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # MES-135 (29433(a); PM Q4) moved this into G32: it now walks every
     # citation in the whole record, so the gate-5 unit that held the top-level
     # ones (MES-127) is entailed and re-cut. What stays is the population.
-    test "G32 walks the citations outside the rows: 9 repository and 8 harness at this tip",
+    # MES-138 added one outside the rows: the claim-unmatched section's
+    # handed_over_from.view_label.
+    test "G32 walks the citations outside the rows: 10 repository and 8 harness at this tip",
          %{inputs: inputs, result: %{report: r}} do
       outside =
         for {_, {:ok, doc}} <- inputs.records,
@@ -1871,11 +1884,11 @@ defmodule MCP.Conformance.AdjudicationsTest do
               A.collect(%{doc | "sections" => Enum.map(doc["sections"], &Map.delete(&1, "rows"))}),
             do: c
 
-      assert Enum.count(outside, &Map.has_key?(&1, "lines")) == 9
+      assert Enum.count(outside, &Map.has_key?(&1, "lines")) == 10
       assert Enum.count(outside, &Map.has_key?(&1, "harness_sha256")) == 8
 
-      assert r["repo_citations_found"] == 417 and
-               r["harness_citations_not_verified_in_gate_5"] == 260
+      assert r["repo_citations_found"] == 450 and
+               r["harness_citations_not_verified_in_gate_5"] == 265
     end
 
     test "G32 refuses a drifted top-level citation, with no edge key", %{inputs: inputs} do
@@ -1897,12 +1910,13 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # now requires, of EVERY row, that a member row's et_test lies inside the
     # member's own test and that a member-less row carries `et_test: null`.
     # What stays here is the population the tie runs over, at this tip.
-    test "the et_test tie's population: 15 member rows, 93 member-less rows with et_test null",
+    # MES-138 added 30 member rows (21 bucket-1, 9 claim-unmatched).
+    test "the et_test tie's population: 45 member rows, 93 member-less rows with et_test null",
          %{inputs: inputs} do
       rows = for {_, {:ok, doc}} <- inputs.records, s <- doc["sections"], r <- s["rows"], do: r
       {owned, memberless} = Enum.split_with(rows, &is_binary(&1["member"]))
 
-      assert length(owned) == 15 and length(memberless) == 93
+      assert length(owned) == 45 and length(memberless) == 93
       assert Enum.all?(memberless, &is_nil(&1["et_test"]))
       assert Enum.all?(owned, &(A.et_test_owner(&1, inputs.source_fun) == :ok))
     end
@@ -1955,15 +1969,17 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # The figures the moduledoc's K1-R/K1-R2 residual states, measured here so
     # that they cannot go stale silently: a moved figure means the moduledoc
     # moves. The CLEAN-swap set is computed by its predicate, over EVERY
-    # committed row: (a) the two rows' check ties are mutual (each row's check
-    # spans overlap a site of the other's token), and (b) the et_test tie does
-    # not separate them (the same member, or both nil). It is asserted EQUAL,
-    # as a set of pairs, to the audited set @k1r_clean_cliques records. Auditing
-    # each exchange here instead (all 5778 pairs) takes tens of minutes, so that
-    # sweep was run off gate 5, by CR on MES-135 (29679/29680), and the predicate
-    # is what gate 5 re-runs. Any row, tie or wording change that moves the set
-    # turns this red, whichever side it moves.
-    test "K1-R/K1-R2's figures: 11 of 143 sites shared, 82 of 173 tokens only on shared sites, 60 rows (48 bucket-2) tie only through one; the CLEAN-swap set equals the audited 481 pairs (477 bucket-2 + 4 member)",
+    # committed row: (a) the check tie does not separate them (each row's check
+    # spans overlap a site of the other's token, or both rows are `oc:none/`),
+    # and (b) the et_test tie does not separate them (both nil, or each row's
+    # et_test is owned by the other's member). It is asserted EQUAL, as a set
+    # of pairs, to the audited set @k1r_clean_cliques records. Auditing each
+    # exchange here instead (all 9453 pairs at MES-138) takes about 14 minutes
+    # at 32-way, so that sweep runs off gate 5, as the controls' `swap-audit`
+    # mode, and the predicate is what gate 5 re-runs. Any row, tie or wording
+    # change that moves the set turns this red, whichever side it moves, and
+    # the failure prints the difference both ways.
+    test "K1-R/K1-R2's figures: 11 of 143 sites shared, 82 of 173 tokens only on shared sites, 60 rows (48 bucket-2) tie only through one; the CLEAN-swap set equals the audited 482 pairs (477 bucket-2 + 5 member)",
          %{inputs: inputs} do
       {:ok, loc} = inputs.locator
       ov = fn [p, q], [r, t] -> max(p, r) < min(q, t) end
@@ -1995,23 +2011,50 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
       only_shared =
         for {v, _, r} <- rows,
-            sites = Enum.filter(loc[r["tag"]], fn st -> Enum.any?(spans.(r), &ov.(&1, st)) end),
+            sites =
+              Enum.filter(Map.get(loc, r["tag"], []), fn st ->
+                Enum.any?(spans.(r), &ov.(&1, st))
+              end),
             sites != [] and Enum.all?(sites, &(&1 in shared)),
             do: v
 
-      assert length(rows) == 108 and Enum.count(rows, &(elem(&1, 0) =~ "/bucket-2")) == 93
+      assert length(rows) == 138 and Enum.count(rows, &(elem(&1, 0) =~ "/bucket-2")) == 93
       assert {length(only_shared), Enum.count(only_shared, &(&1 =~ "/bucket-2"))} == {60, 48}
 
       # The ids name rows uniquely, so a pair of ids is a pair of rows.
       ids = Enum.map(rows, &elem(&1, 1))
-      assert length(Enum.uniq(ids)) == 108
+      assert length(Enum.uniq(ids)) == 138
+
+      # (a) the check tie does not separate them: mutual through the locator, or
+      # both rows on no OC check (`oc:none/`, no span either way; MES-138).
+      none? = fn r -> String.starts_with?(r["tag"], "oc:none/") end
+
+      # (b) the et_test tie does not separate them: both member-less, or each
+      # row's et_test is owned by the OTHER row's member (the same member test,
+      # or two doctests of one directive; MES-138 S2a).
+      owned? = fn et, member ->
+        A.et_test_owner(%{"member" => member, "et_test" => et}, inputs.source_fun) == :ok
+      end
+
+      et_same? = fn x, y ->
+        case {x["member"], y["member"]} do
+          {nil, nil} ->
+            true
+
+          {a, b} when is_binary(a) and is_binary(b) ->
+            owned?.(x["et_test"], b) and owned?.(y["et_test"], a)
+
+          _ ->
+            false
+        end
+      end
 
       mutual =
         for {{_, i, x}, n} <- Enum.with_index(rows),
             {{_, j, y}, m} <- Enum.with_index(rows),
             n < m,
-            ties?.(x, y["tag"]) and ties?.(y, x["tag"]),
-            do: {MapSet.new([i, j]), x["member"] == y["member"]}
+            (ties?.(x, y["tag"]) and ties?.(y, x["tag"])) or (none?.(x) and none?.(y)),
+            do: {MapSet.new([i, j]), et_same?.(x, y)}
 
       computed = for {pair, true} <- mutual, into: MapSet.new(), do: pair
 
@@ -2025,22 +2068,32 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
       # Every audited id is a committed row: a typo cannot shrink the set silently.
       assert Enum.all?(List.flatten(@k1r_clean_cliques), &(&1 in ids))
-      assert MapSet.size(audited) == 481
-      assert {length(mutual), length(mutual) - MapSet.size(computed)} == {551, 70}
-      assert MapSet.equal?(computed, audited)
+      assert MapSet.size(audited) == 482
+      # On failure, the difference both ways, not the two whole sets (R3-1 (b)).
+      assert {MapSet.difference(computed, audited), MapSet.difference(audited, computed)} ==
+               {MapSet.new(), MapSet.new()}
+
+      assert {length(mutual), length(mutual) - MapSet.size(computed)} == {986, 504}
 
       member_pairs = Enum.filter(computed, fn p -> Enum.all?(p, &is_binary(elem(&1, 1))) end)
 
-      assert {MapSet.size(computed) - length(member_pairs), length(member_pairs)} == {477, 4}
+      assert {MapSet.size(computed) - length(member_pairs), length(member_pairs)} == {477, 5}
       member_rows = member_pairs |> Enum.flat_map(&MapSet.to_list/1) |> Enum.uniq()
 
       assert {length(member_rows), Enum.frequencies(Enum.map(member_rows, &elem(&1, 0))),
               member_rows |> Enum.map(&elem(&1, 1)) |> Enum.uniq() |> Enum.sort()} ==
-               {5,
+               {7,
                 %{
+                  "adjudication-D1-nd-CU-2026-07-28.json" => 2,
                   "adjudication-D4a-2026-07-28.json" => 1,
                   "adjudication-D4b-2026-07-28.json" => 4
-                }, Enum.sort([@k1r_stateless, @k1r_dispatch])}
+                },
+                Enum.sort([
+                  @k1r_stateless,
+                  @k1r_dispatch,
+                  "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (8)",
+                  "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (9)"
+                ])}
     end
 
     # MES-135 K1-R2 (CR 29680): the member half of the residual, pinned like
@@ -2199,14 +2252,78 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert at.("test one", [8, 9]) == {:error, {:window_outside_test, 8}}
     end
 
+    # MES-138: a doctest member's window is its `doctest Target` directive line.
+    test "the et_test self-check owns a doctest member by its directive line, and nothing else" do
+      src = """
+      defmodule M do
+        use ExUnit.Case
+        doctest Some.Target, import: true
+        doctest Other.Target
+
+        test "t" do
+          assert true
+        end
+      end
+      """
+
+      source_fun = fn "test/src.exs" -> {:ok, src} end
+
+      at = fn member, lines ->
+        A.et_test_owner(
+          %{
+            "member" => member,
+            "et_test" => %{"file" => "test/src.exs", "lines" => lines, "bytes" => ""}
+          },
+          source_fun
+        )
+      end
+
+      dt = "M/doctest Some.Target.f/1 (3)"
+      assert at.(dt, [3, 3]) == :ok
+      assert at.("M/doctest Other.Target.g/2 (1)", [4, 4]) == :ok
+      # Another directive's line, a two-line window, the wrong module, a test line.
+      assert at.(dt, [4, 4]) == {:error, {:not_the_directive, "Some.Target"}}
+      assert at.(dt, [3, 4]) == {:error, :doctest_window_is_one_line}
+      assert at.("N/doctest Some.Target.f/1 (3)", [3, 3]) == {:error, :module}
+      assert at.(dt, [6, 6]) == {:error, {:not_the_directive, "Some.Target"}}
+      # A test member is still owned by its test, never by a directive.
+      assert at.("M/test t", [7, 7]) == :ok
+      assert {:error, _} = at.("M/test t", [3, 3])
+    end
+
     # MES-126 ratified the first five; MES-127 (29430, Q1) added extend_test and
     # accept_bound; MES-128 (29444, Q1) added extend_to_match and build_test;
-    # MES-129 (29460, Q1) added blocked_on_sdk_gap.
-    test "the closed disposition set is the one MES-126, MES-127, MES-128 and MES-129 ratified" do
+    # MES-129 (29460, Q1) added blocked_on_sdk_gap; MES-138 (29693, Q1) added
+    # the D1 family.
+    test "the closed disposition set is the one MES-126, MES-127, MES-128, MES-129 and MES-138 ratified" do
       assert A.dispositions() ==
-               ~w(fix_sdk fix_conformance_adapter keep_design_publish_bound po_decision_required suite_defect_upstream extend_test accept_bound extend_to_match build_test blocked_on_sdk_gap)
+               ~w(fix_sdk fix_conformance_adapter keep_design_publish_bound po_decision_required suite_defect_upstream extend_test accept_bound extend_to_match build_test blocked_on_sdk_gap genuine_extra_coverage redundant not_a_conformance_claim wrong_against_spec)
 
       assert A.build_levels() == ~w(pure_unit mock_transport plug live_http)
+    end
+
+    # MES-138 (29693, Q1-Q4): the D1 catalogues are pinned here, not declared
+    # by the records they govern (MES-129 rule 3).
+    test "the D1 catalogues are pinned: the family, its views, its routes, the echo fields, the view schemas" do
+      assert A.d1_dispositions() ==
+               ~w(genuine_extra_coverage redundant not_a_conformance_claim wrong_against_spec)
+
+      assert A.d1_dispositions() -- A.dispositions() == []
+
+      assert A.d1_views() == [
+               "docs/conformance/buckets/bucket-1-2026-07-28.json",
+               "docs/conformance/buckets/claim-unmatched-2026-07-28.json"
+             ]
+
+      assert A.routes() == %{"redundant" => "A3", "not_a_conformance_claim" => "A2"}
+
+      assert A.echo_fields() ==
+               ~w(shape verdicts bucket escalation_reason escalation_cause cg search_id the_search_that_found_none)
+
+      assert A.view_schemas() == ~w(bucket-view/1 escalated-view/1 claim-unmatched-view/1)
+
+      # Each D1 view is a real view file whose schema the guard admits.
+      for v <- A.d1_views(), do: assert(json(v)["schema"] in A.view_schemas())
     end
   end
 
@@ -2214,7 +2331,8 @@ defmodule MCP.Conformance.AdjudicationsTest do
   # bucket views directory, never from the records.
   describe "the universe of views owed a record" do
     @owed_views ~w(bucket-1 bucket-2a bucket-2b bucket-3 bucket-4a bucket-4b bucket-5a bucket-5b bucket-6 claim-unmatched escalated)
-    @closed_views ~w(bucket-2a bucket-2b bucket-4a bucket-4b escalated)
+    # MES-138 closed claim-unmatched and deleted its @pending line.
+    @closed_views ~w(bucket-2a bucket-2b bucket-4a bucket-4b claim-unmatched escalated)
 
     test "the anchor, the exclusions, the pending catalogue and the scan skip are pinned" do
       assert A.anchor() == {"docs/conformance/buckets", "*.json"}
@@ -2231,8 +2349,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
                "docs/conformance/buckets/bucket-3-2026-07-28.json" => "MES-144",
                "docs/conformance/buckets/bucket-5a-2026-07-28.json" => "MES-148",
                "docs/conformance/buckets/bucket-5b-2026-07-28.json" => "MES-146",
-               "docs/conformance/buckets/bucket-6-2026-07-28.json" => "MES-144",
-               "docs/conformance/buckets/claim-unmatched-2026-07-28.json" => "MES-138"
+               "docs/conformance/buckets/bucket-6-2026-07-28.json" => "MES-144"
              }
 
       assert A.scan_population() == ~w(ls-files -z --cached --others --exclude-standard)
@@ -2276,10 +2393,10 @@ defmodule MCP.Conformance.AdjudicationsTest do
     end
 
     # The printed figure is asserted, not just printed.
-    test "the task prints owed 11 — closed 5, pending 6, with each pending view's ticket",
+    test "the task prints owed 11 — closed 6, pending 5, with each pending view's ticket",
          %{result: %{report: r}} do
       assert Render.views(r) ==
-               "owed 11 — closed 5, pending 6: bucket-1 (MES-143), bucket-3 (MES-144), bucket-5a (MES-148), bucket-5b (MES-146), bucket-6 (MES-144), claim-unmatched (MES-138)"
+               "owed 11 — closed 6, pending 5: bucket-1 (MES-143), bucket-3 (MES-144), bucket-5a (MES-148), bucket-5b (MES-146), bucket-6 (MES-144)"
 
       assert Render.render(r, []) =~ "views         " <> Render.views(r)
     end
@@ -2290,7 +2407,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert inputs.strays == []
     end
 
-    test "in a copied tree: a sixth record is walked; a dropped section, a record outside the walk, a wrong schema and a stray are refused",
+    test "in a copied tree: a seventh record is walked; a dropped section, a record outside the walk, a wrong schema and a stray are refused",
          %{} do
       tmp = copied_tree()
       on_exit(fn -> File.rm_rf!(tmp) end)
@@ -2325,7 +2442,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       )
 
       assert kinds.() == []
-      assert load.() |> A.audit() |> get_in([:report, "records_visited"]) == 6
+      assert load.() |> A.audit() |> get_in([:report, "records_visited"]) == 7
       assert sixth in records_in_dir(tmp)
       File.rm!(Path.join(tmp, sixth))
 
@@ -3459,6 +3576,492 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
       corrected = put_in(ok, ["cause_slug", "verdict"], "corrected")
       assert kinds(inputs([esc], [section([corrected])])) == [:bad_row]
+    end
+  end
+
+  # --- the D1-nd+CU record (MES-138) --------------------------------------------
+  #
+  # MES-129's rules, applied from the start: the derived set is held to its
+  # criterion both ways over the whole view; the counts are the rows'
+  # enumeration; the routes equal the routed rows both ways; and every assert
+  # the record says it read resolves to an assert at that line.
+
+  @d1 "docs/conformance/adjudications/adjudication-D1-nd-CU-2026-07-28.json"
+  @v1 "docs/conformance/buckets/bucket-1-2026-07-28.json"
+  @vcu "docs/conformance/buckets/claim-unmatched-2026-07-28.json"
+  @assert_word ~r/\b(assert|refute|assert_receive|refute_receive)\b/
+
+  defp d1_section(inputs, view) do
+    {:ok, record} = inputs.records[@d1]
+    Enum.find(record["sections"], &(&1["view"] == view))
+  end
+
+  describe "the D1-nd+CU record (MES-138)" do
+    test "bucket-1's section EQUALS the view rows whose member is none_determinable, over all 195; the 174 others are on a leg",
+         %{inputs: inputs} do
+      leg =
+        for r <- json("docs/conformance/etcc-attribution.json")["rows"],
+            into: %{},
+            do: {r["key"], r["leg"]}
+
+      {:ok, view} = inputs.views[@v1]
+      assert length(view["rows"]) == 195
+
+      {nd, others} =
+        Enum.split_with(view["rows"], &(leg[&1["member"]["register_key"]] == "none_determinable"))
+
+      section = d1_section(inputs, @v1)
+      assert {section["closure"], section["owner"]} == {"open", "MES-143"}
+      assert MapSet.new(section["rows"], &A.key/1) == MapSet.new(nd, &A.key/1)
+      assert length(section["rows"]) == 21
+
+      # The rows outside the slice, each with its recorded reading: a leg.
+      assert Enum.frequencies_by(others, &leg[&1["member"]["register_key"]]) ==
+               %{"server" => 103, "client" => 71}
+    end
+
+    test "the claim-unmatched section closes the view and records the hand-over from MES-133",
+         %{inputs: inputs} do
+      {:ok, view} = inputs.views[@vcu]
+      section = d1_section(inputs, @vcu)
+
+      assert {section["closure"], section["owner"]} == {"closed", "MES-138"}
+      assert MapSet.new(section["rows"], &A.key/1) == MapSet.new(view["rows"], &A.key/1)
+      assert length(section["rows"]) == 9
+
+      h = section["handed_over_from"]
+      assert h["ticket"] == "MES-133" and h["why"] =~ "29609 Q4"
+      assert h["view_label"]["file"] == @vcu
+      assert h["view_label"]["bytes"] =~ ~s|"adjudication_owner": "MES-133 (D1)"|
+      assert view["adjudication_owner"] == "MES-133 (D1)"
+    end
+
+    test "every row is one of the D1 family; the counts are the rows' enumeration, per section",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1]
+
+      for {name, view} <- [{"bucket_1_none_determinable", @v1}, {"claim_unmatched", @vcu}] do
+        rows = d1_section(inputs, view)["rows"]
+        assert Enum.all?(rows, &(&1["disposition"] in A.d1_dispositions()))
+
+        enumerated =
+          rows
+          |> Enum.group_by(& &1["disposition"], & &1["tag"])
+          |> Map.new(fn {d, tags} -> {d, %{"count" => length(tags), "tags" => tags}} end)
+
+        assert record["counts"][name] == enumerated, name
+      end
+
+      counts =
+        for {name, c} <- record["counts"],
+            into: %{},
+            do: {name, Map.new(c, fn {d, v} -> {d, v["count"]} end)}
+
+      # Per verdict, negatives included: no redundant row and, since the N5
+      # ruling [authored 29707 N5 | ratified 29708], no wrong_against_spec row,
+      # in either section.
+      assert counts == %{
+               "bucket_1_none_determinable" => %{
+                 "genuine_extra_coverage" => 17,
+                 "not_a_conformance_claim" => 4
+               },
+               "claim_unmatched" => %{
+                 "genuine_extra_coverage" => 3,
+                 "not_a_conformance_claim" => 6
+               }
+             }
+    end
+
+    test "the routes equal the routed rows, both ways, and the unused route is named",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1]
+      rows = for s <- record["sections"], r <- s["rows"], do: r
+      routed = Enum.filter(rows, &Map.has_key?(&1, "routed_to"))
+
+      # Every routed row is a routed disposition, and every such row is routed.
+      assert Enum.all?(routed, &Map.has_key?(A.routes(), &1["disposition"]))
+
+      assert Enum.filter(rows, &Map.has_key?(A.routes(), &1["disposition"])) == routed
+
+      by_owner = Enum.frequencies_by(routed, &{&1["routed_to"]["owner"], &1["routed_to"]["to"]})
+
+      assert by_owner ==
+               Map.new(record["routing"], &{{&1["owner"], &1["to"]}, &1["rows"]})
+
+      assert by_owner == %{{"MES-153", "A2"} => 10}
+
+      # MES-153 comment 29700 lists the four rows routed at a361a0f as items
+      # 1-4, in record order. The six the N5 ruling re-routed (29708) are
+      # items 1-6 of MES-153 comment 29716, in record order; its item 7 was
+      # withdrawn (MES-153 comment 29722) when the claim-grain ruling
+      # [authored 29721 B-A | ratified 29723] made that row genuine.
+      second = &"MES-153 comment 29716, item #{&1}"
+
+      assert Enum.map(routed, &{&1["tag"], &1["routed_to"]["owner_record"]}) == [
+               {"oc:none/no-oc-scenario/extensions-and-experimental-stay-separate", second.(1)},
+               {"oc:none/no-oc-scenario/extensions-inbound-not-validated", second.(2)},
+               {"oc:none/no-oc-scenario/notification-framing-encode", second.(3)},
+               {"oc:none/no-oc-scenario/sse-codec-round-trip", second.(4)},
+               {"oc:none/no-oc-scenario/CG7-exclusion-is-logged",
+                "MES-153 comment 29700, item 1"},
+               {"oc:none/no-oc-scenario/CG7-non-tools-call-carries-no-headers-opt",
+                "MES-153 comment 29700, item 2"},
+               {"oc:none/no-oc-scenario/CG1-no-mcp-name-without-a-name-target", second.(5)},
+               {"oc:none/no-oc-scenario/MES-115-retry-identity-re-resolved", second.(6)},
+               {"oc:none/no-oc-scenario/MES-117-default-caching-policy-values",
+                "MES-153 comment 29700, item 3"},
+               {"oc:none/no-axis-contact/AC7-identity-factory-not-invoked-on-rejected-origin",
+                "MES-153 comment 29700, item 4"}
+             ]
+
+      assert [%{"owner" => "MES-152", "to" => "A3"}] =
+               Enum.map(record["unused_routes"], &Map.take(&1, ~w(owner to)))
+
+      refute Enum.any?(routed, &(&1["routed_to"]["owner"] == "MES-152"))
+    end
+
+    # PM 29708, item B1: the N5 ruling [authored 29707 N5 | ratified 29708]
+    # decides not_a_conformance_claim against wrong_against_spec by ONE
+    # counterfactual, applied to every row: could a conforming SDK fail this
+    # unit? Each row records its reading; the not-a-claim set is held EQUAL to
+    # the rows whose reading fires, both ways, over the whole record.
+    test "the not-a-claim set EQUALS the rows whose counterfactual fires, both ways; every row records one reading",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1]
+      rows = for s <- record["sections"], r <- s["rows"], do: r
+      assert length(rows) == 30
+
+      for r <- rows do
+        cf = r["counterfactual"]
+        assert is_map(cf), r["tag"]
+        assert is_boolean(cf["conforming_sdk_can_fail"]), r["tag"]
+        assert is_binary(cf["reading"]) and cf["reading"] != "", r["tag"]
+        refute cf["reading"] =~ "\n", r["tag"]
+
+        # A reading that says none can names the spec text that makes it so;
+        # one that fires names the assert a conforming SDK would fail.
+        if cf["conforming_sdk_can_fail"],
+          do: assert(cf["reading"] =~ ~r/(test|test\.exs):\d+/, r["tag"]),
+          else: assert(cf["reading"] =~ ~r/^None can: .*(\.mdx|\.ts|§)/, r["tag"])
+      end
+
+      fires =
+        for r <- rows,
+            r["counterfactual"]["conforming_sdk_can_fail"],
+            into: MapSet.new(),
+            do: r["tag"]
+
+      not_a_claim =
+        for r <- rows,
+            r["disposition"] == "not_a_conformance_claim",
+            into: MapSet.new(),
+            do: r["tag"]
+
+      assert MapSet.difference(fires, not_a_claim) == MapSet.new()
+      assert MapSet.difference(not_a_claim, fires) == MapSet.new()
+      assert MapSet.size(fires) == 10
+
+      # wrong_against_spec is "forbids or contradicts" under the ruling, and no
+      # row asserts either.
+      refute Enum.any?(rows, &(&1["disposition"] == "wrong_against_spec"))
+
+      assert record["counterfactual"]["question"] == "could a conforming SDK fail this unit?"
+      assert record["counterfactual"]["provenance"] == "[authored 29707 N5 | ratified 29708]"
+
+      # PM 29717: the counterfactual's grain is wire meaning; host values are
+      # the recorded alternative.
+      assert record["counterfactual"]["grain_provenance"] == "[authored 29713 | ratified 29717]"
+      assert is_map(record["counterfactual"]["fires_on_another_grain"])
+
+      # PM 29723: the unit is the view's. Bucket 1 asks of the member; the
+      # claim-unmatched view asks of the claim alone. One entry per D1 view
+      # the record binds, and no other.
+      unit = record["counterfactual"]["unit"]
+
+      assert record["counterfactual"]["unit_provenance"] ==
+               "[authored 29721 B-A | ratified 29723]"
+
+      assert Map.keys(unit) == Enum.sort([@v1, @vcu])
+      assert Map.keys(unit) == Enum.sort(Enum.map(record["sections"], & &1["view"]))
+      assert unit[@v1] =~ ~r/\Athe member: /
+      assert unit[@vcu] =~ ~r/\Athe claim: /
+    end
+
+    test "every assert a row says it read is an assert at that line; a whole-test window lists them all",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1]
+
+      for s <- record["sections"], r <- s["rows"] do
+        assert r["asserts_read"] != [], r["tag"]
+
+        read =
+          for entry <- r["asserts_read"],
+              [_, file, line, text] <- [Regex.run(~r/\A(test\/[^:]+):(\d+) — (.*)\z/s, entry)] do
+            {:ok, src} = inputs.source_fun.(file)
+
+            at =
+              src |> String.split("\n") |> Enum.at(String.to_integer(line) - 1) |> String.trim()
+
+            assert at == text and at =~ @assert_word, entry
+            {file, String.to_integer(line)}
+          end
+
+        # A generator pattern filters what it cannot match: nothing may be dropped.
+        assert length(read) == length(r["asserts_read"]) or
+                 match?(%{"lines" => [l, l]}, r["et_test"]),
+               r["tag"]
+
+        case r["et_test"] do
+          %{"lines" => [l, l]} ->
+            # A doctest: its body is the @doc example, cited in doctest_body.
+            assert r["doctest_body"]["file"] == "lib/mcp/protocol/extensions.ex"
+            assert read == []
+
+          %{"file" => f, "lines" => [from, to]} ->
+            {:ok, src} = inputs.source_fun.(f)
+
+            in_window =
+              for {line, i} <- src |> String.split("\n") |> Enum.with_index(1),
+                  i in from..to,
+                  line =~ @assert_word,
+                  do: {f, i}
+
+            # Every assert in the cited window was read; a bucket-1 window is
+            # the whole test, so there the two are equal.
+            assert in_window -- read == [], r["tag"]
+            if s["view"] == @v1, do: assert(read == in_window, r["tag"])
+        end
+      end
+    end
+  end
+
+  # --- the D1 family, unit by unit (MES-138; authored 29691, ratified 29693) -----
+
+  @d1v "docs/conformance/buckets/bucket-1-2026-07-28.json"
+
+  # The synthetic inputs, bound to a D1 view path instead of the neutral one.
+  defp d1_inputs(view_rows, rows, view \\ @d1v) do
+    base = inputs(view_rows, [section(rows)])
+    {:ok, rec} = base.records[@rec]
+
+    %{
+      base
+      | anchor: [view],
+        views: %{view => base.views[@view]},
+        records: %{
+          @rec => {:ok, %{rec | "sections" => [section(rows, "closed", %{"view" => view})]}}
+        }
+    }
+  end
+
+  defp d1_kinds(inputs),
+    do:
+      inputs
+      |> A.audit(%{not_owed: %{}, pending: %{}})
+      |> Map.fetch!(:defects)
+      |> Enum.map(& &1.kind)
+
+  # An oc:none/ view row, and a D1 row over it with no harness span under check.
+  # Like a real bucket-1 view row, it carries no shape, verdicts or bucket.
+  defp nd,
+    do:
+      "M/test a"
+      |> view_row(nil, "oc:none/no-oc-scenario/x", %{"cg" => nil})
+      |> Map.drop(~w(shape verdicts bucket))
+
+  defp d1_row(disp, extra) do
+    row(nd(), Map.merge(%{"check" => %{"requires" => "none"}, "disposition" => disp}, extra))
+  end
+
+  @routed %{"owner" => "MES-152", "owner_record" => "the MES-152 routing comment"}
+  @counterpart %{
+    "token" => "oc:e",
+    "site" => %{"harness_sha256" => "abc", "byte_span" => [2, 4], "bytes" => "x"},
+    "why_a3_missed" => "one line"
+  }
+  @spec_cite %{
+    "url" => "https://modelcontextprotocol.io/specification/2026-07-28/basic",
+    "quote" => "one verbatim line"
+  }
+
+  defp good_d1 do
+    [
+      d1_row("genuine_extra_coverage", %{"protects" => "stdio framing, which OC never drives"}),
+      d1_row("redundant", %{
+        "oc_counterpart" => @counterpart,
+        "routed_to" => Map.put(@routed, "to", "A3")
+      }),
+      d1_row("not_a_conformance_claim", %{
+        "routed_to" => %{@routed | "owner" => "MES-153"} |> Map.put("to", "A2")
+      }),
+      d1_row("wrong_against_spec", %{"spec" => @spec_cite})
+    ]
+  end
+
+  describe "the D1 family, unit by unit (MES-138)" do
+    test "each of the four, well formed, in a section bound to a D1 view: CLEAN" do
+      for r <- good_d1() do
+        assert d1_kinds(d1_inputs([nd()], [r])) == [], r["disposition"]
+      end
+    end
+
+    test "a claim-unmatched-view/1 view is admitted, and each of the four is CLEAN over it" do
+      cu = "docs/conformance/buckets/claim-unmatched-2026-07-28.json"
+      vr = view_row("M/test a", "claim a", "oc:none/no-oc-scenario/x")
+
+      for r <- good_d1() do
+        r = Map.merge(r, %{"claim" => "claim a", "echo" => A.echo(vr)})
+        i = d1_inputs([vr], [r], cu)
+        i = put_in(i.views[cu], {:ok, %{"schema" => "claim-unmatched-view/1", "rows" => [vr]}})
+        assert d1_kinds(i) == [], r["disposition"]
+      end
+    end
+
+    test "the refusals name G32 and the kind" do
+      [g | _] = good_d1()
+
+      [line] =
+        d1_inputs([nd()], [Map.delete(g, "protects")])
+        |> A.audit(%{not_owed: %{}, pending: %{}})
+        |> Map.fetch!(:defects)
+        |> Enum.map(&A.format_defect/1)
+
+      assert line =~ ~r/^G32 protects_missing — /
+    end
+
+    test "protects_missing: a genuine_extra_coverage row without a one-line protects" do
+      [g | _] = good_d1()
+
+      for bad <- [:absent, nil, "", "  ", "two\nlines", 7] do
+        r = if bad == :absent, do: Map.delete(g, "protects"), else: Map.put(g, "protects", bad)
+        assert d1_kinds(d1_inputs([nd()], [r])) == [:protects_missing], inspect(bad)
+      end
+    end
+
+    test "counterpart_missing: a redundant row without a tied, explained oc_counterpart" do
+      [_, red | _] = good_d1()
+
+      for {label, oc} <- [
+            {"absent", :absent},
+            {"not a map", "oc:e"},
+            {"token not in the locator", %{@counterpart | "token" => "oc:nope"}},
+            {"token absent", Map.delete(@counterpart, "token")},
+            {"site absent", Map.delete(@counterpart, "site")},
+            {"site a repository citation",
+             %{
+               @counterpart
+               | "site" => %{"file" => @src, "lines" => [2, 2], "bytes" => "assert x == 1"}
+             }},
+            {"site off every locator site",
+             put_in(@counterpart, ["site", "byte_span"], [20, 30])},
+            {"site on ANOTHER token's site only",
+             %{@counterpart | "token" => "oc:t1"} |> put_in(["site", "byte_span"], [20, 30])},
+            {"why_a3_missed absent", Map.delete(@counterpart, "why_a3_missed")},
+            {"why_a3_missed two lines", %{@counterpart | "why_a3_missed" => "a\nb"}}
+          ] do
+        r =
+          if oc == :absent,
+            do: Map.delete(red, "oc_counterpart"),
+            else: Map.put(red, "oc_counterpart", oc)
+
+        assert d1_kinds(d1_inputs([nd()], [r])) == [:counterpart_missing], label
+      end
+    end
+
+    test "routed_to_missing: a redundant or not_a_conformance_claim row without its own route" do
+      [_, red, nac | _] = good_d1()
+
+      for {r, to, wrong_to} <- [{red, "A3", "A2"}, {nac, "A2", "A3"}],
+          {label, routed} <- [
+            {"absent", :absent},
+            {"the other route", r["routed_to"] |> Map.put("to", wrong_to)},
+            {"no to", Map.delete(r["routed_to"], "to")},
+            {"owner not a ticket key", %{r["routed_to"] | "owner" => "someone"}},
+            {"owner_record two lines", %{r["routed_to"] | "owner_record" => "a\nb"}},
+            {"owner_record absent", Map.delete(r["routed_to"], "owner_record")}
+          ] do
+        planted =
+          if routed == :absent,
+            do: Map.delete(r, "routed_to"),
+            else: Map.put(r, "routed_to", routed)
+
+        assert d1_kinds(d1_inputs([nd()], [planted])) == [:routed_to_missing],
+               "#{r["disposition"]} (#{to}): #{label}"
+      end
+    end
+
+    test "spec_citation_missing: a wrong_against_spec row without a 2026-07-28 URL and a one-line quote" do
+      [_, _, _, w] = good_d1()
+
+      for {label, spec} <- [
+            {"absent", :absent},
+            {"not a map", "https://modelcontextprotocol.io/specification/2026-07-28"},
+            {"another revision",
+             %{
+               @spec_cite
+               | "url" => "https://modelcontextprotocol.io/specification/2025-11-25/basic"
+             }},
+            {"a lookalike revision",
+             %{@spec_cite | "url" => "https://modelcontextprotocol.io/specification/2026-07-280"}},
+            {"http",
+             %{@spec_cite | "url" => "http://modelcontextprotocol.io/specification/2026-07-28"}},
+            {"quote absent", Map.delete(@spec_cite, "quote")},
+            {"quote two lines", %{@spec_cite | "quote" => "a\nb"}}
+          ] do
+        r = if spec == :absent, do: Map.delete(w, "spec"), else: Map.put(w, "spec", spec)
+        assert d1_kinds(d1_inputs([nd()], [r])) == [:spec_citation_missing], label
+      end
+    end
+
+    test "disposition_outside_view: a D1 code outside a D1 view, and a non-D1 code in one" do
+      # Both ways (29693, Q3).
+      for r <- good_d1() do
+        assert kinds(
+                 inputs([a()], [
+                   section([row(a(), Map.drop(r, ~w(member claim tag echo et_test check)))])
+                 ])
+               ) ==
+                 [:disposition_outside_view],
+               r["disposition"]
+      end
+
+      for disp <- A.dispositions() -- A.d1_dispositions() do
+        extra = %{
+          "bound" => "b",
+          "build_level" => "pure_unit",
+          "remedy" => "r",
+          "extend_target" => %{"reading" => "u"},
+          "sdk_gap" => %{
+            "owner" => "MES-1",
+            "owner_record" => "o",
+            "record" => %{"file" => @src, "lines" => [2, 2], "bytes" => "assert x == 1"}
+          }
+        }
+
+        assert d1_kinds(d1_inputs([nd()], [d1_row(disp, extra)])) == [:disposition_outside_view],
+               disp
+      end
+
+      # A code outside the closed set is disposition_outside_set's alone.
+      assert d1_kinds(d1_inputs([nd()], [d1_row("wontfix", %{})])) == [:disposition_outside_set]
+    end
+
+    test "the new echo fields: a re-run search under an unchanged key is echo_drift" do
+      vr = Map.merge(nd(), %{"search_id" => "ND01", "the_search_that_found_none" => "s"})
+      [g | _] = good_d1()
+      r = Map.put(g, "echo", A.echo(vr))
+
+      assert r["echo"] == %{
+               "cg" => nil,
+               "search_id" => "ND01",
+               "the_search_that_found_none" => "s"
+             }
+
+      assert d1_kinds(d1_inputs([vr], [r])) == []
+
+      for {f, v} <- [{"search_id", "ND02"}, {"the_search_that_found_none", "t"}] do
+        assert d1_kinds(d1_inputs([Map.put(vr, f, v)], [r])) == [:echo_drift], f
+      end
     end
   end
 

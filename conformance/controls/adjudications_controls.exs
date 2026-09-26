@@ -11,6 +11,13 @@
 #     mix run conformance/controls/adjudications_controls.exs mutation
 #     mix run conformance/controls/adjudications_controls.exs harness
 #     mix run conformance/controls/adjudications_controls.exs all
+#     mix run conformance/controls/adjudications_controls.exs swap-audit
+#
+# `swap-audit` (MES-138, R3-1) is NOT part of `all`: it exchanges the contents
+# of every pair of committed rows through A.audit (9453 pairs, about 14 minutes
+# at 32-way at MES-138). It is the source of gate 5's @k1r_clean_cliques
+# fixture, which is pasted from its printed literal and never from the unit's
+# computed set, and it prints the difference both ways against that fixture.
 #
 # WHAT G32 CLAIMS. Every edge a bound view projects is adjudicated exactly once
 # by a record row with a disposition from the closed set, and every repository
@@ -65,7 +72,10 @@
 # about member rows. Two rows' contents exchange unseen iff their check ties
 # are mutual and the et_test tie does not separate them (both member-less, or
 # the same member test): 481 of the 5778 pairs of committed rows at MES-135,
-# 477 bucket-2 and 4 member (the moduledoc names them). Two of those pairs are
+# 477 bucket-2 and 4 member (the moduledoc names them). At MES-138 the
+# predicate is amended (check: mutual, OR both `oc:none/`; et_test: each
+# window owned by the other's member) and `swap-audit` measures it over every
+# pair: 482 of 9453, 477 bucket-2 and 5 member. Two of the MES-135 pairs are
 # shown CLEAN as KNOWN RESIDUALS: CR's bucket-2 plant (K1-R, CR 29672) and
 # the cross-record D4a initialize / D4b ping member pair (K1-R2, CR 29680).
 # `mutation` gains (7) closure_not_exclusive cut; (8) each new kind's clause
@@ -82,6 +92,15 @@
 # because the build is not in this repository. It FAILS CLOSED when the build
 # is absent or its sha differs. Set MES_HARNESS_DIST to point at it; the default
 # is where the accepted runs installed it.
+#
+# MES-138 added the D1 family (authored 29691, ratified 29693). `refusals`
+# gains `d1_plants/2`: with positive controls first (a bucket-1 row, in an
+# open section over the REAL bucket-1 view, as each well-formed D1 code:
+# CLEAN), one plant per D1 refusal (protects_missing, counterpart_missing,
+# routed_to_missing, spec_citation_missing) and disposition_outside_view both
+# ways (fix_sdk in bucket-1; genuine_extra_coverage on D4a's 4a row). They join
+# the plants table, so `mutation` (8) neutralises each clause alone and
+# requires its plant CLEAN.
 #
 # WHY IN MEMORY. Every plant mutates decoded data inside this VM. Nothing in the
 # clone is written, because seats share one checkout.
@@ -103,6 +122,8 @@ defmodule AdjudicationsControls do
   @d2aii "docs/conformance/adjudications/adjudication-D2a-ii-2026-07-28.json"
   @w3 "docs/conformance/adjudications/adjudication-W3-plant.json"
   @v1 "docs/conformance/buckets/bucket-1-2026-07-28.json"
+  @vcu "docs/conformance/buckets/claim-unmatched-2026-07-28.json"
+  @d1 "docs/conformance/adjudications/adjudication-D1-nd-CU-2026-07-28.json"
   # The arity of each clause `mutation` neutralises (MES-135).
   @arity %{
     "owed_defects" => 1,
@@ -118,12 +139,22 @@ defmodule AdjudicationsControls do
     "check_defects" => 4,
     "root_cause_defects" => 4,
     "echo_defects" => 4,
+    "view_scope_defects" => 4,
+    "protects_defects" => 3,
+    "counterpart_defects" => 4,
+    "routed_to_defects" => 3,
+    "spec_defects" => 3,
     "ambiguous_defects" => 2
   }
   @source "conformance/lib/mcp/conformance/adjudications.ex"
   @default_dist "/tmp/conf11/node_modules/@modelcontextprotocol/conformance/dist/index.js"
   @tcg1c_ascii "a non-ASCII tool name rides `mcp-name` as the Base64 sentinel and decodes back to the body value"
   @tcg1c_crlf "a CRLF-bearing tool name is neutralised — it rides `mcp-name` encoded, carries no raw CR, and injects no header"
+
+  def run(["swap-audit"]) do
+    swap_audit()
+    IO.puts("\nPASS swap-audit")
+  end
 
   def run([mode]) when mode in ~w(positive refusals mutation harness) do
     apply(__MODULE__, String.to_existing_atom(mode), [])
@@ -137,7 +168,7 @@ defmodule AdjudicationsControls do
 
   def run(_) do
     IO.puts(
-      "usage: mix run #{__ENV__.file |> Path.relative_to_cwd()} positive|refusals|mutation|harness|all"
+      "usage: mix run #{__ENV__.file |> Path.relative_to_cwd()} positive|refusals|mutation|harness|swap-audit|all"
     )
 
     System.halt(2)
@@ -155,6 +186,7 @@ defmodule AdjudicationsControls do
     check("the D2b record is visited", @d2b in A.load().walk)
     check("the D2a-i record is visited", @d2ai in A.load().walk)
     check("the D2a-ii record is visited", @d2aii in A.load().walk)
+    check("the D1-nd+CU record is visited", @d1 in A.load().walk)
 
     check(
       "reach: #{r["rows_visited"]} rows over #{r["views_bound"]} views",
@@ -727,7 +759,83 @@ defmodule AdjudicationsControls do
        outside, policy},
       {:stray_in_walk_root, "a copy of D4a's record as .jsn in the walk root (tree copy)", stray,
        policy}
-    ] ++ k1_plants(base, policy) ++ q3_plants(base, policy)
+    ] ++ k1_plants(base, policy) ++ q3_plants(base, policy) ++ d1_plants(base, policy)
+  end
+
+  # MES-138 (authored 29691, ratified 29693): one plant per D1 refusal, on a
+  # bucket-1-shaped row in an open section over the REAL bucket-1 view (its
+  # first row, a client-leg member no committed record adjudicates), and a
+  # D1 code planted on D4a's first row, outside a D1 view.
+  def d1_plants(base, policy) do
+    b1 = open_over(base, @v1, "MES-143", 1)
+    [r1] = rows(b1, @v1, @w3)
+    {:ok, loc} = A.read_locator(".")
+    {token, [span | _]} = loc |> Enum.sort() |> Enum.find(fn {_, ss} -> ss != [] end)
+
+    routed = fn to ->
+      %{"to" => to, "owner" => "MES-152", "owner_record" => "control"}
+    end
+
+    redundant =
+      Map.merge(r1, %{
+        "disposition" => "redundant",
+        "oc_counterpart" => %{
+          "token" => token,
+          "site" => %{"harness_sha256" => "control", "byte_span" => span, "bytes" => "control"},
+          "why_a3_missed" => "control"
+        },
+        "routed_to" => routed.("A3")
+      })
+
+    as = fn r -> update_rows(b1, @v1, fn _ -> [r] end, @w3) end
+
+    for {label, r} <- [
+          {"redundant, its counterpart tied to #{token}", redundant},
+          {"not_a_conformance_claim, routed to A2",
+           Map.merge(r1, %{
+             "disposition" => "not_a_conformance_claim",
+             "routed_to" => routed.("A2")
+           })},
+          {"wrong_against_spec, with a 2026-07-28 URL and a quote",
+           Map.merge(r1, %{
+             "disposition" => "wrong_against_spec",
+             "spec" => %{
+               "url" => "https://modelcontextprotocol.io/specification/2026-07-28",
+               "quote" => "control"
+             }
+           })}
+        ] do
+      ds = A.audit(as.(r), policy).defects
+
+      check(
+        "  (positive) a bucket-1 row, #{label}: CLEAN",
+        ds == [],
+        Enum.map(ds, &A.format_defect/1)
+      )
+    end
+
+    [a | _] = rows(base, @v4a)
+
+    [
+      {:protects_missing, "bucket-1 row, genuine_extra_coverage, its `protects` removed",
+       as.(Map.delete(r1, "protects")), policy},
+      {:counterpart_missing, "bucket-1 row, redundant, its counterpart's site moved off #{token}",
+       as.(put_in(redundant, ["oc_counterpart", "site", "byte_span"], [0, 1])), policy},
+      {:routed_to_missing, "bucket-1 row, redundant, routed to A2 instead of A3",
+       as.(Map.put(redundant, "routed_to", routed.("A2"))), policy},
+      {:spec_citation_missing, "bucket-1 row, wrong_against_spec, with no `spec`",
+       as.(Map.put(r1, "disposition", "wrong_against_spec")), policy},
+      {:disposition_outside_view, "bucket-1 row carrying fix_sdk",
+       as.(Map.put(r1, "disposition", "fix_sdk")), policy},
+      {:disposition_outside_view,
+       "D4a's first 4a row carrying genuine_extra_coverage (with protects)",
+       update_rows(base, @v4a, fn [_ | rest] ->
+         [
+           Map.merge(a, %{"disposition" => "genuine_extra_coverage", "protects" => "control"})
+           | rest
+         ]
+       end), policy}
+    ]
   end
 
   # Q4: the first repository citation outside the sections of D4a (its
@@ -963,7 +1071,7 @@ defmodule AdjudicationsControls do
              "view" => view,
              "closure" => "open",
              "owner" => owner,
-             "rows" => tied_rows(Enum.take(v["rows"], n))
+             "rows" => tied_rows(Enum.take(v["rows"], n), view)
            }
          ]
        }}
@@ -973,7 +1081,9 @@ defmodule AdjudicationsControls do
 
   # Complete rows for real view rows, each tied (K1): the member's own test
   # line as et_test, and for an OC tag the locator's first site under check.
-  defp tied_rows(view_rows) do
+  # Over a D1 view the disposition is a D1 one, since MES-138 scopes the family
+  # to the D1 views both ways (disposition_outside_view).
+  defp tied_rows(view_rows, view \\ nil) do
     {:ok, loc} = A.read_locator(".")
     source_fun = A.load().source_fun
     index = test_line_index()
@@ -1006,9 +1116,13 @@ defmodule AdjudicationsControls do
         "check" => check,
         "root_cause" => %{"statement" => "control"},
         "if_conformance_fixed" => [],
-        "disposition" => "extend_test",
         "rationale" => "control"
       }
+      |> Map.merge(
+        if view in A.d1_views(),
+          do: %{"disposition" => "genuine_extra_coverage", "protects" => "control"},
+          else: %{"disposition" => "extend_test"}
+      )
     end
   end
 
@@ -1138,10 +1252,10 @@ defmodule AdjudicationsControls do
       # gate-5 walk-root pin existed to catch. The universe (K2) now refuses it
       # itself: every view the unseen records closed is owed and unadjudicated.
       check(
-        "(2) a narrowed walk sees zero records and is REFUSED: owed_unadjudicated on the 5 closed views",
+        "(2) a narrowed walk sees zero records and is REFUSED: owed_unadjudicated on the 6 closed views",
         r["records_visited"] == 0 and
           Enum.sort(for(%{kind: :owed_unadjudicated, file: f} <- ds, do: f)) ==
-            Enum.sort([@v2a, @v2b, @v4a, @v4b, @ves]) and
+            Enum.sort([@v2a, @v2b, @v4a, @v4b, @vcu, @ves]) and
           Enum.all?(ds, &(&1.kind == :owed_unadjudicated)),
         Enum.map(ds, &A.format_defect/1)
       )
@@ -1156,14 +1270,25 @@ defmodule AdjudicationsControls do
     d4b_rows = rows(base, @v4b, @d4b)
 
     all_rows =
-      d4b_rows ++ rows(base, @v2b, @d2b) ++ rows(base, @v2a, @d2ai) ++ rows(base, @v2a, @d2aii)
+      d4b_rows ++
+        rows(base, @v2b, @d2b) ++
+        rows(base, @v2a, @d2ai) ++
+        rows(base, @v2a, @d2aii) ++ rows(base, @v1, @d1) ++ rows(base, @vcu, @d1)
 
     set_def =
-      ~s|suite_defect_upstream extend_test accept_bound\n                   extend_to_match build_test blocked_on_sdk_gap)|
+      ~s|suite_defect_upstream extend_test accept_bound\n                   extend_to_match build_test blocked_on_sdk_gap\n                   genuine_extra_coverage redundant not_a_conformance_claim wrong_against_spec)|
 
     check("(3) the closed-set definition is found in the source", String.contains?(src, set_def))
 
-    for code <- ~w(extend_test accept_bound extend_to_match build_test blocked_on_sdk_gap) do
+    # MES-138's D1 codes on its committed rows. `redundant` and
+    # `wrong_against_spec` are in the set but no committed row carries either
+    # (no redundant row was found, and under the N5 ruling no row asserts what
+    # the spec forbids or contradicts), so neither has rows to refuse; their
+    # admission is shown by d1_plants' positive controls instead ("redundant,
+    # its counterpart tied to ..." and "wrong_against_spec, with a 2026-07-28
+    # URL and a quote").
+    for code <-
+          ~w(extend_test accept_bound extend_to_match build_test blocked_on_sdk_gap genuine_extra_coverage not_a_conformance_claim) do
       cut = String.replace(set_def, ~r/(?<=\s)#{code}(?=[\s)])\s?/, "")
       mutant = String.replace(src, set_def, cut)
       check("(3) the no-#{code} mutant differs from the source", mutant != src)
@@ -1244,7 +1369,12 @@ defmodule AdjudicationsControls do
       check_foreign: "check_defects",
       root_cause_foreign: "root_cause_defects",
       echo_drift: "echo_defects",
-      citation_ambiguous: "ambiguous_defects"
+      citation_ambiguous: "ambiguous_defects",
+      disposition_outside_view: "view_scope_defects",
+      protects_missing: "protects_defects",
+      counterpart_missing: "counterpart_defects",
+      routed_to_missing: "routed_to_defects",
+      spec_citation_missing: "spec_defects"
     }
 
     for {kind, label, inputs, policy} <- plants(base) do
@@ -1278,7 +1408,7 @@ defmodule AdjudicationsControls do
 
     # (9) W1 and W5 on the member row are refused by more than one tie: each tie
     # alone still refuses, and only with every named tie neutralised do they
-    # pass. On the 481 pairs the K1-R/K1-R2 predicate admits, a W1-shaped
+    # pass. On the 482 pairs the K1-R/K1-R2 predicate admits (481 at MES-135), a W1-shaped
     # exchange passes with nothing neutralised.
     for {label, inputs, funs} <- [
           {"W1", w1(base), ~w(et_test_defects check_defects)},
@@ -1324,6 +1454,157 @@ defmodule AdjudicationsControls do
     fun.()
   after
     Code.compile_string(File.read!(@source), @source)
+  end
+
+  # --- swap-audit (MES-138, R3-1; adapted from CR's /tmp/cr135sweep/sweep.exs) -----
+  #
+  # The AUDITED set of row pairs whose contents (every field but member, claim,
+  # tag and echo) exchange and still audit CLEAN, over EVERY pair of committed
+  # rows, each exchange run through A.audit. Gate 5's K1-R/K1-R2 unit pins the
+  # set by equality to @k1r_clean_cliques; this mode is where that fixture comes
+  # from, never from the unit's own computed set, which would make the pin a
+  # tautology. It prints the cliques as the literal to paste, and the
+  # difference both ways against the fixture as committed.
+  @k1r_test "test/conformance/adjudications_test.exs"
+  @k1r_keep ~w(member claim tag echo)
+
+  def swap_audit do
+    header("swap-audit — every pair of committed rows, contents exchanged, through A.audit")
+    base = A.load()
+    check("the committed tree is clean before any exchange", A.audit(base).defects == [])
+
+    rows =
+      for {file, {:ok, doc}} <- Enum.sort(base.records),
+          {s, si} <- Enum.with_index(doc["sections"]),
+          {r, ri} <- Enum.with_index(s["rows"]),
+          do: %{
+            file: file,
+            si: si,
+            ri: ri,
+            row: r,
+            id: {Path.basename(file), r["member"], r["tag"]}
+          }
+
+    ids = Enum.map(rows, & &1.id)
+
+    check(
+      "#{length(rows)} rows, each with a unique stable id",
+      length(Enum.uniq(ids)) == length(ids)
+    )
+
+    put = fn inputs, %{file: f, si: si, ri: ri}, new ->
+      update_in(inputs, [:records, f], fn {:ok, doc} ->
+        {:ok, put_in(doc, ["sections", Access.at(si), "rows", Access.at(ri)], new)}
+      end)
+    end
+
+    swap = fn x, y -> Map.merge(y, Map.take(x, @k1r_keep)) end
+    indexed = Enum.with_index(rows)
+    pairs = for {x, i} <- indexed, {y, j} <- indexed, i < j, do: {x, y}
+
+    results =
+      pairs
+      |> Task.async_stream(
+        fn {x, y} ->
+          {nx, ny} = {swap.(x.row, y.row), swap.(y.row, x.row)}
+          noop = nx == x.row and ny == y.row
+          {x.id, y.id, noop, A.audit(base |> put.(x, nx) |> put.(y, ny)).defects == []}
+        end,
+        max_concurrency: System.schedulers_online(),
+        timeout: :infinity,
+        ordered: false
+      )
+      |> Enum.map(fn {:ok, r} -> r end)
+
+    noops = for {i, j, true, _} <- results, do: {i, j}
+
+    check(
+      "#{length(results)} pairs exchanged, 0 of them no-ops",
+      noops == [],
+      Enum.map(noops, &inspect/1)
+    )
+
+    clean = for {i, j, _, true} <- results, into: MapSet.new(), do: MapSet.new([i, j])
+    cliques = cliques(clean)
+
+    check(
+      "the CLEAN set is a union of cliques: every pair within each component is CLEAN",
+      Enum.all?(cliques, fn c ->
+        for(i <- c, j <- c, i < j, do: MapSet.new([i, j])) |> Enum.all?(&(&1 in clean))
+      end)
+    )
+
+    IO.puts(
+      "        CLEAN pairs: #{MapSet.size(clean)}; cliques by size: #{inspect(Enum.map(cliques, &length/1))}"
+    )
+
+    fixture = k1r_fixture()
+    missing = MapSet.difference(clean, fixture)
+    extra = MapSet.difference(fixture, clean)
+
+    IO.puts(
+      "        audited − fixture (#{MapSet.size(missing)}): #{inspect(MapSet.to_list(missing), limit: :infinity)}"
+    )
+
+    IO.puts(
+      "        fixture − audited (#{MapSet.size(extra)}): #{inspect(MapSet.to_list(extra), limit: :infinity)}"
+    )
+
+    IO.puts("\n        -- the audited cliques, as the fixture literal --")
+
+    IO.puts(
+      inspect(cliques, limit: :infinity, printable_limit: :infinity, pretty: true, width: 98)
+    )
+
+    check(
+      "the committed fixture @k1r_clean_cliques EQUALS the audited set",
+      MapSet.size(missing) == 0 and MapSet.size(extra) == 0
+    )
+  end
+
+  # Connected components of the CLEAN graph, each sorted; sorted by size, then id.
+  defp cliques(pairs) do
+    edges = Enum.map(pairs, &MapSet.to_list/1)
+    nodes = edges |> List.flatten() |> Enum.uniq()
+
+    adj =
+      Enum.reduce(edges, %{}, fn [a, b], acc ->
+        acc |> Map.update(a, [b], &[b | &1]) |> Map.update(b, [a], &[a | &1])
+      end)
+
+    {comps, _} =
+      Enum.reduce(Enum.sort(nodes), {[], MapSet.new()}, fn n, {acc, seen} ->
+        if n in seen do
+          {acc, seen}
+        else
+          comp = reach([n], adj, MapSet.new([n]))
+          {[Enum.sort(MapSet.to_list(comp)) | acc], MapSet.union(seen, comp)}
+        end
+      end)
+
+    Enum.sort_by(comps, &{-length(&1), &1})
+  end
+
+  defp reach([], _adj, seen), do: seen
+
+  defp reach([n | rest], adj, seen) do
+    new = Enum.reject(Map.get(adj, n, []), &(&1 in seen))
+    reach(new ++ rest, adj, Enum.reduce(new, seen, &MapSet.put(&2, &1)))
+  end
+
+  # The fixture as COMMITTED in the gate-5 test, read out of its source: the
+  # three attributes it is written with, evaluated, and expanded to pairs.
+  defp k1r_fixture do
+    src = File.read!(@k1r_test)
+
+    attrs =
+      for name <- ~w(k1r_stateless k1r_dispatch k1r_clean_cliques) do
+        [_, body] = Regex.run(~r/^  @#{name} (.*?)\n(?=  @|\n)/ms, src)
+        "#{name} = " <> String.replace(body, "@k1r_", "k1r_")
+      end
+
+    {cliques, _} = Code.eval_string(Enum.join(attrs, "\n") <> "\nk1r_clean_cliques")
+    for c <- cliques, i <- c, j <- c, i < j, into: MapSet.new(), do: MapSet.new([i, j])
   end
 
   # --- harness -----------------------------------------------------------------------
