@@ -1877,7 +1877,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # MES-138 added one outside the rows: the claim-unmatched section's
     # handed_over_from.view_label. MES-139 adds none outside the rows; inside
     # them, 35 et_test (repository) and 39 harness (12 oc_counterpart sites,
-    # 12 predicates, 15 near misses).
+    # 12 predicates, 15 near misses). MES-140 adds none outside the rows;
+    # inside them, 36 et_test and 1 doctest_body (repository) and 15 harness
+    # (3 oc_counterpart sites, 3 predicates, 9 near misses).
     test "G32 walks the citations outside the rows: 10 repository and 8 harness at this tip",
          %{inputs: inputs, result: %{report: r}} do
       outside =
@@ -1889,8 +1891,8 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert Enum.count(outside, &Map.has_key?(&1, "lines")) == 10
       assert Enum.count(outside, &Map.has_key?(&1, "harness_sha256")) == 8
 
-      assert r["repo_citations_found"] == 485 and
-               r["harness_citations_not_verified_in_gate_5"] == 304
+      assert r["repo_citations_found"] == 522 and
+               r["harness_citations_not_verified_in_gate_5"] == 319
     end
 
     test "G32 refuses a drifted top-level citation, with no edge key", %{inputs: inputs} do
@@ -1913,13 +1915,13 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # member's own test and that a member-less row carries `et_test: null`.
     # What stays here is the population the tie runs over, at this tip.
     # MES-138 added 30 member rows (21 bucket-1, 9 claim-unmatched); MES-139
-    # adds 35 (bucket-1).
-    test "the et_test tie's population: 80 member rows, 93 member-less rows with et_test null",
+    # adds 35 (bucket-1); MES-140 adds 36 (bucket-1).
+    test "the et_test tie's population: 116 member rows, 93 member-less rows with et_test null",
          %{inputs: inputs} do
       rows = for {_, {:ok, doc}} <- inputs.records, s <- doc["sections"], r <- s["rows"], do: r
       {owned, memberless} = Enum.split_with(rows, &is_binary(&1["member"]))
 
-      assert length(owned) == 80 and length(memberless) == 93
+      assert length(owned) == 116 and length(memberless) == 93
       assert Enum.all?(memberless, &is_nil(&1["et_test"]))
       assert Enum.all?(owned, &(A.et_test_owner(&1, inputs.source_fun) == :ok))
     end
@@ -2021,12 +2023,12 @@ defmodule MCP.Conformance.AdjudicationsTest do
             sites != [] and Enum.all?(sites, &(&1 in shared)),
             do: v
 
-      assert length(rows) == 173 and Enum.count(rows, &(elem(&1, 0) =~ "/bucket-2")) == 93
+      assert length(rows) == 209 and Enum.count(rows, &(elem(&1, 0) =~ "/bucket-2")) == 93
       assert {length(only_shared), Enum.count(only_shared, &(&1 =~ "/bucket-2"))} == {60, 48}
 
       # The ids name rows uniquely, so a pair of ids is a pair of rows.
       ids = Enum.map(rows, &elem(&1, 1))
-      assert length(Enum.uniq(ids)) == 173
+      assert length(Enum.uniq(ids)) == 209
 
       # (a) the check tie does not separate them: mutual through the locator, or
       # both rows on no OC check (`oc:none/`, no span either way; MES-138).
@@ -2080,7 +2082,10 @@ defmodule MCP.Conformance.AdjudicationsTest do
       # before them and with each other: 35 * 30 + C(35, 2) = 1645 more mutual
       # pairs (986 -> 2631), every one separated by the et_test tie, so the
       # CLEAN set stays 482 (swap-audit touching the record: 5425 pairs, 0 CLEAN).
-      assert {length(mutual), length(mutual) - MapSet.size(computed)} == {2631, 2149}
+      # MES-140's 36 add 36 * 65 + C(36, 2) = 2970 more (2631 -> 5601), every
+      # one separated by the et_test tie: its one doctest's directive line is
+      # shared by no committed row, so the CLEAN set stays 482.
+      assert {length(mutual), length(mutual) - MapSet.size(computed)} == {5601, 5119}
 
       member_pairs = Enum.filter(computed, fn p -> Enum.all?(p, &is_binary(elem(&1, 1))) end)
 
@@ -2414,7 +2419,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert inputs.strays == []
     end
 
-    test "in a copied tree: an eighth record is walked; a dropped section, a record outside the walk, a wrong schema and a stray are refused",
+    test "in a copied tree: a ninth record is walked; a dropped section, a record outside the walk, a wrong schema and a stray are refused",
          %{} do
       tmp = copied_tree()
       on_exit(fn -> File.rm_rf!(tmp) end)
@@ -2449,7 +2454,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       )
 
       assert kinds.() == []
-      assert load.() |> A.audit() |> get_in([:report, "records_visited"]) == 8
+      assert load.() |> A.audit() |> get_in([:report, "records_visited"]) == 9
       assert sixth in records_in_dir(tmp)
       File.rm!(Path.join(tmp, sixth))
 
@@ -3595,6 +3600,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
   @d1 "docs/conformance/adjudications/adjudication-D1-nd-CU-2026-07-28.json"
   @d1ci "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json"
+  @d1cii "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json"
   @v1 "docs/conformance/buckets/bucket-1-2026-07-28.json"
   @vcu "docs/conformance/buckets/claim-unmatched-2026-07-28.json"
   @assert_word ~r/\b(assert|refute|assert_receive|refute_receive)\b/
@@ -3829,6 +3835,15 @@ defmodule MCP.Conformance.AdjudicationsTest do
     Enum.filter(
       view_rows,
       &(legs[&1["member"]["register_key"]] == leg and &1["member"]["module"] in mods)
+    )
+  end
+
+  # MES-140 (29765 Q1, ratified 29766): the complement, so a client test module
+  # added later falls in a slice rather than outside both.
+  defp join_selected(view_rows, legs, %{"leg" => leg, "module_not_in" => mods}) do
+    Enum.filter(
+      view_rows,
+      &(legs[&1["member"]["register_key"]] == leg and &1["member"]["module"] not in mods)
     )
   end
 
@@ -4114,6 +4129,360 @@ defmodule MCP.Conformance.AdjudicationsTest do
     end
   end
 
+  # --- the D1-client-ii record (MES-140; plan 29764/29765, ratified 29766) -----
+  #
+  # The slice is the COMPLEMENT of MES-139's modules on the client leg
+  # (module_not_in, Q1 of 29765, ratified 29766), pinned literally and held
+  # both ways over the whole view. Together the two selectors must PARTITION
+  # the view's client-leg rows; a refusal control shows the partition check
+  # naming an overlap and a gap.
+
+  @d1cii_selector %{
+    "join" => "docs/conformance/etcc-attribution.json",
+    "on" => "member.register_key",
+    "leg" => "client",
+    "module_not_in" => ["MCP.ClientTest", "MCP.ClientToolSchemasTest"]
+  }
+
+  defp d1cii_rows(inputs) do
+    {:ok, record} = inputs.records[@d1cii]
+    [section] = record["sections"]
+    section["rows"]
+  end
+
+  # `:ok` when the slices are pairwise disjoint and their union is `universe`;
+  # otherwise the first failure, naming the keys.
+  defp partition(slices, universe) do
+    keys = Enum.map(slices, &MapSet.new(&1, fn r -> A.key(r) end))
+    all = MapSet.new(universe, &A.key/1)
+
+    overlap =
+      for {a, i} <- Enum.with_index(keys),
+          {b, j} <- Enum.with_index(keys),
+          i < j,
+          k <- MapSet.intersection(a, b),
+          into: MapSet.new(),
+          do: k
+
+    union = Enum.reduce(keys, MapSet.new(), &MapSet.union/2)
+
+    cond do
+      overlap != MapSet.new() ->
+        {:error, {:overlap, overlap}}
+
+      MapSet.difference(all, union) != MapSet.new() ->
+        {:error, {:gap, MapSet.difference(all, union)}}
+
+      MapSet.difference(union, all) != MapSet.new() ->
+        {:error, {:outside, MapSet.difference(union, all)}}
+
+      true ->
+        :ok
+    end
+  end
+
+  describe "the D1-client-ii record (MES-140)" do
+    test "the section EQUALS the complement selector's rows, both ways, over all 195; the 159 others carry a leg and module",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1cii]
+      [section] = record["sections"]
+      {:ok, view} = inputs.views[@v1]
+      assert length(view["rows"]) == 195
+
+      assert {section["view"], section["closure"], section["owner"]} == {@v1, "open", "MES-143"}
+      assert section["slice"]["selector"] == @d1cii_selector
+      assert join_equality(section["rows"], view["rows"], @d1cii_selector) == :ok
+      assert length(section["rows"]) == 36 and section["slice"]["rows"] == 36
+
+      legs = leg_of()
+      inside = join_selected(view["rows"], legs, @d1cii_selector)
+      others = view["rows"] -- inside
+
+      assert Enum.frequencies_by(inside, & &1["member"]["module"]) == %{
+               "MCP.Transport.SSETest" => 10,
+               "MCP.Protocol.HeaderMirrorTest" => 6,
+               "MCP.Protocol.CapabilitiesTest" => 5,
+               "MCP.ClientDefectsTest" => 4,
+               "MCP.ProtocolTest" => 3,
+               "MCP.Transport.RoutingHeadersTest" => 3,
+               "MCP.ClientConformanceTest" => 2,
+               "MCP.Protocol.ErrorTest" => 2,
+               "MCP.Protocol.Messages.DiscoverTest" => 1
+             }
+
+      assert Enum.frequencies_by(others, &legs[&1["member"]["register_key"]]) ==
+               %{"server" => 103, "none_determinable" => 21, "client" => 35}
+    end
+
+    test "the join equality refuses one added non-slice row and one dropped slice row",
+         %{inputs: inputs} do
+      {:ok, view} = inputs.views[@v1]
+      rows = d1cii_rows(inputs)
+      inside = join_selected(view["rows"], leg_of(), @d1cii_selector)
+
+      # A client row of MES-139's slice: the one kind a complement could wrongly admit.
+      [other | _] = join_selected(view["rows"], leg_of(), @d1ci_selector)
+      refute other in inside
+
+      assert {:error, {added, none}} =
+               join_equality(
+                 rows ++ [%{other | "member" => other["member"]["register_key"]}],
+                 view["rows"],
+                 @d1cii_selector
+               )
+
+      assert {MapSet.to_list(added), none} == {[A.key(other)], MapSet.new()}
+
+      [first | rest] = rows
+      assert {:error, {none, dropped}} = join_equality(rest, view["rows"], @d1cii_selector)
+      assert {none, MapSet.to_list(dropped)} == {MapSet.new(), [A.key(first)]}
+    end
+
+    test "MES-139's and MES-140's selectors, and their two sections, PARTITION the view's 71 client-leg rows",
+         %{inputs: inputs} do
+      {:ok, view} = inputs.views[@v1]
+      legs = leg_of()
+      client = Enum.filter(view["rows"], &(legs[&1["member"]["register_key"]] == "client"))
+      assert length(client) == 71
+
+      i = join_selected(view["rows"], legs, @d1ci_selector)
+      ii = join_selected(view["rows"], legs, @d1cii_selector)
+      assert {length(i), length(ii)} == {35, 36}
+      assert partition([i, ii], client) == :ok
+
+      # The committed sections, not only the selectors.
+      assert partition([d1ci_rows(inputs), d1cii_rows(inputs)], client) == :ok
+    end
+
+    test "the partition check names an overlap, a gap and a row outside the leg",
+         %{inputs: inputs} do
+      {:ok, view} = inputs.views[@v1]
+      legs = leg_of()
+      client = Enum.filter(view["rows"], &(legs[&1["member"]["register_key"]] == "client"))
+      [i, ii] = [d1ci_rows(inputs), d1cii_rows(inputs)]
+
+      # Positive limb on these inputs, so each refusal below is the plant's.
+      assert partition([i, ii], client) == :ok
+
+      [x | _] = ii
+      assert partition([i ++ [x], ii], client) == {:error, {:overlap, MapSet.new([A.key(x)])}}
+
+      [y | rest] = i
+      assert partition([rest, ii], client) == {:error, {:gap, MapSet.new([A.key(y)])}}
+
+      [z | _] = Enum.filter(view["rows"], &(legs[&1["member"]["register_key"]] == "server"))
+      z = %{z | "member" => z["member"]["register_key"]}
+      assert partition([i, ii ++ [z]], client) == {:error, {:outside, MapSet.new([A.key(z)])}}
+    end
+
+    test "every row is one of the D1 family; the counts are the rows' enumeration, negatives included",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1cii]
+      rows = d1cii_rows(inputs)
+      assert Enum.all?(rows, &(&1["disposition"] in A.d1_dispositions()))
+
+      enumerated =
+        rows
+        |> Enum.group_by(& &1["disposition"], & &1["tag"])
+        |> Map.new(fn {d, tags} -> {d, %{"count" => length(tags), "tags" => tags}} end)
+
+      assert record["counts"] == %{"bucket_1_client_ii" => enumerated}
+
+      assert Map.new(enumerated, fn {d, v} -> {d, v["count"]} end) == %{
+               "genuine_extra_coverage" => 21,
+               "redundant" => 3,
+               "not_a_conformance_claim" => 11,
+               "wrong_against_spec" => 1
+             }
+    end
+
+    test "the routes equal the routed rows, both ways; both routes are used",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1cii]
+      rows = d1cii_rows(inputs)
+      routed = Enum.filter(rows, &Map.has_key?(&1, "routed_to"))
+
+      assert Enum.filter(rows, &Map.has_key?(A.routes(), &1["disposition"])) == routed
+
+      by_owner = Enum.frequencies_by(routed, &{&1["routed_to"]["owner"], &1["routed_to"]["to"]})
+      assert by_owner == Map.new(record["routing"], &{{&1["owner"], &1["to"]}, &1["rows"]})
+      assert by_owner == %{{"MES-152", "A3"} => 3, {"MES-153", "A2"} => 11}
+      assert record["unused_routes"] == []
+
+      # The PM's routing comments (29776): MES-152 comment 29774 lists the 3
+      # redundant rows as items 1-3, and MES-153 comment 29775 the 8
+      # not-a-claim rows as items 1-8, each in record order. The correction
+      # round's three (B1 of 29796, ratified 29799) are MES-153 comment 29798's
+      # items 1-3, in record order.
+      a3 = &"MES-152 comment 29774, item #{&1}"
+      a2 = &"MES-153 comment 29775, item #{&1}"
+      b1 = &"MES-153 comment 29798, item #{&1}"
+
+      assert Enum.map(routed, &{&1["tag"], &1["routed_to"]["owner_record"]}) == [
+               {"oc:none/no-oc-scenario/CG2-outbound-meta", a3.(1)},
+               {"oc:none/no-axis-contact/D-3-no-retry-when-no-offered-version-is-supported",
+                a2.(1)},
+               {"oc:none/no-axis-contact/D-3-no-retry-when-supported-data-is-unusable", a2.(2)},
+               {"oc:none/no-axis-contact/D-3-no-retry-on-a-non-32022-error", a2.(3)},
+               {"oc:none/no-axis-contact/D-3-retry-completes-after-32022", a3.(2)},
+               {"oc:none/no-oc-scenario/CG2-encode-keeps-the-two-apart", a2.(4)},
+               {"oc:none/no-oc-fixture-case/CG7-static-reachability", b1.(1)},
+               {"oc:none/no-oc-fixture-case/CG7-integer-safe-range", a2.(5)},
+               {"oc:none/no-oc-fixture-case/CG7-non-map-arguments", a2.(6)},
+               {"oc:none/no-oc-fixture-case/CG7-nested-path-exact", b1.(2)},
+               {"oc:none/no-oc-fixture-case/CG7-no-raw-crlf-across-all-headers", b1.(3)},
+               {"oc:none/no-oc-fixture-case/CG1-notification-carries-mcp-method", a2.(7)},
+               {"oc:none/no-oc-fixture-case/CG7-cache-miss-no-mirroring", a3.(3)},
+               {"oc:none/no-oc-scenario/sse-decode-all-fields", a2.(8)}
+             ]
+
+      # The wrong_against_spec row carries no route (29735): its remedy is
+      # remediation's, recorded by the PM in the register.
+      assert [w] = Enum.filter(rows, &(&1["disposition"] == "wrong_against_spec"))
+      refute Map.has_key?(w, "routed_to")
+    end
+
+    test "every assert a row says it read is an assert at that line, each whole-test window lists them all, and the doctest cites its body",
+         %{inputs: inputs} do
+      for r <- d1cii_rows(inputs) do
+        %{"file" => f, "lines" => [from, to]} = r["et_test"]
+        {:ok, src} = inputs.source_fun.(f)
+        lines = String.split(src, "\n")
+
+        read =
+          for entry <- r["asserts_read"],
+              [_, file, line, text] <- [Regex.run(~r/\A(test\/[^:]+):(\d+) — (.*)\z/s, entry)] do
+            at = lines |> Enum.at(String.to_integer(line) - 1) |> String.trim()
+            assert file == f and at == text and at =~ @assert_word, entry
+            {file, String.to_integer(line)}
+          end
+
+        in_window =
+          for {line, i} <- Enum.with_index(lines, 1),
+              i in from..to,
+              line =~ @assert_word,
+              do: {f, i}
+
+        if from == to do
+          # The one doctest: its window is the directive, its body the @doc
+          # example, and its expected value is the assertion.
+          assert r["member"] ==
+                   "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (4)"
+
+          assert {read, in_window} == {[], []}
+
+          assert %{"file" => "lib/mcp/protocol/header_mirror.ex", "lines" => [169, 170]} =
+                   r["doctest_body"]
+
+          assert r["asserts_read"] == [
+                   "lib/mcp/protocol/header_mirror.ex:169-170 — the doctest example (its expected value is the assertion)"
+                 ]
+        else
+          assert length(read) == length(r["asserts_read"]) and read != [], r["tag"]
+          assert read == in_window, r["tag"]
+        end
+      end
+    end
+
+    # Q5-Q7 [authored 29733/29734 | ratified 29735]: a member asserting an
+    # axis of an in-scope check, directly or by entailment, is redundant, and
+    # its counterpart is the full match where there is one.
+    test "the redundant rows: each counterpart and its predicate, the one entailed, and all three fire",
+         %{inputs: inputs} do
+      red = Enum.filter(d1cii_rows(inputs), &(&1["disposition"] == "redundant"))
+      short = &(&1["tag"] |> String.split("/") |> List.last())
+
+      assert Map.new(red, &{short.(&1), &1["oc_counterpart"]["token"]}) == %{
+               "CG2-outbound-meta" =>
+                 "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta",
+               "D-3-retry-completes-after-32022" =>
+                 "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta",
+               "CG7-cache-miss-no-mirroring" =>
+                 "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call"
+             }
+
+      predicates = %{
+        "CG2-outbound-meta" =>
+          "let s=i?.[`io.modelcontextprotocol/clientInfo`],c=i?.[`io.modelcontextprotocol/clientCapabilities`],l=a&&c",
+        "D-3-retry-completes-after-32022" =>
+          "let i=r.params?._meta,a=i?.[`io.modelcontextprotocol/protocolVersion`]",
+        "CG7-cache-miss-no-mirroring" => "a?a!==i&&o.push(`Mcp-Name header value"
+      }
+
+      for r <- red do
+        oc = r["oc_counterpart"]
+        assert oc["predicate"]["bytes"] == predicates[short.(r)], short.(r)
+
+        assert byte_size(oc["predicate"]["bytes"]) ==
+                 Enum.reduce(oc["predicate"]["byte_span"], &-/2)
+
+        # Redundant takes precedence (Q5); each reading is recorded, and all fire.
+        assert r["counterfactual"]["conforming_sdk_can_fail"], short.(r)
+      end
+
+      # Q6: the entailed one cites the crosswalk's two precedent lines, and each
+      # cited line carries the precedent it is cited for.
+      [entailed] =
+        for r <- red, r["oc_counterpart"]["why_a3_missed"] =~ "entails its presence", do: r
+
+      assert short.(entailed) == "CG2-outbound-meta"
+      xw = "conformance/data/crosswalk-edges-client.json" |> File.read!() |> String.split("\n")
+
+      cited =
+        Regex.scan(
+          ~r/crosswalk-edges-client\.json:(\d+)/,
+          entailed["oc_counterpart"]["why_a3_missed"],
+          capture: :all_but_first
+        )
+        |> Enum.map(fn [n] -> Enum.at(xw, String.to_integer(n) - 1) end)
+
+      assert length(cited) == 2
+      assert Enum.at(cited, 0) =~ ~s("evidence": "client_test.exs:153 — )
+      assert Enum.at(cited, 1) =~ ~s("evidence": "capabilities_test.exs:98 — )
+      assert Enum.all?(cited, &(&1 =~ "entail"))
+
+      # Q7: the Mcp-Name row is a FULL match, and the crosswalk carries its
+      # sibling's identical claim as an edge at routing_headers_test.exs:350.
+      [name] = Enum.filter(red, &(short.(&1) == "CG7-cache-miss-no-mirroring"))
+      assert name["rationale"] =~ "both agree, the full match"
+
+      assert File.read!("conformance/data/crosswalk-edges-client.json") =~
+               ~s("evidence": "routing_headers_test.exs:350 — `assert headers[\\"mcp-name\\"] == \\"test_custom_headers\\"`)
+    end
+
+    test "the one wrong_against_spec row POSTs a JSON-RPC response, which the client MUST NOT send",
+         %{inputs: inputs} do
+      [w] = Enum.filter(d1cii_rows(inputs), &(&1["disposition"] == "wrong_against_spec"))
+      assert w["tag"] == "oc:none/no-oc-scenario/CG1-methodless-carries-no-routing-headers"
+
+      assert w["spec"] == %{
+               "url" =>
+                 "https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/streamable-http",
+               "quote" => "The client **MUST NOT** send JSON-RPC _responses_."
+             }
+
+      # The message sent carries an id and a result and no method: a response.
+      assert w["et_test"]["bytes"] =~
+               ~s(:ok = HTTPClient.send_message(transport, %{"jsonrpc" => "2.0", "id" => 1, "result" => %{}}\))
+    end
+
+    test "the genuine rows each say which ground they hold",
+         %{inputs: inputs} do
+      genuine = Enum.filter(d1cii_rows(inputs), &(&1["disposition"] == "genuine_extra_coverage"))
+
+      grounds =
+        Enum.frequencies_by(genuine, fn r ->
+          cond do
+            r["protects"] =~ "no in-scope check scores our SSE parser" -> :sse_parser_unscored
+            r["protects"] =~ "OC's null-passable ground" -> :null_passable
+            true -> :unreached_input
+          end
+        end)
+
+      assert grounds == %{sse_parser_unscored: 9, null_passable: 10, unreached_input: 2}
+    end
+  end
+
   # --- every D1 record in the directory (MES-139; authored 29729, ratified 29731) --
   #
   # MES-138's both-ways unit, generalised: it runs over every record the walk
@@ -4143,8 +4512,8 @@ defmodule MCP.Conformance.AdjudicationsTest do
       rows = for {_, _, ss} <- recs, s <- ss, r <- s["rows"], do: r
 
       # Reach, so the unit cannot pass over an empty set.
-      assert Enum.map(recs, &elem(&1, 0)) == [@d1ci, @d1]
-      assert length(rows) == 65
+      assert Enum.map(recs, &elem(&1, 0)) == [@d1ci, @d1cii, @d1]
+      assert length(rows) == 101
 
       # Independently of d1_records/1: every row of every record bound to a D1
       # view carries a D1 disposition, and every D1 disposition sits in one.

@@ -1,0 +1,1614 @@
+{
+  "schema": "adjudication-record/1",
+  "authored_by_hand": true,
+  "ticket": "MES-140",
+  "revision": "2026-07-28",
+  "what_this_is": "The D1-client-ii adjudication record: bucket 1's client-leg members in the nine modules other than MCP.ClientTest and MCP.ClientToolSchemasTest (an OPEN section, owned by MES-143, which closes the view). It is normative for the members it adjudicates; Confluence page 277741649 mirrors it. Guard G32 holds its rows equal to the view in both directions, with dispositions from the D1 family (authored 29691, ratified 29693).",
+  "harness": {
+    "version": "0.2.0-alpha.11",
+    "sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae"
+  },
+  "spec": {
+    "commit": "5f5440bb",
+    "schema_ts_md5": "48a009165e07f6732e38baf91291de87",
+    "streamable_http_mdx_md5": "63f792fddd2a9d81026ebafe6930ff87",
+    "note": "Read at the pinned commit for this ticket; both md5s match etcc-membership.md §B.2. Not committed, so gate 5 holds no spec bytes (the stated residual of wrong_against_spec and of every `None can:` citation)."
+  },
+  "method": "Each member's asserts were read in full and listed in asserts_read. Each was searched by predicate against the 56 client-leg checks of docs/conformance/in-scope-2026-07-28.json (a server-leg predicate reads what a server sends, and these members assert what the client sends, parses or reports), and against the pinned harness where a near miss exists (near_miss, a harness citation). A member that asserts an axis of an in-scope check, directly or by entailment (ratified 29735, Q6), has a missed edge (the MES-119 shape) and is redundant, routed to A3; redundant takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5]. Every row then records ONE counterfactual [authored 29707 N5 | ratified 29708]: could a conforming SDK fail this unit? The unit is the member (the view is member-grain; [authored 29721 B-A | ratified 29723]), asked at wire-meaning grain [authored 29713 | ratified 29717]. Outside redundant and wrong_against_spec, a row whose reading fires is not_a_conformance_claim, routed to A2; a row whose reading does not fire names the spec text that makes it so, and is genuine extra coverage. wrong_against_spec is reserved for a unit asserting what the spec forbids or contradicts. Every firing line was MEASURED by a scratch lib/ mutation that realises the stated alternative, in a throwaway worktree restored lib/-clean after each (29763), and names the innermost test-body frame (MES-139 CR N5).",
+  "routing": [
+    {
+      "owner": "MES-152",
+      "to": "A3",
+      "rows": 3,
+      "condition": "The PM posted the MES-152 routing comment for MES-140 before review: MES-152 comment 29774, items 1 to 3, the redundant rows in record order. Each routed row's owner_record names that comment and its item."
+    },
+    {
+      "owner": "MES-153",
+      "to": "A2",
+      "rows": 11,
+      "condition": "The PM posted the MES-153 routing comments for MES-140: comment 29775, items 1 to 8, the not_a_conformance_claim rows adjudicated before review, in record order; and comment 29798, items 1 to 3, the rows re-verdicted by the correction round [authored 29796 B1 | ratified 29799], in record order. Each routed row's owner_record names its comment and item."
+    }
+  ],
+  "unused_routes": [],
+  "counts": {
+    "bucket_1_client_ii": {
+      "genuine_extra_coverage": {
+        "count": 21,
+        "tags": [
+          "oc:none/no-oc-scenario/CG2-inbound-parse",
+          "oc:none/no-oc-scenario/server-capabilities-experimental",
+          "oc:none/no-oc-scenario/server-capabilities-missing-keys",
+          "oc:none/no-oc-scenario/server-capabilities-full-map",
+          "oc:none/no-oc-scenario/CG2-absent-yields-nil",
+          "oc:none/no-oc-scenario/jsonrpc-error-object-from-wire",
+          "oc:none/no-oc-scenario/jsonrpc-error-object-without-data",
+          "oc:none/no-oc-fixture-case/CG7-sentinel-literal-ambiguity",
+          "oc:none/no-oc-scenario/discover-result-struct-round-trip",
+          "oc:none/no-oc-scenario/jsonrpc-decode-success-response",
+          "oc:none/no-oc-scenario/jsonrpc-decode-error-response",
+          "oc:none/no-axis-contact/MES-109-encode-bang-returns-bare-json",
+          "oc:none/no-oc-scenario/sse-decode-json-data",
+          "oc:none/no-oc-scenario/sse-decode-data-only",
+          "oc:none/no-oc-scenario/sse-decode-optional-space",
+          "oc:none/no-oc-scenario/sse-decode-ignores-comments",
+          "oc:none/no-oc-scenario/sse-decode-ignores-unknown-fields",
+          "oc:none/no-oc-scenario/sse-decode-joins-data-lines",
+          "oc:none/no-oc-scenario/sse-stream-buffers-partial",
+          "oc:none/no-oc-scenario/sse-stream-across-chunk-boundaries",
+          "oc:none/no-oc-scenario/sse-stream-parses-complete-events"
+        ]
+      },
+      "redundant": {
+        "count": 3,
+        "tags": [
+          "oc:none/no-oc-scenario/CG2-outbound-meta",
+          "oc:none/no-axis-contact/D-3-retry-completes-after-32022",
+          "oc:none/no-oc-fixture-case/CG7-cache-miss-no-mirroring"
+        ]
+      },
+      "not_a_conformance_claim": {
+        "count": 11,
+        "tags": [
+          "oc:none/no-axis-contact/D-3-no-retry-when-no-offered-version-is-supported",
+          "oc:none/no-axis-contact/D-3-no-retry-when-supported-data-is-unusable",
+          "oc:none/no-axis-contact/D-3-no-retry-on-a-non-32022-error",
+          "oc:none/no-oc-scenario/CG2-encode-keeps-the-two-apart",
+          "oc:none/no-oc-fixture-case/CG7-static-reachability",
+          "oc:none/no-oc-fixture-case/CG7-integer-safe-range",
+          "oc:none/no-oc-fixture-case/CG7-non-map-arguments",
+          "oc:none/no-oc-fixture-case/CG7-nested-path-exact",
+          "oc:none/no-oc-fixture-case/CG7-no-raw-crlf-across-all-headers",
+          "oc:none/no-oc-fixture-case/CG1-notification-carries-mcp-method",
+          "oc:none/no-oc-scenario/sse-decode-all-fields"
+        ]
+      },
+      "wrong_against_spec": {
+        "count": 1,
+        "tags": [
+          "oc:none/no-oc-scenario/CG1-methodless-carries-no-routing-headers"
+        ]
+      }
+    }
+  },
+  "sections": [
+    {
+      "view": "docs/conformance/buckets/bucket-1-2026-07-28.json",
+      "closure": "open",
+      "owner": "MES-143",
+      "slice": {
+        "criterion": "the view rows whose member's `leg` in docs/conformance/etcc-attribution.json is `client` and whose member module is NOT MCP.ClientTest or MCP.ClientToolSchemasTest",
+        "selector": {
+          "join": "docs/conformance/etcc-attribution.json",
+          "on": "member.register_key",
+          "leg": "client",
+          "module_not_in": [
+            "MCP.ClientTest",
+            "MCP.ClientToolSchemasTest"
+          ]
+        },
+        "statement": "This section adjudicates 36 rows of the view: the client-leg members outside MCP.ClientTest and MCP.ClientToolSchemasTest, in nine modules. With MES-139's section it partitions the view's 71 client-leg rows; a client test module added later falls in this complement, not outside both.",
+        "rows": 36
+      },
+      "rows": [
+        {
+          "member": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/CG2-outbound-meta",
+          "echo": {
+            "cg": "CG2",
+            "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population."
+          },
+          "et_test": {
+            "file": "test/mcp/client_conformance_test.exs",
+            "lines": [
+              235,
+              250
+            ],
+            "bytes": "    test \"the OUTBOUND half (MES-16) still rides every request's _meta\" do\n      {:ok, client} =\n        Client.start_link(\n          transport: {MockTransport, []},\n          client_capabilities: %ClientCapabilities{\n            extensions: %{\"com.example/ext\" => %{\"setting\" => true}}\n          }\n        )\n\n      transport = Client.transport(client)\n      {_result, request} = discover(client, transport, %{\"tools\" => %{}})\n\n      assert request[\"params\"][\"_meta\"][\"io.modelcontextprotocol/clientCapabilities\"][\n               \"extensions\"\n             ] == %{\"com.example/ext\" => %{\"setting\" => true}}\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/client_conformance_test.exs:247 — assert request[\"params\"][\"_meta\"][\"io.modelcontextprotocol/clientCapabilities\"]["
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "redundant",
+          "oc_counterpart": {
+            "token": "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta",
+            "site": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                339945,
+                340354
+              ],
+              "bytes": "this.addOrUpdateCheck({id:`sep-2575-client-populates-meta`,name:`ClientPopulatesMeta`,description:`Client populates _meta on every request with the required fields (protocolVersion, clientCapabilities)`,status:l?`SUCCESS`:`FAILURE`,timestamp:new Date().toISOString(),specReferences:[{id:`SEP-2575`,url:`https://modelcontextprotocol.io/specification/draft/basic/index#meta`}],details:{method:r.method,meta:i}})"
+            },
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                339838,
+                339944
+              ],
+              "bytes": "let s=i?.[`io.modelcontextprotocol/clientInfo`],c=i?.[`io.modelcontextprotocol/clientCapabilities`],l=a&&c"
+            },
+            "why_a3_missed": "A3 did not see client_conformance_test.exs:247 as the meta_carries_client_capabilities axis (clientCapabilities present on the request); the other axis, protocolVersion, is not asserted, so the edge is partial; the assert reads a key inside clientCapabilities, which entails its presence, the crosswalk's own precedent (conformance/data/crosswalk-edges-client.json:334; conformance/data/crosswalk-edges-client.json:351) [ratified 29735, Q6]."
+          },
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "clientCapabilities carries the capabilities relevant to this request (basic/index.mdx:377), and the spec's own discover example sends `{}` (discover.mdx:27), so the extensions equality at client_conformance_test.exs:247 fails for an SDK that does the same."
+          },
+          "routed_to": {
+            "to": "A3",
+            "owner": "MES-152",
+            "owner_record": "MES-152 comment 29774, item 1"
+          },
+          "rationale": "Every assert read (each listed in asserts_read). The assert at client_conformance_test.exs:247-249 reads `_meta[\"io.modelcontextprotocol/clientCapabilities\"][\"extensions\"]` on the server/discover probe (the `discover` helper's `[request]`, client_conformance_test.exs:166), which entails clientCapabilities is present (ENTAILED agreement, ratified 29735 Q6): ClientPopulatesMeta's axis meta_carries_client_capabilities (`c=i?.[`io.modelcontextprotocol/clientCapabilities`]`, oc_counterpart.predicate) agrees; its protocolVersion axis is not asserted. The same shape as MES-139's CG2-stamped-into-discover-probe. So the member HAS an OC counterpart that the crosswalk did not record: the MES-119 missed-edge shape, a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterpart-free counterfactual [authored 29733/29734 | ratified 29735, Q5]: a member with a missed edge is not truly a bucket-1 member, so the D1 premise fails; its reading is still recorded honestly, and it fires. Once MES-152 adds the edge, the member is re-adjudicated in its new bucket. Nothing is relabelled or deleted here."
+        },
+        {
+          "member": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/CG2-inbound-parse",
+          "echo": {
+            "cg": "CG2",
+            "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population."
+          },
+          "et_test": {
+            "file": "test/mcp/client_conformance_test.exs",
+            "lines": [
+              186,
+              209
+            ],
+            "bytes": "    test \"the client can read what the server declared, with the settings map intact\" do\n      {:ok, client} = Client.start_link(transport: {MockTransport, []})\n      transport = Client.transport(client)\n\n      extensions = %{\n        \"io.modelcontextprotocol/tasks\" => %{},\n        \"com.example/thing\" => %{\"mimeTypes\" => [\"text/html\"], \"nested\" => %{\"depth\" => 2}}\n      }\n\n      {result, _request} =\n        discover(client, transport, %{\"tools\" => %{}, \"extensions\" => extensions})\n\n      assert result.server_capabilities.extensions == extensions\n      assert Client.server_capabilities(client).extensions == extensions\n\n      # An extension we do not implement is neither rejected, nor rewritten,\n      # nor reported as a fault — the posture `extensions.ex:56-61` commits to\n      # in prose and nothing tested.\n      assert get_in(result.server_capabilities.extensions, [\n               \"com.example/thing\",\n               \"nested\",\n               \"depth\"\n             ]) == 2\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/client_conformance_test.exs:198 — assert result.server_capabilities.extensions == extensions",
+            "test/mcp/client_conformance_test.exs:199 — assert Client.server_capabilities(client).extensions == extensions",
+            "test/mcp/client_conformance_test.exs:204 — assert get_in(result.server_capabilities.extensions, ["
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "A server's capabilities.extensions, a nested settings map included, reach the client's caller as the server advertised them, on the connect result and afterwards; OC's null-passable ground: every client-leg check's predicate reads what our client SENDS (headers, _meta, tool arguments, retries, a canary fetch; ToolAddNumbers reads only the types of the recorded tools/call's `a` and `b` arguments), not what it reports to its caller, so a client that dropped or rewrote a server's extensions would pass them.",
+          "rationale": "Every assert read (each listed in asserts_read). The asserts read the server's advertised extensions back out of the connect result (:198), the client's stored capabilities (:199) and a nested setting (:204-208). No client-leg check reads a server's capabilities as the client reports them; the request-metadata checks read the client's OUTBOUND `_meta`. No client-leg check's predicate is asserted here, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: extensions are advertised in the capabilities `extensions` map, an empty object meaning support with no settings (schema.ts:872-874, :882; versioning.mdx:84-85), and both identifiers carry a prefix, so the unit asks only that a well-formed map be reported as advertised, at wire meaning (the MES-139 CG2-server-extensions-surfaced reading)."
+          }
+        },
+        {
+          "member": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 offering only versions we do not support is surfaced, never retried",
+          "claim": null,
+          "tag": "oc:none/no-axis-contact/D-3-no-retry-when-no-offered-version-is-supported",
+          "echo": {
+            "cg": null,
+            "search_id": "NAC01",
+            "the_search_that_found_none": "a client NOT retrying: an error from which it cannot negotiate a version (a -32022 offering no version it supports, a -32022 with no usable `supported` data, or an error that is not -32022 at all) surfaced to the caller with no second request sent"
+          },
+          "et_test": {
+            "file": "test/mcp/client_defects_test.exs",
+            "lines": [
+              327,
+              347
+            ],
+            "bytes": "    test \"a -32022 offering only versions we do not support is surfaced, never retried\" do\n      # ADR-003 sub-decision 5: this client is 2026-07-28 only and negotiates\n      # down to nothing. The retry can never reach for 2025-11-25.\n      {client, transport} = start_client()\n\n      task = Task.async(fn -> Client.list_tools(client) end)\n      [first] = wait_for_sent(transport, 1)\n\n      MockTransport.inject(transport, %{\n        \"jsonrpc\" => \"2.0\",\n        \"id\" => first[\"id\"],\n        \"error\" => %{\n          \"code\" => -32_022,\n          \"message\" => \"Unsupported protocol version\",\n          \"data\" => %{\"supported\" => [\"2025-11-25\", \"2025-06-18\"], \"requested\" => \"2026-07-28\"}\n        }\n      })\n\n      assert {:error, %MCP.Protocol.Error{code: -32_022}} = Task.await(task)\n      assert length(MockTransport.sent_messages(transport)) == 1\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/client_defects_test.exs:345 — assert {:error, %MCP.Protocol.Error{code: -32_022}} = Task.await(task)",
+            "test/mcp/client_defects_test.exs:346 — assert length(MockTransport.sent_messages(transport)) == 1"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "near_miss": {
+            "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+            "byte_span": [
+              342746,
+              342818
+            ],
+            "bytes": "o===`2026-07-28`&&a===`2026-07-28`?p.status=`SUCCESS`:p.status=`WARNING`"
+          },
+          "rationale": "Every assert read (each listed in asserts_read). The nearest in-scope check is ClientRetrySupportedVersion (near_miss): both of its axes are predicates ON a retry (`o===`2026-07-28`&&a===`2026-07-28``, scored after the harness's own rejection), and this member asserts there is none (the view row's rule-A reading). The count is an ASSERTED value, so the extra request below is not incidental traffic (29735 Q8). The counterfactual fires (see `counterfactual`), so by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. Nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "An SDK that also implements 2025-11-25 finds a mutually supported version in `supported` and retries with it, as versioning.mdx:69-71 says it SHOULD, so the retry goes unanswered and the Task.await at client_defects_test.exs:345 times out; the one-message count at :346 is never reached."
+          },
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29775, item 1"
+          }
+        },
+        {
+          "member": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 with no usable data is surfaced, never retried",
+          "claim": null,
+          "tag": "oc:none/no-axis-contact/D-3-no-retry-when-supported-data-is-unusable",
+          "echo": {
+            "cg": null,
+            "search_id": "NAC01",
+            "the_search_that_found_none": "a client NOT retrying: an error from which it cannot negotiate a version (a -32022 offering no version it supports, a -32022 with no usable `supported` data, or an error that is not -32022 at all) surfaced to the caller with no second request sent"
+          },
+          "et_test": {
+            "file": "test/mcp/client_defects_test.exs",
+            "lines": [
+              350,
+              364
+            ],
+            "bytes": "    test \"a -32022 with no usable data is surfaced, never retried\" do\n      {client, transport} = start_client()\n\n      task = Task.async(fn -> Client.list_tools(client) end)\n      [first] = wait_for_sent(transport, 1)\n\n      MockTransport.inject(transport, %{\n        \"jsonrpc\" => \"2.0\",\n        \"id\" => first[\"id\"],\n        \"error\" => %{\"code\" => -32_022, \"message\" => \"Unsupported protocol version\"}\n      })\n\n      assert {:error, %MCP.Protocol.Error{code: -32_022}} = Task.await(task)\n      assert length(MockTransport.sent_messages(transport)) == 1\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/client_defects_test.exs:362 — assert {:error, %MCP.Protocol.Error{code: -32_022}} = Task.await(task)",
+            "test/mcp/client_defects_test.exs:363 — assert length(MockTransport.sent_messages(transport)) == 1"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "near_miss": {
+            "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+            "byte_span": [
+              342746,
+              342818
+            ],
+            "bytes": "o===`2026-07-28`&&a===`2026-07-28`?p.status=`SUCCESS`:p.status=`WARNING`"
+          },
+          "rationale": "Every assert read (each listed in asserts_read). The nearest in-scope check is ClientRetrySupportedVersion (near_miss): both of its axes are predicates ON a retry (`o===`2026-07-28`&&a===`2026-07-28``, scored after the harness's own rejection), and this member asserts there is none (the view row's rule-A reading). The count is an ASSERTED value, so the extra request below is not incidental traffic (29735 Q8). The counterfactual fires (see `counterfactual`), so by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. Nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "The -32022 carries no `data.supported`, which schema.ts:489-494 requires, so a dual-era SDK may read it as no recognised modern error and fall back to `initialize` (stdio.mdx:135-137); the fallback goes unanswered and the Task.await at client_defects_test.exs:362 times out; :363 is never reached."
+          },
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29775, item 2"
+          }
+        },
+        {
+          "member": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a non-32022 error is never retried",
+          "claim": null,
+          "tag": "oc:none/no-axis-contact/D-3-no-retry-on-a-non-32022-error",
+          "echo": {
+            "cg": null,
+            "search_id": "NAC01",
+            "the_search_that_found_none": "a client NOT retrying: an error from which it cannot negotiate a version (a -32022 offering no version it supports, a -32022 with no usable `supported` data, or an error that is not -32022 at all) surfaced to the caller with no second request sent"
+          },
+          "et_test": {
+            "file": "test/mcp/client_defects_test.exs",
+            "lines": [
+              400,
+              414
+            ],
+            "bytes": "    test \"a non-32022 error is never retried\" do\n      {client, transport} = start_client()\n\n      task = Task.async(fn -> Client.list_tools(client) end)\n      [first] = wait_for_sent(transport, 1)\n\n      MockTransport.inject(transport, %{\n        \"jsonrpc\" => \"2.0\",\n        \"id\" => first[\"id\"],\n        \"error\" => %{\"code\" => -32_601, \"message\" => \"Method not found\"}\n      })\n\n      assert {:error, %MCP.Protocol.Error{code: -32_601}} = Task.await(task)\n      assert length(MockTransport.sent_messages(transport)) == 1\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/client_defects_test.exs:412 — assert {:error, %MCP.Protocol.Error{code: -32_601}} = Task.await(task)",
+            "test/mcp/client_defects_test.exs:413 — assert length(MockTransport.sent_messages(transport)) == 1"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "near_miss": {
+            "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+            "byte_span": [
+              342746,
+              342818
+            ],
+            "bytes": "o===`2026-07-28`&&a===`2026-07-28`?p.status=`SUCCESS`:p.status=`WARNING`"
+          },
+          "rationale": "Every assert read (each listed in asserts_read). The nearest in-scope check is ClientRetrySupportedVersion (near_miss): both of its axes are predicates ON a retry (`o===`2026-07-28`&&a===`2026-07-28``, scored after the harness's own rejection), and this member asserts there is none (the view row's rule-A reading). The count is an ASSERTED value, so the extra request below is not incidental traffic (29735 Q8). The counterfactual fires (see `counterfactual`), so by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. Nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "A dual-era SDK falls back to `initialize` on an error that is not a recognised modern one, -32601 being the common legacy answer (stdio.mdx:135-141), so the fallback goes unanswered and the Task.await at client_defects_test.exs:412 times out; :413 is never reached."
+          },
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29775, item 3"
+          }
+        },
+        {
+          "member": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) the retry re-stamps the version chosen from `supported`",
+          "claim": null,
+          "tag": "oc:none/no-axis-contact/D-3-retry-completes-after-32022",
+          "echo": {
+            "cg": null,
+            "search_id": "NAC02",
+            "the_search_that_found_none": "the version-negotiation retry COMPLETING: after a -32022 whose `supported` names the configured version, the retried call returns its result to the caller"
+          },
+          "et_test": {
+            "file": "test/mcp/client_defects_test.exs",
+            "lines": [
+              367,
+              397
+            ],
+            "bytes": "    test \"the retry re-stamps the version chosen from `supported`\" do\n      # The client advertises something the server rejects; the server offers\n      # 2026-07-28, which we do support, so the retry must carry THAT version\n      # in `_meta` — not the originally-configured one.\n      {client, transport} = start_client(protocol_version: \"2026-07-28\")\n\n      task = Task.async(fn -> Client.list_tools(client) end)\n      [first] = wait_for_sent(transport, 1)\n\n      assert first[\"params\"][\"_meta\"][\"io.modelcontextprotocol/protocolVersion\"] == \"2026-07-28\"\n\n      MockTransport.inject(transport, %{\n        \"jsonrpc\" => \"2.0\",\n        \"id\" => first[\"id\"],\n        \"error\" => %{\n          \"code\" => -32_022,\n          \"message\" => \"Unsupported protocol version\",\n          \"data\" => %{\"supported\" => [\"2026-07-28\"], \"requested\" => \"2026-07-28\"}\n        }\n      })\n\n      [_first, retry] = wait_for_sent(transport, 2)\n\n      MockTransport.inject(transport, %{\n        \"jsonrpc\" => \"2.0\",\n        \"id\" => retry[\"id\"],\n        \"result\" => %{\"tools\" => []}\n      })\n\n      assert {:ok, %{\"tools\" => []}} = Task.await(task)\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/client_defects_test.exs:376 — assert first[\"params\"][\"_meta\"][\"io.modelcontextprotocol/protocolVersion\"] == \"2026-07-28\"",
+            "test/mcp/client_defects_test.exs:396 — assert {:ok, %{\"tools\" => []}} = Task.await(task)"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "redundant",
+          "oc_counterpart": {
+            "token": "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta",
+            "site": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                339945,
+                340354
+              ],
+              "bytes": "this.addOrUpdateCheck({id:`sep-2575-client-populates-meta`,name:`ClientPopulatesMeta`,description:`Client populates _meta on every request with the required fields (protocolVersion, clientCapabilities)`,status:l?`SUCCESS`:`FAILURE`,timestamp:new Date().toISOString(),specReferences:[{id:`SEP-2575`,url:`https://modelcontextprotocol.io/specification/draft/basic/index#meta`}],details:{method:r.method,meta:i}})"
+            },
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                339311,
+                339381
+              ],
+              "bytes": "let i=r.params?._meta,a=i?.[`io.modelcontextprotocol/protocolVersion`]"
+            },
+            "why_a3_missed": "A3 read this member only against ClientRetrySupportedVersion, whose axes score the RETRY (rule A: no contact, the view row); it did not see client_defects_test.exs:376, an equality on the FIRST request's `_meta` protocolVersion, as ClientPopulatesMeta's meta_carries_protocol_version axis (`a=i?.[`io.modelcontextprotocol/protocolVersion`]`); the clientCapabilities axis is not asserted, so the edge is partial."
+          },
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "The server's -32022 names the rejected version itself as supported (client_defects_test.exs:384), and versioning.mdx:69-71 makes the retry a SHOULD, so an SDK that surfaces the error sends no retry and the `wait_for_sent(transport, 2)` at client_defects_test.exs:388 fails."
+          },
+          "routed_to": {
+            "to": "A3",
+            "owner": "MES-152",
+            "owner_record": "MES-152 comment 29774, item 2"
+          },
+          "rationale": "Every assert read (each listed in asserts_read). The assert at client_defects_test.exs:376 is an equality on the first request's `_meta[\"io.modelcontextprotocol/protocolVersion\"]`, which entails its presence (DIRECT agreement): ClientPopulatesMeta's axis meta_carries_protocol_version (`a=i?.[`io.modelcontextprotocol/protocolVersion`]`, oc_counterpart.predicate) agrees; its clientCapabilities axis is not asserted. ClientRetrySupportedVersion stays a near miss, as the view row records: the retry's own version is never asserted (S9-17). So the member HAS an OC counterpart that the crosswalk did not record: the MES-119 missed-edge shape, a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterpart-free counterfactual [authored 29733/29734 | ratified 29735, Q5]: a member with a missed edge is not truly a bucket-1 member, so the D1 premise fails; its reading is still recorded honestly, and it fires. Once MES-152 adds the edge, the member is re-adjudicated in its new bucket. Nothing is relabelled or deleted here."
+        },
+        {
+          "member": "MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 handles experimental capabilities",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/server-capabilities-experimental",
+          "echo": {
+            "cg": null,
+            "search_id": "S05",
+            "the_search_that_found_none": "a client decoding the SERVER's advertised capabilities map into a struct — a full map, a map with capabilities missing, and an `experimental` key preserved"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/capabilities_test.exs",
+            "lines": [
+              39,
+              43
+            ],
+            "bytes": "    test \"from_map/1 handles experimental capabilities\" do\n      map = %{\"experimental\" => %{\"custom\" => %{\"enabled\" => true}}}\n      caps = ServerCapabilities.from_map(map)\n      assert caps.experimental == %{\"custom\" => %{\"enabled\" => true}}\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/capabilities_test.exs:42 — assert caps.experimental == %{\"custom\" => %{\"enabled\" => true}}"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "A server's experimental capabilities decode verbatim, nested settings included; OC's null-passable ground: every client-leg check's predicate reads what our client SENDS (headers, _meta, tool arguments, retries, a canary fetch; ToolAddNumbers reads only the types of the recorded tools/call's `a` and `b` arguments), not what it reports to its caller.",
+          "rationale": "Every assert read (each listed in asserts_read). No client-leg check reads a server's capabilities as the client decodes them; ClientDeclares*Capability reads the client's OUTBOUND clientCapabilities. No client-leg check's predicate is asserted here, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: `experimental` is a map of non-standard capabilities the server supports (schema.ts:795-797), so `custom: {enabled: true}` has one meaning, and decoding it verbatim is that meaning."
+          }
+        },
+        {
+          "member": "MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 handles missing capabilities",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/server-capabilities-missing-keys",
+          "echo": {
+            "cg": null,
+            "search_id": "S05",
+            "the_search_that_found_none": "a client decoding the SERVER's advertised capabilities map into a struct — a full map, a map with capabilities missing, and an `experimental` key preserved"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/capabilities_test.exs",
+            "lines": [
+              28,
+              36
+            ],
+            "bytes": "    test \"from_map/1 handles missing capabilities\" do\n      caps = ServerCapabilities.from_map(%{})\n\n      assert caps.tools == nil\n      assert caps.resources == nil\n      assert caps.prompts == nil\n      assert caps.logging == nil\n      assert caps.completions == nil\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/capabilities_test.exs:31 — assert caps.tools == nil",
+            "test/mcp/protocol/capabilities_test.exs:32 — assert caps.resources == nil",
+            "test/mcp/protocol/capabilities_test.exs:33 — assert caps.prompts == nil",
+            "test/mcp/protocol/capabilities_test.exs:34 — assert caps.logging == nil",
+            "test/mcp/protocol/capabilities_test.exs:35 — assert caps.completions == nil"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "An empty server capabilities object decodes to no tools, resources, prompts, logging or completions; OC's null-passable ground: every client-leg check's predicate reads what our client SENDS (headers, _meta, tool arguments, retries, a canary fetch; ToolAddNumbers reads only the types of the recorded tools/call's `a` and `b` arguments), not what it reports to its caller.",
+          "rationale": "Every assert read (each listed in asserts_read). No client-leg check reads a server's capabilities as the client decodes them; ClientDeclares*Capability reads the client's OUTBOUND clientCapabilities. No client-leg check's predicate is asserted here, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: each server capability is present only if the server supports it (schema.ts:799, :810, :817, :832, :857), so `{}` declares none of the five; `nil` is this SDK's host value for absent, which this grain does not count (29717)."
+          }
+        },
+        {
+          "member": "MCP.Protocol.CapabilitiesTest/test ServerCapabilities from_map/1 parses full capabilities",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/server-capabilities-full-map",
+          "echo": {
+            "cg": null,
+            "search_id": "S05",
+            "the_search_that_found_none": "a client decoding the SERVER's advertised capabilities map into a struct — a full map, a map with capabilities missing, and an `experimental` key preserved"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/capabilities_test.exs",
+            "lines": [
+              8,
+              25
+            ],
+            "bytes": "    test \"from_map/1 parses full capabilities\" do\n      map = %{\n        \"tools\" => %{\"listChanged\" => true},\n        \"resources\" => %{\"subscribe\" => true, \"listChanged\" => true},\n        \"prompts\" => %{\"listChanged\" => true},\n        \"logging\" => %{},\n        \"completions\" => %{}\n      }\n\n      caps = ServerCapabilities.from_map(map)\n\n      assert caps.tools.list_changed == true\n      assert caps.resources.subscribe == true\n      assert caps.resources.list_changed == true\n      assert caps.prompts.list_changed == true\n      assert %MCP.Protocol.Capabilities.LoggingCapabilities{} = caps.logging\n      assert %MCP.Protocol.Capabilities.CompletionCapabilities{} = caps.completions\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/capabilities_test.exs:19 — assert caps.tools.list_changed == true",
+            "test/mcp/protocol/capabilities_test.exs:20 — assert caps.resources.subscribe == true",
+            "test/mcp/protocol/capabilities_test.exs:21 — assert caps.resources.list_changed == true",
+            "test/mcp/protocol/capabilities_test.exs:22 — assert caps.prompts.list_changed == true",
+            "test/mcp/protocol/capabilities_test.exs:23 — assert %MCP.Protocol.Capabilities.LoggingCapabilities{} = caps.logging",
+            "test/mcp/protocol/capabilities_test.exs:24 — assert %MCP.Protocol.Capabilities.CompletionCapabilities{} = caps.completions"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "A full server capabilities object decodes with each sub-flag intact (tools.listChanged, resources.subscribe and listChanged, prompts.listChanged) and logging and completions declared; OC's null-passable ground: every client-leg check's predicate reads what our client SENDS (headers, _meta, tool arguments, retries, a canary fetch; ToolAddNumbers reads only the types of the recorded tools/call's `a` and `b` arguments), not what it reports to its caller.",
+          "rationale": "Every assert read (each listed in asserts_read). No client-leg check reads a server's capabilities as the client decodes them; ClientDeclares*Capability reads the client's OUTBOUND clientCapabilities. No client-leg check's predicate is asserted here, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: presence declares each capability (schema.ts:799, :810, :817, :832, :857) and each sub-flag states its own support (:827-829, :848-854, :867-869), so the decoded flags and presences are the map's one meaning."
+          }
+        },
+        {
+          "member": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/CG2-absent-yields-nil",
+          "echo": {
+            "cg": "CG2",
+            "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population."
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/capabilities_test.exs",
+            "lines": [
+              140,
+              148
+            ],
+            "bytes": "    test \"T7 — ServerCapabilities decode keeps the two apart\" do\n      caps = ServerCapabilities.from_map(%{\"extensions\" => @extensions})\n      assert caps.extensions == @extensions\n      assert caps.experimental == nil\n\n      caps = ServerCapabilities.from_map(%{\"experimental\" => @experimental})\n      assert caps.experimental == @experimental\n      assert caps.extensions == nil\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/capabilities_test.exs:142 — assert caps.extensions == @extensions",
+            "test/mcp/protocol/capabilities_test.exs:143 — assert caps.experimental == nil",
+            "test/mcp/protocol/capabilities_test.exs:146 — assert caps.experimental == @experimental",
+            "test/mcp/protocol/capabilities_test.exs:147 — assert caps.extensions == nil"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "A server declaring only extensions decodes with no experimental capabilities, and one declaring only experimental decodes with no extensions, so the two fields never borrow each other's contents; OC's null-passable ground: every client-leg check's predicate reads what our client SENDS (headers, _meta, tool arguments, retries, a canary fetch; ToolAddNumbers reads only the types of the recorded tools/call's `a` and `b` arguments), not what it reports to its caller.",
+          "rationale": "Every assert read (each listed in asserts_read). No client-leg check reads a server's capabilities as the client decodes them; ClientDeclares*Capability reads the client's OUTBOUND clientCapabilities. No client-leg check's predicate is asserted here, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: `experimental` and `extensions` are distinct fields (schema.ts:797, :882), so a map declaring one declares nothing under the other; `nil` is this SDK's host value for that absence, which this grain does not count (29717)."
+          }
+        },
+        {
+          "member": "MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T8 — ClientCapabilities encode keeps the two apart",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/CG2-encode-keeps-the-two-apart",
+          "echo": {
+            "cg": "CG2",
+            "the_search_that_found_none": "RUN AT THIS TIP BY C1b-ii, not quoted. `/extension/i` over the WHOLE row — scenario + check id + name + description — of all 175 manifest checks in docs/conformance/in-scope-2026-07-28.json returns 0. The sweep is shown to have REACHED that population rather than to have matched nothing for want of running: the same predicate over the same 175 rows returns 45 for `/header/i`, 36 for `/schema/i` and 8 for `/caching/i`. So the zero is a property of the population's content, not of the sweep. Corroborates cg-reconciliation.md §2's E0, which recorded the same zero from the CG side; this one is measured from inside the declared check population."
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/capabilities_test.exs",
+            "lines": [
+              151,
+              167
+            ],
+            "bytes": "    test \"T8 — ClientCapabilities encode keeps the two apart\" do\n      decoded =\n        %ClientCapabilities{extensions: @extensions}\n        |> Jason.encode!()\n        |> Jason.decode!()\n\n      assert decoded[\"extensions\"] == @extensions\n      refute Map.has_key?(decoded, \"experimental\")\n\n      decoded =\n        %ClientCapabilities{experimental: @experimental}\n        |> Jason.encode!()\n        |> Jason.decode!()\n\n      assert decoded[\"experimental\"] == @experimental\n      refute Map.has_key?(decoded, \"extensions\")\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/capabilities_test.exs:157 — assert decoded[\"extensions\"] == @extensions",
+            "test/mcp/protocol/capabilities_test.exs:158 — refute Map.has_key?(decoded, \"experimental\")",
+            "test/mcp/protocol/capabilities_test.exs:165 — assert decoded[\"experimental\"] == @experimental",
+            "test/mcp/protocol/capabilities_test.exs:166 — refute Map.has_key?(decoded, \"extensions\")"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "rationale": "Every assert read (each listed in asserts_read). The nearest in-scope checks are ClientDeclares{Roots,Sampling,Elicitation}Capability, which read the `roots`, `sampling` and `elicitation` keys of the client's clientCapabilities; this member encodes only `extensions` and `experimental`, so no check's predicate is asserted and A3 missed nothing. The counterfactual fires (see `counterfactual`), so by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. Nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "An SDK may emit `experimental: {}` or `extensions: {}` for none: an empty map names no capability and means what absence means (schema.ts:95, :720, :785; versioning.mdx:84-85), so the refute at capabilities_test.exs:158 holds one conforming form of two."
+          },
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29775, item 4"
+          }
+        },
+        {
+          "member": "MCP.Protocol.ErrorTest/test from_map/1 parses error from wire format",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/jsonrpc-error-object-from-wire",
+          "echo": {
+            "cg": null,
+            "search_id": "S04",
+            "the_search_that_found_none": "a client decoding a JSON-RPC ERROR OBJECT off the wire into a struct — `code`, `message`, and `data` present or absent"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/error_test.exs",
+            "lines": [
+              106,
+              113
+            ],
+            "bytes": "    test \"parses error from wire format\" do\n      map = %{\"code\" => -32_601, \"message\" => \"Method not found\", \"data\" => \"foo/bar\"}\n      error = Error.from_map(map)\n\n      assert error.code == -32_601\n      assert error.message == \"Method not found\"\n      assert error.data == \"foo/bar\"\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/error_test.exs:110 — assert error.code == -32_601",
+            "test/mcp/protocol/error_test.exs:111 — assert error.message == \"Method not found\"",
+            "test/mcp/protocol/error_test.exs:112 — assert error.data == \"foo/bar\""
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "A JSON-RPC error object decodes with its integer code, message and data intact; OC's null-passable ground: every client-leg check's predicate reads what our client SENDS (headers, _meta, tool arguments, retries, a canary fetch; ToolAddNumbers reads only the types of the recorded tools/call's `a` and `b` arguments), not what it reports to its caller: a client-leg fixture answers an unknown tool with -32601 (index.js@345069), but no check reads how the client decodes it.",
+          "rationale": "Every assert read (each listed in asserts_read). The asserts read the decoded code, message and data. No client-leg check's predicate is asserted here, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: an error carries an integer `code`, a `message` and optional `data` (basic/index.mdx:104-106), so the three decoded values are the object's one meaning."
+          }
+        },
+        {
+          "member": "MCP.Protocol.ErrorTest/test from_map/1 parses error without data",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/jsonrpc-error-object-without-data",
+          "echo": {
+            "cg": null,
+            "search_id": "S04",
+            "the_search_that_found_none": "a client decoding a JSON-RPC ERROR OBJECT off the wire into a struct — `code`, `message`, and `data` present or absent"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/error_test.exs",
+            "lines": [
+              116,
+              122
+            ],
+            "bytes": "    test \"parses error without data\" do\n      map = %{\"code\" => -32_603, \"message\" => \"Internal error\"}\n      error = Error.from_map(map)\n\n      assert error.code == -32_603\n      assert error.data == nil\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/error_test.exs:120 — assert error.code == -32_603",
+            "test/mcp/protocol/error_test.exs:121 — assert error.data == nil"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "A JSON-RPC error object with no `data` decodes with its code and no data; OC's null-passable ground: every client-leg check's predicate reads what our client SENDS (headers, _meta, tool arguments, retries, a canary fetch; ToolAddNumbers reads only the types of the recorded tools/call's `a` and `b` arguments), not what it reports to its caller: a client-leg fixture answers an unknown tool with -32601 (index.js@345069), but no check reads how the client decodes it.",
+          "rationale": "Every assert read (each listed in asserts_read). The asserts read the decoded code and the absent data. No client-leg check's predicate is asserted here, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: `data` is optional (basic/index.mdx:106), so an error without it carries none; `nil` is this SDK's host value for that absence, which this grain does not count (29717)."
+          }
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (4)",
+          "claim": null,
+          "tag": "oc:none/no-oc-fixture-case/CG7-sentinel-literal-ambiguity",
+          "echo": {
+            "cg": "CG7",
+            "the_search_that_found_none": "Both CG7 scenarios' fixtures were read at the pinned build. `http-custom-headers` serves two tools and ONE argument vector — the 16 values of the alpha.11 `http-custom-headers` fixture's own argument vector, enumerated in header_mirror_test.exs:305-322 — and no value in it is sentinel-shaped (`=?base64?…?=`); `http-invalid-tool-headers` sends no annotated VALUES at all, only ten malformed tool DEFINITIONS (`Ua`). The 29 CG7 check names were then read for one whose predicate is about a plain value that looks encoded: none is. `Ka` would in fact mis-handle such a value — `Ga` calls it safe, so `Wa` decodes it and the comparison is made against the DECODED form — but no fixture case reaches that path."
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/header_mirror_test.exs",
+            "lines": [
+              31,
+              31
+            ],
+            "bytes": "  doctest MCP.Protocol.HeaderMirror, tags: [:etcc]"
+          },
+          "doctest_body": {
+            "file": "lib/mcp/protocol/header_mirror.ex",
+            "lines": [
+              169,
+              170
+            ],
+            "bytes": "      iex> MCP.Protocol.HeaderMirror.encode_value(\"=?base64?literal?=\")\n      \"=?base64?PT9iYXNlNjQ/bGl0ZXJhbD89?=\""
+          },
+          "asserts_read": [
+            "lib/mcp/protocol/header_mirror.ex:169-170 — the doctest example (its expected value is the assertion)"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "near_miss": {
+            "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+            "byte_span": [
+              713922,
+              714076
+            ],
+            "bytes": "c=s?`sep-2243-client-base64-unsafe`:r===`number`||r===`integer`||r===`boolean`?`sep-2243-client-encode-values`:`sep-2243-client-mirrors-designated-params`"
+          },
+          "protects": "A plain-ASCII value that looks like the Base64 sentinel is itself encoded (streamable-http.mdx:506-508, a MUST), exactly as the spec's own table encodes it (:518); OC's ClientCustomHeader_* comparison would score the case under sep-2243-client-mirrors-designated-params (near_miss), but its fixture's 16 values hold none that is sentinel-shaped (the view row's search), so no OC run provokes it.",
+          "rationale": "Every assert read (each listed in asserts_read). A doctest: its body is the @doc example at lib/mcp/protocol/header_mirror.ex:169-170 (doctest_body), the fourth of the four iex blocks of `doctest MCP.Protocol.HeaderMirror` (header_mirror_test.exs:31, whose only option is `tags:`). The nearest check selects its id by the value's type and safety (near_miss); it scores whatever values the fixture sends, and none is a literal. The same verdict as MES-138's sentinel-shaped-literal-is-itself-encoded. No client-leg check's predicate is asserted here, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: a plain-ASCII value matching the sentinel MUST be Base64-encoded (streamable-http.mdx:506-508), and the spec's table gives this exact value's encoding (:518)."
+          }
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) a NESTED object property IS reachable — every step is a `properties` key",
+          "claim": null,
+          "tag": "oc:none/no-oc-fixture-case/CG7-static-reachability",
+          "echo": {
+            "cg": "CG7",
+            "search_id": "S18",
+            "the_search_that_found_none": "an `x-mcp-header` annotation on a NESTED object property — a chain of `properties` keys more than one step deep — being statically reachable and mirrored"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/header_mirror_test.exs",
+            "lines": [
+              207,
+              222
+            ],
+            "bytes": "    test \"a NESTED object property IS reachable — every step is a `properties` key\" do\n      annotations =\n        annotations!(\n          schema(%{\n            \"outer\" =>\n              schema(%{\n                \"inner\" => %{\"type\" => \"string\", \"x-mcp-header\" => \"Inner\"}\n              })\n          })\n        )\n\n      assert [%{name: \"Inner\", path: [\"outer\", \"inner\"]}] = annotations\n\n      assert [{\"mcp-param-inner\", \"v\"}] =\n               HeaderMirror.headers_for(annotations, %{\"outer\" => %{\"inner\" => \"v\"}})\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/header_mirror_test.exs:218 — assert [%{name: \"Inner\", path: [\"outer\", \"inner\"]}] = annotations",
+            "test/mcp/protocol/header_mirror_test.exs:220 — assert [{\"mcp-param-inner\", \"v\"}] ="
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "rationale": "Every assert read (each listed in asserts_read). The asserts read the parsed annotation's path (:218) and the mirrored header (:220). ClientSupportsCustomHeaders and the ClientCustomHeader_* checks read headers on the fixture's own tools/call, whose annotations are top-level, so an SDK that refused a nested annotation passes them; this is a near miss by input, not a shared subject (the MES-117 lesson). No client-leg check's predicate is asserted here, and A3 missed nothing. The counterfactual fires (see `counterfactual`): a mirrored header's NAME is held to one of its two conforming forms, the wire-meaning grain applied as at CG2-encode-keeps-the-two-apart [authored 29796 B1 | ratified 29799]. So by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. Nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "The spec's own form of a mirrored header's name is `Mcp-Param-{Name}` (streamable-http.mdx:373-374, :537; its table writes `Mcp-Param-Region`, :514), and header names are case-insensitive (:572-575), so it is one meaning with the lower-case name but not one wire state (Mint writes a name byte for byte). An SDK that emits `Mcp-Param-Inner` fails the match at header_mirror_test.exs:220."
+          },
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29798, item 1"
+          }
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test annotation validity — the three constraints NO harness check covers (spec-only) an integer outside the IEEE 754 safe range is not mirrored, and says so",
+          "claim": null,
+          "tag": "oc:none/no-oc-fixture-case/CG7-integer-safe-range",
+          "echo": {
+            "cg": "CG7",
+            "search_id": "S19",
+            "the_search_that_found_none": "an integer argument OUTSIDE the IEEE 754 safe range being refused mirroring rather than silently truncated, with the omission logged"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/header_mirror_test.exs",
+            "lines": [
+              134,
+              152
+            ],
+            "bytes": "    test \"an integer outside the IEEE 754 safe range is not mirrored, and says so\" do\n      annotations = annotations!(schema(%{\"n\" => %{\"type\" => \"integer\", \"x-mcp-header\" => \"N\"}}))\n\n      assert [{\"mcp-param-n\", \"9007199254740991\"}] =\n               HeaderMirror.headers_for(annotations, %{\"n\" => 9_007_199_254_740_991})\n\n      assert [{\"mcp-param-n\", \"-9007199254740991\"}] =\n               HeaderMirror.headers_for(annotations, %{\"n\" => -9_007_199_254_740_991})\n\n      log =\n        ExUnit.CaptureLog.capture_log(fn ->\n          assert [] = HeaderMirror.headers_for(annotations, %{\"n\" => 9_007_199_254_740_992})\n        end)\n\n      # The omission is visible. A silently absent header is indistinguishable\n      # on the wire from a parameter that has no annotation — F-9's shape.\n      assert log =~ \"Mcp-Param-N\"\n      assert log =~ \"safe range\"\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/header_mirror_test.exs:137 — assert [{\"mcp-param-n\", \"9007199254740991\"}] =",
+            "test/mcp/protocol/header_mirror_test.exs:140 — assert [{\"mcp-param-n\", \"-9007199254740991\"}] =",
+            "test/mcp/protocol/header_mirror_test.exs:145 — assert [] = HeaderMirror.headers_for(annotations, %{\"n\" => 9_007_199_254_740_992})",
+            "test/mcp/protocol/header_mirror_test.exs:150 — assert log =~ \"Mcp-Param-N\"",
+            "test/mcp/protocol/header_mirror_test.exs:151 — assert log =~ \"safe range\""
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "near_miss": {
+            "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+            "byte_span": [
+              710618,
+              710674
+            ],
+            "bytes": "this.checkParamHeader(e,`Priority`,i.priority,`integer`)"
+          },
+          "rationale": "Every assert read (each listed in asserts_read). The nearest in-scope check is ClientCustomHeader_Priority (near_miss): it scores the fixture's own `priority` argument, 42 (index.js@705961, `priority:42`), while :137 and :140 assert the same decimal-string rule for a different parameter at the safe range's two bounds, and :145-151 its omission past them; an SDK that failed only at the bounds passes the check, so this is a near miss by input. No client-leg check's predicate is asserted here, and A3 missed nothing. The counterfactual fires (see `counterfactual`), so by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. Nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "An SDK may word the omission warning differently or not log it at all: the one x-mcp-header logging duty is a SHOULD on REJECTING a tool definition (streamable-http.mdx:405-407), not on omitting a value at call time, so the `=~` assert at header_mirror_test.exs:150 fails."
+          },
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29775, item 5"
+          }
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a non-map arguments value yields no headers rather than raising",
+          "claim": null,
+          "tag": "oc:none/no-oc-fixture-case/CG7-non-map-arguments",
+          "echo": {
+            "cg": "CG7",
+            "the_search_that_found_none": "The fixture's `handleToolsCall` reads `n.params?.arguments||{}` and the scenario's own client driver always sends an object, so no case sends a non-map `arguments`. All 29 CG7 check names were read for one whose predicate is about malformed `arguments`: none is."
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/header_mirror_test.exs",
+            "lines": [
+              472,
+              476
+            ],
+            "bytes": "    test \"a non-map arguments value yields no headers rather than raising\" do\n      annotations = annotations!(schema(%{\"a\" => %{\"type\" => \"string\", \"x-mcp-header\" => \"A\"}}))\n      assert [] = HeaderMirror.headers_for(annotations, nil)\n      assert [] = HeaderMirror.headers_for(annotations, \"not a map\")\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/header_mirror_test.exs:474 — assert [] = HeaderMirror.headers_for(annotations, nil)",
+            "test/mcp/protocol/header_mirror_test.exs:475 — assert [] = HeaderMirror.headers_for(annotations, \"not a map\")"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "rationale": "Every assert read (each listed in asserts_read). The scenario's client driver always hands our client an object `arguments` (the view row's search), and no client-leg check's predicate reads a malformed `arguments`, so A3 missed nothing. The counterfactual fires (see `counterfactual`), so by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. Nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "`arguments` is an object when present (schema.ts:1871), so an SDK may refuse a tools/call whose arguments is a string rather than send it, and one whose mirror raises on it fails the match at header_mirror_test.exs:475."
+          },
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29775, item 6"
+          }
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule the exact property path is read — a same-named key elsewhere is not",
+          "claim": null,
+          "tag": "oc:none/no-oc-fixture-case/CG7-nested-path-exact",
+          "echo": {
+            "cg": "CG7",
+            "the_search_that_found_none": "Every annotated property in both `http-custom-headers` tool schemas is TOP-LEVEL — read at the pinned build: `region`, `priority`, `verbose`, `debug`, `empty_val`, `method_val`, `non_ascii_val`, `whitespace_val`, `leading_space_val`, `trailing_space_val`, `internal_space_val`, `control_char_val`, `crlf_val`, `tab_val`. No fixture tool nests an annotation, so no fixture call can distinguish reading the annotated PATH from reading a same-named key anywhere. The 29 check names were read for one about path resolution: none is."
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/header_mirror_test.exs",
+            "lines": [
+              479,
+              492
+            ],
+            "bytes": "    test \"the exact property path is read — a same-named key elsewhere is not\" do\n      annotations =\n        annotations!(\n          schema(%{\n            \"outer\" => schema(%{\"region\" => %{\"type\" => \"string\", \"x-mcp-header\" => \"R\"}})\n          })\n        )\n\n      # A top-level \"region\" is NOT at the annotated path [\"outer\", \"region\"].\n      assert [] = HeaderMirror.headers_for(annotations, %{\"region\" => \"wrong\"})\n\n      assert [{\"mcp-param-r\", \"right\"}] =\n               HeaderMirror.headers_for(annotations, %{\"outer\" => %{\"region\" => \"right\"}})\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/header_mirror_test.exs:488 — assert [] = HeaderMirror.headers_for(annotations, %{\"region\" => \"wrong\"})",
+            "test/mcp/protocol/header_mirror_test.exs:490 — assert [{\"mcp-param-r\", \"right\"}] ="
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "rationale": "Every assert read (each listed in asserts_read). The asserts read the headers for a top-level `region` (none, :488) and for `outer.region` (:490). ClientCustomHeaderNoMirrorUnannotated reads `mcp-param-query`, a DECLARED unannotated parameter of the fixture's schema; the top-level `region` here is in no schema at all, so it is a different input and not that check's subject. No client-leg check's predicate is asserted here, and A3 missed nothing. The counterfactual fires (see `counterfactual`): a mirrored header's NAME is held to one of its two conforming forms, the wire-meaning grain applied as at CG2-encode-keeps-the-two-apart [authored 29796 B1 | ratified 29799]. So by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. Nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "The spec's own form of a mirrored header's name is `Mcp-Param-{Name}` (streamable-http.mdx:373-374, :537; its table writes `Mcp-Param-Region`, :514), and header names are case-insensitive (:572-575), so it is one meaning with the lower-case name but not one wire state (Mint writes a name byte for byte). An SDK that emits `Mcp-Param-R` fails the match at header_mirror_test.exs:490."
+          },
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29798, item 2"
+          }
+        },
+        {
+          "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector no header carries a raw CR or LF — injection is closed by construction",
+          "claim": null,
+          "tag": "oc:none/no-oc-fixture-case/CG7-no-raw-crlf-across-all-headers",
+          "echo": {
+            "cg": "CG7",
+            "the_search_that_found_none": "All 29 CG7 checks were read. Each `ClientCustomHeader_*` check's predicate quantifies over ONE named header — `checkParamHeader` is called once per annotated parameter and `a=e.headers[i]` reads that parameter's header alone. No check's predicate quantifies over the header SET, and neither `ClientSupportsCustomHeaders` (`some(...)`, an existential over names, not values) nor the two NoMirror checks (`===void 0` on one named header) is universal either."
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/header_mirror_test.exs",
+            "lines": [
+              389,
+              399
+            ],
+            "bytes": "    test \"no header carries a raw CR or LF — injection is closed by construction\", %{\n      headers: headers\n    } do\n      # The property that matters most, asserted over the WHOLE header set\n      # rather than the two values that happen to contain newlines.\n      for {name, value} <- headers do\n        refute value =~ \"\\r\", \"header #{name} carried a raw CR\"\n        refute value =~ \"\\n\", \"header #{name} carried a raw LF\"\n        assert name == String.downcase(name)\n      end\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/header_mirror_test.exs:395 — refute value =~ \"\\r\", \"header #{name} carried a raw CR\"",
+            "test/mcp/protocol/header_mirror_test.exs:396 — refute value =~ \"\\n\", \"header #{name} carried a raw LF\"",
+            "test/mcp/protocol/header_mirror_test.exs:397 — assert name == String.downcase(name)"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "near_miss": {
+            "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+            "byte_span": [
+              712336,
+              712387
+            ],
+            "bytes": "this.checkParamHeader(e,`CrLf`,i.crlf_val,`string`)"
+          },
+          "rationale": "Every assert read (each listed in asserts_read). The asserts read every produced header (:394-398). The per-header checks each read one named header's value against its body value, and `refute value =~ \"\\r\"` is weaker than that equality, so on ClientCustomHeader_CrLf's value axis it is SILENT (the crosswalk's own reading of a sentinel-shape assert, crosswalk-edges-client.json's ClientCustomHeader_ControlChar/CrLf/Tab rows), and the loop asserts no header's presence. No client-leg check's predicate is asserted here, and A3 missed nothing. The counterfactual fires (see `counterfactual`): a mirrored header's NAME is held to one of its two conforming forms, the wire-meaning grain applied as at CG2-encode-keeps-the-two-apart [authored 29796 B1 | ratified 29799]. So by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. Nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "The spec's own form of a mirrored header's name is `Mcp-Param-{Name}` (streamable-http.mdx:373-374, :537; its table writes `Mcp-Param-Region`, :514), and header names are case-insensitive (:572-575), so it is one meaning with the lower-case name but not one wire state (Mint writes a name byte for byte). An SDK that emits `Mcp-Param-ControlChar` fails the assert at header_mirror_test.exs:397 (inside the loop at :394). The CR/LF refutes at :395-396 do not fire, since a value with a control character MUST be carried Base64-encoded (:480-483); the member fires on :397 alone, at member grain."
+          },
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29798, item 3"
+          }
+        },
+        {
+          "member": "MCP.Protocol.Messages.DiscoverTest/test from_map/1 round-trips the schema shape",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/discover-result-struct-round-trip",
+          "echo": {
+            "cg": null,
+            "search_id": "S06",
+            "the_search_that_found_none": "the CLIENT side of `server/discover` — issuing the probe, and what it makes of the DiscoverResult it gets back (capabilities, `serverInfo`, `supportedVersions`, an error in place of a result, and the accessors that surface them afterwards)"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol/messages/discover_test.exs",
+            "lines": [
+              37,
+              51
+            ],
+            "bytes": "  test \"from_map/1 round-trips the schema shape\" do\n    map = %{\n      \"supportedVersions\" => [\"2026-07-28\"],\n      \"capabilities\" => %{},\n      \"resultType\" => \"complete\",\n      \"ttlMs\" => 0,\n      \"cacheScope\" => \"public\",\n      \"_meta\" => %{\"io.modelcontextprotocol/serverInfo\" => %{\"name\" => \"s\", \"version\" => \"2.0.0\"}}\n    }\n\n    result = Discover.Result.from_map(map)\n    assert result.supported_versions == [\"2026-07-28\"]\n    assert result.cache_scope == \"public\"\n    assert result.server_info.name == \"s\"\n  end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol/messages/discover_test.exs:48 — assert result.supported_versions == [\"2026-07-28\"]",
+            "test/mcp/protocol/messages/discover_test.exs:49 — assert result.cache_scope == \"public\"",
+            "test/mcp/protocol/messages/discover_test.exs:50 — assert result.server_info.name == \"s\""
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "A DiscoverResult decodes with its supportedVersions, cacheScope and serverInfo intact; OC's null-passable ground: every client-leg check's predicate reads what our client SENDS (headers, _meta, tool arguments, retries, a canary fetch; ToolAddNumbers reads only the types of the recorded tools/call's `a` and `b` arguments), not what it reports to its caller: client-leg fixtures answer server/discover (index.js@342885, @697072), but no check reads what the client decodes from it.",
+          "rationale": "Every assert read (each listed in asserts_read). The asserts read the decoded supported versions (:48), cacheScope (:49) and serverInfo name (:50). No client-leg check's predicate is asserted here, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: supportedVersions, cacheScope and serverInfo are DiscoverResult's own fields (schema.ts:683, :1109, :157; discover.mdx:94-99), so each decoded value is the result's one meaning."
+          }
+        },
+        {
+          "member": "MCP.ProtocolTest/test decode/1 decodes a success response",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/jsonrpc-decode-success-response",
+          "echo": {
+            "cg": null,
+            "search_id": "S03",
+            "the_search_that_found_none": "a client DECODING an INBOUND JSON-RPC response — classifying a `result` message and an `error` message and building the struct the caller receives"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol_test.exs",
+            "lines": [
+              104,
+              111
+            ],
+            "bytes": "    test \"decodes a success response\" do\n      json = ~s({\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"tools\":[]}})\n      assert {:ok, %Response{} = response} = Protocol.decode(json)\n\n      assert response.id == 1\n      assert response.result == %{\"tools\" => []}\n      assert response.error == nil\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol_test.exs:106 — assert {:ok, %Response{} = response} = Protocol.decode(json)",
+            "test/mcp/protocol_test.exs:108 — assert response.id == 1",
+            "test/mcp/protocol_test.exs:109 — assert response.result == %{\"tools\" => []}",
+            "test/mcp/protocol_test.exs:110 — assert response.error == nil"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "A JSON-RPC success response decodes with its id and result, and no error; OC's null-passable ground: every client-leg check's predicate reads what our client SENDS (headers, _meta, tool arguments, retries, a canary fetch; ToolAddNumbers reads only the types of the recorded tools/call's `a` and `b` arguments), not what it reports to its caller: client-leg fixtures answer requests by id (index.js@342885, `id:r.id`), but no check reads how the client decodes the response.",
+          "rationale": "Every assert read (each listed in asserts_read). The asserts read the decoded struct, id, result and error. No client-leg check's predicate is asserted here, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: a result response carries the request's id and a `result` (basic/index.mdx:70-71), so the decoded id and result are its one meaning; the nil error is this SDK's host value, which this grain does not count (29717)."
+          }
+        },
+        {
+          "member": "MCP.ProtocolTest/test decode/1 decodes an error response",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/jsonrpc-decode-error-response",
+          "echo": {
+            "cg": null,
+            "search_id": "S03",
+            "the_search_that_found_none": "a client DECODING an INBOUND JSON-RPC response — classifying a `result` message and an `error` message and building the struct the caller receives"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol_test.exs",
+            "lines": [
+              114,
+              122
+            ],
+            "bytes": "    test \"decodes an error response\" do\n      json = ~s({\"jsonrpc\":\"2.0\",\"id\":1,\"error\":{\"code\":-32601,\"message\":\"Method not found\"}})\n      assert {:ok, %Response{} = response} = Protocol.decode(json)\n\n      assert response.id == 1\n      assert response.result == nil\n      assert response.error.code == -32_601\n      assert response.error.message == \"Method not found\"\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol_test.exs:116 — assert {:ok, %Response{} = response} = Protocol.decode(json)",
+            "test/mcp/protocol_test.exs:118 — assert response.id == 1",
+            "test/mcp/protocol_test.exs:119 — assert response.result == nil",
+            "test/mcp/protocol_test.exs:120 — assert response.error.code == -32_601",
+            "test/mcp/protocol_test.exs:121 — assert response.error.message == \"Method not found\""
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "A JSON-RPC error response decodes with its id and error code and message, and no result; OC's null-passable ground: every client-leg check's predicate reads what our client SENDS (headers, _meta, tool arguments, retries, a canary fetch; ToolAddNumbers reads only the types of the recorded tools/call's `a` and `b` arguments), not what it reports to its caller: a client-leg fixture answers an unknown tool with -32601 (index.js@345069), but no check reads how the client decodes it.",
+          "rationale": "Every assert read (each listed in asserts_read). The asserts read the decoded struct, id, result, code and message. No client-leg check's predicate is asserted here, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: an error response carries the request's id and an `error` with an integer `code` and a `message` (basic/index.mdx:103-105), so the decoded values are its one meaning."
+          }
+        },
+        {
+          "member": "MCP.ProtocolTest/test encode!/1 returns JSON string",
+          "claim": null,
+          "tag": "oc:none/no-axis-contact/MES-109-encode-bang-returns-bare-json",
+          "echo": {
+            "cg": null,
+            "search_id": "NAC05",
+            "the_search_that_found_none": "the BANG encoder's return type: `encode!/1` handing back the JSON binary bare, where its non-bang sibling wraps it in an `{:ok, _}` tuple"
+          },
+          "et_test": {
+            "file": "test/mcp/protocol_test.exs",
+            "lines": [
+              181,
+              186
+            ],
+            "bytes": "    test \"returns JSON string\" do\n      request = Request.new(1, \"ping\")\n      json = Protocol.encode!(request)\n      assert is_binary(json)\n      assert Jason.decode!(json)[\"method\"] == \"ping\"\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/protocol_test.exs:184 — assert is_binary(json)",
+            "test/mcp/protocol_test.exs:185 — assert Jason.decode!(json)[\"method\"] == \"ping\""
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "near_miss": {
+            "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+            "byte_span": [
+              325368,
+              325721
+            ],
+            "bytes": "a.push({id:`wire-schema-valid`,name:`WireSchemaValid`,description:`Every JSON-RPC message the implementation sent is valid per the spec JSON schema for the negotiated spec version`,status:o.length===0?`SUCCESS`:`FAILURE`,timestamp:r,specReferences:i,details:{messagesValidated:n,violations:o.map(et)},errorMessage:o.length>0?o.map(tt).join(`\n`):void 0})"
+          },
+          "protects": "The bang encoder hands back the encoded request bare, with the method it was given; `Protocol.encode!/1` has no lib/ call site (lib/mcp/protocol.ex:39 is its definition, and nothing in lib/ calls it), so no OC run reaches it.",
+          "rationale": "Every assert read (each listed in asserts_read). The nearest in-scope check is WireSchemaValid (near_miss): its one axis scores a schema violation in a message our side sent, and this member's subject is the bang variant's return shape; its one field read (:185) is a sanity check on the test, not a claim about wire validity (the view row's reading). The member's method, `ping`, was removed in this revision (changelog.mdx:20), and the unit does not assert that a client sends it: it asserts only that serialisation keeps the method it was given, so it asserts nothing the spec forbids. No client-leg check's predicate is asserted here, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: a request's `method` is the request's own (basic/index.mdx:39), and generic serialisation of it is not a step (A2 §2.2), so the decoded method is the one given; bare-or-tupled is the host value this grain does not count (29717)."
+          }
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a NOTIFICATION carries it too — the spec says all requests, not all responses-bearing ones",
+          "claim": null,
+          "tag": "oc:none/no-oc-fixture-case/CG1-notification-carries-mcp-method",
+          "echo": {
+            "cg": "CG1",
+            "the_search_that_found_none": "RUN AT THIS TIP. The check-emitting code IS general over methods: `checkMcpMethodHeader` computes `ClientMcpMethodHeader_${n.replace(/\\//g,`_`)}` from the body method, so a `notifications/cancelled` POST would emit `ClientMcpMethodHeader_notifications_cancelled`. No such key is in A1's 175 — no case in the scenario drives a notification, which is what `no-oc-fixture-case` names. The near miss is named rather than left for a reader to trip over: `/notification/i` over the whole row of all 175 returns 6, and exactly ONE is a routing-header check — `ClientMcpMethodHeader_notifications_initialized`. That one is OUT OF DENOMINATOR: A5's bucket-0 artefact records it `removed_by_spec` (`reason_code`), because 2026-07-28 removed the initialize handshake under SEP-2575, and it is one of the only 2 of 175 A5 excludes. So the nearest existing check is unavailable as a counterpart BY RULE, not by absence. The sweep is shown to have reached the population: `/response/i` over the same 175 rows returns 17."
+          },
+          "et_test": {
+            "file": "test/mcp/transport/routing_headers_test.exs",
+            "lines": [
+              110,
+              122
+            ],
+            "bytes": "    test \"a NOTIFICATION carries it too — the spec says all requests, not all responses-bearing ones\",\n         %{agent: agent, url: url} do\n      transport = start_transport(url)\n\n      :ok =\n        HTTPClient.send_message(transport, %{\n          \"jsonrpc\" => \"2.0\",\n          \"method\" => \"notifications/cancelled\",\n          \"params\" => %{\"requestId\" => 1}\n        })\n\n      assert headers_of(agent, 0)[\"mcp-method\"] == \"notifications/cancelled\"\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/routing_headers_test.exs:121 — assert headers_of(agent, 0)[\"mcp-method\"] == \"notifications/cancelled\""
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "near_miss": {
+            "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+            "byte_span": [
+              698067,
+              698211
+            ],
+            "bytes": "for(let t of[`initialize`,`notifications/initialized`,`tools/list`,`tools/call`,`resources/list`,`resources/read`,`prompts/list`,`prompts/get`])"
+          },
+          "rationale": "Every assert read (each listed in asserts_read). The nearest in-scope check is ClientMcpMethodHeader_notifications_initialized (near_miss: the method list `getChecks` emits Method rows for). Its subject is the notifications/initialized POST, which our stateless client never sends; `checkMcpMethodHeader` would name a notifications/cancelled POST ClientMcpMethodHeader_notifications_cancelled, which is not among the 175 (the view row). A shared header name is not subject identity (the MES-117 lesson), so this is a near miss, and A3 missed nothing. The counterfactual fires (see `counterfactual`), so by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. Nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "This revision defines no client-to-server notification over Streamable HTTP (streamable-http.mdx:95-100), so an SDK's HTTP transport may refuse to POST notifications/cancelled, and the `:ok =` match at routing_headers_test.exs:114 fails."
+          },
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29775, item 7"
+          }
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a message with no method carries no routing headers",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/CG1-methodless-carries-no-routing-headers",
+          "echo": {
+            "cg": "CG1",
+            "the_search_that_found_none": "RUN AT THIS TIP. All 175 manifest rows were swept for one whose SUBJECT is a message carrying no method (`/\\bno method\\b|methodless|without a method/i` over scenario + id + name + description): 0. The sweep reached the population — `/response/i` over the same rows returns 17, `/header/i` 45. And the reason it is 0 is structural rather than incidental: the harness's handling of a methodless message is the EARLY RETURN `if(!n||this.methodHeaderChecks.has(n))return;`, which this ticket records as a PRECONDITION on the Method rows, not as an axis. `oc-axes-c1.json`'s `preconditions_rule` states that an ET claim can neither agree with nor contradict a precondition, so there is no axis for this claim to land on even though the code path exists and is addressed."
+          },
+          "et_test": {
+            "file": "test/mcp/transport/routing_headers_test.exs",
+            "lines": [
+              125,
+              132
+            ],
+            "bytes": "    test \"a message with no method carries no routing headers\", %{agent: agent, url: url} do\n      transport = start_transport(url)\n      :ok = HTTPClient.send_message(transport, %{\"jsonrpc\" => \"2.0\", \"id\" => 1, \"result\" => %{}})\n\n      headers = headers_of(agent, 0)\n      refute Map.has_key?(headers, \"mcp-method\")\n      refute Map.has_key?(headers, \"mcp-name\")\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/routing_headers_test.exs:130 — refute Map.has_key?(headers, \"mcp-method\")",
+            "test/mcp/transport/routing_headers_test.exs:131 — refute Map.has_key?(headers, \"mcp-name\")"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "wrong_against_spec",
+          "near_miss": {
+            "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+            "byte_span": [
+              699711,
+              699756
+            ],
+            "bytes": "if(!n||this.methodHeaderChecks.has(n))return;"
+          },
+          "spec": {
+            "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/streamable-http",
+            "quote": "The client **MUST NOT** send JSON-RPC _responses_."
+          },
+          "rationale": "Every assert read (each listed in asserts_read). The unit POSTs `{\"jsonrpc\": \"2.0\", \"id\": 1, \"result\": %{}}`, a JSON-RPC response, through the client transport and matches `:ok` (routing_headers_test.exs:127), then asserts what that POST's headers lack (:130-131). streamable-http.mdx:80-81 requires the body of a client POST to be a request or notification and says the client MUST NOT send JSON-RPC responses, so the unit asserts that the client sends a message the specification forbids (N5, 29708). The harness's methodless early return (near_miss) is a precondition, not an axis (the view row), so no check's predicate is asserted and A3 missed nothing. The remedy belongs to remediation, and nothing here edits the test.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "A conforming SDK MUST NOT send a JSON-RPC response (streamable-http.mdx:80-81), so its transport refuses this one, and the `:ok =` match at routing_headers_test.exs:127 fails."
+          }
+        },
+        {
+          "member": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client with no prior tools/list, nothing is mirrored and the client says so",
+          "claim": null,
+          "tag": "oc:none/no-oc-fixture-case/CG7-cache-miss-no-mirroring",
+          "echo": {
+            "cg": "CG7",
+            "the_search_that_found_none": "The scenario's client driver always issues tools/list before tools/call — indeed `http-invalid-tool-headers` emits a FAILING gate check when it does not (`sep-2243-invalid-tool-tools-list-gate`, which A5 leaves in the denominator). So no fixture case reaches a tools/call with no prior listing. All 29 CG7 check names were read for one whose subject is mirroring in the ABSENCE of a schema: none is."
+          },
+          "et_test": {
+            "file": "test/mcp/transport/routing_headers_test.exs",
+            "lines": [
+              372,
+              391
+            ],
+            "bytes": "    test \"with no prior tools/list, nothing is mirrored and the client says so\", %{\n      agent: agent,\n      url: url\n    } do\n      # The C-2 miss policy, observed: the call still goes out, carries its\n      # routing headers, carries NO Mcp-Param-*, and is announced.\n      respond_with(agent, tools_responder([@tool]))\n      {:ok, client} = Client.start_link(transport: {HTTPClient, url: url})\n\n      log =\n        ExUnit.CaptureLog.capture_log(fn ->\n          {:ok, _} =\n            Client.call_tool(client, \"test_custom_headers\", %{\"region\" => \"us-west1\"})\n        end)\n\n      headers = headers_of(agent, 0)\n      assert headers[\"mcp-name\"] == \"test_custom_headers\"\n      refute Map.has_key?(headers, \"mcp-param-region\")\n      assert log =~ \"no cached inputSchema\"\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/routing_headers_test.exs:388 — assert headers[\"mcp-name\"] == \"test_custom_headers\"",
+            "test/mcp/transport/routing_headers_test.exs:389 — refute Map.has_key?(headers, \"mcp-param-region\")",
+            "test/mcp/transport/routing_headers_test.exs:390 — assert log =~ \"no cached inputSchema\""
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "redundant",
+          "oc_counterpart": {
+            "token": "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+            "site": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                700837,
+                701224
+              ],
+              "bytes": "this.checks.push({id:`sep-2243-client-includes-standard-headers`,name:`ClientMcpNameHeader_${r.replace(/\\//g,`_`)}`,description:`Client sends correct Mcp-Name header on ${r} request`,status:o.length===0?`SUCCESS`:`FAILURE`,timestamp:new Date().toISOString(),errorMessage:o.length>0?o.join(`; `):void 0,specReferences:[La],details:{method:r,sourceField:n,expectedValue:i,actualHeader:a}})"
+            },
+            "predicate": {
+              "harness_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+              "byte_span": [
+                700603,
+                700641
+              ],
+              "bytes": "a?a!==i&&o.push(`Mcp-Name header value"
+            },
+            "why_a3_missed": "A3 did not record routing_headers_test.exs:388, an equality of the tools/call's `mcp-name` header with the tool named in the call, as ClientMcpNameHeader_tools_call (both axes, a FULL match, ratified 29735 Q7); the view row saw the claim and left it in claims_without_an_edge for C1b-ii, which then recorded only the sibling's identical claim (the crosswalk edge at routing_headers_test.exs:350)."
+          },
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "The cache-miss warning asserted at routing_headers_test.exs:390 is the SDK's own log text, and no spec text requires it, so an SDK without it fails the unit."
+          },
+          "routed_to": {
+            "to": "A3",
+            "owner": "MES-152",
+            "owner_record": "MES-152 comment 29774, item 3"
+          },
+          "rationale": "Every assert read (each listed in asserts_read). The assert at routing_headers_test.exs:388 is an equality of the call's `mcp-name` header with the tool name, `test_custom_headers`, which entails presence (DIRECT agreement): ClientMcpNameHeader_tools_call's axes mcp_name_header_present and mcp_name_header_matches_source_field (`a?a!==i&&o.push(...)`, oc_counterpart.predicate) both agree, the full match. The refute at :389 is NOT an edge onto ClientCustomHeader_Region: that check's input is the tools/call after the fixture's tools/list, and this member's is a call with no prior listing (the view row), so its subject differs. So the member HAS an OC counterpart that the crosswalk did not record: the MES-119 missed-edge shape, a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterpart-free counterfactual [authored 29733/29734 | ratified 29735, Q5]: a member with a missed edge is not truly a bucket-1 member, so the D1 premise fails; its reading is still recorded honestly, and it fires. Once MES-152 adds the edge, the member is re-adjudicated in its new bucket. Nothing is relabelled or deleted here."
+        },
+        {
+          "member": "MCP.Transport.SSETest/test decode_event/1 decodes event with JSON data",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/sse-decode-json-data",
+          "echo": {
+            "cg": null,
+            "search_id": "S01",
+            "the_search_that_found_none": "a client PARSING one Server-Sent-Events event's text into its fields — `event:` / `id:` / `data:` / `retry:`, `data:` lines joined with newlines, `:`-leading comment lines ignored, unrecognised field names ignored, and the space after the colon optional"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/sse_test.exs",
+            "lines": [
+              104,
+              108
+            ],
+            "bytes": "    test \"decodes event with JSON data\" do\n      json = ~s({\"jsonrpc\":\"2.0\",\"id\":1})\n      assert {:ok, event} = SSE.decode_event(\"data: #{json}\")\n      assert event.data == json\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/sse_test.exs:106 — assert {:ok, event} = SSE.decode_event(\"data: #{json}\")",
+            "test/mcp/transport/sse_test.exs:107 — assert event.data == json"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "A `data:` line carrying a JSON-RPC message parses to that JSON text unchanged; no in-scope check scores our SSE parser: of the seven client-leg scenarios only json-schema-ref-no-deref answers our client's POST in SSE (the TS SDK server transport, index.js@721008), and its NoNetworkRefDereference scores only whether tools/list arrived and the canary was fetched (index.js@721700); the http-* servers write SSE only to a GET (index.js@696242), and the others answer in JSON (ND04's reach, MES-138).",
+          "rationale": "Every assert read (each listed in asserts_read). The asserts read the parsed event(s). No in-scope check scores our parser's output (the reach is measured in protects), so no check's predicate is asserted, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: the client MUST accept an SSE response (streamable-http.mdx:88-91) and reads it per the SSE specification the transport cites (:35, :151-153), under which a `data:` line's value, one leading space removed, is the event's data, so the JSON text is the data."
+          }
+        },
+        {
+          "member": "MCP.Transport.SSETest/test decode_event/1 decodes event with all fields",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/sse-decode-all-fields",
+          "echo": {
+            "cg": null,
+            "search_id": "S01",
+            "the_search_that_found_none": "a client PARSING one Server-Sent-Events event's text into its fields — `event:` / `id:` / `data:` / `retry:`, `data:` lines joined with newlines, `:`-leading comment lines ignored, unrecognised field names ignored, and the space after the colon optional"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/sse_test.exs",
+            "lines": [
+              85,
+              93
+            ],
+            "bytes": "    test \"decodes event with all fields\" do\n      text = \"event: message\\nid: 42\\ndata: hello\\nretry: 3000\"\n      assert {:ok, event} = SSE.decode_event(text)\n\n      assert event.event == \"message\"\n      assert event.id == \"42\"\n      assert event.data == \"hello\"\n      assert event.retry == 3000\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/sse_test.exs:87 — assert {:ok, event} = SSE.decode_event(text)",
+            "test/mcp/transport/sse_test.exs:89 — assert event.event == \"message\"",
+            "test/mcp/transport/sse_test.exs:90 — assert event.id == \"42\"",
+            "test/mcp/transport/sse_test.exs:91 — assert event.data == \"hello\"",
+            "test/mcp/transport/sse_test.exs:92 — assert event.retry == 3000"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "not_a_conformance_claim",
+          "rationale": "Every assert read (each listed in asserts_read). No in-scope check scores our parser's output (ND04's reach, MES-138), so no check's predicate is asserted, and A3 missed nothing. The counterfactual fires (see `counterfactual`), so by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. Nothing is relabelled or deleted here.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": true,
+            "reading": "Resumable SSE streams via Last-Event-ID are not supported (streamable-http.mdx:157), so ids have no role and an SDK's parser may discard the `id:` field, and `event.id == \"42\"` at sse_test.exs:90 fails."
+          },
+          "routed_to": {
+            "to": "A2",
+            "owner": "MES-153",
+            "owner_record": "MES-153 comment 29775, item 8"
+          }
+        },
+        {
+          "member": "MCP.Transport.SSETest/test decode_event/1 decodes event with only data",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/sse-decode-data-only",
+          "echo": {
+            "cg": null,
+            "search_id": "S01",
+            "the_search_that_found_none": "a client PARSING one Server-Sent-Events event's text into its fields — `event:` / `id:` / `data:` / `retry:`, `data:` lines joined with newlines, `:`-leading comment lines ignored, unrecognised field names ignored, and the space after the colon optional"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/sse_test.exs",
+            "lines": [
+              96,
+              101
+            ],
+            "bytes": "    test \"decodes event with only data\" do\n      assert {:ok, event} = SSE.decode_event(\"data: hello world\")\n      assert event.data == \"hello world\"\n      refute Map.has_key?(event, :event)\n      refute Map.has_key?(event, :id)\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/sse_test.exs:97 — assert {:ok, event} = SSE.decode_event(\"data: hello world\")",
+            "test/mcp/transport/sse_test.exs:98 — assert event.data == \"hello world\"",
+            "test/mcp/transport/sse_test.exs:99 — refute Map.has_key?(event, :event)",
+            "test/mcp/transport/sse_test.exs:100 — refute Map.has_key?(event, :id)"
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "An event with only a `data:` line parses to its data, with no event type or id of its own; no in-scope check scores our SSE parser: of the seven client-leg scenarios only json-schema-ref-no-deref answers our client's POST in SSE (the TS SDK server transport, index.js@721008), and its NoNetworkRefDereference scores only whether tools/list arrived and the canary was fetched (index.js@721700); the http-* servers write SSE only to a GET (index.js@696242), and the others answer in JSON (ND04's reach, MES-138).",
+          "rationale": "Every assert read (each listed in asserts_read). The asserts read the parsed event(s). No in-scope check scores our parser's output (the reach is measured in protects), so no check's predicate is asserted, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: the client MUST accept an SSE response (streamable-http.mdx:88-91) and reads it per the SSE specification the transport cites (:35, :151-153), under which an event with no `event:` or `id:` field has the default type and no id; the absent `:event` and `:id` keys are this SDK's host value for that meaning, which this grain does not count (29717)."
+          }
+        },
+        {
+          "member": "MCP.Transport.SSETest/test decode_event/1 handles fields without space after colon",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/sse-decode-optional-space",
+          "echo": {
+            "cg": null,
+            "search_id": "S01",
+            "the_search_that_found_none": "a client PARSING one Server-Sent-Events event's text into its fields — `event:` / `id:` / `data:` / `retry:`, `data:` lines joined with newlines, `:`-leading comment lines ignored, unrecognised field names ignored, and the space after the colon optional"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/sse_test.exs",
+            "lines": [
+              136,
+              140
+            ],
+            "bytes": "    test \"handles fields without space after colon\" do\n      text = \"data:hello\"\n      assert {:ok, event} = SSE.decode_event(text)\n      assert event.data == \"hello\"\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/sse_test.exs:138 — assert {:ok, event} = SSE.decode_event(text)",
+            "test/mcp/transport/sse_test.exs:139 — assert event.data == \"hello\""
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "A field with no space after the colon (`data:hello`) parses to the same value as one with a space; no in-scope check scores our SSE parser: of the seven client-leg scenarios only json-schema-ref-no-deref answers our client's POST in SSE (the TS SDK server transport, index.js@721008), and its NoNetworkRefDereference scores only whether tools/list arrived and the canary was fetched (index.js@721700); the http-* servers write SSE only to a GET (index.js@696242), and the others answer in JSON (ND04's reach, MES-138).",
+          "rationale": "Every assert read (each listed in asserts_read). The asserts read the parsed event(s). No in-scope check scores our parser's output (the reach is measured in protects), so no check's predicate is asserted, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: the client MUST accept an SSE response (streamable-http.mdx:88-91) and reads it per the SSE specification the transport cites (:35, :151-153), under which only a single leading space after the colon is removed, so `data:hello` carries `hello`."
+          }
+        },
+        {
+          "member": "MCP.Transport.SSETest/test decode_event/1 ignores comment lines",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/sse-decode-ignores-comments",
+          "echo": {
+            "cg": null,
+            "search_id": "S01",
+            "the_search_that_found_none": "a client PARSING one Server-Sent-Events event's text into its fields — `event:` / `id:` / `data:` / `retry:`, `data:` lines joined with newlines, `:`-leading comment lines ignored, unrecognised field names ignored, and the space after the colon optional"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/sse_test.exs",
+            "lines": [
+              118,
+              122
+            ],
+            "bytes": "    test \"ignores comment lines\" do\n      text = \": this is a comment\\ndata: hello\"\n      assert {:ok, event} = SSE.decode_event(text)\n      assert event.data == \"hello\"\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/sse_test.exs:120 — assert {:ok, event} = SSE.decode_event(text)",
+            "test/mcp/transport/sse_test.exs:121 — assert event.data == \"hello\""
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "A `:`-leading comment line before the data is ignored and the event parses to its data; no in-scope check scores our SSE parser: of the seven client-leg scenarios only json-schema-ref-no-deref answers our client's POST in SSE (the TS SDK server transport, index.js@721008), and its NoNetworkRefDereference scores only whether tools/list arrived and the canary was fetched (index.js@721700); the http-* servers write SSE only to a GET (index.js@696242), and the others answer in JSON (ND04's reach, MES-138).",
+          "rationale": "Every assert read (each listed in asserts_read). The asserts read the parsed event(s). No in-scope check scores our parser's output (the reach is measured in protects), so no check's predicate is asserted, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: clients must ignore an SSE comment line and must not treat it as malformed (streamable-http.mdx:151-153), so the event's data is `hello`."
+          }
+        },
+        {
+          "member": "MCP.Transport.SSETest/test decode_event/1 ignores unknown fields",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/sse-decode-ignores-unknown-fields",
+          "echo": {
+            "cg": null,
+            "search_id": "S01",
+            "the_search_that_found_none": "a client PARSING one Server-Sent-Events event's text into its fields — `event:` / `id:` / `data:` / `retry:`, `data:` lines joined with newlines, `:`-leading comment lines ignored, unrecognised field names ignored, and the space after the colon optional"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/sse_test.exs",
+            "lines": [
+              125,
+              129
+            ],
+            "bytes": "    test \"ignores unknown fields\" do\n      text = \"custom: value\\ndata: hello\"\n      assert {:ok, event} = SSE.decode_event(text)\n      assert event.data == \"hello\"\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/sse_test.exs:127 — assert {:ok, event} = SSE.decode_event(text)",
+            "test/mcp/transport/sse_test.exs:128 — assert event.data == \"hello\""
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "An unknown field (`custom: value`) is ignored and the event parses to its data; no in-scope check scores our SSE parser: of the seven client-leg scenarios only json-schema-ref-no-deref answers our client's POST in SSE (the TS SDK server transport, index.js@721008), and its NoNetworkRefDereference scores only whether tools/list arrived and the canary was fetched (index.js@721700); the http-* servers write SSE only to a GET (index.js@696242), and the others answer in JSON (ND04's reach, MES-138).",
+          "rationale": "Every assert read (each listed in asserts_read). The asserts read the parsed event(s). No in-scope check scores our parser's output (the reach is measured in protects), so no check's predicate is asserted, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: the client MUST accept an SSE response (streamable-http.mdx:88-91) and reads it per the SSE specification the transport cites (:35, :151-153), under which a field name other than event, data, id or retry is ignored, so the event's data is `hello`."
+          }
+        },
+        {
+          "member": "MCP.Transport.SSETest/test decode_event/1 joins multiple data lines with newlines",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/sse-decode-joins-data-lines",
+          "echo": {
+            "cg": null,
+            "search_id": "S01",
+            "the_search_that_found_none": "a client PARSING one Server-Sent-Events event's text into its fields — `event:` / `id:` / `data:` / `retry:`, `data:` lines joined with newlines, `:`-leading comment lines ignored, unrecognised field names ignored, and the space after the colon optional"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/sse_test.exs",
+            "lines": [
+              111,
+              115
+            ],
+            "bytes": "    test \"joins multiple data lines with newlines\" do\n      text = \"data: line1\\ndata: line2\\ndata: line3\"\n      assert {:ok, event} = SSE.decode_event(text)\n      assert event.data == \"line1\\nline2\\nline3\"\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/sse_test.exs:113 — assert {:ok, event} = SSE.decode_event(text)",
+            "test/mcp/transport/sse_test.exs:114 — assert event.data == \"line1\\nline2\\nline3\""
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "Three `data:` lines parse to one data value joined by newlines; no in-scope check scores our SSE parser: of the seven client-leg scenarios only json-schema-ref-no-deref answers our client's POST in SSE (the TS SDK server transport, index.js@721008), and its NoNetworkRefDereference scores only whether tools/list arrived and the canary was fetched (index.js@721700); the http-* servers write SSE only to a GET (index.js@696242), and the others answer in JSON (ND04's reach, MES-138).",
+          "rationale": "Every assert read (each listed in asserts_read). The asserts read the parsed event(s). No in-scope check scores our parser's output (the reach is measured in protects), so no check's predicate is asserted, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: the client MUST accept an SSE response (streamable-http.mdx:88-91) and reads it per the SSE specification the transport cites (:35, :151-153), under which each `data:` line's value is appended to the data buffer followed by a newline and the final newline removed, so the data is `line1\\nline2\\nline3`."
+          }
+        },
+        {
+          "member": "MCP.Transport.SSETest/test stream parser buffers incomplete events",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/sse-stream-buffers-partial",
+          "echo": {
+            "cg": null,
+            "search_id": "S02",
+            "the_search_that_found_none": "a client's INCREMENTAL SSE stream parser — event boundaries found on a blank line across arbitrary chunk splits, a partial event held in a buffer until the bytes completing it arrive, and several events yielded from one chunk"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/sse_test.exs",
+            "lines": [
+              156,
+              167
+            ],
+            "bytes": "    test \"buffers incomplete events\" do\n      parser = SSE.new_parser()\n\n      # First chunk — incomplete event\n      {events1, parser} = SSE.feed(parser, \"event: message\\ndata: hel\")\n      assert events1 == []\n\n      # Second chunk — completes the event\n      {events2, _parser} = SSE.feed(parser, \"lo\\n\\n\")\n      assert length(events2) == 1\n      assert Enum.at(events2, 0).data == \"hello\"\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/sse_test.exs:161 — assert events1 == []",
+            "test/mcp/transport/sse_test.exs:165 — assert length(events2) == 1",
+            "test/mcp/transport/sse_test.exs:166 — assert Enum.at(events2, 0).data == \"hello\""
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "An event split across two chunks is buffered, not emitted early, and parses whole once the blank line arrives; no in-scope check scores our SSE parser: of the seven client-leg scenarios only json-schema-ref-no-deref answers our client's POST in SSE (the TS SDK server transport, index.js@721008), and its NoNetworkRefDereference scores only whether tools/list arrived and the canary was fetched (index.js@721700); the http-* servers write SSE only to a GET (index.js@696242), and the others answer in JSON (ND04's reach, MES-138).",
+          "rationale": "Every assert read (each listed in asserts_read). The asserts read the parsed event(s). No in-scope check scores our parser's output (the reach is measured in protects), so no check's predicate is asserted, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: the client MUST accept an SSE response (streamable-http.mdx:88-91) and reads it per the SSE specification the transport cites (:35, :151-153), under which an event is dispatched only at a blank line, so the first chunk yields nothing and the second yields one event whose data is `hello`."
+          }
+        },
+        {
+          "member": "MCP.Transport.SSETest/test stream parser handles multiple chunks",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/sse-stream-across-chunk-boundaries",
+          "echo": {
+            "cg": null,
+            "search_id": "S02",
+            "the_search_that_found_none": "a client's INCREMENTAL SSE stream parser — event boundaries found on a blank line across arbitrary chunk splits, a partial event held in a buffer until the bytes completing it arrive, and several events yielded from one chunk"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/sse_test.exs",
+            "lines": [
+              170,
+              184
+            ],
+            "bytes": "    test \"handles multiple chunks\" do\n      parser = SSE.new_parser()\n\n      {events1, parser} = SSE.feed(parser, \"data: one\\n\\ndata: tw\")\n      assert length(events1) == 1\n      assert Enum.at(events1, 0).data == \"one\"\n\n      {events2, parser} = SSE.feed(parser, \"o\\n\\ndata: thr\")\n      assert length(events2) == 1\n      assert Enum.at(events2, 0).data == \"two\"\n\n      {events3, _parser} = SSE.feed(parser, \"ee\\n\\n\")\n      assert length(events3) == 1\n      assert Enum.at(events3, 0).data == \"three\"\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/sse_test.exs:174 — assert length(events1) == 1",
+            "test/mcp/transport/sse_test.exs:175 — assert Enum.at(events1, 0).data == \"one\"",
+            "test/mcp/transport/sse_test.exs:178 — assert length(events2) == 1",
+            "test/mcp/transport/sse_test.exs:179 — assert Enum.at(events2, 0).data == \"two\"",
+            "test/mcp/transport/sse_test.exs:182 — assert length(events3) == 1",
+            "test/mcp/transport/sse_test.exs:183 — assert Enum.at(events3, 0).data == \"three\""
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "Three events whose bytes straddle chunk boundaries each parse whole, one per chunk that completes it; no in-scope check scores our SSE parser: of the seven client-leg scenarios only json-schema-ref-no-deref answers our client's POST in SSE (the TS SDK server transport, index.js@721008), and its NoNetworkRefDereference scores only whether tools/list arrived and the canary was fetched (index.js@721700); the http-* servers write SSE only to a GET (index.js@696242), and the others answer in JSON (ND04's reach, MES-138).",
+          "rationale": "Every assert read (each listed in asserts_read). The asserts read the parsed event(s). No in-scope check scores our parser's output (the reach is measured in protects), so no check's predicate is asserted, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: the client MUST accept an SSE response (streamable-http.mdx:88-91) and reads it per the SSE specification the transport cites (:35, :151-153), under which an event is dispatched only at its blank line, however the bytes are chunked, so the chunks yield `one`, `two` and `three` in turn."
+          }
+        },
+        {
+          "member": "MCP.Transport.SSETest/test stream parser parses complete events",
+          "claim": null,
+          "tag": "oc:none/no-oc-scenario/sse-stream-parses-complete-events",
+          "echo": {
+            "cg": null,
+            "search_id": "S02",
+            "the_search_that_found_none": "a client's INCREMENTAL SSE stream parser — event boundaries found on a blank line across arbitrary chunk splits, a partial event held in a buffer until the bytes completing it arrive, and several events yielded from one chunk"
+          },
+          "et_test": {
+            "file": "test/mcp/transport/sse_test.exs",
+            "lines": [
+              145,
+              153
+            ],
+            "bytes": "    test \"parses complete events\" do\n      parser = SSE.new_parser()\n      data = \"event: message\\ndata: hello\\n\\nevent: message\\ndata: world\\n\\n\"\n\n      {events, _parser} = SSE.feed(parser, data)\n      assert length(events) == 2\n      assert Enum.at(events, 0).data == \"hello\"\n      assert Enum.at(events, 1).data == \"world\"\n    end"
+          },
+          "asserts_read": [
+            "test/mcp/transport/sse_test.exs:150 — assert length(events) == 2",
+            "test/mcp/transport/sse_test.exs:151 — assert Enum.at(events, 0).data == \"hello\"",
+            "test/mcp/transport/sse_test.exs:152 — assert Enum.at(events, 1).data == \"world\""
+          ],
+          "check": {
+            "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
+            "searched": "every check of docs/conformance/in-scope-2026-07-28.json, read by predicate; the view row's the_search_that_found_none (echoed) is the input, not the verdict"
+          },
+          "root_cause": null,
+          "if_conformance_fixed": null,
+          "disposition": "genuine_extra_coverage",
+          "protects": "Two complete events in one chunk parse as two events, in order; no in-scope check scores our SSE parser: of the seven client-leg scenarios only json-schema-ref-no-deref answers our client's POST in SSE (the TS SDK server transport, index.js@721008), and its NoNetworkRefDereference scores only whether tools/list arrived and the canary was fetched (index.js@721700); the http-* servers write SSE only to a GET (index.js@696242), and the others answer in JSON (ND04's reach, MES-138).",
+          "rationale": "Every assert read (each listed in asserts_read). The asserts read the parsed event(s). No in-scope check scores our parser's output (the reach is measured in protects), so no check's predicate is asserted, and A3 missed nothing.",
+          "counterfactual": {
+            "conforming_sdk_can_fail": false,
+            "reading": "None can: the client MUST accept an SSE response (streamable-http.mdx:88-91) and reads it per the SSE specification the transport cites (:35, :151-153), under which each blank line dispatches the event before it, so one chunk holding two events yields `hello` then `world`."
+          }
+        }
+      ]
+    }
+  ],
+  "counterfactual": {
+    "question": "could a conforming SDK fail this unit?",
+    "unit": {
+      "docs/conformance/buckets/bucket-1-2026-07-28.json": "the member: that view's unit is the member, so the question is asked of the member's whole test"
+    },
+    "unit_provenance": "[authored 29721 B-A | ratified 29723]",
+    "provenance": "[authored 29707 N5 | ratified 29708]",
+    "grain_provenance": "[authored 29713 | ratified 29717]",
+    "grain_ruling": "PM ruling 29717: the grain is WIRE MEANING. Two SDKs that give one wire state the same meaning in different host values are the same SDK here.",
+    "grain": "Asked of the wire meaning the asserted value denotes, read as A2 gate 2 reads it (etcc-membership.md §2.2, §2.4).",
+    "incidental_traffic": {
+      "provenance": "[authored 29733/29734 | ratified 29735, Q8]",
+      "rule": "A reading fires when a conforming SDK's ASSERTED value could differ in form or meaning. It does not fire on incidental traffic: an extra or reordered request that trips the mock's message sequencing (a serialising SDK, or a re-fetch of a ttlMs: 0 result) is not an asserted value. Asked otherwise, every client test fires, the 29717 degeneracy one level down."
+    },
+    "precedence": {
+      "provenance": "[authored 29733/29734 | ratified 29735, Q5]",
+      "rule": "redundant takes precedence: a member with a missed edge is routed to A3 and its reading is recorded honestly, firing or not."
+    }
+  }
+}

@@ -5024,6 +5024,246 @@
       "path": "sections[#0].slice.statement",
       "phrase": "35 rows",
       "quantity": "d1_client_i_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "method",
+      "phrase": "56 client-leg checks",
+      "quantity": "manifest_client"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta | oc:none/no-oc-scenario/CG2-outbound-meta].echo.the_search_that_found_none",
+      "phrase": "all 175 manifest checks",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta | oc:none/no-oc-scenario/CG2-outbound-meta].echo.the_search_that_found_none",
+      "phrase": "175 rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact | oc:none/no-oc-scenario/CG2-inbound-parse].echo.the_search_that_found_none",
+      "phrase": "all 175 manifest checks",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact | oc:none/no-oc-scenario/CG2-inbound-parse].echo.the_search_that_found_none",
+      "phrase": "175 rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart | oc:none/no-oc-scenario/CG2-absent-yields-nil].echo.the_search_that_found_none",
+      "phrase": "all 175 manifest checks",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T7 — ServerCapabilities decode keeps the two apart | oc:none/no-oc-scenario/CG2-absent-yields-nil].echo.the_search_that_found_none",
+      "phrase": "175 rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T8 — ClientCapabilities encode keeps the two apart | oc:none/no-oc-scenario/CG2-encode-keeps-the-two-apart].echo.the_search_that_found_none",
+      "phrase": "all 175 manifest checks",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Protocol.CapabilitiesTest/test extensions vs experimental — the 2x2 (T6-T9) T8 — ClientCapabilities encode keeps the two apart | oc:none/no-oc-scenario/CG2-encode-keeps-the-two-apart].echo.the_search_that_found_none",
+      "phrase": "175 rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (4) | oc:none/no-oc-fixture-case/CG7-sentinel-literal-ambiguity].echo.the_search_that_found_none",
+      "phrase": "29 CG7 check",
+      "quantity": "cg7_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a non-map arguments value yields no headers rather than raising | oc:none/no-oc-fixture-case/CG7-non-map-arguments].echo.the_search_that_found_none",
+      "phrase": "All 29 CG7 check",
+      "quantity": "cg7_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule the exact property path is read — a same-named key elsewhere is not | oc:none/no-oc-fixture-case/CG7-nested-path-exact].echo.the_search_that_found_none",
+      "phrase": "29 check",
+      "quantity": "cg7_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector no header carries a raw CR or LF — injection is closed by construction | oc:none/no-oc-fixture-case/CG7-no-raw-crlf-across-all-headers].echo.the_search_that_found_none",
+      "phrase": "All 29 CG7 checks",
+      "quantity": "cg7_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector no header carries a raw CR or LF — injection is closed by construction | oc:none/no-oc-fixture-case/CG7-no-raw-crlf-across-all-headers].echo.the_search_that_found_none",
+      "phrase": "two NoMirror checks",
+      "quantity": "cg7_nomirror_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a NOTIFICATION carries it too — the spec says all requests, not all responses-bearing ones | oc:none/no-oc-fixture-case/CG1-notification-carries-mcp-method].echo.the_search_that_found_none",
+      "phrase": "175 rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a message with no method carries no routing headers | oc:none/no-oc-scenario/CG1-methodless-carries-no-routing-headers].echo.the_search_that_found_none",
+      "phrase": "All 175 manifest rows",
+      "quantity": "manifest_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client with no prior tools/list, nothing is mirrored and the client says so | oc:none/no-oc-fixture-case/CG7-cache-miss-no-mirroring].echo.the_search_that_found_none",
+      "phrase": "All 29 CG7 check",
+      "quantity": "cg7_checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Transport.SSETest/test decode_event/1 decodes event with JSON data | oc:none/no-oc-scenario/sse-decode-json-data].protects",
+      "phrase": "seven client-leg scenarios",
+      "quantity": "locator_client_scenarios"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Transport.SSETest/test decode_event/1 decodes event with only data | oc:none/no-oc-scenario/sse-decode-data-only].protects",
+      "phrase": "seven client-leg scenarios",
+      "quantity": "locator_client_scenarios"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Transport.SSETest/test decode_event/1 handles fields without space after colon | oc:none/no-oc-scenario/sse-decode-optional-space].protects",
+      "phrase": "seven client-leg scenarios",
+      "quantity": "locator_client_scenarios"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Transport.SSETest/test decode_event/1 ignores comment lines | oc:none/no-oc-scenario/sse-decode-ignores-comments].protects",
+      "phrase": "seven client-leg scenarios",
+      "quantity": "locator_client_scenarios"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Transport.SSETest/test decode_event/1 ignores unknown fields | oc:none/no-oc-scenario/sse-decode-ignores-unknown-fields].protects",
+      "phrase": "seven client-leg scenarios",
+      "quantity": "locator_client_scenarios"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Transport.SSETest/test decode_event/1 joins multiple data lines with newlines | oc:none/no-oc-scenario/sse-decode-joins-data-lines].protects",
+      "phrase": "seven client-leg scenarios",
+      "quantity": "locator_client_scenarios"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Transport.SSETest/test stream parser buffers incomplete events | oc:none/no-oc-scenario/sse-stream-buffers-partial].protects",
+      "phrase": "seven client-leg scenarios",
+      "quantity": "locator_client_scenarios"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Transport.SSETest/test stream parser handles multiple chunks | oc:none/no-oc-scenario/sse-stream-across-chunk-boundaries].protects",
+      "phrase": "seven client-leg scenarios",
+      "quantity": "locator_client_scenarios"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].rows[MCP.Transport.SSETest/test stream parser parses complete events | oc:none/no-oc-scenario/sse-stream-parses-complete-events].protects",
+      "phrase": "seven client-leg scenarios",
+      "quantity": "locator_client_scenarios"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].slice.statement",
+      "phrase": "36 rows",
+      "quantity": "d1_client_ii_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].slice.statement",
+      "phrase": "nine modules",
+      "quantity": "d1_client_ii_modules"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].slice.statement",
+      "phrase": "71 client-leg rows",
+      "quantity": "bucket_1_client_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "what_this_is",
+      "phrase": "nine modules",
+      "quantity": "d1_client_ii_modules"
     }
   ],
   "guard": "G31 — MCP.Conformance.InputFigures (MES-120)",
@@ -15081,6 +15321,121 @@
         "count": {
           "at": "rows[]",
           "in": "docs/conformance/buckets/bucket-0-2026-07-28.json"
+        }
+      }
+    },
+    "bucket_1_client_rows": {
+      "means": "bucket-1 view rows whose member is client-leg (MES-139's and MES-140's slices together)",
+      "query": {
+        "count": {
+          "at": "rows[]",
+          "in": "docs/conformance/buckets/bucket-1-2026-07-28.json",
+          "where": [
+            {
+              "field": "member.register_key",
+              "in_set": {
+                "count": {
+                  "at": "rows[]",
+                  "distinct": "key",
+                  "in": "docs/conformance/etcc-attribution.json",
+                  "where": [
+                    {
+                      "eq": "client",
+                      "field": "leg"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "d1_client_ii_rows": {
+      "means": "bucket-1 view rows whose member is client-leg and NOT in MCP.ClientTest or MCP.ClientToolSchemasTest (MES-140's slice)",
+      "query": {
+        "count": {
+          "at": "rows[]",
+          "in": "docs/conformance/buckets/bucket-1-2026-07-28.json",
+          "where": [
+            {
+              "field": "member.register_key",
+              "in_set": {
+                "count": {
+                  "at": "rows[]",
+                  "distinct": "key",
+                  "in": "docs/conformance/etcc-attribution.json",
+                  "where": [
+                    {
+                      "eq": "client",
+                      "field": "leg"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "not": {
+                "field": "member.module",
+                "in": [
+                  "MCP.ClientTest",
+                  "MCP.ClientToolSchemasTest"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "d1_client_ii_modules": {
+      "means": "distinct member modules of MES-140's slice",
+      "query": {
+        "count": {
+          "at": "rows[]",
+          "distinct": "member.module",
+          "in": "docs/conformance/buckets/bucket-1-2026-07-28.json",
+          "where": [
+            {
+              "field": "member.register_key",
+              "in_set": {
+                "count": {
+                  "at": "rows[]",
+                  "distinct": "key",
+                  "in": "docs/conformance/etcc-attribution.json",
+                  "where": [
+                    {
+                      "eq": "client",
+                      "field": "leg"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "not": {
+                "field": "member.module",
+                "in": [
+                  "MCP.ClientTest",
+                  "MCP.ClientToolSchemasTest"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "cg7_nomirror_checks": {
+      "means": "CG7's two NoMirror checks (ClientCustomHeaderNoMirror*)",
+      "query": {
+        "count": {
+          "at": "rows[]",
+          "in": "docs/conformance/oc-emitting-sites-2026-07-28.json",
+          "where": [
+            {
+              "field": "name",
+              "starts_with": "ClientCustomHeaderNoMirror"
+            }
+          ]
         }
       }
     }

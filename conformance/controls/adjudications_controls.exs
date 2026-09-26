@@ -1144,8 +1144,22 @@ defmodule AdjudicationsControls do
   # An OPEN section, owned by the view's pending ticket, over the first `n` rows
   # of a real view, each row complete and tied: the member's own test line as
   # et_test, and (for an OC tag) the locator's first site as check.
+  # The first n view rows that NO committed record adjudicates yet, so the plant
+  # is a new binding and not a duplicate: bucket-1's first row was free until
+  # MES-140 adjudicated it. When MES-143 closes bucket-1 none is free, and this
+  # control needs another view.
   defp open_over(base, view, owner, n) do
     {:ok, v} = view |> File.read!() |> Jason.decode()
+
+    taken =
+      for {_, {:ok, doc}} <- base.records,
+          s <- doc["sections"],
+          s["view"] == view,
+          r <- s["rows"],
+          into: MapSet.new(),
+          do: A.key(r)
+
+    free = Enum.reject(v["rows"], &(A.key(&1) in taken))
 
     record =
       {:ok,
@@ -1158,7 +1172,7 @@ defmodule AdjudicationsControls do
              "view" => view,
              "closure" => "open",
              "owner" => owner,
-             "rows" => tied_rows(Enum.take(v["rows"], n), view)
+             "rows" => tied_rows(Enum.take(free, n), view)
            }
          ]
        }}
