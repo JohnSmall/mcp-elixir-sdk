@@ -1239,6 +1239,15 @@ defmodule MCP.Conformance.Adjudications do
   must be the member's test (qualified by its `describe` when nested), in a
   file that defines the member's module.
 
+  A GENERATED test (MES-141 Q-C, [authored 29813 | ratified 29816]) sits
+  under `for {label, _} <- [LITERAL list] do` and its name interpolates the
+  label: it is owned under each name the literal list expands to (qualified by
+  the `describe` enclosing the `for`), and the window rules above are
+  unchanged. Refused by name: `:generator_not_literal` (the list, or an
+  element's label, is not a literal), `:name_does_not_interpolate_label`,
+  `:name_interpolates_other_than_label`, `:generator_pattern_not_label_pair`,
+  `:generator_not_found`; a label absent from the list is `{:names, expansion}`.
+
   A DOCTEST member (`Mod/doctest Target.fun/arity (n)`, MES-138 S2a,
   [authored 29695 | ratified 29702]) has no
   `test "…"` line: its body is the `@doc` of `Target`, in `lib/`. Its window
@@ -1289,15 +1298,118 @@ defmodule MCP.Conformance.Adjudications do
          true <- Enum.all?(tests, fn {j, _} -> j <= i or j > to end) || :window_crosses_a_test,
          last when is_integer(last) <- test_end(lines, i, indent) || :test_end_not_found,
          true <- to <= last || {:window_outside_test, last},
-         describe = describe_above(lines, i, indent),
-         expected = Enum.join(Enum.reject(["test", describe, unescape(name)], &is_nil/1), " "),
-         true <- expected == member_test || {:names, expected},
+         {:ok, expected} <- test_names(lines, i, indent, name),
+         true <- member_test in expected || {:names, names_reported(expected)},
          true <- String.contains?(src, "defmodule #{module} do") || :module do
       :ok
     else
       other -> {:error, other}
     end
   end
+
+  # A literal test name names one test. A name that interpolates (`#{`) names
+  # one test per element of the `for` generator enclosing it, admitted only in
+  # the shape MES-141 Q-C ruled ([authored 29813 | ratified 29816]): the
+  # nearest shallower line is `for {label, _} <- [LITERAL list] do` at two
+  # spaces less indent, every element's first slot is a string literal, and
+  # the name interpolates the label and nothing else. Each generated name is
+  # resolved by expanding the literal list; anything else is refused by name.
+  defp test_names(lines, i, indent, name) do
+    if String.contains?(name, "\#{") or under_a_for?(lines, i, indent) do
+      generated_names(lines, i, indent, name)
+    else
+      describe = describe_above(lines, i, indent)
+      {:ok, [Enum.join(Enum.reject(["test", describe, unescape(name)], &is_nil/1), " ")]}
+    end
+  end
+
+  defp generated_names(lines, i, indent, name) do
+    for_indent = String.slice(indent, 2..-1//1)
+
+    with true <- byte_size(indent) >= 4 || :generator_not_found,
+         {_, f} <- enclosing_line(lines, i, indent) || :generator_not_found,
+         {for_line, ^f} = Enum.at(lines, f - 1),
+         true <- String.starts_with?(for_line, for_indent <> "for ") || :generator_not_found,
+         e when is_integer(e) <- test_end(lines, f, for_indent) || :generator_not_found,
+         block = lines |> Enum.slice((f - 1)..(e - 1)) |> Enum.map_join("\n", &elem(&1, 0)),
+         {:ok, {:for, _, [{:<-, _, [pattern, list]}, [do: _]]}} <-
+           Code.string_to_quoted(block),
+         {:ok, var} <- label_var(pattern),
+         {:ok, labels} <- literal_labels(list),
+         {:ok, template} <- name_template(name, var) do
+      describe = if for_indent == "  ", do: nil, else: describe_above(lines, f, for_indent)
+
+      {:ok,
+       for l <- labels do
+         Enum.join(Enum.reject(["test", describe, template.(l)], &is_nil/1), " ")
+       end}
+    else
+      {:ok, _other} -> :generator_not_a_for
+      {:error, {_, _, _}} -> :generator_not_found
+      other -> other
+    end
+  end
+
+  defp under_a_for?(lines, i, indent) do
+    case enclosing_line(lines, i, indent) do
+      {l, _} -> String.starts_with?(String.trim_leading(l), "for ")
+      nil -> false
+    end
+  end
+
+  # The nearest non-blank line above `i` indented less than the test.
+  defp enclosing_line(lines, i, indent) do
+    lines
+    |> Enum.take(i - 1)
+    |> Enum.reverse()
+    |> Enum.find(fn {l, _} ->
+      String.trim(l) != "" and not String.starts_with?(l, indent)
+    end)
+  end
+
+  defp label_var({{v, _, ctx}, _}) when is_atom(v) and is_atom(ctx), do: {:ok, v}
+  defp label_var(_pattern), do: :generator_pattern_not_label_pair
+
+  defp literal_labels(list) when is_list(list) do
+    labels = for {l, _} <- list, is_binary(l), do: l
+
+    if labels != [] and length(labels) == length(list),
+      do: {:ok, labels},
+      else: :generator_not_literal
+  end
+
+  defp literal_labels(_list), do: :generator_not_literal
+
+  # `test "#{label} rest"` quoted is a `<<>>` of literal parts and one
+  # interpolation of `label`; any other interpolation is refused.
+  defp name_template(name, var) do
+    case Code.string_to_quoted(~s(") <> name <> ~s(")) do
+      {:ok, {:<<>>, _, parts}} ->
+        mapped =
+          Enum.map(parts, fn
+            p when is_binary(p) ->
+              p
+
+            {:"::", _, [{{:., _, [Kernel, :to_string]}, _, [{^var, _, c}]}, _]} when is_atom(c) ->
+              :label
+
+            _ ->
+              :other
+          end)
+
+        cond do
+          :other in mapped -> :name_interpolates_other_than_label
+          :label not in mapped -> :name_does_not_interpolate_label
+          true -> {:ok, fn l -> mapped |> Enum.map_join(&if(&1 == :label, do: l, else: &1)) end}
+        end
+
+      _ ->
+        :name_does_not_interpolate_label
+    end
+  end
+
+  defp names_reported([one]), do: one
+  defp names_reported(many), do: many
 
   defp test_end(lines, i, indent) do
     {head, _} = Enum.at(lines, i - 1)

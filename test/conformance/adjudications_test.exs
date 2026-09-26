@@ -57,7 +57,11 @@ defmodule MCP.Conformance.AdjudicationsTest do
   # swap-audit`, never from the unit's own computed set: all 9453 pairs of the
   # 138 committed rows, 0 no-ops, 482 CLEAN, exactly the pairs within these 9
   # cliques (30, 9, 3, 3, 2, 2, 2, 2, 2 rows: 435 + 36 + 3 + 3 + 5 * 1 = 482).
-  # The one new pair is D1's two ExtensionsTest doctests of one directive. Ids
+  # The one new pair is D1's two ExtensionsTest doctests of one directive. At
+  # MES-141 `swap-audit touching` the D1-server-i record audited its 8892 pairs,
+  # 0 no-ops, 55 CLEAN: one new clique of 11, the for-generated W-1 rows, which
+  # share one generated test's window (the shared-anchor residual), appended as
+  # printed; the 482 untouched pairs are kept (fixture − audited: 0). Ids
   # are `{record basename, member, tag}`; the cliques are the set, written
   # compactly.
   @k1r_stateless "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601"
@@ -192,6 +196,41 @@ defmodule MCP.Conformance.AdjudicationsTest do
        "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel"},
       {"adjudication-D4b-2026-07-28.json", @k1r_dispatch,
        "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping"}
+    ],
+    [
+      {"adjudication-D1-server-i-2026-07-28.json",
+       "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value array survives to the wire",
+       "oc:none/no-oc-scenario/structured-content-array-survives"},
+      {"adjudication-D1-server-i-2026-07-28.json",
+       "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty array survives to the wire",
+       "oc:none/no-oc-scenario/structured-content-empty-array-survives"},
+      {"adjudication-D1-server-i-2026-07-28.json",
+       "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty object survives to the wire",
+       "oc:none/no-oc-scenario/structured-content-empty-object-survives"},
+      {"adjudication-D1-server-i-2026-07-28.json",
+       "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty string survives to the wire",
+       "oc:none/no-oc-scenario/structured-content-empty-string-survives"},
+      {"adjudication-D1-server-i-2026-07-28.json",
+       "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value false survives to the wire",
+       "oc:none/no-oc-scenario/structured-content-false-survives"},
+      {"adjudication-D1-server-i-2026-07-28.json",
+       "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value float survives to the wire",
+       "oc:none/no-oc-scenario/structured-content-float-survives"},
+      {"adjudication-D1-server-i-2026-07-28.json",
+       "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value null survives to the wire",
+       "oc:none/no-oc-scenario/structured-content-null-survives"},
+      {"adjudication-D1-server-i-2026-07-28.json",
+       "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value object survives to the wire",
+       "oc:none/no-oc-scenario/structured-content-object-survives"},
+      {"adjudication-D1-server-i-2026-07-28.json",
+       "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value string survives to the wire",
+       "oc:none/no-oc-scenario/structured-content-string-survives"},
+      {"adjudication-D1-server-i-2026-07-28.json",
+       "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value true survives to the wire",
+       "oc:none/no-oc-scenario/structured-content-true-survives"},
+      {"adjudication-D1-server-i-2026-07-28.json",
+       "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value zero survives to the wire",
+       "oc:none/no-oc-scenario/structured-content-zero-survives"}
     ]
   ]
   @crosswalk "docs/conformance/crosswalk-2026-07-28.json"
@@ -1879,8 +1918,14 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # them, 35 et_test (repository) and 39 harness (12 oc_counterpart sites,
     # 12 predicates, 15 near misses). MES-140 adds none outside the rows;
     # inside them, 36 et_test and 1 doctest_body (repository) and 15 harness
-    # (3 oc_counterpart sites, 3 predicates, 9 near misses).
-    test "G32 walks the citations outside the rows: 10 repository and 8 harness at this tip",
+    # (3 oc_counterpart sites, 3 predicates, 9 near misses). MES-141 adds,
+    # outside the rows, 1 repository (unscored_server_scenarios.listed_at) and
+    # 12 harness (5 in unscored_server_scenarios.sites, 7 in
+    # wire_schema_valid.sites; both from correction round 1, 29914); inside
+    # them, 39 et_test (repository) and 190 harness (137 in oc_counterpart: 35
+    # sites, 35 predicates, 32 probes and 35 inside `also`; 44 in oc_unscored;
+    # 2 near misses; 7 in unscored_near_miss).
+    test "G32 walks the citations outside the rows: 11 repository and 20 harness at this tip",
          %{inputs: inputs, result: %{report: r}} do
       outside =
         for {_, {:ok, doc}} <- inputs.records,
@@ -1888,11 +1933,11 @@ defmodule MCP.Conformance.AdjudicationsTest do
               A.collect(%{doc | "sections" => Enum.map(doc["sections"], &Map.delete(&1, "rows"))}),
             do: c
 
-      assert Enum.count(outside, &Map.has_key?(&1, "lines")) == 10
-      assert Enum.count(outside, &Map.has_key?(&1, "harness_sha256")) == 8
+      assert Enum.count(outside, &Map.has_key?(&1, "lines")) == 11
+      assert Enum.count(outside, &Map.has_key?(&1, "harness_sha256")) == 20
 
-      assert r["repo_citations_found"] == 522 and
-               r["harness_citations_not_verified_in_gate_5"] == 319
+      assert r["repo_citations_found"] == 562 and
+               r["harness_citations_not_verified_in_gate_5"] == 521
     end
 
     test "G32 refuses a drifted top-level citation, with no edge key", %{inputs: inputs} do
@@ -1915,13 +1960,14 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # member's own test and that a member-less row carries `et_test: null`.
     # What stays here is the population the tie runs over, at this tip.
     # MES-138 added 30 member rows (21 bucket-1, 9 claim-unmatched); MES-139
-    # adds 35 (bucket-1); MES-140 adds 36 (bucket-1).
-    test "the et_test tie's population: 116 member rows, 93 member-less rows with et_test null",
+    # adds 35 (bucket-1); MES-140 adds 36 (bucket-1); MES-141 adds 39 (bucket-1,
+    # eleven of them for-generated, owned under Q-C).
+    test "the et_test tie's population: 155 member rows, 93 member-less rows with et_test null",
          %{inputs: inputs} do
       rows = for {_, {:ok, doc}} <- inputs.records, s <- doc["sections"], r <- s["rows"], do: r
       {owned, memberless} = Enum.split_with(rows, &is_binary(&1["member"]))
 
-      assert length(owned) == 116 and length(memberless) == 93
+      assert length(owned) == 155 and length(memberless) == 93
       assert Enum.all?(memberless, &is_nil(&1["et_test"]))
       assert Enum.all?(owned, &(A.et_test_owner(&1, inputs.source_fun) == :ok))
     end
@@ -1984,7 +2030,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # mode, and the predicate is what gate 5 re-runs. Any row, tie or wording
     # change that moves the set turns this red, whichever side it moves, and
     # the failure prints the difference both ways.
-    test "K1-R/K1-R2's figures: 11 of 143 sites shared, 82 of 173 tokens only on shared sites, 60 rows (48 bucket-2) tie only through one; the CLEAN-swap set equals the audited 482 pairs (477 bucket-2 + 5 member)",
+    test "K1-R/K1-R2's figures: 11 of 143 sites shared, 82 of 173 tokens only on shared sites, 60 rows (48 bucket-2) tie only through one; the CLEAN-swap set equals the audited 537 pairs (477 bucket-2 + 60 member)",
          %{inputs: inputs} do
       {:ok, loc} = inputs.locator
       ov = fn [p, q], [r, t] -> max(p, r) < min(q, t) end
@@ -2023,12 +2069,12 @@ defmodule MCP.Conformance.AdjudicationsTest do
             sites != [] and Enum.all?(sites, &(&1 in shared)),
             do: v
 
-      assert length(rows) == 209 and Enum.count(rows, &(elem(&1, 0) =~ "/bucket-2")) == 93
+      assert length(rows) == 248 and Enum.count(rows, &(elem(&1, 0) =~ "/bucket-2")) == 93
       assert {length(only_shared), Enum.count(only_shared, &(&1 =~ "/bucket-2"))} == {60, 48}
 
       # The ids name rows uniquely, so a pair of ids is a pair of rows.
       ids = Enum.map(rows, &elem(&1, 1))
-      assert length(Enum.uniq(ids)) == 209
+      assert length(Enum.uniq(ids)) == 248
 
       # (a) the check tie does not separate them: mutual through the locator, or
       # both rows on no OC check (`oc:none/`, no span either way; MES-138).
@@ -2073,7 +2119,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
       # Every audited id is a committed row: a typo cannot shrink the set silently.
       assert Enum.all?(List.flatten(@k1r_clean_cliques), &(&1 in ids))
-      assert MapSet.size(audited) == 482
+      assert MapSet.size(audited) == 537
       # On failure, the difference both ways, not the two whole sets (R3-1 (b)).
       assert {MapSet.difference(computed, audited), MapSet.difference(audited, computed)} ==
                {MapSet.new(), MapSet.new()}
@@ -2084,19 +2130,23 @@ defmodule MCP.Conformance.AdjudicationsTest do
       # CLEAN set stays 482 (swap-audit touching the record: 5425 pairs, 0 CLEAN).
       # MES-140's 36 add 36 * 65 + C(36, 2) = 2970 more (2631 -> 5601), every
       # one separated by the et_test tie: its one doctest's directive line is
-      # shared by no committed row, so the CLEAN set stays 482.
-      assert {length(mutual), length(mutual) - MapSet.size(computed)} == {5601, 5119}
+      # shared by no committed row, so the CLEAN set stays 482. MES-141's 39 add
+      # 39 * 101 + C(39, 2) = 4680 more (5601 -> 10281); the et_test tie
+      # separates all but the 55 within the eleven for-generated W-1 rows, which
+      # share one window (482 -> 537).
+      assert {length(mutual), length(mutual) - MapSet.size(computed)} == {10_281, 9744}
 
       member_pairs = Enum.filter(computed, fn p -> Enum.all?(p, &is_binary(elem(&1, 1))) end)
 
-      assert {MapSet.size(computed) - length(member_pairs), length(member_pairs)} == {477, 5}
+      assert {MapSet.size(computed) - length(member_pairs), length(member_pairs)} == {477, 60}
       member_rows = member_pairs |> Enum.flat_map(&MapSet.to_list/1) |> Enum.uniq()
 
       assert {length(member_rows), Enum.frequencies(Enum.map(member_rows, &elem(&1, 0))),
               member_rows |> Enum.map(&elem(&1, 1)) |> Enum.uniq() |> Enum.sort()} ==
-               {7,
+               {18,
                 %{
                   "adjudication-D1-nd-CU-2026-07-28.json" => 2,
+                  "adjudication-D1-server-i-2026-07-28.json" => 11,
                   "adjudication-D4a-2026-07-28.json" => 1,
                   "adjudication-D4b-2026-07-28.json" => 4
                 },
@@ -2105,6 +2155,14 @@ defmodule MCP.Conformance.AdjudicationsTest do
                   @k1r_dispatch,
                   "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (8)",
                   "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (9)"
+                  | for(
+                      l <-
+                        ~w(false true zero float string array object null) ++
+                          ["empty string", "empty array", "empty object"],
+                      do:
+                        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value " <>
+                          l <> " survives to the wire"
+                    )
                 ])}
     end
 
@@ -2303,6 +2361,84 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert {:error, _} = at.("M/test t", [3, 3])
     end
 
+    # MES-141 Q-C ([authored 29813 | ratified 29816]): a test generated by
+    # `for {label, _} <- [LITERAL list]` whose name interpolates the label is
+    # owned under each name the literal list expands to, and under no other.
+    # Every refusal names its guard.
+    test "the et_test self-check owns a for-generated test under each expanded name, and refuses the rest by name" do
+      src = ~S"""
+      defmodule M do
+        describe "d" do
+          for {label, v} <- [{"a", 1}, {"b c", 2}] do
+            test "#{label} ok", _ctx do
+              assert unquote(v) > 0
+            end
+          end
+
+          for {label, v} <- @cases do
+            test "#{label} attr" do
+              assert unquote(v)
+            end
+          end
+
+          for {label, v} <- [{"a", 1}] do
+            test "fixed name" do
+              assert unquote(v)
+            end
+          end
+
+          for {label, v} <- [{"a", 1}] do
+            test "#{label} #{v} both" do
+              assert true
+            end
+          end
+
+          for {label, v} <- [{"a", 1}, {label_var(), 2}] do
+            test "#{label} computed" do
+              assert unquote(v)
+            end
+          end
+        end
+
+        for {label, _} <- [{"top", 1}] do
+          test "#{label} level" do
+            assert true
+          end
+        end
+      end
+      """
+
+      source_fun = fn "test/src.exs" -> {:ok, src} end
+
+      at = fn member, lines ->
+        A.et_test_owner(
+          %{
+            "member" => "M/" <> member,
+            "et_test" => %{"file" => "test/src.exs", "lines" => lines, "bytes" => ""}
+          },
+          source_fun
+        )
+      end
+
+      # The positive case: both expanded names, qualified by the describe; and
+      # a top-level generator, qualified by nothing.
+      assert at.("test d a ok", [4, 6]) == :ok
+      assert at.("test d b c ok", [4, 6]) == :ok
+      assert at.("test top level", [35, 37]) == :ok
+      # A label absent from the literal list: the expansion is named.
+      assert at.("test d z ok", [4, 6]) == {:error, {:names, ["test d a ok", "test d b c ok"]}}
+      # The unexpanded template is not a name either.
+      assert {:error, {:names, _}} = at.(~S"test d #{label} ok", [4, 6])
+      # A non-literal generator: a module attribute, and a list with a computed label.
+      assert at.("test d a attr", [10, 12]) == {:error, :generator_not_literal}
+      assert at.("test d a computed", [28, 30]) == {:error, :generator_not_literal}
+      # A name without the interpolation, and one interpolating another binding.
+      assert at.("test d fixed name", [16, 18]) == {:error, :name_does_not_interpolate_label}
+      assert at.("test d a 1 both", [22, 24]) == {:error, :name_interpolates_other_than_label}
+      # The window rules are unchanged: past the test's own `end` is refused.
+      assert at.("test d a ok", [4, 7]) == {:error, {:window_outside_test, 6}}
+    end
+
     # MES-126 ratified the first five; MES-127 (29430, Q1) added extend_test and
     # accept_bound; MES-128 (29444, Q1) added extend_to_match and build_test;
     # MES-129 (29460, Q1) added blocked_on_sdk_gap; MES-138 (29693, Q1) added
@@ -2419,7 +2555,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert inputs.strays == []
     end
 
-    test "in a copied tree: a ninth record is walked; a dropped section, a record outside the walk, a wrong schema and a stray are refused",
+    test "in a copied tree: a tenth record is walked; a dropped section, a record outside the walk, a wrong schema and a stray are refused",
          %{} do
       tmp = copied_tree()
       on_exit(fn -> File.rm_rf!(tmp) end)
@@ -2454,7 +2590,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       )
 
       assert kinds.() == []
-      assert load.() |> A.audit() |> get_in([:report, "records_visited"]) == 9
+      assert load.() |> A.audit() |> get_in([:report, "records_visited"]) == 10
       assert sixth in records_in_dir(tmp)
       File.rm!(Path.join(tmp, sixth))
 
@@ -3601,6 +3737,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
   @d1 "docs/conformance/adjudications/adjudication-D1-nd-CU-2026-07-28.json"
   @d1ci "docs/conformance/adjudications/adjudication-D1-client-i-2026-07-28.json"
   @d1cii "docs/conformance/adjudications/adjudication-D1-client-ii-2026-07-28.json"
+  @d1si "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json"
   @v1 "docs/conformance/buckets/bucket-1-2026-07-28.json"
   @vcu "docs/conformance/buckets/claim-unmatched-2026-07-28.json"
   @assert_word ~r/\b(assert|refute|assert_receive|refute_receive)\b/
@@ -4483,6 +4620,335 @@ defmodule MCP.Conformance.AdjudicationsTest do
     end
   end
 
+  # --- the D1-server-i record (MES-141; plan 29806/29807, ratified 29808) ------
+  #
+  # The first of three server-leg slices. MES-141 pins all three selectors now
+  # (Q2 of 29807, ratified 29808): MES-142's by module, MES-143's as the
+  # complement of the other two's modules. Together they must PARTITION the
+  # view's 103 server-leg rows at 39/37/27; a refusal control names an
+  # overlap, a gap and a row outside the leg, and a module moved across the
+  # selectors is shown red.
+
+  @d1si_selector %{
+    "join" => "docs/conformance/etcc-attribution.json",
+    "on" => "member.register_key",
+    "leg" => "server",
+    "module_in" => ["MCP.Server.ExtensionsNegotiationTest", "MCP.Server.JsonSchema202012Test"]
+  }
+
+  @d1sii_selector %{
+    "join" => "docs/conformance/etcc-attribution.json",
+    "on" => "member.register_key",
+    "leg" => "server",
+    "module_in" => [
+      "MCP.Server.SubscriptionsDispatchTest",
+      "MCP.Transport.SSETest",
+      "MCP.Transport.StreamableHTTPStatelessTest",
+      "MCP.Transport.SubscriptionsStreamTest"
+    ]
+  }
+
+  @d1siii_selector %{
+    "join" => "docs/conformance/etcc-attribution.json",
+    "on" => "member.register_key",
+    "leg" => "server",
+    "module_not_in" => [
+      "MCP.Server.ExtensionsNegotiationTest",
+      "MCP.Server.JsonSchema202012Test",
+      "MCP.Server.SubscriptionsDispatchTest",
+      "MCP.Transport.SSETest",
+      "MCP.Transport.StreamableHTTPStatelessTest",
+      "MCP.Transport.SubscriptionsStreamTest"
+    ]
+  }
+
+  defp d1si_rows(inputs) do
+    {:ok, record} = inputs.records[@d1si]
+    [section] = record["sections"]
+    section["rows"]
+  end
+
+  defp server_rows(view_rows, legs),
+    do: Enum.filter(view_rows, &(legs[&1["member"]["register_key"]] == "server"))
+
+  describe "the D1-server-i record (MES-141)" do
+    test "the section EQUALS the join selector's rows, both ways, over all 195; the 156 others carry a leg and module",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1si]
+      [section] = record["sections"]
+      {:ok, view} = inputs.views[@v1]
+      assert length(view["rows"]) == 195
+
+      assert {section["view"], section["closure"], section["owner"]} == {@v1, "open", "MES-143"}
+      assert section["slice"]["selector"] == @d1si_selector
+      assert join_equality(section["rows"], view["rows"], @d1si_selector) == :ok
+      assert length(section["rows"]) == 39 and section["slice"]["rows"] == 39
+
+      # Every one held: the Q-C admission leaves nothing outside the record.
+      refute Map.has_key?(record, "not_yet_held")
+
+      legs = leg_of()
+      inside = join_selected(view["rows"], legs, @d1si_selector)
+      others = view["rows"] -- inside
+
+      assert Enum.frequencies_by(inside, & &1["member"]["module"]) ==
+               %{
+                 "MCP.Server.JsonSchema202012Test" => 23,
+                 "MCP.Server.ExtensionsNegotiationTest" => 16
+               }
+
+      assert Enum.frequencies_by(others, &legs[&1["member"]["register_key"]]) ==
+               %{"server" => 64, "none_determinable" => 21, "client" => 71}
+    end
+
+    test "the join equality refuses one added non-slice row and one dropped slice row",
+         %{inputs: inputs} do
+      {:ok, view} = inputs.views[@v1]
+      rows = d1si_rows(inputs)
+      inside = join_selected(view["rows"], leg_of(), @d1si_selector)
+
+      # A server row of MES-142's slice: the kind a leg-only selector would admit.
+      [other | _] = join_selected(view["rows"], leg_of(), @d1sii_selector)
+      refute other in inside
+
+      assert {:error, {added, none}} =
+               join_equality(
+                 rows ++ [%{other | "member" => other["member"]["register_key"]}],
+                 view["rows"],
+                 @d1si_selector
+               )
+
+      assert {MapSet.to_list(added), none} == {[A.key(other)], MapSet.new()}
+
+      [first | rest] = rows
+      assert {:error, {none, dropped}} = join_equality(rest, view["rows"], @d1si_selector)
+      assert {none, MapSet.to_list(dropped)} == {MapSet.new(), [A.key(first)]}
+    end
+
+    test "the three pinned selectors PARTITION the view's 103 server-leg rows at 39/37/27, and MES-141's section meets its own",
+         %{inputs: inputs} do
+      {:ok, view} = inputs.views[@v1]
+      legs = leg_of()
+      server = server_rows(view["rows"], legs)
+      assert length(server) == 103
+
+      [i, ii, iii] =
+        for sel <- [@d1si_selector, @d1sii_selector, @d1siii_selector],
+            do: join_selected(view["rows"], legs, sel)
+
+      assert {length(i), length(ii), length(iii)} == {39, 37, 27}
+      assert partition([i, ii, iii], server) == :ok
+
+      # The complement is of exactly the other two selectors' modules.
+      assert @d1siii_selector["module_not_in"] ==
+               Enum.sort(@d1si_selector["module_in"] ++ @d1sii_selector["module_in"])
+
+      # SSETest also has client and none_determinable rows: the leg conjunct
+      # is load-bearing in MES-142's selector, and dropping it admits them.
+      sse = Enum.filter(view["rows"], &(&1["member"]["module"] == "MCP.Transport.SSETest"))
+
+      assert Enum.frequencies_by(sse, &legs[&1["member"]["register_key"]]) ==
+               %{"server" => 8, "client" => 10, "none_determinable" => 1}
+
+      # The committed section, not only the selector.
+      assert partition([d1si_rows(inputs), ii, iii], server) == :ok
+    end
+
+    test "the server partition check names an overlap, a gap and a row outside the leg, and a moved module goes red",
+         %{inputs: inputs} do
+      {:ok, view} = inputs.views[@v1]
+      legs = leg_of()
+      server = server_rows(view["rows"], legs)
+      sel = &join_selected(view["rows"], legs, &1)
+      [i, ii, iii] = Enum.map([@d1si_selector, @d1sii_selector, @d1siii_selector], sel)
+
+      # Positive limb on these inputs, so each refusal below is the plant's.
+      assert partition([i, ii, iii], server) == :ok
+
+      [x | _] = ii
+
+      assert partition([i ++ [x], ii, iii], server) ==
+               {:error, {:overlap, MapSet.new([A.key(x)])}}
+
+      [y | rest] = iii
+      assert partition([i, ii, rest], server) == {:error, {:gap, MapSet.new([A.key(y)])}}
+
+      [z | _] = Enum.filter(view["rows"], &(legs[&1["member"]["register_key"]] == "client"))
+      z = %{z | "member" => z["member"]["register_key"]}
+
+      assert partition([i ++ [z], ii, iii], server) ==
+               {:error, {:outside, MapSet.new([A.key(z)])}}
+
+      # Move one module across: SSETest copied into MES-141's selector overlaps
+      # MES-142's; taken out of MES-142's and left out of the complement, it is
+      # a gap; moved wholesale, the partition survives but the pinned counts do not.
+      mod = "MCP.Transport.SSETest"
+      sse = MapSet.new(Enum.filter(ii, &(&1["member"]["module"] == mod)), &A.key/1)
+      i_plus = sel.(%{@d1si_selector | "module_in" => [mod | @d1si_selector["module_in"]]})
+      ii_minus = sel.(%{@d1sii_selector | "module_in" => @d1sii_selector["module_in"] -- [mod]})
+
+      assert partition([i_plus, ii, iii], server) == {:error, {:overlap, sse}}
+      assert partition([i, ii_minus, iii], server) == {:error, {:gap, sse}}
+      assert partition([i_plus, ii_minus, iii], server) == :ok
+      refute {length(i_plus), length(ii_minus), length(iii)} == {39, 37, 27}
+    end
+
+    test "every row is one of the D1 family; the counts are the rows' enumeration, negatives included",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1si]
+      rows = d1si_rows(inputs)
+      assert Enum.all?(rows, &(&1["disposition"] in A.d1_dispositions()))
+
+      enumerated =
+        rows
+        |> Enum.group_by(& &1["disposition"], & &1["tag"])
+        |> Map.new(fn {d, tags} -> {d, %{"count" => length(tags), "tags" => tags}} end)
+
+      assert record["counts"] == %{"bucket_1_server_i" => enumerated}
+
+      assert Map.new(enumerated, fn {d, v} -> {d, v["count"]} end) == %{
+               "genuine_extra_coverage" => 2,
+               "redundant" => 35,
+               "not_a_conformance_claim" => 1,
+               "wrong_against_spec" => 1
+             }
+    end
+
+    test "the routes equal the routed rows, both ways, numbered in record order; the wrong row carries none",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1si]
+      rows = d1si_rows(inputs)
+      routed = Enum.filter(rows, &Map.has_key?(&1, "routed_to"))
+
+      assert Enum.filter(rows, &Map.has_key?(A.routes(), &1["disposition"])) == routed
+
+      by_owner = Enum.frequencies_by(routed, &{&1["routed_to"]["owner"], &1["routed_to"]["to"]})
+      assert by_owner == Map.new(record["routing"], &{{&1["owner"], &1["to"]}, &1["rows"]})
+      assert by_owner == %{{"MES-152", "A3"} => 35, {"MES-153", "A2"} => 1}
+      assert record["unused_routes"] == []
+
+      # The PM's routing comments (29889): MES-152 comment 29887 lists the 35
+      # redundant rows as items 1-35, and MES-153 comment 29888 the one
+      # not-a-claim row as item 1, each in record order.
+      a3 = &"MES-152 comment 29887, item #{&1}"
+      a2 = &"MES-153 comment 29888, item #{&1}"
+
+      assert Enum.map(routed, &{&1["tag"], &1["routed_to"]["owner_record"]}) == [
+               {"oc:none/no-oc-scenario/extensions-offer-no-error", a3.(1)},
+               {"oc:none/no-oc-scenario/extensions-offer-discover-unaffected", a3.(2)},
+               {"oc:none/no-oc-scenario/extensions-offer-tools-list-unaffected", a3.(3)},
+               {"oc:none/no-oc-scenario/extensions-offer-malformed-declaration", a2.(1)},
+               {"oc:none/no-oc-scenario/extensions-config-non-object-value", a3.(4)},
+               {"oc:none/no-oc-scenario/extensions-config-unencodable-dropped", a3.(5)},
+               {"oc:none/no-oc-scenario/extensions-config-non-object-encoding-dropped", a3.(6)},
+               {"oc:none/no-oc-scenario/extensions-config-valid-declaration-silent", a3.(7)},
+               {"oc:none/no-oc-scenario/extensions-absent-by-default", a3.(8)},
+               {"oc:none/no-oc-scenario/extensions-empty-declaration-absent", a3.(9)},
+               {"oc:none/no-oc-scenario/extensions-declared-appears-verbatim", a3.(10)},
+               {"oc:none/no-oc-scenario/extensions-invalid-identifier-dropped", a3.(11)},
+               {"oc:none/no-oc-scenario/extensions-declaration-fixed-at-build", a3.(12)},
+               {"oc:none/no-oc-scenario/content-list-is-never-injected-into", a3.(13)},
+               {"oc:none/no-oc-scenario/extras-camelcase-key-named-not-silent", a3.(14)},
+               {"oc:none/no-oc-scenario/extras-non-boolean-is-error-named", a3.(15)},
+               {"oc:none/no-oc-scenario/structured-content-present-nil-is-json-null", a3.(16)},
+               {"oc:none/no-oc-scenario/structured-content-absent-stays-absent", a3.(17)},
+               {"oc:none/no-oc-scenario/structured-content-array-survives", a3.(18)},
+               {"oc:none/no-oc-scenario/structured-content-empty-array-survives", a3.(19)},
+               {"oc:none/no-oc-scenario/structured-content-empty-object-survives", a3.(20)},
+               {"oc:none/no-oc-scenario/structured-content-empty-string-survives", a3.(21)},
+               {"oc:none/no-oc-scenario/structured-content-false-survives", a3.(22)},
+               {"oc:none/no-oc-scenario/structured-content-float-survives", a3.(23)},
+               {"oc:none/no-oc-scenario/structured-content-null-survives", a3.(24)},
+               {"oc:none/no-oc-scenario/structured-content-object-survives", a3.(25)},
+               {"oc:none/no-oc-scenario/structured-content-string-survives", a3.(26)},
+               {"oc:none/no-oc-scenario/structured-content-true-survives", a3.(27)},
+               {"oc:none/no-oc-scenario/structured-content-zero-survives", a3.(28)},
+               {"oc:none/no-oc-server-check/schema-2020-12-explicit-dialect-carried", a3.(29)},
+               {"oc:none/no-oc-server-check/schema-2020-12-composition-keywords", a3.(30)},
+               {"oc:none/no-oc-server-check/schema-2020-12-conditional-keywords", a3.(31)},
+               {"oc:none/no-oc-server-check/schema-2020-12-reference-keywords", a3.(32)},
+               {"oc:none/no-oc-server-check/schema-2020-12-whole-fixture-intact", a3.(33)},
+               {"oc:none/no-oc-server-check/schema-2020-12-validation-keywords", a3.(34)},
+               {"oc:none/no-oc-scenario/tool-arguments-delivered-unchanged", a3.(35)}
+             ]
+
+      assert [w] = Enum.filter(rows, &(&1["disposition"] == "wrong_against_spec"))
+      refute Map.has_key?(w, "routed_to")
+    end
+
+    test "every assert a row says it read is an assert at that line, and each window lists them all",
+         %{inputs: inputs} do
+      for r <- d1si_rows(inputs) do
+        %{"file" => f, "lines" => [from, to]} = r["et_test"]
+        {:ok, src} = inputs.source_fun.(f)
+        lines = String.split(src, "\n")
+
+        read =
+          for entry <- r["asserts_read"],
+              [_, file, line, text] <- [Regex.run(~r/\A(test\/[^:]+):(\d+) — (.*)\z/s, entry)] do
+            at = lines |> Enum.at(String.to_integer(line) - 1) |> String.trim()
+            assert file == f and at == text and at =~ @assert_word, entry
+            {file, String.to_integer(line)}
+          end
+
+        in_window =
+          for {line, i} <- Enum.with_index(lines, 1),
+              i in from..to,
+              line =~ @assert_word,
+              do: {f, i}
+
+        assert length(read) == length(r["asserts_read"]) and read != [], r["tag"]
+        assert read == in_window, r["tag"]
+      end
+    end
+
+    # Q-C [authored 29813 | ratified 29816]: the generated W-1 members are held,
+    # one row per label of the literal list, all sharing the one generated
+    # test's window (the shared-anchor residual the swap audit records).
+    test "the eleven generated W-1 rows are the literal list's labels, one window, each firing at :217",
+         %{inputs: inputs} do
+      prefix =
+        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value "
+
+      gen = Enum.filter(d1si_rows(inputs), &(&1["et_test"]["lines"] == [209, 219]))
+
+      assert gen |> Enum.map(&String.trim_leading(&1["member"], prefix)) |> Enum.sort() ==
+               Enum.sort(
+                 for l <-
+                       ~w(false true zero float string array object null) ++
+                         ["empty string", "empty array", "empty object"],
+                     do: l <> " survives to the wire"
+               )
+
+      for r <- gen do
+        assert A.et_test_owner(r, inputs.source_fun) == :ok
+        assert r["disposition"] == "redundant"
+        assert r["counterfactual"]["reading"] =~ "fails at json_schema_2020_12_test.exs:217."
+      end
+    end
+
+    # M9 (hop A figure 32, corrected at hop B): the measured figure is the 39
+    # less the rows it names as not red, and those are exactly the rows whose
+    # reading does not cite basic/index.mdx:380-382.
+    test "M9's measured figure equals the rows whose reading cites the -32602 gate, both ways",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1si]
+      rows = d1si_rows(inputs)
+      [m9] = Enum.filter(record["mutations"], &(&1["id"] == "M9"))
+      m = m9["measured"]
+
+      cites =
+        for r <- rows, r["counterfactual"]["reading"] =~ "basic/index.mdx:380-382", do: r["tag"]
+
+      not_red = for r <- rows, r["tag"] not in cites, do: r["tag"]
+
+      assert Enum.sort(m["slice_members_not_red"]) == Enum.sort(not_red)
+      assert m["slice_members_red"] == length(cites)
+      assert {m["slice_members_red"], m["slice_members"]} == {33, 39}
+      assert m["slice_members_red"] + length(m["slice_members_not_red"]) == length(rows)
+    end
+  end
+
   # --- every D1 record in the directory (MES-139; authored 29729, ratified 29731) --
   #
   # MES-138's both-ways unit, generalised: it runs over every record the walk
@@ -4496,6 +4962,31 @@ defmodule MCP.Conformance.AdjudicationsTest do
   # Pinned here, independently of the guard's module attributes.
   @fires_cite ~r/\b([\w-]+_test\.exs):(\d+)\b/
   @none_can ~r/\ANone can: .*(\.mdx|\.ts|§)/u
+
+  # The lines of every `setup do ... end` block (two-space describe, four-space
+  # setup) inside the describe that encloses `line` of `file`; [] at top level.
+  defp describe_setup_lines(inputs, file, line) do
+    {:ok, src} = inputs.source_fun.(file)
+    lines = src |> String.split("\n") |> Enum.with_index(1)
+    above = lines |> Enum.take(line) |> Enum.reverse()
+
+    case Enum.find(above, &(elem(&1, 0) =~ ~r/^  describe "/)) do
+      nil -> []
+      {_, d} -> setup_lines(lines, d, closing_line(lines, d, "  end"))
+    end
+  end
+
+  defp setup_lines(lines, d, d_end) do
+    for {l, j} <- lines,
+        j > d and j < d_end and l =~ ~r/^    setup( .*)? do$/,
+        k <- j..closing_line(lines, j, "    end"),
+        do: k
+  end
+
+  # The first line after `from` that is exactly `closing`.
+  defp closing_line(lines, from, closing) do
+    Enum.find_value(lines, fn {l, j} -> (j > from and String.trim_trailing(l) == closing) && j end)
+  end
 
   defp d1_records(inputs) do
     for path <- inputs.walk,
@@ -4512,8 +5003,8 @@ defmodule MCP.Conformance.AdjudicationsTest do
       rows = for {_, _, ss} <- recs, s <- ss, r <- s["rows"], do: r
 
       # Reach, so the unit cannot pass over an empty set.
-      assert Enum.map(recs, &elem(&1, 0)) == [@d1ci, @d1cii, @d1]
-      assert length(rows) == 101
+      assert Enum.map(recs, &elem(&1, 0)) == [@d1ci, @d1cii, @d1, @d1si]
+      assert length(rows) == 140
 
       # Independently of d1_records/1: every row of every record bound to a D1
       # view carries a D1 disposition, and every D1 disposition sits in one.
@@ -4545,7 +5036,16 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
           for [base, n] <- cites do
             assert base == Path.basename(f), "#{at}: #{base} is not #{f}"
-            assert String.to_integer(n) in from..to, "#{at}: :#{n} outside #{from}..#{to}"
+            n = String.to_integer(n)
+
+            # MES-141 Q-D ([authored 29813 | ratified 29816]): where the member
+            # fails in its describe's setup, before any test-body frame exists,
+            # the setup line is admitted, and only when the reading says so and
+            # the line lies in a `setup` block of the describe enclosing the window.
+            assert n in from..to or
+                     (cf["reading"] =~ "in the describe setup" and
+                        n in describe_setup_lines(inputs, f, from)),
+                   "#{at}: :#{n} outside #{from}..#{to}"
           end
         else
           assert cf["reading"] =~ @none_can, at
