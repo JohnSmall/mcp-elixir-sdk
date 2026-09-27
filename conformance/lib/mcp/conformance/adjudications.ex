@@ -648,8 +648,7 @@ defmodule MCP.Conformance.Adjudications do
   }
 
   @pending %{
-    "docs/conformance/buckets/bucket-5a-2026-07-28.json" => "MES-148",
-    "docs/conformance/buckets/bucket-5b-2026-07-28.json" => "MES-146"
+    "docs/conformance/buckets/bucket-5a-2026-07-28.json" => "MES-148"
   }
 
   # A record is found OUTSIDE the walk by scanning the files git would commit

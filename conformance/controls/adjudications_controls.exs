@@ -24,7 +24,10 @@
 # touch it. A pair of two OTHER rows is not re-audited: its rows are unchanged,
 # and the guard is too, except S1's counterfactual_missing, a per-row SHAPE
 # check that an exchange carries with the rest of the row. The full audit is
-# quadratic; the touching one is linear in the committed rows.
+# quadratic; the touching one is linear in the committed rows. A NO-OP pair
+# (two rows identical outside member, claim, tag and echo, so the exchange
+# changes nothing) is reported by name and counted CLEAN, never halted on
+# (MES-146 Q12); gate 5 pins which pairs those are.
 #
 # WHAT G32 CLAIMS. Every edge a bound view projects is adjudicated exactly once
 # by a record row with a disposition from the closed set, and every repository
@@ -1655,10 +1658,10 @@ defmodule AdjudicationsControls do
       # gate-5 walk-root pin existed to catch. The universe (K2) now refuses it
       # itself: every view the unseen records closed is owed and unadjudicated.
       check(
-        "(2) a narrowed walk sees zero records and is REFUSED: owed_unadjudicated on the 9 closed views",
+        "(2) a narrowed walk sees zero records and is REFUSED: owed_unadjudicated on the 10 closed views",
         r["records_visited"] == 0 and
           Enum.sort(for(%{kind: :owed_unadjudicated, file: f} <- ds, do: f)) ==
-            Enum.sort([@v1, @v2a, @v2b, @v3, @v4a, @v4b, @v6, @vcu, @ves]) and
+            Enum.sort([@v1, @v2a, @v2b, @v3, @v4a, @v4b, @v5b, @v6, @vcu, @ves]) and
           Enum.all?(ds, &(&1.kind == :owed_unadjudicated)),
         Enum.map(ds, &A.format_defect/1)
       )
@@ -1933,7 +1936,7 @@ defmodule AdjudicationsControls do
             si: si,
             ri: ri,
             row: r,
-            id: {Path.basename(file), r["member"], r["tag"]}
+            id: {Path.basename(file), r["member"], r["claim"], r["tag"]}
           }
 
     ids = Enum.map(rows, & &1.id)
@@ -1981,11 +1984,27 @@ defmodule AdjudicationsControls do
       )
       |> Enum.map(fn {:ok, r} -> r end)
 
+    # MES-146 Q12 (PM 30145): a no-op exchange (two rows identical outside
+    # member, claim, tag and echo) is reported by name, not halted on. It leaves
+    # the tree unchanged, so G32 cannot see it by construction; it is counted in
+    # the CLEAN set, which overstates the residual rather than hiding it. Gate
+    # 5 pins the no-op set to exactly D5b-ii's ClientCustomHeaderOmitNull pair.
     noops = for {i, j, true, _} <- results, do: {i, j}
+    by_id = Map.new(rows, &{&1.id, &1.row})
+
+    IO.puts("        #{length(results)} pairs exchanged, #{length(noops)} of them no-ops:")
+
+    for {i, j} <- noops,
+        do:
+          IO.puts(
+            "        NO-OP #{inspect({i, j}, limit: :infinity, printable_limit: :infinity)}"
+          )
 
     check(
-      "#{length(results)} pairs exchanged, 0 of them no-ops",
-      noops == [],
+      "each no-op pair is identical outside #{Enum.join(@k1r_keep, ", ")}, and its exchange audits CLEAN",
+      Enum.all?(noops, fn {i, j} ->
+        Map.drop(by_id[i], @k1r_keep) == Map.drop(by_id[j], @k1r_keep)
+      end) and Enum.all?(for({_, _, true, ok} <- results, do: ok)),
       Enum.map(noops, &inspect/1)
     )
 

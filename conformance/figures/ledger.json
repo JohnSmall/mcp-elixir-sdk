@@ -5384,6 +5384,14 @@
       "path": "sections[#0].slice.statement",
       "phrase": "31 rows",
       "quantity": "d5b_i_rows"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D5b-ii-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].slice.statement",
+      "phrase": "36 rows",
+      "quantity": "d5b_ii_rows"
     }
   ],
   "guard": "G31 — MCP.Conformance.InputFigures (MES-120)",
@@ -15732,6 +15740,21 @@
             {
               "field": "oc_key.1",
               "ne": "http-custom-headers"
+            }
+          ]
+        }
+      }
+    },
+    "d5b_ii_rows": {
+      "means": "bucket-5b view rows whose check scenario, oc_key[1], is http-custom-headers (MES-146's slice; MES-145 holds the complement)",
+      "query": {
+        "count": {
+          "at": "rows[]",
+          "in": "docs/conformance/buckets/bucket-5b-2026-07-28.json",
+          "where": [
+            {
+              "eq": "http-custom-headers",
+              "field": "oc_key.1"
             }
           ]
         }

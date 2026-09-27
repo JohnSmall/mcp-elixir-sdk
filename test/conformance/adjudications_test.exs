@@ -67,205 +67,346 @@ defmodule MCP.Conformance.AdjudicationsTest do
   # test and one shared http-standard-headers emitting site, whose recomputed
   # D5 evidence is identical (appended as printed; the 537 untouched pairs are
   # kept, fixture − audited: 0). Ids
-  # are `{record basename, member, tag}`; the cliques are the set, written
-  # compactly.
+  # are `{record basename, member, claim, tag}`, G32's row key under its record
+  # (MES-146 Q9): D5b-ii's two ClientCustomHeaderOmitNull rows share member and
+  # tag, so the earlier `{record basename, member, tag}` stopped naming rows.
+  # The literal was converted mechanically from that form, each old id to the
+  # one row it resolved to; the cliques are the set, written compactly.
   @k1r_stateless "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601"
   @k1r_dispatch "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)"
   @k1r_clean_cliques [
     [
-      {"adjudication-D2a-i-2026-07-28.json", nil,
+      {"adjudication-D2a-i-2026-07-28.json", nil, nil,
        "oc:server/input-required-result-basic-elicitation/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-i-2026-07-28.json", nil,
+      {"adjudication-D2a-i-2026-07-28.json", nil, nil,
        "oc:server/input-required-result-basic-list-roots/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-i-2026-07-28.json", nil,
+      {"adjudication-D2a-i-2026-07-28.json", nil, nil,
        "oc:server/input-required-result-basic-sampling/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-i-2026-07-28.json", nil,
+      {"adjudication-D2a-i-2026-07-28.json", nil, nil,
        "oc:server/input-required-result-capability-check/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-i-2026-07-28.json", nil,
+      {"adjudication-D2a-i-2026-07-28.json", nil, nil,
        "oc:server/input-required-result-ignore-extra-params/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-i-2026-07-28.json", nil,
+      {"adjudication-D2a-i-2026-07-28.json", nil, nil,
        "oc:server/input-required-result-missing-input-response/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-i-2026-07-28.json", nil,
+      {"adjudication-D2a-i-2026-07-28.json", nil, nil,
        "oc:server/input-required-result-multi-round/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-i-2026-07-28.json", nil,
+      {"adjudication-D2a-i-2026-07-28.json", nil, nil,
        "oc:server/input-required-result-multiple-input-requests/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-i-2026-07-28.json", nil,
+      {"adjudication-D2a-i-2026-07-28.json", nil, nil,
        "oc:server/input-required-result-non-tool-request/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-i-2026-07-28.json", nil,
+      {"adjudication-D2a-i-2026-07-28.json", nil, nil,
        "oc:server/input-required-result-result-type/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-i-2026-07-28.json", nil,
+      {"adjudication-D2a-i-2026-07-28.json", nil, nil,
        "oc:server/input-required-result-tampered-state/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-i-2026-07-28.json", nil,
+      {"adjudication-D2a-i-2026-07-28.json", nil, nil,
        "oc:server/input-required-result-unsupported-methods/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-i-2026-07-28.json", nil,
+      {"adjudication-D2a-i-2026-07-28.json", nil, nil,
        "oc:server/input-required-result-validate-input/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
        "oc:server/caching/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
        "oc:server/completion-complete/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
        "oc:server/prompts-get-embedded-resource/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
        "oc:server/prompts-get-simple/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
        "oc:server/prompts-get-with-args/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
        "oc:server/prompts-get-with-image/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
        "oc:server/prompts-list/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
        "oc:server/resources-list/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
        "oc:server/resources-read-binary/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
        "oc:server/resources-read-text/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
        "oc:server/resources-templates-read/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
        "oc:server/sep-2164-resource-not-found/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
        "oc:server/tools-call-audio/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
        "oc:server/tools-call-error/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
        "oc:server/tools-call-mixed-content/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
        "oc:server/tools-call-with-progress/wire-schema-valid/WireSchemaValid"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
        "oc:server/tools-list/wire-schema-valid/WireSchemaValid"}
-    ],
-    [
-      {"adjudication-D2b-2026-07-28.json", nil,
-       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_colon_in_name"},
-      {"adjudication-D2b-2026-07-28.json", nil,
-       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_control_char_name"},
-      {"adjudication-D2b-2026-07-28.json", nil,
-       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_non_ascii_name"},
-      {"adjudication-D2b-2026-07-28.json", nil,
-       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_space_in_name"},
-      {"adjudication-D2b-2026-07-28.json", nil,
-       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-not-empty/ClientRejectsInvalidTool_invalid_empty_header"},
-      {"adjudication-D2b-2026-07-28.json", nil,
-       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_array_header"},
-      {"adjudication-D2b-2026-07-28.json", nil,
-       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_null_header"},
-      {"adjudication-D2b-2026-07-28.json", nil,
-       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_diff_case"},
-      {"adjudication-D2b-2026-07-28.json", nil,
-       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_same_case"}
-    ],
-    [
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
-       "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
-       "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-meta"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
-       "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-protocol-version"}
-    ],
-    [
-      {"adjudication-D4a-2026-07-28.json", @k1r_stateless,
-       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize"},
-      {"adjudication-D4b-2026-07-28.json", @k1r_stateless,
-       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel"},
-      {"adjudication-D4b-2026-07-28.json", @k1r_stateless,
-       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping"}
-    ],
-    [
-      {"adjudication-D1-nd-CU-2026-07-28.json",
-       "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (8)",
-       "oc:none/no-oc-scenario/extensions-doctest-inbound-read"},
-      {"adjudication-D1-nd-CU-2026-07-28.json",
-       "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (9)",
-       "oc:none/no-oc-scenario/extensions-doctest-nil-envelope"}
-    ],
-    [
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
-       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-resources-subscribe/HttpServerMethodNotFound404resourcessubscribe"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
-       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-resources-unsubscribe/HttpServerMethodNotFound404resourcesunsubscribe"}
-    ],
-    [
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
-       "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid"},
-      {"adjudication-D2a-ii-2026-07-28.json", nil,
-       "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-protocol-version/RequestMetaInvalid"}
-    ],
-    [
-      {"adjudication-D2b-2026-07-28.json", nil,
-       "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_get"},
-      {"adjudication-D2b-2026-07-28.json", nil,
-       "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_read"}
-    ],
-    [
-      {"adjudication-D4b-2026-07-28.json", @k1r_dispatch,
-       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel"},
-      {"adjudication-D4b-2026-07-28.json", @k1r_dispatch,
-       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping"}
     ],
     [
       {"adjudication-D1-server-i-2026-07-28.json",
        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value array survives to the wire",
-       "oc:none/no-oc-scenario/structured-content-array-survives"},
+       nil, "oc:none/no-oc-scenario/structured-content-array-survives"},
       {"adjudication-D1-server-i-2026-07-28.json",
        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty array survives to the wire",
-       "oc:none/no-oc-scenario/structured-content-empty-array-survives"},
+       nil, "oc:none/no-oc-scenario/structured-content-empty-array-survives"},
       {"adjudication-D1-server-i-2026-07-28.json",
        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty object survives to the wire",
-       "oc:none/no-oc-scenario/structured-content-empty-object-survives"},
+       nil, "oc:none/no-oc-scenario/structured-content-empty-object-survives"},
       {"adjudication-D1-server-i-2026-07-28.json",
        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value empty string survives to the wire",
-       "oc:none/no-oc-scenario/structured-content-empty-string-survives"},
+       nil, "oc:none/no-oc-scenario/structured-content-empty-string-survives"},
       {"adjudication-D1-server-i-2026-07-28.json",
        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value false survives to the wire",
-       "oc:none/no-oc-scenario/structured-content-false-survives"},
+       nil, "oc:none/no-oc-scenario/structured-content-false-survives"},
       {"adjudication-D1-server-i-2026-07-28.json",
        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value float survives to the wire",
-       "oc:none/no-oc-scenario/structured-content-float-survives"},
+       nil, "oc:none/no-oc-scenario/structured-content-float-survives"},
       {"adjudication-D1-server-i-2026-07-28.json",
        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value null survives to the wire",
-       "oc:none/no-oc-scenario/structured-content-null-survives"},
+       nil, "oc:none/no-oc-scenario/structured-content-null-survives"},
       {"adjudication-D1-server-i-2026-07-28.json",
        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value object survives to the wire",
-       "oc:none/no-oc-scenario/structured-content-object-survives"},
+       nil, "oc:none/no-oc-scenario/structured-content-object-survives"},
       {"adjudication-D1-server-i-2026-07-28.json",
        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value string survives to the wire",
-       "oc:none/no-oc-scenario/structured-content-string-survives"},
+       nil, "oc:none/no-oc-scenario/structured-content-string-survives"},
       {"adjudication-D1-server-i-2026-07-28.json",
        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value true survives to the wire",
-       "oc:none/no-oc-scenario/structured-content-true-survives"},
+       nil, "oc:none/no-oc-scenario/structured-content-true-survives"},
       {"adjudication-D1-server-i-2026-07-28.json",
        "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value zero survives to the wire",
-       "oc:none/no-oc-scenario/structured-content-zero-survives"}
+       nil, "oc:none/no-oc-scenario/structured-content-zero-survives"}
+    ],
+    [
+      {"adjudication-D2b-2026-07-28.json", nil, nil,
+       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_colon_in_name"},
+      {"adjudication-D2b-2026-07-28.json", nil, nil,
+       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_control_char_name"},
+      {"adjudication-D2b-2026-07-28.json", nil, nil,
+       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_non_ascii_name"},
+      {"adjudication-D2b-2026-07-28.json", nil, nil,
+       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-charset/ClientRejectsInvalidTool_invalid_space_in_name"},
+      {"adjudication-D2b-2026-07-28.json", nil, nil,
+       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-not-empty/ClientRejectsInvalidTool_invalid_empty_header"},
+      {"adjudication-D2b-2026-07-28.json", nil, nil,
+       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_array_header"},
+      {"adjudication-D2b-2026-07-28.json", nil, nil,
+       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-primitive-only/ClientRejectsInvalidTool_invalid_null_header"},
+      {"adjudication-D2b-2026-07-28.json", nil, nil,
+       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_diff_case"},
+      {"adjudication-D2b-2026-07-28.json", nil, nil,
+       "oc:client/http-invalid-tool-headers/sep-2243-x-mcp-header-unique/ClientRejectsInvalidTool_invalid_duplicate_same_case"}
+    ],
+    [
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+       "the ControlChar argument's header is sentinel-SHAPED",
+       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_ControlChar"},
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+       "the CrLf argument's header is sentinel-SHAPED",
+       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_CrLf"},
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+       "the LeadingSpace argument is mirrored as its exact Base64 sentinel",
+       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_LeadingSpace"},
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+       "the NonAscii argument is mirrored as its exact Base64 sentinel",
+       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_NonAscii"},
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+       "the Tab argument's header is sentinel-SHAPED",
+       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Tab"},
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+       "the TrailingSpace argument is mirrored as its exact Base64 sentinel",
+       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_TrailingSpace"},
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+       "the Whitespace argument is mirrored as its exact Base64 sentinel",
+       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Whitespace"}
+    ],
+    [
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value",
+       "the `Mcp-Param-ControlChar` header our client produced for the fixture's `control_char_val` decodes back to exactly that body value",
+       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_ControlChar"},
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value",
+       "the `Mcp-Param-CrLf` header our client produced for the fixture's `crlf_val` decodes back to exactly that body value",
+       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_CrLf"},
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value",
+       "the `Mcp-Param-NonAscii` header our client produced for the fixture's `non_ascii_val` decodes back to exactly that body value",
+       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_NonAscii"},
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value",
+       "the `Mcp-Param-Tab` header our client produced for the fixture's `tab_val` decodes back to exactly that body value",
+       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Tab"},
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value",
+       "the `Mcp-Param-Whitespace` header our client produced for the fixture's `whitespace_val` decodes back to exactly that body value",
+       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Whitespace"}
+    ],
+    [
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
+       "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-client-capabilities"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
+       "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-meta"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
+       "oc:server/server-stateless/sep-2575-http-server-meta-invalid-400/HttpServerMetaInvalid400#missing-protocol-version"}
+    ],
+    [
+      {"adjudication-D4a-2026-07-28.json",
+       "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
+       "a removed `initialize` over HTTP yields JSON-RPC error -32022",
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize"},
+      {"adjudication-D4b-2026-07-28.json",
+       "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
+       "a removed `logging/setLevel` over HTTP yields JSON-RPC error -32601",
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel"},
+      {"adjudication-D4b-2026-07-28.json",
+       "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
+       "a removed `ping` over HTTP yields JSON-RPC error -32601",
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping"}
     ],
     [
       {"adjudication-D5b-i-2026-07-28.json",
        "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a request carries the body method",
+       "each POST's `mcp-method` header is the body's `method`, asserted over five methods sent down one transport",
        "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_list"},
       {"adjudication-D5b-i-2026-07-28.json",
        "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a request carries the body method",
+       "each POST's `mcp-method` header is the body's `method`, asserted over five methods sent down one transport",
        "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_list"},
       {"adjudication-D5b-i-2026-07-28.json",
        "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a request carries the body method",
+       "each POST's `mcp-method` header is the body's `method`, asserted over five methods sent down one transport",
        "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_list"}
     ],
     [
       {"adjudication-D5b-i-2026-07-28.json",
        "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri",
+       "the `mcp-name` header carries the body's name-source field, and WHICH field that is depends on the method",
        "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_prompts_get"},
       {"adjudication-D5b-i-2026-07-28.json",
        "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri",
+       "the `mcp-name` header carries the body's name-source field, and WHICH field that is depends on the method",
        "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_resources_read"},
       {"adjudication-D5b-i-2026-07-28.json",
        "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri",
+       "the `mcp-name` header carries the body's name-source field, and WHICH field that is depends on the method",
        "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call"}
+    ],
+    [
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false",
+       "the debug argument is mirrored as \"true\"",
+       "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Debug"},
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false",
+       "the priority argument is mirrored as \"42\"",
+       "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Priority"},
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false",
+       "the verbose argument is mirrored as \"false\"",
+       "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Verbose"}
+    ],
+    [
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+       "on a real HTTP request, the mcp-param-nonascii argument arrives as \"=?base64?SGVsbG8sIOS4lueVjA==?=\"",
+       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_NonAscii"},
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+       "on a real HTTP request, the mcp-param-priority argument arrives as \"42\"",
+       "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Priority"},
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+       "on a real HTTP request, the mcp-param-verbose argument arrives as \"false\"",
+       "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Verbose"}
+    ],
+    [
+      {"adjudication-D1-nd-CU-2026-07-28.json",
+       "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (8)", nil,
+       "oc:none/no-oc-scenario/extensions-doctest-inbound-read"},
+      {"adjudication-D1-nd-CU-2026-07-28.json",
+       "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (9)", nil,
+       "oc:none/no-oc-scenario/extensions-doctest-nil-envelope"}
+    ],
+    [
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-resources-subscribe/HttpServerMethodNotFound404resourcessubscribe"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-resources-unsubscribe/HttpServerMethodNotFound404resourcesunsubscribe"}
+    ],
+    [
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
+       "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-client-capabilities/RequestMetaInvalid"},
+      {"adjudication-D2a-ii-2026-07-28.json", nil, nil,
+       "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-protocol-version/RequestMetaInvalid"}
+    ],
+    [
+      {"adjudication-D2b-2026-07-28.json", nil, nil,
+       "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_get"},
+      {"adjudication-D2b-2026-07-28.json", nil, nil,
+       "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_read"}
+    ],
+    [
+      {"adjudication-D4b-2026-07-28.json",
+       "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)",
+       "a dispatched `logging/setLevel` is answered with -32601 method-not-found",
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel"},
+      {"adjudication-D4b-2026-07-28.json",
+       "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)",
+       "a dispatched `ping` is answered with -32601 method-not-found",
+       "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping"}
     ],
     [
       {"adjudication-D5b-i-2026-07-28.json",
        "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+       "the mcp-method routing header rides the same request",
        "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_call"},
       {"adjudication-D5b-i-2026-07-28.json",
        "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+       "the mcp-name routing header rides the same request",
        "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call"}
+    ],
+    [
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (2)",
+       "a non-ASCII value is carried as the Base64 sentinel",
+       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_NonAscii"},
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (3)",
+       "a value with leading and trailing whitespace is carried as the Base64 sentinel",
+       "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_Whitespace"}
+    ],
+    [
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a null value omits the header; so does an absent one",
+       "a null-valued annotated parameter produces no header, while a non-null sibling still does",
+       "oc:client/http-custom-headers/sep-2243-client-omit-null/ClientCustomHeaderOmitNull"},
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a null value omits the header; so does an absent one",
+       "an ABSENT annotated parameter also produces no header",
+       "oc:client/http-custom-headers/sep-2243-client-omit-null/ClientCustomHeaderOmitNull"}
+    ],
+    [
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector plain ASCII is sent as-is",
+       "the method_val argument is mirrored plain",
+       "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Method"},
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector plain ASCII is sent as-is",
+       "the region argument is mirrored plain",
+       "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region"}
+    ],
+    [
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+       "on a real HTTP request, the mcp-param-emptyval argument arrives as \"\"",
+       "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_EmptyVal"},
+      {"adjudication-D5b-ii-2026-07-28.json",
+       "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
+       "on a real HTTP request, the mcp-param-region argument arrives as \"us-west1\"",
+       "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region"}
     ]
   ]
   @crosswalk "docs/conformance/crosswalk-2026-07-28.json"
@@ -1971,8 +2112,12 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # and 2 premise; mechanism: 2 gate_5.exclusion_site and 2
     # stored_et_verdict.read_at; excluded_tests.tagged: 3) and no harness.
     # MES-145 adds none outside the rows; inside them, 31 et_test (repository)
-    # and 31 harness (check.emitted_at, one per row).
-    test "G32 walks the citations outside the rows: 25 repository and 30 harness at this tip",
+    # and 31 harness (check.emitted_at, one per row). MES-146 adds, outside the
+    # rows, 6 harness (aggregation_sweep: 3 limbs[].condition_at, P2s, Sunann and
+    # Snull; 3 findings[].at, F1-F3); inside them, 39 et_test and doctest_body
+    # (repository: 36 et_test, 3 doctest_body) and 81 harness (36 emitted_at,
+    # 9 locator_site, 36 condition_at).
+    test "G32 walks the citations outside the rows: 25 repository and 36 harness at this tip",
          %{inputs: inputs, result: %{report: r}} do
       outside =
         for {_, {:ok, doc}} <- inputs.records,
@@ -1981,10 +2126,10 @@ defmodule MCP.Conformance.AdjudicationsTest do
             do: c
 
       assert Enum.count(outside, &Map.has_key?(&1, "lines")) == 25
-      assert Enum.count(outside, &Map.has_key?(&1, "harness_sha256")) == 30
+      assert Enum.count(outside, &Map.has_key?(&1, "harness_sha256")) == 36
 
-      assert r["repo_citations_found"] == 671 and
-               r["harness_citations_not_verified_in_gate_5"] == 742
+      assert r["repo_citations_found"] == 710 and
+               r["harness_citations_not_verified_in_gate_5"] == 829
     end
 
     test "G32 refuses a drifted top-level citation, with no edge key", %{inputs: inputs} do
@@ -2009,13 +2154,14 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # MES-138 added 30 member rows (21 bucket-1, 9 claim-unmatched); MES-139
     # adds 35 (bucket-1); MES-140 adds 36 (bucket-1); MES-141 adds 39 (bucket-1,
     # eleven of them for-generated, owned under Q-C); MES-142 adds 37 (bucket-1);
-    # MES-143 adds 27 (bucket-1); MES-145 adds 31 (bucket-5b).
-    test "the et_test tie's population: 250 member rows, 93 member-less rows with et_test null",
+    # MES-143 adds 27 (bucket-1); MES-145 adds 31 (bucket-5b); MES-146 adds 36
+    # (bucket-5b).
+    test "the et_test tie's population: 286 member rows, 93 member-less rows with et_test null",
          %{inputs: inputs} do
       rows = for {_, {:ok, doc}} <- inputs.records, s <- doc["sections"], r <- s["rows"], do: r
       {owned, memberless} = Enum.split_with(rows, &is_binary(&1["member"]))
 
-      assert length(owned) == 250 and length(memberless) == 93
+      assert length(owned) == 286 and length(memberless) == 93
       assert Enum.all?(memberless, &is_nil(&1["et_test"]))
       assert Enum.all?(owned, &(A.et_test_owner(&1, inputs.source_fun) == :ok))
     end
@@ -2078,7 +2224,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # mode, and the predicate is what gate 5 re-runs. Any row, tie or wording
     # change that moves the set turns this red, whichever side it moves, and
     # the failure prints the difference both ways.
-    test "K1-R/K1-R2's figures: 11 of 143 sites shared, 82 of 173 tokens only on shared sites, 74 rows (48 bucket-2) tie only through one; the CLEAN-swap set equals the audited 544 pairs (477 bucket-2 + 67 member)",
+    test "K1-R/K1-R2's figures: 11 of 143 sites shared, 82 of 173 tokens only on shared sites, 106 rows (48 bucket-2) tie only through one; the CLEAN-swap set equals the audited 585 pairs (477 bucket-2 + 108 member)",
          %{inputs: inputs} do
       {:ok, loc} = inputs.locator
       ov = fn [p, q], [r, t] -> max(p, r) < min(q, t) end
@@ -2109,12 +2255,12 @@ defmodule MCP.Conformance.AdjudicationsTest do
             sites != [] and Enum.all?(sites, &(&1 in shared)),
             do: v
 
-      assert length(rows) == 343 and Enum.count(rows, &(elem(&1, 0) =~ "/bucket-2")) == 93
-      assert {length(only_shared), Enum.count(only_shared, &(&1 =~ "/bucket-2"))} == {74, 48}
+      assert length(rows) == 379 and Enum.count(rows, &(elem(&1, 0) =~ "/bucket-2")) == 93
+      assert {length(only_shared), Enum.count(only_shared, &(&1 =~ "/bucket-2"))} == {106, 48}
 
       # The ids name rows uniquely, so a pair of ids is a pair of rows.
       ids = Enum.map(rows, &elem(&1, 1))
-      assert length(Enum.uniq(ids)) == 343
+      assert length(Enum.uniq(ids)) == 379
 
       mutual = k1r_mutual(inputs, rows, true)
       computed = for {pair, true} <- mutual, into: MapSet.new(), do: pair
@@ -2122,7 +2268,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       audited = k1r_audited()
       # Every audited id is a committed row: a typo cannot shrink the set silently.
       assert Enum.all?(List.flatten(@k1r_clean_cliques), &(&1 in ids))
-      assert MapSet.size(audited) == 544
+      assert MapSet.size(audited) == 585
       # On failure, the difference both ways, not the two whole sets (R3-1 (b)).
       assert {MapSet.difference(computed, audited), MapSet.difference(audited, computed)} ==
                {MapSet.new(), MapSet.new()}
@@ -2146,23 +2292,29 @@ defmodule MCP.Conformance.AdjudicationsTest do
       # ClientRejectsInvalidTool_invalid_object_header and ClientKeepsValidTool
       # rows, one member test and one site, whose recomputed null outcomes
       # differ), and 7 are CLEAN, the three cliques swap-audit measured
-      # (537 -> 544).
-      assert {length(mutual), length(mutual) - MapSet.size(computed)} == {21_441, 20_897}
+      # (537 -> 544). MES-146's 36 D5 rows add 239 more (21441 -> 21680), 41 of
+      # them CLEAN: the eight cliques swap-audit measured (7, 5, 3, 3, 2, 2, 2, 2
+      # rows), each one member test on shared http-custom-headers sites, all
+      # inside the D5b-ii record (544 -> 585). One of the 41 is a no-op, the two
+      # ClientCustomHeaderOmitNull rows, identical outside member, claim, tag and
+      # echo (MES-146 Q12).
+      assert {length(mutual), length(mutual) - MapSet.size(computed)} == {21_680, 21_095}
 
       member_pairs = Enum.filter(computed, fn p -> Enum.all?(p, &is_binary(elem(&1, 1))) end)
 
-      assert {MapSet.size(computed) - length(member_pairs), length(member_pairs)} == {477, 67}
+      assert {MapSet.size(computed) - length(member_pairs), length(member_pairs)} == {477, 108}
       member_rows = member_pairs |> Enum.flat_map(&MapSet.to_list/1) |> Enum.uniq()
 
       assert {length(member_rows), Enum.frequencies(Enum.map(member_rows, &elem(&1, 0))),
               member_rows |> Enum.map(&elem(&1, 1)) |> Enum.uniq() |> Enum.sort()} ==
-               {26,
+               {52,
                 %{
                   "adjudication-D1-nd-CU-2026-07-28.json" => 2,
                   "adjudication-D1-server-i-2026-07-28.json" => 11,
                   "adjudication-D4a-2026-07-28.json" => 1,
                   "adjudication-D4b-2026-07-28.json" => 4,
-                  "adjudication-D5b-i-2026-07-28.json" => 8
+                  "adjudication-D5b-i-2026-07-28.json" => 8,
+                  "adjudication-D5b-ii-2026-07-28.json" => 26
                 },
                 Enum.sort([
                   @k1r_stateless,
@@ -2171,7 +2323,14 @@ defmodule MCP.Conformance.AdjudicationsTest do
                   "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri",
                   "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
                   "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (8)",
-                  "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (9)"
+                  "MCP.Protocol.ExtensionsTest/doctest MCP.Protocol.Extensions.from_meta/1 (9)",
+                  "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (2)",
+                  "MCP.Protocol.HeaderMirrorTest/doctest MCP.Protocol.HeaderMirror.encode_value/1 (3)",
+                  "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a null value omits the header; so does an absent one",
+                  "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector an integer becomes its decimal string, a boolean lowercase true/false",
+                  "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value",
+                  "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector non-ASCII, padded, control and CRLF values are Base64 sentinels",
+                  "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector plain ASCII is sent as-is"
                   | for(
                       l <-
                         ~w(false true zero float string array object null) ++
@@ -2181,6 +2340,65 @@ defmodule MCP.Conformance.AdjudicationsTest do
                           l <> " survives to the wire"
                     )
                 ])}
+    end
+
+    # MES-146 Q9: the fixture's ids were re-keyed from `{record basename,
+    # member, tag}` to `{record basename, member, claim, tag}` by a mechanical
+    # conversion. Each id, its claim dropped, is the old id; this holds every
+    # one of them to resolving to exactly one committed row, the row it names,
+    # so the conversion neither merged nor re-pointed an id. The old form's
+    # collisions are pinned too: D5b-ii's two ClientCustomHeaderOmitNull rows
+    # are the only ones. The 74 converted ids all predate D5b-ii; D5b-ii's 26
+    # were printed by the swap-audit under the new key (MES-146 hop D), and the
+    # two OmitNull rows are among them as the Q12 no-op pair, so they are the
+    # only fixture ids an old id cannot name, and exactly those.
+    test "the K1-R fixture is the 3-tuple fixture re-keyed: each old id resolves to exactly the one row it now names",
+         %{inputs: inputs} do
+      rows = k1r_rows(inputs)
+      old = fn {rec, mem, _claim, tag} -> {rec, mem, tag} end
+      by_old = Enum.group_by(rows, &old.(elem(&1, 1)), &elem(&1, 1))
+
+      collisions = for {o, [_, _ | _] = ids} <- by_old, into: %{}, do: {o, length(ids)}
+
+      assert collisions == %{
+               {"adjudication-D5b-ii-2026-07-28.json",
+                "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a null value omits the header; so does an absent one",
+                "oc:client/http-custom-headers/sep-2243-client-omit-null/ClientCustomHeaderOmitNull"} =>
+                 2
+             }
+
+      fixture = List.flatten(@k1r_clean_cliques)
+      assert fixture != [] and length(Enum.uniq(fixture)) == length(fixture)
+
+      assert Enum.count(fixture, &(elem(&1, 0) != "adjudication-D5b-ii-2026-07-28.json")) == 74
+
+      assert Enum.sort(Enum.reject(fixture, &(Map.get(by_old, old.(&1)) == [&1]))) ==
+               Enum.sort(Map.fetch!(by_old, hd(Map.keys(collisions))))
+    end
+
+    # MES-146 Q12 (PM 30145): the swap-audit reports a NO-OP pair (two rows
+    # identical outside member, claim, tag and echo, whose exchange changes
+    # nothing) by name and counts it CLEAN rather than halting. G32 cannot see
+    # such an exchange by construction, so this pins which pairs they are:
+    # exactly D5b-ii's two ClientCustomHeaderOmitNull rows ("null omits",
+    # "absent omits"), measured over every committed row.
+    test "the swap-audit's no-op pairs are exactly D5b-ii's ClientCustomHeaderOmitNull pair",
+         %{inputs: inputs} do
+      noops =
+        k1r_rows(inputs)
+        |> Enum.group_by(fn {_, _, r} -> Map.drop(r, ~w(member claim tag echo)) end, &elem(&1, 1))
+        |> Map.values()
+        |> Enum.flat_map(fn ids -> for i <- ids, j <- ids, i < j, do: {i, j} end)
+
+      rec = "adjudication-D5b-ii-2026-07-28.json"
+
+      member =
+        "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule a null value omits the header; so does an absent one"
+
+      tag = "oc:client/http-custom-headers/sep-2243-client-omit-null/ClientCustomHeaderOmitNull"
+
+      assert [{{^rec, ^member, c1, ^tag}, {^rec, ^member, c2, ^tag}}] = noops
+      assert c1 != c2
     end
 
     # MES-135 K1-R2 (CR 29680): the member half of the residual, pinned like
@@ -2498,7 +2716,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
     @owed_views ~w(bucket-1 bucket-2a bucket-2b bucket-3 bucket-4a bucket-4b bucket-5a bucket-5b bucket-6 claim-unmatched escalated)
     # MES-138 closed claim-unmatched and deleted its @pending line; MES-143
     # closed bucket-1 and deleted its; MES-144 closed bucket-3 and bucket-6.
-    @closed_views ~w(bucket-1 bucket-2a bucket-2b bucket-3 bucket-4a bucket-4b bucket-6 claim-unmatched escalated)
+    @closed_views ~w(bucket-1 bucket-2a bucket-2b bucket-3 bucket-4a bucket-4b bucket-5b bucket-6 claim-unmatched escalated)
 
     test "the anchor, the exclusions, the pending catalogue and the scan skip are pinned" do
       assert A.anchor() == {"docs/conformance/buckets", "*.json"}
@@ -2511,8 +2729,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert Enum.all?(Map.values(A.not_owed()), &(is_binary(&1) and &1 != ""))
 
       assert A.pending() == %{
-               "docs/conformance/buckets/bucket-5a-2026-07-28.json" => "MES-148",
-               "docs/conformance/buckets/bucket-5b-2026-07-28.json" => "MES-146"
+               "docs/conformance/buckets/bucket-5a-2026-07-28.json" => "MES-148"
              }
 
       assert A.scan_population() == ~w(ls-files -z --cached --others --exclude-standard)
@@ -2556,10 +2773,10 @@ defmodule MCP.Conformance.AdjudicationsTest do
     end
 
     # The printed figure is asserted, not just printed.
-    test "the task prints owed 11 — closed 9, pending 2, with each pending view's ticket",
+    test "the task prints owed 11 — closed 10, pending 1, with each pending view's ticket",
          %{result: %{report: r}} do
       assert Render.views(r) ==
-               "owed 11 — closed 9, pending 2: bucket-5a (MES-148), bucket-5b (MES-146)"
+               "owed 11 — closed 10, pending 1: bucket-5a (MES-148)"
 
       assert Render.render(r, []) =~ "views         " <> Render.views(r)
     end
@@ -2570,7 +2787,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert inputs.strays == []
     end
 
-    test "in a copied tree: a fourteenth record is walked; a dropped section, a record outside the walk, a wrong schema and a stray are refused",
+    test "in a copied tree: a fifteenth record is walked; a dropped section, a record outside the walk, a wrong schema and a stray are refused",
          %{} do
       tmp = copied_tree()
       on_exit(fn -> File.rm_rf!(tmp) end)
@@ -2605,7 +2822,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       )
 
       assert kinds.() == []
-      assert load.() |> A.audit() |> get_in([:report, "records_visited"]) == 14
+      assert load.() |> A.audit() |> get_in([:report, "records_visited"]) == 15
       assert sixth in records_in_dir(tmp)
       File.rm!(Path.join(tmp, sixth))
 
@@ -8576,7 +8793,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
           r
         end
 
-      pair = MapSet.new(w6, &{Path.basename(@d5bi), &1["member"], &1["tag"]})
+      pair = MapSet.new(w6, &{Path.basename(@d5bi), &1["member"], &1["claim"], &1["tag"]})
 
       assert clean.(true) == k1r_audited()
       without = clean.(false)
@@ -8617,6 +8834,496 @@ defmodule MCP.Conformance.AdjudicationsTest do
     end
   end
 
+  @d5bii "docs/conformance/adjudications/adjudication-D5b-ii-2026-07-28.json"
+  # D5b-ii's slice of bucket 5b, the complement of D5b-i's, pinned literally
+  # (the MES-129 rule). G32 does not read `slice.selector`, so these units are
+  # its only check, and the partition is held over BOTH records (MES-146).
+  @d5bii_selector %{"field" => "oc_key[1]", "in" => ["http-custom-headers"]}
+
+  describe "the D5b-ii record (MES-146)" do
+    setup %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d5bii]
+      [section] = record["sections"]
+      {:ok, i} = inputs.records[@d5bi]
+      [section_i] = i["sections"]
+      {:ok, view} = inputs.views[@v5b]
+      {ctx, []} = A.d5_context(A.load_d5("."))
+
+      %{
+        record: record,
+        section: section,
+        rows: section["rows"],
+        rows_i: section_i["rows"],
+        view: view,
+        ctx: ctx
+      }
+    end
+
+    # (a) The partition: every view row is in exactly one of the two sections,
+    # and every section row is a view row. 31 + 36 = 67, both ways.
+    test "D5b-i and D5b-ii partition bucket 5b's 67 rows, both ways: 31 + 36, no row in both, none outside",
+         %{rows: rows, rows_i: rows_i, view: view} do
+      view_keys = Enum.map(view["rows"], &A.key/1)
+      assert length(view_keys) == 67 and length(Enum.uniq(view_keys)) == 67
+
+      ki = MapSet.new(rows_i, &A.key/1)
+      kii = MapSet.new(rows, &A.key/1)
+      assert {MapSet.size(ki), MapSet.size(kii)} == {31, 36}
+      assert {length(rows_i), length(rows)} == {31, 36}
+
+      assert MapSet.intersection(ki, kii) == MapSet.new()
+      assert MapSet.union(ki, kii) == MapSet.new(view_keys)
+
+      for k <- view_keys do
+        assert Enum.count([ki, kii], &(k in &1)) == 1, inspect(k)
+      end
+
+      # The two selectors are complements over oc_key[1]: each view row is
+      # selected by exactly one of them.
+      for r <- view["rows"] do
+        assert d5bi_selected?(r) != d5bii_selected?(r), inspect(A.key(r))
+      end
+    end
+
+    # (c) The slice criterion held to its set, both ways (MES-129 rule 1).
+    test "the section EQUALS the selector's 36 rows, both ways; the refusals of one added and one dropped row",
+         %{record: record, section: section, rows: rows, view: view} do
+      assert {section["view"], section["closure"], section["owner"]} ==
+               {@v5b, "closed", "MES-146"}
+
+      assert record["ticket"] == "MES-146"
+      assert section["slice"]["selector"] == @d5bii_selector
+      assert section["slice"]["rows"] == 36
+      assert d5bii_equality(rows, view["rows"]) == :ok
+
+      {inside, others} = Enum.split_with(view["rows"], &d5bii_selected?/1)
+      assert length(inside) == 36 and length(others) == 31
+
+      assert Enum.frequencies_by(inside, & &1["member"]["module"]) == %{
+               "MCP.Protocol.HeaderMirrorTest" => 27,
+               "MCP.Transport.RoutingHeadersTest" => 8,
+               "MCP.ClientToolSchemasTest" => 1
+             }
+
+      [other | _] = others
+
+      assert {:error, {added, none}} =
+               d5bii_equality(
+                 rows ++ [%{other | "member" => other["member"]["register_key"]}],
+                 view["rows"]
+               )
+
+      assert {MapSet.to_list(added), none} == {[A.key(other)], MapSet.new()}
+
+      [first | rest] = rows
+      assert {:error, {none, dropped}} = d5bii_equality(rest, view["rows"])
+      assert {none, MapSet.to_list(dropped)} == {MapSet.new(), [A.key(first)]}
+
+      assert record["counts"]["population"] == %{
+               "view_rows" => 67,
+               "this_section" => 36,
+               "d5b_i_rows_MES_145" => 31
+             }
+    end
+
+    # (d) The null premise on this scenario, and every row's OC side recomputed.
+    test "http-custom-headers: the null premise holds, 16 names not_emitted and 2 fail in every null, no discount; every row recomputed",
+         %{rows: rows, ctx: ctx} do
+      assert Enum.filter(A.null_premise_defects(ctx), &(elem(&1, 1) == "http-custom-headers")) ==
+               []
+
+      tags = rows |> Enum.map(& &1["tag"]) |> Enum.uniq()
+      assert length(tags) == 18
+
+      by_outcome =
+        Enum.group_by(tags, fn t ->
+          ctx |> A.oc_null_expected(t) |> Enum.map(& &1["outcome"]) |> Enum.uniq()
+        end)
+
+      assert Map.keys(by_outcome) |> Enum.sort() == [["fail"], ["not_emitted"]]
+
+      assert by_outcome[["fail"]]
+             |> Enum.map(&(String.split(&1, "/") |> List.last()))
+             |> Enum.sort() ==
+               ~w(ClientCustomHeaderOmitNull ClientSupportsCustomHeaders)
+
+      assert length(by_outcome[["not_emitted"]]) == 16
+      assert Enum.all?(tags, &(A.owed_discounts(ctx, &1) == []))
+
+      # The declared-id FAILURE behaviour: every null carries exactly the five
+      # id-keyed NotObserved backfills, and nothing else.
+      for t <- tags, e <- A.oc_null_expected(ctx, t) do
+        assert e["checks"]["total"] == 5 and e["checks"]["FAILURE"] == 5
+        assert length(e["failed_checks"]) == 5
+      end
+
+      for r <- rows do
+        assert r["oc_null"] == A.oc_null_expected(ctx, r["tag"]), r["tag"]
+        assert r["discounts"] == A.owed_discounts(ctx, r["tag"]), r["tag"]
+        assert A.derive_disposition(ctx, r["tag"], r["et_null"]) == r["disposition"], r["tag"]
+        assert r["et_null"]["measured"] == true, r["tag"]
+      end
+    end
+
+    test "the section's counts are its rows' enumeration: 36 vacuous_et, no discount; fail 4 and not_emitted 32",
+         %{record: record, rows: rows} do
+      item = &%{"member" => &1["member"], "tag" => &1["tag"]}
+
+      enum = fn keys, pred ->
+        Map.new(keys, fn k ->
+          items = for r <- rows, pred.(r, k), do: item.(r)
+          {k, %{"count" => length(items), "rows" => items}}
+        end)
+      end
+
+      counts = &Map.new(&1, fn {k, v} -> {k, v["count"]} end)
+      by_disposition = enum.(A.d5_dispositions(), &(&1["disposition"] == &2))
+      assert record["counts"]["by_disposition"] == by_disposition
+
+      assert counts.(by_disposition) == %{
+               "discriminating" => 0,
+               "vacuous_oc" => 0,
+               "vacuous_et" => 36,
+               "vacuous_both" => 0,
+               "not_established" => 0
+             }
+
+      grains = for t <- A.discount_types(), g <- A.discount_grains(), do: "#{t}/#{g}"
+
+      by_discount =
+        enum.(grains, fn r, k ->
+          Enum.any?(r["discounts"], &("#{&1["type"]}/#{&1["grain"]}" == k))
+        end)
+
+      assert record["counts"]["by_discount"] == by_discount
+      assert Enum.all?(counts.(by_discount), fn {_, n} -> n == 0 end)
+
+      by_outcome =
+        enum.(A.null_outcomes(), fn r, k -> Enum.any?(r["oc_null"], &(&1["outcome"] == k)) end)
+
+      assert record["counts"]["by_null_outcome_any_census"] == by_outcome
+
+      assert counts.(by_outcome) == %{
+               "pass" => 0,
+               "skipped" => 0,
+               "fail" => 4,
+               "not_emitted" => 32,
+               "undetermined" => 0
+             }
+    end
+
+    # (e) The catalogues, pinned: the 18 checks of the sweep in harness order,
+    # the limb catalogue, and every row's limbs with their results.
+    test "the aggregation sweep's catalogues: 18 checks, 14 limbs (11 row limbs, 3 negatives), every row's limbs and results",
+         %{record: record, rows: rows} do
+      sweep = record["aggregation_sweep"]
+
+      assert Enum.map(sweep["by_check"], &{&1["check"], length(&1["rows"])}) == [
+               {"ClientSupportsCustomHeaders", 1},
+               {"ClientCustomHeader_Region", 4},
+               {"ClientCustomHeader_Priority", 2},
+               {"ClientCustomHeader_Verbose", 2},
+               {"ClientCustomHeader_Debug", 1},
+               {"ClientCustomHeader_EmptyVal", 2},
+               {"ClientCustomHeader_Method", 2},
+               {"ClientCustomHeaderNoMirrorNumber", 1},
+               {"ClientCustomHeader_NonAscii", 4},
+               {"ClientCustomHeader_Whitespace", 3},
+               {"ClientCustomHeader_LeadingSpace", 1},
+               {"ClientCustomHeader_TrailingSpace", 1},
+               {"ClientCustomHeader_InternalSpace", 1},
+               {"ClientCustomHeader_ControlChar", 2},
+               {"ClientCustomHeader_CrLf", 2},
+               {"ClientCustomHeader_Tab", 2},
+               {"ClientCustomHeaderNoMirrorUnannotated", 2},
+               {"ClientCustomHeaderOmitNull", 3}
+             ]
+
+      assert sweep["by_check"]
+             |> Enum.flat_map(& &1["rows"])
+             |> Enum.map(& &1["row"])
+             |> Enum.sort() ==
+               Enum.to_list(1..36)
+
+      assert {sweep["limbs_built_rows"], sweep["negative_rows"]} == {Enum.to_list(1..36), []}
+
+      assert Enum.map(sweep["limbs"], &{&1["id"], &1["shape"], &1["use"]}) == [
+               {"V4", "direct", "row limb"},
+               {"V5", "direct", "row limb"},
+               {"V8", "direct", "row limb"},
+               {"V6", "direct", "row limb"},
+               {"V7", "direct", "row limb"},
+               {"P1", "layer", "row limb"},
+               {"P2s", "sampling", "row limb"},
+               {"Lall", "layer", "row limb"},
+               {"Lnull", "layer", "row limb"},
+               {"Sunann", "sampling", "row limb"},
+               {"Snull", "sampling", "row limb"},
+               {"V1", "negative", "recorded negative"},
+               {"P2", "negative", "recorded negative"},
+               {"V3", "negative", "recorded negative"}
+             ]
+
+      assert Enum.map(sweep["findings"], & &1["id"]) == ~w(F1 F2 F3 F4 F5)
+
+      # A row limb carries the catalogue's edits verbatim.
+      cat = Map.new(sweep["limbs"], &{&1["id"], &1["edits"]})
+
+      for r <- rows, m <- r["et_null"]["mutations"] do
+        assert m["edits"] == cat[m["id"]], m["id"]
+      end
+
+      assert Enum.map(rows, fn r ->
+               {r["tag"] |> String.split("/") |> List.last(),
+                Enum.map(r["et_null"]["mutations"], &{&1["id"], &1["result"]})}
+             end) == [
+               {"ClientCustomHeader_Region",
+                [{"V4", "green"}, {"V5", "red"}, {"P1", "green"}, {"P2s", "green"}]},
+               {"ClientCustomHeader_NonAscii",
+                [{"V4", "green"}, {"V8", "red"}, {"P1", "green"}, {"P2s", "green"}]},
+               {"ClientCustomHeader_Whitespace",
+                [{"V4", "green"}, {"V8", "red"}, {"P1", "green"}, {"P2s", "green"}]},
+               {"ClientCustomHeaderOmitNull",
+                [{"V6", "red"}, {"Lnull", "green"}, {"Snull", "green"}]},
+               {"ClientCustomHeaderOmitNull",
+                [{"V6", "red"}, {"Lnull", "green"}, {"Snull", "green"}]},
+               {"ClientCustomHeader_InternalSpace",
+                [{"V4", "red"}, {"V5", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeader_EmptyVal", [{"V4", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeader_Priority",
+                [{"V4", "red"}, {"V5", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeader_Verbose",
+                [{"V4", "red"}, {"V5", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeader_Debug",
+                [{"V4", "red"}, {"V5", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeader_NonAscii",
+                [{"V4", "red"}, {"V8", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeader_Whitespace",
+                [{"V4", "red"}, {"V8", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeader_LeadingSpace",
+                [{"V4", "red"}, {"V8", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeader_TrailingSpace",
+                [{"V4", "red"}, {"V8", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeader_ControlChar",
+                [{"V4", "red"}, {"V8", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeader_CrLf",
+                [{"V4", "red"}, {"V8", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeader_Tab",
+                [{"V4", "red"}, {"V8", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeader_Region",
+                [{"V4", "red"}, {"V5", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeader_Method",
+                [{"V4", "red"}, {"V5", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeader_Method",
+                [{"V4", "red"}, {"V5", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeaderNoMirrorUnannotated",
+                [{"V7", "red"}, {"Lall", "green"}, {"Sunann", "red"}]},
+               {"ClientCustomHeaderNoMirrorNumber",
+                [{"V7", "red"}, {"Lall", "green"}, {"Sunann", "red"}]},
+               {"ClientSupportsCustomHeaders",
+                [{"V4", "red"}, {"P1", "green"}, {"P2s", "green"}]},
+               {"ClientCustomHeader_Region",
+                [{"V4", "red"}, {"V5", "red"}, {"P1", "red"}, {"P2s", "green"}]},
+               {"ClientCustomHeader_Priority",
+                [{"V4", "red"}, {"V5", "red"}, {"P1", "red"}, {"P2s", "green"}]},
+               {"ClientCustomHeader_Verbose",
+                [{"V4", "red"}, {"V5", "red"}, {"P1", "red"}, {"P2s", "green"}]},
+               {"ClientCustomHeader_NonAscii",
+                [{"V4", "red"}, {"V8", "red"}, {"P1", "red"}, {"P2s", "green"}]},
+               {"ClientCustomHeader_EmptyVal", [{"V4", "red"}, {"P1", "red"}, {"P2s", "green"}]},
+               {"ClientCustomHeaderNoMirrorUnannotated",
+                [{"V7", "red"}, {"Lall", "red"}, {"Sunann", "green"}]},
+               {"ClientCustomHeader_Region",
+                [{"V4", "red"}, {"V5", "red"}, {"P1", "red"}, {"P2s", "green"}]},
+               {"ClientCustomHeaderOmitNull",
+                [{"V6", "red"}, {"Lnull", "red"}, {"Snull", "green"}]},
+               {"ClientCustomHeader_NonAscii",
+                [{"V4", "red"}, {"V8", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeader_Whitespace",
+                [{"V4", "red"}, {"V8", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeader_ControlChar",
+                [{"V4", "red"}, {"V8", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeader_CrLf",
+                [{"V4", "red"}, {"V8", "red"}, {"P1", "green"}, {"P2s", "red"}]},
+               {"ClientCustomHeader_Tab",
+                [{"V4", "red"}, {"V8", "red"}, {"P1", "green"}, {"P2s", "red"}]}
+             ]
+    end
+
+    # Q3's condition (PM 30138), made checkable: a sampling limb's row names the
+    # harness bytes carrying the shape, and the member's own test does not carry it.
+    test "every sampling limb cites the harness's argument shape, which the member's test does not send",
+         %{rows: rows} do
+      sampling =
+        for r <- rows,
+            m <- r["et_null"]["mutations"],
+            m["limb_shape"] == "sampling",
+            do: {r, m}
+
+      assert length(sampling) == 36
+
+      for {r, m} <- sampling do
+        c = m["condition_at"]
+        assert c["harness_sha256"] =~ "a10085d0"
+
+        case m["id"] do
+          id when id in ~w(P2s Sunann) ->
+            assert c["bytes"] == "control_char_val:`line1\nline2`"
+            if m["result"] == "green", do: refute(r["et_test"]["bytes"] =~ "\\n")
+
+          "Snull" ->
+            assert c["bytes"] =~ "verbose:null,query:`SELECT 1`"
+
+            if m["result"] == "green",
+              do: refute(r["et_test"]["bytes"] =~ ~s("query"))
+        end
+      end
+
+      # 14 sampling greens; for 8 rows, all RoutingHeadersTest, a sampling limb
+      # is the ONLY green, so Q3's condition carries their disposition.
+      greens =
+        for {{r, m}, n} <- Enum.with_index(sampling), m["result"] == "green", do: {n, r, m["id"]}
+
+      assert length(greens) == 14
+
+      sampling_only =
+        for r <- rows,
+            g = for(m <- r["et_null"]["mutations"], m["result"] == "green", do: m["limb_shape"]),
+            g != [] and Enum.all?(g, &(&1 == "sampling")),
+            do: r["member"]
+
+      assert length(sampling_only) == 8
+
+      assert Enum.all?(
+               sampling_only,
+               &String.starts_with?(&1, "MCP.Transport.RoutingHeadersTest/")
+             )
+    end
+
+    # F5: four tokens the locator sites at a sibling's push; each such row cites
+    # the true site as emitted_at and the locator's as locator_site.
+    test "the locator's four mis-sited ClientCustomHeader_* tokens carry locator_site; every emitted_at names its own check",
+         %{rows: rows} do
+      mis =
+        for r <- rows,
+            Map.has_key?(r["check"], "locator_site"),
+            uniq: true,
+            do: r["tag"] |> String.split("/") |> List.last()
+
+      assert Enum.sort(mis) ==
+               ~w(ClientCustomHeader_EmptyVal ClientCustomHeader_InternalSpace ClientCustomHeader_Method ClientCustomHeader_Region)
+
+      for r <- rows do
+        name = r["tag"] |> String.split("/") |> List.last()
+        at = r["check"]["emitted_at"]["bytes"]
+
+        if String.starts_with?(name, "ClientCustomHeader_"),
+          do: assert(at =~ "name:`ClientCustomHeader_${t}`"),
+          else: assert(at =~ "name:`#{name}`")
+
+        if ls = r["check"]["locator_site"],
+          do: assert(ls["bytes"] =~ ~r/name:`ClientCustomHeaderNoMirror(Number|Unannotated)`/)
+      end
+    end
+
+    # (b) The whole bucket-5b view (MES-146 closing duty), re-derived from the
+    # sections the directory walk finds on the view, not from either record's
+    # own counts: counts per disposition, per discount and per null outcome,
+    # each enumerated by key and pinned. Each record's counts must then be
+    # exactly its share of the enumeration, so a record's counts cannot drift
+    # from the whole. The mirror page (conformance/controls/bucket5b_mirror.exs)
+    # prints the same figures.
+    test "the bucket-5b view, whole (MES-146): 67 rows = 7 discriminating / 11 vacuous_oc / 43 vacuous_et / 6 vacuous_both / 0 not_established, from the walk over both records",
+         %{inputs: inputs, view: view} do
+      secs =
+        for {f, {:ok, doc}} <- Enum.sort(inputs.records),
+            s <- doc["sections"],
+            s["view"] == @v5b,
+            do: {Path.basename(f), doc, s}
+
+      assert Enum.map(secs, fn {f, doc, s} -> {f, doc["ticket"], s["closure"], s["owner"]} end) ==
+               [
+                 {"adjudication-D5b-i-2026-07-28.json", "MES-145", "open", "MES-146"},
+                 {"adjudication-D5b-ii-2026-07-28.json", "MES-146", "closed", "MES-146"}
+               ]
+
+      rows = for {_, _, s} <- secs, r <- s["rows"], do: r
+      assert Enum.sort(Enum.map(rows, &A.key/1)) == Enum.sort(Enum.map(view["rows"], &A.key/1))
+      assert length(rows) == 67
+
+      item = &%{"member" => &1["member"], "tag" => &1["tag"]}
+
+      enum = fn rs, keys, pred ->
+        Map.new(keys, fn k ->
+          items = for r <- rs, pred.(r, k), do: item.(r)
+          {k, %{"count" => length(items), "rows" => items}}
+        end)
+      end
+
+      grains = for t <- A.discount_types(), g <- A.discount_grains(), do: "#{t}/#{g}"
+
+      axes = %{
+        "by_disposition" => {A.d5_dispositions(), &(&1["disposition"] == &2)},
+        "by_discount" =>
+          {grains,
+           fn r, k -> Enum.any?(r["discounts"], &("#{&1["type"]}/#{&1["grain"]}" == k)) end},
+        "by_null_outcome_any_census" =>
+          {A.null_outcomes(), fn r, k -> Enum.any?(r["oc_null"], &(&1["outcome"] == k)) end}
+      }
+
+      whole = Map.new(axes, fn {axis, {keys, pred}} -> {axis, enum.(rows, keys, pred)} end)
+      counts = &Map.new(&1, fn {k, v} -> {k, v["count"]} end)
+
+      assert counts.(whole["by_disposition"]) == %{
+               "discriminating" => 7,
+               "vacuous_oc" => 11,
+               "vacuous_et" => 43,
+               "vacuous_both" => 6,
+               "not_established" => 0
+             }
+
+      assert counts.(whole["by_discount"]) == %{
+               "null/check" => 17,
+               "null/scenario" => 10,
+               "drive_policy/check" => 1,
+               "drive_policy/scenario" => 10
+             }
+
+      assert counts.(whole["by_null_outcome_any_census"]) == %{
+               "pass" => 3,
+               "skipped" => 14,
+               "fail" => 22,
+               "not_emitted" => 34,
+               "undetermined" => 0
+             }
+
+      # Each record's counts are its share of the enumeration, item for item,
+      # in section-row order; the shares add up to the whole.
+      for {axis, {keys, pred}} <- axes, {_, doc, s} <- secs do
+        assert doc["counts"][axis] == enum.(s["rows"], keys, pred), "#{doc["ticket"]} #{axis}"
+      end
+
+      for {axis, by_key} <- whole, {k, %{"rows" => items}} <- by_key do
+        assert items ==
+                 Enum.flat_map(secs, fn {_, doc, _} -> doc["counts"][axis][k]["rows"] end),
+               "#{axis} #{k}"
+      end
+    end
+  end
+
+  defp d5bii_selected?(view_row), do: Enum.at(view_row["oc_key"], 1) in ["http-custom-headers"]
+
+  defp d5bii_equality(section_rows, view_rows) do
+    want = for r <- view_rows, d5bii_selected?(r), into: MapSet.new(), do: A.key(r)
+    have = MapSet.new(section_rows, &A.key/1)
+    added = MapSet.difference(have, want)
+    dropped = MapSet.difference(want, have)
+
+    if added == MapSet.new() and dropped == MapSet.new(),
+      do: :ok,
+      else: {:error, {added, dropped}}
+  end
+
   defp d5bi_selected?(view_row), do: Enum.at(view_row["oc_key"], 1) not in ["http-custom-headers"]
 
   defp d5bi_equality(section_rows, view_rows) do
@@ -8635,7 +9342,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
     for {f, {:ok, doc}} <- inputs.records,
         s <- doc["sections"],
         r <- s["rows"],
-        do: {s["view"], {Path.basename(f), r["member"], r["tag"]}, r}
+        do: {s["view"], {Path.basename(f), r["member"], r["claim"], r["tag"]}, r}
   end
 
   # The K1-R pair predicate over the committed rows ({view, id, row}), each
