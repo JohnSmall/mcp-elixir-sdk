@@ -103,14 +103,14 @@ defmodule MCP.Transport.SSE do
   @doc """
   Decodes an SSE event string into an event map.
 
-  Parses the standard SSE fields (event, id, data, retry) from the
-  event text. Multiple `data:` lines are joined with newlines.
+  Parses the standard SSE fields (event, id, data, retry) from event text whose
+  lines may end in CRLF, CR or LF. Multiple `data:` lines are joined with newlines.
 
   Returns `{:ok, event}` or `{:error, reason}`.
   """
   @spec decode_event(String.t()) :: {:ok, event()} | {:error, term()}
   def decode_event(text) when is_binary(text) do
-    lines = String.split(text, "\n")
+    lines = String.split(text, ["\r\n", "\r", "\n"])
 
     event =
       Enum.reduce(lines, %{}, fn line, acc ->
@@ -136,20 +136,24 @@ defmodule MCP.Transport.SSE do
       {events, parser} = MCP.Transport.SSE.feed(parser, chunk1)
       {events, parser} = MCP.Transport.SSE.feed(parser, chunk2)
   """
-  @spec new_parser() :: binary()
-  def new_parser, do: ""
+  @spec new_parser() :: parser()
+  def new_parser, do: %{buffer: "", cr: false, bom: ""}
 
   @doc """
   Feeds data to a stream parser and returns any complete events.
 
   Returns `{events, new_parser_state}` where events is a list of
   decoded event maps.
+
+  Lines may end in CRLF, CR or LF, mixed within one stream, as the SSE
+  specification allows. A CR that ends one chunk and an LF that starts the
+  next are one line ending, and a byte-order mark at the start of the stream
+  is dropped, even when it arrives split across chunks.
+
+  A bare binary state (the pre-MES-156 form) is still accepted; `""` is a fresh parser.
   """
-  @spec feed(binary(), binary()) :: {[event()], binary()}
-  def feed(buffer, data) when is_binary(buffer) and is_binary(data) do
-    combined = buffer <> data
-    extract_events(combined, [])
-  end
+  @spec feed(parser() | binary(), binary()) :: {[event()], parser()}
+  def feed(parser, data) when is_binary(data), do: feed_chunk(parser, data)
 
   # --- Private helpers ---
 
@@ -176,17 +180,13 @@ defmodule MCP.Transport.SSE do
   defp parse_field(":" <> _rest, acc), do: acc
   defp parse_field("", acc), do: acc
 
+  # The field name runs to the FIRST colon, and exactly one space after it is
+  # dropped; the rest of the value is kept as sent (no trim).
   defp parse_field(line, acc) do
-    case String.split(line, ": ", parts: 2) do
-      [field, value] -> apply_field(field, String.trim(value), acc)
-      [field_with_colon] -> maybe_parse_no_space(field_with_colon, acc)
-    end
-  end
-
-  defp maybe_parse_no_space(text, acc) do
-    case String.split(text, ":", parts: 2) do
-      [field, value] -> apply_field(field, String.trim(value), acc)
-      _ -> acc
+    case String.split(line, ":", parts: 2) do
+      [field, " " <> value] -> apply_field(field, value, acc)
+      [field, value] -> apply_field(field, value, acc)
+      [_no_colon] -> acc
     end
   end
 
@@ -225,4 +225,50 @@ defmodule MCP.Transport.SSE do
         {events, buffer}
     end
   end
+
+  # --- Stream parser state (MES-156) ---
+  #
+  # Kept below extract_events/2 so that the lines above it do not move: its
+  # decode_event/1 call is cited by line elsewhere in the repository.
+
+  # buffer: normalised (LF-only) text not yet ending in a blank line.
+  # cr: the last byte fed was CR, so an LF opening the next chunk is its pair.
+  # bom: the bytes held while they are still a proper prefix of a UTF-8 BOM at
+  #      stream start, or :done once the start of the stream has been passed.
+  @opaque parser :: %{buffer: binary(), cr: boolean(), bom: binary() | :done}
+
+  @bom <<0xEF, 0xBB, 0xBF>>
+
+  defp feed_chunk("", data), do: feed_chunk(new_parser(), data)
+
+  defp feed_chunk(buffer, data) when is_binary(buffer),
+    do: feed_chunk(%{new_parser() | bom: :done}, buffer <> data)
+
+  # An empty chunk changes nothing, so a carried CR survives it.
+  defp feed_chunk(parser, ""), do: {[], parser}
+
+  defp feed_chunk(%{bom: :done} = parser, data), do: take_lines(parser, data)
+
+  defp feed_chunk(%{bom: held} = parser, data) do
+    case held <> data do
+      @bom <> rest ->
+        feed_chunk(%{parser | bom: :done}, rest)
+
+      partial
+      when byte_size(partial) < 3 and binary_part(@bom, 0, byte_size(partial)) == partial ->
+        {[], %{parser | bom: partial}}
+
+      other ->
+        feed_chunk(%{parser | bom: :done}, other)
+    end
+  end
+
+  defp take_lines(%{buffer: buffer, cr: cr} = parser, data) do
+    data = if cr, do: drop_leading_lf(data), else: data
+    {events, rest} = extract_events(buffer <> String.replace(data, ["\r\n", "\r"], "\n"), [])
+    {events, %{parser | buffer: rest, cr: String.ends_with?(data, "\r")}}
+  end
+
+  defp drop_leading_lf("\n" <> rest), do: rest
+  defp drop_leading_lf(data), do: data
 end
