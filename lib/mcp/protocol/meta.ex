@@ -133,4 +133,59 @@ defmodule MCP.Protocol.Meta do
 
   def validate_protocol_version(%__MODULE__{protocol_version: got}, _supported),
     do: {:error, {:unsupported, got}}
+
+  # --- The required per-request fields (basic/index.mdx) ---
+
+  @required_keys [@protocol_version_key, @client_capabilities_key]
+
+  @doc """
+  The `_meta` keys every client request **MUST** carry (basic/index.mdx,
+  per-request protocol fields): the protocol version and the client
+  capabilities. `clientInfo` is a SHOULD and is not among them.
+  """
+  @spec required_keys() :: [String.t()]
+  def required_keys, do: @required_keys
+
+  @doc """
+  Returns the required `_meta` keys absent from a request's `params`, in
+  `required_keys/0` order, or `[]` when the request is well-formed. A missing
+  or non-map `_meta` is missing every key; a key whose value is `null` is
+  missing. Agrees with `is_missing_required/1` on every input.
+  """
+  @spec missing_required(map() | nil) :: [String.t()]
+  def missing_required(params) do
+    meta = if is_map(params), do: Map.get(params, "_meta"), else: nil
+    meta = if is_map(meta), do: meta, else: %{}
+    Enum.filter(@required_keys, &is_nil(Map.get(meta, &1)))
+  end
+
+  @doc """
+  Guard form of `missing_required(params) != []`: true when a request's
+  `params` lack a required `_meta` field. Such a request is malformed and is
+  rejected with -32602 (HTTP 400) — ahead of the -32022 version check, which
+  judges only a version that is present.
+  """
+  defguard is_missing_required(params)
+           when not is_map(params) or not is_map_key(params, "_meta") or
+                  not is_map(:erlang.map_get("_meta", params)) or
+                  not is_map_key(
+                    :erlang.map_get("_meta", params),
+                    "io.modelcontextprotocol/protocolVersion"
+                  ) or
+                  is_nil(
+                    :erlang.map_get(
+                      "io.modelcontextprotocol/protocolVersion",
+                      :erlang.map_get("_meta", params)
+                    )
+                  ) or
+                  not is_map_key(
+                    :erlang.map_get("_meta", params),
+                    "io.modelcontextprotocol/clientCapabilities"
+                  ) or
+                  is_nil(
+                    :erlang.map_get(
+                      "io.modelcontextprotocol/clientCapabilities",
+                      :erlang.map_get("_meta", params)
+                    )
+                  )
 end

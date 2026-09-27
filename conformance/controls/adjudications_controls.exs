@@ -10,6 +10,7 @@
 #     mix run conformance/controls/adjudications_controls.exs refusals
 #     mix run conformance/controls/adjudications_controls.exs mutation
 #     mix run conformance/controls/adjudications_controls.exs harness
+#     mix run conformance/controls/adjudications_controls.exs anchors
 #     mix run conformance/controls/adjudications_controls.exs all
 #     mix run conformance/controls/adjudications_controls.exs swap-audit
 #     mix run conformance/controls/adjudications_controls.exs swap-audit touching <record basename>
@@ -219,7 +220,9 @@ defmodule AdjudicationsControls do
     "et_null_defects" => 4,
     "derivation_defects" => 4,
     "not_established_defects" => 3,
-    "ambiguous_defects" => 2
+    "ambiguous_defects" => 2,
+    "unwarranted_defects" => 2,
+    "prose_anchor_defects" => 2
   }
   @source "conformance/lib/mcp/conformance/adjudications.ex"
   # A D1 row's counterfactual that audits clean: it does not fire, and cites spec text.
@@ -241,22 +244,279 @@ defmodule AdjudicationsControls do
     IO.puts("\nPASS swap-audit touching #{record}")
   end
 
-  def run([mode]) when mode in ~w(positive refusals mutation harness) do
+  def run([mode]) when mode in ~w(positive refusals mutation harness anchors) do
     apply(__MODULE__, String.to_existing_atom(mode), [])
     IO.puts("\nPASS #{mode}")
   end
 
   def run(["all"]) do
-    for m <- ~w(positive refusals mutation harness)a, do: apply(__MODULE__, m, [])
+    for m <- ~w(positive refusals mutation harness anchors)a, do: apply(__MODULE__, m, [])
     IO.puts("\nPASS all")
   end
 
   def run(_) do
     IO.puts(
-      "usage: mix run #{__ENV__.file |> Path.relative_to_cwd()} positive|refusals|mutation|harness|swap-audit|all"
+      "usage: mix run #{__ENV__.file |> Path.relative_to_cwd()} positive|refusals|mutation|harness|anchors|swap-audit|all"
     )
 
     System.halt(2)
+  end
+
+  # --- anchors (MES-161) ---------------------------------------------------------
+  #
+  # A citation of behaviour a later commit removed carries `at` and is read at
+  # that commit (PM ruling 30337, Q9). Each plant is on the REAL records, and is
+  # refused by exactly the kinds named, each naming G32: (a) a wrong sha, an
+  # abbreviated one, and a non-ancestor one (a commit made in a throwaway shared
+  # clone, so nothing is written to this checkout) are `anchor_invalid`; a
+  # drifted byte at `at` is `citation_drift`; (b) `at` put on text the ticket did
+  # not edit, whether unmoved (D2b's in-scope citation) or moved (the W-1 window, at its
+  # bd99a39 lines), is `anchor_unwarranted`; a prose anchor whose cite is not in
+  # its field, or that carries no `at`, is `prose_anchor_foreign`. Then the
+  # guard is recompiled in this VM: with the at-reader cut (an anchored citation
+  # read at the tip) the 127 anchored citations are refused, and with each new
+  # clause cut its plant audits CLEAN, so each clause is load-bearing.
+
+  @anchor_sha "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
+  @d1si "docs/conformance/adjudications/adjudication-D1-server-i-2026-07-28.json"
+
+  def anchors do
+    header("anchors (MES-161) — `at`, planted into the real records")
+    base = A.load()
+
+    %{defects: ds, report: r} = A.audit(base)
+
+    check(
+      "(positive) the committed tree audits clean with #{r["repo_citations_anchored"]} citations anchored at #{inspect(r["anchored_at"])}",
+      ds == [] and r["repo_citations_anchored"] == 127 and r["anchored_at"] == [@anchor_sha],
+      Enum.map(ds, &A.format_defect/1)
+    )
+
+    # The D4a initialize row's first if_conformance_fixed window: anchored, and
+    # not an et_test, so a plant on it moves no tie.
+    {:ok, d4a} = base.records[@record]
+
+    row_at =
+      Enum.find_index(
+        hd(d4a["sections"])["rows"],
+        &match?(%{"if_conformance_fixed" => [%{"at" => _} | _]}, &1)
+      )
+
+    row = hd(d4a["sections"])["rows"] |> Enum.at(row_at)
+
+    ifx = [
+      "sections",
+      Access.at(0),
+      "rows",
+      Access.at(row_at),
+      "if_conformance_fixed",
+      Access.at(0)
+    ]
+
+    plant_at = fn inputs, fun -> put_record(inputs, @record, &update_in(&1, ifx, fun)) end
+
+    expect(
+      "(a) anchor_invalid: `at` names no commit",
+      [:anchor_invalid],
+      A.key(row),
+      plant_at.(base, &Map.put(&1, "at", String.duplicate("0", 40)))
+    )
+
+    expect(
+      "(a) anchor_invalid: `at` abbreviated (not a full commit id)",
+      [:anchor_invalid],
+      A.key(row),
+      plant_at.(base, &Map.put(&1, "at", String.slice(@anchor_sha, 0, 7)))
+    )
+
+    {clone, child} = non_ancestor_clone()
+
+    try do
+      expect(
+        "(a) anchor_invalid: `at` a commit holding the same file and bytes, but NOT an ancestor of HEAD",
+        [:anchor_invalid],
+        A.key(row),
+        %{plant_at.(base, &Map.put(&1, "at", child)) | source_fun: A.load(root: clone).source_fun}
+      )
+    after
+      File.rm_rf!(clone)
+    end
+
+    expect(
+      "(a) citation_drift: one byte of an anchored citation changed, read at `at`",
+      [:citation_drift],
+      A.key(row),
+      plant_at.(base, &Map.update!(&1, "bytes", fn b -> b <> "x" end))
+    )
+
+    # (b) `at` on text the ticket did not edit. Unmoved: D2b's first row cites
+    # the in-scope list, which no commit since bd99a39 has touched.
+    {:ok, d2b} = base.records[@d2b]
+    d4b_row = hd(hd(d2b["sections"])["rows"])
+    lib_path = ["sections", Access.at(0), "rows", Access.at(0), "oc_status_at_accepted_run"]
+
+    {_, 0} =
+      System.cmd("git", [
+        "diff",
+        "--quiet",
+        @anchor_sha,
+        "HEAD",
+        "--",
+        d4b_row["oc_status_at_accepted_run"]["file"]
+      ])
+
+    expect(
+      "(b) anchor_unwarranted: `at` on an unmoved citation the ticket did not edit (D2b's in-scope window)",
+      [:anchor_unwarranted],
+      A.key(d4b_row),
+      put_record(base, @d2b, &update_in(&1, lib_path, fn c -> Map.put(c, "at", @anchor_sha) end))
+    )
+
+    # Moved but unedited: a W-1 row's et_test, at its bd99a39 window [209, 219].
+    {:ok, d1si} = base.records[@d1si]
+    rows_si = hd(d1si["sections"])["rows"]
+    wi = Enum.find_index(rows_si, &(&1["et_test"]["lines"] == [226, 236]))
+
+    expect(
+      "(b) anchor_unwarranted: `at` on a moved, unedited window (W-1, [209, 219] at bd99a39, [226, 236] at the tip)",
+      [:anchor_unwarranted],
+      A.key(Enum.at(rows_si, wi)),
+      put_record(
+        base,
+        @d1si,
+        &update_in(&1, ["sections", Access.at(0), "rows", Access.at(wi), "et_test"], fn c ->
+          Map.merge(c, %{"lines" => [209, 219], "at" => @anchor_sha})
+        end)
+      )
+    )
+
+    # Prose anchors.
+    pi = Enum.find_index(rows_si, &match?(%{"prose_anchors" => [_ | _]}, &1))
+    pa = ["sections", Access.at(0), "rows", Access.at(pi), "prose_anchors", Access.at(0)]
+    plant_pa = fn fun -> put_record(base, @d1si, &update_in(&1, pa, fun)) end
+
+    expect(
+      "(c) prose_anchor_foreign: the cite does not occur in its field",
+      [:prose_anchor_foreign],
+      A.key(Enum.at(rows_si, pi)),
+      plant_pa.(&Map.put(&1, "cite", "no_such_test.exs:1"))
+    )
+
+    expect(
+      "(c) prose_anchor_foreign + citation_drift: a prose anchor with no `at` (read at the tip, where its text is gone)",
+      [:citation_drift, :prose_anchor_foreign],
+      A.key(Enum.at(rows_si, pi)),
+      plant_pa.(&Map.delete(&1, "at"))
+    )
+
+    # --- the guard recompiled: each new clause load-bearing ---
+    src = File.read!(@source)
+
+    reader =
+      ~s|def cited_source(%{"file" => f, "at" => sha}, source_fun), do: source_fun.({:at, sha, f})|
+
+    at_blind =
+      String.replace(
+        src,
+        reader,
+        ~s|def cited_source(%{"file" => f, "at" => _}, source_fun), do: source_fun.(f)|
+      )
+
+    check("(M1) the at-blind mutant differs from the source", at_blind != src)
+
+    with_module(at_blind, fn ->
+      ds = A.audit(A.load()).defects
+      drifted = Enum.filter(ds, &(&1.kind == :citation_drift and &1.detail =~ "@" <> @anchor_sha))
+
+      check(
+        "(M1) at-reader cut (anchored citations read at the tip): all 127 anchored citations refused as citation_drift",
+        length(drifted) == 127,
+        [
+          "#{length(drifted)} anchored citations drifted; kinds #{inspect(ds |> Enum.map(& &1.kind) |> Enum.frequencies())}"
+        ]
+      )
+    end)
+
+    unwarranted =
+      put_record(base, @d2b, &update_in(&1, lib_path, fn c -> Map.put(c, "at", @anchor_sha) end))
+
+    with_module(neutralise(src, ["unwarranted_defects"]), fn ->
+      check(
+        "(M2) unwarranted_defects cut: `at` on an unedited citation audits CLEAN",
+        A.audit(unwarranted).defects == []
+      )
+    end)
+
+    with_module(neutralise(src, ["prose_anchor_defects"]), fn ->
+      check(
+        "(M3) prose_anchor_defects cut: a prose anchor whose cite is not in its field audits CLEAN",
+        A.audit(plant_pa.(&Map.put(&1, "cite", "no_such_test.exs:1"))).defects == []
+      )
+    end)
+
+    ancestry = ~s|match?({:error, _}, git(root, ["merge-base", "--is-ancestor", sha, "HEAD"])) ->|
+    no_ancestry = String.replace(src, ancestry, "false ->")
+    check("(M4) the no-ancestry mutant differs from the source", no_ancestry != src)
+    {clone, child} = non_ancestor_clone()
+
+    try do
+      with_module(no_ancestry, fn ->
+        ds =
+          A.audit(%{
+            plant_at.(base, &Map.put(&1, "at", child))
+            | source_fun: A.load(root: clone).source_fun
+          }).defects
+
+        check(
+          "(M4) ancestry check cut: the non-ancestor `at` audits CLEAN",
+          ds == [],
+          Enum.map(ds, &A.format_defect/1)
+        )
+      end)
+    after
+      File.rm_rf!(clone)
+    end
+
+    %{defects: ds} = A.audit(A.load())
+    check("restored: the real guard is back and the tree is clean", ds == [])
+  end
+
+  # A shared clone of this checkout's HEAD, holding one extra commit: a child of
+  # the anchor with the anchor's tree. It holds every anchored file with the
+  # anchored bytes, and is NOT an ancestor of HEAD. The clone's objects are its
+  # own; nothing is written here.
+  defp non_ancestor_clone do
+    clone =
+      Path.join(System.tmp_dir!(), "mes161-anchor-ctl-#{System.unique_integer([:positive])}")
+
+    {_, 0} = System.cmd("git", ["clone", "-q", "--shared", ".", clone])
+
+    {child, 0} =
+      System.cmd(
+        "git",
+        [
+          "-C",
+          clone,
+          "commit-tree",
+          @anchor_sha <> "^{tree}",
+          "-p",
+          @anchor_sha,
+          "-m",
+          "MES-161 control: not an ancestor of HEAD"
+        ],
+        env: [
+          {"GIT_AUTHOR_NAME", "control"},
+          {"GIT_AUTHOR_EMAIL", "control@invalid"},
+          {"GIT_COMMITTER_NAME", "control"},
+          {"GIT_COMMITTER_EMAIL", "control@invalid"}
+        ]
+      )
+
+    {clone, String.trim(child)}
+  end
+
+  defp put_record(inputs, record, fun) do
+    update_in(inputs, [:records, record], fn {:ok, doc} -> {:ok, fun.(doc)} end)
   end
 
   # --- positive ------------------------------------------------------------------
@@ -1229,12 +1489,12 @@ defmodule AdjudicationsControls do
          &Map.delete(&1, "occurrence")
        ), policy},
       {:citation_ambiguous,
-       "D4b's subscriptions_dispatch_test.exs:389 citation claiming occurrence 2 (it is 1)",
+       "D4b's subscriptions_dispatch_test.exs:442 citation claiming occurrence 2 (it is 1)",
        map_citation(
          base,
          @d4b,
          "test/mcp/server/subscriptions_dispatch_test.exs",
-         [389, 389],
+         [442, 442],
          &Map.put(&1, "occurrence", 2)
        ), policy}
     ]

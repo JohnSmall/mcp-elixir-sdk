@@ -94,7 +94,10 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
         "id" => id,
         "method" => "subscriptions/listen",
         "params" => %{
-          "_meta" => %{"io.modelcontextprotocol/protocolVersion" => @version},
+          "_meta" => %{
+            "io.modelcontextprotocol/protocolVersion" => @version,
+            "io.modelcontextprotocol/clientCapabilities" => %{}
+          },
           "notifications" => notifications
         }
       })
@@ -266,6 +269,10 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- the acknowledgment ---
 
   describe "the stream opens with its acknowledgment" do
+    @tag oc: [
+           "oc:server/server-stateless/sep-2575-server-sends-subscription-ack/ServerSendsSubscriptionAck",
+           "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId"
+         ]
     @tag :etcc
     test "the first message is notifications/subscriptions/acknowledged", %{a: port} do
       stream = open_listen(port, %{"toolsListChanged" => true, "promptsListChanged" => true})
@@ -283,6 +290,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       close(stream)
     end
 
+    @tag oc: "oc:none/no-oc-scenario/sse-response-headers"
     @tag :etcc
     test "the response carries the SSE headers the spec SHOULDs", %{a: port} do
       stream = open_listen(port, %{"toolsListChanged" => true})
@@ -298,6 +306,10 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       close(stream)
     end
 
+    @tag oc: [
+           "oc:server/server-stateless/sep-2575-server-sends-subscription-ack/ServerSendsSubscriptionAck",
+           "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId"
+         ]
     @tag :etcc
     test "nothing bearing this subscription's id precedes its acknowledgment", %{a: port} do
       # SubscribingHandler emits INSIDE handle_listen/3 for the id "eager" —
@@ -320,6 +332,8 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- delivery and filtering, end to end ---
 
   describe "delivery over the wire" do
+    @tag oc:
+           "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId"
     @tag :etcc
     test "an opted-in notification arrives, stamped with the subscription id", %{a: port} do
       stream = open_listen(port, %{"toolsListChanged" => true})
@@ -337,6 +351,8 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       close(stream)
     end
 
+    @tag oc:
+           "oc:server/server-stateless/sep-2575-server-honors-notification-filter/ServerHonorsNotificationFilter"
     @tag :etcc
     test "an unrequested type never reaches the wire", %{a: port} do
       stream = open_listen(port, %{"toolsListChanged" => true})
@@ -361,6 +377,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- T-8: keep-alive frames, both directions ---
 
   describe "T-8 keep-alive comment lines" do
+    @tag oc: "oc:none/no-oc-scenario/sse-comment-is-a-bare-colon"
     @tag :etcc
     test "the encoder emits a bare comment line" do
       assert SSE.comment() == ":\r\n"
@@ -370,6 +387,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       assert SSE.encode_event(%{}) =~ "data:"
     end
 
+    @tag oc: "oc:none/no-oc-scenario/sse-comment-line-ignored"
     @tag :etcc
     test "our parser ignores a comment line arriving between two events" do
       first = SSE.encode_message(%{"jsonrpc" => "2.0", "method" => "one"})
@@ -381,6 +399,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       assert methods == ["one", "two"]
     end
 
+    @tag oc: "oc:none/no-oc-scenario/idle-stream-emits-comments"
     @tag :etcc
     test "an idle stream actually emits comment frames, and stays open", %{a: port} do
       # keepalive_interval is 150ms in this harness, so ~500ms of silence should
@@ -409,6 +428,9 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- T-9: cancellation and teardown ---
 
   describe "T-9 closing the stream is cancellation" do
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "the client closing tears the subscription down within a bounded window", %{a: port} do
       stream = open_listen(port, %{"toolsListChanged" => true}, id: "cancel-me")
       assert {:ok, _ack, _stream} = next_event(stream)
@@ -425,6 +447,9 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       assert {:error, :closed} = sink.("notifications/tools/list_changed", %{})
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "the handler's teardown callback runs exactly once", %{a: port} do
       stream = open_listen(port, %{"toolsListChanged" => true}, id: "once")
       assert {:ok, _ack, _stream} = next_event(stream)
@@ -439,6 +464,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- T-12: graceful close vs abrupt drop ---
 
   describe "T-12 the close asymmetry a client depends on" do
+    @tag oc: "oc:none/no-oc-scenario/close-asymmetry-response-first"
     @tag :etcc
     test "lifetime expiry sends the listen response, then closes" do
       # A 400ms lifetime, so expiry is the teardown reason rather than a
@@ -466,6 +492,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       close(stream)
     end
 
+    @tag oc: "oc:none/no-oc-scenario/close-frame-decision"
     @tag :etcc
     test "the close-frame decision refuses to write after a peer close" do
       # The half of the asymmetry end-to-end testing CANNOT reach: once the peer
@@ -482,6 +509,9 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       assert {:send, _} = MCP.Server.Subscription.close_frame(sub, :shutdown)
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "an abrupt client drop still tears the subscription down", %{a: port} do
       stream = open_listen(port, %{"toolsListChanged" => true}, id: "dropped")
       assert {:ok, _ack, _stream} = next_event(stream)
@@ -499,6 +529,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- T-10: the multi-instance boundary (Ruling 1), with its positive control ---
 
   describe "T-10 the documented multi-instance boundary" do
+    @tag oc: "oc:none/no-oc-scenario/no-cross-instance-delivery"
     @tag :etcc
     test "a change on instance B does not reach a stream held by instance A", %{a: a, b: b} do
       stream = open_listen(a, %{"toolsListChanged" => true}, id: "on-a")
@@ -533,6 +564,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- MC-6: clean failure when the stream cannot be started ---
 
   describe "MC-6 a stream that cannot start fails cleanly" do
+    @tag oc: "oc:none/no-oc-scenario/stream-start-failure"
     @tag :etcc
     test "controlled -32603, nothing streamed, and the handler is told" do
       # The failure is injected through the :stream_start seam, for the same
@@ -550,7 +582,10 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
           "id" => "wont-start",
           "method" => "subscriptions/listen",
           "params" => %{
-            "_meta" => %{"io.modelcontextprotocol/protocolVersion" => @version},
+            "_meta" => %{
+              "io.modelcontextprotocol/protocolVersion" => @version,
+              "io.modelcontextprotocol/clientCapabilities" => %{}
+            },
             "notifications" => %{"toolsListChanged" => true}
           }
         })
@@ -584,6 +619,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- Correction round 1 (review F4): the collector/stream lifetime property ---
 
   describe "the collector's lifetime ends strictly before the stream's" do
+    @tag oc: "oc:none/no-oc-scenario/collector-lifetime-ends-first"
     @tag :etcc
     test "the collector is gone by the time the stream is live", %{a: port} do
       # Replaces the T-7 case that could not fail. The claim it guarded — "the
@@ -627,6 +663,9 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- Correction round 1 (found while fixing K1, reported to the PM) ---
 
   describe "the teardown context has no channels" do
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "a handler emitting from handle_listen_closed/3 is dropped, not exited", %{a: port} do
       # `notify_listen_closed/4` rescues but does not catch exits, and
       # `:reply_sink` used to still be bound here — to a collector the driver
@@ -651,6 +690,8 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- Correction round 1 (review F1/F2): teardown on every exit ---
 
   describe "every exit from a listen runs teardown" do
+    @tag oc:
+           "oc:server/server-stateless/sep-2575-http-server-error-jsonrpc-id/HttpServerErrorJsonrpcId"
     @tag :etcc
     test "a REFUSED listen tells the handler and kills the sink (F1)" do
       # The handler is handed a live sink and then refuses. Before the fix
@@ -666,7 +707,10 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
           "id" => "refuse-me",
           "method" => "subscriptions/listen",
           "params" => %{
-            "_meta" => %{"io.modelcontextprotocol/protocolVersion" => @version},
+            "_meta" => %{
+              "io.modelcontextprotocol/protocolVersion" => @version,
+              "io.modelcontextprotocol/clientCapabilities" => %{}
+            },
             "notifications" => %{"toolsListChanged" => true}
           }
         })
@@ -690,6 +734,9 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       assert {:error, :closed} = sink.("notifications/tools/list_changed", %{})
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "a RAISE inside the stream loop tells the handler and kills the sink (F2)", %{a: port} do
       # Non-map params reach `Subscription.frame/3` and raise there, killing the
       # process that holds the stream. The wire side of that is defensible — an
@@ -713,6 +760,9 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       close(stream)
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "teardown still runs exactly once when an exit tears down and then unwinds", %{a: port} do
       # `close_stream/7` tears down explicitly and `open_stream/7`'s `after`
       # tears down again on the way out. The claim slot is what makes that two
@@ -731,6 +781,9 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   #     lifecycle, not per branch ---
 
   describe "the exits that raise before a branch is chosen" do
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
     test "a RAISE inside handle_listen/3 tells the handler and kills the sink (R1)" do
       # PROBE A from the re-review. The handler captured the sink and then
       # raised, so the request died before `Dispatch.dispatch/3` returned a
@@ -746,7 +799,10 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
           "id" => "raise-in-listen",
           "method" => "subscriptions/listen",
           "params" => %{
-            "_meta" => %{"io.modelcontextprotocol/protocolVersion" => @version},
+            "_meta" => %{
+              "io.modelcontextprotocol/protocolVersion" => @version,
+              "io.modelcontextprotocol/clientCapabilities" => %{}
+            },
             "notifications" => %{"toolsListChanged" => true}
           }
         })
@@ -769,6 +825,9 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       assert {:error, :closed} = sink.("notifications/tools/list_changed", %{})
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
     test "a :stream_start that RAISES tells the handler and kills the sink (R1)" do
       # PROBE B. `start_chunked/1` rescues into `{:error, exception}`, but the
       # seam is injectable and a custom one is free to raise — and before this
@@ -785,7 +844,10 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
           "id" => "start-raises",
           "method" => "subscriptions/listen",
           "params" => %{
-            "_meta" => %{"io.modelcontextprotocol/protocolVersion" => @version},
+            "_meta" => %{
+              "io.modelcontextprotocol/protocolVersion" => @version,
+              "io.modelcontextprotocol/clientCapabilities" => %{}
+            },
             "notifications" => %{"toolsListChanged" => true}
           }
         })
@@ -806,6 +868,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       assert {:error, :closed} = sink.("notifications/tools/list_changed", %{})
     end
 
+    @tag oc: "oc:none/no-oc-scenario/listen-refused-above-handler"
     @tag :etcc
     test "a listen answered ABOVE the handler is owed no teardown callback" do
       # The other half of the same property, and the only reason the obligation
@@ -821,7 +884,10 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
           "id" => "no-filter",
           "method" => "subscriptions/listen",
           "params" => %{
-            "_meta" => %{"io.modelcontextprotocol/protocolVersion" => @version}
+            "_meta" => %{
+              "io.modelcontextprotocol/protocolVersion" => @version,
+              "io.modelcontextprotocol/clientCapabilities" => %{}
+            }
           }
         })
 
@@ -840,6 +906,8 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       refute_receive {:listen_closed, "no-filter", _}, 500
     end
 
+    @tag oc:
+           "oc:server/server-stateless/sep-2575-http-server-error-jsonrpc-id/HttpServerErrorJsonrpcId"
     @tag :etcc
     test "a handler-side exit in teardown does not replace the refusal response (R3)" do
       # The residue of c4b6578: `notify_listen_closed/4` rescued but did not
@@ -854,7 +922,10 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
           "id" => "exit-in-teardown",
           "method" => "subscriptions/listen",
           "params" => %{
-            "_meta" => %{"io.modelcontextprotocol/protocolVersion" => @version},
+            "_meta" => %{
+              "io.modelcontextprotocol/protocolVersion" => @version,
+              "io.modelcontextprotocol/clientCapabilities" => %{}
+            },
             "notifications" => %{"toolsListChanged" => true}
           }
         })
@@ -899,6 +970,9 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
     # The message armed the obligation, raised above every routing decision,
     # and paid teardown with an id the client chose.
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
     test "a Response-shaped message naming the method is not a listen (R4)" do
       port = start_instance(self())
 
@@ -943,7 +1017,10 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
               "id" => "raise-in-listen",
               "method" => "subscriptions/listen",
               "params" => %{
-                "_meta" => %{"io.modelcontextprotocol/protocolVersion" => @version},
+                "_meta" => %{
+                  "io.modelcontextprotocol/protocolVersion" => @version,
+                  "io.modelcontextprotocol/clientCapabilities" => %{}
+                },
                 "notifications" => %{"toolsListChanged" => true}
               }
             }),
@@ -955,6 +1032,8 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       assert_receive {:listen_closed, "raise-in-listen", "alice"}, 2_000
     end
 
+    @tag oc:
+           "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId"
     @tag :etcc
     test "a second client cannot tear down a live subscription it does not own (R4)", %{a: port} do
       # THE REACH, and why R4 was blocking rather than an over-approximation:
@@ -1004,6 +1083,9 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- JSON mode ---
 
   describe "JSON mode refuses the method" do
+    @tag oc: :none
+    @tag oc_reason:
+           "contradicted by HttpServerMethodNotFound404 FAILURE live (the suite requires 404/-32601 here): pre-existing, assertions unchanged; PO exception, MES-161 comment 30342; the fix is MES-165"
     @tag :etcc
     test "subscriptions/listen returns -32601 rather than an empty stream" do
       port = start_instance(self(), enable_json_response: true)
@@ -1014,7 +1096,10 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
           "id" => 1,
           "method" => "subscriptions/listen",
           "params" => %{
-            "_meta" => %{"io.modelcontextprotocol/protocolVersion" => @version},
+            "_meta" => %{
+              "io.modelcontextprotocol/protocolVersion" => @version,
+              "io.modelcontextprotocol/clientCapabilities" => %{}
+            },
             "notifications" => %{"toolsListChanged" => true}
           }
         })

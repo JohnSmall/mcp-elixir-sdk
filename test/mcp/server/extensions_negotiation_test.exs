@@ -68,7 +68,16 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
   defp discover(opts \\ []) do
     {:reply, response, _state} =
       Dispatch.dispatch(
-        %Request{id: 1, method: "server/discover", params: %{}},
+        %Request{
+          id: 1,
+          method: "server/discover",
+          params: %{
+            "_meta" => %{
+              "io.modelcontextprotocol/protocolVersion" => @version,
+              @client_capabilities_key => %{}
+            }
+          }
+        },
         %ToolContext{request_id: 1},
         config(opts)
       )
@@ -108,6 +117,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # and require explicit opt-in". Absence, not `{}`: `"extensions": {}` claims
     # "I do extensions, none of them", and this SDK makes no such claim.
     # Same `refute Map.has_key?/2` form as discover_test.exs:32-33.
+    @tag oc: "oc:none/no-oc-scenario/extensions-absent-by-default"
     @tag :etcc
     test "T1 — `extensions` is absent from a default server/discover result" do
       capabilities = discover()
@@ -119,6 +129,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # T2. The two ways a declaration can come to nothing both reach the same
     # absent wire — so "absent by default" is not a special case of the default
     # value, it is what an empty declaration means.
+    @tag oc: "oc:none/no-oc-scenario/extensions-empty-declaration-absent"
     @tag :etcc
     test "T2 — an empty or fully-invalid declaration is absent, not `{}`" do
       refute Map.has_key?(discover(extensions: %{}), "extensions")
@@ -129,6 +140,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # T3. The permanent presence half of T1's control: the absence assertions
     # above are only worth anything if the field CAN appear. schema.ts:882 —
     # `extensions?: { [key: string]: JSONObject }` on ServerCapabilities.
+    @tag oc: "oc:none/no-oc-scenario/extensions-declared-appears-verbatim"
     @tag :etcc
     test "T3 — a declared extension appears verbatim under capabilities.extensions" do
       declared = %{"io.modelcontextprotocol/tasks" => %{}, "com.example/x" => %{"n" => 1}}
@@ -139,6 +151,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
 
     # The declaration is validated on the way out — the one point at which this
     # SDK could help a consumer emit a key that violates schema.ts:876-877.
+    @tag oc: "oc:none/no-oc-scenario/extensions-invalid-identifier-dropped"
     @tag :etcc
     test "an invalid identifier is dropped from the declaration, valid ones kept" do
       capabilities =
@@ -150,6 +163,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # The server's set is launch-static (frozen at `init/1`, beside
     # `:instructions` and `:server_info`); the client's is per request
     # (schema.ts:91-98). Two lifetimes, and the API must not imply they are one.
+    @tag oc: "oc:none/no-oc-scenario/extensions-declaration-fixed-at-build"
     @tag :etcc
     test "the server's declaration is fixed at build time, not per request" do
       config = config(extensions: %{"com.example/x" => %{}})
@@ -157,7 +171,16 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
       for id <- 1..3 do
         {:reply, response, _} =
           Dispatch.dispatch(
-            %Request{id: id, method: "server/discover", params: %{"_meta" => %{}}},
+            %Request{
+              id: id,
+              method: "server/discover",
+              params: %{
+                "_meta" => %{
+                  "io.modelcontextprotocol/protocolVersion" => @version,
+                  @client_capabilities_key => %{}
+                }
+              }
+            },
             %ToolContext{request_id: id},
             config
           )
@@ -178,6 +201,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # The assertion is `Jason.encode!/1` over the whole response rather than a
     # look at the capabilities map: encodability is the actual property, and
     # the encoder is the thing that used to raise.
+    @tag oc: "oc:none/no-oc-scenario/extensions-config-unencodable-dropped"
     @tag :etcc
     test "a settings value that cannot be encoded is dropped at launch, not raised at request time" do
       capture_log(fn ->
@@ -203,6 +227,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # property; being an object is, and this asserts it where it is observable:
     # every advertised settings value is a map after a real round trip through
     # `Jason`.
+    @tag oc: "oc:none/no-oc-scenario/extensions-config-non-object-encoding-dropped"
     @tag :etcc
     test "a settings value that encodes to a non-object is dropped, never advertised" do
       capture_log(fn ->
@@ -228,6 +253,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # itself: a struct is a map, so it passed the guard and then died in the
     # comprehension. `build/2` now returns `{:ok, _}` for every one of them and
     # the server starts, advertising nothing.
+    @tag oc: "oc:none/no-oc-scenario/extensions-config-non-object-value"
     @tag :etcc
     test "a non-object :extensions value leaves build/2 successful and the wire silent" do
       capture_log(fn ->
@@ -243,6 +269,9 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # operator with a server that never advertises an extension it does
     # implement and nothing anywhere saying why; the warning names the
     # identifier AND the option it came from.
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "the drop is announced at the seam that dropped it" do
       log = capture_log(fn -> discover(extensions: %{"no-prefix" => %{}}) end)
 
@@ -263,6 +292,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # capture is VM-wide, so `client_test.exs` emitting this exact prefix
     # concurrently still failed it. The module is `async: false` for that; see
     # the note on `use ExUnit.Case` above.
+    @tag oc: "oc:none/no-oc-scenario/extensions-config-valid-declaration-silent"
     @tag :etcc
     test "a valid declaration is advertised and warns about nothing" do
       log =
@@ -281,6 +311,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # party and the obligation is the client's: a client offering extensions we
     # do not support is NOT an error condition. Rejecting here would be
     # over-building against the spec.
+    @tag oc: "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText"
     @tag :etcc
     test "T10 — tools/call succeeds normally; no error, no -32021" do
       params = %{
@@ -302,6 +333,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # DECODED maps with `==`, and map equality is key-order-insensitive, so it
     # is not a byte comparison and could not be one — nothing on this path is
     # serialised. The assertion is the right one; only the name over-claimed.
+    @tag oc: "oc:none/no-oc-scenario/extensions-offer-result-identical"
     @tag :etcc
     test "T10 — the result is identical to the same call without extensions" do
       base = %{"name" => "whoami", "arguments" => %{}}
@@ -310,7 +342,8 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
         dispatch(
           "tools/call",
           Map.put(base, "_meta", %{
-            "io.modelcontextprotocol/protocolVersion" => @version
+            "io.modelcontextprotocol/protocolVersion" => @version,
+            @client_capabilities_key => %{}
           })
         )
 
@@ -321,6 +354,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
 
     # T11. "Nothing breaks" must not be route-specific: a rejection path added
     # to one family and not another would pass a single-route test.
+    @tag oc: "oc:server/tools-list/tools-list/ToolsList"
     @tag :etcc
     test "T11 — tools/list is unaffected" do
       response = dispatch("tools/list", %{"_meta" => meta_offering_extensions()})
@@ -329,6 +363,8 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
       assert is_list(response["result"]["tools"])
     end
 
+    @tag oc:
+           "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover"
     @tag :etcc
     test "T11 — server/discover is unaffected, and still advertises nothing" do
       response = dispatch("server/discover", %{"_meta" => meta_offering_extensions()})
@@ -338,6 +374,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
       refute Map.has_key?(response["result"]["capabilities"], "extensions")
     end
 
+    @tag oc: "oc:none/no-oc-scenario/extensions-offer-list-endpoints-unaffected"
     @tag :etcc
     test "T11 — resources/list and prompts/list are unaffected" do
       for method <- ["resources/list", "prompts/list"] do
@@ -349,6 +386,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # A malformed declaration is still not an error: inbound is never validated,
     # so there is no shape a client can send that turns a serviceable request
     # into a failure.
+    @tag oc: "oc:none/no-oc-scenario/extensions-offer-malformed-declaration"
     @tag :etcc
     test "a malformed or non-object extensions declaration still breaks nothing" do
       for extensions <- [%{"no-prefix" => %{}}, "not an object", nil, 42] do
@@ -373,6 +411,7 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # change: the raw client `_meta` already reaches every identity-capable
     # callback as `ctx.meta` (tool_context.ex:84, populated at plug.ex:396 and
     # connection.ex:133,210), and `from_meta/1` is a pure read over it.
+    @tag oc: "oc:none/no-oc-scenario/extensions-handler-visible-read"
     @tag :etcc
     test "a handler can read the client's declaration off ctx.meta" do
       ctx = %ToolContext{request_id: 1, meta: meta_offering_extensions()}
@@ -385,6 +424,9 @@ defmodule MCP.Server.ExtensionsNegotiationTest do
     # peer SUPPORTS, never who it IS. Identity comes from ctx.identity alone,
     # which the authenticated transport pipeline supplies. A declaration that
     # tries to look like identity changes nothing about it.
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
     test "a client's declaration cannot influence ctx.identity" do
       meta =
         put_in(

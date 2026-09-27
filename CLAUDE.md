@@ -403,6 +403,16 @@ earlier-tagged test's check.
 that turns it green, or the test does not merge. There is no known-red path: gate 5
 already forbids knowingly red tests.
 
+**The one disclosed exception (PO ruling, MES-161 comment `30342`).** A **pre-existing**
+test (not `[new]`) whose **assertions are unchanged** may merge as `oc: :none` while a
+red OC check contradicts it, provided that **(a)** any body change is limited to request
+construction the branch's own `lib/` fix requires, **(b)** any tag change is limited to
+the `oc:`/`oc_reason:` declaration, and **(c)** the `oc_reason` names the red check, the
+ticket that owns its fix, and the ruling (`MES-161 30342`). A new test, or one whose
+assertions change, still cannot merge. Gate 7 does **not** check this mechanically — a
+`:none` declaration measures nothing — so it is the reviewer's, on the checklist item
+below.
+
 **Fail-closed.** No `node` on PATH, no harness at `/tmp/conf11`, a harness whose
 `dist/index.js` is not the pinned build, a runner that raises, exits or throws, a run the adjudicator
 refuses, a scenario that threw or was not run, an unresolvable ref, a HEAD that is not
@@ -450,8 +460,12 @@ declarations, no leg run). Reading declarations over the whole test tree is ~0.2
 > applies, check out `{TICKET_KEY}` with a clean tree, run
 > `mix conformance.oc_gate {TICKET_KEY}` and paste its output. For each new or changed
 > test, check that the declared check (or `oc: :none` reason) is the honest counterpart
-> of what the test asserts — the gate cannot. If it cannot run at your seat (no `node`,
-> no harness), report **that**, and do not record the check as done.
+> of what the test asserts — the gate cannot. For any `oc: :none` that invokes the
+> disclosed exception above, check conditions (a)-(c) against the diff: assertions
+> unchanged, body change only request construction, tag change only the declaration,
+> and the reason naming the red check, its owning ticket and `MES-161 30342`. If it
+> cannot run at your seat (no `node`, no harness), report **that**, and do not record
+> the check as done.
 
 ### Evidence
 

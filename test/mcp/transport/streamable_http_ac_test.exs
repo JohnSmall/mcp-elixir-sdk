@@ -62,7 +62,15 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
   end
 
   defp with_meta(params, extra_meta \\ %{}) do
-    meta = Map.merge(%{"io.modelcontextprotocol/protocolVersion" => @version}, extra_meta)
+    meta =
+      Map.merge(
+        %{
+          "io.modelcontextprotocol/protocolVersion" => @version,
+          "io.modelcontextprotocol/clientCapabilities" => %{}
+        },
+        extra_meta
+      )
+
     Map.put(params, "_meta", meta)
   end
 
@@ -97,6 +105,9 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
 
   # --- AC1 — static handler_opts identity threads per request ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "AC1 — static handler_opts identity threads per request" do
     url = start_instance(handler_opts: [identity: "PM"])
     # Even with a competing authenticated role, the static identity is the
@@ -107,6 +118,9 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
 
   # --- AC2 — per-request factory reads conn.assigns ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "AC2 — factory reads conn.assigns per request", %{std: url} do
     assert tool_text(
              post(url, "tools/call", with_meta(%{"name" => "whoami"}), role: "CODE_CREATOR")
@@ -116,6 +130,9 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
 
   # --- AC3 ★ — a tools/call identity arg is ignored; pipeline wins (real HTTP) ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "AC3 — tools/call identity arg is ignored; pipeline wins", %{std: url} do
     params = with_meta(%{"name" => "whoami_with_arg", "arguments" => %{"identity" => "PM-SPOOF"}})
     assert tool_text(post(url, "tools/call", params, role: "REVIEWER")) == "REVIEWER"
@@ -123,6 +140,9 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
 
   # --- AC3′ ★ (NEW) — a prompts/get identity arg is ignored; pipeline wins ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "AC3' — prompts/get identity arg is ignored; pipeline wins", %{std: url} do
     params = with_meta(%{"name" => "who", "arguments" => %{"identity" => "PM-SPOOF"}})
     resp = post(url, "prompts/get", params, role: "REVIEWER")
@@ -132,6 +152,9 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
 
   # --- AC4 — absent handler_opts is backward-compatible (empty identity) ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "AC4 — absent handler_opts is backward-compatible (empty identity)" do
     url = start_instance([])
 
@@ -141,6 +164,9 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
 
   # --- AC5 — identity is per-request fresh, never sticky ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "AC5 — identity is per-request fresh; a changed credential is reflected next request",
        %{std: url} do
     # No initialize/session to bind at: each request resolves its own identity.
@@ -153,6 +179,9 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
 
   # --- AC6′ ★ — interleaved callers across two instances never leak identity ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "AC6' — interleaved authenticated callers across two instances never leak identity",
        %{std: u1, std2: u2} do
     # Round-robin two instances with interleaved principals; each request must
@@ -167,6 +196,8 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
 
   # --- AC7 — non-localhost origin rejected over real HTTP (parity) ---
 
+  @tag oc:
+         "oc:server/dns-rebinding-protection/localhost-host-rebinding-rejected/DNSRebindingRejected"
   @tag :etcc
   test "AC7 — non-localhost origin is rejected 403 (acceptance parity)", %{std: url} do
     resp =
@@ -180,6 +211,7 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
 
   # --- AC8 — factory raise / non-keyword → clean -32603, nothing leaked ---
 
+  @tag oc: "oc:none/no-oc-scenario/identity-factory-raises"
   @tag :etcc
   test "AC8 — a factory that raises fails cleanly (-32603); the secret never leaks" do
     url = start_instance(handler_opts: fn _conn -> raise "boom secret=xyz789" end)
@@ -192,6 +224,7 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
     refute Jason.encode!(resp.body) =~ "xyz789"
   end
 
+  @tag oc: "oc:none/no-oc-scenario/identity-factory-wrong-shape"
   @tag :etcc
   test "AC8 — a factory that returns a non-keyword fails cleanly (-32603)" do
     url = start_instance(handler_opts: fn _conn -> :not_a_keyword end)
@@ -203,6 +236,9 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
     assert error(resp)["code"] == -32_603
   end
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
   test "AC8 — a static non-keyword handler_opts fails fast at init (ArgumentError)" do
     # Preserves the MES-3 case-8 fail-fast (handler_opts_test.exs) at the SDK
     # boundary: bad static config never reaches a request.
@@ -219,6 +255,9 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
   # Vector: tool-call arguments — covered by AC3 (tools/call) + AC3′ (prompts/get).
 
   # Vector: _meta entries (incl. the self-declared clientInfo label).
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "spoof — a _meta clientInfo/identity value is ignored; pipeline wins", %{std: url} do
     spoof_meta = %{
       "io.modelcontextprotocol/clientInfo" => %{"name" => "PM-SPOOF"},
@@ -230,6 +269,9 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
   end
 
   # Vector: model-reachable raw request headers (not the authenticated assign).
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "spoof — a body-reachable identity-looking header does not change identity", %{std: url} do
     headers = [{"x-user", "PM-SPOOF"}, {"identity", "PM-SPOOF"}]
     params = with_meta(%{"name" => "whoami"})
@@ -241,6 +283,9 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
   # Vector: MRTR continuation (SEP-2567 state handle). requestState +
   # inputResponses are model-passed; identity must be re-resolved from THIS
   # request's pipeline on the retry, never taken from the continuation.
+  @tag oc: :none
+  @tag oc_reason:
+         "its counterparts are not all SUCCESS live (IgnoreUnexpectedParams WARNING, InputRequiredResultMultiRoundR1 SUCCESS, InputRequiredResultRequestStateComplete SUCCESS, InputRequiredResultRequestStateIncomplete SUCCESS, ResultTypeIncluded SUCCESS), so they cannot vouch (gate 7 Q1); MES-161 does not remedy them"
   @tag :etcc
   test "spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
        %{std: url} do
@@ -267,6 +312,11 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
   # Vector: caches shared across requests/instances — the shipped default is
   # no-store (ttlMs 0), so nothing is cached to leak. (AC6′ proves no
   # cross-request/instance identity leakage directly.)
+  @tag oc: [
+         "oc:server/caching/sep-2549-cache-scope-valid/CacheScopeValid",
+         "oc:server/caching/sep-2549-tools-list-caching-hints/ToolsListCachingHints",
+         "oc:server/caching/sep-2549-ttl-non-negative/TtlNonNegative"
+       ]
   @tag :etcc
   test "default caching policy is no-store (ttlMs 0)", %{std: url} do
     r = result(post(url, "tools/list", with_meta(%{}), role: "PM"))
@@ -277,6 +327,9 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
   # §3.2 — identity is server-internal and never serialized into the response
   # envelope unless a handler deliberately echoes it. The `silent` tool never
   # touches identity, so a sentinel principal must appear nowhere in the body.
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "identity never crosses the wire (envelope carries no identity)", %{std: url} do
     sentinel = "SENTINEL-PRINCIPAL-9f3a"
     resp = post(url, "tools/call", with_meta(%{"name" => "silent"}), role: sentinel)

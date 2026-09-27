@@ -43,13 +43,21 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
   defp result(conn), do: conn.resp_body |> Jason.decode!() |> Map.get("result")
   defp error(conn), do: conn.resp_body |> Jason.decode!() |> Map.get("error")
-  defp with_meta(params), do: Map.put(params, "_meta", @meta)
+
+  defp with_meta(params),
+    do:
+      Map.put(params, "_meta", Map.put(@meta, "io.modelcontextprotocol/clientCapabilities", %{}))
 
   # --- lifecycle (no handshake, no session) ---
 
+  @tag oc: [
+         "oc:server/server-stateless/sep-2575-request-meta-client-info-optional/RequestMetaClientInfoOptional",
+         "oc:server/server-stateless/sep-2575-server-identifies-in-result-meta/ServerIdentifiesInResultMeta",
+         "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover"
+       ]
   @tag :etcc
   test "server/discover returns the schema-shaped result with no version gate" do
-    conn = post(opts(), rpc("server/discover", %{}))
+    conn = post(opts(), rpc("server/discover", with_meta(%{})))
     r = result(conn)
     assert conn.status == 200
     assert r["supportedVersions"] == [@version]
@@ -57,6 +65,8 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert r["_meta"]["io.modelcontextprotocol/serverInfo"]["name"]
   end
 
+  @tag oc:
+         "oc:server/server-stateless/sep-2575-discover-capabilities-match-handlers/DiscoverCapabilitiesMatchHandlers"
   @tag :etcc
   test "tools/list then tools/call work directly, no initialize first" do
     list = post(opts(), rpc("tools/list", with_meta(%{}))) |> result()
@@ -71,6 +81,11 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert hd(call["content"])["text"] == ""
   end
 
+  @tag oc: [
+         "oc:server/caching/sep-2549-cache-scope-valid/CacheScopeValid",
+         "oc:server/caching/sep-2549-tools-list-caching-hints/ToolsListCachingHints",
+         "oc:server/caching/sep-2549-ttl-non-negative/TtlNonNegative"
+       ]
   @tag :etcc
   test "list/read results carry caching hints (ttlMs/cacheScope)" do
     r = post(opts(), rpc("tools/list", with_meta(%{}))) |> result()
@@ -78,12 +93,29 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert r["cacheScope"] == "public"
   end
 
+  @tag oc: :none
+  @tag oc_reason:
+         "re-pointed by MES-161 to a present-but-unsupported version: ServerUnsupportedVersionError is FAILURE live (server/discover lacks the -32022 gate; MES-163)"
   @tag :etcc
   test "a request without a protocolVersion _meta fails fast (-32022)" do
-    conn = post(opts(), rpc("tools/call", %{"name" => "whoami"}))
+    msg =
+      rpc("tools/call", %{
+        "name" => "whoami",
+        "_meta" =>
+          Map.put(
+            with_meta(%{})["_meta"],
+            "io.modelcontextprotocol/protocolVersion",
+            "1999-01-01"
+          )
+      })
+
+    conn = post(opts(), msg)
     assert error(conn)["code"] == -32_022
   end
 
+  @tag oc: :none
+  @tag oc_reason:
+         "contradicted by HttpServerMethodNotFound404initialize FAILURE live (the suite requires 404/-32601 here): pre-existing, assertions unchanged; PO exception, MES-161 comment 30342; the fix is MES-165"
   @tag :etcc
   test "initialize is gone → -32022; ping/logging.setLevel → -32601" do
     assert error(post(opts(), rpc("initialize", %{})))["code"] == -32_022
@@ -93,6 +125,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
   # --- routing headers (SEP-2243) ---
 
+  @tag oc: "oc:none/no-oc-server-check/McpMethod-vs-method"
   @tag :etcc
   test "matching Mcp-Method routes normally; a mismatch is rejected (-32020)" do
     ok = post(opts(), rpc("tools/list", with_meta(%{})), [{"mcp-method", "tools/list"}])
@@ -102,6 +135,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert error(bad)["code"] == -32_020
   end
 
+  @tag oc: "oc:none/no-oc-server-check/McpName-vs-params-name"
   @tag :etcc
   test "Mcp-Name mismatch against params.name is rejected (-32020)" do
     msg = rpc("tools/call", with_meta(%{"name" => "whoami", "arguments" => %{}}))
@@ -110,6 +144,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
   end
 
   # SEP-2243 (F1): for resources/read the Mcp-Name target is params.uri.
+  @tag oc: "oc:none/no-oc-server-check/McpName-vs-params-uri"
   @tag :etcc
   test "resources/read — Mcp-Name is validated against params.uri (mismatch → -32020)" do
     msg = rpc("resources/read", with_meta(%{"uri" => "mem://res"}))
@@ -124,6 +159,8 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
   # --- origin enforcement (AC7 re-homed) ---
 
+  @tag oc:
+         "oc:server/dns-rebinding-protection/localhost-host-rebinding-rejected/DNSRebindingRejected"
   @tag :etcc
   test "AC7 — non-localhost origin is rejected 403; the identity factory never runs" do
     test_pid = self()
@@ -149,6 +186,9 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
   # --- per-request identity (MC-2 / MC-3 / MC-4 over real HTTP) ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "MC-2 — the factory resolves identity per request from conn.assigns" do
     plug_opts = opts(handler_opts: fn conn -> [identity: conn.assigns[:role]] end)
 
@@ -163,6 +203,9 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert hd(result(conn)["content"])["text"] == "REVIEWER"
   end
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "MC-4 — a tool-arg identity cannot override the pipeline identity" do
     plug_opts = opts(handler_opts: fn conn -> [identity: conn.assigns[:role]] end)
 
@@ -180,6 +223,9 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert hd(result(conn)["content"])["text"] == "PM"
   end
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "MC-3 — two interleaved requests each see their own identity (no leakage)" do
     plug_opts = opts(handler_opts: fn conn -> [identity: conn.assigns[:role]] end)
 
@@ -196,6 +242,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert hd(result(call.("REVIEWER"))["content"])["text"] == "REVIEWER"
   end
 
+  @tag oc: "oc:none/no-oc-scenario/identity-factory-raises-yields-500"
   @tag :etcc
   test "MC-6 — a factory that raises fails cleanly (-32603) with no handler invoked" do
     plug_opts = opts(handler_opts: fn _conn -> raise "boom secret=abc123" end)
@@ -218,6 +265,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
   # AC5 claimed it satisfied. The `collector_start` seam makes Codex's manual
   # injection a permanent test (A7); shown FAILING against the unguarded match
   # and passing here.
+  @tag oc: "oc:none/no-oc-scenario/collector-start-failure"
   @tag :etcc
   test "MC-6 — a collector that fails to start fails cleanly (-32603), no handler invoked" do
     plug_opts =
@@ -240,6 +288,12 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
   # --- MRTR round-trip (SEP-2322) ---
 
+  @tag oc: [
+         "oc:server/input-required-result-multi-round/sep-2322-multi-round-r1/InputRequiredResultMultiRoundR1",
+         "oc:server/input-required-result-request-state/sep-2322-request-state-complete/InputRequiredResultRequestStateComplete",
+         "oc:server/input-required-result-request-state/sep-2322-request-state-incomplete/InputRequiredResultRequestStateIncomplete",
+         "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded"
+       ]
   @tag :etcc
   test "tools/call input-required → retry with requestState → completion" do
     first = post(opts(), rpc("tools/call", with_meta(%{"name" => "needs_input"}))) |> result()
@@ -262,6 +316,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
   # --- transport errors ---
 
+  @tag oc: "oc:none/no-oc-scenario/verb-405-allow-POST"
   @tag :etcc
   test "GET and DELETE are not allowed (405), and allow names only POST" do
     # Ruling 2 (MES-15): no backward compatibility. GET previously answered 200
@@ -280,6 +335,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     end
   end
 
+  @tag oc: "oc:none/no-oc-scenario/malformed-body--32700"
   @tag :etcc
   test "a malformed body is a parse error → -32700" do
     bad =
@@ -295,6 +351,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
   # --- Ruling 7: no cross-request notification residue after a handler raises ---
 
+  @tag oc: "oc:none/no-oc-scenario/no-residue-after-raise"
   @tag :etcc
   test "a raising handler leaves no notification residue for the next request (SSE)" do
     # SSE mode so notifications are flushed into the response body — exactly
@@ -343,6 +400,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
       %{urls: [url1, url2]}
     end
 
+    @tag oc: "oc:none/no-oc-scenario/two-instance-round-robin"
     @tag :etcc
     test "interleaving requests round-robin across two stateless instances succeeds identically",
          %{urls: urls} do
@@ -350,7 +408,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
       # is self-contained. Round-robin the sequence across both and assert
       # identical results — proving there is no session affinity.
       sequence = [
-        {"server/discover", %{}},
+        {"server/discover", with_meta(%{})},
         {"tools/list", with_meta(%{})},
         {"tools/call", with_meta(%{"name" => "whoami", "arguments" => %{}})},
         {"resources/read", with_meta(%{"uri" => "mem://res"})}

@@ -2117,7 +2117,10 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # Snull; 3 findings[].at, F1-F3); inside them, 39 et_test and doctest_body
     # (repository: 36 et_test, 3 doctest_body) and 81 harness (36 emitted_at,
     # 9 locator_site, 36 condition_at).
-    test "G32 walks the citations outside the rows: 25 repository and 36 harness at this tip",
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the D-record files: it asserts a record-guard property (MES-161 re-resolved its line pins), not SDK wire behaviour, so no OC check corresponds"
+    test "G32 walks the citations outside the rows: 26 repository and 36 harness at this tip",
          %{inputs: inputs, result: %{report: r}} do
       outside =
         for {_, {:ok, doc}} <- inputs.records,
@@ -2125,10 +2128,13 @@ defmodule MCP.Conformance.AdjudicationsTest do
               A.collect(%{doc | "sections" => Enum.map(doc["sections"], &Map.delete(&1, "rows"))}),
             do: c
 
-      assert Enum.count(outside, &Map.has_key?(&1, "lines")) == 25
+      assert Enum.count(outside, &Map.has_key?(&1, "lines")) == 26
       assert Enum.count(outside, &Map.has_key?(&1, "harness_sha256")) == 36
 
-      assert r["repo_citations_found"] == 710 and
+      # MES-161: 110 of them are prose anchors, and 127 in all are read at `at`.
+      assert r["repo_citations_anchored"] == 127
+
+      assert r["repo_citations_found"] == 820 and
                r["harness_citations_not_verified_in_gate_5"] == 829
     end
 
@@ -2498,14 +2504,17 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # CR's P5 probe (MES-127 review 29435, B1): a window past the owning test's
     # `end` quotes no test code, and was admitted as the preceding test before
     # the self-check found the test's own closing line.
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the D-record files: it asserts a record-guard property (MES-161 re-resolved its line pins), not SDK wire behaviour, so no OC check corresponds"
     test "the et_test self-check refuses a window past the owning test's end",
          %{inputs: inputs} do
       {:ok, record} = inputs.records[@d4b]
       [%{"rows" => [r1, _, r3 | _]}] = record["sections"]
 
       for {r, file, [from, to]} <- [
-            {r1, "test/mcp/transport/streamable_http_stateless_test.exs", [92, 96]},
-            {r3, "test/mcp/server/dispatch_test.exs", [96, 98]}
+            {r1, "test/mcp/transport/streamable_http_stateless_test.exs", [124, 129]},
+            {r3, "test/mcp/server/dispatch_test.exs", [124, 126]}
           ] do
         {:ok, src} = inputs.source_fun.(file)
         bytes = src |> String.split("\n") |> Enum.slice((from - 1)..(to - 1)) |> Enum.join("\n")
@@ -5245,11 +5254,15 @@ defmodule MCP.Conformance.AdjudicationsTest do
       refute Map.has_key?(w, "routed_to")
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the D-record files: it asserts a record-guard property (MES-161 re-resolved its line pins), not SDK wire behaviour, so no OC check corresponds"
     test "every assert a row says it read is an assert at that line, and each window lists them all",
          %{inputs: inputs} do
       for r <- d1si_rows(inputs) do
         %{"file" => f, "lines" => [from, to]} = r["et_test"]
-        {:ok, src} = inputs.source_fun.(f)
+        # An anchored et_test (MES-161) is read at its `at`, with its asserts.
+        {:ok, src} = A.cited_source(r["et_test"], inputs.source_fun)
         lines = String.split(src, "\n")
 
         read =
@@ -5274,12 +5287,15 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # Q-C [authored 29813 | ratified 29816]: the generated W-1 members are held,
     # one row per label of the literal list, all sharing the one generated
     # test's window (the shared-anchor residual the swap audit records).
-    test "the eleven generated W-1 rows are the literal list's labels, one window, each firing at :217",
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the D-record files: it asserts a record-guard property (MES-161 re-resolved its line pins), not SDK wire behaviour, so no OC check corresponds"
+    test "the eleven generated W-1 rows are the literal list's labels, one window, each firing at :234",
          %{inputs: inputs} do
       prefix =
         "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value "
 
-      gen = Enum.filter(d1si_rows(inputs), &(&1["et_test"]["lines"] == [209, 219]))
+      gen = Enum.filter(d1si_rows(inputs), &(&1["et_test"]["lines"] == [226, 236]))
 
       assert gen |> Enum.map(&String.trim_leading(&1["member"], prefix)) |> Enum.sort() ==
                Enum.sort(
@@ -5292,7 +5308,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
       for r <- gen do
         assert A.et_test_owner(r, inputs.source_fun) == :ok
         assert r["disposition"] == "redundant"
-        assert r["counterfactual"]["reading"] =~ "fails at json_schema_2020_12_test.exs:217."
+        assert r["counterfactual"]["reading"] =~ "fails at json_schema_2020_12_test.exs:234."
       end
     end
 
@@ -5451,6 +5467,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert {none, MapSet.to_list(dropped)} == {MapSet.new(), [A.key(first)]}
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the D-record files: it asserts a record-guard property (MES-161 re-resolved its line pins), not SDK wire behaviour, so no OC check corresponds"
     test "every row is one of the D1 family; the counts are the rows' enumeration, negatives included",
          %{inputs: inputs} do
       {:ok, record} = inputs.records[@d1sii]
@@ -5474,7 +5493,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
       # No genuine row: the only readings that do not fire are two redundant
       # rows' (redundant takes precedence, 29735 Q5). The hop-A genuine row
-      # (29961 Q-R1) fires under M18, at its own :89, and protects nothing now.
+      # (29961 Q-R1) fires under M18, at its own :95 (:89 at bd99a39), and protects nothing now.
       assert for(r <- rows, !r["counterfactual"]["conforming_sdk_can_fail"], do: r["tag"]) == [
                "oc:none/no-oc-scenario/absent-notifications--32602",
                "oc:none/no-oc-scenario/listen-id-echoed-uncoerced"
@@ -5488,7 +5507,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
       [lr] = Enum.filter(rows, &(&1["tag"] == "oc:none/no-oc-scenario/listen-request-parses"))
       assert lr["disposition"] == "not_a_conformance_claim"
-      assert fired_at(lr) == "subscriptions_dispatch_test.exs:89"
+      assert fired_at(lr) == "subscriptions_dispatch_test.exs:95"
       assert fired_at(lr) in d1sii_mutation(record, "M18")["reddens"]
       refute Map.has_key?(lr, "protects")
     end
@@ -5558,11 +5577,15 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert routed == rows
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the D-record files: it asserts a record-guard property (MES-161 re-resolved its line pins), not SDK wire behaviour, so no OC check corresponds"
     test "every assert a row says it read is an assert at that line, and each window lists them all",
          %{inputs: inputs} do
       for r <- d1sii_rows(inputs) do
         %{"file" => f, "lines" => [from, to]} = r["et_test"]
-        {:ok, src} = inputs.source_fun.(f)
+        # An anchored et_test (MES-161) is read at its `at`, with its asserts.
+        {:ok, src} = A.cited_source(r["et_test"], inputs.source_fun)
         lines = String.split(src, "\n")
 
         read =
@@ -5592,6 +5615,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # (test) frame at an enclosing `for` or capture_log, the reading names the
     # failing assert inside it, and the row says so in `exunit_frame`: the set
     # of rows carrying it EQUALS the set whose named line is so enclosed.
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the D-record files: it asserts a record-guard property (MES-161 re-resolved its line pins), not SDK wire behaviour, so no OC check corresponds"
     test "each firing line is an assert its mutation reddened; the enclosed-frame rows are exactly the rows that say so",
          %{inputs: inputs} do
       {:ok, record} = inputs.records[@d1sii]
@@ -5608,8 +5634,8 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
       enclosed =
         for r <- firing, into: %{} do
-          %{"file" => f, "lines" => [from, to]} = r["et_test"]
-          {:ok, src} = inputs.source_fun.(f)
+          %{"lines" => [from, to]} = r["et_test"]
+          {:ok, src} = A.cited_source(r["et_test"], inputs.source_fun)
           lines = String.split(src, "\n")
           [_, n] = String.split(fired_at(r), ":")
           n = String.to_integer(n)
@@ -5630,36 +5656,43 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert said == Map.reject(enclosed, fn {_, {at, _}} -> is_nil(at) end)
 
       assert said == %{
-               "oc:none/no-oc-scenario/verb-405-allow-POST" => {271, 278},
+               "oc:none/no-oc-scenario/verb-405-allow-POST" => {326, 333},
+               # anchored at bd99a39 (MES-161): its et_test is read there
                "oc:none/no-oc-scenario/stream-start-failure" => {559, 566},
-               "oc:none/no-oc-scenario/collector-lifetime-ends-first" => {595, 600}
+               "oc:none/no-oc-scenario/collector-lifetime-ends-first" => {631, 636}
              }
 
       # And the enclosing kind is the opener's.
       for r <- firing, f = r["counterfactual"]["exunit_frame"] do
-        {:ok, src} = inputs.source_fun.(r["et_test"]["file"])
+        {:ok, src} = A.cited_source(r["et_test"], inputs.source_fun)
         opener = src |> String.split("\n") |> Enum.at(f["reported_at"] - 1)
         kind = if opener =~ "capture_log", do: "capture_log", else: "for"
         assert f["enclosing"] == kind, r["tag"]
       end
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the D-record files: it asserts a record-guard property (MES-161 re-resolved its line pins), not SDK wire behaviour, so no OC check corresponds"
     test "the enclosed-frame detector sees a capture_log and a for, and not a line after either closes",
          %{inputs: inputs} do
       {:ok, src} = inputs.source_fun.("test/mcp/transport/subscriptions_stream_test.exs")
       lines = String.split(src, "\n")
-      assert enclosing_block(lines, 588, 600) == 595
-      # :623 is after the capture_log closes at :617.
-      assert enclosing_block(lines, 588, 623) == nil
+      assert enclosing_block(lines, 624, 636) == 631
+      # :659 is after the capture_log closes at :653.
+      assert enclosing_block(lines, 624, 659) == nil
 
       {:ok, src} = inputs.source_fun.("test/mcp/transport/streamable_http_stateless_test.exs")
       lines = String.split(src, "\n")
-      assert enclosing_block(lines, 266, 278) == 271
-      assert enclosing_block(lines, 284, 292) == nil
+      assert enclosing_block(lines, 321, 333) == 326
+      assert enclosing_block(lines, 340, 348) == nil
     end
 
     # PM 29945 Q2: M9 stays MES-141's; M9h and M9f are their own mutations, and
     # #27 cites each mutation's line under its own name, never one merged line.
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the D-record files: it asserts a record-guard property (MES-161 re-resolved its line pins), not SDK wire behaviour, so no OC check corresponds"
     test "the M9 family's measured figures equal the rows whose firing line each reddened",
          %{inputs: inputs} do
       {:ok, record} = inputs.records[@d1sii]
@@ -5699,10 +5732,10 @@ defmodule MCP.Conformance.AdjudicationsTest do
         Enum.filter(rows, &(&1["tag"] == "oc:none/no-oc-server-check/McpName-vs-params-uri"))
 
       assert uri["counterfactual"]["firing_lines_by_mutation"] == %{
-               "M9" => "streamable_http_stateless_test.exs:122",
-               "M9h" => "streamable_http_stateless_test.exs:121",
-               "M9f" => "streamable_http_stateless_test.exs:118",
-               "M10" => "streamable_http_stateless_test.exs:121"
+               "M9" => "streamable_http_stateless_test.exs:157",
+               "M9h" => "streamable_http_stateless_test.exs:156",
+               "M9f" => "streamable_http_stateless_test.exs:153",
+               "M10" => "streamable_http_stateless_test.exs:156"
              }
 
       for {id, at} <- uri["counterfactual"]["firing_lines_by_mutation"] do
@@ -5728,16 +5761,19 @@ defmodule MCP.Conformance.AdjudicationsTest do
     end
 
     # CR 29960 B1, PM 29962: M18 enforces basic/index.mdx:380-382 in the filter
-    # parser. It reddens the listen-request-parses member at :89 (its firing
-    # line), the empty-filter member at :166 (a second reading), and otherwise
+    # parser. It reddens the listen-request-parses member at :95 (its firing
+    # line), the empty-filter member at :180 (a second reading), and otherwise
     # only redundant rows' own M9 lines.
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the D-record files: it asserts a record-guard property (MES-161 re-resolved its line pins), not SDK wire behaviour, so no OC check corresponds"
     test "M18's figures equal its lines; beyond its two readings it reddens only redundant rows' M9 lines",
          %{inputs: inputs} do
       {:ok, record} = inputs.records[@d1sii]
       rows = d1sii_rows(inputs)
       [m9, m18] = Enum.map(~w(M9 M18), &d1sii_mutation(record, &1))
 
-      assert m18["reddens"] == ["subscriptions_dispatch_test.exs:89"]
+      assert m18["reddens"] == ["subscriptions_dispatch_test.exs:95"]
       red = m18["reddens"] ++ m18["also_reddens_in_slice"]
       assert length(red) == m18["measured"]["slice_members_red"]
       assert m18["measured"]["slice_members_red"] == 13
@@ -5763,8 +5799,8 @@ defmodule MCP.Conformance.AdjudicationsTest do
       [{lr, _}, {ef, _} | rest] = owners
       assert lr["tag"] == "oc:none/no-oc-scenario/listen-request-parses"
       assert ef["tag"] == "oc:none/no-oc-scenario/empty-filter-is-legal"
-      assert [%{"mutation" => "M18", "fails_at" => 166}] = ef["second_readings"]
-      assert at.(ef, 166) in m18["also_reddens_in_slice"]
+      assert [%{"mutation" => "M18", "fails_at" => 180}] = ef["second_readings"]
+      assert at.(ef, 180) in m18["also_reddens_in_slice"]
 
       for {r, l} <- rest do
         assert r["disposition"] == "redundant" and l in m9["reddens"], r["tag"]
@@ -6138,6 +6174,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # an assert in the row's window and among the lines a mutation reddened.
     # #27's assert runs in a `for` inside a capture_log, and ExUnit reports the
     # capture_log call (measured under M9h): the row says so in exunit_frame.
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the D-record files: it asserts a record-guard property (MES-161 re-resolved its line pins), not SDK wire behaviour, so no OC check corresponds"
     test "each firing line is an assert its mutation reddened; the one enclosed-frame row says so",
          %{inputs: inputs} do
       {:ok, record} = inputs.records[@d1siii]
@@ -6153,8 +6192,8 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
       enclosed =
         for r <- firing, into: %{} do
-          %{"file" => f, "lines" => [from, to]} = r["et_test"]
-          {:ok, src} = inputs.source_fun.(f)
+          %{"lines" => [from, to]} = r["et_test"]
+          {:ok, src} = A.cited_source(r["et_test"], inputs.source_fun)
           lines = String.split(src, "\n")
           [_, n] = String.split(fired_at(r), ":")
           n = String.to_integer(n)
@@ -6182,12 +6221,12 @@ defmodule MCP.Conformance.AdjudicationsTest do
         end
 
       tag = "oc:none/no-oc-scenario/cache-scope-warning-once-per-configuration"
-      assert said == %{tag => {"capture_log", 98, 116}}
+      assert said == %{tag => {"capture_log", 120, 138}}
       refute Enum.any?(rows, &Map.has_key?(&1, "exunit_frame"))
 
       # The detector finds the rows with an enclosing block: only #27, whose
-      # innermost opener is the `for` (:106), itself inside the capture_log (:98).
-      assert Map.reject(enclosed, fn {_, {at, _}} -> is_nil(at) end) == %{tag => {106, true}}
+      # innermost opener is the `for` (:128), itself inside the capture_log (:120).
+      assert Map.reject(enclosed, fn {_, {at, _}} -> is_nil(at) end) == %{tag => {128, true}}
 
       # The firing lines that are not asserts: three ToolOrder members, whose
       # assert-free line calls the helper that raises over a nil `tools`.
@@ -6201,10 +6240,10 @@ defmodule MCP.Conformance.AdjudicationsTest do
         inputs.source_fun.("test/mcp/transport/streamable_http_cache_scope_warning_test.exs")
 
       lines = String.split(src, "\n")
-      assert enclosing_block(lines, 96, 106) == 98
-      assert Enum.at(lines, 97) =~ "capture_log(fn ->"
-      # :120 is after the capture_log closes at :118.
-      assert enclosing_block(lines, 96, 120) == nil
+      assert enclosing_block(lines, 118, 128) == 120
+      assert Enum.at(lines, 119) =~ "capture_log(fn ->"
+      # :142 is after the capture_log closes at :140.
+      assert enclosing_block(lines, 118, 142) == nil
     end
 
     # PM 29945 Q2, applied here: each of the M9 family cited under its own
@@ -7682,6 +7721,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert A.occurrences(cite, fn _ -> {:ok, src} end) == [2, 3]
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the D-record files: it asserts a record-guard property (MES-161 re-resolved its line pins), not SDK wire behaviour, so no OC check corresponds"
     test "the three committed occurrence citations are the pinned ones", %{inputs: inputs} do
       got =
         for {f, {:ok, doc}} <- inputs.records,
@@ -7695,7 +7737,7 @@ defmodule MCP.Conformance.AdjudicationsTest do
                {"adjudication-D2b-2026-07-28.json", "test/mcp/protocol/capabilities_test.exs",
                 [64, 64], 2},
                {"adjudication-D4b-2026-07-28.json",
-                "test/mcp/server/subscriptions_dispatch_test.exs", [389, 389], 1}
+                "test/mcp/server/subscriptions_dispatch_test.exs", [442, 442], 1}
              ]
     end
 

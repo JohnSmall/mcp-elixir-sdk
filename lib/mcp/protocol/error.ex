@@ -141,4 +141,13 @@ defmodule MCP.Protocol.Error do
       data: Map.get(map, "data")
     }
   end
+
+  @doc """
+  The -32602 a request missing required per-request `_meta` fields earns
+  (basic/index.mdx). `data.missing` names the absent keys.
+  """
+  @spec missing_required_meta([String.t()]) :: t()
+  def missing_required_meta(missing) when is_list(missing) do
+    invalid_params(%{"missing" => missing})
+  end
 end

@@ -43,7 +43,11 @@ defmodule MCP.Server.JsonSchema202012Test do
     }
   end
 
-  defp meta, do: %{"io.modelcontextprotocol/protocolVersion" => @version}
+  defp meta,
+    do: %{
+      "io.modelcontextprotocol/protocolVersion" => @version,
+      "io.modelcontextprotocol/clientCapabilities" => %{}
+    }
 
   # Dispatch, then serialise and re-parse: the assertion is about the wire.
   defp round_trip(method, params, opts \\ []) do
@@ -83,11 +87,13 @@ defmodule MCP.Server.JsonSchema202012Test do
     # check would fail on changes that lose nothing while catching nothing a
     # map comparison misses. Only the name over-claimed. Same slip as MES-16's
     # R-6, which is why the reason is written down rather than just fixed.
+    @tag oc: "oc:none/no-oc-server-check/schema-2020-12-whole-fixture-intact"
     @tag :etcc
     test "the whole fixture arrives intact — decoded-map equality, not bytes", %{schema: schema} do
       assert schema == SchemaHandler.fixture_schema()
     end
 
+    @tag oc: "oc:none/no-oc-server-check/schema-2020-12-reference-keywords"
     @tag :etcc
     test "reference keywords survive: $schema, $defs, $anchor, $ref", %{schema: schema} do
       assert schema["$schema"] == "https://json-schema.org/draft/2020-12/schema"
@@ -96,12 +102,14 @@ defmodule MCP.Server.JsonSchema202012Test do
       assert schema["properties"]["address"]["$ref"] == "#/$defs/address"
     end
 
+    @tag oc: "oc:none/no-oc-server-check/schema-2020-12-composition-keywords"
     @tag :etcc
     test "composition keywords survive: allOf, anyOf", %{schema: schema} do
       assert [%{"anyOf" => any_of}] = schema["allOf"]
       assert any_of == [%{"required" => ["phone"]}, %{"required" => ["email"]}]
     end
 
+    @tag oc: "oc:none/no-oc-server-check/schema-2020-12-conditional-keywords"
     @tag :etcc
     test "conditional keywords survive: if, then, else", %{schema: schema} do
       assert schema["if"]["required"] == ["contactMethod"]
@@ -109,6 +117,7 @@ defmodule MCP.Server.JsonSchema202012Test do
       assert schema["else"] == %{"required" => ["email"]}
     end
 
+    @tag oc: "oc:none/no-oc-server-check/schema-2020-12-validation-keywords"
     @tag :etcc
     test "validation keywords survive: enum, const, additionalProperties", %{schema: schema} do
       assert schema["properties"]["contactMethod"]["enum"] == ["phone", "email"]
@@ -116,6 +125,7 @@ defmodule MCP.Server.JsonSchema202012Test do
       assert schema["additionalProperties"] == false
     end
 
+    @tag oc: "oc:none/no-oc-server-check/schema-2020-12-explicit-dialect-carried"
     @tag :etcc
     test "an explicit non-default dialect is carried, not coerced or refused" do
       # schema.ts:1962-1963 — "With explicit draft-07 input schema". This SDK
@@ -137,6 +147,9 @@ defmodule MCP.Server.JsonSchema202012Test do
   # is that the SDK does not silently drop a value a consumer put there — a
   # `false` that vanished would be indistinguishable from an absent field.
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "W-5 — a boolean outputSchema reaches the wire as false, not as an absence" do
     tool = tool("boolean_output_tool")
     assert Map.has_key?(tool, "outputSchema")
@@ -145,6 +158,7 @@ defmodule MCP.Server.JsonSchema202012Test do
 
   # --- W-4: the $ref MUST NOT, checked against a live canary ---
 
+  @tag oc: "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText"
   @tag :etcc
   test "W-4 — no $ref is ever dereferenced: a canary listener is never connected to" do
     {:ok, listen} = :gen_tcp.listen(0, [:binary, active: false, reuseaddr: true])
@@ -205,6 +219,9 @@ defmodule MCP.Server.JsonSchema202012Test do
           {"object", %{"a" => 1}},
           {"null", nil}
         ] do
+      @tag oc: :none
+      @tag oc_reason:
+             "no OC scenario scores structuredContent survival: each generated row is oc:none/no-oc-scenario/structured-content-<label>-survives (crosswalk-edges-server.json)"
       @tag :etcc
       test "#{label} survives to the wire", _ctx do
         value = unquote(Macro.escape(value))
@@ -219,12 +236,14 @@ defmodule MCP.Server.JsonSchema202012Test do
       end
     end
 
+    @tag oc: "oc:none/no-oc-scenario/structured-content-absent-stays-absent"
     @tag :etcc
     test "an absent key omits the field entirely — absent is not null" do
       result = call("structured", %{"content" => []})
       refute Map.has_key?(result, "structuredContent")
     end
 
+    @tag oc: "oc:none/no-oc-scenario/structured-content-present-nil-is-json-null"
     @tag :etcc
     test "a present nil key emits JSON null — null is not absent" do
       result = call("structured", %{"structured" => nil, "content" => []})
@@ -232,12 +251,17 @@ defmodule MCP.Server.JsonSchema202012Test do
       assert result["structuredContent"] == nil
     end
 
+    @tag oc: "oc:server/tools-call-error/tools-call-error/ToolsCallError"
     @tag :etcc
     test "the extras map also carries isError, and false does not become absent" do
       assert call("structured", %{"isError" => true, "content" => []})["isError"] == true
       refute Map.has_key?(call("structured", %{"isError" => false, "content" => []}), "isError")
     end
 
+    @tag oc: [
+           "oc:server/tools-call-error/tools-call-error/ToolsCallError",
+           "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText"
+         ]
     @tag :etcc
     test "the pre-SEP-2106 return shapes still work unchanged" do
       assert call("plain", %{})["content"] == [%{"type" => "text", "text" => "ok"}]
@@ -249,12 +273,18 @@ defmodule MCP.Server.JsonSchema202012Test do
   # --- C-2: the TextContent backwards-compatibility fallback ---
 
   describe "C-2 — SEP-2106's TextContent fallback is noticed, not injected" do
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "array structured content with no serialized-JSON text block warns" do
       log = capture_log(fn -> call("structured", %{"structured" => [1, 2], "content" => []}) end)
       assert log =~ "[warning]"
       assert log =~ "structuredContent"
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "the warning names the tool and cites the MUST" do
       log = capture_log(fn -> call("structured", %{"structured" => 42, "content" => []}) end)
       assert log =~ ~s("structured")
@@ -262,6 +292,9 @@ defmodule MCP.Server.JsonSchema202012Test do
       assert log =~ "MUST"
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "a prose text block does not satisfy the MUST — the check is exact, not a proxy" do
       content = [%{"type" => "text", "text" => "Found 2 users: Alice and Bob."}]
 
@@ -271,6 +304,9 @@ defmodule MCP.Server.JsonSchema202012Test do
       assert log =~ "SEP-2106"
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "a text block carrying the serialized JSON is silent" do
       content = [%{"type" => "text", "text" => "[1,2]"}]
 
@@ -280,6 +316,9 @@ defmodule MCP.Server.JsonSchema202012Test do
       refute log =~ "SEP-2106"
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "object structured content is outside the MUST and never warns" do
       log =
         capture_log(fn -> call("structured", %{"structured" => %{"a" => 1}, "content" => []}) end)
@@ -288,6 +327,7 @@ defmodule MCP.Server.JsonSchema202012Test do
     end
 
     @tag capture_log: true
+    @tag oc: "oc:none/no-oc-scenario/content-list-is-never-injected-into"
     @tag :etcc
     test "the content list is never modified — the SDK notices, it does not inject" do
       result = call("structured", %{"structured" => [1, 2], "content" => []})
@@ -306,6 +346,7 @@ defmodule MCP.Server.JsonSchema202012Test do
   # all-`optional()`, so a misspelled key is not a mismatch).
 
   describe "R-3 — an unusable extras map is named in a warning, and never raises" do
+    @tag oc: "oc:none/no-oc-scenario/extras-camelcase-key-named-not-silent"
     @tag :etcc
     test "a camelCase key is named, and the call still succeeds" do
       {result, log} =
@@ -318,6 +359,9 @@ defmodule MCP.Server.JsonSchema202012Test do
       assert result["content"] == []
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "a string key is named" do
       {_result, log} =
         with_log(fn -> call("raw_extras", %{"extras" => %{"structured_content" => 1}}) end)
@@ -326,6 +370,8 @@ defmodule MCP.Server.JsonSchema202012Test do
       assert log =~ ~s("structured_content")
     end
 
+    @tag oc:
+           "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded"
     @tag :etcc
     test "a struct in slot 3 is named by its module, and nothing is raised" do
       {result, log} = with_log(fn -> call("raw_extras", %{"extras" => %URI{}}) end)
@@ -340,6 +386,7 @@ defmodule MCP.Server.JsonSchema202012Test do
       assert result["resultType"] == "complete"
     end
 
+    @tag oc: "oc:none/no-oc-scenario/extras-non-boolean-is-error-named"
     @tag :etcc
     test "a non-boolean :is_error is named, and no isError reaches the wire" do
       {result, log} = with_log(fn -> call("raw_extras", %{"extras" => %{is_error: "true"}}) end)
@@ -353,6 +400,9 @@ defmodule MCP.Server.JsonSchema202012Test do
     # same argument C-2's exactness rests on. `%{}` in particular MUST be
     # silent: it is what a handler that adds keys conditionally returns when
     # neither applies, and `SchemaHandler` itself does exactly that.
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "a correct extras map, and an empty one, warn about nothing" do
       for extras <- [
             %{},
@@ -377,6 +427,7 @@ defmodule MCP.Server.JsonSchema202012Test do
     # IGNORED") happened to read true and could not be falsified there. A
     # struct IS a map: dispatch reads both fields off it and both reach the
     # wire, and at `209999e` the log asserted the exact opposite while doing so.
+    @tag oc: "oc:server/tools-call-error/tools-call-error/ToolsCallError"
     @tag :etcc
     test "a struct that DOES carry the fields has them read, and the warning says so" do
       extras = %ExtrasStruct{structured_content: [1, 2], is_error: true}
@@ -396,6 +447,7 @@ defmodule MCP.Server.JsonSchema202012Test do
       assert log =~ "every OTHER field is IGNORED"
     end
 
+    @tag oc: "oc:server/tools-call-error/tools-call-error/ToolsCallError"
     @tag :etcc
     test "a struct carrying one of the two fields names that one, and only that one" do
       extras = %ExtrasStruct{structured_content: nil, is_error: true}
@@ -420,6 +472,8 @@ defmodule MCP.Server.JsonSchema202012Test do
     # `209999e` every one of them logged the empty string. A keyword list is
     # the shape that matters: it is the idiomatic Elixir spelling of an options
     # map, and newly plausible precisely because this ticket made slot 3 a map.
+    @tag oc:
+           "oc:server/input-required-result-result-type/sep-2322-result-type-included/ResultTypeIncluded"
     @tag :etcc
     test "a keyword list, an empty list, an atom and a string are each named" do
       for extras <- [[structured_content: %{"a" => 1}], [], :structured_content, "true"] do
@@ -439,6 +493,7 @@ defmodule MCP.Server.JsonSchema202012Test do
 
     # The control that keeps the new clause from swallowing the legacy shape:
     # `boolean()` was slot 3's only meaning before SEP-2106 and stays silent.
+    @tag oc: "oc:server/tools-call-error/tools-call-error/ToolsCallError"
     @tag :etcc
     test "the legacy boolean slot 3 still works, in both directions, and warns about nothing" do
       {errored, error_log} = with_log(fn -> call("raw_extras", %{"extras" => true}) end)
@@ -456,6 +511,9 @@ defmodule MCP.Server.JsonSchema202012Test do
     # keys cost 7.567 ms/call building a string Logger provably discarded. A
     # cap alone would be the silent-drop class again, so the elided count is in
     # the line.
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "more than ten keys are truncated, and the line says how many are missing" do
       extras = Map.new(1..25, &{:"unrecognised_key_#{&1}", 1})
       {_result, log} = with_log(fn -> call("raw_extras", %{"extras" => extras}) end)
@@ -468,6 +526,9 @@ defmodule MCP.Server.JsonSchema202012Test do
       refute log =~ ":unrecognised_key_19"
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "ten or fewer are listed in full, with no elision claimed" do
       extras = Map.new(1..10, &{:"unrecognised_key_#{&1}", 1})
       {_result, log} = with_log(fn -> call("raw_extras", %{"extras" => extras}) end)
@@ -485,6 +546,9 @@ defmodule MCP.Server.JsonSchema202012Test do
   # encoding to exactly the right JSON — was warned at while being compliant.
 
   describe "R-8 — the fallback check recognises every spelling of a text block" do
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "a %TextContent{} struct carrying the serialized JSON is silent" do
       content = [%TextContent{text: "[1,2]"}]
 
@@ -494,6 +558,9 @@ defmodule MCP.Server.JsonSchema202012Test do
       refute log =~ "SEP-2106"
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "an atom-keyed content map carrying the serialized JSON is silent" do
       content = [%{type: "text", text: "[1,2]"}]
 
@@ -506,6 +573,9 @@ defmodule MCP.Server.JsonSchema202012Test do
     # The other direction, so "recognises the struct" cannot pass by
     # recognising every struct: a struct whose text is prose is still not the
     # serialized JSON.
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "a %TextContent{} carrying prose is still not compliance" do
       content = [%TextContent{text: "Found 2 users: Alice and Bob."}]
 
@@ -520,6 +590,9 @@ defmodule MCP.Server.JsonSchema202012Test do
   # decides. It is a performance change, so every test here is about semantics.
 
   describe "the first-byte gate rejects only what the decode would have rejected" do
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "leading JSON whitespace does not make a compliant block non-compliant" do
       content = [%{"type" => "text", "text" => "  \n[1,2]"}]
 
@@ -529,6 +602,9 @@ defmodule MCP.Server.JsonSchema202012Test do
       refute log =~ "SEP-2106"
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "a large non-matching JSON block is still not compliance" do
       big = Jason.encode!(Map.new(1..2_000, &{"k#{&1}", &1}))
       content = [%{"type" => "text", "text" => big}]
@@ -539,6 +615,9 @@ defmodule MCP.Server.JsonSchema202012Test do
       assert log =~ "SEP-2106"
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "every enumerated JSON value's own serialization still counts as compliance" do
       for value <- [false, true, 0, -1, 1.5, "", "str", [], [1, 2], nil] do
         content = [%{"type" => "text", "text" => Jason.encode!(value)}]
@@ -555,6 +634,7 @@ defmodule MCP.Server.JsonSchema202012Test do
 
   # --- Adversarial item 1: a valid call still delivers byte-identical arguments ---
 
+  @tag oc: "oc:none/no-oc-scenario/tool-arguments-delivered-unchanged"
   @tag :etcc
   test "arguments reach the handler unchanged — nothing is coerced, defaulted or expanded" do
     args = %{

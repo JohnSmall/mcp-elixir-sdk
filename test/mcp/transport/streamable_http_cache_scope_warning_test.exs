@@ -22,7 +22,10 @@ defmodule MCP.Transport.StreamableHTTPCacheScopeWarningTest do
   alias MCP.Transport.StreamableHTTP.Plug, as: MCPPlug
 
   @version "2026-07-28"
-  @meta %{"io.modelcontextprotocol/protocolVersion" => @version}
+  @meta %{
+    "io.modelcontextprotocol/protocolVersion" => @version,
+    "io.modelcontextprotocol/clientCapabilities" => %{}
+  }
   @needle "may be cached publicly"
 
   defp factory, do: fn conn -> [identity: conn.assigns[:role]] end
@@ -34,6 +37,9 @@ defmodule MCP.Transport.StreamableHTTPCacheScopeWarningTest do
 
   # --- AC7(a): fires on the risky configuration ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
   test "AC7(a): warns when a per-request identity factory meets public + ttlMs > 0" do
     log =
       capture_log(fn ->
@@ -44,6 +50,9 @@ defmodule MCP.Transport.StreamableHTTPCacheScopeWarningTest do
     assert log =~ "private"
   end
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
   test "AC7(a): also warns for a STATIC handler_opts carrying an :identity" do
     log =
       capture_log(fn ->
@@ -55,11 +64,17 @@ defmodule MCP.Transport.StreamableHTTPCacheScopeWarningTest do
 
   # --- AC7(b): silent on every safe configuration ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
   test "AC7(b)(i): silent when no identity is resolved (no handler_opts)" do
     log = capture_log(fn -> init(server_opts: [cache_defaults: {60_000, "public"}]) end)
     refute log =~ @needle
   end
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
   test "AC7(b)(i'): silent for a static handler_opts WITHOUT :identity" do
     log =
       capture_log(fn ->
@@ -69,6 +84,9 @@ defmodule MCP.Transport.StreamableHTTPCacheScopeWarningTest do
     refute log =~ @needle
   end
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
   test "AC7(b)(ii): silent when the scope is private" do
     log =
       capture_log(fn ->
@@ -78,6 +96,9 @@ defmodule MCP.Transport.StreamableHTTPCacheScopeWarningTest do
     refute log =~ @needle
   end
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
   test "AC7(b)(iii): silent when ttlMs is 0 (the default no-store policy)" do
     log_default = capture_log(fn -> init(handler_opts: factory()) end)
 
@@ -92,6 +113,7 @@ defmodule MCP.Transport.StreamableHTTPCacheScopeWarningTest do
 
   # --- AC7(c): exactly once across N requests (config-time, not per request) ---
 
+  @tag oc: "oc:none/no-oc-scenario/cache-scope-warning-once-per-configuration"
   @tag :etcc
   test "AC7(c): N requests against a warned configuration produce exactly ONE line" do
     log =
@@ -122,6 +144,9 @@ defmodule MCP.Transport.StreamableHTTPCacheScopeWarningTest do
 
   # --- C3: the warning surfaces at RUNTIME via the documented Bandit shape ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
   test "C3: warning reaches the runtime log when started via Bandit plug: {Mod, opts}" do
     port = free_port()
 

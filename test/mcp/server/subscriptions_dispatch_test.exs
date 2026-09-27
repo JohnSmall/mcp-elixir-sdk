@@ -44,7 +44,12 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
 
   defp listen_request(notifications, opts \\ []) do
     params =
-      %{"_meta" => %{"io.modelcontextprotocol/protocolVersion" => @version}}
+      %{
+        "_meta" => %{
+          "io.modelcontextprotocol/protocolVersion" => @version,
+          "io.modelcontextprotocol/clientCapabilities" => %{}
+        }
+      }
       |> then(fn p ->
         if notifications == :omitted, do: p, else: Map.put(p, "notifications", notifications)
       end)
@@ -75,6 +80,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
   # --- T-1: wire shapes, pinned against the schema's own examples ---
 
   describe "T-1 wire shapes (pinned to schema/2026-07-28 examples)" do
+    @tag oc: "oc:none/no-oc-scenario/listen-request-parses"
     @tag :etcc
     test "the request parses as the pinned SubscriptionsListenRequest example" do
       # schema/2026-07-28/examples/SubscriptionsListenRequest/listen-for-list-changes.json
@@ -94,6 +100,8 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
              }
     end
 
+    @tag oc:
+           "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId"
     @tag :etcc
     test "the acknowledgment matches the pinned SubscriptionsAcknowledgedNotification example" do
       # schema/2026-07-28/examples/SubscriptionsAcknowledgedNotification/listen-acknowledged.json
@@ -112,6 +120,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
              }
     end
 
+    @tag oc: "oc:none/no-oc-scenario/close-response-shape"
     @tag :etcc
     test "the graceful-close response matches the pinned example exactly" do
       # schema/2026-07-28/examples/SubscriptionsListenResultResponse/
@@ -129,6 +138,8 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
              }
     end
 
+    @tag oc:
+           "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId"
     @tag :etcc
     test "a resources/updated frame matches the pinned notification example" do
       sub =
@@ -149,6 +160,8 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
              }
     end
 
+    @tag oc:
+           "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId"
     @tag :etcc
     test "the id is echoed, never coerced — RequestId is string OR integer" do
       # The pinned examples use a string id; the mdx prose uses an integer. Both
@@ -161,6 +174,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       assert %{"id" => "listen-1"} = Subscriptions.close_response("listen-1")
     end
 
+    @tag oc: "oc:none/no-oc-scenario/empty-filter-is-legal"
     @tag :etcc
     test "notifications is required; {} is legal and means subscribe to nothing" do
       assert {:ok, %{}} = Subscriptions.parse_filter(%{"notifications" => %{}})
@@ -170,12 +184,16 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
                Subscriptions.parse_filter(%{"notifications" => []})
     end
 
+    @tag oc: "oc:none/no-oc-scenario/absent-notifications--32602"
     @tag :etcc
     test "an absent notifications object is -32602, not a silently empty stream" do
       assert {:reply, %{"error" => error}, _} = open(:omitted)
       assert error["code"] == -32_602
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-ADJ, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "an empty filter opens a real stream that carries nothing" do
       assert {:stream, %Subscription{} = sub, _} = open(%{})
       assert sub.honoured == %{}
@@ -187,6 +205,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
   # --- T-2: ack first, and the honoured subset rather than the requested one ---
 
   describe "T-2 the acknowledgment reports what was honoured" do
+    @tag oc: "oc:none/no-oc-scenario/ack-omits-refused-type"
     @tag :etcc
     test "a requested-but-refused type is absent from the ack" do
       requested = %{
@@ -203,6 +222,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       refute Map.has_key?(sub.ack["params"]["notifications"], "promptsListChanged")
     end
 
+    @tag oc: "oc:none/no-oc-scenario/ack-equals-enforced-set"
     @tag :etcc
     test "the ack is built from the same value the stream enforces" do
       assert {:stream, %Subscription{} = sub, _} = open(%{"toolsListChanged" => true})
@@ -213,6 +233,8 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       assert MapSet.equal?(promised, sub.allowed)
     end
 
+    @tag oc:
+           "oc:server/server-stateless/sep-2575-server-tags-subscription-id/ServerTagsSubscriptionId"
     @tag :etcc
     test "the ack carries this subscription's id in _meta" do
       assert {:stream, %Subscription{} = sub, _} = open(%{"toolsListChanged" => true}, id: 42)
@@ -225,6 +247,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
   # --- T-3 / T-4: the two stream MUST NOTs ---
 
   describe "T-3 MUST NOT send an unrequested notification type" do
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-ADJ, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "only the opted-in types are framed" do
       assert {:stream, sub, _} = open(%{"toolsListChanged" => true})
 
@@ -234,6 +259,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       assert :drop == Subscription.frame(sub, Methods.resources_updated(), %{"uri" => "mem://x"})
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-ADJ, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "a resource URI outside the honoured list is dropped" do
       allowed = SubscribingHandler.allowed_uri_prefix() <> "a.txt"
       other = SubscribingHandler.allowed_uri_prefix() <> "b.txt"
@@ -244,6 +272,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       assert :drop == Subscription.frame(sub, Methods.resources_updated(), %{"uri" => other})
     end
 
+    @tag oc: "oc:none/no-oc-scenario/uri-filter-key-style"
     @tag :etcc
     test "the URI filter reads either key style, so nothing is dropped for writing %{uri: ...}" do
       # Review F6: this filter used to read only the string key, so an
@@ -264,6 +293,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
   end
 
   describe "T-4 MUST NOT send request-scoped notifications on the listen stream" do
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-ADJ, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "progress and message are refused by the same rule, on any filter" do
       # Not a separate check that could be forgotten: no SubscriptionFilter key
       # maps to either method, so neither can ever enter an honoured set.
@@ -280,6 +312,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       assert :drop == Subscription.frame(sub, Methods.logging_message(), %{"level" => "info"})
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-ADJ, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "no filter key maps to a request-scoped method" do
       request_scoped = [Methods.progress(), Methods.logging_message()]
       mapped = Enum.map(Subscriptions.filter_keys(), &Subscriptions.method_for/1)
@@ -291,6 +326,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
   # --- T-5: ack ⊆ advertised, and the JSON-mode refusal ---
 
   describe "T-5 the ack never claims more than server/discover advertised" do
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-ADJ, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "a type the server does not advertise is not honoured, even if the handler returns it" do
       # A config whose capabilities advertise tools only. The handler would
       # honour resourcesListChanged; the advertised-capability narrowing is what
@@ -317,6 +355,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       assert sub.honoured == %{"toolsListChanged" => true}
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-ADJ, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "resourceSubscriptions is refused unless resources.subscribe is advertised" do
       base = config()
 
@@ -343,6 +384,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       refute Map.has_key?(sub.honoured, "resourceSubscriptions")
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-ADJ, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "every honoured key is advertised, for the full filter" do
       every_type = %{
         "toolsListChanged" => true,
@@ -363,6 +407,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
   end
 
   describe "T-5 JSON mode refuses the method outright" do
+    @tag oc: :none
+    @tag oc_reason:
+           "its counterparts are not all SUCCESS live (HttpServerMethodNotFound404 FAILURE), so they cannot vouch (gate 7 Q1); MES-161 does not remedy them (the 404 fix is MES-165)"
     @tag :etcc
     test "a non-streaming driver gets -32601, never a silent black hole" do
       json_mode = config(streaming: false)
@@ -373,6 +420,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       assert error["code"] == -32_601
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-ADJ, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "and that deployment advertises no subscription capability, so the refusal is honest" do
       json_mode = config(streaming: false)
 
@@ -382,6 +432,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       assert Subscriptions.permitted_by(json_mode.capabilities) == %{}
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "its counterparts are not all SUCCESS live (HttpServerMethodNotFound404 FAILURE), so they cannot vouch (gate 7 Q1); MES-161 does not remedy them (the 404 fix is MES-165)"
     @tag :etcc
     test "a handler with no handle_listen/3 also gets -32601" do
       {:ok, no_listen} = Config.build(MCP.Test.StatelessHandler, streaming: true)
@@ -394,6 +447,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
   # --- T-6 / T-7: sink separation, in both directions ---
 
   describe "T-6 the two sinks cannot cross-contaminate" do
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
     test "a non-listen request's context has no stream sink at all" do
       # Not "has one that refuses" — has none. Dispatch strips it for every
       # method other than subscriptions/listen, so a tool handler has nothing
@@ -402,7 +458,10 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
         id: 1,
         method: "tools/call",
         params: %{
-          "_meta" => %{"io.modelcontextprotocol/protocolVersion" => @version},
+          "_meta" => %{
+            "io.modelcontextprotocol/protocolVersion" => @version,
+            "io.modelcontextprotocol/clientCapabilities" => %{}
+          },
           "name" => "emit_request_scoped",
           "arguments" => %{}
         }
@@ -422,6 +481,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       refute_received {:leaked_to_stream, _, _}
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-ADJ, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "the stripping is per-method, not per-route — a notification is stripped too" do
       notification = %MCP.Protocol.Messages.Notification{
         method: "notifications/cancelled",
@@ -436,6 +498,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       refute_received :leaked
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "the listen open callback DOES receive the stream sink" do
       sink = fn _m, _p -> :ok end
       assert {:stream, _sub, _} = open(%{"toolsListChanged" => true}, stream_sink: sink)
@@ -461,6 +526,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
     # collector is gone by the time the stream is live". Recorded here rather
     # than deleted silently, so the ledger shows a test moved and why.
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "a stream sink is not a collector push — it never accumulates for a response" do
       collected = fn method, params -> send(self(), {:pushed, method, params}) end
       assert {:stream, _sub, _} = open(%{"toolsListChanged" => true}, stream_sink: collected)
@@ -477,6 +545,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
   # --- Authorization at open time ---
 
   describe "open-time authorization via the honoured subset" do
+    @tag oc: "oc:none/no-oc-scenario/ack-omits-unauthorized-uri"
     @tag :etcc
     test "a URI this principal may not observe is absent from the ack" do
       allowed = SubscribingHandler.allowed_uri_prefix() <> "a.txt"
@@ -488,6 +557,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       assert sub.ack["params"]["notifications"] == %{}
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-ADJ, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "the same request from a permitted principal is honoured" do
       allowed = SubscribingHandler.allowed_uri_prefix() <> "a.txt"
 
@@ -495,6 +567,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       assert sub.honoured["resourceSubscriptions"] == [allowed]
     end
 
+    @tag oc: "oc:none/no-oc-scenario/handler-refusal--32603"
     @tag :etcc
     test "a handler may refuse the subscription outright" do
       # `{:listen_refused, ...}`, NOT `{:reply, ...}`: the response is an
@@ -507,6 +580,7 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       assert error["code"] == -32_603
     end
 
+    @tag oc: "oc:none/no-oc-scenario/refusals-above-the-handler"
     @tag :etcc
     test "the two refusals that never reach the handler stay {:reply, ...}" do
       # A malformed filter, and a deployment that cannot stream. Neither ran
@@ -523,6 +597,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
                )
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
     test "identity reaches handle_listen/3 from the context, never from params" do
       params_spoof = %{"toolsListChanged" => true, "identity" => "mallory"}
       assert {:stream, _, _} = open(params_spoof, identity: "alice")
@@ -533,6 +610,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
   # --- T-11 (driver opt-in half; the per-driver clause is covered elsewhere) ---
 
   describe "T-11 a driver that does not opt in can never receive {:stream, ...}" do
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-ADJ, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "streaming: false yields only the two original shapes" do
       json_mode = config(streaming: false)
 
@@ -541,7 +621,10 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
           id: 1,
           method: method,
           params: %{
-            "_meta" => %{"io.modelcontextprotocol/protocolVersion" => @version},
+            "_meta" => %{
+              "io.modelcontextprotocol/protocolVersion" => @version,
+              "io.modelcontextprotocol/clientCapabilities" => %{}
+            },
             "notifications" => %{"toolsListChanged" => true}
           }
         }
@@ -550,6 +633,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       end
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "not an ET-CC member: etcc-register ET-ADJ, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
     test "MCP.Server.Connection declares streaming: false" do
       # The stdio/in-process driver's opt-out, asserted rather than assumed:
       # this is what makes its {:stream, ...} clause unreachable rather than

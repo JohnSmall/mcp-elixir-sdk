@@ -63,8 +63,8 @@
           "et_test": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              88,
-              90
+              120,
+              122
             ],
             "bytes": "  test \"initialize is gone → -32022; ping/logging.setLevel → -32601\" do\n    assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022\n    assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601",
             "asserts": "Through the real MCPPlug, a POST of the removed method ping is answered with JSON-RPC error -32601.",
@@ -133,8 +133,8 @@
             {
               "file": "test/mcp/transport/streamable_http_stateless_test.exs",
               "lines": [
-                90,
-                90
+                122,
+                122
               ],
               "bytes": "    assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601",
               "breaks": "Does NOT break: the line asserts -32601 and never reads the status. Under the R2 fix it stays green and gains the status assertion this disposition records."
@@ -163,8 +163,8 @@
           "et_test": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              88,
-              91
+              120,
+              123
             ],
             "bytes": "  test \"initialize is gone → -32022; ping/logging.setLevel → -32601\" do\n    assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022\n    assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601\n    assert error(post(opts(), rpc(\"logging/setLevel\", %{\"level\" => \"info\"})))[\"code\"] == -32_601",
             "asserts": "Through the real MCPPlug, a POST of the removed method logging/setLevel is answered with JSON-RPC error -32601.",
@@ -233,8 +233,8 @@
             {
               "file": "test/mcp/transport/streamable_http_stateless_test.exs",
               "lines": [
-                91,
-                91
+                123,
+                123
               ],
               "bytes": "    assert error(post(opts(), rpc(\"logging/setLevel\", %{\"level\" => \"info\"})))[\"code\"] == -32_601",
               "breaks": "Does NOT break: the line asserts -32601 and never reads the status. Under the R2 fix it stays green and gains the status assertion this disposition records."
@@ -263,8 +263,8 @@
           "et_test": {
             "file": "test/mcp/server/dispatch_test.exs",
             "lines": [
-              88,
-              95
+              116,
+              123
             ],
             "bytes": "  test \"ping and logging/setLevel are removed → method not found (-32601)\" do\n    {:reply, ping_resp, _} = Dispatch.dispatch(req(\"ping\", %{}), ctx(), config())\n\n    {:reply, log_resp, _} =\n      Dispatch.dispatch(req(\"logging/setLevel\", %{\"level\" => \"info\"}), ctx(), config())\n\n    assert ping_resp[\"error\"][\"code\"] == -32_601\n    assert log_resp[\"error\"][\"code\"] == -32_601",
             "asserts": "Dispatch.dispatch/3 answers the removed method ping with JSON-RPC error -32601.",
@@ -325,8 +325,8 @@
             {
               "file": "test/mcp/server/dispatch_test.exs",
               "lines": [
-                94,
-                94
+                122,
+                122
               ],
               "bytes": "    assert ping_resp[\"error\"][\"code\"] == -32_601",
               "breaks": "Does NOT break: the dispatch's -32601 is unchanged by an HTTP status mapping."
@@ -337,8 +337,8 @@
           "reached_elsewhere_by": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              88,
-              90
+              120,
+              122
             ],
             "bytes": "  test \"initialize is gone → -32022; ping/logging.setLevel → -32601\" do\n    assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022\n    assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601"
           },
@@ -363,8 +363,8 @@
           "et_test": {
             "file": "test/mcp/server/dispatch_test.exs",
             "lines": [
-              88,
-              95
+              116,
+              123
             ],
             "bytes": "  test \"ping and logging/setLevel are removed → method not found (-32601)\" do\n    {:reply, ping_resp, _} = Dispatch.dispatch(req(\"ping\", %{}), ctx(), config())\n\n    {:reply, log_resp, _} =\n      Dispatch.dispatch(req(\"logging/setLevel\", %{\"level\" => \"info\"}), ctx(), config())\n\n    assert ping_resp[\"error\"][\"code\"] == -32_601\n    assert log_resp[\"error\"][\"code\"] == -32_601",
             "asserts": "Dispatch.dispatch/3 answers the removed method logging/setLevel with JSON-RPC error -32601.",
@@ -425,8 +425,8 @@
             {
               "file": "test/mcp/server/dispatch_test.exs",
               "lines": [
-                95,
-                95
+                123,
+                123
               ],
               "bytes": "    assert log_resp[\"error\"][\"code\"] == -32_601",
               "breaks": "Does NOT break: the dispatch's -32601 is unchanged by an HTTP status mapping."
@@ -437,8 +437,8 @@
           "reached_elsewhere_by": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              88,
-              91
+              120,
+              123
             ],
             "bytes": "  test \"initialize is gone → -32022; ping/logging.setLevel → -32601\" do\n    assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022\n    assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601\n    assert error(post(opts(), rpc(\"logging/setLevel\", %{\"level\" => \"info\"})))[\"code\"] == -32_601"
           },
@@ -463,8 +463,8 @@
           "et_test": {
             "file": "test/mcp/server/subscriptions_dispatch_test.exs",
             "lines": [
-              367,
-              373
+              414,
+              420
             ],
             "bytes": "    test \"a non-streaming driver gets -32601, never a silent black hole\" do\n      json_mode = config(streaming: false)\n\n      assert {:reply, %{\"error\" => error}, _} =\n               Dispatch.dispatch(listen_request(%{\"toolsListChanged\" => true}), ctx(), json_mode)\n\n      assert error[\"code\"] == -32_601",
             "asserts": "Dispatch.dispatch/3 in a non-streaming (JSON-mode) deployment answers subscriptions/listen with JSON-RPC error -32601.",
@@ -525,8 +525,8 @@
             {
               "file": "test/mcp/server/subscriptions_dispatch_test.exs",
               "lines": [
-                373,
-                373
+                420,
+                420
               ],
               "bytes": "      assert error[\"code\"] == -32_601",
               "breaks": "Does NOT break: the dispatch's -32601 is unchanged by an HTTP status mapping."
@@ -537,8 +537,8 @@
           "reached_elsewhere_by": {
             "file": "test/mcp/transport/subscriptions_stream_test.exs",
             "lines": [
-              1028,
-              1029
+              1113,
+              1114
             ],
             "bytes": "      assert response.status == 200\n      assert response.body[\"error\"][\"code\"] == -32_601"
           },
@@ -563,8 +563,8 @@
           "et_test": {
             "file": "test/mcp/server/subscriptions_dispatch_test.exs",
             "lines": [
-              386,
-              390
+              439,
+              443
             ],
             "bytes": "    test \"a handler with no handle_listen/3 also gets -32601\" do\n      {:ok, no_listen} = Config.build(MCP.Test.StatelessHandler, streaming: true)\n\n      assert {:reply, %{\"error\" => %{\"code\" => -32_601}}, _} =\n               Dispatch.dispatch(listen_request(%{\"toolsListChanged\" => true}), ctx(), no_listen)",
             "asserts": "Dispatch.dispatch/3 over a handler that implements no handle_listen/3 answers subscriptions/listen with JSON-RPC error -32601.",
@@ -625,8 +625,8 @@
             {
               "file": "test/mcp/server/subscriptions_dispatch_test.exs",
               "lines": [
-                389,
-                389
+                442,
+                442
               ],
               "bytes": "      assert {:reply, %{\"error\" => %{\"code\" => -32_601}}, _} =",
               "breaks": "Does NOT break: the dispatch's -32601 is unchanged by an HTTP status mapping.",

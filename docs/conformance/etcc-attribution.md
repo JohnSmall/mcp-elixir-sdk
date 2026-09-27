@@ -119,7 +119,7 @@ permitted by that parenthetical and they do not agree:
 it to be inferred.** The loose reading is printed beside it because it does *not*
 have the one-directional property below — which is exactly why the reading has to
 be named. The three opposite-direction cells under the loose reading are the
-reviewer's finding, reproduced (it measured two; `self_compatibility_test.exs:97`
+reviewer's finding, reproduced (it measured two; `self_compatibility_test.exs:101`
 became a third when §2.3's new rule moved it).
 
 **WHAT THE CORRELATION DOES NOT DO, stated because this file previously implied
@@ -224,7 +224,7 @@ primary failure signature**.
 **Result under the ratified mechanical rule: 145 server, 107 client, 29
 `none_determinable` — 10.3% residue.**
 
-**What moved, and it is one row.** `transport/self_compatibility_test.exs:97`
+**What moved, and it is one row.** `transport/self_compatibility_test.exs:101`
 (*"REACHABILITY CONTROL: an encoded Mcp-Name is decoded before comparison"*) was
 `server` in round 1 and is `none_determinable` now. Round 1's figures were
 146 / 107 / 28. **The reviewer expected a wording change rather than a
@@ -298,24 +298,24 @@ neutralised to the identity function:
     decode_value/1 -> identity      994 tests, 6 failures
       header_mirror_test.exs:367, :438
       routing_headers_test.exs:206, :248
-      self_compatibility_test.exs:97, :173
+      self_compatibility_test.exs:101, :185
 
     encode_value/1 -> identity      994 tests, 11 failures
       header_mirror_test.exs:31 (x3 of its 4 doctests), :354, :389, :438
       routing_headers_test.exs:206, :248, :318
-      self_compatibility_test.exs:97, :173
+      self_compatibility_test.exs:101, :185
 
 `decode_value/1 -> identity` reproduces the reviewer's six exactly, which is the
 cross-seat check on the instrument itself.
 
-**The row that moves: `self_compatibility_test.exs:97`, `server` → `none_determinable`.**
+**The row that moves: `self_compatibility_test.exs:101`, `server` → `none_determinable`.**
 It is reddened by *both* mutations, and the failure lines say why — two assertions,
 one definite on each leg:
 
 | assertion | falsified by | not falsified by | leg |
 | --- | --- | --- | --- |
 | `:101 assert String.starts_with?(header, "=?base64?")` | `encode_value` mutation — fails **at :101** | any server mutation: `header` is computed before the post, and the recorder never reaches our server | **client-definite** |
-| `:110 assert conn.status == 200` | `decode_value` mutation — fails **at :110** | the `encode_value` mutation — **measured**: with `:101` replaced by `_ = header`, the client mutation leaves `self_compatibility_test.exs:97` GREEN and only `self_compatibility_test.exs:173` reddens | **server-definite** |
+| `:110 assert conn.status == 200` | `decode_value` mutation — fails **at :110** | the `encode_value` mutation — **measured**: with `:101` replaced by `_ = header`, the client mutation leaves `self_compatibility_test.exs:101` GREEN and only `self_compatibility_test.exs:185` reddens | **server-definite** |
 
 The second row's negative half is a **measurement, not a reachability argument**:
 ExUnit aborts at the first failure, so the only way to see whether `:110` survives
@@ -345,7 +345,7 @@ a client mutation is to remove `:101` and re-run. It survives. **Two definite le
   Its `headers` come from `HeaderMirror.headers_for/2` in the `describe`'s own
   `setup`, so the decode is applied to our own encoder's output. Single assertion,
   falsified from either side, neither leg definite.
-* **`self_compatibility_test.exs:116`, `:131`, `:144`, `:160` stay `server`** — they name `encode_value`
+* **`self_compatibility_test.exs:121`, `:137`, `:151`, `:168` stay `server`** — they name `encode_value`
   but assert nothing about its output, and the `encode_value` mutation **does not
   redden them**, which is the negative half measured rather than argued.
 * **`header_mirror_test.exs:450` stays `server`** — `decode_value` applied to two literals, and the
@@ -357,7 +357,7 @@ a client mutation is to remove `:101` and re-run. It survives. **Two definite le
   of the parser (`assert response.status == 200`, `assert_receive`/`refute_receive`
   over the handler) touch no client code at all. Same for the 15 `Bandit`
   false-candidates, whose far end is a double.
-* **`capabilities_test.exs:46`, `sse_test.exs:187`, `subscriptions_stream_test.exs:374` stay `none_determinable`** as round-trips under
+* **`capabilities_test.exs:46`, `sse_test.exs:187`, `subscriptions_stream_test.exs:392` stay `none_determinable`** as round-trips under
   the second limb, each a single assertion over a decode of our own encoder's
   output.
 
@@ -370,12 +370,12 @@ candidates.
 **(1) End-to-end, both legs in one test — 7.** A mutation on either leg reddens
 it, so the assertion constrains the pair.
 `integration_test.exs:128,139,160,178,193,204`;
-`transport/self_compatibility_test.exs:173`.
+`transport/self_compatibility_test.exs:185`.
 
 **(2) Round-trip — the decode/parse consumes OUR OWN encoder's output, so the one
 assertion is falsified from either side — 4.**
 `protocol/capabilities_test.exs:46`; `protocol/header_mirror_test.exs:367`;
-`transport/sse_test.exs:187`; `transport/subscriptions_stream_test.exs:374`.
+`transport/sse_test.exs:187`; `transport/subscriptions_stream_test.exs:392`.
 This is the rule's second limb; §2.3 names the call each one's decode consumes.
 
 **(3) Two independent single-leg claims on OPPOSITE legs, so the rule makes both
@@ -384,8 +384,8 @@ legs definite and neither alone owns the member — 3.**
 over `ClientCapabilities` **and** `ServerCapabilities`);
 `protocol/header_mirror_test.exs:438` (an `encode_value` literal **and** a
 `decode_value` literal — moved here from class 2 in correction round 1, where it
-was miscalled a round-trip); `transport/self_compatibility_test.exs:97` (the
-client-produced sentinel at `:101` **and** our server's 200 at `:110` — the one
+was miscalled a round-trip); `transport/self_compatibility_test.exs:101` (the
+client-produced sentinel at `:105` **and** our server's 200 at `:114` — the one
 row the ratified rule re-attributed, §2.3).
 
 **(4) A public API with no `lib/` call site on either leg — 7.**
@@ -481,7 +481,7 @@ accuses **nothing**: every sweep hit is already assigned a CG.
 ### §3.3 The assignments, per item
 
 **CG1 — 10** (A4: 9). `routing_headers_test.exs:90,110,125,137,166,186,206,230,248`
-(client) + `self_compatibility_test.exs:173` (`none_determinable`; CG1's T-CG1c
+(client) + `self_compatibility_test.exs:185` (`none_determinable`; CG1's T-CG1c
 sentinel claim asserted end to end).
 
 **CG2 — 14** (A4: 4 units, of which 2 are ET-CC). `client_conformance_test.exs:186,235`;
@@ -777,7 +777,7 @@ leg, not a look-alike. Its leg is `client`, consistently.
 carrier-less, not inherited from the plan.**
 
 * For `CG2-unknown-not-a-fault`, the nearest candidate is
-  `extensions_negotiation_test.exs:285` (T10, *"tools/call succeeds normally; no
+  `extensions_negotiation_test.exs:316` (T10, *"tools/call succeeds normally; no
   error, no -32021"*). **Rejected:** T10 is our **server** not faulting on an
   unknown **client** extension; the claim is our **client** not faulting on an
   unknown **server** extension. Different implementation under test — the
@@ -813,21 +813,21 @@ join was most likely to drop:**
 
 | member | leg | contradicts |
 | --- | --- | --- |
-| `dispatch_test.exs:82` — *"initialize is removed → -32022"* | server | `oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize` |
-| `streamable_http_stateless_test.exs:88` — *"initialize is gone → -32022; ping/logging.setLevel → -32601"* | server | the same check |
+| `dispatch_test.exs:107` — *"initialize is removed → -32022"* | server | `oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize` |
+| `streamable_http_stateless_test.exs:120` — *"initialize is gone → -32022; ping/logging.setLevel → -32601"* | server | the same check |
 
 The check requires **404 + -32601**; both members assert **-32022**. They are
 `ET-CC` in B2a's register **deliberately** — excluding them would empty bucket 4a
 by construction, and 4a is a finding this epic exists to surface.
 `etcc-membership.md` §B.4(i-b) records why that rule is not in Part A.
 
-`streamable_http_stateless_test.exs:88` bundles three claims and only the
+`streamable_http_stateless_test.exs:120` bundles three claims and only the
 `initialize` one contradicts; the two `-32601` claims agree. Under
 `match-relation.md` §1 that member contributes **three edges**, and C1 preserves
 all three verdicts — this file records the contradiction at member granularity
 and does not collapse them.
 
-`test/conformance/etcc_attribution_test.exs` asserts the `dispatch_test.exs:82`
+`test/conformance/etcc_attribution_test.exs` asserts the `dispatch_test.exs:107`
 row by name, so the one row most likely to be lost cannot be lost silently.
 
 ---

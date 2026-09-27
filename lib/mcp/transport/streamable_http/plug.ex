@@ -39,9 +39,9 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     1. **Enforcement** — localhost/Origin (and any host auth) runs first, on
        every request, before the identity factory (MC-5 / AC7). A rejected
        request never runs the factory.
-    2. **Decode + routing headers** — parse the JSON-RPC body; validate any
-       `Mcp-Method` / `Mcp-Name` routing headers against it (SEP-2243) —
-       mismatch → `-32020`.
+    2. **Decode, routing headers, `_meta`** — parse the JSON-RPC body; check
+       `Mcp-Method` / `Mcp-Name` against it (SEP-2243, mismatch → `-32020`),
+       then the required `_meta` keys (missing → HTTP 400, `-32602`, the id).
     3. **Identity resolution** — the `:handler_opts` factory is evaluated
        against *this request's* `conn` (or the static keyword's `:identity`);
        the result populates `ToolContext.identity`, never from `params`
@@ -320,13 +320,16 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     with {:ok, body, conn} <- Plug.Conn.read_body(conn),
          {:ok, message} <- Jason.decode(body),
          :ok <- check_routing_headers(conn, message),
+         {:ok, decoded} <- decode_well_formed(message),
          {:ok, identity} <- resolve_identity(config.handler_opts, conn),
-         {:ok, decoded} <- Protocol.decode_message(message),
          {:ok, collector} <- start_collector(config.collector_start) do
       dispatch(conn, config, decoded, message, identity, collector)
     else
       {:error, %Jason.DecodeError{} = e} ->
         send_json_error(conn, 400, Error.parse_error_code(), "Parse error", inspect(e))
+
+      {:error, {:meta_invalid, id, missing}} ->
+        send_meta_invalid(conn, id, missing)
 
       {:error, {:routing_mismatch, detail}} ->
         send_json_error(conn, 400, Error.header_mismatch_code(), "Header mismatch", detail)
@@ -369,14 +372,11 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     end
   end
 
-  # Starts the per-request notification collector, mapping a start failure to a
-  # controlled `{:error, {:collector_start_failed, reason}}` for the with-chain
-  # (MC-6) rather than crashing on an unguarded match.
-  defp start_collector(start_fun) do
-    case start_fun.() do
-      {:ok, _collector} = ok -> ok
-      {:error, reason} -> {:error, {:collector_start_failed, reason}}
-    end
+  # -32602 + HTTP 400, with the request's id; see `decode_well_formed/1`.
+  defp send_meta_invalid(conn, id, missing) do
+    error = Error.missing_required_meta(missing)
+    body = %{"code" => error.code, "message" => error.message, "data" => error.data}
+    send_json(conn, 400, %{"jsonrpc" => "2.0", "id" => id, "error" => body})
   end
 
   defp dispatch(conn, config, decoded, raw_message, identity, collector) do
@@ -1065,5 +1065,46 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
     host_without_port = String.replace(host_part, ~r{:\d+$}, "")
     host_without_port in @localhost_patterns
+  end
+
+  # --- Per-request _meta: HTTP 400 for a malformed request (basic/index.mdx) ---
+
+  # `MCP.Server.Dispatch` rejects a request missing a required `_meta` field
+  # with -32602 on every transport, but its reply would leave here as HTTP 200.
+  # So the Plug refuses the request itself — after the routing-header check
+  # (-32020 first: a header that contradicts the body is judged before the
+  # body's contents) and before identity resolution or any handler runs. The
+  # removed methods are exempt here exactly as they are in Dispatch.
+  #
+  # These helpers, and `start_collector/1` (moved here by MES-161, unchanged),
+  # sit below every line the adjudication records cite, so none of those moves.
+  defp decode_well_formed(message) do
+    case Protocol.decode_message(message) do
+      {:ok, %Request{method: method, id: id, params: params}} = decoded
+      when method not in ["initialize", "ping", "logging/setLevel"] ->
+        case MCP.Protocol.Meta.missing_required(params) do
+          [] -> decoded
+          missing -> {:error, {:meta_invalid, id, missing}}
+        end
+
+      other ->
+        other
+    end
+  end
+
+  defp send_json(conn, http_status, body) do
+    conn
+    |> Plug.Conn.put_resp_content_type("application/json")
+    |> Plug.Conn.send_resp(http_status, Jason.encode!(body))
+  end
+
+  # Starts the per-request notification collector, mapping a start failure to a
+  # controlled `{:error, {:collector_start_failed, reason}}` for the with-chain
+  # (MC-6) rather than crashing on an unguarded match.
+  defp start_collector(start_fun) do
+    case start_fun.() do
+      {:ok, _collector} = ok -> ok
+      {:error, reason} -> {:error, {:collector_start_failed, reason}}
+    end
   end
 end

@@ -115,13 +115,13 @@
       "lib": "lib/mcp/server/dispatch.ex (dispatch/3)",
       "change": "answer -32602 when `_meta` lacks io.modelcontextprotocol/protocolVersion or io.modelcontextprotocol/clientCapabilities (basic/index.mdx:380-382); byte-identical to MES-141's M9",
       "reddens": [
-        "dispatch_test.exs:112",
-        "tool_order_test.exs:155",
-        "tool_order_test.exs:129",
-        "tool_order_test.exs:141",
-        "tool_order_test.exs:99",
-        "tool_order_test.exs:105",
-        "tool_order_test.exs:93"
+        "dispatch_test.exs:148",
+        "tool_order_test.exs:172",
+        "tool_order_test.exs:144",
+        "tool_order_test.exs:157",
+        "tool_order_test.exs:109",
+        "tool_order_test.exs:116",
+        "tool_order_test.exs:102"
       ],
       "measured": {
         "slice_members_red": 7,
@@ -165,17 +165,17 @@
       "lib": "lib/mcp/server/dispatch.ex (dispatch/3) and lib/mcp/transport/streamable_http/plug.ex (call/2)",
       "change": "M9, and the Plug answers a request whose `_meta` lacks either required field 400 with -32602, after check_routing_headers (HttpServerMetaInvalid400's axis) [PM 29945 Q2]",
       "reddens": [
-        "dispatch_test.exs:112",
-        "tool_order_test.exs:155",
-        "tool_order_test.exs:129",
-        "tool_order_test.exs:141",
-        "tool_order_test.exs:99",
-        "tool_order_test.exs:105",
-        "tool_order_test.exs:93",
-        "self_compatibility_test.exs:155",
-        "streamable_http_ac_test.exs:190",
-        "streamable_http_ac_test.exs:202",
-        "streamable_http_cache_scope_warning_test.exs:116 (reported at the enclosing capture_log, :98)"
+        "dispatch_test.exs:148",
+        "tool_order_test.exs:172",
+        "tool_order_test.exs:144",
+        "tool_order_test.exs:157",
+        "tool_order_test.exs:109",
+        "tool_order_test.exs:116",
+        "tool_order_test.exs:102",
+        "self_compatibility_test.exs:162",
+        "streamable_http_ac_test.exs:222",
+        "streamable_http_ac_test.exs:235",
+        "streamable_http_cache_scope_warning_test.exs:138 (reported at the enclosing capture_log, :98)"
       ],
       "measured": {
         "slice_members_red": 11,
@@ -207,20 +207,20 @@
       "lib": "lib/mcp/server/dispatch.ex (dispatch/3) and lib/mcp/transport/streamable_http/plug.ex (call/2)",
       "change": "M9h with the Plug's `_meta` check placed BEFORE check_routing_headers: the other validation order for a two-defect request [PM 29945 Q1, Q2]",
       "reddens": [
-        "dispatch_test.exs:112",
-        "tool_order_test.exs:155",
-        "tool_order_test.exs:129",
-        "tool_order_test.exs:141",
-        "tool_order_test.exs:99",
-        "tool_order_test.exs:105",
-        "tool_order_test.exs:93",
-        "self_compatibility_test.exs:140",
-        "self_compatibility_test.exs:127",
-        "self_compatibility_test.exs:155",
-        "self_compatibility_test.exs:169",
-        "streamable_http_ac_test.exs:190",
-        "streamable_http_ac_test.exs:202",
-        "streamable_http_cache_scope_warning_test.exs:116 (reported at the enclosing capture_log, :98)"
+        "dispatch_test.exs:148",
+        "tool_order_test.exs:172",
+        "tool_order_test.exs:144",
+        "tool_order_test.exs:157",
+        "tool_order_test.exs:109",
+        "tool_order_test.exs:116",
+        "tool_order_test.exs:102",
+        "self_compatibility_test.exs:146",
+        "self_compatibility_test.exs:132",
+        "self_compatibility_test.exs:162",
+        "self_compatibility_test.exs:177",
+        "streamable_http_ac_test.exs:222",
+        "streamable_http_ac_test.exs:235",
+        "streamable_http_cache_scope_warning_test.exs:138 (reported at the enclosing capture_log, :98)"
       ],
       "measured": {
         "slice_members_red": 14,
@@ -252,9 +252,9 @@
       "lib": "lib/mcp/transport/streamable_http/plug.ex (check_routing_headers/2)",
       "change": "answer 400/-32020 when a POST request lacks MCP-Protocol-Version or Mcp-Method, or lacks Mcp-Name where a target exists (streamable-http.mdx:252-253, :280-281, :288-293, :622-625)",
       "reddens": [
-        "streamable_http_ac_test.exs:190",
-        "streamable_http_ac_test.exs:202",
-        "streamable_http_cache_scope_warning_test.exs:116 (reported at the enclosing capture_log, :98)"
+        "streamable_http_ac_test.exs:222",
+        "streamable_http_ac_test.exs:235",
+        "streamable_http_cache_scope_warning_test.exs:138 (reported at the enclosing capture_log, :98)"
       ],
       "measured": {
         "slice_members_red": 3,
@@ -288,13 +288,13 @@
         "run": "4 doctests and 162 tests in the slice's modules, --seed 0"
       },
       "also_reddens_in_slice": [
-        "dispatch_test.exs:112",
-        "tool_order_test.exs:155",
-        "tool_order_test.exs:129",
-        "tool_order_test.exs:141",
-        "tool_order_test.exs:99",
-        "tool_order_test.exs:105",
-        "tool_order_test.exs:93"
+        "dispatch_test.exs:148",
+        "tool_order_test.exs:172",
+        "tool_order_test.exs:144",
+        "tool_order_test.exs:157",
+        "tool_order_test.exs:109",
+        "tool_order_test.exs:116",
+        "tool_order_test.exs:102"
       ],
       "used_by": "the firing reading of #5 (oc:none/no-axis-contact/SEP-2575-validate-classifies-earlier-version-unsupported): a conforming alternative the member refuses",
       "note": "The second list is every other slice member M9 reddens: their requests lack clientCapabilities, so a validator enforcing the MUST refuses them as M9 does. It moves no verdict but #5's (oc:none/no-axis-contact/SEP-2575-validate-classifies-earlier-version-unsupported).",
@@ -562,8 +562,8 @@
         "run": "4 doctests and 162 tests in the slice's modules, --seed 0"
       },
       "also_reddens_in_slice": [
-        "self_compatibility_test.exs:155",
-        "streamable_http_cache_scope_warning_test.exs:116 (reported at the enclosing capture_log, :98)"
+        "self_compatibility_test.exs:162",
+        "streamable_http_cache_scope_warning_test.exs:138 (reported at the enclosing capture_log, :98)"
       ],
       "used_by": "the firing reading of #10, #11 (oc:none/no-oc-scenario/decode-request, oc:none/no-oc-scenario/decode-request-string-id): a conforming alternative the members refuse",
       "note": "Measured with the conformance fixture as handler: #10's request is answered 400 {\"error\":{\"code\":-32602,...},\"id\":42} by the real Plug and the same error with id 42 by the real Connection; #11's with id \"abc-123\" on both; a well-formed tools/call, 200 with its result, unchanged. The second list is the redundant self-compatibility and cache-scope members, whose POSTs lack clientCapabilities and are now answered 400 -32602 by their id; recorded, and it moves no verdict. It supersedes M30 (hop B), a decoder refusal that lost the id, dropped in correction round 1 [CR 30023 B2 | PM 30028].",
@@ -1230,13 +1230,13 @@
           "et_test": {
             "file": "test/mcp/server/dispatch_test.exs",
             "lines": [
-              109,
-              113
+              145,
+              149
             ],
             "bytes": "  test \"old-shape (2025-11-25) version fails fast (-32022)\" do\n    params = %{\"name\" => \"whoami\", \"arguments\" => %{}, \"_meta\" => meta(\"2025-11-25\")}\n    {:reply, resp, _} = Dispatch.dispatch(req(\"tools/call\", params), ctx(\"PM\"), config())\n    assert resp[\"error\"][\"code\"] == -32_022\n  end"
           },
           "asserts_read": [
-            "test/mcp/server/dispatch_test.exs:112 — assert resp[\"error\"][\"code\"] == -32_022"
+            "test/mcp/server/dispatch_test.exs:148 — assert resp[\"error\"][\"code\"] == -32_022"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -1272,7 +1272,7 @@
               ],
               "bytes": "{slug:`missing-client-capabilities`,description:`Rejects request with _meta missing io.modelcontextprotocol/clientCapabilities`,params:{_meta:{\"io.modelcontextprotocol/protocolVersion\":l[`io.modelcontextprotocol/protocolVersion`],\"io.modelcontextprotocol/clientInfo\":l[`io.modelcontextprotocol/clientInfo`]}},rpcId:104}"
             },
-            "why_a3_missed": "A3 did not see dispatch_test.exs:112 as RequestMetaInvalid's missing-client-capabilities case: it requires -32022 for a tools/call whose `_meta` lacks clientCapabilities (the `meta/1` helper, dispatch_test.exs:27, whose map carries protocolVersion only), which entails the response is not the -32602 the check requires, a CONTRADICTING edge [ratified 29735, Q6; 29816 Q-A; PM 29945 Q1]."
+            "why_a3_missed": "A3 did not see dispatch_test.exs:148 as RequestMetaInvalid's missing-client-capabilities case: it requires -32022 for a tools/call whose `_meta` lacks clientCapabilities (the `meta/1` helper, dispatch_test.exs:27, whose map carries protocolVersion only), which entails the response is not the -32602 the check requires, a CONTRADICTING edge [ratified 29735, Q6; 29816 Q-A; PM 29945 Q1]."
           },
           "near_miss": [
             {
@@ -1303,14 +1303,38 @@
           "oc_relation": "covered and scored only through the construction: RequestMetaInvalid (contradicted; red), the missed edge in oc_counterpart; ServerUnsupportedVersionError (scored) agrees with :112 on the version half only, and is not recorded as an edge [ratified 29991, Q1]: its probe sends server/discover with the connector's whole `_meta` and an unsupported version (near_miss: the check, the version it sends, and the probe spreading the connector's `_meta` `l`), a well-formed request with one defect, where this member's tools/call carries two; HttpServerMetaInvalid400: silent, asserted at Dispatch.dispatch/3, below the transport",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 (basic/index.mdx:380-382), this tools/call's `_meta` lacks clientCapabilities (the `meta/1` helper, at :27 of the same file), and the specification does not order that check against the version check (basic/versioning.mdx:48-52), so a server validating the required fields first answers -32602 and the member fails at dispatch_test.exs:112."
+            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 (basic/index.mdx:380-382), this tools/call's `_meta` lacks clientCapabilities (the `meta/1` helper, at :27 of the same file), and the specification does not order that check against the version check (basic/versioning.mdx:48-52), so a server validating the required fields first answers -32602 and the member fails at dispatch_test.exs:148."
           },
           "routed_to": {
             "to": "A3",
             "owner": "MES-152",
             "owner_record": "MES-152 comment 30010, item 1"
           },
-          "rationale": "Every assert read. :112 requires code -32022 for a tools/call whose `_meta` names the 2025-11-25 version (:110). That `_meta` is the `meta/1` helper's (dispatch_test.exs:27), which carries protocolVersion only, so the request lacks clientCapabilities too: two defects, an unsupported version (basic/versioning.mdx:48-52, -32022) and a missing required field (basic/index.mdx:380-382, -32602), and the specification does not order the two validations, so a conforming server may answer either [PM 29945 Q1; ratified 29991, Q1]. The -32022 asserted therefore contradicts RequestMetaInvalid's `r?.error?.code===-32602` on the member's own request (oc_counterpart). This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9 (Dispatch.dispatch/3 answers -32602 when `_meta` lacks protocolVersion or clientCapabilities), in a throwaway worktree restored lib/-clean: the member fails at :112, the (test) frame."
+          "rationale": "Every assert read. :112 requires code -32022 for a tools/call whose `_meta` names the 2025-11-25 version (:110). That `_meta` is the `meta/1` helper's (dispatch_test.exs:27), which carries protocolVersion only, so the request lacks clientCapabilities too: two defects, an unsupported version (basic/versioning.mdx:48-52, -32022) and a missing required field (basic/index.mdx:380-382, -32602), and the specification does not order the two validations, so a conforming server may answer either [PM 29945 Q1; ratified 29991, Q1]. The -32022 asserted therefore contradicts RequestMetaInvalid's `r?.error?.code===-32602` on the member's own request (oc_counterpart). This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9 (Dispatch.dispatch/3 answers -32602 when `_meta` lacks protocolVersion or clientCapabilities), in a throwaway worktree restored lib/-clean: the member fails at :112, the (test) frame.",
+          "prose_anchors": [
+            {
+              "field": "oc_counterpart.why_a3_missed",
+              "cite": "dispatch_test.exs:27",
+              "file": "test/mcp/server/dispatch_test.exs",
+              "lines": [
+                27,
+                27
+              ],
+              "bytes": "  defp meta(version \\\\ @version), do: %{\"io.modelcontextprotocol/protocolVersion\" => version}",
+              "at": "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
+            },
+            {
+              "field": "rationale",
+              "cite": "dispatch_test.exs:27",
+              "file": "test/mcp/server/dispatch_test.exs",
+              "lines": [
+                27,
+                27
+              ],
+              "bytes": "  defp meta(version \\\\ @version), do: %{\"io.modelcontextprotocol/protocolVersion\" => version}",
+              "at": "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
+            }
+          ]
         },
         {
           "member": "MCP.Server.NotificationCollectorTest/test drain returns pushed notifications as wire maps, in emission order (G3)",
@@ -1366,15 +1390,15 @@
           "et_test": {
             "file": "test/mcp/server/tool_order_test.exs",
             "lines": [
-              147,
-              160
+              164,
+              177
             ],
             "bytes": "  test \"BOUND — sorting is per RESPONSE; a paginated listing is not made deterministic\" do\n    # Each page is sorted on its way out. That does not make the concatenation of\n    # two pages sorted, and it does nothing at all about a handler whose own\n    # paging returns different CONTENTS per request. The honest claim is\n    # \"deterministic within each response, given a deterministic page\".\n    page_b = config(EtsRegistryHandler, order: [\"tool_9\", \"tool_8\", \"tool_7\"])\n    page_a = config(EtsRegistryHandler, order: [\"tool_3\", \"tool_2\", \"tool_1\"])\n\n    listing = list_tool_names(page_b) ++ list_tool_names(page_a)\n\n    assert list_tool_names(page_b) == [\"tool_7\", \"tool_8\", \"tool_9\"]\n    assert list_tool_names(page_a) == [\"tool_1\", \"tool_2\", \"tool_3\"]\n    refute listing == Enum.sort(listing)\n  end"
           },
           "asserts_read": [
-            "test/mcp/server/tool_order_test.exs:157 — assert list_tool_names(page_b) == [\"tool_7\", \"tool_8\", \"tool_9\"]",
-            "test/mcp/server/tool_order_test.exs:158 — assert list_tool_names(page_a) == [\"tool_1\", \"tool_2\", \"tool_3\"]",
-            "test/mcp/server/tool_order_test.exs:159 — refute listing == Enum.sort(listing)"
+            "test/mcp/server/tool_order_test.exs:174 — assert list_tool_names(page_b) == [\"tool_7\", \"tool_8\", \"tool_9\"]",
+            "test/mcp/server/tool_order_test.exs:175 — assert list_tool_names(page_a) == [\"tool_1\", \"tool_2\", \"tool_3\"]",
+            "test/mcp/server/tool_order_test.exs:176 — refute listing == Enum.sort(listing)"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -1438,14 +1462,38 @@
           "oc_relation": "covered and scored only through the construction: RequestMetaInvalid (contradicted; red) and ToolsList (agreed, partial), the missed edges in oc_counterpart; the ordering half is not covered, scored or unscored: no in-scope check sends tools/list twice or compares two listings (ToolsList's predicate reads each tool's name, description and inputSchema, oc_counterpart.also's predicate), and no unscored server scenario reads tools/list order (the order of `tools` occurs in no class body, measured by search); tools.mdx:71-72 makes deterministic order a SHOULD. WireSchemaValid: silent, the unit dispatches below the transport and sends nothing a scenario validates",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 (basic/index.mdx:380-382), and this tools/list's `_meta` lacks clientCapabilities (the `list_tool_names/2` helper, at :64-69 of the same file), so the response is an error, `result.tools` is absent, and the member fails at tool_order_test.exs:155."
+            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 (basic/index.mdx:380-382), and this tools/list's `_meta` lacks clientCapabilities (the `list_tool_names/2` helper, at :64-69 of the same file), so the response is an error, `result.tools` is absent, and the member fails at tool_order_test.exs:172."
           },
           "routed_to": {
             "to": "A3",
             "owner": "MES-152",
             "owner_record": "MES-152 comment 30010, item 2"
           },
-          "rationale": "Every assert read. :157 and :158 require each page's names sorted, :159 refutes that the concatenation built at :155 is sorted. Each listing comes from the `list_tool_names/2` helper (tool_order_test.exs:64-69), which dispatches a tools/list whose `_meta` carries protocolVersion only (:65) and maps `result.tools` to names (:68). Reading `result.tools` entails the response carries a result with a tools array (ToolsList's tools-member and array axes, agreed; oc_counterpart.also), and CONTRADICTS RequestMetaInvalid's `r?.error?.code===-32602` for exactly that request (oc_counterpart.predicate, .probe) [ratified 29735, Q6; 29816 Q-A]. The ordering the member states as its subject is a SHOULD (tools.mdx:71-72), and a unit insisting on it would fire on its own ground; that ground is not reached, because the construction reddens the member first. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9, in a throwaway worktree restored lib/-clean: the member fails at :155, the (test) frame, inside `list_tool_names/2`'s map over a nil `tools`."
+          "rationale": "Every assert read. :157 and :158 require each page's names sorted, :159 refutes that the concatenation built at :155 is sorted. Each listing comes from the `list_tool_names/2` helper (tool_order_test.exs:64-69), which dispatches a tools/list whose `_meta` carries protocolVersion only (:65) and maps `result.tools` to names (:68). Reading `result.tools` entails the response carries a result with a tools array (ToolsList's tools-member and array axes, agreed; oc_counterpart.also), and CONTRADICTS RequestMetaInvalid's `r?.error?.code===-32602` for exactly that request (oc_counterpart.predicate, .probe) [ratified 29735, Q6; 29816 Q-A]. The ordering the member states as its subject is a SHOULD (tools.mdx:71-72), and a unit insisting on it would fire on its own ground; that ground is not reached, because the construction reddens the member first. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9, in a throwaway worktree restored lib/-clean: the member fails at :155, the (test) frame, inside `list_tool_names/2`'s map over a nil `tools`.",
+          "prose_anchors": [
+            {
+              "field": "oc_counterpart.why_a3_missed",
+              "cite": "tool_order_test.exs:64-69",
+              "file": "test/mcp/server/tool_order_test.exs",
+              "lines": [
+                64,
+                69
+              ],
+              "bytes": "  defp list_tool_names(config, params \\\\ %{}) do\n    params = Map.put(params, \"_meta\", %{\"io.modelcontextprotocol/protocolVersion\" => @version})\n    req = %Request{id: 1, method: \"tools/list\", params: params}\n    {:reply, resp, _state} = Dispatch.dispatch(req, %ToolContext{request_id: 1}, config)\n    Enum.map(resp[\"result\"][\"tools\"], & &1[\"name\"])\n  end",
+              "at": "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
+            },
+            {
+              "field": "rationale",
+              "cite": "tool_order_test.exs:64-69",
+              "file": "test/mcp/server/tool_order_test.exs",
+              "lines": [
+                64,
+                69
+              ],
+              "bytes": "  defp list_tool_names(config, params \\\\ %{}) do\n    params = Map.put(params, \"_meta\", %{\"io.modelcontextprotocol/protocolVersion\" => @version})\n    req = %Request{id: 1, method: \"tools/list\", params: params}\n    {:reply, resp, _state} = Dispatch.dispatch(req, %ToolContext{request_id: 1}, config)\n    Enum.map(resp[\"result\"][\"tools\"], & &1[\"name\"])\n  end",
+              "at": "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
+            }
+          ]
         },
         {
           "member": "MCP.Server.ToolOrderTest/test CONTROL-1 — :tool_order = :handler keeps a curated non-alphabetical order verbatim",
@@ -1459,15 +1507,15 @@
           "et_test": {
             "file": "test/mcp/server/tool_order_test.exs",
             "lines": [
-              125,
-              134
+              140,
+              149
             ],
             "bytes": "  test \"CONTROL-1 — :tool_order = :handler keeps a curated non-alphabetical order verbatim\" do\n    curated = [\"tool_9\", \"tool_1\", \"tool_24\", \"tool_3\"]\n    cfg = config(EtsRegistryHandler, [order: curated], %{tool_order: :handler})\n\n    listed = list_tool_names(cfg)\n\n    assert Enum.sort(listed) == Enum.sort(curated)\n    refute listed == Enum.sort(curated), \"the curated order happened to be sorted; pick another\"\n    assert listed == Enum.map(:ets.tab2list(cfg.handler_state.table), &elem(&1, 0))\n  end"
           },
           "asserts_read": [
-            "test/mcp/server/tool_order_test.exs:131 — assert Enum.sort(listed) == Enum.sort(curated)",
-            "test/mcp/server/tool_order_test.exs:132 — refute listed == Enum.sort(curated), \"the curated order happened to be sorted; pick another\"",
-            "test/mcp/server/tool_order_test.exs:133 — assert listed == Enum.map(:ets.tab2list(cfg.handler_state.table), &elem(&1, 0))"
+            "test/mcp/server/tool_order_test.exs:146 — assert Enum.sort(listed) == Enum.sort(curated)",
+            "test/mcp/server/tool_order_test.exs:147 — refute listed == Enum.sort(curated), \"the curated order happened to be sorted; pick another\"",
+            "test/mcp/server/tool_order_test.exs:148 — assert listed == Enum.map(:ets.tab2list(cfg.handler_state.table), &elem(&1, 0))"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -1531,14 +1579,38 @@
           "oc_relation": "covered and scored only through the construction: RequestMetaInvalid (contradicted; red) and ToolsList (agreed, partial), the missed edges in oc_counterpart; the ordering half is not covered, scored or unscored: no in-scope check sends tools/list twice or compares two listings (ToolsList's predicate reads each tool's name, description and inputSchema, oc_counterpart.also's predicate), and no unscored server scenario reads tools/list order (the order of `tools` occurs in no class body, measured by search); tools.mdx:71-72 makes deterministic order a SHOULD. WireSchemaValid: silent, the unit dispatches below the transport and sends nothing a scenario validates",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 (basic/index.mdx:380-382), and this tools/list's `_meta` lacks clientCapabilities (the `list_tool_names/2` helper, at :64-69 of the same file), so the response is an error, `result.tools` is absent, and the member fails at tool_order_test.exs:129."
+            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 (basic/index.mdx:380-382), and this tools/list's `_meta` lacks clientCapabilities (the `list_tool_names/2` helper, at :64-69 of the same file), so the response is an error, `result.tools` is absent, and the member fails at tool_order_test.exs:144."
           },
           "routed_to": {
             "to": "A3",
             "owner": "MES-152",
             "owner_record": "MES-152 comment 30010, item 3"
           },
-          "rationale": "Every assert read. :131 requires the listing to hold the curated set, :132 refutes that it is sorted, :133 requires the handler's own ETS order verbatim, over the listing taken at :129. Each listing comes from the `list_tool_names/2` helper (tool_order_test.exs:64-69), which dispatches a tools/list whose `_meta` carries protocolVersion only (:65) and maps `result.tools` to names (:68). Reading `result.tools` entails the response carries a result with a tools array (ToolsList's tools-member and array axes, agreed; oc_counterpart.also), and CONTRADICTS RequestMetaInvalid's `r?.error?.code===-32602` for exactly that request (oc_counterpart.predicate, .probe) [ratified 29735, Q6; 29816 Q-A]. The ordering the member states as its subject is a SHOULD (tools.mdx:71-72), and a unit insisting on it would fire on its own ground; that ground is not reached, because the construction reddens the member first. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9, in a throwaway worktree restored lib/-clean: the member fails at :129, the (test) frame, inside `list_tool_names/2`'s map over a nil `tools`."
+          "rationale": "Every assert read. :131 requires the listing to hold the curated set, :132 refutes that it is sorted, :133 requires the handler's own ETS order verbatim, over the listing taken at :129. Each listing comes from the `list_tool_names/2` helper (tool_order_test.exs:64-69), which dispatches a tools/list whose `_meta` carries protocolVersion only (:65) and maps `result.tools` to names (:68). Reading `result.tools` entails the response carries a result with a tools array (ToolsList's tools-member and array axes, agreed; oc_counterpart.also), and CONTRADICTS RequestMetaInvalid's `r?.error?.code===-32602` for exactly that request (oc_counterpart.predicate, .probe) [ratified 29735, Q6; 29816 Q-A]. The ordering the member states as its subject is a SHOULD (tools.mdx:71-72), and a unit insisting on it would fire on its own ground; that ground is not reached, because the construction reddens the member first. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9, in a throwaway worktree restored lib/-clean: the member fails at :129, the (test) frame, inside `list_tool_names/2`'s map over a nil `tools`.",
+          "prose_anchors": [
+            {
+              "field": "oc_counterpart.why_a3_missed",
+              "cite": "tool_order_test.exs:64-69",
+              "file": "test/mcp/server/tool_order_test.exs",
+              "lines": [
+                64,
+                69
+              ],
+              "bytes": "  defp list_tool_names(config, params \\\\ %{}) do\n    params = Map.put(params, \"_meta\", %{\"io.modelcontextprotocol/protocolVersion\" => @version})\n    req = %Request{id: 1, method: \"tools/list\", params: params}\n    {:reply, resp, _state} = Dispatch.dispatch(req, %ToolContext{request_id: 1}, config)\n    Enum.map(resp[\"result\"][\"tools\"], & &1[\"name\"])\n  end",
+              "at": "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
+            },
+            {
+              "field": "rationale",
+              "cite": "tool_order_test.exs:64-69",
+              "file": "test/mcp/server/tool_order_test.exs",
+              "lines": [
+                64,
+                69
+              ],
+              "bytes": "  defp list_tool_names(config, params \\\\ %{}) do\n    params = Map.put(params, \"_meta\", %{\"io.modelcontextprotocol/protocolVersion\" => @version})\n    req = %Request{id: 1, method: \"tools/list\", params: params}\n    {:reply, resp, _state} = Dispatch.dispatch(req, %ToolContext{request_id: 1}, config)\n    Enum.map(resp[\"result\"][\"tools\"], & &1[\"name\"])\n  end",
+              "at": "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
+            }
+          ]
         },
         {
           "member": "MCP.Server.ToolOrderTest/test CONTROL-2 (discriminates nothing) — an already-deterministic handler is unaffected",
@@ -1552,13 +1624,13 @@
           "et_test": {
             "file": "test/mcp/server/tool_order_test.exs",
             "lines": [
-              139,
-              142
+              155,
+              158
             ],
             "bytes": "  test \"CONTROL-2 (discriminates nothing) — an already-deterministic handler is unaffected\" do\n    cfg = config(MCP.Test.StatelessHandler, [])\n    assert Enum.uniq(for _ <- 1..3, do: list_tool_names(cfg)) |> length() == 1\n  end"
           },
           "asserts_read": [
-            "test/mcp/server/tool_order_test.exs:141 — assert Enum.uniq(for _ <- 1..3, do: list_tool_names(cfg)) |> length() == 1"
+            "test/mcp/server/tool_order_test.exs:157 — assert Enum.uniq(for _ <- 1..3, do: list_tool_names(cfg)) |> length() == 1"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -1622,14 +1694,38 @@
           "oc_relation": "covered and scored only through the construction: RequestMetaInvalid (contradicted; red) and ToolsList (agreed, partial), the missed edges in oc_counterpart; the ordering half is not covered, scored or unscored: no in-scope check sends tools/list twice or compares two listings (ToolsList's predicate reads each tool's name, description and inputSchema, oc_counterpart.also's predicate), and no unscored server scenario reads tools/list order (the order of `tools` occurs in no class body, measured by search); tools.mdx:71-72 makes deterministic order a SHOULD. WireSchemaValid: silent, the unit dispatches below the transport and sends nothing a scenario validates",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 (basic/index.mdx:380-382), and this tools/list's `_meta` lacks clientCapabilities (the `list_tool_names/2` helper, at :64-69 of the same file), so the response is an error, `result.tools` is absent, and the member fails at tool_order_test.exs:141."
+            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 (basic/index.mdx:380-382), and this tools/list's `_meta` lacks clientCapabilities (the `list_tool_names/2` helper, at :64-69 of the same file), so the response is an error, `result.tools` is absent, and the member fails at tool_order_test.exs:157."
           },
           "routed_to": {
             "to": "A3",
             "owner": "MES-152",
             "owner_record": "MES-152 comment 30010, item 4"
           },
-          "rationale": "Every assert read. :141 requires three listings of an already-deterministic handler to be one. Each listing comes from the `list_tool_names/2` helper (tool_order_test.exs:64-69), which dispatches a tools/list whose `_meta` carries protocolVersion only (:65) and maps `result.tools` to names (:68). Reading `result.tools` entails the response carries a result with a tools array (ToolsList's tools-member and array axes, agreed; oc_counterpart.also), and CONTRADICTS RequestMetaInvalid's `r?.error?.code===-32602` for exactly that request (oc_counterpart.predicate, .probe) [ratified 29735, Q6; 29816 Q-A]. The ordering the member states as its subject is a SHOULD (tools.mdx:71-72), and a unit insisting on it would fire on its own ground; that ground is not reached, because the construction reddens the member first. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9, in a throwaway worktree restored lib/-clean: the member fails at :141, the (test) frame, inside `list_tool_names/2`'s map over a nil `tools`."
+          "rationale": "Every assert read. :141 requires three listings of an already-deterministic handler to be one. Each listing comes from the `list_tool_names/2` helper (tool_order_test.exs:64-69), which dispatches a tools/list whose `_meta` carries protocolVersion only (:65) and maps `result.tools` to names (:68). Reading `result.tools` entails the response carries a result with a tools array (ToolsList's tools-member and array axes, agreed; oc_counterpart.also), and CONTRADICTS RequestMetaInvalid's `r?.error?.code===-32602` for exactly that request (oc_counterpart.predicate, .probe) [ratified 29735, Q6; 29816 Q-A]. The ordering the member states as its subject is a SHOULD (tools.mdx:71-72), and a unit insisting on it would fire on its own ground; that ground is not reached, because the construction reddens the member first. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9, in a throwaway worktree restored lib/-clean: the member fails at :141, the (test) frame, inside `list_tool_names/2`'s map over a nil `tools`.",
+          "prose_anchors": [
+            {
+              "field": "oc_counterpart.why_a3_missed",
+              "cite": "tool_order_test.exs:64-69",
+              "file": "test/mcp/server/tool_order_test.exs",
+              "lines": [
+                64,
+                69
+              ],
+              "bytes": "  defp list_tool_names(config, params \\\\ %{}) do\n    params = Map.put(params, \"_meta\", %{\"io.modelcontextprotocol/protocolVersion\" => @version})\n    req = %Request{id: 1, method: \"tools/list\", params: params}\n    {:reply, resp, _state} = Dispatch.dispatch(req, %ToolContext{request_id: 1}, config)\n    Enum.map(resp[\"result\"][\"tools\"], & &1[\"name\"])\n  end",
+              "at": "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
+            },
+            {
+              "field": "rationale",
+              "cite": "tool_order_test.exs:64-69",
+              "file": "test/mcp/server/tool_order_test.exs",
+              "lines": [
+                64,
+                69
+              ],
+              "bytes": "  defp list_tool_names(config, params \\\\ %{}) do\n    params = Map.put(params, \"_meta\", %{\"io.modelcontextprotocol/protocolVersion\" => @version})\n    req = %Request{id: 1, method: \"tools/list\", params: params}\n    {:reply, resp, _state} = Dispatch.dispatch(req, %ToolContext{request_id: 1}, config)\n    Enum.map(resp[\"result\"][\"tools\"], & &1[\"name\"])\n  end",
+              "at": "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
+            }
+          ]
         },
         {
           "member": "MCP.Server.ToolOrderTest/test SUBJECT — one instance answers in the same order on every request",
@@ -1643,13 +1739,13 @@
           "et_test": {
             "file": "test/mcp/server/tool_order_test.exs",
             "lines": [
-              97,
-              100
+              107,
+              110
             ],
             "bytes": "  test \"SUBJECT — one instance answers in the same order on every request\" do\n    cfg = config(EtsRegistryHandler, order: :forward)\n    assert Enum.uniq(for _ <- 1..5, do: list_tool_names(cfg)) |> length() == 1\n  end"
           },
           "asserts_read": [
-            "test/mcp/server/tool_order_test.exs:99 — assert Enum.uniq(for _ <- 1..5, do: list_tool_names(cfg)) |> length() == 1"
+            "test/mcp/server/tool_order_test.exs:109 — assert Enum.uniq(for _ <- 1..5, do: list_tool_names(cfg)) |> length() == 1"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -1713,14 +1809,38 @@
           "oc_relation": "covered and scored only through the construction: RequestMetaInvalid (contradicted; red) and ToolsList (agreed, partial), the missed edges in oc_counterpart; the ordering half is not covered, scored or unscored: no in-scope check sends tools/list twice or compares two listings (ToolsList's predicate reads each tool's name, description and inputSchema, oc_counterpart.also's predicate), and no unscored server scenario reads tools/list order (the order of `tools` occurs in no class body, measured by search); tools.mdx:71-72 makes deterministic order a SHOULD. WireSchemaValid: silent, the unit dispatches below the transport and sends nothing a scenario validates",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 (basic/index.mdx:380-382), and this tools/list's `_meta` lacks clientCapabilities (the `list_tool_names/2` helper, at :64-69 of the same file), so the response is an error, `result.tools` is absent, and the member fails at tool_order_test.exs:99."
+            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 (basic/index.mdx:380-382), and this tools/list's `_meta` lacks clientCapabilities (the `list_tool_names/2` helper, at :64-69 of the same file), so the response is an error, `result.tools` is absent, and the member fails at tool_order_test.exs:109."
           },
           "routed_to": {
             "to": "A3",
             "owner": "MES-152",
             "owner_record": "MES-152 comment 30010, item 5"
           },
-          "rationale": "Every assert read. :99 requires five listings of one instance to be one. Each listing comes from the `list_tool_names/2` helper (tool_order_test.exs:64-69), which dispatches a tools/list whose `_meta` carries protocolVersion only (:65) and maps `result.tools` to names (:68). Reading `result.tools` entails the response carries a result with a tools array (ToolsList's tools-member and array axes, agreed; oc_counterpart.also), and CONTRADICTS RequestMetaInvalid's `r?.error?.code===-32602` for exactly that request (oc_counterpart.predicate, .probe) [ratified 29735, Q6; 29816 Q-A]. The ordering the member states as its subject is a SHOULD (tools.mdx:71-72), and a unit insisting on it would fire on its own ground; that ground is not reached, because the construction reddens the member first. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9, in a throwaway worktree restored lib/-clean: the member fails at :99, the (test) frame, inside `list_tool_names/2`'s map over a nil `tools`."
+          "rationale": "Every assert read. :99 requires five listings of one instance to be one. Each listing comes from the `list_tool_names/2` helper (tool_order_test.exs:64-69), which dispatches a tools/list whose `_meta` carries protocolVersion only (:65) and maps `result.tools` to names (:68). Reading `result.tools` entails the response carries a result with a tools array (ToolsList's tools-member and array axes, agreed; oc_counterpart.also), and CONTRADICTS RequestMetaInvalid's `r?.error?.code===-32602` for exactly that request (oc_counterpart.predicate, .probe) [ratified 29735, Q6; 29816 Q-A]. The ordering the member states as its subject is a SHOULD (tools.mdx:71-72), and a unit insisting on it would fire on its own ground; that ground is not reached, because the construction reddens the member first. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9, in a throwaway worktree restored lib/-clean: the member fails at :99, the (test) frame, inside `list_tool_names/2`'s map over a nil `tools`.",
+          "prose_anchors": [
+            {
+              "field": "oc_counterpart.why_a3_missed",
+              "cite": "tool_order_test.exs:64-69",
+              "file": "test/mcp/server/tool_order_test.exs",
+              "lines": [
+                64,
+                69
+              ],
+              "bytes": "  defp list_tool_names(config, params \\\\ %{}) do\n    params = Map.put(params, \"_meta\", %{\"io.modelcontextprotocol/protocolVersion\" => @version})\n    req = %Request{id: 1, method: \"tools/list\", params: params}\n    {:reply, resp, _state} = Dispatch.dispatch(req, %ToolContext{request_id: 1}, config)\n    Enum.map(resp[\"result\"][\"tools\"], & &1[\"name\"])\n  end",
+              "at": "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
+            },
+            {
+              "field": "rationale",
+              "cite": "tool_order_test.exs:64-69",
+              "file": "test/mcp/server/tool_order_test.exs",
+              "lines": [
+                64,
+                69
+              ],
+              "bytes": "  defp list_tool_names(config, params \\\\ %{}) do\n    params = Map.put(params, \"_meta\", %{\"io.modelcontextprotocol/protocolVersion\" => @version})\n    req = %Request{id: 1, method: \"tools/list\", params: params}\n    {:reply, resp, _state} = Dispatch.dispatch(req, %ToolContext{request_id: 1}, config)\n    Enum.map(resp[\"result\"][\"tools\"], & &1[\"name\"])\n  end",
+              "at": "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
+            }
+          ]
         },
         {
           "member": "MCP.Server.ToolOrderTest/test SUBJECT — the default order is by name, and the tool SET is untouched",
@@ -1734,15 +1854,15 @@
           "et_test": {
             "file": "test/mcp/server/tool_order_test.exs",
             "lines": [
-              103,
-              110
+              114,
+              121
             ],
             "bytes": "  test \"SUBJECT — the default order is by name, and the tool SET is untouched\" do\n    cfg = config(EtsRegistryHandler, order: :forward)\n    names = list_tool_names(cfg)\n\n    assert names == Enum.sort(EtsRegistryHandler.names())\n    assert Enum.sort(names) == Enum.sort(EtsRegistryHandler.names())\n    assert length(names) == 24\n  end"
           },
           "asserts_read": [
-            "test/mcp/server/tool_order_test.exs:107 — assert names == Enum.sort(EtsRegistryHandler.names())",
-            "test/mcp/server/tool_order_test.exs:108 — assert Enum.sort(names) == Enum.sort(EtsRegistryHandler.names())",
-            "test/mcp/server/tool_order_test.exs:109 — assert length(names) == 24"
+            "test/mcp/server/tool_order_test.exs:118 — assert names == Enum.sort(EtsRegistryHandler.names())",
+            "test/mcp/server/tool_order_test.exs:119 — assert Enum.sort(names) == Enum.sort(EtsRegistryHandler.names())",
+            "test/mcp/server/tool_order_test.exs:120 — assert length(names) == 24"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -1806,14 +1926,38 @@
           "oc_relation": "covered and scored only through the construction: RequestMetaInvalid (contradicted; red) and ToolsList (agreed, partial), the missed edges in oc_counterpart; the ordering half is not covered, scored or unscored: no in-scope check sends tools/list twice or compares two listings (ToolsList's predicate reads each tool's name, description and inputSchema, oc_counterpart.also's predicate), and no unscored server scenario reads tools/list order (the order of `tools` occurs in no class body, measured by search); tools.mdx:71-72 makes deterministic order a SHOULD. WireSchemaValid: silent, the unit dispatches below the transport and sends nothing a scenario validates",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 (basic/index.mdx:380-382), and this tools/list's `_meta` lacks clientCapabilities (the `list_tool_names/2` helper, at :64-69 of the same file), so the response is an error, `result.tools` is absent, and the member fails at tool_order_test.exs:105."
+            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 (basic/index.mdx:380-382), and this tools/list's `_meta` lacks clientCapabilities (the `list_tool_names/2` helper, at :64-69 of the same file), so the response is an error, `result.tools` is absent, and the member fails at tool_order_test.exs:116."
           },
           "routed_to": {
             "to": "A3",
             "owner": "MES-152",
             "owner_record": "MES-152 comment 30010, item 6"
           },
-          "rationale": "Every assert read. :107 requires the listing taken at :105 to be sorted by name, :108 the set untouched, :109 its length 24. Each listing comes from the `list_tool_names/2` helper (tool_order_test.exs:64-69), which dispatches a tools/list whose `_meta` carries protocolVersion only (:65) and maps `result.tools` to names (:68). Reading `result.tools` entails the response carries a result with a tools array (ToolsList's tools-member and array axes, agreed; oc_counterpart.also), and CONTRADICTS RequestMetaInvalid's `r?.error?.code===-32602` for exactly that request (oc_counterpart.predicate, .probe) [ratified 29735, Q6; 29816 Q-A]. The ordering the member states as its subject is a SHOULD (tools.mdx:71-72), and a unit insisting on it would fire on its own ground; that ground is not reached, because the construction reddens the member first. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9, in a throwaway worktree restored lib/-clean: the member fails at :105, the (test) frame, inside `list_tool_names/2`'s map over a nil `tools`."
+          "rationale": "Every assert read. :107 requires the listing taken at :105 to be sorted by name, :108 the set untouched, :109 its length 24. Each listing comes from the `list_tool_names/2` helper (tool_order_test.exs:64-69), which dispatches a tools/list whose `_meta` carries protocolVersion only (:65) and maps `result.tools` to names (:68). Reading `result.tools` entails the response carries a result with a tools array (ToolsList's tools-member and array axes, agreed; oc_counterpart.also), and CONTRADICTS RequestMetaInvalid's `r?.error?.code===-32602` for exactly that request (oc_counterpart.predicate, .probe) [ratified 29735, Q6; 29816 Q-A]. The ordering the member states as its subject is a SHOULD (tools.mdx:71-72), and a unit insisting on it would fire on its own ground; that ground is not reached, because the construction reddens the member first. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9, in a throwaway worktree restored lib/-clean: the member fails at :105, the (test) frame, inside `list_tool_names/2`'s map over a nil `tools`.",
+          "prose_anchors": [
+            {
+              "field": "oc_counterpart.why_a3_missed",
+              "cite": "tool_order_test.exs:64-69",
+              "file": "test/mcp/server/tool_order_test.exs",
+              "lines": [
+                64,
+                69
+              ],
+              "bytes": "  defp list_tool_names(config, params \\\\ %{}) do\n    params = Map.put(params, \"_meta\", %{\"io.modelcontextprotocol/protocolVersion\" => @version})\n    req = %Request{id: 1, method: \"tools/list\", params: params}\n    {:reply, resp, _state} = Dispatch.dispatch(req, %ToolContext{request_id: 1}, config)\n    Enum.map(resp[\"result\"][\"tools\"], & &1[\"name\"])\n  end",
+              "at": "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
+            },
+            {
+              "field": "rationale",
+              "cite": "tool_order_test.exs:64-69",
+              "file": "test/mcp/server/tool_order_test.exs",
+              "lines": [
+                64,
+                69
+              ],
+              "bytes": "  defp list_tool_names(config, params \\\\ %{}) do\n    params = Map.put(params, \"_meta\", %{\"io.modelcontextprotocol/protocolVersion\" => @version})\n    req = %Request{id: 1, method: \"tools/list\", params: params}\n    {:reply, resp, _state} = Dispatch.dispatch(req, %ToolContext{request_id: 1}, config)\n    Enum.map(resp[\"result\"][\"tools\"], & &1[\"name\"])\n  end",
+              "at": "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
+            }
+          ]
         },
         {
           "member": "MCP.Server.ToolOrderTest/test SUBJECT — two instances holding the same tool set answer in the same order",
@@ -1827,13 +1971,13 @@
           "et_test": {
             "file": "test/mcp/server/tool_order_test.exs",
             "lines": [
-              89,
-              94
+              98,
+              103
             ],
             "bytes": "  test \"SUBJECT — two instances holding the same tool set answer in the same order\" do\n    fwd = config(EtsRegistryHandler, order: :forward)\n    rev = config(EtsRegistryHandler, order: :reverse)\n\n    assert list_tool_names(fwd) == list_tool_names(rev)\n  end"
           },
           "asserts_read": [
-            "test/mcp/server/tool_order_test.exs:93 — assert list_tool_names(fwd) == list_tool_names(rev)"
+            "test/mcp/server/tool_order_test.exs:102 — assert list_tool_names(fwd) == list_tool_names(rev)"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -1897,14 +2041,38 @@
           "oc_relation": "covered and scored only through the construction: RequestMetaInvalid (contradicted; red) and ToolsList (agreed, partial), the missed edges in oc_counterpart; the ordering half is not covered, scored or unscored: no in-scope check sends tools/list twice or compares two listings (ToolsList's predicate reads each tool's name, description and inputSchema, oc_counterpart.also's predicate), and no unscored server scenario reads tools/list order (the order of `tools` occurs in no class body, measured by search); tools.mdx:71-72 makes deterministic order a SHOULD. WireSchemaValid: silent, the unit dispatches below the transport and sends nothing a scenario validates",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 (basic/index.mdx:380-382), and this tools/list's `_meta` lacks clientCapabilities (the `list_tool_names/2` helper, at :64-69 of the same file), so the response is an error, `result.tools` is absent, and the member fails at tool_order_test.exs:93."
+            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 (basic/index.mdx:380-382), and this tools/list's `_meta` lacks clientCapabilities (the `list_tool_names/2` helper, at :64-69 of the same file), so the response is an error, `result.tools` is absent, and the member fails at tool_order_test.exs:102."
           },
           "routed_to": {
             "to": "A3",
             "owner": "MES-152",
             "owner_record": "MES-152 comment 30010, item 7"
           },
-          "rationale": "Every assert read. :93 requires two instances' listings to be equal. Each listing comes from the `list_tool_names/2` helper (tool_order_test.exs:64-69), which dispatches a tools/list whose `_meta` carries protocolVersion only (:65) and maps `result.tools` to names (:68). Reading `result.tools` entails the response carries a result with a tools array (ToolsList's tools-member and array axes, agreed; oc_counterpart.also), and CONTRADICTS RequestMetaInvalid's `r?.error?.code===-32602` for exactly that request (oc_counterpart.predicate, .probe) [ratified 29735, Q6; 29816 Q-A]. The ordering the member states as its subject is a SHOULD (tools.mdx:71-72), and a unit insisting on it would fire on its own ground; that ground is not reached, because the construction reddens the member first. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9, in a throwaway worktree restored lib/-clean: the member fails at :93, the (test) frame, inside `list_tool_names/2`'s map over a nil `tools`."
+          "rationale": "Every assert read. :93 requires two instances' listings to be equal. Each listing comes from the `list_tool_names/2` helper (tool_order_test.exs:64-69), which dispatches a tools/list whose `_meta` carries protocolVersion only (:65) and maps `result.tools` to names (:68). Reading `result.tools` entails the response carries a result with a tools array (ToolsList's tools-member and array axes, agreed; oc_counterpart.also), and CONTRADICTS RequestMetaInvalid's `r?.error?.code===-32602` for exactly that request (oc_counterpart.predicate, .probe) [ratified 29735, Q6; 29816 Q-A]. The ordering the member states as its subject is a SHOULD (tools.mdx:71-72), and a unit insisting on it would fire on its own ground; that ground is not reached, because the construction reddens the member first. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9, in a throwaway worktree restored lib/-clean: the member fails at :93, the (test) frame, inside `list_tool_names/2`'s map over a nil `tools`.",
+          "prose_anchors": [
+            {
+              "field": "oc_counterpart.why_a3_missed",
+              "cite": "tool_order_test.exs:64-69",
+              "file": "test/mcp/server/tool_order_test.exs",
+              "lines": [
+                64,
+                69
+              ],
+              "bytes": "  defp list_tool_names(config, params \\\\ %{}) do\n    params = Map.put(params, \"_meta\", %{\"io.modelcontextprotocol/protocolVersion\" => @version})\n    req = %Request{id: 1, method: \"tools/list\", params: params}\n    {:reply, resp, _state} = Dispatch.dispatch(req, %ToolContext{request_id: 1}, config)\n    Enum.map(resp[\"result\"][\"tools\"], & &1[\"name\"])\n  end",
+              "at": "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
+            },
+            {
+              "field": "rationale",
+              "cite": "tool_order_test.exs:64-69",
+              "file": "test/mcp/server/tool_order_test.exs",
+              "lines": [
+                64,
+                69
+              ],
+              "bytes": "  defp list_tool_names(config, params \\\\ %{}) do\n    params = Map.put(params, \"_meta\", %{\"io.modelcontextprotocol/protocolVersion\" => @version})\n    req = %Request{id: 1, method: \"tools/list\", params: params}\n    {:reply, resp, _state} = Dispatch.dispatch(req, %ToolContext{request_id: 1}, config)\n    Enum.map(resp[\"result\"][\"tools\"], & &1[\"name\"])\n  end",
+              "at": "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
+            }
+          ]
         },
         {
           "member": "MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: a PLAIN mismatched header is still -32020",
@@ -1918,14 +2086,14 @@
           "et_test": {
             "file": "test/mcp/transport/self_compatibility_test.exs",
             "lines": [
-              131,
-              141
+              137,
+              147
             ],
             "bytes": "  test \"NEGATIVE CONTROL: a PLAIN mismatched header is still -32020\" do\n    conn =\n      post(call_tool_message(\"weather\"), [\n        {\"mcp-method\", \"tools/call\"},\n        {\"mcp-name\", \"not_weather\"},\n        {\"mcp-protocol-version\", @version}\n      ])\n\n    assert conn.status == 400\n    assert body(conn)[\"error\"][\"code\"] == -32_020\n  end"
           },
           "asserts_read": [
-            "test/mcp/transport/self_compatibility_test.exs:139 — assert conn.status == 400",
-            "test/mcp/transport/self_compatibility_test.exs:140 — assert body(conn)[\"error\"][\"code\"] == -32_020"
+            "test/mcp/transport/self_compatibility_test.exs:145 — assert conn.status == 400",
+            "test/mcp/transport/self_compatibility_test.exs:146 — assert body(conn)[\"error\"][\"code\"] == -32_020"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -1983,19 +2151,19 @@
                 }
               }
             ],
-            "why_a3_missed": "A3 did not see self_compatibility_test.exs:140 as RequestMetaInvalid's missing-client-capabilities case contradicted, nor :139 as HttpServerMetaInvalid400's status axis agreed: the POSTed tools/call's `_meta` lacks clientCapabilities (the `call_tool_message/1` helper, self_compatibility_test.exs:85-92, which carries the protocolVersion-only `@meta` of :39), so the asserted -32020 is not the -32602 the check requires, while the asserted 400 is the status the other requires [ratified 29735, Q6; 29816 Q-A; PM 29945 Q1]."
+            "why_a3_missed": "A3 did not see self_compatibility_test.exs:146 as RequestMetaInvalid's missing-client-capabilities case contradicted, nor :139 as HttpServerMetaInvalid400's status axis agreed: the POSTed tools/call's `_meta` lacks clientCapabilities (the `call_tool_message/1` helper, self_compatibility_test.exs:88-95, which carries the protocolVersion-only `@meta` of :39), so the asserted -32020 is not the -32602 the check requires, while the asserted 400 is the status the other requires [ratified 29735, Q6; 29816 Q-A; PM 29945 Q1]."
           },
           "oc_relation": "covered and scored only through the construction: RequestMetaInvalid (contradicted; red), the missed edge in oc_counterpart, and HttpServerMetaInvalid400 (status agreed by entailment; red), in oc_counterpart.also; the header-mismatch half is covered and not scored: ServerRejectsMismatchedNameHeader (http-header-validation, unscored_server_scenarios.sites.hhv_mn) sends a tools/call whose Mcp-Name disagrees with params.name and reads a rejection, agreeing with :140 on the header ground; HttpServerHeaderMismatch400 (scored) mismatches MCP-Protocol-Version against `_meta` on server/discover, a shared error code and not a shared subject",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 and, on HTTP, status 400 (basic/index.mdx:380-382), this tools/call's `_meta` lacks clientCapabilities (the `call_tool_message/1` helper, at :85-92 of the same file), and the specification does not order that check against the header check, so a server validating `_meta` first answers -32602 and the member fails at self_compatibility_test.exs:140."
+            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 and, on HTTP, status 400 (basic/index.mdx:380-382), this tools/call's `_meta` lacks clientCapabilities (the `call_tool_message/1` helper, at :85-92 of the same file), and the specification does not order that check against the header check, so a server validating `_meta` first answers -32602 and the member fails at self_compatibility_test.exs:146."
           },
           "routed_to": {
             "to": "A3",
             "owner": "MES-152",
             "owner_record": "MES-152 comment 30010, item 8"
           },
-          "rationale": "Every assert read. :139 requires status 400 and :140 code -32020, for a tools/call whose plain Mcp-Name header names a tool other than params.name (:135). The message is the `call_tool_message/1` helper's (self_compatibility_test.exs:85-92), whose `_meta` is the protocolVersion-only `@meta` of :39, so the request has two defects: a header that disagrees with its body (streamable-http.mdx:622-629, -32020) and a missing required field (basic/index.mdx:380-382, -32602). The specification does not order the two validations: a conforming server that checks `_meta` first answers 400/-32602, contradicting the asserted -32020 [PM 29945 Q1] (oc_counterpart), while the 400 agrees with HttpServerMetaInvalid400 by entailment (oc_counterpart.also). The exact shape of MES-142's McpName-vs-params-name row. M9 and M9h (header check first) leave it green; M9f (the `_meta` check first) is the order that reddens it, and it is conforming. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9f (M9h with the Plug's `_meta` check placed before check_routing_headers), in a throwaway worktree restored lib/-clean: the member fails at :140, the (test) frame."
+          "rationale": "Every assert read. :139 requires status 400 and :140 code -32020, for a tools/call whose plain Mcp-Name header names a tool other than params.name (:135). The message is the `call_tool_message/1` helper's (self_compatibility_test.exs:88-95), whose `_meta` is the protocolVersion-only `@meta` of :39, so the request has two defects: a header that disagrees with its body (streamable-http.mdx:622-629, -32020) and a missing required field (basic/index.mdx:380-382, -32602). The specification does not order the two validations: a conforming server that checks `_meta` first answers 400/-32602, contradicting the asserted -32020 [PM 29945 Q1] (oc_counterpart), while the 400 agrees with HttpServerMetaInvalid400 by entailment (oc_counterpart.also). The exact shape of MES-142's McpName-vs-params-name row. M9 and M9h (header check first) leave it green; M9f (the `_meta` check first) is the order that reddens it, and it is conforming. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9f (M9h with the Plug's `_meta` check placed before check_routing_headers), in a throwaway worktree restored lib/-clean: the member fails at :140, the (test) frame."
         },
         {
           "member": "MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: an encoded header naming a DIFFERENT tool is still -32020",
@@ -2009,14 +2177,14 @@
           "et_test": {
             "file": "test/mcp/transport/self_compatibility_test.exs",
             "lines": [
-              116,
-              128
+              121,
+              133
             ],
             "bytes": "  test \"NEGATIVE CONTROL: an encoded header naming a DIFFERENT tool is still -32020\" do\n    # W2 must not become \"stop comparing\". This encodes a name the body does\n    # not carry; decoding is what makes the mismatch visible.\n    conn =\n      post(call_tool_message(Handler.tool_name()), [\n        {\"mcp-method\", \"tools/call\"},\n        {\"mcp-name\", HeaderMirror.encode_value(\"другой_инструмент\")},\n        {\"mcp-protocol-version\", @version}\n      ])\n\n    assert conn.status == 400\n    assert body(conn)[\"error\"][\"code\"] == -32_020\n  end"
           },
           "asserts_read": [
-            "test/mcp/transport/self_compatibility_test.exs:126 — assert conn.status == 400",
-            "test/mcp/transport/self_compatibility_test.exs:127 — assert body(conn)[\"error\"][\"code\"] == -32_020"
+            "test/mcp/transport/self_compatibility_test.exs:131 — assert conn.status == 400",
+            "test/mcp/transport/self_compatibility_test.exs:132 — assert body(conn)[\"error\"][\"code\"] == -32_020"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -2074,19 +2242,19 @@
                 }
               }
             ],
-            "why_a3_missed": "A3 did not see self_compatibility_test.exs:127 as RequestMetaInvalid's missing-client-capabilities case contradicted, nor :126 as HttpServerMetaInvalid400's status axis agreed: the POSTed tools/call's `_meta` lacks clientCapabilities (the `call_tool_message/1` helper, self_compatibility_test.exs:85-92, which carries the protocolVersion-only `@meta` of :39), so the asserted -32020 is not the -32602 the check requires, while the asserted 400 is the status the other requires [ratified 29735, Q6; 29816 Q-A; PM 29945 Q1]."
+            "why_a3_missed": "A3 did not see self_compatibility_test.exs:132 as RequestMetaInvalid's missing-client-capabilities case contradicted, nor :126 as HttpServerMetaInvalid400's status axis agreed: the POSTed tools/call's `_meta` lacks clientCapabilities (the `call_tool_message/1` helper, self_compatibility_test.exs:88-95, which carries the protocolVersion-only `@meta` of :39), so the asserted -32020 is not the -32602 the check requires, while the asserted 400 is the status the other requires [ratified 29735, Q6; 29816 Q-A; PM 29945 Q1]."
           },
           "oc_relation": "covered and scored only through the construction: RequestMetaInvalid (contradicted; red), the missed edge in oc_counterpart, and HttpServerMetaInvalid400 (status agreed by entailment; red), in oc_counterpart.also; the header-mismatch half is covered and not scored: ServerRejectsMismatchedNameHeader (http-header-validation, unscored_server_scenarios.sites.hhv_mn) sends a tools/call whose Mcp-Name disagrees with params.name and reads a rejection, agreeing with :127 on the header ground; HttpServerHeaderMismatch400 (scored) mismatches MCP-Protocol-Version against `_meta` on server/discover, a shared error code and not a shared subject",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 and, on HTTP, status 400 (basic/index.mdx:380-382), this tools/call's `_meta` lacks clientCapabilities (the `call_tool_message/1` helper, at :85-92 of the same file), and the specification does not order that check against the header check, so a server validating `_meta` first answers -32602 and the member fails at self_compatibility_test.exs:127."
+            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 and, on HTTP, status 400 (basic/index.mdx:380-382), this tools/call's `_meta` lacks clientCapabilities (the `call_tool_message/1` helper, at :85-92 of the same file), and the specification does not order that check against the header check, so a server validating `_meta` first answers -32602 and the member fails at self_compatibility_test.exs:132."
           },
           "routed_to": {
             "to": "A3",
             "owner": "MES-152",
             "owner_record": "MES-152 comment 30010, item 9"
           },
-          "rationale": "Every assert read. :126 requires status 400 and :127 code -32020, for a tools/call whose Base64-encoded Mcp-Name header decodes to a tool other than params.name (:122). The message is the `call_tool_message/1` helper's (self_compatibility_test.exs:85-92), whose `_meta` is the protocolVersion-only `@meta` of :39, so the request has two defects: a header that disagrees with its body (streamable-http.mdx:622-629, -32020) and a missing required field (basic/index.mdx:380-382, -32602). The specification does not order the two validations: a conforming server that checks `_meta` first answers 400/-32602, contradicting the asserted -32020 [PM 29945 Q1] (oc_counterpart), while the 400 agrees with HttpServerMetaInvalid400 by entailment (oc_counterpart.also). The exact shape of MES-142's McpName-vs-params-name row. M9 and M9h (header check first) leave it green; M9f (the `_meta` check first) is the order that reddens it, and it is conforming. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9f (M9h with the Plug's `_meta` check placed before check_routing_headers), in a throwaway worktree restored lib/-clean: the member fails at :127, the (test) frame."
+          "rationale": "Every assert read. :126 requires status 400 and :127 code -32020, for a tools/call whose Base64-encoded Mcp-Name header decodes to a tool other than params.name (:122). The message is the `call_tool_message/1` helper's (self_compatibility_test.exs:88-95), whose `_meta` is the protocolVersion-only `@meta` of :39, so the request has two defects: a header that disagrees with its body (streamable-http.mdx:622-629, -32020) and a missing required field (basic/index.mdx:380-382, -32602). The specification does not order the two validations: a conforming server that checks `_meta` first answers 400/-32602, contradicting the asserted -32020 [PM 29945 Q1] (oc_counterpart), while the 400 agrees with HttpServerMetaInvalid400 by entailment (oc_counterpart.also). The exact shape of MES-142's McpName-vs-params-name row. M9 and M9h (header check first) leave it green; M9f (the `_meta` check first) is the order that reddens it, and it is conforming. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9f (M9h with the Plug's `_meta` check placed before check_routing_headers), in a throwaway worktree restored lib/-clean: the member fails at :127, the (test) frame."
         },
         {
           "member": "MCP.Transport.SelfCompatibilityTest/test a plain header matching a plain name still passes — decoding leaves it alone",
@@ -2100,14 +2268,14 @@
           "et_test": {
             "file": "test/mcp/transport/self_compatibility_test.exs",
             "lines": [
-              144,
-              157
+              151,
+              164
             ],
             "bytes": "  test \"a plain header matching a plain name still passes — decoding leaves it alone\" do\n    conn =\n      post(call_tool_message(\"unknown_but_matching\"), [\n        {\"mcp-method\", \"tools/call\"},\n        {\"mcp-name\", \"unknown_but_matching\"},\n        {\"mcp-protocol-version\", @version}\n      ])\n\n    # The routing check passed (no -32020); the handler's own \"unknown tool\"\n    # answer is what comes back, which is the point: the header stopped being\n    # the thing that failed.\n    assert conn.status == 200\n    refute body(conn)[\"error\"][\"code\"] == -32_020\n  end"
           },
           "asserts_read": [
-            "test/mcp/transport/self_compatibility_test.exs:155 — assert conn.status == 200",
-            "test/mcp/transport/self_compatibility_test.exs:156 — refute body(conn)[\"error\"][\"code\"] == -32_020"
+            "test/mcp/transport/self_compatibility_test.exs:162 — assert conn.status == 200",
+            "test/mcp/transport/self_compatibility_test.exs:163 — refute body(conn)[\"error\"][\"code\"] == -32_020"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -2135,19 +2303,19 @@
               ],
               "bytes": "n.status===400"
             },
-            "why_a3_missed": "A3 did not see self_compatibility_test.exs:155 as HttpServerMetaInvalid400's status axis contradicted: it requires 200 for a POSTed tools/call whose `_meta` lacks clientCapabilities (the `call_tool_message/1` helper, self_compatibility_test.exs:85-92, which carries the protocolVersion-only `@meta` of :39), the check's missing-client-capabilities case [ratified 29735, Q6; 29816 Q-A; PM 29945 Q2]."
+            "why_a3_missed": "A3 did not see self_compatibility_test.exs:162 as HttpServerMetaInvalid400's status axis contradicted: it requires 200 for a POSTed tools/call whose `_meta` lacks clientCapabilities (the `call_tool_message/1` helper, self_compatibility_test.exs:88-95, which carries the protocolVersion-only `@meta` of :39), the check's missing-client-capabilities case [ratified 29735, Q6; 29816 Q-A; PM 29945 Q2]."
           },
           "oc_relation": "covered and scored only through the construction: HttpServerMetaInvalid400 (contradicted; red), the missed edge in oc_counterpart; RequestMetaInvalid: silent, :156 refutes only -32020 and a -32602 body passes it; the header half is covered and not scored: ServerRejectsMismatchedNameHeader (http-header-validation, unscored_server_scenarios.sites.hhv_mn) sends a mismatched Mcp-Name and reads a rejection, and this member's header matches its body, so the check is silent on it",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 and, on HTTP, status 400 (basic/index.mdx:380-382), and this tools/call's `_meta` lacks clientCapabilities (the `call_tool_message/1` helper, at :85-92 of the same file), so the POST is refused (status 400) and the member fails at self_compatibility_test.exs:155."
+            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 and, on HTTP, status 400 (basic/index.mdx:380-382), and this tools/call's `_meta` lacks clientCapabilities (the `call_tool_message/1` helper, at :85-92 of the same file), so the POST is refused (status 400) and the member fails at self_compatibility_test.exs:162."
           },
           "routed_to": {
             "to": "A3",
             "owner": "MES-152",
             "owner_record": "MES-152 comment 30010, item 10"
           },
-          "rationale": "Every assert read. :155 requires status 200 and :156 refutes code -32020, for a tools/call whose Mcp-Name header matches its params.name. The message is the `call_tool_message/1` helper's (self_compatibility_test.exs:85-92), whose `_meta` is the protocolVersion-only `@meta` of :39, so the request lacks clientCapabilities: RequestMetaInvalid's missing-client-capabilities case, which basic/index.mdx:380-382 makes malformed, to be rejected -32602 and, on HTTP, 400. The 200 at :155 contradicts HttpServerMetaInvalid400's `n.status===400` for that request (oc_counterpart). M9 alone leaves it green (-32602 in a 200 body; :156 refutes only -32020); M9h is the conforming answer [PM 29945 Q2]. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9h (M9, and the Plug answers the same request 400 with -32602, after check_routing_headers), in a throwaway worktree restored lib/-clean: the member fails at :155, the (test) frame."
+          "rationale": "Every assert read. :155 requires status 200 and :156 refutes code -32020, for a tools/call whose Mcp-Name header matches its params.name. The message is the `call_tool_message/1` helper's (self_compatibility_test.exs:88-95), whose `_meta` is the protocolVersion-only `@meta` of :39, so the request lacks clientCapabilities: RequestMetaInvalid's missing-client-capabilities case, which basic/index.mdx:380-382 makes malformed, to be rejected -32602 and, on HTTP, 400. The 200 at :155 contradicts HttpServerMetaInvalid400's `n.status===400` for that request (oc_counterpart). M9 alone leaves it green (-32602 in a 200 body; :156 refutes only -32020); M9h is the conforming answer [PM 29945 Q2]. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9h (M9, and the Plug answers the same request 400 with -32602, after check_routing_headers), in a throwaway worktree restored lib/-clean: the member fails at :155, the (test) frame."
         },
         {
           "member": "MCP.Transport.SelfCompatibilityTest/test a sentinel-shaped header that is not valid Base64 is compared as-is, not crashed on",
@@ -2161,14 +2329,14 @@
           "et_test": {
             "file": "test/mcp/transport/self_compatibility_test.exs",
             "lines": [
-              160,
-              170
+              168,
+              178
             ],
             "bytes": "  test \"a sentinel-shaped header that is not valid Base64 is compared as-is, not crashed on\" do\n    conn =\n      post(call_tool_message(\"weather\"), [\n        {\"mcp-method\", \"tools/call\"},\n        {\"mcp-name\", \"=?base64?!!!not-base64!!!?=\"},\n        {\"mcp-protocol-version\", @version}\n      ])\n\n    assert conn.status == 400\n    assert body(conn)[\"error\"][\"code\"] == -32_020\n  end"
           },
           "asserts_read": [
-            "test/mcp/transport/self_compatibility_test.exs:168 — assert conn.status == 400",
-            "test/mcp/transport/self_compatibility_test.exs:169 — assert body(conn)[\"error\"][\"code\"] == -32_020"
+            "test/mcp/transport/self_compatibility_test.exs:176 — assert conn.status == 400",
+            "test/mcp/transport/self_compatibility_test.exs:177 — assert body(conn)[\"error\"][\"code\"] == -32_020"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -2226,19 +2394,19 @@
                 }
               }
             ],
-            "why_a3_missed": "A3 did not see self_compatibility_test.exs:169 as RequestMetaInvalid's missing-client-capabilities case contradicted, nor :168 as HttpServerMetaInvalid400's status axis agreed: the POSTed tools/call's `_meta` lacks clientCapabilities (the `call_tool_message/1` helper, self_compatibility_test.exs:85-92, which carries the protocolVersion-only `@meta` of :39), so the asserted -32020 is not the -32602 the check requires, while the asserted 400 is the status the other requires [ratified 29735, Q6; 29816 Q-A; PM 29945 Q1]."
+            "why_a3_missed": "A3 did not see self_compatibility_test.exs:177 as RequestMetaInvalid's missing-client-capabilities case contradicted, nor :168 as HttpServerMetaInvalid400's status axis agreed: the POSTed tools/call's `_meta` lacks clientCapabilities (the `call_tool_message/1` helper, self_compatibility_test.exs:88-95, which carries the protocolVersion-only `@meta` of :39), so the asserted -32020 is not the -32602 the check requires, while the asserted 400 is the status the other requires [ratified 29735, Q6; 29816 Q-A; PM 29945 Q1]."
           },
           "oc_relation": "covered and scored only through the construction: RequestMetaInvalid (contradicted; red), the missed edge in oc_counterpart, and HttpServerMetaInvalid400 (status agreed by entailment; red), in oc_counterpart.also; the header-mismatch half is covered and not scored: ServerRejectsMismatchedNameHeader (http-header-validation, unscored_server_scenarios.sites.hhv_mn) sends a tools/call whose Mcp-Name disagrees with params.name and reads a rejection; a sentinel with an undecodable payload is outside its probe; HttpServerHeaderMismatch400 (scored) mismatches MCP-Protocol-Version against `_meta` on server/discover, a shared error code and not a shared subject",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 and, on HTTP, status 400 (basic/index.mdx:380-382), this tools/call's `_meta` lacks clientCapabilities (the `call_tool_message/1` helper, at :85-92 of the same file), and the specification does not order that check against the header check, so a server validating `_meta` first answers -32602 and the member fails at self_compatibility_test.exs:169."
+            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 and, on HTTP, status 400 (basic/index.mdx:380-382), this tools/call's `_meta` lacks clientCapabilities (the `call_tool_message/1` helper, at :85-92 of the same file), and the specification does not order that check against the header check, so a server validating `_meta` first answers -32602 and the member fails at self_compatibility_test.exs:177."
           },
           "routed_to": {
             "to": "A3",
             "owner": "MES-152",
             "owner_record": "MES-152 comment 30010, item 11"
           },
-          "rationale": "Every assert read. :168 requires status 400 and :169 code -32020, for a tools/call whose Mcp-Name is sentinel-shaped with a payload that is not valid Base64 (:164). The message is the `call_tool_message/1` helper's (self_compatibility_test.exs:85-92), whose `_meta` is the protocolVersion-only `@meta` of :39, so the request has two defects: a header that disagrees with its body (streamable-http.mdx:622-629, -32020) and a missing required field (basic/index.mdx:380-382, -32602). The specification does not order the two validations: a conforming server that checks `_meta` first answers 400/-32602, contradicting the asserted -32020 [PM 29945 Q1] (oc_counterpart), while the 400 agrees with HttpServerMetaInvalid400 by entailment (oc_counterpart.also). The exact shape of MES-142's McpName-vs-params-name row. M9 and M9h (header check first) leave it green; M9f (the `_meta` check first) is the order that reddens it, and it is conforming. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9f (M9h with the Plug's `_meta` check placed before check_routing_headers), in a throwaway worktree restored lib/-clean: the member fails at :169, the (test) frame."
+          "rationale": "Every assert read. :168 requires status 400 and :169 code -32020, for a tools/call whose Mcp-Name is sentinel-shaped with a payload that is not valid Base64 (:164). The message is the `call_tool_message/1` helper's (self_compatibility_test.exs:88-95), whose `_meta` is the protocolVersion-only `@meta` of :39, so the request has two defects: a header that disagrees with its body (streamable-http.mdx:622-629, -32020) and a missing required field (basic/index.mdx:380-382, -32602). The specification does not order the two validations: a conforming server that checks `_meta` first answers 400/-32602, contradicting the asserted -32020 [PM 29945 Q1] (oc_counterpart), while the 400 agrees with HttpServerMetaInvalid400 by entailment (oc_counterpart.also). The exact shape of MES-142's McpName-vs-params-name row. M9 and M9h (header check first) leave it green; M9f (the `_meta` check first) is the order that reddens it, and it is conforming. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9f (M9h with the Plug's `_meta` check placed before check_routing_headers), in a throwaway worktree restored lib/-clean: the member fails at :169, the (test) frame."
         },
         {
           "member": "MCP.Transport.StreamableHTTP.ACTest/test AC8 — a factory that raises fails cleanly (-32603); the secret never leaks",
@@ -2252,15 +2420,15 @@
           "et_test": {
             "file": "test/mcp/transport/streamable_http_ac_test.exs",
             "lines": [
-              184,
-              193
+              216,
+              225
             ],
             "bytes": "  test \"AC8 — a factory that raises fails cleanly (-32603); the secret never leaks\" do\n    url = start_instance(handler_opts: fn _conn -> raise \"boom secret=xyz789\" end)\n\n    {resp, _log} =\n      with_log(fn -> post(url, \"tools/call\", with_meta(%{\"name\" => \"whoami\"}), role: \"PM\") end)\n\n    assert resp.status == 500\n    assert error(resp)[\"code\"] == -32_603\n    refute Jason.encode!(resp.body) =~ \"xyz789\"\n  end"
           },
           "asserts_read": [
-            "test/mcp/transport/streamable_http_ac_test.exs:190 — assert resp.status == 500",
-            "test/mcp/transport/streamable_http_ac_test.exs:191 — assert error(resp)[\"code\"] == -32_603",
-            "test/mcp/transport/streamable_http_ac_test.exs:192 — refute Jason.encode!(resp.body) =~ \"xyz789\""
+            "test/mcp/transport/streamable_http_ac_test.exs:222 — assert resp.status == 500",
+            "test/mcp/transport/streamable_http_ac_test.exs:223 — assert error(resp)[\"code\"] == -32_603",
+            "test/mcp/transport/streamable_http_ac_test.exs:224 — refute Jason.encode!(resp.body) =~ \"xyz789\""
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -2318,12 +2486,12 @@
                 }
               }
             ],
-            "why_a3_missed": "A3 did not see streamable_http_ac_test.exs:190 as HttpServerMetaInvalid400's status axis contradicted, nor :191 as RequestMetaInvalid's code contradicted: the POSTed tools/call's `_meta` lacks clientCapabilities (the `with_meta/2` helper, streamable_http_ac_test.exs:64-67, which adds a protocolVersion-only `_meta`), the checks' missing-client-capabilities case [ratified 29735, Q6; 29816 Q-A; PM 29945 Q2]."
+            "why_a3_missed": "A3 did not see streamable_http_ac_test.exs:222 as HttpServerMetaInvalid400's status axis contradicted, nor :191 as RequestMetaInvalid's code contradicted: the POSTed tools/call's `_meta` lacks clientCapabilities (the `with_meta/2` helper, streamable_http_ac_test.exs:64-67, which adds a protocolVersion-only `_meta`), the checks' missing-client-capabilities case [ratified 29735, Q6; 29816 Q-A; PM 29945 Q2]."
           },
           "oc_relation": "covered and scored only through the construction: HttpServerMetaInvalid400 (contradicted; red), the missed edge in oc_counterpart, and RequestMetaInvalid (contradicted; red), in oc_counterpart.also; the identity-factory half is not covered, scored or unscored: no in-scope check configures a server's per-request identity resolution, and no unscored server scenario names a handler_opts factory or an internal error on it (-32603 occurs in an unscored window only as the harness's auth fixture server, unscored_server_scenarios.what_they_read)",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 and, on HTTP, status 400 (basic/index.mdx:380-382), and this tools/call's `_meta` lacks clientCapabilities (the `with_meta/2` helper, at :64-67 of the same file), so a server validating `_meta` before it resolves identity refuses it (status 400) and the member fails at streamable_http_ac_test.exs:190."
+            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 and, on HTTP, status 400 (basic/index.mdx:380-382), and this tools/call's `_meta` lacks clientCapabilities (the `with_meta/2` helper, at :64-67 of the same file), so a server validating `_meta` before it resolves identity refuses it (status 400) and the member fails at streamable_http_ac_test.exs:222."
           },
           "routed_to": {
             "to": "A3",
@@ -2334,9 +2502,33 @@
           "second_readings": [
             {
               "mutation": "M10",
-              "fails_at": 190,
+              "fails_at": 222,
               "reading": "A second reading only, and it moves no verdict [PM 29945 Q3]: the POST carries no Mcp-Method or Mcp-Name header, which streamable-http.mdx:622-625 makes a validation failure (400, -32020), so a server enforcing the required headers refuses it (status 400) and the member fails at :190. Remediation owner MES-155.",
               "remediation_owner": "MES-155"
+            }
+          ],
+          "prose_anchors": [
+            {
+              "field": "oc_counterpart.why_a3_missed",
+              "cite": "streamable_http_ac_test.exs:64-67",
+              "file": "test/mcp/transport/streamable_http_ac_test.exs",
+              "lines": [
+                64,
+                67
+              ],
+              "bytes": "  defp with_meta(params, extra_meta \\\\ %{}) do\n    meta = Map.merge(%{\"io.modelcontextprotocol/protocolVersion\" => @version}, extra_meta)\n    Map.put(params, \"_meta\", meta)\n  end",
+              "at": "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
+            },
+            {
+              "field": "rationale",
+              "cite": "streamable_http_ac_test.exs:64-67",
+              "file": "test/mcp/transport/streamable_http_ac_test.exs",
+              "lines": [
+                64,
+                67
+              ],
+              "bytes": "  defp with_meta(params, extra_meta \\\\ %{}) do\n    meta = Map.merge(%{\"io.modelcontextprotocol/protocolVersion\" => @version}, extra_meta)\n    Map.put(params, \"_meta\", meta)\n  end",
+              "at": "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
             }
           ]
         },
@@ -2352,14 +2544,14 @@
           "et_test": {
             "file": "test/mcp/transport/streamable_http_ac_test.exs",
             "lines": [
-              196,
-              204
+              229,
+              237
             ],
             "bytes": "  test \"AC8 — a factory that returns a non-keyword fails cleanly (-32603)\" do\n    url = start_instance(handler_opts: fn _conn -> :not_a_keyword end)\n\n    {resp, _log} =\n      with_log(fn -> post(url, \"tools/call\", with_meta(%{\"name\" => \"whoami\"}), role: \"PM\") end)\n\n    assert resp.status == 500\n    assert error(resp)[\"code\"] == -32_603\n  end"
           },
           "asserts_read": [
-            "test/mcp/transport/streamable_http_ac_test.exs:202 — assert resp.status == 500",
-            "test/mcp/transport/streamable_http_ac_test.exs:203 — assert error(resp)[\"code\"] == -32_603"
+            "test/mcp/transport/streamable_http_ac_test.exs:235 — assert resp.status == 500",
+            "test/mcp/transport/streamable_http_ac_test.exs:236 — assert error(resp)[\"code\"] == -32_603"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -2417,12 +2609,12 @@
                 }
               }
             ],
-            "why_a3_missed": "A3 did not see streamable_http_ac_test.exs:202 as HttpServerMetaInvalid400's status axis contradicted, nor :203 as RequestMetaInvalid's code contradicted: the POSTed tools/call's `_meta` lacks clientCapabilities (the `with_meta/2` helper, streamable_http_ac_test.exs:64-67, which adds a protocolVersion-only `_meta`), the checks' missing-client-capabilities case [ratified 29735, Q6; 29816 Q-A; PM 29945 Q2]."
+            "why_a3_missed": "A3 did not see streamable_http_ac_test.exs:235 as HttpServerMetaInvalid400's status axis contradicted, nor :203 as RequestMetaInvalid's code contradicted: the POSTed tools/call's `_meta` lacks clientCapabilities (the `with_meta/2` helper, streamable_http_ac_test.exs:64-67, which adds a protocolVersion-only `_meta`), the checks' missing-client-capabilities case [ratified 29735, Q6; 29816 Q-A; PM 29945 Q2]."
           },
           "oc_relation": "covered and scored only through the construction: HttpServerMetaInvalid400 (contradicted; red), the missed edge in oc_counterpart, and RequestMetaInvalid (contradicted; red), in oc_counterpart.also; the identity-factory half is not covered, scored or unscored: no in-scope check configures a server's per-request identity resolution, and no unscored server scenario names a handler_opts factory or an internal error on it (-32603 occurs in an unscored window only as the harness's auth fixture server, unscored_server_scenarios.what_they_read)",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 and, on HTTP, status 400 (basic/index.mdx:380-382), and this tools/call's `_meta` lacks clientCapabilities (the `with_meta/2` helper, at :64-67 of the same file), so a server validating `_meta` before it resolves identity refuses it (status 400) and the member fails at streamable_http_ac_test.exs:202."
+            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 and, on HTTP, status 400 (basic/index.mdx:380-382), and this tools/call's `_meta` lacks clientCapabilities (the `with_meta/2` helper, at :64-67 of the same file), so a server validating `_meta` before it resolves identity refuses it (status 400) and the member fails at streamable_http_ac_test.exs:235."
           },
           "routed_to": {
             "to": "A3",
@@ -2433,9 +2625,33 @@
           "second_readings": [
             {
               "mutation": "M10",
-              "fails_at": 202,
+              "fails_at": 235,
               "reading": "A second reading only, and it moves no verdict [PM 29945 Q3]: the POST carries no Mcp-Method or Mcp-Name header, which streamable-http.mdx:622-625 makes a validation failure (400, -32020), so a server enforcing the required headers refuses it (status 400) and the member fails at :202. Remediation owner MES-155.",
               "remediation_owner": "MES-155"
+            }
+          ],
+          "prose_anchors": [
+            {
+              "field": "oc_counterpart.why_a3_missed",
+              "cite": "streamable_http_ac_test.exs:64-67",
+              "file": "test/mcp/transport/streamable_http_ac_test.exs",
+              "lines": [
+                64,
+                67
+              ],
+              "bytes": "  defp with_meta(params, extra_meta \\\\ %{}) do\n    meta = Map.merge(%{\"io.modelcontextprotocol/protocolVersion\" => @version}, extra_meta)\n    Map.put(params, \"_meta\", meta)\n  end",
+              "at": "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
+            },
+            {
+              "field": "rationale",
+              "cite": "streamable_http_ac_test.exs:64-67",
+              "file": "test/mcp/transport/streamable_http_ac_test.exs",
+              "lines": [
+                64,
+                67
+              ],
+              "bytes": "  defp with_meta(params, extra_meta \\\\ %{}) do\n    meta = Map.merge(%{\"io.modelcontextprotocol/protocolVersion\" => @version}, extra_meta)\n    Map.put(params, \"_meta\", meta)\n  end",
+              "at": "bd99a3945f2885a943ac736b8b2d33422c97ccc0"
             }
           ]
         },
@@ -2451,14 +2667,14 @@
           "et_test": {
             "file": "test/mcp/transport/streamable_http_cache_scope_warning_test.exs",
             "lines": [
-              96,
-              121
+              118,
+              143
             ],
             "bytes": "  test \"AC7(c): N requests against a warned configuration produce exactly ONE line\" do\n    log =\n      capture_log(fn ->\n        plug_opts =\n          init(\n            enable_json_response: true,\n            handler_opts: factory(),\n            server_opts: [cache_defaults: {60_000, \"public\"}]\n          )\n\n        for _ <- 1..5 do\n          conn =\n            :post\n            |> conn(\"http://localhost/\", Jason.encode!(rpc(\"tools/list\")))\n            |> put_req_header(\"content-type\", \"application/json\")\n            |> put_req_header(\"accept\", \"application/json\")\n            |> put_req_header(\"origin\", \"http://localhost\")\n            |> assign(:role, \"PM\")\n            |> MCPPlug.call(plug_opts)\n\n          assert conn.status == 200\n        end\n      end)\n\n    assert count(log, @needle) == 1\n  end"
           },
           "asserts_read": [
-            "test/mcp/transport/streamable_http_cache_scope_warning_test.exs:116 — assert conn.status == 200",
-            "test/mcp/transport/streamable_http_cache_scope_warning_test.exs:120 — assert count(log, @needle) == 1"
+            "test/mcp/transport/streamable_http_cache_scope_warning_test.exs:138 — assert conn.status == 200",
+            "test/mcp/transport/streamable_http_cache_scope_warning_test.exs:142 — assert count(log, @needle) == 1"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -2486,16 +2702,16 @@
               ],
               "bytes": "n.status===400"
             },
-            "why_a3_missed": "A3 did not see streamable_http_cache_scope_warning_test.exs:116 as HttpServerMetaInvalid400's status axis contradicted: it requires 200 for five POSTed tools/list requests whose `_meta` lacks clientCapabilities (the `rpc/1` helper, streamable_http_cache_scope_warning_test.exs:151-152, which carries the protocolVersion-only `@meta` of :25), the check's missing-client-capabilities case [ratified 29735, Q6; 29816 Q-A; PM 29945 Q2]."
+            "why_a3_missed": "A3 did not see streamable_http_cache_scope_warning_test.exs:138 as HttpServerMetaInvalid400's status axis contradicted: it requires 200 for five POSTed tools/list requests whose `_meta` lacks clientCapabilities (the `rpc/1` helper, streamable_http_cache_scope_warning_test.exs:176-177, which carries the protocolVersion-only `@meta` of :25), the check's missing-client-capabilities case [ratified 29735, Q6; 29816 Q-A; PM 29945 Q2]."
           },
           "oc_relation": "covered and scored only through the construction: HttpServerMetaInvalid400 (contradicted; red), the missed edge in oc_counterpart; RequestMetaInvalid: silent, no body is read; the warning half is not covered, scored or unscored: no check reads a server's log, and CacheScopeValid (caching) reads the cacheScope value of a list result, not a warning about it",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 and, on HTTP, status 400 (basic/index.mdx:380-382), and each tools/list's `_meta` lacks clientCapabilities (the `rpc/1` helper, at :151-152 of the same file), so the first POST is refused (status 400) and the member fails at streamable_http_cache_scope_warning_test.exs:116.",
+            "reading": "A conforming server MUST reject a request missing a required `_meta` field with -32602 and, on HTTP, status 400 (basic/index.mdx:380-382), and each tools/list's `_meta` lacks clientCapabilities (the `rpc/1` helper, at :151-152 of the same file), so the first POST is refused (status 400) and the member fails at streamable_http_cache_scope_warning_test.exs:138.",
             "exunit_frame": {
               "enclosing": "capture_log",
-              "reported_at": 98,
-              "failing_assert": 116,
+              "reported_at": 120,
+              "failing_assert": 138,
               "note": "ExUnit reports the (test) frame at the capture_log call (:98); the failing assert is :116, inside the `for` at :106 inside its anonymous fn, and that is the line the reading names (M9h, M9f, M10; measured)"
             }
           },
@@ -2504,11 +2720,11 @@
             "owner": "MES-152",
             "owner_record": "MES-152 comment 30010, item 14"
           },
-          "rationale": "Every assert read. :116 requires status 200 on each of five POSTed tools/list requests, and :120 exactly one warning line in the captured log. The message is the `rpc/1` helper's (streamable_http_cache_scope_warning_test.exs:151-152), whose `_meta` is the protocolVersion-only `@meta` of :25, so each request lacks clientCapabilities: RequestMetaInvalid's missing-client-capabilities case, which basic/index.mdx:380-382 makes malformed, to be rejected -32602 and, on HTTP, 400. The 200 at :116 contradicts HttpServerMetaInvalid400's `n.status===400` for that request (oc_counterpart). M9 alone leaves it green (a 200 carrying a -32602 body); M9h is the conforming answer [PM 29945 Q2]. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9h, in a throwaway worktree restored lib/-clean: the assert at :116 fails on the first iteration; ExUnit reports the (test) frame at the enclosing capture_log, :98 (exunit_frame). M10 also reddens it (second_readings).",
+          "rationale": "Every assert read. :116 requires status 200 on each of five POSTed tools/list requests, and :120 exactly one warning line in the captured log. The message is the `rpc/1` helper's (streamable_http_cache_scope_warning_test.exs:176-177), whose `_meta` is the protocolVersion-only `@meta` of :25, so each request lacks clientCapabilities: RequestMetaInvalid's missing-client-capabilities case, which basic/index.mdx:380-382 makes malformed, to be rejected -32602 and, on HTTP, 400. The 200 at :116 contradicts HttpServerMetaInvalid400's `n.status===400` for that request (oc_counterpart). M9 alone leaves it green (a 200 carrying a -32602 body); M9h is the conforming answer [PM 29945 Q2]. This SDK has no gate for a missing clientCapabilities anywhere in lib/ (the only Error.invalid_params in lib/mcp/server is the subscriptions/listen one, dispatch.ex:372), and the census records every RequestMetaInvalid check FAILURE, so the unit pins the red behaviour on the wire it models. So the member HAS an OC counterpart the crosswalk did not record: the MES-119 missed-edge shape, here a CONTRADICTING edge onto a check that is red (29816 Q-A), a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterfactual [authored 29733/29734 | ratified 29735, Q5] and over wrong_against_spec [29816 Q-B]; its reading is recorded honestly, and it fires. Nothing is relabelled or deleted here. Firing line measured by scratch mutation M9h, in a throwaway worktree restored lib/-clean: the assert at :116 fails on the first iteration; ExUnit reports the (test) frame at the enclosing capture_log, :98 (exunit_frame). M10 also reddens it (second_readings).",
           "second_readings": [
             {
               "mutation": "M10",
-              "fails_at": 116,
+              "fails_at": 138,
               "reading": "A second reading only, and it moves no verdict [PM 29945 Q3]: the POST carries no MCP-Protocol-Version, Mcp-Method or Mcp-Name header, which streamable-http.mdx:622-625 makes a validation failure (400, -32020), so a server enforcing the required headers answers 400 and the assert at :116 fails; ExUnit reports :98, as above. Remediation owner MES-155.",
               "remediation_owner": "MES-155"
             }

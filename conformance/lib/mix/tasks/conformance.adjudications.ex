@@ -46,6 +46,27 @@ defmodule Mix.Tasks.Conformance.Adjudications do
     "owed #{r["owed"]} — closed #{length(r["closed"])}, pending #{map_size(r["pending"])}: #{pending}"
   end
 
+  defp anchored(r), do: Map.get(r, "repo_citations_anchored", 0)
+
+  # Anchored citations (MES-161) are verified at the commit they name, not at the
+  # tip, and are printed as such so that a historical citation is never silent.
+  @doc """
+  The where-clause of the citations line: ` at the tip`, or, when some are
+  anchored, ` (693 at the tip, anchored 127 @bd99a39 — at that commit, not the tip)`.
+  """
+  def anchored_clause(r) do
+    case anchored(r) do
+      0 ->
+        " at the tip"
+
+      n ->
+        at =
+          r |> Map.get("anchored_at", []) |> Enum.map_join(", ", &("@" <> String.slice(&1, 0, 7)))
+
+        " (#{r["repo_citations_holding"] - n} at the tip, anchored #{n} #{at} — at that commit, not the tip)"
+    end
+  end
+
   defp short(view),
     do: view |> Path.basename(".json") |> String.replace(~r/-\d{4}-\d{2}-\d{2}$/, "")
 
@@ -58,7 +79,7 @@ defmodule Mix.Tasks.Conformance.Adjudications do
     citations =
       case defects do
         [] ->
-          "#{r["repo_citations_holding"]} repository citations verified at the tip; " <>
+          "#{r["repo_citations_holding"]} repository citations verified#{anchored_clause(r)}; " <>
             "#{r["harness_citations_not_verified_in_gate_5"]} harness citations NOT verified here (control `harness` mode)"
 
         _ ->

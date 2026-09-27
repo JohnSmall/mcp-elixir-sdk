@@ -174,8 +174,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -245,8 +245,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -316,8 +316,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -409,8 +409,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -480,8 +480,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -551,8 +551,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -644,8 +644,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -715,8 +715,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -786,8 +786,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -879,8 +879,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -950,8 +950,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -1043,8 +1043,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -1238,8 +1238,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -1331,8 +1331,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -1411,8 +1411,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -1491,8 +1491,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -1584,8 +1584,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -1655,8 +1655,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -1726,8 +1726,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -2069,8 +2069,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -2261,8 +2261,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -2354,8 +2354,8 @@
           "extend_target": {
             "file": "test/mcp/server/extensions_negotiation_test.exs",
             "lines": [
-              342,
-              342
+              379,
+              379
             ],
             "bytes": "    test \"T11 — resources/list and prompts/list are unaffected\" do",
             "reading": "Dispatch-level unit that already sends prompts/list (and resources/list) through Dispatch.dispatch/3 and asserts no error."
@@ -2424,8 +2424,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -2723,8 +2723,8 @@
           "extend_target": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              244,
-              244
+              298,
+              298
             ],
             "bytes": "  test \"tools/call input-required → retry with requestState → completion\" do",
             "reading": "The MRTR retry unit: the real plug, a tools/call that returns input_required, then a retry echoing requestState that completes. Its handler is test/support/stateless_handler.ex's needs_input."
@@ -2810,7 +2810,7 @@
       ],
       "predicate": "a unit outside ET-CC that sends a server any of this slice's stimuli and asserts on the response.",
       "measured_at": "4d396e2",
-      "statement": "Looked for and found only at the fixture: the ConformanceRequestStateTest units exercise the conformance adapter's token, and the one that sends the harness's own tampering shape is cited on the RejectTamperedState row. The client-side D-2 unit drives a client retry, not a server. The spoof unit at streamable_http_ac_test.exs:233 is in the universe only because its body window reaches the comment above the next unit; it sends no MRTR stimulus. Gate 5 recomputes the universe and requires it to equal units.",
+      "statement": "Looked for and found only at the fixture: the ConformanceRequestStateTest units exercise the conformance adapter's token, and the one that sends the harness's own tampering shape is cited on the RejectTamperedState row. The client-side D-2 unit drives a client retry, not a server. The spoof unit at streamable_http_ac_test.exs:275 is in the universe only because its body window reaches the comment above the next unit; it sends no MRTR stimulus. Gate 5 recomputes the universe and requires it to equal units.",
       "residual": "The per-unit reading is by hand at 4d396e2; gate 5 holds the universe, not the reading."
     },
     {

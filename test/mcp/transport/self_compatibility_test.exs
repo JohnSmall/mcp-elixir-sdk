@@ -36,7 +36,10 @@ defmodule MCP.Transport.SelfCompatibilityTest do
   alias MCP.Transport.StreamableHTTP.Plug, as: MCPPlug
 
   @version "2026-07-28"
-  @meta %{"io.modelcontextprotocol/protocolVersion" => @version}
+  @meta %{
+    "io.modelcontextprotocol/protocolVersion" => @version,
+    "io.modelcontextprotocol/clientCapabilities" => %{}
+  }
 
   defmodule Handler do
     @moduledoc false
@@ -93,6 +96,7 @@ defmodule MCP.Transport.SelfCompatibilityTest do
 
   defp body(conn), do: Jason.decode!(conn.resp_body)
 
+  @tag oc: "oc:none/no-oc-fixture-case/routing-header-decoded-before-comparison"
   @tag :etcc
   test "REACHABILITY CONTROL: an encoded Mcp-Name is decoded before comparison, so our own client is not self-rejected" do
     name = Handler.tool_name()
@@ -112,6 +116,7 @@ defmodule MCP.Transport.SelfCompatibilityTest do
     assert %{"content" => [%{"text" => "sunny"}]} = body(conn)["result"]
   end
 
+  @tag oc: "oc:none/no-oc-server-check/mcp-name-encoded-mismatch-32020"
   @tag :etcc
   test "NEGATIVE CONTROL: an encoded header naming a DIFFERENT tool is still -32020" do
     # W2 must not become "stop comparing". This encodes a name the body does
@@ -127,6 +132,7 @@ defmodule MCP.Transport.SelfCompatibilityTest do
     assert body(conn)["error"]["code"] == -32_020
   end
 
+  @tag oc: "oc:none/no-oc-server-check/mcp-name-plain-mismatch-32020"
   @tag :etcc
   test "NEGATIVE CONTROL: a PLAIN mismatched header is still -32020" do
     conn =
@@ -140,6 +146,7 @@ defmodule MCP.Transport.SelfCompatibilityTest do
     assert body(conn)["error"]["code"] == -32_020
   end
 
+  @tag oc: "oc:none/no-oc-server-check/mcp-name-plain-match-passes"
   @tag :etcc
   test "a plain header matching a plain name still passes — decoding leaves it alone" do
     conn =
@@ -156,6 +163,7 @@ defmodule MCP.Transport.SelfCompatibilityTest do
     refute body(conn)["error"]["code"] == -32_020
   end
 
+  @tag oc: "oc:none/no-oc-server-check/mcp-name-malformed-sentinel-compared-as-is"
   @tag :etcc
   test "a sentinel-shaped header that is not valid Base64 is compared as-is, not crashed on" do
     conn =
@@ -169,6 +177,10 @@ defmodule MCP.Transport.SelfCompatibilityTest do
     assert body(conn)["error"]["code"] == -32_020
   end
 
+  @tag oc: [
+         "oc:server/tools-call-simple-text/tools-call-simple-text/ToolsCallSimpleText",
+         "oc:server/tools-list/tools-list/ToolsList"
+       ]
   @tag :etcc
   test "END TO END: our client calls our server's non-header-safe tool over real HTTP" do
     # The whole loop — client encodes, server decodes, tool runs. This is the

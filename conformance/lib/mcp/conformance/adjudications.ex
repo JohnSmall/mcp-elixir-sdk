@@ -479,6 +479,50 @@ defmodule MCP.Conformance.Adjudications do
   is held to it even where the bytes are unique (n = 1). Otherwise it is
   refused as `citation_ambiguous` (MES-135, 29451).
 
+  ## A citation of behaviour a later commit removed is anchored (MES-161)
+
+  **The rule: a citation of behaviour that a later commit removed is anchored
+  at the last commit that had it** [PM ruling, MES-161 30337 Q9]. Such a
+  citation carries `at`, a full commit id, and is read from git objects at
+  that commit, not from the tip. Its line window and bytes stay exactly as
+  measured. Re-citing it at the tip with new bytes would make the record claim
+  the removed behaviour still exists. The first use is MES-161: the server
+  began rejecting a request missing a required `_meta` field, the tests that
+  sent such requests were fixed, and 127 D-record citations of the old
+  requests are anchored at `bd99a39`, the last `main` commit before the fix.
+
+  A citation written in prose (`x_test.exs:N` inside a `rationale`) has no
+  map to carry `at`. So the map holding the prose carries `prose_anchors`: one
+  `{field, cite, file, lines, bytes, at}` per such citation, where `field` is
+  the dotted path of the prose on that map and `cite` is the citation as the
+  prose writes it. The entry is a repository citation like any other, so its
+  bytes are held at `at` (`citation_drift`).
+
+  The `et_test` tie and the D1 assert readings read an anchored `et_test` at
+  its `at` too (`cited_source/2`), so a row whose member test was changed by
+  the fix is ONE measurement at `at`: its other citations of that file keep
+  their line numbers at `at`.
+
+    * **anchor_invalid**: `at` is not a 40-hex commit id, names no commit, is
+      not an ancestor of HEAD, or the file is absent at it. A branch-only sha
+      does not survive a squash-merge, so it is refused here, before it can.
+    * **anchor_unwarranted**: the cited bytes still occur in the file at the
+      tip, at the same lines or moved. `at` is only for text that is gone, so
+      it cannot hide ordinary drift.
+    * **prose_anchor_foreign**: a prose anchor without `at`, or whose `cite`
+      does not occur in the `field` it names.
+
+  The report counts anchored citations (`repo_citations_anchored`, with
+  `anchored_at`), and the task prints them apart from the tip's, so a
+  historical citation is visible rather than silent.
+
+  **What anchoring does NOT hold.** That the anchored text was removed ON
+  PURPOSE: `anchor_unwarranted` checks that the text is gone, not why. That
+  `at` is the LAST commit that had the text: any older ancestor still holding
+  the bytes passes, so the rule's "the last commit that had it" is the
+  author's word, not a check. Prose citations that nobody anchored are prose,
+  held by no guard, as before.
+
   ## What is refused
 
   `unreadable`, `bad_record`, `bad_section`, `unknown_view`,
@@ -495,7 +539,8 @@ defmodule MCP.Conformance.Adjudications do
   `owner_mismatch`, `empty_closure_unwarranted`, `emptiness_unechoed`,
   `emptiness_drift`, `record_outside_walk`,
   `stray_in_walk_root`, `et_test_foreign`, `check_foreign`, `root_cause_foreign`,
-  `citation_ambiguous`, `echo_drift`, `citation_drift`, and `reach`. Every refusal names the guard, the kind, the
+  `citation_ambiguous`, `echo_drift`, `citation_drift`, `anchor_invalid`,
+  `anchor_unwarranted`, `prose_anchor_foreign`, and `reach`. Every refusal names the guard, the kind, the
   record file and the edge key.
 
   ## Reach, and what the guard reports over an empty directory
@@ -629,6 +674,8 @@ defmodule MCP.Conformance.Adjudications do
   @locator "docs/conformance/oc-emitting-sites-2026-07-28.json"
   @no_oc_prefix "oc:none/"
   @r_id ~r/\AR[0-9]+\z/
+  # An anchored citation's `at` (MES-161): a full commit id, never an abbreviation.
+  @full_sha ~r/\A[0-9a-f]{40}\z/
 
   # --- the universe of views owed a record (MES-135 K2) ------------------------
   #
@@ -893,12 +940,61 @@ defmodule MCP.Conformance.Adjudications do
     end
   end
 
-  # A citation may only name a relative path inside the repository.
+  # A citation may only name a relative path inside the repository. An anchored
+  # one (`{:at, sha, file}`, MES-161) is read from git objects at `sha`, which
+  # must be a full commit id that is an ancestor of HEAD. Each read is memoised
+  # per process by `{root, sha, file}`, so a control planting a different sha is
+  # read afresh.
+  defp read_source(root, {:at, sha, file}) do
+    key = {__MODULE__, :at, root, sha, file}
+
+    case Process.get(key) do
+      nil ->
+        result = read_at(root, sha, file)
+        Process.put(key, result)
+        result
+
+      result ->
+        result
+    end
+  end
+
   defp read_source(root, file) do
-    if Path.type(file) == :relative and ".." not in Path.split(file),
+    if in_repository?(file),
       do: File.read(Path.join(root, file)),
       else: {:error, :outside_repository}
   end
+
+  defp in_repository?(file), do: Path.type(file) == :relative and ".." not in Path.split(file)
+
+  defp read_at(root, sha, file) do
+    cond do
+      not (is_binary(sha) and sha =~ @full_sha) ->
+        {:error, {:at_malformed, sha}}
+
+      not in_repository?(file) ->
+        {:error, :outside_repository}
+
+      match?({:error, _}, git(root, ["cat-file", "-e", sha <> "^{commit}"])) ->
+        {:error, {:at_unknown, sha}}
+
+      match?({:error, _}, git(root, ["merge-base", "--is-ancestor", sha, "HEAD"])) ->
+        {:error, {:at_not_ancestor, sha}}
+
+      true ->
+        case git(root, ["show", "#{sha}:#{file}"]) do
+          {:ok, src} -> {:ok, src}
+          {:error, _} -> {:error, {:at_absent, sha, file}}
+        end
+    end
+  end
+
+  @doc """
+  The source a citation is read from: `file` at the tip, or, when the citation
+  carries `at`, `file` as it stood at that commit (MES-161).
+  """
+  def cited_source(%{"file" => f, "at" => sha}, source_fun), do: source_fun.({:at, sha, f})
+  def cited_source(%{"file" => f}, source_fun), do: source_fun.(f)
 
   # --- the audit --------------------------------------------------------------
 
@@ -945,6 +1041,8 @@ defmodule MCP.Conformance.Adjudications do
       "views_bound" => sections |> Enum.map(& &1.view) |> Enum.uniq() |> length(),
       "repo_citations_found" => citations.repo,
       "repo_citations_holding" => citations.repo - citations.drifted,
+      "repo_citations_anchored" => citations.anchored,
+      "anchored_at" => citations.anchored_at,
       "harness_citations_not_verified_in_gate_5" => citations.harness,
       "dispositions" => rows |> Enum.map(fn {_, r} -> r["disposition"] end) |> Enum.frequencies()
     }
@@ -1515,7 +1613,7 @@ defmodule MCP.Conformance.Adjudications do
          when is_binary(file) and is_integer(from) and is_integer(to) and is_binary(b) <-
            et || :not_a_citation,
          [module, member_test] <- String.split(member, "/", parts: 2),
-         {:ok, src} <- source_fun.(file) do
+         {:ok, src} <- cited_source(et, source_fun) do
       case Regex.run(@doctest_member, member_test) do
         [_, target] -> doctest_owner(src, from, to, module, target)
         nil -> owner(src, from, to, module, member_test)
@@ -2484,7 +2582,10 @@ defmodule MCP.Conformance.Adjudications do
             nil
 
           et_test_owner(
-            %{row | "et_test" => %{"file" => et_file, "lines" => [line, line], "bytes" => ""}},
+            %{
+              row
+              | "et_test" => Map.merge(row["et_test"], %{"lines" => [line, line], "bytes" => ""})
+            },
             source_fun
           ) != :ok ->
             "#{id} fires at #{cite}, which is not inside #{row["member"]}'s own test"
@@ -2690,19 +2791,102 @@ defmodule MCP.Conformance.Adjudications do
     failed =
       for {f, k, c} <- found,
           {:error, why} <- [verify(c, source_fun)],
-          do: {c, d(:citation_drift, f, k, "#{c["file"]}:#{inspect(c["lines"])} #{why}")}
+          do: {c, d(drift_kind(c, source_fun), f, k, "#{cite_label(c)} #{why}")}
+
+    anchored = for {_, _, c} <- found, citation_form(c) == :repo, Map.has_key?(c, "at"), do: c
 
     counts = %{
       repo: Map.get(forms, :repo, 0),
       harness: Map.get(forms, :harness, 0),
-      drifted: Enum.count(failed, fn {c, _} -> citation_form(c) == :repo end)
+      drifted: Enum.count(failed, fn {c, _} -> citation_form(c) == :repo end),
+      anchored: length(anchored),
+      anchored_at: anchored |> Enum.map(& &1["at"]) |> Enum.uniq() |> Enum.sort()
     }
 
     held =
       for {_, _, c} = x <- found, citation_form(c) == :repo, verify(c, source_fun) == :ok, do: x
 
-    {counts, Enum.map(failed, &elem(&1, 1)) ++ ambiguous_defects(held, source_fun)}
+    {counts,
+     Enum.map(failed, &elem(&1, 1)) ++
+       ambiguous_defects(held, source_fun) ++
+       unwarranted_defects(held, source_fun) ++
+       prose_anchor_defects(rows, records)}
   end
+
+  defp cite_label(%{"at" => at} = c), do: "#{c["file"]}:#{inspect(c["lines"])} @#{at}"
+  defp cite_label(c), do: "#{c["file"]}:#{inspect(c["lines"])}"
+
+  # An `at` that cannot be read as an ancestor commit is the anchor's defect,
+  # not the bytes': a malformed or unknown sha, one that is not an ancestor of
+  # HEAD, or a file absent at it.
+  defp drift_kind(%{"file" => f, "at" => sha}, source_fun) do
+    case source_fun.({:at, sha, f}) do
+      {:ok, _} -> :citation_drift
+      {:error, _} -> :anchor_invalid
+    end
+  end
+
+  defp drift_kind(_c, _source_fun), do: :citation_drift
+
+  # An anchored citation is admitted ONLY for text a later commit removed: its
+  # squashed bytes may occur nowhere in the file at the tip. Text still there,
+  # at the same lines or moved, is cited at the tip, so `at` cannot hide
+  # ordinary drift (PM ruling, MES-161 30337 Q9 (b)).
+  defp unwarranted_defects(held, source_fun) do
+    for {f, k, %{"at" => at} = c} <- held,
+        tip = Map.delete(c, "at"),
+        {:ok, _} <- [source_fun.(c["file"])],
+        [_ | _] = starts <- [occurrences(tip, source_fun)],
+        do:
+          d(
+            :anchor_unwarranted,
+            f,
+            k,
+            "#{cite_label(c)} — its bytes still occur at the tip, at lines #{inspect(starts, charlists: :as_lists)}; `at` is only for text a later commit removed, so cite it at the tip (#{short_sha(at)} is not needed)"
+          )
+  end
+
+  defp short_sha(sha) when is_binary(sha), do: String.slice(sha, 0, 7)
+
+  # A prose anchor (`prose_anchors`, MES-161) holds a citation written in prose
+  # (`x_test.exs:N`) at the commit it was measured at. It must carry `at`, and
+  # its `cite` must occur in the text of the `field` it names on the map that
+  # holds it.
+  defp prose_anchor_defects(rows, records) do
+    in_rows = for {s, r} <- rows, is_map(r), x <- prose_holders(r), do: {s.file, key(r), x}
+
+    outside =
+      for {file, {:ok, doc}} <- Enum.sort(records),
+          x <- prose_holders(outside_rows(doc)),
+          do: {file, nil, x}
+
+    for {f, k, {holder, entry}} <- in_rows ++ outside,
+        why <- [prose_anchor_why(holder, entry)],
+        why != nil,
+        do: d(:prose_anchor_foreign, f, k, why)
+  end
+
+  defp prose_holders(%{"prose_anchors" => pa} = m) when is_list(pa),
+    do: Enum.map(pa, &{m, &1}) ++ prose_holders(Map.delete(m, "prose_anchors"))
+
+  defp prose_holders(m) when is_map(m), do: m |> Map.values() |> Enum.flat_map(&prose_holders/1)
+  defp prose_holders(l) when is_list(l), do: Enum.flat_map(l, &prose_holders/1)
+  defp prose_holders(_), do: []
+
+  defp prose_anchor_why(holder, %{"field" => field, "cite" => cite} = e)
+       when is_binary(field) and is_binary(cite) do
+    text = get_in(holder, String.split(field, "."))
+
+    cond do
+      not is_binary(e["at"]) -> "a prose anchor for #{inspect(cite)} carries no `at`"
+      not is_binary(text) -> "a prose anchor names #{inspect(field)}, which holds no text here"
+      not String.contains?(text, cite) -> "#{inspect(cite)} does not occur in #{field}"
+      true -> nil
+    end
+  end
+
+  defp prose_anchor_why(_holder, e),
+    do: "a prose anchor needs `field` and `cite`: #{inspect(Map.drop(e, ["bytes"]))}"
 
   # A citation whose bytes recur, at an equal window elsewhere in the file, is
   # right on its bytes and may be wrong on its unit (MES-128's capabilities_test
@@ -2712,12 +2896,12 @@ defmodule MCP.Conformance.Adjudications do
     # Each cited file is read and squashed once per audit.
     squashed =
       held
-      |> Enum.map(fn {_, _, c} -> c["file"] end)
+      |> Enum.map(fn {_, _, c} -> source_key(c) end)
       |> Enum.uniq()
-      |> Map.new(fn f -> {f, squashed_lines(f, source_fun)} end)
+      |> Map.new(fn sk -> {sk, squashed_lines(sk, source_fun)} end)
 
     for {f, k, %{"lines" => [from, _]} = c} <- held,
-        starts <- [occurrences_in(c, squashed[c["file"]])],
+        starts <- [occurrences_in(c, squashed[source_key(c)])],
         n <- [Enum.find_index(starts, &(&1 == from)) + 1],
         (length(starts) > 1 or Map.has_key?(c, "occurrence")) and c["occurrence"] != n,
         do:
@@ -2734,11 +2918,14 @@ defmodule MCP.Conformance.Adjudications do
   text equals the squashed `bytes`, in order. A held citation's own `from` is
   among them.
   """
-  def occurrences(%{"file" => f} = c, source_fun),
-    do: occurrences_in(c, squashed_lines(f, source_fun))
+  def occurrences(c, source_fun),
+    do: occurrences_in(c, squashed_lines(source_key(c), source_fun))
 
-  defp squashed_lines(f, source_fun) do
-    {:ok, src} = source_fun.(f)
+  # Which source a citation is read from: its file, at `at` when it has one.
+  defp source_key(c), do: Map.take(c, ["file", "at"])
+
+  defp squashed_lines(sk, source_fun) do
+    {:ok, src} = cited_source(sk, source_fun)
     src |> String.split("\n") |> Enum.map(&squash/1) |> List.to_tuple()
   end
 
@@ -2782,9 +2969,9 @@ defmodule MCP.Conformance.Adjudications do
   squashed `bytes`. A `bytes` map that is neither a repository nor a harness
   citation is an error, so a malformed citation cannot slip past as uncounted.
   """
-  def verify(%{"file" => f, "lines" => [from, to], "bytes" => b}, source_fun)
+  def verify(%{"file" => f, "lines" => [from, to], "bytes" => b} = c, source_fun)
       when is_binary(f) and is_integer(from) and is_integer(to) and from >= 1 and to >= from do
-    case source_fun.(f) do
+    case cited_source(c, source_fun) do
       {:ok, src} -> compare(String.split(src, "\n"), from, to, b)
       {:error, why} -> {:error, "cannot be read: #{inspect(why)}"}
     end

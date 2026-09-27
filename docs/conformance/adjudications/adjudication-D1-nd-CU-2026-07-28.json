@@ -671,16 +671,16 @@
           "et_test": {
             "file": "test/mcp/transport/self_compatibility_test.exs",
             "lines": [
-              97,
-              113
+              101,
+              117
             ],
             "bytes": "  test \"REACHABILITY CONTROL: an encoded Mcp-Name is decoded before comparison, so our own client is not self-rejected\" do\n    name = Handler.tool_name()\n    # Exactly what the client now puts on the wire for this name.\n    header = HeaderMirror.encode_value(name)\n    assert String.starts_with?(header, \"=?base64?\")\n\n    conn =\n      post(call_tool_message(name), [\n        {\"mcp-method\", \"tools/call\"},\n        {\"mcp-name\", header},\n        {\"mcp-protocol-version\", @version}\n      ])\n\n    assert conn.status == 200\n    refute Map.has_key?(body(conn), \"error\")\n    assert %{\"content\" => [%{\"text\" => \"sunny\"}]} = body(conn)[\"result\"]\n  end"
           },
           "asserts_read": [
-            "test/mcp/transport/self_compatibility_test.exs:101 — assert String.starts_with?(header, \"=?base64?\")",
-            "test/mcp/transport/self_compatibility_test.exs:110 — assert conn.status == 200",
-            "test/mcp/transport/self_compatibility_test.exs:111 — refute Map.has_key?(body(conn), \"error\")",
-            "test/mcp/transport/self_compatibility_test.exs:112 — assert %{\"content\" => [%{\"text\" => \"sunny\"}]} = body(conn)[\"result\"]"
+            "test/mcp/transport/self_compatibility_test.exs:105 — assert String.starts_with?(header, \"=?base64?\")",
+            "test/mcp/transport/self_compatibility_test.exs:114 — assert conn.status == 200",
+            "test/mcp/transport/self_compatibility_test.exs:115 — refute Map.has_key?(body(conn), \"error\")",
+            "test/mcp/transport/self_compatibility_test.exs:116 — assert %{\"content\" => [%{\"text\" => \"sunny\"}]} = body(conn)[\"result\"]"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -892,13 +892,13 @@
           "et_test": {
             "file": "test/mcp/transport/subscriptions_stream_test.exs",
             "lines": [
-              374,
-              382
+              392,
+              400
             ],
             "bytes": "    test \"our parser ignores a comment line arriving between two events\" do\n      first = SSE.encode_message(%{\"jsonrpc\" => \"2.0\", \"method\" => \"one\"})\n      second = SSE.encode_message(%{\"jsonrpc\" => \"2.0\", \"method\" => \"two\"})\n\n      {events, _rest} = SSE.feed(SSE.new_parser(), first <> \":\\n\\n\" <> second)\n\n      methods = Enum.map(events, &Jason.decode!(&1.data)[\"method\"])\n      assert methods == [\"one\", \"two\"]\n    end"
           },
           "asserts_read": [
-            "test/mcp/transport/subscriptions_stream_test.exs:381 — assert methods == [\"one\", \"two\"]"
+            "test/mcp/transport/subscriptions_stream_test.exs:399 — assert methods == [\"one\", \"two\"]"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -1137,16 +1137,16 @@
           "et_test": {
             "file": "test/mcp/transport/streamable_http_ac_test.exs",
             "lines": [
-              245,
-              264
+              290,
+              309
             ],
             "bytes": "  test \"spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh\",\n       %{std: url} do\n    first = post(url, \"tools/call\", with_meta(%{\"name\" => \"needs_input_id\"}), role: \"PM\")\n    assert result(first)[\"resultType\"] == \"input_required\"\n    assert result(first)[\"requestState\"] == \"rs-token-id\"\n\n    retry_params =\n      with_meta(%{\n        \"name\" => \"needs_input_id\",\n        \"arguments\" => %{},\n        \"requestState\" => result(first)[\"requestState\"],\n        \"inputResponses\" => [%{\"name\" => \"x\", \"identity\" => \"PM-SPOOF\"}]\n      })\n\n    # Retry carries a DIFFERENT authenticated role than the first request:\n    # completion must echo the retry's re-resolved identity (REVIEWER),\n    # neither the first request's PM nor the planted PM-SPOOF.\n    final = post(url, \"tools/call\", retry_params, role: \"REVIEWER\")\n    assert result(final)[\"resultType\"] == \"complete\"\n    assert tool_text(final) == \"REVIEWER\""
           },
           "asserts_read": [
-            "test/mcp/transport/streamable_http_ac_test.exs:248 — assert result(first)[\"resultType\"] == \"input_required\"",
-            "test/mcp/transport/streamable_http_ac_test.exs:249 — assert result(first)[\"requestState\"] == \"rs-token-id\"",
-            "test/mcp/transport/streamable_http_ac_test.exs:263 — assert result(final)[\"resultType\"] == \"complete\"",
-            "test/mcp/transport/streamable_http_ac_test.exs:264 — assert tool_text(final) == \"REVIEWER\""
+            "test/mcp/transport/streamable_http_ac_test.exs:293 — assert result(first)[\"resultType\"] == \"input_required\"",
+            "test/mcp/transport/streamable_http_ac_test.exs:294 — assert result(first)[\"requestState\"] == \"rs-token-id\"",
+            "test/mcp/transport/streamable_http_ac_test.exs:308 — assert result(final)[\"resultType\"] == \"complete\"",
+            "test/mcp/transport/streamable_http_ac_test.exs:309 — assert tool_text(final) == \"REVIEWER\""
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -1158,7 +1158,7 @@
           "rationale": "The counterfactual fires (see `counterfactual`), so by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. Anchor for the planted value: mrtr.mdx:232, \"servers **MUST** treat `requestState` as an attacker-controlled input\" (it does not mention client inputs). For the identity claim the nearest text is mrtr.mdx:234-235, a SHOULD to bind \"the authenticated principal, rejecting state presented by a different principal\"; the unit asserts completion instead. A SHOULD does not forbid, so this is not wrong_against_spec; it is one conforming choice, and the one the spec recommends against. Reach, unchanged: RejectTamperedState's subject is a tampered requestState's rejection, not the identity a completion reports. Nothing is relabelled or deleted here.",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "A server following mrtr.mdx:234-235 (it SHOULD bind 'the authenticated principal, rejecting state presented by a different principal') rejects PM's requestState presented by REVIEWER, and fails `resultType == \"complete\"` and `tool_text == \"REVIEWER\"` at streamable_http_ac_test.exs:263-264."
+            "reading": "A server following mrtr.mdx:234-235 (it SHOULD bind 'the authenticated principal, rejecting state presented by a different principal') rejects PM's requestState presented by REVIEWER, and fails `resultType == \"complete\"` and `tool_text == \"REVIEWER\"` at streamable_http_ac_test.exs:308-309."
           },
           "routed_to": {
             "to": "A2",
@@ -1177,16 +1177,16 @@
           "et_test": {
             "file": "test/mcp/server/json_schema_2020_12_test.exs",
             "lines": [
-              149,
-              188
+              163,
+              202
             ],
             "bytes": "  test \"W-4 — no $ref is ever dereferenced: a canary listener is never connected to\" do\n    {:ok, listen} = :gen_tcp.listen(0, [:binary, active: false, reuseaddr: true])\n    {:ok, port} = :inet.port(listen)\n    url = \"http://127.0.0.1:#{port}/schema.json\"\n\n    # Drive both directions: listing a tool whose inputSchema $refs the canary,\n    # and calling THAT tool with arguments.\n    #\n    # Round 1 called `\"echo_args\"` here — a tool that is not advertised and\n    # whose schema contains no `$ref` — so the `tools/call` half of the canary\n    # controlled nothing: the reviewer added a resolver on the call path and\n    # the test stayed green. It is `\"network_ref_tool\"`, and the mutation has\n    # now been run against the corrected test (it goes red). One string, and\n    # it is this ticket's own rule landing on it: a stated discriminating\n    # mutation is not evidence until it has been run.\n    assert tool(\"network_ref_tool\", ref_url: url)[\"inputSchema\"][\"properties\"][\"payload\"] ==\n             %{\"$ref\" => url}\n\n    req = %Request{\n      id: 1,\n      method: \"tools/call\",\n      params: %{\n        \"name\" => \"network_ref_tool\",\n        \"arguments\" => %{\"payload\" => %{\"any\" => \"thing\"}},\n        \"_meta\" => meta()\n      }\n    }\n\n    {:reply, resp, _state} =\n      Dispatch.dispatch(req, %ToolContext{request_id: 1}, config(ref_url: url))\n\n    # The call must SUCCEED, or the canary measures a short-circuit rather than\n    # a non-dereference: an error return before the handler runs would let a\n    # resolver on a later line pass unnoticed.\n    refute Map.has_key?(resp, \"error\")\n    assert resp[\"result\"][\"content\"] != []\n\n    # SEP-2106 Security Implications, and `basic/index.mdx:301-302` at the same\n    # pin: a `$ref` that resolves to a network URI MUST NOT be dereferenced.\n    assert {:error, :timeout} = :gen_tcp.accept(listen, 200)"
           },
           "asserts_read": [
-            "test/mcp/server/json_schema_2020_12_test.exs:164 — assert tool(\"network_ref_tool\", ref_url: url)[\"inputSchema\"][\"properties\"][\"payload\"] ==",
-            "test/mcp/server/json_schema_2020_12_test.exs:183 — refute Map.has_key?(resp, \"error\")",
-            "test/mcp/server/json_schema_2020_12_test.exs:184 — assert resp[\"result\"][\"content\"] != []",
-            "test/mcp/server/json_schema_2020_12_test.exs:188 — assert {:error, :timeout} = :gen_tcp.accept(listen, 200)"
+            "test/mcp/server/json_schema_2020_12_test.exs:178 — assert tool(\"network_ref_tool\", ref_url: url)[\"inputSchema\"][\"properties\"][\"payload\"] ==",
+            "test/mcp/server/json_schema_2020_12_test.exs:197 — refute Map.has_key?(resp, \"error\")",
+            "test/mcp/server/json_schema_2020_12_test.exs:198 — assert resp[\"result\"][\"content\"] != []",
+            "test/mcp/server/json_schema_2020_12_test.exs:202 — assert {:error, :timeout} = :gen_tcp.accept(listen, 200)"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -1204,7 +1204,7 @@
           "if_conformance_fixed": null,
           "disposition": "genuine_extra_coverage",
           "protects": "A SERVER, at its default configuration, never dereferences a tool inputSchema `$ref` that resolves to a network URI, on either the tools/list or the tools/call path; OC's NoNetworkRefDereference (near_miss) scores only the CLIENT, so a server that fetched the canary would pass OC.",
-          "rationale": "The claim is the non-dereference, measured by the canary (json_schema_2020_12_test.exs:188), and on this view the counterfactual is asked of the CLAIM, not of the member's whole unit [authored 29721 B-A | ratified 29723]. basic/index.mdx:301-302 is a MUST NOT, and the only fetching it permits is an opt-in mode that MUST be disabled by default (:304-305), so no conforming server falsifies the claim. The success asserts (:164, :183-184) guard the canary against a short-circuit and are not the claim; that a server following :309-310 would reject the schema and fail them is a reading of the unit, not of the claim. Reach, unchanged: NoNetworkRefDereference, the one in-scope key matching `$ref` or deref, observes our client, not our server. Nothing is relabelled or deleted here.",
+          "rationale": "The claim is the non-dereference, measured by the canary (json_schema_2020_12_test.exs:202), and on this view the counterfactual is asked of the CLAIM, not of the member's whole unit [authored 29721 B-A | ratified 29723]. basic/index.mdx:301-302 is a MUST NOT, and the only fetching it permits is an opt-in mode that MUST be disabled by default (:304-305), so no conforming server falsifies the claim. The success asserts (:164, :183-184) guard the canary against a short-circuit and are not the claim; that a server following :309-310 would reject the schema and fail them is a reading of the unit, not of the claim. Reach, unchanged: NoNetworkRefDereference, the one in-scope key matching `$ref` or deref, observes our client, not our server. Nothing is relabelled or deleted here.",
           "counterfactual": {
             "conforming_sdk_can_fail": false,
             "reading": "None can: implementations MUST NOT automatically dereference a `$ref` that resolves to a network URI (basic/index.mdx:301-302), and an opt-in fetching mode MUST be disabled by default (:304-305), so a conforming server at its defaults never connects to the canary; a server that rejects the schema instead (:309-310) still never dereferences it."
@@ -1221,14 +1221,14 @@
           "et_test": {
             "file": "test/mcp/transport/streamable_http_ac_test.exs",
             "lines": [
-              271,
-              274
+              321,
+              324
             ],
             "bytes": "  test \"default caching policy is no-store (ttlMs 0)\", %{std: url} do\n    r = result(post(url, \"tools/list\", with_meta(%{}), role: \"PM\"))\n    assert r[\"ttlMs\"] == 0\n    assert r[\"cacheScope\"] == \"public\""
           },
           "asserts_read": [
-            "test/mcp/transport/streamable_http_ac_test.exs:273 — assert r[\"ttlMs\"] == 0",
-            "test/mcp/transport/streamable_http_ac_test.exs:274 — assert r[\"cacheScope\"] == \"public\""
+            "test/mcp/transport/streamable_http_ac_test.exs:323 — assert r[\"ttlMs\"] == 0",
+            "test/mcp/transport/streamable_http_ac_test.exs:324 — assert r[\"cacheScope\"] == \"public\""
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -1245,7 +1245,7 @@
           "rationale": "The claim is that ttlMs 0 and cacheScope public are what a server gets when it configures NO caching policy: a statement about this SDK's configuration default. The wire values are already edges. No spec text names a server's unconfigured default; caching.mdx:56 (\"If `ttlMs` is absent, clients **SHOULD** assume a default of `0`\") is the near miss, and its subject is a CLIENT reading an absent field, which never happens here because the server always sends it. So the claim read alone fails A2 gate 3 (no anchor can be named); routed to A2.",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "A server's unconfigured caching defaults are its own choice: no spec text names them (caching.mdx:56 is a CLIENT's default for an absent ttlMs), so an SDK with other defaults fails streamable_http_ac_test.exs:273-274."
+            "reading": "A server's unconfigured caching defaults are its own choice: no spec text names them (caching.mdx:56 is a CLIENT's default for an absent ttlMs), so an SDK with other defaults fails streamable_http_ac_test.exs:323-324."
           }
         },
         {
@@ -1259,14 +1259,14 @@
           "et_test": {
             "file": "test/mcp/transport/streamable_http_stateless_test.exs",
             "lines": [
-              128,
-              147
+              165,
+              184
             ],
             "bytes": "  test \"AC7 — non-localhost origin is rejected 403; the identity factory never runs\" do\n    test_pid = self()\n\n    plug_opts =\n      opts(\n        handler_opts: fn _conn ->\n          send(test_pid, :factory_ran)\n          [identity: \"PM\"]\n        end\n      )\n\n    conn =\n      :post\n      |> conn(\"http://localhost/\", Jason.encode!(rpc(\"tools/list\", with_meta(%{}))))\n      |> put_req_header(\"content-type\", \"application/json\")\n      |> put_req_header(\"origin\", \"http://evil.example\")\n      |> MCPPlug.call(plug_opts)\n\n    assert conn.status == 403\n    refute_receive :factory_ran, 200"
           },
           "asserts_read": [
-            "test/mcp/transport/streamable_http_stateless_test.exs:146 — assert conn.status == 403",
-            "test/mcp/transport/streamable_http_stateless_test.exs:147 — refute_receive :factory_ran, 200"
+            "test/mcp/transport/streamable_http_stateless_test.exs:183 — assert conn.status == 403",
+            "test/mcp/transport/streamable_http_stateless_test.exs:184 — refute_receive :factory_ran, 200"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -1280,10 +1280,10 @@
             "owner": "MES-153",
             "owner_record": "MES-153 comment 29700, item 4"
           },
-          "rationale": "The claim (streamable_http_stateless_test.exs:147, `refute_receive :factory_ran`) is the ORDER of two server-internal events. A message to the test process is not a wire artefact, and the 403 that is one is already an edge (MES-110 rule A, authored 29283, ratified 29319), so the claim read alone fails A2 gate 2. Routed to A2. Keeping the unit is not in question; the question is whether a claim-level CONFORMANCE record should stand for it.",
+          "rationale": "The claim (streamable_http_stateless_test.exs:184, `refute_receive :factory_ran`) is the ORDER of two server-internal events. A message to the test process is not a wire artefact, and the 403 that is one is already an edge (MES-110 rule A, authored 29283, ratified 29319), so the claim read alone fails A2 gate 2. Routed to A2. Keeping the unit is not in question; the question is whether a claim-level CONFORMANCE record should stand for it.",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "A server may run its identity factory before its Origin check: the spec fixes the 403 (an edge already), not the order of two internal steps, so such an SDK fails `refute_receive :factory_ran` at streamable_http_stateless_test.exs:147."
+            "reading": "A server may run its identity factory before its Origin check: the spec fixes the 403 (an edge already), not the order of two internal steps, so such an SDK fails `refute_receive :factory_ran` at streamable_http_stateless_test.exs:184."
           }
         }
       ]

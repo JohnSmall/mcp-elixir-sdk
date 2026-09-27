@@ -106,10 +106,10 @@ defmodule MCP.Conformance.AttributionCitations do
   @spec non_member_citations() :: %{{String.t(), address()} => String.t()}
   def non_member_citations do
     %{
-      {"§2.4", {"self_compatibility_test.exs", 101}} =>
-        "class (3) cites the client-definite ASSERTION of member :97, not a declaration",
-      {"§2.4", {"self_compatibility_test.exs", 110}} =>
-        "class (3) cites the server-definite ASSERTION of the same member :97",
+      {"§2.4", {"self_compatibility_test.exs", 105}} =>
+        "class (3) cites the client-definite ASSERTION of member :101, not a declaration",
+      {"§2.4", {"self_compatibility_test.exs", 114}} =>
+        "class (3) cites the server-definite ASSERTION of the same member :101",
       {"§3.3", {"discover_test.exs", 37}} =>
         "CG5's mentioning-not-discharging witness — cited BECAUSE it is not a CG5 member"
     }

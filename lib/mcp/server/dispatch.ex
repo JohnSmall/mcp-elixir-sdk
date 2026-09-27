@@ -70,7 +70,7 @@ defmodule MCP.Server.Dispatch do
 
   alias MCP.Protocol.Error
   alias MCP.Protocol.Messages.{Discover, MRTR, Notification, Request, Subscriptions}
-  alias MCP.Protocol.Meta
+  require MCP.Protocol.Meta, as: Meta
   alias MCP.Protocol.Methods
   alias MCP.Server.Subscription
   alias MCP.Server.ToolContext
@@ -117,13 +117,13 @@ defmodule MCP.Server.Dispatch do
     handle_notification(method, params, seal_stream_sink(ctx, nil), config)
   end
 
-  # The stream sink is reachable ONLY from the listen open callback. Clearing it
-  # here — once, for every other method, present and future — is what makes
-  # "a request-scoped notification cannot reach a listen stream" a property of
-  # the dispatch rather than of each route remembering to do it. A new route
-  # added later inherits the guarantee without knowing it exists.
-  defp seal_stream_sink(ctx, method) do
-    if method == Methods.subscriptions_listen(), do: ctx, else: %{ctx | stream_sink: nil}
+  # --- A request missing a required _meta field: -32602, ahead of every route ---
+  # basic/index.mdx has no exemption, so `server/discover` too, and before the
+  # -32022 gate below. The removed methods keep their stateless answers.
+  defp handle_request(method, id, params, _ctx, config)
+       when method not in ["initialize", "ping", "logging/setLevel"] and
+              Meta.is_missing_required(params) do
+    reply(id, Error.missing_required_meta(Meta.missing_required(params)), config)
   end
 
   # --- Removed methods: stateless behaviour, no legacy path ---
@@ -732,4 +732,16 @@ defmodule MCP.Server.Dispatch do
 
   defp get_in_params(nil, _key), do: nil
   defp get_in_params(params, key), do: Map.get(params, key)
+
+  # The stream sink is reachable ONLY from the listen open callback. Clearing it
+  # here — once, for every other method, present and future — is what makes
+  # "a request-scoped notification cannot reach a listen stream" a property of
+  # the dispatch rather than of each route remembering to do it. A new route
+  # added later inherits the guarantee without knowing it exists.
+  #
+  # (Placed at the bottom by MES-161, with no change, so that the _meta gate
+  # could take its lines without moving any line the adjudication records cite.)
+  defp seal_stream_sink(ctx, method) do
+    if method == Methods.subscriptions_listen(), do: ctx, else: %{ctx | stream_sink: nil}
+  end
 end

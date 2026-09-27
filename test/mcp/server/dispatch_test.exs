@@ -24,7 +24,11 @@ defmodule MCP.Server.DispatchTest do
 
   defp ctx(identity \\ nil), do: %ToolContext{request_id: 1, identity: identity}
 
-  defp meta(version \\ @version), do: %{"io.modelcontextprotocol/protocolVersion" => version}
+  defp meta(version \\ @version),
+    do: %{
+      "io.modelcontextprotocol/protocolVersion" => version,
+      "io.modelcontextprotocol/clientCapabilities" => %{}
+    }
 
   defp req(method, params), do: %Request{id: 1, method: method, params: params}
 
@@ -38,10 +42,16 @@ defmodule MCP.Server.DispatchTest do
 
   # --- MC-1: per-request context reaches the callback ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "MC-1 — context identity reaches tools/call" do
     assert tool_text(call_tool("whoami", %{}, "PM")) == "PM"
   end
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "MC-1 — context reaches a non-tool path (prompts/get)" do
     params = %{"name" => "who", "arguments" => %{}, "_meta" => meta()}
     {:reply, resp, _} = Dispatch.dispatch(req("prompts/get", params), ctx("REVIEWER"), config())
@@ -51,16 +61,25 @@ defmodule MCP.Server.DispatchTest do
 
   # --- MC-4: a model-supplied identity arg NEVER reaches ctx.identity ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "MC-4 — tool-arg identity does not override ctx.identity (spoof dropped)" do
     assert tool_text(call_tool("whoami_with_arg", %{"identity" => "spoof"}, "REAL")) == "REAL"
   end
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "MC-4 — with no pipeline identity, a spoof arg still yields empty (never spoof)" do
     text = tool_text(call_tool("whoami_with_arg", %{"identity" => "spoof"}, nil))
     assert text == ""
     refute text == "spoof"
   end
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "MC-4 — prompts/get: a competing arguments.identity does not override ctx.identity (AC3′)" do
     params = %{"name" => "who", "arguments" => %{"identity" => "spoof"}, "_meta" => meta()}
     {:reply, resp, _} = Dispatch.dispatch(req("prompts/get", params), ctx("REVIEWER"), config())
@@ -71,6 +90,9 @@ defmodule MCP.Server.DispatchTest do
 
   # --- MC-3: per-request isolation ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "MC-3 — concurrent requests see their own identity; no leakage" do
     assert tool_text(call_tool("whoami", %{}, "PM")) == "PM"
     assert tool_text(call_tool("whoami", %{}, "REVIEWER")) == "REVIEWER"
@@ -78,12 +100,18 @@ defmodule MCP.Server.DispatchTest do
 
   # --- Removed methods: stateless behaviour, no legacy path ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "contradicted by HttpServerMethodNotFound404initialize FAILURE live (the suite requires 404/-32601 here): pre-existing, assertions unchanged; PO exception, MES-161 comment 30342; the fix is MES-165"
   @tag :etcc
   test "initialize is removed → UnsupportedProtocolVersion (-32022)" do
     {:reply, resp, _} = Dispatch.dispatch(req("initialize", %{}), ctx(), config())
     assert resp["error"]["code"] == -32_022
   end
 
+  @tag oc: :none
+  @tag oc_reason:
+         "its counterparts are not all SUCCESS live (HttpServerMethodNotFound404loggingsetLevel FAILURE, HttpServerMethodNotFound404ping FAILURE), so they cannot vouch (gate 7 Q1); MES-161 does not remedy them (the 404 fix is MES-165)"
   @tag :etcc
   test "ping and logging/setLevel are removed → method not found (-32601)" do
     {:reply, ping_resp, _} = Dispatch.dispatch(req("ping", %{}), ctx(), config())
@@ -97,14 +125,22 @@ defmodule MCP.Server.DispatchTest do
 
   # --- Per-request version gate ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "re-pointed by MES-161 to a present-but-unsupported version: ServerUnsupportedVersionError is FAILURE live (server/discover lacks the -32022 gate; MES-163)"
   @tag :etcc
   test "request without a protocolVersion _meta fails fast (-32022)" do
     {:reply, resp, _} =
-      Dispatch.dispatch(req("tools/call", %{"name" => "whoami"}), ctx("PM"), config())
+      Dispatch.dispatch(
+        req("tools/call", %{"name" => "whoami", "_meta" => meta("1999-01-01")}),
+        ctx("PM"),
+        config()
+      )
 
     assert resp["error"]["code"] == -32_022
   end
 
+  @tag oc: "oc:none/no-axis-contact/SEP-2575-old-version-rejected-32022"
   @tag :etcc
   test "old-shape (2025-11-25) version fails fast (-32022)" do
     params = %{"name" => "whoami", "arguments" => %{}, "_meta" => meta("2025-11-25")}
@@ -114,9 +150,15 @@ defmodule MCP.Server.DispatchTest do
 
   # --- server/discover: no version gate; schema-shaped result ---
 
+  @tag oc: [
+         "oc:server/server-stateless/sep-2575-server-identifies-in-result-meta/ServerIdentifiesInResultMeta",
+         "oc:server/server-stateless/sep-2575-server-implements-discover/ServerImplementsDiscover"
+       ]
   @tag :etcc
   test "server/discover: schema shape (supportedVersions + CacheableResult fields; serverInfo in _meta)" do
-    {:reply, resp, _} = Dispatch.dispatch(req("server/discover", %{}), ctx(), config())
+    {:reply, resp, _} =
+      Dispatch.dispatch(req("server/discover", %{"_meta" => meta()}), ctx(), config())
+
     result = resp["result"]
 
     assert result["supportedVersions"] == [@version]
@@ -131,6 +173,9 @@ defmodule MCP.Server.DispatchTest do
 
   # --- MC-1 depth: context reaches ALL EIGHT identity-capable callbacks ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "MC-1 depth — the per-request context reaches all eight identity-capable callbacks" do
     id = "PM"
 
@@ -157,6 +202,9 @@ defmodule MCP.Server.DispatchTest do
     end
   end
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "F3 — a handler missing the required context arity is a contract error (method-not-found), not a silent legacy call" do
     defmodule NoCtxHandler do
       @behaviour MCP.Server.Handler
@@ -173,6 +221,9 @@ defmodule MCP.Server.DispatchTest do
 
   # --- notifications are SDK-internal no-ops ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-ADJ, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
   test "notifications/initialized is tolerated as a no-op (handshake removed)" do
     notif = %Notification{method: "notifications/initialized", params: nil}
     assert {:noreply, _state} = Dispatch.dispatch(notif, ctx(), config())

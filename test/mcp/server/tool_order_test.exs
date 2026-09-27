@@ -62,7 +62,12 @@ defmodule MCP.Server.ToolOrderTest do
   end
 
   defp list_tool_names(config, params \\ %{}) do
-    params = Map.put(params, "_meta", %{"io.modelcontextprotocol/protocolVersion" => @version})
+    params =
+      Map.put(params, "_meta", %{
+        "io.modelcontextprotocol/protocolVersion" => @version,
+        "io.modelcontextprotocol/clientCapabilities" => %{}
+      })
+
     req = %Request{id: 1, method: "tools/list", params: params}
     {:reply, resp, _state} = Dispatch.dispatch(req, %ToolContext{request_id: 1}, config)
     Enum.map(resp["result"]["tools"], & &1["name"])
@@ -70,6 +75,9 @@ defmodule MCP.Server.ToolOrderTest do
 
   # --- Fixture precondition (RULING 4): the red arm must be able to be red ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "etcc-register ET-CTRL: a control over the test fixture itself, not SDK wire behaviour; no OC check corresponds"
   test "GUARD — the two population orders really do iterate differently" do
     {fwd, rev} = EtsRegistryHandler.iteration_orders()
 
@@ -85,6 +93,7 @@ defmodule MCP.Server.ToolOrderTest do
 
   # --- SUBJECT: the arm that was red before the fix ---
 
+  @tag oc: "oc:none/no-oc-scenario/tools-list-order-across-instances"
   @tag :etcc
   test "SUBJECT — two instances holding the same tool set answer in the same order" do
     fwd = config(EtsRegistryHandler, order: :forward)
@@ -93,12 +102,14 @@ defmodule MCP.Server.ToolOrderTest do
     assert list_tool_names(fwd) == list_tool_names(rev)
   end
 
+  @tag oc: "oc:none/no-oc-scenario/tools-list-order-across-requests"
   @tag :etcc
   test "SUBJECT — one instance answers in the same order on every request" do
     cfg = config(EtsRegistryHandler, order: :forward)
     assert Enum.uniq(for _ <- 1..5, do: list_tool_names(cfg)) |> length() == 1
   end
 
+  @tag oc: "oc:none/no-oc-scenario/tools-list-default-order-and-set"
   @tag :etcc
   test "SUBJECT — the default order is by name, and the tool SET is untouched" do
     cfg = config(EtsRegistryHandler, order: :forward)
@@ -111,6 +122,9 @@ defmodule MCP.Server.ToolOrderTest do
 
   # --- MUTANT: the mechanism switched off reproduces the defect ---
 
+  @tag oc: :none
+  @tag oc_reason:
+         "not an ET-CC member: etcc-register ET-OUT, excluded at gate 3 (asserts SDK-specific behaviour no spec clause constrains); no OC check corresponds"
   test "MUTANT — with :tool_order = :handler the two instances diverge again" do
     fwd = config(EtsRegistryHandler, [order: :forward], %{tool_order: :handler})
     rev = config(EtsRegistryHandler, [order: :reverse], %{tool_order: :handler})
@@ -121,6 +135,7 @@ defmodule MCP.Server.ToolOrderTest do
 
   # --- CONTROL-1: the escape hatch preserves a curated, conformant order ---
 
+  @tag oc: "oc:none/no-oc-scenario/tools-list-curated-order-escape-hatch"
   @tag :etcc
   test "CONTROL-1 — :tool_order = :handler keeps a curated non-alphabetical order verbatim" do
     curated = ["tool_9", "tool_1", "tool_24", "tool_3"]
@@ -135,6 +150,7 @@ defmodule MCP.Server.ToolOrderTest do
 
   # --- CONTROL-2: discriminates nothing, and says so ---
 
+  @tag oc: "oc:none/no-oc-scenario/tools-list-order-control-vacuous"
   @tag :etcc
   test "CONTROL-2 (discriminates nothing) — an already-deterministic handler is unaffected" do
     cfg = config(MCP.Test.StatelessHandler, [])
@@ -143,6 +159,7 @@ defmodule MCP.Server.ToolOrderTest do
 
   # --- BOUND: what the guarantee does NOT cover (A2d) ---
 
+  @tag oc: "oc:none/no-oc-scenario/tools-list-order-pagination-bound"
   @tag :etcc
   test "BOUND — sorting is per RESPONSE; a paginated listing is not made deterministic" do
     # Each page is sorted on its way out. That does not make the concatenation of
