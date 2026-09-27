@@ -40,7 +40,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
        every request, before the identity factory (MC-5 / AC7). A rejected
        request never runs the factory.
     2. **Decode, routing headers, `_meta`** — parse the JSON-RPC body; check
-       `Mcp-Method` / `Mcp-Name` against it (SEP-2243, mismatch → `-32020`),
+       `Mcp-Method` / `Mcp-Name` against it (SEP-2243, missing or mismatch → `-32020`),
        then the required `_meta` keys (missing → HTTP 400, `-32602`, the id).
     3. **Identity resolution** — the `:handler_opts` factory is evaluated
        against *this request's* `conn` (or the static keyword's `:identity`);
@@ -884,7 +884,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   # `Mcp-Param-*` half. The distinction is not the ticket boundary but the
   # breakage: this server never compares `Mcp-Param-*` at all, so no
   # self-incompatibility exists there to fix.
-  defp check_routing_headers(conn, message) do
+  defp check_header_values(conn, message) do
     method = Map.get(message, "method")
     header_method = first_header(conn, "mcp-method")
     header_name = decode_header_name(first_header(conn, "mcp-name"))
@@ -1107,4 +1107,53 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
       {:error, reason} -> {:error, {:collector_start_failed, reason}}
     end
   end
+
+  # --- Required standard headers (MES-155) ---
+
+  # Every POST carries `MCP-Protocol-Version` and `Mcp-Method`, and `Mcp-Name`
+  # when the method has a name target (`streamable-http.mdx:252-253`,
+  # `:280-281`, `:288-293`); a missing one, or a header version that
+  # contradicts the body's `_meta` version, fails header validation
+  # (`:622-625`) with -32020 + HTTP 400. Judged here, ahead of `_meta` (-32602)
+  # and Dispatch's version gate (-32022): headers are transport-level. A body
+  # with no version skips the equality, so it still earns MES-161's -32602.
+  # The value comparisons are then `check_header_values/2`, unchanged. Appended
+  # below every line the adjudication records cite, so none of those moves.
+  defp check_routing_headers(conn, %{"method" => method} = message) when is_binary(method) do
+    params = Map.get(message, "params")
+    target = routing_target(method, params)
+    header_version = first_header(conn, "mcp-protocol-version")
+    body_version = body_protocol_version(params)
+
+    cond do
+      is_nil(header_version) ->
+        {:error, {:routing_mismatch, "missing required header MCP-Protocol-Version"}}
+
+      is_nil(first_header(conn, "mcp-method")) ->
+        {:error, {:routing_mismatch, "missing required header Mcp-Method"}}
+
+      is_binary(target) and is_nil(first_header(conn, "mcp-name")) ->
+        {:error, {:routing_mismatch, "missing required header Mcp-Name"}}
+
+      is_binary(body_version) and header_version != body_version ->
+        {:error,
+         {:routing_mismatch, "MCP-Protocol-Version #{header_version} != #{inspect(body_version)}"}}
+
+      true ->
+        check_header_values(conn, message)
+    end
+  end
+
+  defp check_routing_headers(conn, message) when is_map(message),
+    do: check_header_values(conn, message)
+
+  # A body that is not an object is `decode_well_formed/1`'s to refuse (-32600).
+  defp check_routing_headers(_conn, _message), do: :ok
+
+  # Pattern-matched rather than `get_in/2`: a non-object `_meta` must reach the
+  # -32602 path, not raise here.
+  defp body_protocol_version(%{"_meta" => %{} = meta}),
+    do: Map.get(meta, MCP.Protocol.Meta.protocol_version_key())
+
+  defp body_protocol_version(_params), do: nil
 end

@@ -19,7 +19,7 @@ defmodule MCP.Server.RequiredMetaTest do
   alias MCP.Protocol.Types.Implementation
   alias MCP.Server.Dispatch
   alias MCP.Server.ToolContext
-  alias MCP.Test.StatelessHandler
+  alias MCP.Test.{RequiredHeaders, StatelessHandler}
   alias MCP.Transport.StreamableHTTP.Plug, as: MCPPlug
 
   @version "2026-07-28"
@@ -56,7 +56,7 @@ defmodule MCP.Server.RequiredMetaTest do
     base =
       :post
       |> conn("http://localhost/", Jason.encode!(message))
-      |> put_req_header("content-type", "application/json")
+      |> RequiredHeaders.put_json(message)
       |> put_req_header("accept", "application/json")
       |> put_req_header("origin", "http://localhost")
 
@@ -201,7 +201,7 @@ defmodule MCP.Server.RequiredMetaTest do
 
   @tag oc: :none
   @tag oc_reason:
-         "-32020 before -32602 is this SDK's stated order (MES-161 Q4); HttpServerHeaderMismatch400 is FAILURE live, so it cannot vouch"
+         "-32020 before -32602 is this SDK's stated order (MES-161 Q4); HttpServerHeaderMismatch400 sends a full _meta, so no OC check probes the order"
   test "HTTP: a routing-header mismatch is judged before the missing _meta" do
     {status, body} = post(%{}, 5, "tools/list", [{"mcp-method", "resources/list"}])
     assert status == 400

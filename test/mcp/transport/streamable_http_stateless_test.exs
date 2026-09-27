@@ -12,7 +12,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
   import Plug.Conn
   import ExUnit.CaptureLog
 
-  alias MCP.Test.StatelessHandler
+  alias MCP.Test.{RequiredHeaders, StatelessHandler}
   alias MCP.Transport.StreamableHTTP.Plug, as: MCPPlug
 
   @version "2026-07-28"
@@ -35,7 +35,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
       |> put_req_header("accept", "application/json")
       |> put_req_header("origin", "http://localhost")
 
-    headers
+    RequiredHeaders.merge(message, headers)
     |> Enum.reduce(base, fn {k, v}, c -> put_req_header(c, k, v) end)
     |> mutate.()
     |> MCPPlug.call(plug_opts)
@@ -450,7 +450,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
       {"origin", "http://localhost"}
     ]
 
-    {:ok, resp} = Req.post(url, body: body, headers: headers)
+    {:ok, resp} = Req.post(url, body: body, headers: headers ++ RequiredHeaders.for_body(body))
     resp
   end
 

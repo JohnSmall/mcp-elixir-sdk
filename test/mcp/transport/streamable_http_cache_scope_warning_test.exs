@@ -18,7 +18,7 @@ defmodule MCP.Transport.StreamableHTTPCacheScopeWarningTest do
   import Plug.Conn
   import ExUnit.CaptureLog
 
-  alias MCP.Test.StatelessHandler
+  alias MCP.Test.{RequiredHeaders, StatelessHandler}
   alias MCP.Transport.StreamableHTTP.Plug, as: MCPPlug
 
   @version "2026-07-28"
@@ -129,7 +129,7 @@ defmodule MCP.Transport.StreamableHTTPCacheScopeWarningTest do
           conn =
             :post
             |> conn("http://localhost/", Jason.encode!(rpc("tools/list")))
-            |> put_req_header("content-type", "application/json")
+            |> RequiredHeaders.put_json(rpc("tools/list"))
             |> put_req_header("accept", "application/json")
             |> put_req_header("origin", "http://localhost")
             |> assign(:role, "PM")

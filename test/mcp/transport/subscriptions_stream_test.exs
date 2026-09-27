@@ -37,7 +37,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   """
   use ExUnit.Case, async: false
 
-  alias MCP.Test.SubscribingHandler
+  alias MCP.Test.{RequiredHeaders, SubscribingHandler}
   alias MCP.Transport.SSE
 
   @version "2026-07-28"
@@ -108,7 +108,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
     request =
       "POST / HTTP/1.1\r\n" <>
         "Host: localhost\r\n" <>
-        "Content-Type: application/json\r\n" <>
+        RequiredHeaders.raw(body) <>
         "Accept: text/event-stream\r\n" <>
         "Content-Length: #{byte_size(body)}\r\n\r\n" <> body
 
@@ -246,7 +246,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       "POST / HTTP/1.1\r\n" <>
         "Host: localhost\r\n" <>
         "Origin: http://localhost\r\n" <>
-        "Content-Type: application/json\r\n" <>
+        RequiredHeaders.raw(body) <>
         "Connection: close\r\n" <>
         "Content-Length: #{byte_size(body)}\r\n\r\n" <> body
 
@@ -593,7 +593,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       log =
         ExUnit.CaptureLog.capture_log(fn ->
           response =
-            Req.post!("http://127.0.0.1:#{port}/",
+            RequiredHeaders.post!("http://127.0.0.1:#{port}/",
               body: body,
               headers: [{"content-type", "application/json"}, {"origin", "http://localhost"}]
             )
@@ -716,7 +716,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
         })
 
       response =
-        Req.post!("http://127.0.0.1:#{port}/",
+        RequiredHeaders.post!("http://127.0.0.1:#{port}/",
           body: body,
           headers: [{"content-type", "application/json"}, {"origin", "http://localhost"}]
         )
@@ -809,7 +809,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
 
       ExUnit.CaptureLog.capture_log(fn ->
         response =
-          Req.post!("http://127.0.0.1:#{port}/",
+          RequiredHeaders.post!("http://127.0.0.1:#{port}/",
             body: body,
             headers: [{"content-type", "application/json"}, {"origin", "http://localhost"}],
             retry: false
@@ -854,7 +854,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
 
       ExUnit.CaptureLog.capture_log(fn ->
         response =
-          Req.post!("http://127.0.0.1:#{port}/",
+          RequiredHeaders.post!("http://127.0.0.1:#{port}/",
             body: body,
             headers: [{"content-type", "application/json"}, {"origin", "http://localhost"}],
             retry: false
@@ -892,7 +892,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
         })
 
       response =
-        Req.post!("http://127.0.0.1:#{port}/",
+        RequiredHeaders.post!("http://127.0.0.1:#{port}/",
           body: body,
           headers: [{"content-type", "application/json"}, {"origin", "http://localhost"}]
         )
@@ -990,7 +990,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
               {"crafted-other", "tools/list"}
             ] do
           response =
-            Req.post!("http://127.0.0.1:#{port}/",
+            RequiredHeaders.post!("http://127.0.0.1:#{port}/",
               body: crafted.(id, method),
               headers: [{"content-type", "application/json"}, {"origin", "http://localhost"}],
               retry: false
@@ -1010,7 +1010,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       # could pass on a handler that never reports anything: a genuine listen
       # on this same instance, torn down, does reach this test.
       ExUnit.CaptureLog.capture_log(fn ->
-        Req.post!("http://127.0.0.1:#{port}/",
+        RequiredHeaders.post!("http://127.0.0.1:#{port}/",
           body:
             Jason.encode!(%{
               "jsonrpc" => "2.0",
@@ -1050,7 +1050,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
       # Client B, a separate connection to the same instance, naming A's id.
       ExUnit.CaptureLog.capture_log(fn ->
         response =
-          Req.post!("http://127.0.0.1:#{port}/",
+          RequiredHeaders.post!("http://127.0.0.1:#{port}/",
             body:
               Jason.encode!(%{
                 "jsonrpc" => "2.0",
@@ -1105,7 +1105,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
         })
 
       response =
-        Req.post!("http://127.0.0.1:#{port}/",
+        RequiredHeaders.post!("http://127.0.0.1:#{port}/",
           body: body,
           headers: [{"content-type", "application/json"}, {"origin", "http://localhost"}]
         )

@@ -24,7 +24,7 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
 
   import ExUnit.CaptureLog
 
-  alias MCP.Test.{AuthedMCPPlug, StatelessHandler}
+  alias MCP.Test.{AuthedMCPPlug, RequiredHeaders, StatelessHandler}
   alias MCP.Transport.StreamableHTTP.Plug, as: MCPPlug
 
   @version "2026-07-28"
@@ -91,7 +91,7 @@ defmodule MCP.Transport.StreamableHTTP.ACTest do
         Keyword.get(opts, :headers, [])
 
     body = Jason.encode!(%{"jsonrpc" => "2.0", "id" => 1, "method" => method, "params" => params})
-    {:ok, resp} = Req.post(url, body: body, headers: headers)
+    {:ok, resp} = Req.post(url, body: body, headers: headers ++ RequiredHeaders.for_body(body))
     resp
   end
 
