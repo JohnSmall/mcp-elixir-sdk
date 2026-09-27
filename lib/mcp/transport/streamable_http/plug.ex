@@ -321,8 +321,8 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
          {:ok, message} <- Jason.decode(body),
          :ok <- check_routing_headers(conn, message),
          {:ok, decoded} <- decode_well_formed(message),
-         {:ok, identity} <- resolve_identity(config.handler_opts, conn),
-         {:ok, collector} <- start_collector(config.collector_start) do
+         {:ok, identity} <- resolve_identity(config.handler_opts, conn, readable_id(message)),
+         {:ok, collector} <- start_collector(config.collector_start, readable_id(message)) do
       dispatch(conn, config, decoded, message, identity, collector)
     else
       {:error, %Jason.DecodeError{} = e} ->
@@ -332,35 +332,27 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
         send_meta_invalid(conn, id, missing)
 
       {:error, {:routing_mismatch, detail}} ->
-        send_json_error(conn, 400, Error.header_mismatch_code(), "Header mismatch", detail)
+        send_header_mismatch(conn, detail)
 
-      {:error, {:factory_failed, reason}} ->
+      {:error, {:factory_failed, id, reason}} ->
         Logger.error("MCP Plug: handler_opts factory failed: #{inspect(reason)}")
 
-        send_json_error(
-          conn,
-          500,
-          Error.internal_error_code(),
-          "Internal error",
-          "handler_opts factory error"
-        )
+        send_internal_error(conn, id, "handler_opts factory error")
 
       # MC-6 (clean failure): a collector that fails to start yields a
       # controlled internal error before any handler runs — the detail is
       # logged server-side and never returned to the client. This is the path
       # the /plan MC-6 row promised; it was previously an unguarded match
       # (MatchError). Placed after identity resolution, before dispatch.
-      {:error, {:collector_start_failed, reason}} ->
+      {:error, {:collector_start_failed, id, reason}} ->
         Logger.error("MCP Plug: notification collector failed to start: #{inspect(reason)}")
 
-        send_json_error(
-          conn,
-          500,
-          Error.internal_error_code(),
-          "Internal error",
-          "notification collector unavailable"
-        )
+        send_internal_error(conn, id, "notification collector unavailable")
 
+      {:error, {:invalid_request, id, error}} ->
+        send_invalid_request(conn, id, inspect(error))
+
+      # Only where no id is readable: a body that is not an object, or unread.
       {:error, reason} ->
         send_json_error(
           conn,
@@ -378,6 +370,14 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     body = %{"code" => error.code, "message" => error.message, "data" => error.data}
     send_json(conn, 400, %{"jsonrpc" => "2.0", "id" => id, "error" => body})
   end
+
+  # -32020 and -32600 + HTTP 400, with the request's readable id (MES-157);
+  # `check_routing_headers/2` and `decode_well_formed/1` read it.
+  defp send_header_mismatch(conn, {id, text}),
+    do: send_json_error(conn, id, 400, Error.header_mismatch_code(), "Header mismatch", text)
+
+  defp send_invalid_request(conn, id, detail),
+    do: send_json_error(conn, id, 400, Error.invalid_request_code(), "Invalid request", detail)
 
   defp dispatch(conn, config, decoded, raw_message, identity, collector) do
     # The notification collector is a per-request process (MES-14): its pid is
@@ -645,18 +645,18 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
         Logger.error("MCP Plug: could not start the subscription stream: #{inspect(exception)}")
         release_stream(stream)
 
-        conn =
-          send_json_error(
-            conn,
-            500,
-            Error.internal_error_code(),
-            "Internal error",
-            "subscription stream unavailable"
-          )
+        conn = send_internal_error(conn, ctx.request_id, "subscription stream unavailable")
 
         teardown(config, ctx, state, stream)
         conn
     end
+  end
+
+  # -32603 + HTTP 500, with the request's readable id: the with-chain's two
+  # 500s and a stream that could not start. The cause is logged server-side
+  # and never returned to the client (MC-6).
+  defp send_internal_error(conn, id, detail) do
+    send_json_error(conn, id, 500, Error.internal_error_code(), "Internal error", detail)
   end
 
   @doc false
@@ -920,21 +920,21 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   # --- Per-request identity resolution (MC-2/Comment B) ---
 
-  defp resolve_identity(fun, conn) when is_function(fun, 1) do
+  defp resolve_identity(fun, conn, id) when is_function(fun, 1) do
     case fun.(conn) do
       result when is_list(result) ->
         if Keyword.keyword?(result),
           do: {:ok, Keyword.get(result, :identity)},
-          else: {:error, {:factory_failed, {:non_keyword_result, result}}}
+          else: {:error, {:factory_failed, id, {:non_keyword_result, result}}}
 
       other ->
-        {:error, {:factory_failed, {:non_keyword_result, other}}}
+        {:error, {:factory_failed, id, {:non_keyword_result, other}}}
     end
   rescue
-    exception -> {:error, {:factory_failed, {:raised, exception, __STACKTRACE__}}}
+    exception -> {:error, {:factory_failed, id, {:raised, exception, __STACKTRACE__}}}
   end
 
-  defp resolve_identity(list, _conn) when is_list(list), do: {:ok, Keyword.get(list, :identity)}
+  defp resolve_identity(list, _, _) when is_list(list), do: {:ok, Keyword.get(list, :identity)}
 
   # --- handler_opts validation (fail-fast at mount) ---
 
@@ -1016,15 +1016,15 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     |> Plug.Conn.send_resp(200, body)
   end
 
-  defp send_json_error(conn, http_status, code, message, data) do
-    error = %{
-      "jsonrpc" => "2.0",
-      "error" => %{"code" => code, "message" => message, "data" => data}
-    }
+  # The not-readable form. The id is `null`, never absent: an error response
+  # carries the request's id, and `null` only where it could not be determined
+  # (basic/index.mdx:103). `send_json/3` is the one encoder for both forms.
+  defp send_json_error(conn, http_status, code, message, data),
+    do: send_json_error(conn, nil, http_status, code, message, data)
 
-    conn
-    |> Plug.Conn.put_resp_content_type("application/json")
-    |> Plug.Conn.send_resp(http_status, Jason.encode!(error))
+  defp send_json_error(conn, id, http_status, code, message, data) do
+    error = %{"code" => code, "message" => message, "data" => data}
+    send_json(conn, http_status, %{"jsonrpc" => "2.0", "id" => id, "error" => error})
   end
 
   # `POST` alone: GET is refused now that no standing stream exists, so
@@ -1087,6 +1087,9 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
           missing -> {:error, {:meta_invalid, id, missing}}
         end
 
+      {:error, %Error{} = error} when is_map(message) ->
+        {:error, {:invalid_request, readable_id(message), error}}
+
       other ->
         other
     end
@@ -1099,12 +1102,12 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   end
 
   # Starts the per-request notification collector, mapping a start failure to a
-  # controlled `{:error, {:collector_start_failed, reason}}` for the with-chain
+  # controlled `{:error, {:collector_start_failed, id, reason}}` for the with-chain
   # (MC-6) rather than crashing on an unguarded match.
-  defp start_collector(start_fun) do
+  defp start_collector(start_fun, id) do
     case start_fun.() do
       {:ok, _collector} = ok -> ok
-      {:error, reason} -> {:error, {:collector_start_failed, reason}}
+      {:error, reason} -> {:error, {:collector_start_failed, id, reason}}
     end
   end
 
@@ -1119,7 +1122,18 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   # with no version skips the equality, so it still earns MES-161's -32602.
   # The value comparisons are then `check_header_values/2`, unchanged. Appended
   # below every line the adjudication records cite, so none of those moves.
-  defp check_routing_headers(conn, %{"method" => method} = message) when is_binary(method) do
+  # The -32020 limbs below are tagged with the request's readable id (MES-157).
+  defp check_routing_headers(conn, message) do
+    case check_required_headers(conn, message) do
+      {:error, {:routing_mismatch, text}} ->
+        {:error, {:routing_mismatch, {readable_id(message), text}}}
+
+      :ok ->
+        :ok
+    end
+  end
+
+  defp check_required_headers(conn, %{"method" => method} = message) when is_binary(method) do
     params = Map.get(message, "params")
     target = routing_target(method, params)
     header_version = first_header(conn, "mcp-protocol-version")
@@ -1144,11 +1158,11 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     end
   end
 
-  defp check_routing_headers(conn, message) when is_map(message),
+  defp check_required_headers(conn, message) when is_map(message),
     do: check_header_values(conn, message)
 
   # A body that is not an object is `decode_well_formed/1`'s to refuse (-32600).
-  defp check_routing_headers(_conn, _message), do: :ok
+  defp check_required_headers(_conn, _message), do: :ok
 
   # Pattern-matched rather than `get_in/2`: a non-object `_meta` must reach the
   # -32602 path, not raise here.
@@ -1156,4 +1170,10 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     do: Map.get(meta, MCP.Protocol.Meta.protocol_version_key())
 
   defp body_protocol_version(_params), do: nil
+
+  # The request's id where it can be read: a string or a number in an object
+  # body. Anything else — absent, or of a type JSON-RPC does not allow — is not
+  # a readable id, and the error carries `null` (basic/index.mdx:103).
+  defp readable_id(%{"id" => id}) when is_binary(id) or is_number(id), do: id
+  defp readable_id(_message), do: nil
 end
