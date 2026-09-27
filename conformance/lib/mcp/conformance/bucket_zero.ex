@@ -96,9 +96,9 @@ defmodule MCP.Conformance.BucketZero do
   # without a pin can land on it.
   @harness %{
     package: "@modelcontextprotocol/conformance",
-    version: "0.2.0-alpha.11",
+    version: MCP.Conformance.HarnessHost.pinned_version(),
     file: "dist/index.js",
-    sha256: "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
+    sha256: MCP.Conformance.HarnessHost.pinned_dist_sha256(),
     audit: "grep -o SKIPPED dist/index.js | wc -l"
   }
 

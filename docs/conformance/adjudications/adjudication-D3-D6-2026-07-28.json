@@ -1362,7 +1362,7 @@
           "what": "that fixture's assertion"
         },
         {
-          "at": "test/support/conformance_test_harness.ex:66",
+          "at": "test/support/conformance_test_harness.ex:53",
           "what": "a moduledoc sentence (plan part 2 missed this hit)"
         }
       ]

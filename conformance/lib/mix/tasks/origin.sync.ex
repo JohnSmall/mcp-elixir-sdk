@@ -13,7 +13,7 @@ defmodule Mix.Tasks.Origin.Sync do
 
   ## Where it runs, and where it deliberately does not
 
-  Three run points, none of them a seventh DoD gate. Gates 1-6 are per-ticket
+  Three run points, none of them a DoD gate. The DoD gates are per-ticket
   and run by CODE_CREATOR on a branch, *before* the merge exists — a sync check
   there would be red by construction on every ticket, which would make the gate
   table permanently false rather than informative.

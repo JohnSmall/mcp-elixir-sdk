@@ -22,43 +22,30 @@ defmodule MCP.Conformance.TestHarness do
   smaller suite.
   """
 
-  @install_dir "/tmp/conf11/node_modules/@modelcontextprotocol/conformance"
-  @revision "2026-07-28"
+  # The precondition itself lives in `MCP.Conformance.HarnessHost` (MES-160), so
+  # gate 7 in `:dev` and this exclusion in `:test` read one predicate.
+  alias MCP.Conformance.HarnessHost
+
+  @revision HarnessHost.revision()
 
   @doc "The pinned harness install (`@0.2.0-alpha.11`); `latest` has no #{@revision} scenarios."
   @spec install_dir() :: String.t()
-  def install_dir, do: @install_dir
+  def install_dir, do: HarnessHost.install_dir()
 
   @doc "The frozen requirement set as shipped inside the harness package."
   @spec requirements_yaml() :: String.t()
-  def requirements_yaml, do: Path.join([@install_dir, "requirements", "#{@revision}.yaml"])
+  def requirements_yaml, do: HarnessHost.requirements_yaml()
 
   @doc "The harness entry point these tests drive."
   @spec dist() :: String.t()
-  def dist, do: Path.join([@install_dir, "dist", "index.js"])
+  def dist, do: HarnessHost.dist()
 
   @doc """
   `nil` when the live harness can be driven here, otherwise the reason it
   cannot — one sentence, printed by `test_helper.exs` beside the exclusion.
   """
   @spec unavailable_reason() :: String.t() | nil
-  def unavailable_reason do
-    cond do
-      System.find_executable("node") == nil ->
-        "no `node` on PATH (the harness is a Node program; `mix test` cannot drive it here)"
-
-      not File.exists?(dist()) ->
-        "no harness at #{dist()} — install it with " <>
-          "`npm i --prefix /tmp/conf11 @modelcontextprotocol/conformance@0.2.0-alpha.11`"
-
-      not File.exists?(requirements_yaml()) ->
-        "the harness is installed but carries no #{@revision} requirement set at " <>
-          "#{requirements_yaml()} — `latest` has none; the pinned alpha does"
-
-      true ->
-        nil
-    end
-  end
+  def unavailable_reason, do: HarnessHost.unavailable_reason()
 
   @doc """
   The harness's own listing of the frozen set, read from the harness rather than
