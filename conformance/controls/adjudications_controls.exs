@@ -135,6 +135,28 @@
 # view with its echo: MES-144's, which has no row to tie to a harness site. It
 # prints the exemption, and plants H0-H3 hold its boundary (H3: sections: []).
 #
+# MES-145 added the D5 family (authored 30074-30076, ratified 30077).
+# `tied_rows/2` builds a row over a D5 view with the D5 evidence the guard
+# recomputes (`d5_fields/2`: oc_null, discounts, an unmeasured ET reading and
+# the disposition they entail), so `mutation` (1)'s complete 5a section and
+# the K1 5a plants stay well formed. `refusals` gains `d5_plants/2` on the REAL
+# bucket-5b view and the REAL censuses: positives first (the 31 rows off
+# http-custom-headers, open, owned by MES-146: CLEAN; a sep-2322 row as
+# discriminating, vacuous_et and not_established, and an http-standard-headers
+# row as vacuous_oc and vacuous_both: each CLEAN), then one plant per D5
+# refusal (oc_null_missing, oc_null_drift, null_outcome_not_entailed,
+# discount_outside_set, discount_drift, et_null_missing,
+# disposition_underivable, not_established_because_missing) and
+# disposition_outside_view both ways (extend_test in 5b; a D5 code, with its
+# own recomputed evidence, on D4a's 4a row). They join the plants table, so
+# `mutation` (8) neutralises each clause alone and requires its plant CLEAN.
+# Since D5b-i's record landed (MES-145 hop B) `d5_plants/2` runs on the
+# COMMITTED record's 31 rows, measured, rather than on rows built from the
+# view's free rows, which the record now holds; `mutation` (3) cuts the D5
+# codes that carry committed rows (discriminating, vacuous_oc, vacuous_et, and
+# since CR1 vacuous_both), and
+# `tree_copy/0` carries the D5 inputs (the censuses and bucket-0).
+#
 # WHY IN MEMORY. Every plant mutates decoded data inside this VM. Nothing in the
 # clone is written, because seats share one checkout.
 
@@ -150,6 +172,8 @@ defmodule AdjudicationsControls do
   @d2b "docs/conformance/adjudications/adjudication-D2b-2026-07-28.json"
   @v2b "docs/conformance/buckets/bucket-2b-2026-07-28.json"
   @v5a "docs/conformance/buckets/bucket-5a-2026-07-28.json"
+  @v5b "docs/conformance/buckets/bucket-5b-2026-07-28.json"
+  @d5bi "docs/conformance/adjudications/adjudication-D5b-i-2026-07-28.json"
   @d2ai "docs/conformance/adjudications/adjudication-D2a-i-2026-07-28.json"
   @v2a "docs/conformance/buckets/bucket-2a-2026-07-28.json"
   @d2aii "docs/conformance/adjudications/adjudication-D2a-ii-2026-07-28.json"
@@ -184,6 +208,14 @@ defmodule AdjudicationsControls do
     "routed_to_defects" => 3,
     "spec_defects" => 3,
     "counterfactual_defects" => 3,
+    "oc_null_defects" => 4,
+    "oc_null_drift_defects" => 4,
+    "null_entailed_defects" => 4,
+    "discount_set_defects" => 4,
+    "discount_drift_defects" => 4,
+    "et_null_defects" => 4,
+    "derivation_defects" => 4,
+    "not_established_defects" => 3,
     "ambiguous_defects" => 2
   }
   @source "conformance/lib/mcp/conformance/adjudications.ex"
@@ -874,7 +906,173 @@ defmodule AdjudicationsControls do
        outside, policy},
       {:stray_in_walk_root, "a copy of D4a's record as .jsn in the walk root (tree copy)", stray,
        policy}
-    ] ++ k1_plants(base, policy) ++ q3_plants(base, policy) ++ d1_plants(base, policy)
+    ] ++
+      k1_plants(base, policy) ++
+      q3_plants(base, policy) ++ d1_plants(base, policy) ++ d5_plants(base, policy)
+  end
+
+  # MES-145 (authored 30074-30076, ratified 30077): the D5 family on the REAL
+  # bucket-5b view and the REAL censuses. Every 5b row of the slice, complete and tied
+  # (tied_rows/2 recomputes each row's oc_null and discounts through the
+  # guard's public functions and takes the disposition its evidence entails),
+  # in an open section owned by MES-146. Positives first: one real row able to
+  # go red under every null (an sep-2322 row) and one every null skips (an
+  # http-standard-headers row), carried through all five codes. Then one plant
+  # per D5 refusal, and disposition_outside_view both ways.
+  def d5_plants(base, policy) do
+    # The COMMITTED D5b-i record (hop B): its 31 rows off http-custom-headers,
+    # open and owned by MES-146. Before it landed, these plants built the
+    # slice from the view's free rows; the record now holds them, so building
+    # from the free rows would starve the plants (MES-143's lesson), and the
+    # real rows are the stronger positive in any case.
+    b5 = base
+    all = rows(b5, @v5b, @d5bi)
+
+    # An unmeasured ET reading, for the codes a measured row cannot carry.
+    reading = %{
+      "measured" => false,
+      "reading" => "control",
+      "why_not_measured" => "control",
+      "vacuous" => false
+    }
+
+    true = length(all) == 31 and Enum.all?(all, &(not (&1["tag"] =~ "/http-custom-headers/")))
+    {ctx, []} = A.d5_context(A.load_d5("."))
+    red = Enum.find(all, &String.contains?(&1["tag"], "/sep-2322-client-request-state/"))
+    vac = Enum.find(all, &String.contains?(&1["tag"], "/http-standard-headers/"))
+    [line | _] = red["et_test"]["lines"]
+
+    mutation = %{
+      "id" => "C1",
+      "kind" => "violation",
+      "edits" => [%{"file" => "lib/control.ex", "old" => "a", "new" => "b"}],
+      "result" => "red",
+      "firing" => "#{Path.basename(red["et_test"]["file"])}:#{line}"
+    }
+
+    green =
+      mutation
+      |> Map.merge(%{"id" => "C2", "kind" => "null", "result" => "green"})
+      |> Map.delete("firing")
+
+    measured = fn ms -> %{"measured" => true, "mutations" => ms} end
+    # The vacuous row's own member test line, for its firing.
+    [vline | _] = vac["et_test"]["lines"]
+    vfiring = %{mutation | "firing" => "#{Path.basename(vac["et_test"]["file"])}:#{vline}"}
+
+    swap = fn r, fun ->
+      update_rows(b5, @v5b, &Enum.map(&1, fn x -> if x == r, do: fun.(x), else: x end), @d5bi)
+    end
+
+    # A not_established row states why (the committed rows are measured, and
+    # carry no reason; this adds one where the code needs it).
+    as = fn r, disp, et ->
+      r
+      |> Map.merge(%{"disposition" => disp, "et_null" => et})
+      |> then(
+        &if(disp == "not_established",
+          do: Map.put(&1, "not_established_because", "control"),
+          else: &1
+        )
+      )
+    end
+
+    check(
+      "  (positive) the committed D5b-i record: its #{length(all)} bucket-5b rows off http-custom-headers, measured, in an open section owned by MES-146: CLEAN",
+      A.audit(b5, policy).defects == [],
+      Enum.map(A.audit(b5, policy).defects, &A.format_defect/1)
+    )
+
+    check(
+      "  … the rows chosen: #{red["tag"]} (OC able to go red) and #{vac["tag"]} (OC vacuous)",
+      A.derive_disposition(ctx, red["tag"], measured.([mutation])) == "discriminating" and
+        A.derive_disposition(ctx, vac["tag"], measured.([vfiring])) == "vacuous_oc"
+    )
+
+    for {label, r, disp, et} <- [
+          {"the sep-2322 row", red, "discriminating", measured.([mutation])},
+          {"the sep-2322 row", red, "vacuous_et", measured.([mutation, green])},
+          {"the sep-2322 row", red, "not_established", reading},
+          {"the http-standard-headers row", vac, "vacuous_oc", measured.([vfiring])},
+          {"the http-standard-headers row", vac, "vacuous_both", measured.([vfiring, green])}
+        ] do
+      ds = A.audit(swap.(r, &as.(&1, disp, et)), policy).defects
+
+      check(
+        "  (positive) #{label} as #{disp}: CLEAN",
+        ds == [],
+        Enum.map(ds, &A.format_defect/1)
+      )
+    end
+
+    red_d = &as.(&1, "discriminating", measured.([mutation]))
+    [e1 | rest] = red["oc_null"]
+    [a | _] = rows(base, @v4a)
+
+    a_et = %{
+      "measured" => false,
+      "reading" => "control",
+      "why_not_measured" => "control",
+      "vacuous" => false
+    }
+
+    [
+      {:oc_null_missing, "bucket-5b row, its oc_null short of null-connect",
+       swap.(red, &(&1 |> red_d.() |> Map.put("oc_null", rest))), policy},
+      {:oc_null_drift, "bucket-5b row, its null-connect entry's checks moved",
+       swap.(
+         red,
+         &(&1 |> red_d.() |> Map.put("oc_null", [put_in(e1, ["checks", "SUCCESS"], 5) | rest]))
+       ), policy},
+      {:null_outcome_not_entailed,
+       "bucket-5b row, null-connect's FAILURE claimed a pass (absent-from-failed is not the claim; the counts are)",
+       swap.(
+         red,
+         &(&1
+           |> red_d.()
+           |> Map.put("oc_null", [%{e1 | "raw_status" => "SUCCESS", "outcome" => "pass"} | rest]))
+       ), policy},
+      {:discount_outside_set, "bucket-5b row, a discount typed `both` (the two merged)",
+       swap.(
+         vac,
+         &Map.put(&1, "discounts", [%{"type" => "both", "grain" => "check", "sources" => ["x"]}])
+       ), policy},
+      {:discount_drift,
+       "bucket-5b http-standard-headers row, its owed null/scenario discount dropped",
+       swap.(
+         vac,
+         &Map.update!(&1, "discounts", fn ds ->
+           Enum.reject(ds, fn x -> x["grain"] == "scenario" end)
+         end)
+       ), policy},
+      {:et_null_missing, "bucket-5b row, a red mutation with no firing line",
+       swap.(red, &as.(&1, "discriminating", measured.([Map.delete(mutation, "firing")]))),
+       policy},
+      {:disposition_underivable, "bucket-5b sep-2322 row, measured red, labelled vacuous_oc",
+       swap.(red, &as.(&1, "vacuous_oc", measured.([mutation]))), policy},
+      {:not_established_because_missing,
+       "bucket-5b sep-2322 row, not_established on an unmeasured reading, with no reason",
+       swap.(
+         red,
+         &(&1 |> as.("not_established", reading) |> Map.delete("not_established_because"))
+       ), policy},
+      {:disposition_outside_view, "bucket-5b row carrying extend_test",
+       swap.(red, &Map.put(&1, "disposition", "extend_test")), policy},
+      {:disposition_outside_view,
+       "D4a's first 4a row carrying a D5 code, with its own recomputed D5 evidence",
+       update_rows(base, @v4a, fn [_ | tail] ->
+         [
+           Map.merge(a, %{
+             "disposition" => A.derive_disposition(ctx, a["tag"], a_et),
+             "not_established_because" => "control",
+             "oc_null" => A.oc_null_expected(ctx, a["tag"]),
+             "discounts" => A.owed_discounts(ctx, a["tag"]),
+             "et_null" => a_et
+           })
+           | tail
+         ]
+       end), policy}
+    ]
   end
 
   # MES-138 (authored 29691, ratified 29693): one plant per D1 refusal, on a
@@ -1256,9 +1454,10 @@ defmodule AdjudicationsControls do
   # line as et_test, and for an OC tag the locator's first site under check.
   # Over a D1 view the disposition is a D1 one, since MES-138 scopes the family
   # to the D1 views both ways (disposition_outside_view).
-  defp tied_rows(view_rows, view \\ nil) do
+  defp tied_rows(view_rows, view) do
     {:ok, loc} = A.read_locator(".")
     source_fun = A.load().source_fun
+    d5 = if view in A.d5_views(), do: elem(A.d5_context(A.load_d5(".")), 0)
     index = test_line_index()
 
     for vr <- view_rows do
@@ -1292,15 +1491,42 @@ defmodule AdjudicationsControls do
         "rationale" => "control"
       }
       |> Map.merge(
-        if view in A.d1_views(),
-          do: %{
-            "disposition" => "genuine_extra_coverage",
-            "protects" => "control",
-            "counterfactual" => @control_reading
-          },
-          else: %{"disposition" => "extend_test"}
+        cond do
+          view in A.d1_views() ->
+            %{
+              "disposition" => "genuine_extra_coverage",
+              "protects" => "control",
+              "counterfactual" => @control_reading
+            }
+
+          view in A.d5_views() ->
+            d5_fields(d5, vr["tag"])
+
+          true ->
+            %{"disposition" => "extend_test"}
+        end
       )
     end
+  end
+
+  # A D5 row's evidence for `tag`, recomputed through the guard's public
+  # functions, with an unmeasured ET reading, and the disposition it entails
+  # (MES-145, since the D5 views admit only the D5 family).
+  @control_et %{
+    "measured" => false,
+    "reading" => "control",
+    "why_not_measured" => "control",
+    "vacuous" => false
+  }
+
+  defp d5_fields(ctx, tag) do
+    %{
+      "disposition" => A.derive_disposition(ctx, tag, @control_et),
+      "not_established_because" => "control",
+      "oc_null" => A.oc_null_expected(ctx, tag),
+      "discounts" => A.owed_discounts(ctx, tag),
+      "et_null" => @control_et
+    }
   end
 
   # module => [candidate et_test citation], over every test file, read once.
@@ -1451,15 +1677,23 @@ defmodule AdjudicationsControls do
     all_rows = for {_, {:ok, doc}} <- base.records, s <- doc["sections"], r <- s["rows"], do: r
 
     set_def =
-      ~s|suite_defect_upstream extend_test accept_bound\n                   extend_to_match build_test blocked_on_sdk_gap\n                   genuine_extra_coverage redundant not_a_conformance_claim wrong_against_spec)|
+      ~s|suite_defect_upstream extend_test accept_bound\n                   extend_to_match build_test blocked_on_sdk_gap\n                   genuine_extra_coverage redundant not_a_conformance_claim wrong_against_spec\n                   discriminating vacuous_oc vacuous_et vacuous_both not_established)|
 
     check("(3) the closed-set definition is found in the source", String.contains?(src, set_def))
 
     # The D1 codes on the committed rows. Since MES-139 every one of the four
     # has rows (12 redundant, 1 wrong_against_spec there), so each is cut and
     # must refuse exactly its rows.
+    #
+    # The D5 codes (MES-145) with committed rows since D5b-i's record: discriminating,
+    # vacuous_oc, vacuous_et and (since CR1's tools/call-only limbs, 6 rows)
+    # vacuous_both, each cut and required to refuse exactly its rows.
+    # not_established carries no committed row, so a cut would refuse nothing,
+    # and the loop requires each cut code to refuse at least one row; it is
+    # held instead by d5_plants' positives, which carry it on a real bucket-5b
+    # row through the guard.
     for code <-
-          ~w(extend_test accept_bound extend_to_match build_test blocked_on_sdk_gap genuine_extra_coverage redundant not_a_conformance_claim wrong_against_spec) do
+          ~w(extend_test accept_bound extend_to_match build_test blocked_on_sdk_gap genuine_extra_coverage redundant not_a_conformance_claim wrong_against_spec discriminating vacuous_oc vacuous_et vacuous_both) do
       cut = String.replace(set_def, ~r/(?<=\s)#{code}(?=[\s)])\s?/, "")
       mutant = String.replace(src, set_def, cut)
       check("(3) the no-#{code} mutant differs from the source", mutant != src)
@@ -1548,7 +1782,15 @@ defmodule AdjudicationsControls do
       counterpart_missing: "counterpart_defects",
       routed_to_missing: "routed_to_defects",
       spec_citation_missing: "spec_defects",
-      counterfactual_missing: "counterfactual_defects"
+      counterfactual_missing: "counterfactual_defects",
+      oc_null_missing: "oc_null_defects",
+      oc_null_drift: "oc_null_drift_defects",
+      null_outcome_not_entailed: "null_entailed_defects",
+      discount_outside_set: "discount_set_defects",
+      discount_drift: "discount_drift_defects",
+      et_null_missing: "et_null_defects",
+      disposition_underivable: "derivation_defects",
+      not_established_because_missing: "not_established_defects"
     }
 
     for {kind, label, inputs, policy} <- plants(base) do
@@ -2034,6 +2276,16 @@ defmodule AdjudicationsControls do
     end
 
     File.cp!(A.locator_path(), Path.join(tmp, A.locator_path()))
+
+    # MES-145: a D5 row is recomputed from the censuses @d5_legs names and from
+    # bucket-0, so a copy holding D5b-i's record carries them, or G32 refuses
+    # each as `unreadable`.
+    for {_, leg} <- A.d5_legs(),
+        p <- [A.bucket_zero_path(), leg["measurement"], leg["probe"] | leg["nulls"]],
+        p != nil do
+      File.cp!(p, Path.join(tmp, p))
+    end
+
     # A git work tree of its own (MES-135 B1): the outside-the-walk scan lists
     # the files git would commit, and refuses a root git cannot list.
     File.cp!(".gitignore", Path.join(tmp, ".gitignore"))
@@ -2081,7 +2333,7 @@ defmodule AdjudicationsControls do
   # required field present and every K1 tie held, so only the KEY can refuse it.
   defp bind_complete(inputs, view) do
     {:ok, v} = view |> File.read!() |> Jason.decode()
-    rows = tied_rows(v["rows"])
+    rows = tied_rows(v["rows"], view)
 
     inputs
     |> update_in([:records, @record], fn {:ok, r} ->

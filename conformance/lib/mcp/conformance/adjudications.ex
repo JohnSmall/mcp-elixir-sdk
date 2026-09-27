@@ -19,7 +19,14 @@ defmodule MCP.Conformance.Adjudications do
   `routed_to_missing`, `spec_citation_missing` and `disposition_outside_view`
   refusals [authored 29691 | ratified 29693] (Q1 to Q3). MES-139
   (D1-client-i) added the `counterfactual_missing` refusal [authored 29729 |
-  ratified 29731] (Q1).
+  ratified 29731] (Q1). MES-145 (D5b-i) added the D5 family,
+  `discriminating`, `vacuous_oc`, `vacuous_et`, `vacuous_both` and
+  `not_established`, with the `oc_null_missing`, `oc_null_drift`,
+  `null_outcome_not_entailed`, `discount_outside_set`, `discount_drift`,
+  `et_null_missing`, `disposition_underivable` and
+  `not_established_because_missing` refusals, and widened
+  `disposition_outside_view` to it [authored 30074-30076 | ratified 30077]
+  (Q1 to Q6).
 
   ## The dispositions
 
@@ -122,6 +129,70 @@ defmodule MCP.Conformance.Adjudications do
   the claim-unmatched view), and a D1 view admits nothing else. Either way the
   row is refused (`disposition_outside_view`), so a bucket-1 row carrying
   `fix_sdk` cannot audit clean (29693, Q3).
+
+  **The D5 family** [authored 30074-30076 | ratified 30077]. For an edge
+  green in BOTH suites (bucket 5a, server; 5b, client). Agreement is not the
+  finding; the question is which of these greens would go red if the
+  behaviour broke. So each row answers it on both sides, and the guard holds
+  the OC side by RECOMPUTING it:
+
+    * `oc_null`: one entry per committed null census of the row's leg
+      (`@d5_legs`; exactly those, or `oc_null_missing`), each `census`,
+      `scenario`, the census's `checks` and `failed_checks` for the scenario
+      verbatim (else `oc_null_drift`), and the `raw_status` and `outcome` the
+      counts ENTAIL (`null_outcome/3`; else `null_outcome_not_entailed`). A
+      check absent from `failed_checks` has not thereby passed: a pass is
+      claimed only where SUCCESS equals the number of the scenario's bucket-0
+      names no failed entry matches, with nothing skipped and the total
+      accounted for; a skip likewise; `not_emitted` where every emitted check
+      failed; anything else is `undetermined`, never a pass. The outcome is
+      reduced under the leg's own reducer, so on the client leg a WARNING is
+      red; `raw_status` keeps what the census said.
+    * `discounts`: an ATTRIBUTE, not a disposition. A list of `{type, grain,
+      sources}`, one per type (`null`, `drive_policy`) and grain (`check`,
+      `scenario`), never merged (MES-19); a malformed list is
+      `discount_outside_set`. The guard recomputes the owed set
+      (`owed_discounts/2`) and requires equality both ways (`discount_drift`):
+      an owed discount missing, and a stated one that does not hold.
+    * `et_null`: the ET side, the question mirrored back. Either
+      `{measured: true, mutations}`, each mutation an `id`, a `kind`
+      (`violation` or `null`), byte-exact `edits` (`{file, old, new}`), a
+      `result` (`red` or `green`) and, when red, the `firing` line as
+      `<name>_test.exs:N`, in the member's own test file and inside the
+      member's own test; or `{measured: false, reading, why_not_measured,
+      vacuous}`. Otherwise `et_null_missing`.
+
+  The disposition is a FUNCTION of that evidence (`derive_disposition/3`;
+  else `disposition_underivable`). OC is vacuous when some recomputed null
+  outcome is `pass` or `skipped` (a null that is skipped loses nothing, Q2).
+  ET is vacuous when a measured mutation stays green, or an unmeasured
+  reading says so. OC vacuous: `vacuous_both` or `vacuous_oc`, by ET. OC able
+  to go red: `vacuous_et` or `discriminating` by a MEASURED ET, and
+  `not_established` on a reading alone. An `undetermined` outcome with no
+  vacuous one leaves OC unknown, and the row `not_established`. A
+  `not_established` row says why, in one line, `not_established_because`
+  (else `not_established_because_missing`), so the honest disposition is
+  never free.
+
+  What the D5 checks do NOT establish: that a mutation is the strongest
+  violating or do-nothing alternative (MES-143's lesson; the reviewer's, Q5);
+  the premise the pass entailment rests on, which is NOT that bucket-0's
+  vocabulary for a scenario is complete (the committed censuses emit names
+  outside it, all of them FAILUREs) but that each N_S name is emitted at most
+  once and every emission outside N_S appears in `failed_checks`. Counts alone
+  cannot tell "target SUCCESS" from "target absent + one non-N_S SUCCESS", so
+  on input breaking the premise `null_outcome/3` would promote an absence to a
+  pass. `null_premise_defects/1` checks the premise's count-visible
+  consequences over the committed censuses in gate 5: they hold on every
+  client null, and break on the server null at `server-stateless`, where
+  several N_S checks share a name (no row of D5b-i is on that leg); the
+  invisible case (a
+  non-N_S SUCCESS standing in for an absent N_S name) it cannot see, and the
+  harness, which alone could, is not in this repository. A null-passable check is a defect in the INSTRUMENT, not in
+  this SDK, and moves no figure of ours.
+
+  The D5 family is admitted ONLY in a section bound to a D5 view, and a D5
+  view admits nothing else (`disposition_outside_view`, as for D1).
 
   An `extend_to_match`, `build_test` or `blocked_on_sdk_gap` row carries `build_level` (one of
   `pure_unit`, `mock_transport`, `plug`, `live_http`) and a one-line `remedy`,
@@ -316,7 +387,7 @@ defmodule MCP.Conformance.Adjudications do
     * **Which of two rows' content is whose, for the pairs this predicate
       admits (MES-135 K1-R and K1-R2; CR 29672, 29680; amended at MES-138,
       R3-1).** Two rows' contents (every field but `member`, `claim`, `tag`
-      and `echo`) can be exchanged and still audit CLEAN if and only if BOTH:
+      and `echo`) can be exchanged and still audit CLEAN if and only if ALL THREE:
       (a) the `check` tie does not separate them: their ties are MUTUAL (each
       row's harness span overlaps a locator site of the OTHER row's token,
       which happens where the two tokens share a site), OR both rows are
@@ -325,7 +396,10 @@ defmodule MCP.Conformance.Adjudications do
       each row's window is owned by the OTHER row's member (the tie asks only
       that the window lie in the row's own member's test, so the same member
       test, or two doctests of one `doctest` directive, which share its one
-      line).
+      line); and (c), since MES-145, the D5 recomputation does not separate
+      them: neither row is on a D5 view, or both are and each row's tag
+      entails the other's `oc_null` and `discounts` and derives the other's
+      disposition from its `et_null`.
       `root_cause_foreign` separates no pair, because `stated_at` travels with
       the root cause. `check_foreign` accepts a span overlapping ANY locator
       site of the token, and sites are shared: measured at MES-135, 11 of the
@@ -333,7 +407,9 @@ defmodule MCP.Conformance.Adjudications do
       173 tokens have ONLY shared sites, and 60 of the 108 committed rows tie
       their check only through a shared site (48 bucket-2, 12 member rows);
       still 60 of 138 at MES-138, and of 173 at MES-139, since an `oc:none/`
-      row cites no site.
+      row cites no site; 74 of 343 at MES-145 (48 bucket-2, 26 member rows),
+      D5b-i's 14 being its 10 http-standard-headers, 2
+      http-invalid-tool-headers and 2 `WireSchemaValid` rows.
       **The audited set.** At MES-135, CR exchanged every pair of the 108
       committed rows (5778 pairs) and ran each through `audit/2`: 481 pairs
       audited CLEAN, 477 bucket-2 and 4 member; of 551 pairs whose `check`
@@ -361,13 +437,20 @@ defmodule MCP.Conformance.Adjudications do
       D4b's `ping` and `logging-setlevel` rows (both `accept_bound`). The 482
       pairs form 9 cliques, of 30, 9, 3, 3, 2, 2, 2, 2 and 2 rows; the 30 span
       D2a-i and D2a-ii (8 cliques and 481 pairs at MES-135). Gate 5 computes
-      the set by (a) and (b) over every committed row and asserts it EQUALS
+      the set by (a), (b) and (c) over every committed row and asserts it EQUALS
       the audited set pair for pair, and pins two pairs CLEAN as known residuals: CR's bucket-2 plant (D2a-ii's
       `caching` and `tools-call-with-progress` `WireSchemaValid` rows, which
       differ on `check`, `disposition`, `extend_target`, `remedy`,
       `root_cause` and three more fields) and the cross-record member pair
       (D4a's `initialize`, D4b's `ping`). So a row, a tie, or this paragraph
-      moving the set shows up red there. For a token whose sites are all
+      moving the set shows up red there. **At MES-145 the `swap-audit
+      touching` mode exchanges every pair with a D5b-i row (10137 pairs of the
+      343 rows, 0 no-ops): 7 audit CLEAN (537 -> 544), three cliques of 3, 3
+      and 2 rows, each on one member test and one shared
+      http-standard-headers site, whose recomputed D5 evidence is identical.**
+      Of the 184 pairs it adds that the `check` tie leaves unseparated, the
+      `et_test` tie refuses 176 and (c) alone refuses 1 (W6's two rows,
+      whose null outcomes differ). For a token whose sites are all
       shared, the `check` tie cannot be narrowed: any site the row cites is a
       site of another token too.
     * That a slug root cause names the right cause.
@@ -403,6 +486,9 @@ defmodule MCP.Conformance.Adjudications do
   `disposition_outside_set`, `bound_missing`, `build_level_missing`, `sdk_gap_missing`,
   `disposition_outside_view`, `protects_missing`, `counterpart_missing`,
   `routed_to_missing`, `spec_citation_missing`, `counterfactual_missing`,
+  `oc_null_missing`, `oc_null_drift`, `null_outcome_not_entailed`,
+  `discount_outside_set`, `discount_drift`, `et_null_missing`,
+  `disposition_underivable`, `not_established_because_missing`,
   `phantom`, `missing`,
   `duplicate`, `closure_not_exclusive`, `owed_unadjudicated`, `pending_but_closed`,
   `catalogue_names_absent_view`, `bound_to_excluded`, `bound_outside_anchor`,
@@ -454,7 +540,8 @@ defmodule MCP.Conformance.Adjudications do
   @dispositions ~w(fix_sdk fix_conformance_adapter keep_design_publish_bound
                    po_decision_required suite_defect_upstream extend_test accept_bound
                    extend_to_match build_test blocked_on_sdk_gap
-                   genuine_extra_coverage redundant not_a_conformance_claim wrong_against_spec)
+                   genuine_extra_coverage redundant not_a_conformance_claim wrong_against_spec
+                   discriminating vacuous_oc vacuous_et vacuous_both not_established)
 
   # The D1 family (MES-138; authored 29691, ratified 29693): admitted ONLY in a
   # section bound to a D1 view, and a D1 view admits nothing else
@@ -470,6 +557,50 @@ defmodule MCP.Conformance.Adjudications do
   # and cites spec text. `_test.exs:N`, not `test:N` (MES-138 N7).
   @fires_cite ~r/\b[\w-]+_test\.exs:\d+\b/
   @none_can ~r/\ANone can: .*(\.mdx|\.ts|§)/u
+
+  # The D5 family (MES-145; plan 30074-30076, ratified 30077): admitted ONLY in
+  # a section bound to a D5 view, and a D5 view admits nothing else
+  # (disposition_outside_view, both ways, as the D1 family). The disposition is
+  # a checked FUNCTION of the row's evidence (disposition_underivable), and the
+  # OC evidence is recomputed here from the committed censuses (`@d5_legs`).
+  @d5_dispositions ~w(discriminating vacuous_oc vacuous_et vacuous_both not_established)
+  @d5_views ~w(docs/conformance/buckets/bucket-5a-2026-07-28.json
+               docs/conformance/buckets/bucket-5b-2026-07-28.json)
+  # Each family: its dispositions and the views that admit them, both ways.
+  @families [{"D1", @d1_dispositions, @d1_views}, {"D5", @d5_dispositions, @d5_views}]
+  @null_outcomes ~w(pass fail skipped not_emitted undetermined)
+  # A null whose outcome is one of these lost nothing on the check (Q2).
+  @vacuous_outcomes ~w(pass skipped)
+  # The discount is an ATTRIBUTE, never a disposition; null and drive_policy
+  # are separate entries at each grain and never merged (MES-19; Q4).
+  @discount_types ~w(null drive_policy)
+  @discount_grains ~w(check scenario)
+  @et_kinds ~w(violation null)
+  @et_results ~w(red green)
+  # The censuses each leg's D5 rows are recomputed from. `nulls` is every
+  # committed null census of the leg (a row's `oc_null` covers exactly these);
+  # `probe` is the strict-connect probe, whose scope is the adapter
+  # catalogue's (`MCP.Conformance.Adapters.scope/2`), never "all".
+  @d5_legs %{
+    "client" => %{
+      "reducer" => "client_summary",
+      "measurement" => "docs/conformance/client-2026-07-28.json",
+      "nulls" => ~w(docs/conformance/client-2026-07-28-null-connect.json
+                    docs/conformance/client-2026-07-28-null-exit0.json
+                    docs/conformance/client-2026-07-28-null-request.json),
+      "probe" => "docs/conformance/client-2026-07-28-probe-strict-connect.json"
+    },
+    "server" => %{
+      "reducer" => "server_summary",
+      "measurement" => "docs/conformance/server-2026-07-28.json",
+      "nulls" => ~w(docs/conformance/server-2026-07-28-null-control.json),
+      "probe" => nil
+    }
+  }
+  # N_S, a scenario's emission vocabulary, and each check's name and id.
+  @bucket_zero "docs/conformance/bucket-0-2026-07-28.json"
+  # A scenario passes as driven under this verdict (MCP.Conformance.Discounts).
+  @scenario_verdict "server_summary_or_client_summary"
 
   # The build levels an extend_to_match, build_test or blocked_on_sdk_gap row may
   # name (MES-128, 29444; MES-129, 29460).
@@ -543,6 +674,14 @@ defmodule MCP.Conformance.Adjudications do
   def d1_dispositions, do: @d1_dispositions
   def d1_views, do: @d1_views
   def routes, do: @routes
+  def d5_dispositions, do: @d5_dispositions
+  def d5_views, do: @d5_views
+  def d5_legs, do: @d5_legs
+  def null_outcomes, do: @null_outcomes
+  def discount_types, do: @discount_types
+  def discount_grains, do: @discount_grains
+  def et_kinds, do: @et_kinds
+  def bucket_zero_path, do: @bucket_zero
   def echo_fields, do: @echo_fields
   def emptiness_fields, do: @emptiness_fields
   def view_schemas, do: @view_schemas
@@ -599,7 +738,28 @@ defmodule MCP.Conformance.Adjudications do
       anchor: anchor(root),
       strays: strays(root),
       outside: outside(root),
-      source_fun: &read_source(root, &1)
+      source_fun: &read_source(root, &1),
+      d5: load_d5(root)
+    }
+  end
+
+  @doc """
+  The D5 inputs: `bucket_zero`, every census `@d5_legs` names (`censuses`,
+  path => read result), and each leg's probe scope from the adapter catalogue.
+  Read whether or not a D5 row exists; judged only when one does.
+  """
+  def load_d5(root) do
+    paths =
+      for {_, leg} <- @d5_legs,
+          p <- [leg["measurement"], leg["probe"] | leg["nulls"]],
+          p != nil,
+          uniq: true,
+          do: p
+
+    %{
+      bucket_zero: read_json(Path.join(root, @bucket_zero)),
+      censuses: Map.new(paths, &{&1, read_json(Path.join(root, &1))}),
+      probe_scope: %{"client" => MCP.Conformance.Adapters.scope(:client, "strict_connect") || []}
     }
   end
 
@@ -760,7 +920,11 @@ defmodule MCP.Conformance.Adjudications do
         {:error, why} -> {%{}, [d(:unreadable, @locator, nil, why)]}
       end
 
-    ties = %{locator: locator, source_fun: inputs.source_fun}
+    d5_rows? =
+      Enum.any?(rows, fn {_, r} -> is_map(r) and r["disposition"] in @d5_dispositions end)
+
+    {d5, d5_defects} = if d5_rows?, do: d5_context(Map.get(inputs, :d5)), else: {nil, []}
+    ties = %{locator: locator, source_fun: inputs.source_fun, d5: d5}
     row_defects = Enum.flat_map(rows, fn {s, r} -> row_defects(s, r, view_keys, ties) end)
     {citations, citation_defects} = citations(rows, inputs.records, inputs.source_fun)
 
@@ -789,6 +953,7 @@ defmodule MCP.Conformance.Adjudications do
     defects =
       record_defects ++
         locator_defects ++
+        d5_defects ++
         view_defects ++
         row_defects ++ set_defects ++ citation_defects ++ universe_defects ++ reach(report)
 
@@ -1174,6 +1339,14 @@ defmodule MCP.Conformance.Adjudications do
       routed_to_defects(section.file, k, row) ++
       spec_defects(section.file, k, row) ++
       counterfactual_defects(section.file, k, row) ++
+      oc_null_defects(section.file, k, row, ties) ++
+      oc_null_drift_defects(section.file, k, row, ties) ++
+      null_entailed_defects(section.file, k, row, ties) ++
+      discount_set_defects(section.file, k, row, ties) ++
+      discount_drift_defects(section.file, k, row, ties) ++
+      et_null_defects(section.file, k, row, ties) ++
+      derivation_defects(section.file, k, row, ties) ++
+      not_established_defects(section.file, k, row) ++
       echo_defects(section.file, k, row, view_row) ++
       et_test_defects(section.file, k, row, ties) ++
       check_defects(section.file, k, row, ties) ++
@@ -1622,30 +1795,34 @@ defmodule MCP.Conformance.Adjudications do
   #
   # Shape only, as bound_missing: whether a verdict is RIGHT is the reviewer's.
 
-  # A D1 disposition only in a section bound to a D1 view, and a D1 view only
-  # D1 dispositions. A code outside the closed set is disposition_outside_set's.
+  # A family's disposition only in a section bound to one of the family's
+  # views, and a family's view only the family's dispositions (D1: MES-138; D5:
+  # MES-145). A code outside the closed set is disposition_outside_set's.
   defp view_scope_defects(file, k, %{"disposition" => disp}, view) when disp in @dispositions do
-    case {disp in @d1_dispositions, view in @d1_views} do
+    by_disp = Enum.find(@families, fn {_, ds, _} -> disp in ds end)
+    by_view = Enum.find(@families, fn {_, _, vs} -> view in vs end)
+
+    case {by_disp, by_view} do
       {same, same} ->
         []
 
-      {true, false} ->
+      {{family, _, views}, _} ->
         [
           d(
             :disposition_outside_view,
             file,
             k,
-            "#{disp} is a D1 disposition, admitted only in a section bound to #{Enum.join(@d1_views, " or ")}, not #{view}"
+            "#{disp} is a #{family} disposition, admitted only in a section bound to #{Enum.join(views, " or ")}, not #{view}"
           )
         ]
 
-      {false, true} ->
+      {nil, {family, ds, _}} ->
         [
           d(
             :disposition_outside_view,
             file,
             k,
-            "#{view} admits only the D1 dispositions #{Enum.join(@d1_dispositions, " ")}, not #{disp}"
+            "#{view} admits only the #{family} dispositions #{Enum.join(ds, " ")}, not #{disp}"
           )
         ]
     end
@@ -1782,6 +1959,586 @@ defmodule MCP.Conformance.Adjudications do
   end
 
   defp counterfactual_defects(_file, _k, _row), do: []
+
+  # --- the D5 family (MES-145; plan 30074-30076, ratified 30077) --------------------
+  #
+  # A D5 row answers "would this green go red if the behaviour broke?" on both
+  # sides. The OC side is RECOMPUTED here from the committed censuses, never
+  # taken from the row: the row's `oc_null` and `discounts` are claims the guard
+  # re-derives and requires equal. The ET side is the row's measurement,
+  # checked for shape. The disposition is then a function of the two. One
+  # function per refusal, taking the same arguments, so the control can
+  # neutralise each alone; each skips what another refusal owns, so a plant is
+  # refused by one kind.
+
+  @doc """
+  The D5 context from `load_d5/1`'s inputs: `{ctx, defects}`. `ctx` is `nil`
+  when an input cannot be read, and every D5 recomputation is then skipped
+  (each unreadable file is refused as `unreadable`, so nothing passes silently).
+  """
+  def d5_context(nil),
+    do: {nil, [d(:unreadable, @bucket_zero, nil, "the D5 inputs were not loaded")]}
+
+  def d5_context(%{bucket_zero: bz, censuses: censuses, probe_scope: scope}) do
+    unreadable =
+      for {p, r} <- [{@bucket_zero, bz} | Enum.sort(censuses)],
+          not match?({:ok, %{}}, r),
+          do: d(:unreadable, p, nil, "a D5 input: #{inspect(r, limit: 3)}")
+
+    missing =
+      for {_, leg} <- @d5_legs,
+          p <- [leg["measurement"], leg["probe"] | leg["nulls"]],
+          p != nil,
+          not Map.has_key?(censuses, p),
+          do: d(:unreadable, p, nil, "a D5 census @d5_legs names was not loaded")
+
+    case unreadable ++ missing do
+      [] ->
+        {:ok, %{"checks" => checks}} = bz
+
+        {%{
+           checks: Map.new(checks, &{&1["token"], &1}),
+           vocab: Enum.group_by(checks, &{&1["leg"], &1["scenario"]}),
+           censuses: Map.new(censuses, fn {p, {:ok, doc}} -> {p, doc} end),
+           probe_scope: scope
+         }, []}
+
+      ds ->
+        {nil, ds}
+    end
+  end
+
+  defp leg_nulls(tag) do
+    case leg_scenario(tag) do
+      {leg, _} -> get_in(@d5_legs, [leg, "nulls"]) || []
+      nil -> []
+    end
+  end
+
+  # "oc:<leg>/<scenario>/..." -> {leg, scenario}; anything else -> nil.
+  defp leg_scenario("oc:" <> rest) do
+    case String.split(rest, "/", parts: 3) do
+      [leg, scenario, _] -> {leg, scenario}
+      _ -> nil
+    end
+  end
+
+  defp leg_scenario(_), do: nil
+
+  @doc """
+  The null outcome a census entails for the check `tag` names, under the
+  counts-entail rule: `%{"raw_status" => s | nil, "outcome" => o}`.
+
+  N_S is the scenario's checks in bucket-0. The rule assumes each N_S name is
+  emitted at most once and every emission outside N_S appears in
+  `failed_checks` (`null_premise_defects/1`), NOT that N_S is the scenario's
+  whole emission vocabulary: it is not. A `failed_checks`
+  entry matches the check by `name`, or by `id` where that id occurs once in
+  N_S (the sep-2322 entries carry name == id). A matched entry gives the raw
+  status. Otherwise, with R the N_S names no entry matches (the check among
+  them) and F the entries: SUCCESS == |R|, SKIPPED == INFO == 0 and total ==
+  SUCCESS + |F| entails raw SUCCESS; SUCCESS == INFO == 0, SKIPPED == |R| and
+  total == SKIPPED + |F| entails raw SKIPPED; SUCCESS == SKIPPED == INFO == 0
+  and total == |F| entails that the check was never emitted. Anything else,
+  and a check or scenario the inputs lack, is `undetermined`: an absence from
+  `failed_checks` is never read as a pass. The outcome is the raw status
+  reduced under the leg's own reducer (`client_summary` on the client leg, so
+  a WARNING is red; Q3), `ignored` reported as `skipped`.
+  """
+  def null_outcome(ctx, census_path, tag) do
+    with {leg, scenario} <- leg_scenario(tag),
+         %{"reducer" => reducer} <- @d5_legs[leg],
+         %{"name" => name, "key" => [_, _, id | _]} <- ctx.checks[tag],
+         %{} = census <- ctx.censuses[census_path],
+         %{} = sc <- Enum.find(census["scenarios"] || [], &(&1["id"] == scenario)),
+         vocab = Map.get(ctx.vocab, {leg, scenario}, []),
+         {:ok, raw} <- raw_status(sc, vocab, name, id) do
+      %{"raw_status" => raw, "outcome" => reduce(census, reducer, raw)}
+    else
+      _ -> %{"raw_status" => nil, "outcome" => "undetermined"}
+    end
+  end
+
+  defp raw_status(%{"checks" => c, "failed_checks" => f}, vocab, name, id)
+       when is_map(c) and is_list(f) do
+    ids = Enum.frequencies_by(vocab, &Enum.at(&1["key"], 2))
+    matches? = fn e, n, i -> e["name"] == n or (e["id"] == i and ids[i] == 1) end
+    names = Enum.map(vocab, &{&1["name"], Enum.at(&1["key"], 2)})
+
+    case f |> Enum.filter(&matches?.(&1, name, id)) |> Enum.map(& &1["status"]) |> Enum.uniq() do
+      [status] when is_binary(status) ->
+        {:ok, status}
+
+      [] ->
+        r = Enum.count(names, fn {n, i} -> not Enum.any?(f, &matches?.(&1, n, i)) end)
+        if {name, id} in names, do: entailed_status(c, r, length(f)), else: :error
+
+      _ ->
+        :error
+    end
+  end
+
+  defp raw_status(_sc, _vocab, _name, _id), do: :error
+
+  @doc """
+  The count-visible breaches of the premise `null_outcome/3` rests on, over
+  every null census of every D5 leg and every scenario bucket-0 gives that
+  leg: `{census, scenario, kind}`, empty when the premise holds as far as
+  counts can show. `:emitted_twice` is an N_S check matched by more than one
+  `failed_checks` entry (at most once, broken); `:unfailed_outside_n_s` is
+  more non-failed emissions (`total - |F|`) than N_S checks no entry matches,
+  so some emission outside N_S is missing from `failed_checks`;
+  `:failed_checks_incomplete` is FAILURE + WARNING != |F|. What counts cannot
+  show, a non-N_S SUCCESS standing in for an absent N_S name, is not here.
+  """
+  def null_premise_defects(ctx) do
+    for {leg, %{"nulls" => nulls}} <- Enum.sort(@d5_legs),
+        path <- nulls,
+        %{} = census <- [ctx.censuses[path]],
+        {{^leg, scenario}, vocab} <- Enum.sort(ctx.vocab),
+        %{"checks" => c, "failed_checks" => f} <-
+          [Enum.find(census["scenarios"] || [], &(&1["id"] == scenario))],
+        kind <- premise_breaches(c, f, vocab),
+        do: {path, scenario, kind}
+  end
+
+  defp premise_breaches(c, f, vocab) do
+    ids = Enum.frequencies_by(vocab, &Enum.at(&1["key"], 2))
+    hits = fn {n, i} -> Enum.count(f, &(&1["name"] == n or (&1["id"] == i and ids[i] == 1))) end
+    hit_counts = Enum.map(vocab, &hits.({&1["name"], Enum.at(&1["key"], 2)}))
+    r = Enum.count(hit_counts, &(&1 == 0))
+    get = &Map.get(c, &1, 0)
+
+    [
+      {:emitted_twice, Enum.any?(hit_counts, &(&1 > 1))},
+      {:unfailed_outside_n_s, get.("total") - length(f) > r},
+      {:failed_checks_incomplete, get.("FAILURE") + get.("WARNING") != length(f)}
+    ]
+    |> Enum.filter(&elem(&1, 1))
+    |> Enum.map(&elem(&1, 0))
+  end
+
+  # With `r` the N_S names no failed entry matches and `f` the failed entries:
+  # the status the counts entail for every one of the `r`, or :error.
+  defp entailed_status(c, r, f) do
+    counts = Enum.map(~w(SUCCESS SKIPPED INFO total), &Map.get(c, &1))
+
+    case counts do
+      [^r, 0, 0, total] when total == r + f -> {:ok, "SUCCESS"}
+      [0, ^r, 0, total] when total == r + f -> {:ok, "SKIPPED"}
+      [0, 0, 0, ^f] -> {:ok, nil}
+      _ -> :error
+    end
+  end
+
+  defp reduce(_census, _reducer, nil), do: "not_emitted"
+
+  defp reduce(census, reducer, raw) do
+    case get_in(census, ["reducers", reducer, "disposition", raw]) do
+      "fail" -> "fail"
+      "pass" -> "pass"
+      "ignored" -> "skipped"
+      _ -> "undetermined"
+    end
+  end
+
+  @doc """
+  The `oc_null` a D5 row on `tag` must carry: one entry per null census of the
+  tag's leg, each echoing the census's `checks` and `failed_checks` for the
+  scenario verbatim, with the entailed `raw_status` and `outcome`.
+  """
+  def oc_null_expected(ctx, tag) do
+    with {leg, scenario} <- leg_scenario(tag), %{"nulls" => nulls} <- @d5_legs[leg] do
+      for p <- nulls do
+        sc = Enum.find(ctx.censuses[p]["scenarios"] || [], &(&1["id"] == scenario)) || %{}
+
+        Map.merge(
+          %{
+            "census" => p,
+            "scenario" => scenario,
+            "checks" => sc["checks"],
+            "failed_checks" => sc["failed_checks"]
+          },
+          null_outcome(ctx, p, tag)
+        )
+      end
+    else
+      _ -> []
+    end
+  end
+
+  @doc """
+  The discounts a D5 row on `tag` owes, recomputed from the censuses, sorted:
+  each `%{"type", "grain", "sources"}`. `null`/`check`: a null of the leg whose
+  outcome is vacuous (`pass` or `skipped`). `null`/`scenario`: the scenario
+  passes as driven and some null passes it (`MCP.Conformance.Discounts`'
+  null-passable predicate). `drive_policy`/`scenario`: in the probe's scope,
+  passed as driven and not under the probe (Discounts' drive-policy
+  predicate). `drive_policy`/`check`: in the probe's scope, and the probe's
+  outcome for the check is not `pass`.
+  """
+  def owed_discounts(ctx, tag) do
+    with {leg, scenario} <- leg_scenario(tag), %{} = cat <- @d5_legs[leg] do
+      driven? = scenario_passes?(ctx.censuses[cat["measurement"]], scenario, true)
+
+      null_check =
+        Enum.filter(cat["nulls"], &(null_outcome(ctx, &1, tag)["outcome"] in @vacuous_outcomes))
+
+      null_scenario =
+        Enum.filter(cat["nulls"], &scenario_passes?(ctx.censuses[&1], scenario, false))
+
+      probe = cat["probe"]
+      in_probe? = probe != nil and scenario in Map.get(ctx.probe_scope, leg, [])
+
+      [
+        {"null", "check", null_check, null_check != []},
+        {"null", "scenario", null_scenario, driven? and null_scenario != []},
+        {"drive_policy", "scenario", [probe],
+         in_probe? and driven? and not scenario_passes?(ctx.censuses[probe], scenario, false)},
+        {"drive_policy", "check", [probe],
+         in_probe? and null_outcome(ctx, probe, tag)["outcome"] != "pass"}
+      ]
+      |> Enum.filter(&elem(&1, 3))
+      |> Enum.map(fn {t, g, src, _} ->
+        %{"type" => t, "grain" => g, "sources" => Enum.sort(src)}
+      end)
+      |> Enum.sort_by(&{&1["type"], &1["grain"]})
+    else
+      _ -> []
+    end
+  end
+
+  # As driven (`scored?` true): scored, outside `auth/`, and passing; the
+  # predicate MCP.Conformance.Discounts applies to the measurement.
+  defp scenario_passes?(census, scenario, scored?) do
+    case Enum.find((is_map(census) && census["scenarios"]) || [], &(&1["id"] == scenario)) do
+      nil ->
+        false
+
+      s ->
+        (not scored? or (s["scored"] == true and not String.starts_with?(scenario, "auth/"))) and
+          get_in(s, ["passes", @scenario_verdict]) == true
+    end
+  end
+
+  @doc """
+  The disposition a D5 row's evidence entails, or `:unshaped` when its
+  `et_null` is not well formed (et_null_missing owns that). OC is vacuous when
+  some recomputed null outcome is `pass` or `skipped`; unknown when none is
+  and one is `undetermined`. ET is vacuous when a measured mutation stays
+  green, or, unmeasured, when the stated reading says so. Then: OC vacuous
+  gives `vacuous_both` or `vacuous_oc` by ET; OC able to go red gives
+  `vacuous_et` or `discriminating` by a MEASURED ET, and `not_established` on
+  a reading alone; OC unknown gives `not_established`.
+  """
+  def derive_disposition(ctx, tag, et_null) do
+    case {et_shape(et_null), oc_side(ctx, tag)} do
+      {:error, _} -> :unshaped
+      {{_, true}, :vacuous} -> "vacuous_both"
+      {{_, false}, :vacuous} -> "vacuous_oc"
+      {{:measured, true}, :can_go_red} -> "vacuous_et"
+      {{:measured, false}, :can_go_red} -> "discriminating"
+      {{:reading, _}, :can_go_red} -> "not_established"
+      {_, :unknown} -> "not_established"
+    end
+  end
+
+  # :vacuous when some recomputed null outcome is vacuous; :unknown when none
+  # is and one is undetermined (or the tag has no leg); else :can_go_red.
+  defp oc_side(ctx, tag) do
+    outcomes =
+      with {leg, _} <- leg_scenario(tag), %{"nulls" => nulls} <- @d5_legs[leg] do
+        Enum.map(nulls, &null_outcome(ctx, &1, tag)["outcome"])
+      else
+        _ -> ["undetermined"]
+      end
+
+    cond do
+      Enum.any?(outcomes, &(&1 in @vacuous_outcomes)) -> :vacuous
+      outcomes == [] or "undetermined" in outcomes -> :unknown
+      true -> :can_go_red
+    end
+  end
+
+  # {:measured | :reading, et_vacuous?} for a well-formed et_null, else :error.
+  defp et_shape(%{"measured" => true, "mutations" => [_ | _] = ms}) do
+    if Enum.all?(ms, &mutation?/1),
+      do: {:measured, Enum.any?(ms, &(&1["result"] == "green"))},
+      else: :error
+  end
+
+  defp et_shape(%{"measured" => false, "reading" => r, "why_not_measured" => w, "vacuous" => v})
+       when is_boolean(v) do
+    if one_line?(r) and one_line?(w), do: {:reading, v}, else: :error
+  end
+
+  defp et_shape(_), do: :error
+
+  defp mutation?(%{"id" => id, "kind" => kind, "edits" => [_ | _] = edits, "result" => res} = m) do
+    one_line?(id) and kind in @et_kinds and res in @et_results and Enum.all?(edits, &edit?/1) and
+      if(res == "red",
+        do: one_line?(m["firing"]) and m["firing"] =~ @fires_cite,
+        else: is_nil(m["firing"])
+      )
+  end
+
+  defp mutation?(_), do: false
+
+  defp edit?(%{"file" => f, "old" => o, "new" => n})
+       when is_binary(f) and is_binary(o) and is_binary(n),
+       do: f != "" and o != n
+
+  defp edit?(_), do: false
+
+  # The D5 rows whose recomputation can run: a D5 disposition and a context.
+  defguardp d5_row?(row, ties)
+            when is_map_key(row, "disposition") and
+                   :erlang.map_get("disposition", row) in @d5_dispositions and
+                   is_map(:erlang.map_get(:d5, ties))
+
+  # oc_null: one well-formed entry per null census of the leg, exactly.
+  defp oc_null_defects(file, k, row, ties) when d5_row?(row, ties) do
+    with {leg, _} <- leg_scenario(row["tag"]),
+         %{"nulls" => nulls} <- @d5_legs[leg],
+         entries when is_list(entries) <- row["oc_null"],
+         true <- Enum.all?(entries, &null_entry?/1),
+         true <- Enum.sort(Enum.map(entries, & &1["census"])) == Enum.sort(nulls) do
+      []
+    else
+      _ ->
+        leg = elem(leg_scenario(row["tag"]) || {nil, nil}, 0)
+
+        [
+          d(
+            :oc_null_missing,
+            file,
+            k,
+            "a D5 row needs `oc_null`: one entry per null census of its leg (#{inspect(get_in(@d5_legs, [leg, "nulls"]))}), each with `census`, `scenario`, `checks`, `failed_checks`, `raw_status` and an `outcome` in #{inspect(@null_outcomes)}, not #{inspect(row["oc_null"], limit: 3)}"
+          )
+        ]
+    end
+  end
+
+  defp oc_null_defects(_file, _k, _row, _ties), do: []
+
+  defp null_entry?(%{"census" => c, "scenario" => s, "checks" => ch, "outcome" => o} = e)
+       when is_binary(c) and is_binary(s) and is_map(ch) and o in @null_outcomes,
+       do: is_list(e["failed_checks"]) and Map.has_key?(e, "raw_status")
+
+  defp null_entry?(_), do: false
+
+  # Each well-formed entry echoes its census's scenario verbatim.
+  defp oc_null_drift_defects(file, k, row, ties) when d5_row?(row, ties) do
+    want = Map.new(oc_null_expected(ties.d5, row["tag"]), &{&1["census"], &1})
+
+    for e <- List.wrap(row["oc_null"]),
+        null_entry?(e),
+        # A census outside the leg's catalogue is oc_null_missing's.
+        w <- [want[e["census"]]],
+        is_map(w),
+        moved = for(f <- ~w(scenario checks failed_checks), e[f] != w[f], do: f),
+        moved != [],
+        do:
+          d(
+            :oc_null_drift,
+            file,
+            k,
+            "oc_null's entry for #{e["census"]} is not the census's current #{Enum.join(moved, ", ")} (echoed #{inspect(Map.take(e, moved), limit: 4)}, census #{inspect(Map.take(w, moved), limit: 4)})"
+          )
+  end
+
+  defp oc_null_drift_defects(_file, _k, _row, _ties), do: []
+
+  # Each well-formed entry's outcome and raw status are the ones the census
+  # entails (null_outcome/3), recomputed here: gate 5 holds every null claim.
+  defp null_entailed_defects(file, k, row, ties) when d5_row?(row, ties) do
+    nulls = leg_nulls(row["tag"])
+
+    for e <- List.wrap(row["oc_null"]),
+        null_entry?(e),
+        # A census outside the leg's catalogue is oc_null_missing's.
+        e["census"] in nulls,
+        w <- [null_outcome(ties.d5, e["census"], row["tag"])],
+        Map.take(e, ~w(raw_status outcome)) != w,
+        do:
+          d(
+            :null_outcome_not_entailed,
+            file,
+            k,
+            "oc_null claims #{inspect(Map.take(e, ~w(raw_status outcome)))} under #{e["census"]}; its counts entail #{inspect(w)}"
+          )
+  end
+
+  defp null_entailed_defects(_file, _k, _row, _ties), do: []
+
+  defp discount_set_defects(file, k, row, ties) when d5_row?(row, ties) do
+    if discounts?(row["discounts"]),
+      do: [],
+      else: [
+        d(
+          :discount_outside_set,
+          file,
+          k,
+          "a D5 row needs `discounts`, a list (possibly empty) of `{type in #{inspect(@discount_types)}, grain in #{inspect(@discount_grains)}, sources: [census path]}`, one per type and grain, not #{inspect(row["discounts"], limit: 3)}"
+        )
+      ]
+  end
+
+  defp discount_set_defects(_file, _k, _row, _ties), do: []
+
+  defp discounts?(ds) when is_list(ds) do
+    Enum.all?(ds, fn
+      %{"type" => t, "grain" => g, "sources" => [_ | _] = src} ->
+        t in @discount_types and g in @discount_grains and Enum.all?(src, &is_binary/1)
+
+      _ ->
+        false
+    end) and ds |> Enum.map(&{&1["type"], &1["grain"]}) |> Enum.uniq() |> length() == length(ds)
+  end
+
+  defp discounts?(_), do: false
+
+  # Both ways: an owed discount missing, and a stated one that does not hold.
+  defp discount_drift_defects(file, k, row, ties) when d5_row?(row, ties) do
+    stated =
+      if discounts?(row["discounts"]),
+        do:
+          row["discounts"]
+          |> Enum.map(&%{&1 | "sources" => Enum.sort(&1["sources"])})
+          |> Enum.map(&Map.take(&1, ~w(type grain sources)))
+          |> Enum.sort_by(&{&1["type"], &1["grain"]}),
+        else: :unshaped
+
+    owed = owed_discounts(ties.d5, row["tag"])
+
+    if stated == :unshaped or stated == owed,
+      do: [],
+      else: [
+        d(
+          :discount_drift,
+          file,
+          k,
+          "the discounts stated (#{inspect(stated -- owed)} not owed) are not the ones the censuses entail (#{inspect(owed -- stated)} owed and missing)"
+        )
+      ]
+  end
+
+  defp discount_drift_defects(_file, _k, _row, _ties), do: []
+
+  # et_null: measured mutations with byte-exact edits, or a stated reading with
+  # why it was not measured. A red mutation names its firing line in the
+  # member's own test file, inside the member's own test (a doctest member's
+  # body is in lib/, so there only the file is tied).
+  defp et_null_defects(file, k, row, ties) when d5_row?(row, ties) do
+    et = row["et_null"]
+
+    why =
+      case et_shape(et) do
+        :error -> :shape
+        {:reading, _} -> nil
+        {:measured, _} -> firing_foreign(row, et["mutations"], ties.source_fun)
+      end
+
+    case why do
+      nil ->
+        []
+
+      :shape ->
+        [
+          d(
+            :et_null_missing,
+            file,
+            k,
+            "a D5 row needs `et_null`: `{measured: true, mutations: [{id, kind in #{inspect(@et_kinds)}, edits: [{file, old, new}], result in #{inspect(@et_results)}, firing}]}`, a red one's `firing` naming `<name>_test.exs:N` and a green one's none; or `{measured: false, reading, why_not_measured, vacuous: boolean}`; not #{inspect(et, limit: 3)}"
+          )
+        ]
+
+      other ->
+        [
+          d(
+            :et_null_missing,
+            file,
+            k,
+            "a red mutation's firing line is not the member's: #{other}"
+          )
+        ]
+    end
+  end
+
+  defp et_null_defects(_file, _k, _row, _ties), do: []
+
+  defp firing_foreign(row, mutations, source_fun) do
+    et_file = get_in(row, ["et_test", "file"])
+    doctest? = is_binary(row["member"]) and row["member"] =~ ~r{/doctest }
+
+    Enum.find_value(mutations, fn
+      %{"result" => "red", "firing" => f, "id" => id} ->
+        [cite] = Regex.run(@fires_cite, f)
+        [base, n] = String.split(cite, ":")
+        line = String.to_integer(n)
+
+        cond do
+          not is_binary(et_file) or Path.basename(et_file) != base ->
+            "#{id} fires at #{cite}, not in the member's test file #{inspect(et_file)}"
+
+          doctest? ->
+            nil
+
+          et_test_owner(
+            %{row | "et_test" => %{"file" => et_file, "lines" => [line, line], "bytes" => ""}},
+            source_fun
+          ) != :ok ->
+            "#{id} fires at #{cite}, which is not inside #{row["member"]}'s own test"
+
+          true ->
+            nil
+        end
+
+      _ ->
+        nil
+    end)
+  end
+
+  # The disposition is the one the evidence entails.
+  defp derivation_defects(file, k, row, ties) when d5_row?(row, ties) do
+    stated = row["disposition"]
+
+    case derive_disposition(ties.d5, row["tag"], row["et_null"]) do
+      :unshaped ->
+        []
+
+      ^stated ->
+        []
+
+      disp ->
+        [
+          d(
+            :disposition_underivable,
+            file,
+            k,
+            "#{row["disposition"]} does not follow from the row's evidence, which entails #{disp} (the null outcomes recomputed from the censuses, and et_null)"
+          )
+        ]
+    end
+  end
+
+  defp derivation_defects(_file, _k, _row, _ties), do: []
+
+  # The honest "not established" is never free: it says why, in one line.
+  defp not_established_defects(file, k, %{"disposition" => "not_established"} = row) do
+    if one_line?(row["not_established_because"]),
+      do: [],
+      else: [
+        d(
+          :not_established_because_missing,
+          file,
+          k,
+          "a not_established row states why in one line, `not_established_because`, not #{inspect(row["not_established_because"], limit: 3)}"
+        )
+      ]
+  end
+
+  defp not_established_defects(_file, _k, _row), do: []
 
   defp repo_citation?(%{"file" => f, "lines" => [_, _], "bytes" => b})
        when is_binary(f) and is_binary(b),

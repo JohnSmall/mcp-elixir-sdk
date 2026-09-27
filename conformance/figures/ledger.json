@@ -5376,6 +5376,14 @@
       "nth": 1,
       "path": "asymmetry_bucket_6.inherited_figure",
       "phrase": "14 checks"
+    },
+    {
+      "class": "measured",
+      "file": "docs/conformance/adjudications/adjudication-D5b-i-2026-07-28.json",
+      "nth": 1,
+      "path": "sections[#0].slice.statement",
+      "phrase": "31 rows",
+      "quantity": "d5b_i_rows"
     }
   ],
   "guard": "G31 — MCP.Conformance.InputFigures (MES-120)",
@@ -15709,6 +15717,21 @@
             {
               "eq": "FAILURE",
               "field": "status"
+            }
+          ]
+        }
+      }
+    },
+    "d5b_i_rows": {
+      "means": "bucket-5b view rows whose check scenario, oc_key[1], is not http-custom-headers (MES-145's slice; MES-146 holds the complement)",
+      "query": {
+        "count": {
+          "at": "rows[]",
+          "in": "docs/conformance/buckets/bucket-5b-2026-07-28.json",
+          "where": [
+            {
+              "field": "oc_key.1",
+              "ne": "http-custom-headers"
             }
           ]
         }
