@@ -262,7 +262,7 @@ defmodule Mix.Tasks.Conformance.Sweep do
 
   # --- --disambiguate: settle a multi-occurrence FROM by RE-MEASUREMENT ---
 
-  # 16 of the 194 committed mutation lines have a FROM that occurs 2-6 times in its file,
+  # At MES-88, 16 of the 194 committed mutation lines had a FROM occurring 2-6 times in its file,
   # and nothing in the record says whether the sweeper replaced one occurrence or all of
   # them. S7-19 says the answer can decide the verdict: a narrow mutation under-reports
   # reachability and returns the reassuring "dead". So it is settled by RUNNING BOTH
