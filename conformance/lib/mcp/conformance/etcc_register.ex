@@ -62,7 +62,7 @@ defmodule MCP.Conformance.ETCCRegister do
       `mutation` prose (27). **Guard 26 — that the spec still resolves against `lib/` —
       is deliberately NOT run here.** It is the only one of the five that is a function
       of the **tree** rather than of the table, and the ratified cadence puts `lib/`-drift
-      detection at the **sprint boundary** (`CLAUDE.md`, End-of-Sprint Procedure step 4).
+      detection at the **sprint boundary** (`docs/procedure/end-of-sprint.md`, step 4).
       Running it here would make an unrelated ticket's `lib/` change refuse this
       register's build, when what it owes is a sweep finding;
     * an `ET-CC` row that calls a SPLIT module's decode-side producer in its own test

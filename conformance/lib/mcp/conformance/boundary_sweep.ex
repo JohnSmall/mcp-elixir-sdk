@@ -116,7 +116,7 @@ defmodule MCP.Conformance.BoundarySweep do
   unchanged tip measures **994** units with `node` on PATH and **991** without, and
   *both* git-diff skip conditions are empty across that pair. A skip of the end-of-sprint
   sweep therefore additionally requires this fingerprint to match the one recorded with
-  the committed table: `CLAUDE.md`, End-of-Sprint Procedure step 4, condition (c).
+  the committed table: `docs/procedure/end-of-sprint.md`, step 4, condition (c).
 
   The harness fact is read from **the predicate that decides the exclusion** —
   `MCP.Conformance.TestHarness.unavailable_reason/0` — and is never re-derived here.
@@ -624,7 +624,7 @@ defmodule MCP.Conformance.BoundarySweep do
 
   `check_tree: false` skips guard 26, the only one that is a function of the tree rather
   than of the table. That is how `MCP.Conformance.ETCCRegister` calls it: the ratified
-  cadence (`CLAUDE.md`, End-of-Sprint Procedure step 4) puts `lib/`-drift detection at
+  cadence (`docs/procedure/end-of-sprint.md`, step 4) puts `lib/`-drift detection at
   the **sprint boundary**, so a `lib/` move by an unrelated ticket must raise a sweep
   finding, not refuse that ticket's register build.
   """
@@ -884,7 +884,7 @@ defmodule MCP.Conformance.BoundarySweep do
       "population moves), and the population is a function of the host as well as the " <>
       "tree — which is what `host` records: #{host["fingerprint"]}. A skip of the " <>
       "end-of-sprint sweep requires that fingerprint to match the host it is being " <>
-      "skipped on (CLAUDE.md, End-of-Sprint Procedure step 4, condition (c)); " <>
+      "skipped on (docs/procedure/end-of-sprint.md, step 4, condition (c)); " <>
       "`mix conformance.sweep --host` compares the two and exits nonzero when they " <>
       "differ, when no host is recorded, or when the current one cannot be read."
   end

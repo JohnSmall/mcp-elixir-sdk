@@ -546,3 +546,60 @@ Tool results, prompts, and resources can contain multiple content types:
 | `dialyxir` | Type checking |
 | `credo` | Static analysis |
 | `ex_doc` | Documentation |
+
+## Appendix: moved from CLAUDE.md (MES-177)
+
+> Moved verbatim from `CLAUDE.md` by MES-177 (lines 754-779 and 785-806 at e74bf3f), headings
+> demoted one level beneath this appendix. **Historical:** the module map was the *planned*
+> map at the time, before the 2026-07-28 stateless core; §2 of this document is current. The
+> spec link is the 2025-11-25 revision; the protocol target is 2026-07-28 (`CLAUDE.md`,
+> Project Overview and Critical Rules).
+
+### Key Documentation
+
+- **PRD**: `docs/prd.md` — Requirements, protocol features, design decisions
+- **Architecture**: `docs/architecture.md` — Module map, data flow, transport design
+- **Implementation Plan**: `docs/implementation-plan.md` — Phased tasks with detailed breakdown
+- **Onboarding**: `docs/onboarding.md` — Full context for new agents (patterns, gotchas)
+- **MCP Spec**: https://modelcontextprotocol.io/specification/2025-11-25
+
+### Reference Codebases (download locally for coding)
+
+| SDK | Location | Notes |
+|-----|----------|-------|
+| **Go SDK (PRIMARY)** | `/workspace/samples/mcp-go-sdk/` | Official Go SDK, most complete, well-structured |
+| **Python SDK** | `/workspace/samples/mcp-python-sdk/` | Official Python SDK, decorator-based API |
+| **Ruby SDK** | `/workspace/samples/mcp-ruby-sdk/` | Official Ruby SDK (Shopify), good OOP patterns |
+| **TypeScript SDK** | `/workspace/samples/mcp-typescript-sdk/` | Reference implementation |
+
+**GitHub repos to clone:**
+```bash
+git clone https://github.com/modelcontextprotocol/go-sdk /workspace/samples/mcp-go-sdk
+git clone https://github.com/modelcontextprotocol/python-sdk /workspace/samples/mcp-python-sdk
+git clone https://github.com/modelcontextprotocol/ruby-sdk /workspace/samples/mcp-ruby-sdk
+git clone https://github.com/modelcontextprotocol/typescript-sdk /workspace/samples/mcp-typescript-sdk
+git clone https://github.com/modelcontextprotocol/conformance /workspace/samples/mcp-conformance
+```
+
+### Module Map (Planned)
+
+#### Core Protocol
+- `MCP.Protocol` — JSON-RPC 2.0 message types, framing, ID generation
+- `MCP.Protocol.Types` — All MCP types (Tool, Resource, Prompt, Content, etc.)
+- `MCP.Protocol.Messages` — Request/response/notification structs for all MCP methods
+- `MCP.Protocol.Capabilities` — Client and server capability structs
+
+#### Transport Layer
+- `MCP.Transport` — Transport behaviour (send, receive, close)
+- `MCP.Transport.Stdio` — stdin/stdout transport (newline-delimited JSON-RPC)
+- `MCP.Transport.StreamableHTTP` — HTTP POST + SSE transport with session management
+
+#### Client
+- `MCP.Client` — High-level client API (connect, list_tools, call_tool, etc.)
+- `MCP.Client.Session` — Manages single client-server connection lifecycle
+
+#### Server
+- `MCP.Server` — High-level server API (register tools/resources/prompts, run)
+- `MCP.Server.Handler` — Behaviour for implementing server feature handlers
+- `MCP.Server.Router` — Routes incoming JSON-RPC methods to handlers
+

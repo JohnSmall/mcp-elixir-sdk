@@ -16,10 +16,11 @@ defmodule Mix.Tasks.Conformance.Sweep do
 
   ## Cadence
 
-  This is an **end-of-sprint** instrument, not a per-ticket gate — `CLAUDE.md`,
-  End-of-Sprint Procedure step 4, which also states the three-condition skip and what the
-  cadence gives up. A full `--check` is roughly 25 minutes: 50 mutation cycles at ~22 s
-  plus a byte-probe run for every direction whose live count is zero.
+  This is an **end-of-sprint** instrument, not a per-ticket gate —
+  `docs/procedure/end-of-sprint.md`, step 4, which also states the three-condition skip and
+  what the cadence gives up. A full `--check` took 119 min 26 s on MES-174 (31981) at 1790
+  tests: one mutation cycle per direction, plus a byte-probe run for every direction whose
+  live count is zero.
 
   ## `--host`, and why a git diff is not enough
 

@@ -11,9 +11,12 @@
 # and its own branch, in the state the case is about.
 #
 # IT DRIVES THE REAL TEXT, NOT A RETYPED COPY. `extract_guard/0` pulls the fenced block
-# out of CLAUDE.md itself and substitutes the fixture's branch for `{TICKET_KEY}`. A drift
-# between CLAUDE.md and this control is therefore impossible by construction. What it
-# CANNOT anchor is CLAUDE.md against D7 on Confluence 250052681 — a committed second copy
+# out of docs/procedure/lanes.md itself (moved there verbatim from CLAUDE.md by MES-177)
+# and substitutes the fixture's branch for `{TICKET_KEY}`. A drift between that page and
+# this control is therefore impossible by construction, and CLAUDE.md is required to hold
+# NO copy of the block, so a stale second copy left in the core refuses rather than
+# diverging silently. What it CANNOT anchor is the page against D7 on Confluence
+# 250052681 — a committed second copy
 # would be one transcription checked against itself, not an independent anchor. That check
 # was done by hand on MES-100 (guard string md5 b154f3c95c9d71da41f7516dc9ca0f38, 238
 # bytes, page v15) and is stated as a residual rather than faked.
@@ -33,11 +36,12 @@
 # and `refuse_foreign_fixture!/3` re-reads the work tree out of git before each run and
 # refuses unless it resolves inside THAT root. G1-G4 hold that guard to the property, and
 # `guard-mutation` puts weakened predicates back in charge and requires the same paths to be
-# ADMITTED — so the G cases are shown able to fail. The only thing read out of this clone is
-# CLAUDE.md (and, in MG3 alone, a read-only `git rev-parse`); nothing is written here.
+# ADMITTED — so the G cases are shown able to fail. The only things read out of this clone
+# are docs/procedure/lanes.md and CLAUDE.md (and, in MG3 alone, a read-only
+# `git rev-parse`); nothing is written here.
 #
 # THE MUTATIONS ARE IN MEMORY. `mutation` mutates the EXTRACTED snippet, never the file —
-# a seat death mid-run must not leave this shared clone holding a mutated CLAUDE.md (S8-14).
+# a seat death mid-run must not leave this shared clone holding a mutated guard page (S8-14).
 
 defmodule PmAloneLaneGuardControls do
   @project File.cwd!()
@@ -46,6 +50,8 @@ defmodule PmAloneLaneGuardControls do
   # git's own failures are RuntimeErrors too, so without this marker a fixture that merely
   # blew up would be scored as a refusal.
   @refusal "REFUSING TO RUN"
+  # The one home of the D7 guard block since MES-177.
+  @guard_page "docs/procedure/lanes.md"
 
   @reds [
     {"R1", "lib/", "lib/mcp/transport.ex"},
@@ -98,7 +104,7 @@ defmodule PmAloneLaneGuardControls do
     end
   end
 
-  # --- the guard, taken out of CLAUDE.md ---------------------------------------
+  # --- the guard, taken out of docs/procedure/lanes.md --------------------------
   #
   # Three things are asserted about the extraction itself, because each of them failing
   # silently would make every case below vacuous: exactly one fenced block carries the
@@ -107,14 +113,20 @@ defmodule PmAloneLaneGuardControls do
   # restatement is the second copy this control exists to avoid.
 
   defp extract_guard do
-    source = File.read!(Path.join(@project, "CLAUDE.md"))
-
     snippet =
-      ~r/```bash\n(.*?)\n```/s
-      |> Regex.scan(source)
-      |> Enum.map(&Enum.at(&1, 1))
-      |> Enum.filter(&String.contains?(&1, "REFUSE PM-alone"))
-      |> one!("bash block in CLAUDE.md carrying \"REFUSE PM-alone\"")
+      @guard_page
+      |> guard_blocks()
+      |> one!("bash block in #{@guard_page} carrying \"REFUSE PM-alone\"")
+
+    case guard_blocks("CLAUDE.md") do
+      [] ->
+        :ok
+
+      copies ->
+        raise "CANNOT EXTRACT — CLAUDE.md holds #{length(copies)} copy(ies) of the guard " <>
+                "block. Since MES-177 its one home is #{@guard_page}; a second copy in the " <>
+                "core would drift from the one these controls drive."
+    end
 
     _ =
       ~r/\{TICKET_KEY\}/
@@ -128,7 +140,7 @@ defmodule PmAloneLaneGuardControls do
       |> one!("echoed message in the extracted guard")
 
     IO.puts("""
-      guard extracted from CLAUDE.md (#{byte_size(snippet)} bytes):
+      guard extracted from #{@guard_page} (#{byte_size(snippet)} bytes):
     #{indent(snippet)}
       refusal message adjudicated on: #{message}
     """)
@@ -136,11 +148,18 @@ defmodule PmAloneLaneGuardControls do
     %{snippet: snippet, message: message}
   end
 
+  defp guard_blocks(path) do
+    ~r/```bash\n(.*?)\n```/s
+    |> Regex.scan(File.read!(Path.join(@project, path)))
+    |> Enum.map(&Enum.at(&1, 1))
+    |> Enum.filter(&String.contains?(&1, "REFUSE PM-alone"))
+  end
+
   defp one!([one], _what), do: one
 
   defp one!(many, what) do
     raise "CANNOT EXTRACT — found #{length(many)} of: #{what}. Expected exactly one. " <>
-            "The guard has been renamed, removed or duplicated in CLAUDE.md; every control " <>
+            "The guard has been renamed, removed or duplicated in #{@guard_page}; every control " <>
             "below would otherwise run against the wrong text or no text at all."
   end
 
@@ -171,8 +190,18 @@ defmodule PmAloneLaneGuardControls do
 
   # --- P1: the positive control ------------------------------------------------
 
+  # docs/procedure/lanes.md is in the docs-only set AS OBSERVED, not as endorsed: since
+  # MES-177 the gate text D7's boundary protects lives under docs/procedure/, which the
+  # guard's pattern does not name (it never named CLAUDE.md either). The guard string is
+  # D7's and ships verbatim; the remedy is an amendment to D7, owned by MES-106.
   defp p1(root, g) do
-    work = fixture(root, "p1", ["CLAUDE.md", "docs/sprint_9_issues.md", "README.md"])
+    work =
+      fixture(root, "p1", [
+        "CLAUDE.md",
+        "docs/procedure/lanes.md",
+        "docs/sprint_9_issues.md",
+        "README.md"
+      ])
 
     expect(
       "P1",

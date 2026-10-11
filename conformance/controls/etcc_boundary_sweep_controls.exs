@@ -450,7 +450,7 @@ defmodule ETCCBoundarySweepControls do
   #
   # Guard 26 is deliberately NOT wired in: it is the only one that is a function of the
   # TREE rather than the table, and the ratified cadence puts lib/-drift detection at the
-  # sprint boundary (CLAUDE.md, End-of-Sprint Procedure step 4). The last case below is
+  # sprint boundary (docs/procedure/end-of-sprint.md, step 4). The last case below is
   # the NEGATIVE control for exactly that — a guard-26 violation must NOT refuse a
   # register build, and a control that only shows things failing cannot show a boundary.
   defp register do

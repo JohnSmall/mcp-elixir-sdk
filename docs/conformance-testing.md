@@ -55,3 +55,25 @@ mis-attributing it. See `docs/sprint_5_issues.md` S5-12, and MES-57.
 Related in-repo: `docs/adr/0003-2.0.0-conformance-scope.md`,
 `docs/sprint_5_issues.md` (S5-5, S5-6, S5-12, S5-13, S5-14),
 `docs/conformance/` (the committed census and table).
+
+## Appendix: moved from CLAUDE.md (MES-177)
+
+> Moved verbatim from `CLAUDE.md` by MES-177 (lines 807-822 at e74bf3f), headings demoted one
+> level beneath this appendix.
+
+### Conformance Testing
+
+MCP has an official conformance test suite: https://github.com/modelcontextprotocol/conformance
+
+#### SDK Tiers
+- **Tier 1**: 100% conformance pass rate (target)
+- **Tier 2**: 80% conformance pass rate (initial goal)
+- **Tier 3**: No minimum
+
+#### Integration
+The conformance framework tests via:
+- **Server mode**: Framework connects as MCP client to our server
+- **Client mode**: Framework starts a test server, runs our client against it
+
+Requires building conformance adapter scripts (see `docs/implementation-plan.md`).
+
