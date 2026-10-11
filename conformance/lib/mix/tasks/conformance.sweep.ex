@@ -43,6 +43,15 @@ defmodule Mix.Tasks.Conformance.Sweep do
 
   A verdict difference exits **1** and names the direction, the old and new verdict, and
   the ET-CC register rows that direction would move.
+
+  ## The L2 byte probe (MES-174)
+
+  The sweep runs the probe on the unmutated tree FIRST and refuses a blind baseline —
+  scenarios sharing bytes, or a dispatched scenario that did not reach its path — before
+  any test runs. The probe's `scenarios_moved` and `scenarios_run` are measurement
+  fields, and `--check` prints two further reported sections: the baseline probe's
+  fingerprint when it differs from `control.probe` (a re-baseline of the probe, not a move
+  in `lib/`), and the LIVE verdicts L2 carried forward over a probe that moved nothing.
   """
 
   use Mix.Task
@@ -177,7 +186,8 @@ defmodule Mix.Tasks.Conformance.Sweep do
     generated = Sweep.sweep(only: only, log: &log/1)
     if out, do: write(generated, out)
 
-    %{verdict_diffs: vd, measurement_deltas: md} = Sweep.check(generated, committed)
+    %{verdict_diffs: vd, measurement_deltas: md, carried_forward: cf, control_probe: cp} =
+      Sweep.check(generated, committed)
 
     Mix.shell().info("\n== MEASUREMENT DELTA (§2.3(e), reported not raised on) ==")
 
@@ -185,13 +195,16 @@ defmodule Mix.Tasks.Conformance.Sweep do
       Mix.shell().info("  none — every measurement field reproduces at this population too.")
     else
       Mix.shell().info("  #{length(md)} direction(s) differ on measurement fields only:")
-      for d <- md, do: Mix.shell().info("    #{d["id"]}: #{Enum.join(d["fields"], ", ")}")
+      Enum.each(md, &report_delta/1)
 
       Mix.shell().info("""
         CAUSE: the unit population, not lib/. L1 quantifies over the suite; a verdict
         expires when lib/ moves, its L1 measurements additionally when the population does.
       """)
     end
+
+    report_probe(cp)
+    report_carried(cf)
 
     Mix.shell().info("\n== VERDICT DIFF (AC5 — this is the loud one) ==")
 
@@ -201,6 +214,41 @@ defmodule Mix.Tasks.Conformance.Sweep do
       Enum.each(vd, &report_drift/1)
       Mix.raise("#{length(vd)} boundary-direction(s) have DRIFTED from the committed table")
     end
+  end
+
+  defp report_delta(d) do
+    Mix.shell().info("    #{d["id"]}: #{Enum.join(d["fields"], ", ")}")
+
+    if m = d["scenarios_moved"],
+      do: Mix.shell().info("      scenarios_moved: #{inspect(m["was"])} -> #{inspect(m["now"])}")
+  end
+
+  defp report_probe(nil) do
+    Mix.shell().info("\n== BASELINE PROBE (reported not raised on) ==")
+    Mix.shell().info("  unchanged — the probe's baseline fingerprint matches control.probe.")
+  end
+
+  defp report_probe(%{"was" => was, "now" => now}) do
+    Mix.shell().info("\n== BASELINE PROBE (reported not raised on) ==")
+    Mix.shell().info("  RE-BASELINED — the probe's baseline differs from control.probe:")
+    Mix.shell().info("    was #{inspect(was)}")
+    Mix.shell().info("    now #{inspect(now)}")
+
+    Mix.shell().info(
+      "  Read every scenarios_moved delta above against THIS cause first: a changed " <>
+        "baseline moves scenarios_moved with no lib/ change at all."
+    )
+  end
+
+  defp report_carried(ids) do
+    Mix.shell().info("\n== L2 CARRIED FORWARD (reported not raised on) ==")
+
+    Mix.shell().info(
+      "  #{length(ids)} LIVE verdict(s) decided by L2 stand over a probe that moved " <>
+        "NOTHING this run — carried forward from the record, not re-measured:"
+    )
+
+    for id <- ids, do: Mix.shell().info("    #{id}")
   end
 
   # AC5: a drifted verdict names the direction, the old and new value, AND the ET-CC rows

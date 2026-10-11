@@ -7,6 +7,8 @@
 #     mix run conformance/controls/etcc_boundary_sweep_controls.exs drift
 #     mix run conformance/controls/etcc_boundary_sweep_controls.exs register
 #     mix run conformance/controls/etcc_boundary_sweep_controls.exs prefix
+#     mix run conformance/controls/etcc_boundary_sweep_controls.exs probe
+#     mix run conformance/controls/etcc_boundary_sweep_controls.exs probe-mutation
 #
 # WHY A SCRIPT AND NOT AN ExUnit TEST. Same reason as `etcc_register_controls.exs`: a
 # test file added here lands in the very suite the sweep measures. Under `test/mcp/` it
@@ -40,9 +42,14 @@ defmodule ETCCBoundarySweepControls do
   def run(["drift"]), do: drift()
   def run(["register"]), do: register()
   def run(["prefix"]), do: prefix()
+  def run(["probe"]), do: probe()
+  def run(["probe-mutation"]), do: probe_mutation()
 
   def run(_) do
-    IO.puts("usage: guards | prose | harness | host | drift | register | prefix")
+    IO.puts(
+      "usage: guards | prose | harness | host | drift | register | prefix | probe | probe-mutation"
+    )
+
     System.halt(2)
   end
 
@@ -595,6 +602,234 @@ defmodule ETCCBoundarySweepControls do
     Enum.each(mutation, &report_limb/1)
 
     if Enum.any?(positive ++ mutation, fn {_, ok} -> not ok end), do: System.halt(1)
+  end
+
+  # --- probe: the blind-baseline refusal (MES-174), each conjunct shown FIRING ---
+
+  # The probe went blind at MES-161 and nothing said so: 12 dispatch scenarios returned
+  # one shared `-32602`, so every L2 silence on those paths was vacuous, and the MES-171
+  # sweep printed it in neither section. The red case below is NOT fabricated — it is the
+  # probe exactly as it was committed at the last tip where it was blind, read from git.
+  @blind_probe_rev "5e5d18e"
+
+  defp probe do
+    header("PROBE — a blind baseline is refused, each conjunct independently")
+
+    dir =
+      Path.join(System.tmp_dir!(), "etcc-probe-controls-#{System.unique_integer([:positive])}")
+
+    File.mkdir_p!(dir)
+
+    try do
+      blind = Path.join(dir, "blind_probe.exs")
+      {src, 0} = System.cmd("git", ["show", "#{@blind_probe_rev}:#{@paths.probe}"])
+      File.write!(blind, src)
+
+      sighted = Sweep.probe(Path.join(dir, "p1.txt"))
+
+      results = [
+        p1(sighted),
+        r1(blind, dir),
+        r2(sighted),
+        r3(sighted),
+        r4(sighted),
+        r5(sighted),
+        w1(blind, dir)
+      ]
+
+      IO.puts("")
+      Enum.each(results, &report_limb/1)
+      if Enum.any?(results, fn {_, ok} -> not ok end), do: System.halt(1)
+    after
+      File.rm_rf!(dir)
+    end
+  end
+
+  # P1 — the positive control. The real probe at this tip passes, and every scenario is
+  # accounted for by its class, so a pass is not "the predicate saw nothing".
+  defp p1(sighted) do
+    IO.puts("  P1  the committed probe at this tip")
+
+    for {k, v} <- Enum.sort(sighted),
+        do:
+          IO.puts("      #{String.pad_trailing(k, 34)} #{inspect(Sweep.classify_probe_value(v))}")
+
+    ok =
+      try do
+        IO.puts("      passes: #{inspect(Sweep.check_probe_baseline!(sighted))}")
+        map_size(sighted) == 15
+      rescue
+        e in RuntimeError ->
+          IO.puts("      REFUSED (unexpected): #{first_line(e.message)}")
+          false
+      end
+
+    {"P1 committed probe passes, all 15 scenarios classified", ok}
+  end
+
+  # R1 — the natural red case: the probe as committed at the blind tip, RUN, not mocked.
+  defp r1(blind, dir) do
+    IO.puts("\n  R1  the blind probe from git (#{@blind_probe_rev})")
+    base = Sweep.probe(Path.join(dir, "r1.txt"), blind)
+    msg = refusal(base)
+    print_refusal(msg)
+
+    ok =
+      msg != nil and msg =~ "[distinct] 1 group(s)" and msg =~ "    12 x " and
+        msg =~ "[reached] 12 scenario(s)"
+
+    {"R1 blind probe refused on BOTH conjuncts, 12 collided and 12 unreached", ok}
+  end
+
+  # R2 — one scenario errors, with bytes of its own: only :reached can see it.
+  defp r2(sighted) do
+    IO.puts("\n  R2  one dispatched scenario turned into a distinct JSON-RPC error")
+
+    err =
+      inspect(~s({"error":{"code":-32602,"message":"Invalid params"},"id":1,"jsonrpc":"2.0"}))
+
+    msg = refusal(Map.put(sighted, "prompts/get", err))
+    print_refusal(msg)
+    ok = msg != nil and msg =~ "[reached]" and not (msg =~ "[distinct]") and msg =~ "prompts/get"
+    {"R2 a single unreached scenario refused by [reached] alone", ok}
+  end
+
+  # R3 — two RESULTS share bytes: only :distinct can see it.
+  defp r3(sighted) do
+    IO.puts("\n  R3  two result scenarios given the same bytes")
+    msg = refusal(Map.put(sighted, "tools/call text", sighted["tools/call image"]))
+    print_refusal(msg)
+    ok = msg != nil and msg =~ "[distinct]" and not (msg =~ "[reached]")
+    {"R3 two colliding results refused by [distinct] alone", ok}
+  end
+
+  # R4 — a dispatched scenario that produced NO reply (CR F1, `31987`). `dispatched/2`
+  # writes `inspect(other)` for any non-`{:reply, ...}` outcome and the script stores
+  # `inspect/1` of that, so both the literal `inspect({:noreply, %{}})` the ruling names
+  # and the doubly-inspected form the real probe file would hold are checked. Each must
+  # be refused by `[reached]` ALONE, naming the scenario — before correction round 1 the
+  # class exemption let both through.
+  defp r4(sighted) do
+    IO.puts("\n  R4  one dispatched scenario turned into a {:noreply, %{}} non-reply")
+
+    forms = %{
+      "inspect({:noreply, %{}})" => inspect({:noreply, %{}}),
+      "as the probe file holds it" => inspect(inspect({:noreply, %{}}))
+    }
+
+    ok =
+      Enum.all?(forms, fn {label, v} ->
+        msg = refusal(Map.put(sighted, "prompts/get", v))
+        IO.puts("      form: #{label}")
+        print_refusal(msg)
+
+        msg != nil and msg =~ "[reached] 1 scenario(s)" and not (msg =~ "[distinct]") and
+          msg =~ "prompts/get: got :not_a_response, want :result"
+      end)
+
+    {"R4 a dispatched {:noreply, %{}} refused by [reached] alone, both forms", ok}
+  end
+
+  # R5 — a DECLARED non-reply that comes back as a reply: the declaration has gone stale,
+  # and that is refused rather than silently tolerated.
+  defp r5(sighted) do
+    IO.puts("\n  R5  a declared not-a-response scenario turned into a JSON-RPC result")
+    reply = inspect(~s({"id":1,"jsonrpc":"2.0","result":{"stale":true}}))
+    msg = refusal(Map.put(sighted, "SSE frame of a notification", reply))
+    print_refusal(msg)
+
+    ok =
+      msg != nil and not (msg =~ "[distinct]") and
+        msg =~ "SSE frame of a notification: got :result, want :not_a_response"
+
+    {"R5 a stale not-a-response declaration refused by [reached] alone", ok}
+  end
+
+  # --- probe-mutation: R4 is shown able to FAIL, and it is the fix that makes it pass ---
+
+  # Recompiles `MCP.Conformance.BoundarySweep` IN MEMORY with correction round 1's fix
+  # reverted — the class exemption put back into `:reached` — and requires R4 to go RED
+  # under it, then recompiles the committed source and requires R4 green again. Nothing
+  # is written to disk; the module is restored before the script exits.
+  @sweep_src "conformance/lib/mcp/conformance/boundary_sweep.ex"
+  @fix_anchor "          want = expected_class(k),\n          got != want,"
+  @reverted "          want = expected_class(k),\n" <>
+              "          got != :not_a_response or want != :result,\n" <>
+              "          got != want,"
+
+  defp probe_mutation do
+    header("PROBE-MUTATION — R4 goes red when the F1 fix is reverted")
+
+    src = File.read!(@sweep_src)
+    n = src |> String.split(@fix_anchor) |> length() |> Kernel.-(1)
+    IO.puts("  fix anchor occurrences in #{@sweep_src}: #{n} (must be 1)")
+    if n != 1, do: System.halt(1)
+
+    dir = Path.join(System.tmp_dir!(), "etcc-probe-mut-#{System.unique_integer([:positive])}")
+    File.mkdir_p!(dir)
+    Code.put_compiler_option(:ignore_module_conflict, true)
+
+    try do
+      sighted = Sweep.probe(Path.join(dir, "base.txt"))
+
+      Code.compile_string(String.replace(src, @fix_anchor, @reverted), @sweep_src)
+      IO.puts("\n  MUTANT (class exemption restored):")
+      {_, mutant_ok} = r4(sighted)
+
+      Code.compile_string(src, @sweep_src)
+      IO.puts("\n  RESTORED (committed source):")
+      {_, restored_ok} = r4(sighted)
+
+      results = [
+        {"R4 goes RED under the reverted fix", not mutant_ok},
+        {"R4 is green again on the committed source", restored_ok}
+      ]
+
+      IO.puts("")
+      Enum.each(results, &report_limb/1)
+      if Enum.any?(results, fn {_, ok} -> not ok end), do: System.halt(1)
+    after
+      Code.compile_string(src, @sweep_src)
+      File.rm_rf!(dir)
+    end
+  end
+
+  # W1 — the refusal is WIRED: the sweep, driven with the blind probe, refuses before it
+  # runs the baseline suite or applies a single mutation.
+  defp w1(blind, dir) do
+    IO.puts("\n  W1  Sweep.sweep/1 driven with the blind probe")
+    {:ok, lines} = Agent.start_link(fn -> [] end)
+    log = fn l -> Agent.update(lines, &[l | &1]) end
+
+    msg =
+      try do
+        Sweep.sweep(only: ["MCP.Server.Connection"], probe: blind, tmp: dir, log: log)
+        nil
+      rescue
+        e in RuntimeError -> e.message
+      end
+
+    logged = Agent.get(lines, &Enum.reverse/1)
+    Agent.stop(lines)
+    print_refusal(msg)
+    ran_suite = Enum.any?(logged, &(&1 =~ "mix test"))
+    mutated = Enum.any?(logged, &(&1 =~ "[1/"))
+    IO.puts("      ran the baseline suite: #{ran_suite}; reached a mutation cycle: #{mutated}")
+    ok = msg != nil and msg =~ "[distinct]" and not ran_suite and not mutated
+    {"W1 sweep refuses the blind probe before any suite run or mutation", ok}
+  end
+
+  defp refusal(baseline) do
+    Sweep.check_probe_baseline!(baseline)
+    nil
+  rescue
+    e in RuntimeError -> e.message
+  end
+
+  defp print_refusal(nil), do: IO.puts("      NOT refused")
+
+  defp print_refusal(msg) do
+    for l <- msg |> String.split("\n") |> Enum.take(8), do: IO.puts("      | " <> l)
   end
 
   defp row(doc, id), do: Enum.find(doc["boundaries"], &(&1["id"] == id))

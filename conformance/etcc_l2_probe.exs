@@ -89,7 +89,19 @@ defmodule MCP.Conformance.L2Probe do
     }
   end
 
-  defp meta, do: %{"io.modelcontextprotocol/protocolVersion" => @version}
+  # MES-174. Every required per-request `_meta` key, and the SHOULD one too. Until
+  # MES-174 this sent only `protocolVersion`; MES-161 then made `clientCapabilities`
+  # required, and all 12 scenarios routed through dispatch came back as one and the same
+  # `-32602` reply — no mutation behind dispatch could move a byte, so every L2 silence
+  # on those paths was vacuous. `BoundarySweep.check_probe_baseline!/1` now refuses a
+  # baseline in that shape, so a future required key cannot blind the probe silently.
+  defp meta do
+    %{
+      "io.modelcontextprotocol/protocolVersion" => @version,
+      "io.modelcontextprotocol/clientInfo" => %{"name" => "etcc-l2-probe", "version" => "0"},
+      "io.modelcontextprotocol/clientCapabilities" => %{}
+    }
+  end
 
   defp dispatched(method, params) do
     req = %Request{id: 1, method: method, params: Map.put(params, "_meta", meta())}
