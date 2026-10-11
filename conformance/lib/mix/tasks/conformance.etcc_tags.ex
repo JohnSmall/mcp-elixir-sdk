@@ -187,24 +187,38 @@ defmodule Mix.Tasks.Conformance.EtccTags do
   # a declaration the register calls wholly-member. A mark the register does not
   # account for is a stray, and a check that only looked for missing marks would
   # pass with any number of them.
+  #
+  # The marks are read from the AST (`ETCCTags.source_marks/2`), not from lines:
+  # a line inside a string or sigil is text, and a test that builds a test module
+  # as a heredoc would otherwise be reported as carrying a mark (MES-166).
   defp strays(expected) do
     wanted = MapSet.new(expected, &{&1.file, &1.line, &1.kind})
-    body = ETCCTags.tag_line_body()
 
     for file <- test_files(),
-        {text, index} <- file |> read_lines() |> Enum.with_index(1),
-        stray = classify_mark(text, body),
-        stray != nil,
-        not MapSet.member?(wanted, {file, marked_line(index, stray), stray}),
-        do: %{file: file, line: index, kind: stray, text: String.trim(text)}
+        source = File.read!(file),
+        {line, kind} <- source_marks!(file, source),
+        not MapSet.member?(wanted, {file, marked_line(line, kind), kind}),
+        do: %{file: file, line: line, kind: kind, text: source_line(source, line)}
   end
 
-  defp classify_mark(text, body) do
-    cond do
-      String.trim(text) == body -> :tag
-      Regex.match?(@doctest_decl, text) and String.contains?(text, "tags: [:etcc]") -> :directive
-      true -> nil
+  # A file that does not parse, or is not UTF-8, has marks nobody can count, so it
+  # is refused by name rather than skipped: a skipped file is a file whose strays
+  # go unreported.
+  defp source_marks!(file, source) do
+    case ETCCTags.source_marks(source, file) do
+      {:ok, marks} ->
+        marks
+
+      {:error, reason} ->
+        Mix.raise(
+          "REFUSING: #{file} does not parse, so its marks cannot be read — #{reason}. " <>
+            "A file this check cannot read is not a file with no strays."
+        )
     end
+  end
+
+  defp source_line(source, line) do
+    source |> String.split("\n") |> Enum.at(line - 1, "") |> String.trim()
   end
 
   # A `@tag` line marks the declaration BELOW it; a directive marks itself.

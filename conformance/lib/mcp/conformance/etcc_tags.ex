@@ -295,6 +295,88 @@ defmodule MCP.Conformance.ETCCTags do
   end
 
   # ---------------------------------------------------------------------------
+  # The marks a source file actually carries
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Every `:etcc` mark in `source`, as `{line, :tag | :directive}`, read from the
+  **AST** and never from the text.
+
+  MES-166. A line scan cannot tell code from a literal: a test that builds a
+  whole test module in an `~S` heredoc carries `@tag :etcc` on a line of its own,
+  and a scanner that reads lines calls that a mark. In the AST a string or sigil
+  body is a leaf, so nothing inside one is ever walked — which closes the class,
+  not the one fixture that found it.
+
+  What counts as a mark: any `@tag` attribute node whose single argument is the
+  default tag, and any `doctest` call whose `tags:` list contains it **anywhere** —
+  however the source lays them out. So `@tag(:etcc)`, a mark line with a trailing
+  comment, `doctest(Mod, tags: [:etcc])`, and a `doctest` whose `tags:` sit on a
+  continuation line are all marks; the line scan this replaced saw none of them,
+  nor `:etcc` other than as the sole element of the list. That widening is in the
+  refusing direction only (MES-166 F1). `@moduletag`, `@describetag` and
+  `@tag etcc: true` are not read here — PM ruling, MES-166 `31909`; ExUnit's own
+  tags, read by the runtime guard, are what see those.
+
+  A source this function cannot read is `{:error, reason}` naming the file, never
+  an empty list and never a raise: a file whose marks are unknown, read as "none",
+  is how a stray goes unreported. That covers both ways `Code.string_to_quoted/2`
+  rejects input — it RETURNS an error for a syntax error, and RAISES for bytes
+  that are not UTF-8 (MES-166 F2).
+  """
+  @spec source_marks(String.t(), String.t()) ::
+          {:ok, [{pos_integer(), :tag | :directive}]} | {:error, String.t()}
+  def source_marks(source, file) do
+    case quoted(source, file) do
+      {:ok, ast} -> {:ok, ast |> marks_in() |> Enum.sort()}
+      {:error, error} -> {:error, parse_error(file, error)}
+    end
+  end
+
+  # Narrow on purpose. Measured on Elixir 1.19.5 / OTP 28 over 12 shapes of
+  # non-UTF-8 input (in code, strings, comments, heredocs, sigils, charlists and
+  # atoms; truncated, overlong and surrogate encodings): UnicodeConversionError is
+  # the only exception raised. A NUL byte or a BOM comes back as an ordinary error
+  # tuple. A later Elixir that raised something else would propagate it — the check
+  # still exits non-zero, it just would not name the file.
+  defp quoted(source, file) do
+    Code.string_to_quoted(source, file: file)
+  rescue
+    e in UnicodeConversionError -> {:error, {:encoding, Exception.message(e)}}
+  end
+
+  defp marks_in(ast) do
+    {_ast, marks} =
+      Macro.prewalk(ast, [], fn
+        {:@, meta, [{:tag, _, [@default_tag]}]} = node, acc ->
+          {node, [{meta[:line], :tag} | acc]}
+
+        {:doctest, meta, [_module, opts]} = node, acc when is_list(opts) ->
+          if directive_tagged?(opts),
+            do: {node, [{meta[:line], :directive} | acc]},
+            else: {node, acc}
+
+        node, acc ->
+          {node, acc}
+      end)
+
+    marks
+  end
+
+  defp directive_tagged?(opts) do
+    Keyword.keyword?(opts) and @default_tag in List.wrap(Keyword.get(opts, :tags))
+  end
+
+  defp parse_error(file, {:encoding, message}), do: "#{file}: not valid UTF-8 (#{message})"
+
+  defp parse_error(file, {location, message, token}) do
+    "#{file}:#{Keyword.get(location, :line, "?")}: #{parse_message(message)}#{token}"
+  end
+
+  defp parse_message({prefix, suffix}), do: "#{prefix}#{suffix}"
+  defp parse_message(message), do: to_string(message)
+
+  # ---------------------------------------------------------------------------
   # The comparison — both directions, one function
   # ---------------------------------------------------------------------------
 

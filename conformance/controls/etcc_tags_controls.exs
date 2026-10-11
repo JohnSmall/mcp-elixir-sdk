@@ -8,6 +8,8 @@
 #     mix run conformance/controls/etcc_tags_controls.exs select
 #     mix run conformance/controls/etcc_tags_controls.exs mutate
 #     mix run conformance/controls/etcc_tags_controls.exs vacuous
+#     mix run conformance/controls/etcc_tags_controls.exs source_strays
+#     mix run conformance/controls/etcc_tags_controls.exs source_strays_mutation
 #     mix run conformance/controls/etcc_tags_controls.exs all
 #
 # ## Why this is a `mix run` script and not a tagged ExUnit test
@@ -37,6 +39,14 @@
 # is and is not ours: ExUnit ALREADY refuses a totally vacuous `--only` run, so
 # this is a second independent guard on that condition. The case no exit status
 # can express is PARTIAL selection, and that is what `mutate` demonstrates.
+#
+# ## MES-166 — `source_strays`, and its mutation mode
+#
+# Everything above reads the tags ExUnit reports. `source_strays` is the SOURCE
+# side: the real `mix conformance.etcc_tags --check`, over a throwaway copy of the
+# tree with one file planted per case — a mark inside a literal is not counted,
+# a real mark is. `source_strays_mutation` recompiles the reader in memory with
+# each direction broken and requires exactly the named cases to go red.
 #
 # ## S7-4 — the instrument must be shown to have FIRED
 #
@@ -77,6 +87,8 @@ defmodule ETCCTagsControls do
         ["select"] -> select()
         ["mutate"] -> mutate()
         ["vacuous"] -> vacuous()
+        ["source_strays"] -> source_strays()
+        ["source_strays_mutation"] -> source_strays_mutation()
         ["all"] -> all()
         _ -> usage()
       end
@@ -87,7 +99,8 @@ defmodule ETCCTagsControls do
 
   defp usage do
     IO.puts(
-      "usage: mix run #{__ENV__.file} derive|doctest_options|diff|select|mutate|vacuous|all"
+      "usage: mix run #{__ENV__.file} " <>
+        "derive|doctest_options|diff|select|mutate|vacuous|source_strays|source_strays_mutation|all"
     )
   end
 
@@ -98,6 +111,8 @@ defmodule ETCCTagsControls do
     select()
     mutate()
     vacuous()
+    source_strays()
+    source_strays_mutation()
   end
 
   # --- the derivation, enumerated rather than summarised --------------------
@@ -433,6 +448,409 @@ defmodule ETCCTagsControls do
       true ->
         IO.puts("zero selected, non-zero exit, cause named: OK")
     end
+  end
+
+  # --- MES-166: the SOURCE check's stray direction, both ways ----------------
+  #
+  # `mix conformance.etcc_tags --check` read marks off lines, so a test that
+  # builds a test module in a heredoc was reported as carrying a stray mark. The
+  # reader now walks the AST. These cases drive the REAL task, in-process, over a
+  # throwaway copy of `test/` and the register — the real tree is never written —
+  # with one file planted per case. Each case is judged on the PLANTED file's
+  # strays, so a mutation reddens exactly the cases it should and no others.
+
+  @plant "test/mes166_plant_test.exs"
+  @reader_source "conformance/lib/mcp/conformance/etcc_tags.ex"
+
+  # The one expression every mutation replaces. Required to occur exactly once:
+  # a refactor that moves it makes the mutation mode refuse, not pass unmutated.
+  @reader_anchor "{:ok, ast} -> {:ok, ast |> marks_in() |> Enum.sort()}"
+
+  # M1 — the pre-MES-166 line scan (`classify_mark/2` at 0fcdbbc), put back.
+  @line_scan ~S'''
+  {:ok, _ast} ->
+        marks =
+          for {text, i} <- source |> String.split("\n") |> Enum.with_index(1),
+              kind =
+                (cond do
+                   String.trim(text) == "@tag :etcc" -> :tag
+                   Regex.match?(~r/^\s*doctest\s/, text) and String.contains?(text, "tags: [:etcc]") -> :directive
+                   true -> nil
+                 end),
+              kind != nil,
+              do: {i, kind}
+
+        {:ok, marks}
+  '''
+
+  # M2 — a reader that sees nothing at all.
+  @blind "{:ok, _ast} -> {:ok, []}"
+
+  # M5 — the reader crashes on the planted file once it has parsed it (MES-166
+  # correction round 2, B1). Every case whose plant parses must go red: a crash is
+  # never a pass. F1 and F2 do not parse, so they never reach the raise.
+  @raise_on_plant ~S"""
+  {:ok, ast} ->
+        if String.ends_with?(file, "mes166_plant_test.exs"),
+          do: raise("M5: the reader cannot read the plant"),
+          else: {:ok, ast |> marks_in() |> Enum.sort()}
+  """
+
+  # M3 — the UTF-8 rescue removed (MES-166 F2): a non-UTF-8 file then crashes
+  # the check with an exception that names no file, instead of being refused.
+  @utf8_rescue "  rescue\n    e in UnicodeConversionError -> {:error, {:encoding, Exception.message(e)}}\n"
+
+  @mutations [
+    {"M1", "the line scan restored", @reader_anchor, @line_scan, ~w(P0 L1 L2 L3 R3)},
+    {"M2", "the reader returns no marks", @reader_anchor, @blind, ~w(R1 R2 R3)},
+    {"M3", "the UTF-8 rescue removed", @utf8_rescue, "", ~w(F2)},
+    {"M5", "the reader raises on a planted file it can parse", @reader_anchor, @raise_on_plant,
+     ~w(L1 L2 L3 R1 R2 R3)}
+  ]
+
+  defp stray_cases do
+    [
+      %{id: "P0", what: "nothing planted — the copy of the real tree", plant: nil, want: :clean},
+      %{
+        id: "L1",
+        what: "the tag inside an ~S heredoc (the MES-160 fixture shape)",
+        plant: ~S"""
+        defmodule MES166.PlantTest do
+          use ExUnit.Case
+
+          test "builds a module" do
+            src = ~S'''
+            @tag :etcc
+            test "x", do: :ok
+            '''
+
+            assert src
+          end
+        end
+        """,
+        want: {:plant, []}
+      },
+      %{
+        id: "L2",
+        what: "the tag inside a plain heredoc string",
+        plant: ~S'''
+        defmodule MES166.PlantTest do
+          use ExUnit.Case
+
+          test "builds a module" do
+            src = """
+            @tag :etcc
+            test "x", do: :ok
+            """
+
+            assert src
+          end
+        end
+        ''',
+        want: {:plant, []}
+      },
+      %{
+        id: "L3",
+        what: "a doctest directive inside a heredoc",
+        plant: ~S"""
+        defmodule MES166.PlantTest do
+          use ExUnit.Case
+
+          @fixture ~S'''
+          doctest MES166.Nothing, tags: [:etcc]
+          '''
+
+          test "reads the fixture", do: assert(@fixture)
+        end
+        """,
+        want: {:plant, []}
+      },
+      %{
+        id: "R1",
+        what: "a real tag above an untagged test",
+        plant: ~S"""
+        defmodule MES166.PlantTest do
+          use ExUnit.Case
+
+          @tag :etcc
+          test "planted", do: :ok
+        end
+        """,
+        want: {:plant, [{4, "tag"}]}
+      },
+      %{
+        id: "R2",
+        what: "a real doctest directive carrying the tag",
+        plant: ~S"""
+        defmodule MES166.PlantTest do
+          use ExUnit.Case
+          doctest MES166.Nothing, tags: [:etcc]
+        end
+        """,
+        want: {:plant, [{3, "directive"}]}
+      },
+      %{
+        id: "R3",
+        what: "a literal AND a real tag in one file — only the real one",
+        plant: ~S"""
+        defmodule MES166.PlantTest do
+          use ExUnit.Case
+
+          test "builds a module" do
+            src = ~S'''
+            @tag :etcc
+            test "x", do: :ok
+            '''
+
+            assert src
+          end
+
+          @tag :etcc
+          test "planted", do: :ok
+        end
+        """,
+        want: {:plant, [{13, "tag"}]}
+      },
+      %{
+        id: "F1",
+        what: "a test file that does not parse",
+        plant: ~S"""
+        defmodule MES166.PlantTest do
+          @tag :etcc
+          test "planted", do: :ok
+        """,
+        want: {:parse_refused, "missing terminator"}
+      },
+      %{
+        id: "F2",
+        what: "a test file that is not UTF-8 (MES-166 F2)",
+        plant: "defmodule MES166.PlantTest do\n  @tag :etcc\n  @a \"" <> <<0xFF>> <> "\"\nend\n",
+        want: {:parse_refused, "not valid UTF-8"}
+      }
+    ]
+  end
+
+  defp source_strays do
+    section("SOURCE STRAYS (MES-166) — the real --check, a literal is not a mark, a real mark is")
+    preflight_plants!()
+    reds = with_stray_root(&run_stray_cases/1)
+
+    if reds == [],
+      do: IO.puts("\nevery case as expected, both directions: OK"),
+      else: halt("SOURCE STRAYS: #{Enum.join(reds, ", ")} did not behave as expected")
+  end
+
+  defp source_strays_mutation do
+    section("SOURCE STRAYS MUTATION (MES-166) — each direction shown able to go red")
+    preflight_plants!()
+    original = File.read!(@reader_source)
+    before_md5 = md5(original)
+
+    for {id, _what, anchor, _replacement, _want_red} <- @mutations do
+      case length(String.split(original, anchor)) - 1 do
+        1 ->
+          :ok
+
+        n ->
+          halt(
+            "#{id}: its anchor occurs #{n} times in #{@reader_source}, not once — no mutation made"
+          )
+      end
+    end
+
+    with_stray_root(fn root ->
+      for {id, what, anchor, replacement, want_red} <- @mutations do
+        IO.puts("\n--- #{id}: #{what}  (compiled in memory; no file is written)")
+        compile_reader!(String.replace(original, anchor, replacement))
+        red = run_stray_cases(root)
+
+        if Enum.sort(red) == Enum.sort(want_red),
+          do:
+            IO.puts("    red: #{Enum.join(red, " ")} — exactly the cases #{id} must redden: OK"),
+          else: halt("#{id}: red #{inspect(red)}, expected exactly #{inspect(want_red)}")
+      end
+
+      IO.puts("\n--- restored: the reader as committed, recompiled in memory")
+      compile_reader!(original)
+      red = run_stray_cases(root)
+      if red != [], do: halt("restored reader: #{inspect(red)} red")
+    end)
+
+    after_md5 = md5(File.read!(@reader_source))
+
+    if after_md5 == before_md5,
+      do: IO.puts("\n#{@reader_source} md5 #{after_md5} == #{before_md5}: never written: OK"),
+      else: halt("#{@reader_source} CHANGED during the mutation run")
+  end
+
+  # Every planted line a case expects is checked to BE a mark-shaped line before
+  # any case runs, so an expectation cannot silently point at the wrong line.
+  defp preflight_plants! do
+    for %{id: id, plant: plant, want: {:plant, expected}} <- stray_cases(),
+        {line, _kind} <- expected do
+      text = plant |> String.split("\n") |> Enum.at(line - 1, "") |> String.trim()
+
+      unless text == @tag_body or String.starts_with?(text, "doctest "),
+        do: halt("#{id}: line #{line} of the plant is #{inspect(text)}, not a mark")
+    end
+  end
+
+  defp with_stray_root(fun) do
+    root = Path.join(System.tmp_dir!(), "mes166_strays_#{System.unique_integer([:positive])}")
+    register = ETCCTags.paths().register
+
+    try do
+      File.mkdir_p!(Path.join(root, Path.dirname(register)))
+      File.cp_r!("test", Path.join(root, "test"))
+      File.cp!(register, Path.join(root, register))
+      fun.(root)
+    after
+      File.rm_rf!(root)
+    end
+  end
+
+  # Returns the ids of the cases that did NOT behave as expected.
+  defp run_stray_cases(root) do
+    IO.puts(
+      pad("case", 6) <> pad("check", 10) <> pad("strays", 8) <> pad("planted", 22) <> "verdict"
+    )
+
+    for c <- stray_cases(), reduce: [] do
+      reds ->
+        plant_path = Path.join(root, @plant)
+        if c.plant, do: File.write!(plant_path, c.plant)
+        {outcome, out} = check_in(root)
+        File.rm_rf!(plant_path)
+
+        {ok?, planted, total} = verdict(c.want, outcome, out)
+
+        check =
+          case outcome do
+            :ok -> "OK"
+            {:refused, _} -> "REFUSED"
+            {:crashed, _} -> "CRASHED"
+          end
+
+        IO.puts(
+          pad(c.id, 6) <>
+            pad(check, 10) <>
+            pad(total, 8) <>
+            pad(inspect(planted), 22) <> if(ok?, do: "as expected", else: "NOT as expected")
+        )
+
+        IO.puts("      #{c.what}")
+        if ok?, do: reds, else: reds ++ [c.id]
+    end
+  end
+
+  # The one place every case is judged through. A run has exactly three outcomes
+  # (check_in/1): :ok, {:refused, message} and {:crashed, reason}. No case wants a
+  # crash, so a crash is never as expected — decided HERE, once, and not left to
+  # each clause, because a clause that reads "not refused" as "OK" passes a crash
+  # (MES-166 correction round 2, B1). Each clause below then requires its intended
+  # outcome positively; none is satisfied by the absence of another.
+  defp verdict(_want, {:crashed, _reason}, out), do: {false, planted_strays(out), "-"}
+  defp verdict(want, outcome, out), do: judge(want, outcome, out)
+
+  # P0: the check ran, reported, and found nothing.
+  defp judge(:clean, outcome, out) do
+    total = total_strays(out)
+    {outcome == :ok and total == 0, [], total}
+  end
+
+  # L: the check ran and passed, and the planted file contributed no stray.
+  defp judge({:plant, []}, outcome, out) do
+    planted = planted_strays(out)
+    {outcome == :ok and planted == [], planted, total_strays(out)}
+  end
+
+  # R: refused FOR DISAGREEING — not for any other reason — at exactly the planted
+  # lines.
+  defp judge({:plant, expected}, outcome, out) do
+    planted = planted_strays(out)
+
+    ok? =
+      match?({:refused, _}, outcome) and
+        String.contains?(elem(outcome, 1), "source and register disagree") and
+        planted == expected
+
+    {ok?, planted, total_strays(out)}
+  end
+
+  # F: refused, by name, for the stated reason.
+  defp judge({:parse_refused, why}, outcome, _out) do
+    ok? =
+      match?({:refused, _}, outcome) and String.contains?(elem(outcome, 1), @plant) and
+        String.contains?(elem(outcome, 1), "does not parse") and
+        String.contains?(elem(outcome, 1), why)
+
+    {ok?, [], "-"}
+  end
+
+  # The real task, in-process, with its shell captured. S7-4: a run that printed
+  # no report and raised nothing did not fire, and is not read as a result.
+  defp check_in(root) do
+    previous = Mix.shell()
+    Mix.shell(Mix.Shell.Process)
+
+    outcome =
+      try do
+        File.cd!(root, fn -> Mix.Task.rerun("conformance.etcc_tags", ["--check"]) end)
+        :ok
+      rescue
+        e in Mix.Error -> {:refused, Exception.message(e)}
+        # Any other exception is recorded, not propagated: it is a case that did not
+        # behave, and the control must go on to report the rest (M3 needs this).
+        e -> {:crashed, Exception.message(e)}
+      catch
+        # A throw or an exit is a crash too, so the outcome set is closed at three.
+        kind, reason -> {:crashed, "#{kind}: #{inspect(reason)}"}
+      after
+        Mix.shell(previous)
+      end
+
+    out = drain_shell([])
+
+    if outcome == :ok and not String.contains?(out, "ETCC TAG CHECK"),
+      do: halt("CONTROL DID NOT FIRE (not a result): --check printed no report")
+
+    {outcome, out}
+  end
+
+  defp drain_shell(acc) do
+    receive do
+      {:mix_shell, _kind, [line]} -> drain_shell([line | acc])
+    after
+      0 -> acc |> Enum.reverse() |> Enum.join("\n")
+    end
+  end
+
+  defp planted_strays(out) do
+    for [kind, line] <-
+          Regex.scan(~r/STRAY\s+(tag|directive)\s+#{Regex.escape(@plant)}:(\d+)/, out,
+            capture: :all_but_first
+          ),
+        do: {String.to_integer(line), kind}
+  end
+
+  defp total_strays(out) do
+    case Regex.run(~r/stray marks\s+(\d+)/, out, capture: :all_but_first) do
+      [n] -> String.to_integer(n)
+      nil -> "-"
+    end
+  end
+
+  defp compile_reader!(source) do
+    {_modules, diagnostics} =
+      Code.with_diagnostics(fn ->
+        Code.compiler_options(ignore_module_conflict: true)
+        Code.compile_string(source, @reader_source)
+      end)
+
+    errors = Enum.filter(diagnostics, &(&1.severity == :error))
+    if errors != [], do: halt("the mutated reader did not compile: #{inspect(errors)}")
+    # A mutation leaves the AST helpers unused, so warnings there are expected.
+    IO.puts("    compiled in memory, #{length(diagnostics)} compiler warning(s)")
   end
 
   # --- mutation plumbing — restore is md5-verified, not asserted -------------
