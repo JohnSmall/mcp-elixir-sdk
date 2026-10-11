@@ -9,7 +9,7 @@ reading every fixture beforehand predicted only 3 of those 6.
 
 ## Why this is Python, and why that is not a gap to be closed
 
-This file is outside all six DoD gates. That is the PRICE of the control's
+This file is outside every DoD gate. That is the PRICE of the control's
 independence and it is a good price. Writing it in Elixir would put it inside
 the umbrella project whose absence it exists to simulate — one `mix run`, one
 `Code.require_file`, one transitively-loaded application, and the control is

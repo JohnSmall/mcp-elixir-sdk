@@ -85,8 +85,8 @@ mix dialyzer
 
 Every ticket's Definition of Done runs these gates, each individually, all green.
 **Gates 1-5 always. Gate 6 only when the ticket changes `mix.exs` or `mix.lock`. Gate 7
-only when the ticket changes a path under `test/`, `lib/` or `conformance/`** — see each
-gate's applicability rule below:
+only when the ticket changes a path under `test/`, `lib/` or `conformance/`. Gate 8 only
+when it changes a path under `lib/`** — see each gate's applicability rule below:
 
 1. `mix format --check-formatted`
 2. `mix compile --warnings-as-errors`
@@ -99,6 +99,13 @@ gate's applicability rule below:
    no test merges green while the OC check it corresponds to is red. **Run it with the
    branch checked out and the tree clean**, and needs `node` and the pinned harness
    build (checked by its `dist/index.js` sha256) — see *Gate 7* below.
+8. `mix conformance.sweep --verify` — the **ET-CC anchor check** (added by MES-175 under
+   the PO ruling of 2026-10-11; took the set from seven to eight): guards 23-27 resolved
+   against the tree, so a `lib/` edit that moves a `mutation_spec` anchor goes red on the
+   ticket that made it. **Run it with the branch checked out and the tree clean.** Applies
+   in the gate-6 form, three dots: `git diff --name-only main...{TICKET_KEY} | grep -E '^lib/'`.
+   No match ⇒ skip it and say so ("gate 8 not applicable, no lib/ change"). Detail:
+   `docs/procedure/gate-8.md`.
 
 `mix deps.get` is setup, not a gate.
 
@@ -143,6 +150,8 @@ MES-177, and it binds exactly as it did here. **Read a page before the task it g
 - `docs/procedure/gate-7.md` — gate 7's declarations, measurement, fail-closed conditions,
   residuals, checklist item and evidence. Read it when the branch touches `test/`, `lib/` or
   `conformance/`, and in every review.
+- `docs/procedure/gate-8.md` — gate 8's verdict forms, cost, residuals, checklist item and
+  evidence. Read it when the branch touches `lib/`, and in every review.
 - `docs/procedure/publication.md` — D8: push `main` and the tag, `mix origin.sync`, the
   **Publication check** item. The PM at every merge; CODE_REVIEWER in every review.
 - `docs/procedure/end-of-sprint.md` — the PM, at a sprint boundary.

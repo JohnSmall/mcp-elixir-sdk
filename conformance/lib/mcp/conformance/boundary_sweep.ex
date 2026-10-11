@@ -623,10 +623,12 @@ defmodule MCP.Conformance.BoundarySweep do
   fire, and those live in `conformance/controls/etcc_boundary_sweep_controls.exs`.
 
   `check_tree: false` skips guard 26, the only one that is a function of the tree rather
-  than of the table. That is how `MCP.Conformance.ETCCRegister` calls it: the ratified
-  cadence (`docs/procedure/end-of-sprint.md`, step 4) puts `lib/`-drift detection at
-  the **sprint boundary**, so a `lib/` move by an unrelated ticket must raise a sweep
-  finding, not refuse that ticket's register build.
+  than of the table. That is how `MCP.Conformance.ETCCRegister` calls it. Anchor drift
+  is **DoD gate 8** (`mix conformance.sweep --verify`, per ticket that changes `lib/`,
+  `docs/procedure/gate-8.md`), so the `lib/` move is refused on the ticket that makes
+  it; liveness stays at the sprint boundary (`docs/procedure/end-of-sprint.md`, step 4).
+  Guard 26 stays out of the register build so that each red has one meaning: a register
+  refusal is a defect in the table, and a gate-8 GUARD 26 is a `lib/` move.
   """
   def check_table!(rows, opts \\ []) when is_list(rows) do
     %{

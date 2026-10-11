@@ -5,7 +5,7 @@
 > `docs/procedure/`, so "`CLAUDE.md`" in the boundary below reads as "`CLAUDE.md` or
 > `docs/procedure/`", pending D7's amendment on 250052681.** "This file" below is this page:
 > `conformance/controls/pm_alone_lane_guard_controls.exs` extracts the guard block from here.
-> "D8(b)" is run point (b) in `docs/procedure/publication.md`; gates 1-6 are in `CLAUDE.md`.
+> "D8(b)" is run point (b) in `docs/procedure/publication.md`; the DoD gates are in `CLAUDE.md`.
 
 **Work-item lanes (D7).** The lane is the **Jira issue type**, and the default is safe. A
 **PM Task** (issue type id `10484`, hierarchy level 0) is worked **PM-alone**: the PM plans,

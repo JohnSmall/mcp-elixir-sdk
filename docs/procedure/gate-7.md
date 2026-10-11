@@ -80,10 +80,10 @@ runner edit can move a live check either way.
 **The measurement, live on the branch.** For every leg a token names, the task runs the
 leg **whole** through the canonical `mix conformance.run` path (`--requirements
 2026-07-28`) against the working tree, and the run must pass the census's provenance
-judgement pinned to the branch tip **and to the pinned harness build** — `dist/index.js`
-sha256 `a10085d0…` (`MCP.Conformance.HarnessHost.pinned_dist_sha256/0`, the one constant
-`BucketZero` also cites) — before any figure is read. **The committed census is never
-consulted** — it can be stale. A token passes only when it resolves to exactly
+judgement pinned to the branch tip **and to the pinned harness build** —
+`/tmp/conf11/node_modules/@modelcontextprotocol/conformance/dist/index.js`, sha256 `a10085d0…`
+(`MCP.Conformance.HarnessHost.pinned_dist_sha256/0`, the one constant `BucketZero` also cites) —
+before any figure is read. **The committed census is never consulted** — it can be stale. A token passes only when it resolves to exactly
 one row **and** that row is `SUCCESS`. **`WARNING` and `SKIPPED` are refused like
 `FAILURE`** (Q1): a check that cannot be SUCCESS cannot vouch for a test — declare
 `oc: :none` with an `oc_reason` citing it. When the branch changes `lib/` or
@@ -105,7 +105,8 @@ assertions change, still cannot merge. Gate 7 does **not** check this mechanical
 `:none` declaration measures nothing — so it is the reviewer's, on the checklist item
 below.
 
-**Fail-closed.** No `node` on PATH, no harness at `/tmp/conf11`, a harness whose
+**Fail-closed.** No `node` on PATH, no harness at
+`/tmp/conf11/node_modules/@modelcontextprotocol/conformance/dist/index.js`, a harness whose
 `dist/index.js` is not the pinned build, a runner that raises, exits or throws, a run the adjudicator
 refuses, a scenario that threw or was not run, an unresolvable ref, a HEAD that is not
 the branch tip, a dirty tree: each is a **refusal**, never a skip, and each still ends

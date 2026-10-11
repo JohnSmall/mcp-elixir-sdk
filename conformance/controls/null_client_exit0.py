@@ -27,7 +27,7 @@ loaded application, and the control is quietly exercising the thing it is
 supposed to prove nothing about. Its job is to contain no SDK, and the cheapest
 way to guarantee that is for it to be unable to reach one.
 
-That puts this file outside all six DoD gates. That is the PRICE of the
+That puts this file outside every DoD gate. That is the PRICE of the
 control's independence and it is a good price.
 
 ## The beacon

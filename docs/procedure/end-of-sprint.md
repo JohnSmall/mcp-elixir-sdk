@@ -49,6 +49,9 @@ moment an advisory can be acted on without disrupting anything.
      validates the register against the **recorded table**, never the table against
      the **tree**, so it stays green while the verdicts under it rot. Nothing else
      re-runs the sweep.
+   - **The per-ticket half is gate 8** (MES-175). `mix conformance.sweep --verify` checks,
+     on every ticket that changes `lib/`, that the `mutation_spec` anchors still resolve.
+     It re-measures nothing, so liveness stays here (`docs/procedure/gate-8.md`).
    - **Cost, measured not assumed:** **119 min 26 s, measured on MES-174 (31981) at 1790 tests**, all of it on the
      critical path of whoever runs it. That is why it is a cadence check and not a
      per-ticket gate, the same reasoning gate 6's applicability rule uses.

@@ -5,7 +5,7 @@ defmodule Mix.Tasks.Conformance.Sweep do
   Re-runs MES-81's boundary-liveness sweep and compares the result with
   `conformance/data/etcc-boundaries.json`.
 
-      mix conformance.sweep --verify         # guards 23-27 only. No test runs. Seconds.
+      mix conformance.sweep --verify         # guards 23-27 only. No test runs. Seconds. DoD gate 8.
       mix conformance.sweep --host           # skip condition (c). No test runs. Seconds.
       mix conformance.sweep --check          # full sweep, then diff. Nonzero on drift.
       mix conformance.sweep --out PATH       # full sweep, write the regenerated table
@@ -16,11 +16,14 @@ defmodule Mix.Tasks.Conformance.Sweep do
 
   ## Cadence
 
-  This is an **end-of-sprint** instrument, not a per-ticket gate —
+  The sweep (`--check`) is an **end-of-sprint** instrument, not a per-ticket gate —
   `docs/procedure/end-of-sprint.md`, step 4, which also states the three-condition skip and
   what the cadence gives up. A full `--check` took 119 min 26 s on MES-174 (31981) at 1790
   tests: one mutation cycle per direction, plus a byte-probe run for every direction whose
   live count is zero.
+
+  `--verify` is the exception: it re-measures nothing, and it is **DoD gate 8** on every
+  ticket that changes `lib/` (MES-175, `docs/procedure/gate-8.md`).
 
   ## `--host`, and why a git diff is not enough
 
