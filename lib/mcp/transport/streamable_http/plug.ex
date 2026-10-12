@@ -185,7 +185,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   alias MCP.Protocol
   alias MCP.Protocol.Error
-  alias MCP.Protocol.Messages.Request
+  alias MCP.Protocol.Messages.{Request, Response}
   alias MCP.Protocol.Methods
   alias MCP.Server.{Config, Dispatch, NotificationCollector, Subscription, ToolContext}
   alias MCP.Transport.SSE
@@ -1101,6 +1101,12 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
           [] -> decoded
           missing -> {:error, {:meta_invalid, id, missing}}
         end
+
+      # A client MUST NOT send a JSON-RPC response (streamable-http.mdx:80-81), and
+      # this server sends no request one could answer: -32600, before dispatch (MES-168).
+      {:ok, %Response{}} ->
+        error = Error.invalid_request("a client must not send a JSON-RPC response")
+        {:error, {:invalid_request, readable_id(message), error}}
 
       {:error, %Error{} = error} when is_map(message) ->
         {:error, {:invalid_request, readable_id(message), error}}

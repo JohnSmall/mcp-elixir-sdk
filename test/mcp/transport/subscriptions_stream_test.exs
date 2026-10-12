@@ -996,10 +996,10 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
               retry: false
             )
 
-          # The wire side is not what this fixes: an unroutable message is a
-          # 500 either way (MES-31 covers the non-map body's 500 separately).
+          # The wire side is MES-168's: a client-sent response is refused 400 /
+          # -32600 before dispatch. What R4 fixes is what it leaves behind.
           # What changes is what it leaves behind.
-          assert response.status == 500
+          assert {response.status, response.body["error"]["code"]} == {400, -32_600}
         end
       end)
 
@@ -1062,7 +1062,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
             retry: false
           )
 
-        assert response.status == 500
+        assert {response.status, response.body["error"]["code"]} == {400, -32_600}
       end)
 
       # THE PROPERTY: B's request said nothing about A's subscription, and the
