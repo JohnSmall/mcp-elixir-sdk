@@ -39,7 +39,8 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     1. **Enforcement** — localhost/Origin (and any host auth) runs first, on
        every request, before the identity factory (MC-5 / AC7). A rejected
        request never runs the factory.
-    2. **Decode, routing headers, `_meta`** — parse the JSON-RPC body; check
+    2. **Decode, routing headers, `_meta`** — read the body (longer than
+       `:max_body_length` → HTTP 413, `-32600`) and parse it; check
        `Mcp-Method` / `Mcp-Name` against it (SEP-2243, missing or mismatch → `-32020`),
        then the required `_meta` keys (missing → HTTP 400, `-32602`, the id).
     3. **Identity resolution** — the `:handler_opts` factory is evaluated
@@ -89,6 +90,13 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
       gracefully and the client re-listens.
     * `:keepalive_interval` — how often an idle subscription stream emits an SSE
       comment-line keep-alive, in milliseconds (default: 15 s).
+    * `:max_body_length` — the largest POST body read, in bytes (default:
+      `8_000_000`, Plug's own `read_body/2` default). A longer body is refused
+      with HTTP 413 and a JSON-RPC `-32600` whose `id` is `null` — the body was
+      never read, so no id is readable. The rest of the body is left to the
+      HTTP server, which drains it up to its own bound (8 MB on Bandit) and
+      keeps the connection; an excess beyond that bound may reach the client as
+      a connection reset instead of the 413.
 
   ## Subscription streams (`subscriptions/listen`)
 
@@ -205,7 +213,8 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     :collector_start,
     :stream_start,
     :max_stream_lifetime,
-    :keepalive_interval
+    :keepalive_interval,
+    :max_body_length
   ]
 
   # A subscription stream lives at most an hour unless the deployment says
@@ -225,6 +234,10 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   # trip rather than being unbounded. 15s sits under the common 30-60s proxy
   # idle timeout the keep-alive exists to defeat.
   @default_keepalive_interval :timer.seconds(15)
+
+  # Plug's own `read_body/2` default, so naming it changes no deployment's
+  # bound. A body over it is refused 413 (MES-169), never read to the end.
+  @default_max_body_length 8_000_000
 
   @doc """
   Creates a Plug configuration tuple suitable for Bandit.
@@ -257,6 +270,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
     max_stream_lifetime = Keyword.get(opts, :max_stream_lifetime, @default_max_stream_lifetime)
     keepalive_interval = Keyword.get(opts, :keepalive_interval, @default_keepalive_interval)
+    max_body_length = validate_max_body_length!(opts)
 
     # AC7 (MES-14): config-time cache-scope footgun warning. init/1 runs once
     # per plug configuration (call/2 has no path here), so this emits at most
@@ -291,7 +305,8 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
       collector_start: collector_start,
       stream_start: stream_start,
       max_stream_lifetime: max_stream_lifetime,
-      keepalive_interval: keepalive_interval
+      keepalive_interval: keepalive_interval,
+      max_body_length: max_body_length
     }
   end
 
@@ -317,7 +332,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   # --- POST: the request/response path ---
 
   defp handle_post(conn, config) do
-    with {:ok, body, conn} <- Plug.Conn.read_body(conn),
+    with {:ok, body, conn} <- read_body(conn, config.max_body_length),
          {:ok, message} <- Jason.decode(body),
          :ok <- check_routing_headers(conn, message),
          {:ok, decoded} <- decode_well_formed(message),
@@ -325,6 +340,9 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
          {:ok, collector} <- start_collector(config.collector_start, readable_id(message)) do
       dispatch(conn, config, decoded, message, identity, collector)
     else
+      {:error, {:body_too_large, conn}} ->
+        send_body_too_large(conn, config.max_body_length)
+
       {:error, %Jason.DecodeError{} = e} ->
         send_json_error(conn, 400, Error.parse_error_code(), "Parse error", inspect(e))
 
@@ -378,6 +396,25 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   defp send_invalid_request(conn, id, detail),
     do: send_json_error(conn, id, 400, Error.invalid_request_code(), "Invalid request", detail)
+
+  # `{:more, _, conn}` is a body longer than the limit (MES-169): it used to
+  # match no `else` clause, a `WithClauseError` and a bare 500. The conn
+  # returned is the one the response must go out on.
+  defp read_body(conn, length) do
+    case Plug.Conn.read_body(conn, length: length) do
+      {:more, _partial, conn} -> {:error, {:body_too_large, conn}}
+      other -> other
+    end
+  end
+
+  # 413 (RFC 9110 §15.5.14) with -32600 and a `null` id: nothing past the limit
+  # was read, so no id is readable. No `connection: close`: closing on unread
+  # bytes resets the socket and can lose the 413 (measured on MES-169), so the
+  # HTTP server's own drain decides whether the connection survives.
+  defp send_body_too_large(conn, limit) do
+    detail = "request body exceeds #{limit} bytes"
+    send_json_error(conn, 413, Error.invalid_request_code(), "Invalid request", detail)
+  end
 
   defp dispatch(conn, config, decoded, raw_message, identity, collector) do
     # The notification collector is a per-request process (MES-14): its pid is
@@ -1044,6 +1081,17 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   # `POST` alone: GET is refused now that no standing stream exists, so
   # advertising it in `allow` would name a method this endpoint will reject.
+  defp validate_max_body_length!(opts) do
+    case Keyword.get(opts, :max_body_length, @default_max_body_length) do
+      length when is_integer(length) and length > 0 ->
+        length
+
+      other ->
+        raise ArgumentError,
+              "MCP Plug: :max_body_length must be a positive integer, got: #{inspect(other)}"
+    end
+  end
+
   defp method_not_allowed(conn) do
     conn
     |> Plug.Conn.put_resp_header("allow", "POST")

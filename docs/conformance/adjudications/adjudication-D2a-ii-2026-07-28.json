@@ -799,16 +799,16 @@
             "code": {
               "file": "lib/mcp/transport/streamable_http/plug.ex",
               "lines": [
-                1064,
-                1072
+                1112,
+                1120
               ],
               "bytes": "  defp localhost_request?(conn) do\n    origin = Plug.Conn.get_req_header(conn, \"origin\")\n    host = Plug.Conn.get_req_header(conn, \"host\")\n\n    origin_ok = origin == [] || Enum.any?(origin, &localhost_value?/1)\n    host_ok = host == [] || Enum.any?(host, &localhost_value?/1)\n\n    origin_ok && host_ok\n  end"
             },
             "refusal": {
               "file": "lib/mcp/transport/streamable_http/plug.ex",
               "lines": [
-                299,
-                307
+                314,
+                322
               ],
               "bytes": "  def call(conn, config) do\n    # Step 1 — enforcement precedes everything (MC-5 / AC7).\n    if localhost_request?(conn) do\n      route_method(conn, config)\n    else\n      conn\n      |> Plug.Conn.put_resp_content_type(\"text/plain\")\n      |> Plug.Conn.send_resp(403, \"Forbidden: non-localhost origin\")\n    end"
             }
@@ -2145,16 +2145,16 @@
             "code": {
               "file": "lib/mcp/transport/streamable_http/plug.ex",
               "lines": [
-                995,
-                1001
+                1032,
+                1038
               ],
               "bytes": "  defp send_response(conn, config, response, notifications) do\n    if config.enable_json_response do\n      send_json_response(conn, response)\n    else\n      send_sse_response(conn, response, notifications)\n    end\n  end"
             },
             "sse": {
               "file": "lib/mcp/transport/streamable_http/plug.ex",
               "lines": [
-                1023,
-                1032
+                1060,
+                1069
               ],
               "bytes": "  defp send_sse_response(conn, response, notifications) do\n    body =\n      (notifications ++ [response])\n      |> Enum.map_join(&SSE.encode_message/1)\n\n    conn\n    |> Plug.Conn.put_resp_content_type(\"text/event-stream\")\n    |> Plug.Conn.put_resp_header(\"cache-control\", \"no-cache\")\n    |> Plug.Conn.send_resp(200, body)\n  end"
             },
@@ -4001,8 +4001,8 @@
             "sse": {
               "file": "lib/mcp/transport/streamable_http/plug.ex",
               "lines": [
-                1023,
-                1032
+                1060,
+                1069
               ],
               "bytes": "  defp send_sse_response(conn, response, notifications) do\n    body =\n      (notifications ++ [response])\n      |> Enum.map_join(&SSE.encode_message/1)\n\n    conn\n    |> Plug.Conn.put_resp_content_type(\"text/event-stream\")\n    |> Plug.Conn.put_resp_header(\"cache-control\", \"no-cache\")\n    |> Plug.Conn.send_resp(200, body)\n  end"
             }
