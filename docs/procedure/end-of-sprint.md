@@ -50,7 +50,8 @@ moment an advisory can be acted on without disrupting anything.
      the **tree**, so it stays green while the verdicts under it rot. Nothing else
      re-runs the sweep.
    - **The per-ticket half is gate 8** (MES-175). `mix conformance.sweep --verify` checks,
-     on every ticket that changes `lib/`, that the `mutation_spec` anchors still resolve.
+     on every ticket that changes `lib/`, the ET-CC table or a guard source (the command is
+     in `docs/procedure/gate-8.md`), that the `mutation_spec` anchors still resolve.
      It re-measures nothing, so liveness stays here (`docs/procedure/gate-8.md`).
    - **Cost, measured not assumed:** **119 min 26 s, measured on MES-174 (31981) at 1790 tests**, all of it on the
      critical path of whoever runs it. That is why it is a cadence check and not a

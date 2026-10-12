@@ -86,7 +86,7 @@ mix dialyzer
 Every ticket's Definition of Done runs these gates, each individually, all green.
 **Gates 1-5 always. Gate 6 only when the ticket changes `mix.exs` or `mix.lock`. Gate 7
 only when the ticket changes a path under `test/`, `lib/` or `conformance/`. Gate 8 only
-when it changes a path under `lib/`** — see each gate's applicability rule below:
+when it changes `lib/`, the ET-CC boundary table or a guard source** — see each gate's applicability rule below:
 
 1. `mix format --check-formatted`
 2. `mix compile --warnings-as-errors`
@@ -103,8 +103,10 @@ when it changes a path under `lib/`** — see each gate's applicability rule bel
    the PO ruling of 2026-10-11; took the set from seven to eight): guards 23-27 resolved
    against the tree, so a `lib/` edit that moves a `mutation_spec` anchor goes red on the
    ticket that made it. **Run it with the branch checked out and the tree clean.** Applies
-   in the gate-6 form, three dots: `git diff --name-only main...{TICKET_KEY} | grep -E '^lib/'`.
-   No match ⇒ skip it and say so ("gate 8 not applicable, no lib/ change"). Detail:
+   when the branch changes `lib/`, the ET-CC table or a guard source (PO ruling 2026-10-12),
+   by the gate-6 form, three dots, and this exact command:
+   `git diff --no-renames --name-only main...{TICKET_KEY} | grep -E '^(lib/|conformance/data/etcc-boundaries\.json$|conformance/lib/mcp/conformance/boundary_sweep\.ex$|conformance/lib/mix/tasks/conformance\.sweep\.ex$)'`.
+   No match ⇒ skip it and say so ("gate 8 not applicable, no lib/, table or guard change"). Detail:
    `docs/procedure/gate-8.md`.
 
 `mix deps.get` is setup, not a gate.

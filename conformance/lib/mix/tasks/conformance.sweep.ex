@@ -22,8 +22,8 @@ defmodule Mix.Tasks.Conformance.Sweep do
   tests: one mutation cycle per direction, plus a byte-probe run for every direction whose
   live count is zero.
 
-  `--verify` is the exception: it re-measures nothing, and it is **DoD gate 8** on every
-  ticket that changes `lib/` (MES-175, `docs/procedure/gate-8.md`).
+  `--verify` is the exception: it re-measures nothing, and it is **DoD gate 8** (MES-175);
+  when it applies is `docs/procedure/gate-8.md`.
 
   ## `--host`, and why a git diff is not enough
 

@@ -1,11 +1,16 @@
 # Gate 8 — the ET-CC anchor check (MES-175)
 
-> **Written by MES-175.** The gate's list item and its applicability rule are in
-> `CLAUDE.md`, *Definition-of-Done Gates*; "the gate-6 form" is gate 6's applicability rule
-> there. Guards 23-27 are `MCP.Conformance.BoundarySweep.check_table!/2`.
+> **Written by MES-175; trigger widened by MES-180.** The gate's list item is in `CLAUDE.md`,
+> *Definition-of-Done Gates*; "the gate-6 form" is gate 6's applicability rule there. The
+> trigger command's home is the fenced block under *Applicability* below; `CLAUDE.md` carries
+> a byte-identical copy, and `test/conformance/gate_8_trigger_test.exs` holds the two equal.
+> Guards 23-27 are `MCP.Conformance.BoundarySweep.check_table!/2`.
 
 **PO ruling, 2026-10-11.** `mix conformance.sweep --verify` is a Definition-of-Done gate
 for every ticket whose branch changes `lib/` — a gate, not only a review-checklist item.
+**Widened 2026-10-12** (PO ruling, MES-96 comment 32057, Q5; MES-180): it also applies when
+the branch changes the ET-CC boundary table or a guard source, the files `--verify` reads its
+verdict from.
 **Why:** GUARD 26 went red on `main` because MES-161 (Meta) and MES-157 (Plug) edited the
 `lib/` lines two ET-CC `mutation_spec` entries anchor on, and nothing noticed until the
 Sprint 13 end-of-sprint sweep refused to run (MES-171). `--verify` resolves the anchors
@@ -25,9 +30,24 @@ it.
 - **27** — every `mutation_spec` entry renders back to its committed `mutation` prose,
   byte for byte, in order and in count.
 
-**Applicability — the gate-6 form**, three dots, stated in `CLAUDE.md`:
-`git diff --name-only main...{TICKET_KEY} | grep -E '^lib/'`. No match ⇒ skip it and say
-so in the close-out ("gate 8 not applicable, no lib/ change").
+**Applicability — the gate-6 form**, three dots, with this exact command (`CLAUDE.md`
+item 8 carries the same bytes):
+
+```bash
+git diff --no-renames --name-only main...{TICKET_KEY} | grep -E '^(lib/|conformance/data/etcc-boundaries\.json$|conformance/lib/mcp/conformance/boundary_sweep\.ex$|conformance/lib/mix/tasks/conformance\.sweep\.ex$)'
+```
+
+It fires on any path under `lib/` (guard 26 reads it), and on exactly three files:
+`conformance/data/etcc-boundaries.json`, the table guards 23-27 judge;
+`conformance/lib/mcp/conformance/boundary_sweep.ex`, the guards; and
+`conformance/lib/mix/tasks/conformance.sweep.ex`, the task that runs them. The caret makes
+every alternative match from the start of the path (`x/lib/a.ex` does not fire); the `$`
+makes each file an exact path (`etcc-boundaries.json.bak` does not fire); the dots are
+escaped. **`--no-renames`** departs from the gate-6 form on purpose: with git's default
+rename detection, a branch that only renames the table lists the new path alone, so the
+trigger stays silent while `--verify` refuses with `File.Error` (case RE); with it, the old
+path is listed too (MES-180 Q1). No match ⇒ skip it and say so in the close-out ("gate 8 not
+applicable, no lib/, table or guard change").
 
 **Why a documented diff and not an `N/A` in the task** (MES-175 AC4, PM-ratified). The
 task runs in about 0.6 s and is harmless on any tree: on an inapplicable branch it is
@@ -103,11 +123,27 @@ included; **29.5 s** cold (no `_build`) — the project compile gates 2 and 5 al
 4. **Working tree, not git objects.** Guard 26 reads files relative to the cwd. The task
    checks neither that HEAD is the branch tip nor that the tree is clean (gate 7 refuses
    both), so "branch checked out, tree clean" is a rule the person running it keeps.
-5. **The trigger is `lib/`, as ruled.** Guards 23, 24, 25 and 27 are functions of the
-   table alone; only 26 also reads the tree. A branch that changes only
-   `conformance/data/etcc-boundaries.json` or the guard sources skips gate 8. Both measured
-   cases are of that shape: **MES-171** re-anchored the table and **MES-174** regenerated
-   it, neither touching `lib/`. Widening the trigger was put to the PO on MES-175.
+5. **Resolved by MES-180: the trigger was `lib/` alone.** Guards 23, 24, 25 and 27 are
+   functions of the table alone; only 26 also reads the tree, so a branch that changed only
+   `conformance/data/etcc-boundaries.json` or the guard sources skipped gate 8. Both
+   measured cases were of that shape: **MES-171** re-anchored the table and **MES-174**
+   regenerated it, neither touching `lib/`. The PO widened the trigger on 2026-10-12
+   (MES-96 comment 32057, Q5); the command under *Applicability* covers both.
+6. **An unresolvable ref reads as "not applicable".** A mistyped key, a deleted branch or
+   the wrong directory makes `git diff` print `fatal:` to stderr and list nothing; `grep`
+   exits 1 with empty output — the same as a branch that touches none of the paths. The
+   gate-6 and gate-7 forms share this (S9-23 is the D7 guard's case of it), and so does
+   their rename blind spot that `--no-renames` closes here; the cross-gate remedy is a
+   PM-raised backlog ticket. `gate_8_trigger_test.exs` pins the behaviour as observed
+   (case E1), so a change to it is seen. Check the diff's stderr before reading an empty
+   result as a skip.
+7. **The guard sources are three files, as measured at `98c2519`.** `--verify` reaches
+   only the task's `verify/0` and `boundaries/0` and `BoundarySweep`'s `paths/0`,
+   `check_table!/2` and its five `check_*` functions, which call no other project module.
+   Two things outside the trigger can still break it: guard code moved into a **new**
+   module, which the trigger would not see until the list is widened; and `mix.exs`
+   `elixirc_paths`, which decides whether `conformance/lib` compiles at all (gate 6's
+   trigger, not gate 8's). Neither is checked mechanically.
 
 **Repairing a red GUARD 26.** The branch re-anchors the entry to the behaviour its
 mutation targets, as MES-171 did, re-establishing the mutation against that behaviour. It
@@ -134,3 +170,12 @@ copy of the table, and the refusal required: **12/12** guard mutations fired, th
 table passes, reach 50 rows; exit 0, 0.82 s at `b5b277e`. It calls `check_table!/1`
 directly, not the task, so the task's exit-status correspondence rests on the cases above;
 a control for it is a separate backlog ticket.
+
+`test/conformance/gate_8_trigger_test.exs` (MES-180, under gate 5) — the trigger command,
+extracted from this page and required byte-identical in `CLAUDE.md`, run against a throwaway
+git repository: it fires on a `lib/` change (F1), on each of the three files separately
+(F2a-F2c) and on a rename of the table (F3); it stays silent on unrelated `conformance/`
+paths (U1), on near-miss paths (N1-N5) and on a `lib/` change that only `main` made (B1).
+Each case is shown able to fail by a named in-memory mutation of the extracted command
+(M1-M8), and the retired `lib/`-only grep is required absent from every tracked file except
+the sprint registers (`docs/sprint_*_issues.md`, historical records).

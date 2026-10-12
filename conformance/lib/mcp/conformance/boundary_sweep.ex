@@ -624,7 +624,7 @@ defmodule MCP.Conformance.BoundarySweep do
 
   `check_tree: false` skips guard 26, the only one that is a function of the tree rather
   than of the table. That is how `MCP.Conformance.ETCCRegister` calls it. Anchor drift
-  is **DoD gate 8** (`mix conformance.sweep --verify`, per ticket that changes `lib/`,
+  is **DoD gate 8** (`mix conformance.sweep --verify`; when it applies is
   `docs/procedure/gate-8.md`), so the `lib/` move is refused on the ticket that makes
   it; liveness stays at the sprint boundary (`docs/procedure/end-of-sprint.md`, step 4).
   Guard 26 stays out of the register build so that each red has one meaning: a register

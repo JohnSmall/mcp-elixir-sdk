@@ -3,9 +3,10 @@
 > **Moved verbatim from `CLAUDE.md` by MES-177** (lines 25-81 at e74bf3f); the core keeps
 > a summary and a pointer here. **Since MES-177 the gate text this boundary protects lives in
 > `docs/procedure/`, so "`CLAUDE.md`" in the boundary below reads as "`CLAUDE.md` or
-> `docs/procedure/`", pending D7's amendment on 250052681.** "This file" below is this page:
-> `conformance/controls/pm_alone_lane_guard_controls.exs` extracts the guard block from here.
-> "D8(b)" is run point (b) in `docs/procedure/publication.md`; the DoD gates are in `CLAUDE.md`.
+> `docs/procedure/`", as D7 on 250052681 itself says since v19 (2026-10-12).** "This file"
+> below is this page: `conformance/controls/pm_alone_lane_guard_controls.exs` extracts the
+> guard block from here. "D8(b)" is run point (b) in `docs/procedure/publication.md`; the
+> DoD gates are in `CLAUDE.md`.
 
 **Work-item lanes (D7).** The lane is the **Jira issue type**, and the default is safe. A
 **PM Task** (issue type id `10484`, hierarchy level 0) is worked **PM-alone**: the PM plans,

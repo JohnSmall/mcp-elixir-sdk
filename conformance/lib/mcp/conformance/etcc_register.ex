@@ -62,11 +62,11 @@ defmodule MCP.Conformance.ETCCRegister do
       `mutation` prose (27). **Guard 26 — that the spec still resolves against `lib/` —
       is deliberately NOT run here.** It is the only one of the five that is a function
       of the **tree** rather than of the table. Anchor drift is **DoD gate 8** (`mix
-      conformance.sweep --verify`, per ticket that changes `lib/`,
-      `docs/procedure/gate-8.md`), which refuses the `lib/` move on the ticket that makes
-      it; liveness stays at the sprint boundary (`docs/procedure/end-of-sprint.md`, step
-      4). Kept out of this build so that each red has one meaning: a refusal here is a
-      defect in the register or its table, and a gate-8 GUARD 26 is a `lib/` move;
+      conformance.sweep --verify`; when it applies is `docs/procedure/gate-8.md`), which
+      refuses the `lib/` move on the ticket that makes it; liveness stays at the sprint
+      boundary (`docs/procedure/end-of-sprint.md`, step 4). Kept out of this build so
+      that each red has one meaning: a refusal here is a defect in the register or its
+      table, and a gate-8 GUARD 26 is a `lib/` move;
     * an `ET-CC` row that calls a SPLIT module's decode-side producer in its own test
       body without naming that module's `(decode)` direction — **guard 21** (PM ruling
       `26070`). This is the only guard about ATTRIBUTION rather than about a label or a
