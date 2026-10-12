@@ -1839,8 +1839,8 @@
             "code": {
               "file": "lib/mcp/server/dispatch.ex",
               "lines": [
-                298,
-                312
+                306,
+                320
               ],
               "bytes": "  defp route(\"prompts/get\", id, params, ctx, config) do\n    name = Map.get(params || %{}, \"name\", \"\")\n    args = Map.get(params || %{}, \"arguments\")\n\n    call(\n      config,\n      ctx,\n      :handle_get_prompt,\n      [name, args],\n      fn\n        {:ok, result, state} -> {complete(result), state}\n        {:error, code, message, state} -> {{:error, %Error{code: code, message: message}}, state}\n      end,\n      id\n    )"
             }
@@ -1863,8 +1863,8 @@
             "tools_call_route": {
               "file": "lib/mcp/server/dispatch.ex",
               "lines": [
-                224,
-                225
+                232,
+                233
               ],
               "bytes": "        {:input_required, input_requests, request_state, state} ->\n          {MRTR.input_required(input_requests, request_state), state}"
             }
@@ -1942,8 +1942,8 @@
               "code": {
                 "file": "lib/mcp/server/dispatch.ex",
                 "lines": [
-                  489,
-                  490
+                  497,
+                  498
                 ],
                 "bytes": "  # Every result carries `resultType` (Result base, schema.ts:658).\n  defp complete(map), do: Map.put(map, \"resultType\", \"complete\")"
               },
@@ -1967,8 +1967,8 @@
             "code": {
               "file": "lib/mcp/server/dispatch.ex",
               "lines": [
-                298,
-                312
+                306,
+                320
               ],
               "bytes": "  defp route(\"prompts/get\", id, params, ctx, config) do\n    name = Map.get(params || %{}, \"name\", \"\")\n    args = Map.get(params || %{}, \"arguments\")\n\n    call(\n      config,\n      ctx,\n      :handle_get_prompt,\n      [name, args],\n      fn\n        {:ok, result, state} -> {complete(result), state}\n        {:error, code, message, state} -> {{:error, %Error{code: code, message: message}}, state}\n      end,\n      id\n    )"
             }
@@ -2013,8 +2013,8 @@
             "tools_call_route": {
               "file": "lib/mcp/server/dispatch.ex",
               "lines": [
-                224,
-                225
+                232,
+                233
               ],
               "bytes": "        {:input_required, input_requests, request_state, state} ->\n          {MRTR.input_required(input_requests, request_state), state}"
             }

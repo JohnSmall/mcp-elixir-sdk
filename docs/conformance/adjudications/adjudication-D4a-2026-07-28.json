@@ -418,7 +418,8 @@
                   162,
                   168
                 ],
-                "bytes": "  defp handle_request(method, id, params, ctx, config) do\n    meta = Meta.from_params(params)\n\n    case Meta.validate_protocol_version(meta, target_version(config)) do\n      :ok -> route(method, id, params, ctx, config)\n      {:error, _} -> reply(id, Error.unsupported_protocol_version(meta.protocol_version), config)\n    end"
+                "bytes": "  defp handle_request(method, id, params, ctx, config) do\n    meta = Meta.from_params(params)\n\n    case Meta.validate_protocol_version(meta, target_version(config)) do\n      :ok -> route(method, id, params, ctx, config)\n      {:error, _} -> reply(id, Error.unsupported_protocol_version(meta.protocol_version), config)\n    end",
+                "at": "36a5082d029ec7897f10db06e2bec5ae02150989"
               }
             ],
             "discover_is_ungated_by_design": {
@@ -427,7 +428,8 @@
                 146,
                 148
               ],
-              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do"
+              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do",
+              "at": "36a5082d029ec7897f10db06e2bec5ae02150989"
             },
             "client_capabilities_is_read_but_not_gated": {
               "file": "lib/mcp/protocol/meta.ex",

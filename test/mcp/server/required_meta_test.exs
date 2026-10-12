@@ -115,7 +115,7 @@ defmodule MCP.Server.RequiredMetaTest do
 
   @tag oc: :none
   @tag oc_reason:
-         "-32022 for a present-but-unsupported version: ServerUnsupportedVersionError is FAILURE live (discover has no -32022 gate; MES-163)"
+         "-32022 for a present-but-unsupported version: asserts it on tools/list; the OC unsupported-version checks probe only server/discover (MES-163), none a non-discover method"
   test "a present but unsupported version keeps -32022" do
     resp = dispatch("tools/list", %{"_meta" => %{@pv => "1999-01-01", @cc => %{}}})
     assert resp["error"]["code"] == -32_022

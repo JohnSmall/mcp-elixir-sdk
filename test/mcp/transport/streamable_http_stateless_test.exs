@@ -95,7 +95,7 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
   @tag oc: :none
   @tag oc_reason:
-         "re-pointed by MES-161 to a present-but-unsupported version: ServerUnsupportedVersionError is FAILURE live (server/discover lacks the -32022 gate; MES-163)"
+         "re-pointed by MES-161 to a present-but-unsupported version: asserts -32022 on tools/call; the OC unsupported-version checks probe only server/discover (MES-163), none a non-discover method"
   @tag :etcc
   test "a request without a protocolVersion _meta fails fast (-32022)" do
     msg =
@@ -459,5 +459,32 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     {:ok, port} = :inet.port(socket)
     :gen_tcp.close(socket)
     port
+  end
+
+  # --- MES-163: server/discover is behind the version gate too ---
+
+  @tag oc: [
+         "oc:server/server-stateless/sep-2575-http-server-unsupported-version-400/HttpServerUnsupportedVersion400",
+         "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError"
+       ]
+  test "server/discover with an unsupported version → HTTP 400, -32022 naming supported and requested" do
+    msg =
+      rpc("server/discover", %{
+        "_meta" =>
+          Map.put(with_meta(%{})["_meta"], "io.modelcontextprotocol/protocolVersion", "v999.0.0")
+      })
+
+    # JSON mode and the default SSE mode alike: the refusal is plain JSON.
+    for plug_opts <- [opts(), MCPPlug.init(server_mod: StatelessHandler)] do
+      conn = post(plug_opts, msg, [{"mcp-protocol-version", "v999.0.0"}])
+      assert conn.status == 400
+      assert ["application/json" <> _] = get_resp_header(conn, "content-type")
+      body = Jason.decode!(conn.resp_body)
+      assert body["id"] == 1
+      refute Map.has_key?(body, "result")
+      assert body["error"]["code"] == -32_022
+      assert body["error"]["data"]["supported"] == [@version]
+      assert body["error"]["data"]["requested"] == "v999.0.0"
+    end
   end
 end

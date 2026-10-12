@@ -127,7 +127,7 @@ defmodule MCP.Server.DispatchTest do
 
   @tag oc: :none
   @tag oc_reason:
-         "re-pointed by MES-161 to a present-but-unsupported version: ServerUnsupportedVersionError is FAILURE live (server/discover lacks the -32022 gate; MES-163)"
+         "re-pointed by MES-161 to a present-but-unsupported version: asserts -32022 on tools/call; the OC unsupported-version checks probe only server/discover (MES-163), none a non-discover method"
   @tag :etcc
   test "request without a protocolVersion _meta fails fast (-32022)" do
     {:reply, resp, _} =
@@ -227,5 +227,19 @@ defmodule MCP.Server.DispatchTest do
   test "notifications/initialized is tolerated as a no-op (handshake removed)" do
     notif = %Notification{method: "notifications/initialized", params: nil}
     assert {:noreply, _state} = Dispatch.dispatch(notif, ctx(), config())
+  end
+
+  # --- MES-163: server/discover is behind the version gate too ---
+
+  @tag oc:
+         "oc:server/server-stateless/sep-2575-server-unsupported-version-error/ServerUnsupportedVersionError"
+  test "server/discover with an unsupported version → -32022 naming supported and requested" do
+    {:reply, resp, _} =
+      Dispatch.dispatch(req("server/discover", %{"_meta" => meta("v999.0.0")}), ctx(), config())
+
+    refute Map.has_key?(resp, "result")
+    assert resp["error"]["code"] == -32_022
+    assert resp["error"]["data"]["supported"] == [@version]
+    assert resp["error"]["data"]["requested"] == "v999.0.0"
   end
 end

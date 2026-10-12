@@ -47,7 +47,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
        the result populates `ToolContext.identity`, never from `params`
        (MC-2/Comment B, MC-3, MC-4). Factory failure → controlled `-32603`,
        no dispatch (MC-6).
-    4. **Dispatch** — `Dispatch.dispatch(message, ctx, config)`.
+    4. **Dispatch** — `Dispatch.dispatch(message, ctx, config)`; its `-32022` → HTTP 400.
 
   ## Options
 
@@ -438,7 +438,8 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
           # `handle_listen/3`. Telling a handler its subscription closed when it
           # never opened is the same false claim pointed the other way.
           disarm_listen_teardown(stream)
-          send_response(conn, config, response, notifications)
+
+          send_reply(conn, config, response, notifications)
 
         {:noreply, _state} ->
           # Defence in depth since round 3, not a live path: `{:noreply, _}` is
@@ -998,6 +999,20 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
       send_sse_response(conn, response, notifications)
     end
   end
+
+  # The HTTP status a dispatched reply leaves with. An unsupported protocol
+  # version (-32022, from Dispatch's version gate) is HTTP 400
+  # (streamable-http, SEP-2575); it is sent as plain JSON like the pre-dispatch
+  # 400s, never as an SSE stream. Every other reply is HTTP 200.
+  defp send_reply(conn, config, response, notifications) do
+    case reply_status(response) do
+      200 -> send_response(conn, config, response, notifications)
+      status -> send_json(conn, status, response)
+    end
+  end
+
+  defp reply_status(%{"error" => %{"code" => -32_022}}), do: 400
+  defp reply_status(_response), do: 200
 
   defp send_json_response(conn, response) do
     conn

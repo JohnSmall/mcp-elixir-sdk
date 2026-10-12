@@ -357,8 +357,8 @@
             "code": {
               "file": "lib/mcp/server/dispatch.ex",
               "lines": [
-                495,
-                502
+                503,
+                510
               ],
               "bytes": "  defp cacheable(map, config) do\n    {ttl_ms, cache_scope} = Map.get(config, :cache_defaults, @default_cache_defaults)\n\n    map\n    |> complete()\n    |> Map.put(\"ttlMs\", ttl_ms)\n    |> Map.put(\"cacheScope\", cache_scope)\n  end"
             }
@@ -428,8 +428,8 @@
             "code": {
               "file": "lib/mcp/server/dispatch.ex",
               "lines": [
-                495,
-                502
+                503,
+                510
               ],
               "bytes": "  defp cacheable(map, config) do\n    {ttl_ms, cache_scope} = Map.get(config, :cache_defaults, @default_cache_defaults)\n\n    map\n    |> complete()\n    |> Map.put(\"ttlMs\", ttl_ms)\n    |> Map.put(\"cacheScope\", cache_scope)\n  end"
             }
@@ -499,8 +499,8 @@
             "code": {
               "file": "lib/mcp/server/dispatch.ex",
               "lines": [
-                495,
-                502
+                503,
+                510
               ],
               "bytes": "  defp cacheable(map, config) do\n    {ttl_ms, cache_scope} = Map.get(config, :cache_defaults, @default_cache_defaults)\n\n    map\n    |> complete()\n    |> Map.put(\"ttlMs\", ttl_ms)\n    |> Map.put(\"cacheScope\", cache_scope)\n  end"
             }
@@ -570,8 +570,8 @@
             "code": {
               "file": "lib/mcp/server/dispatch.ex",
               "lines": [
-                495,
-                502
+                503,
+                510
               ],
               "bytes": "  defp cacheable(map, config) do\n    {ttl_ms, cache_scope} = Map.get(config, :cache_defaults, @default_cache_defaults)\n\n    map\n    |> complete()\n    |> Map.put(\"ttlMs\", ttl_ms)\n    |> Map.put(\"cacheScope\", cache_scope)\n  end"
             }
@@ -799,8 +799,8 @@
             "code": {
               "file": "lib/mcp/transport/streamable_http/plug.ex",
               "lines": [
-                1049,
-                1057
+                1064,
+                1072
               ],
               "bytes": "  defp localhost_request?(conn) do\n    origin = Plug.Conn.get_req_header(conn, \"origin\")\n    host = Plug.Conn.get_req_header(conn, \"host\")\n\n    origin_ok = origin == [] || Enum.any?(origin, &localhost_value?/1)\n    host_ok = host == [] || Enum.any?(host, &localhost_value?/1)\n\n    origin_ok && host_ok\n  end"
             },
@@ -1055,8 +1055,8 @@
             "code": {
               "file": "lib/mcp/server/dispatch.ex",
               "lines": [
-                300,
-                300
+                308,
+                308
               ],
               "bytes": "    args = Map.get(params || %{}, \"arguments\")"
             }
@@ -1796,8 +1796,8 @@
             "code": {
               "file": "lib/mcp/server/dispatch.ex",
               "lines": [
-                259,
-                260
+                267,
+                268
               ],
               "bytes": "        {:ok, contents, state} -> {cacheable(%{\"contents\" => contents}, config), state}\n        {:error, code, message, state} -> {{:error, %Error{code: code, message: message}}, state}"
             },
@@ -2145,16 +2145,16 @@
             "code": {
               "file": "lib/mcp/transport/streamable_http/plug.ex",
               "lines": [
-                994,
-                1000
+                995,
+                1001
               ],
               "bytes": "  defp send_response(conn, config, response, notifications) do\n    if config.enable_json_response do\n      send_json_response(conn, response)\n    else\n      send_sse_response(conn, response, notifications)\n    end\n  end"
             },
             "sse": {
               "file": "lib/mcp/transport/streamable_http/plug.ex",
               "lines": [
-                1008,
-                1017
+                1023,
+                1032
               ],
               "bytes": "  defp send_sse_response(conn, response, notifications) do\n    body =\n      (notifications ++ [response])\n      |> Enum.map_join(&SSE.encode_message/1)\n\n    conn\n    |> Plug.Conn.put_resp_content_type(\"text/event-stream\")\n    |> Plug.Conn.put_resp_header(\"cache-control\", \"no-cache\")\n    |> Plug.Conn.send_resp(200, body)\n  end"
             },
@@ -2318,7 +2318,8 @@
                 146,
                 148
               ],
-              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do"
+              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do",
+              "at": "36a5082d029ec7897f10db06e2bec5ae02150989"
             }
           },
           "ruling": {
@@ -2433,7 +2434,8 @@
                 146,
                 148
               ],
-              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do"
+              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do",
+              "at": "36a5082d029ec7897f10db06e2bec5ae02150989"
             }
           },
           "ruling": {
@@ -2550,7 +2552,8 @@
                 146,
                 148
               ],
-              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do"
+              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do",
+              "at": "36a5082d029ec7897f10db06e2bec5ae02150989"
             }
           },
           "ruling": {
@@ -2867,7 +2870,8 @@
                 146,
                 148
               ],
-              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do"
+              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do",
+              "at": "36a5082d029ec7897f10db06e2bec5ae02150989"
             }
           },
           "ruling": {
@@ -3047,7 +3051,8 @@
                 146,
                 148
               ],
-              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do"
+              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do",
+              "at": "36a5082d029ec7897f10db06e2bec5ae02150989"
             }
           },
           "ruling": {
@@ -3150,7 +3155,8 @@
                 146,
                 148
               ],
-              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do"
+              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do",
+              "at": "36a5082d029ec7897f10db06e2bec5ae02150989"
             }
           },
           "ruling": {
@@ -3390,8 +3396,8 @@
             "code": {
               "file": "lib/mcp/server/dispatch.ex",
               "lines": [
-                227,
-                228
+                235,
+                236
               ],
               "bytes": "        {:error, code, message, state} ->\n          {{:error, %Error{code: code, message: message}}, state}"
             },
@@ -3670,7 +3676,8 @@
                 146,
                 148
               ],
-              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do"
+              "bytes": "  # --- server/discover: the version-discovery probe (no version gate) ---\n\n  defp handle_request(\"server/discover\", id, _params, _ctx, config) do",
+              "at": "36a5082d029ec7897f10db06e2bec5ae02150989"
             }
           },
           "ruling": {
@@ -3994,8 +4001,8 @@
             "sse": {
               "file": "lib/mcp/transport/streamable_http/plug.ex",
               "lines": [
-                1008,
-                1017
+                1023,
+                1032
               ],
               "bytes": "  defp send_sse_response(conn, response, notifications) do\n    body =\n      (notifications ++ [response])\n      |> Enum.map_join(&SSE.encode_message/1)\n\n    conn\n    |> Plug.Conn.put_resp_content_type(\"text/event-stream\")\n    |> Plug.Conn.put_resp_header(\"cache-control\", \"no-cache\")\n    |> Plug.Conn.send_resp(200, body)\n  end"
             }

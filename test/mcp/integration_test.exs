@@ -225,4 +225,19 @@ defmodule MCP.IntegrationTest do
     assert :ok = Client.close(client)
     assert :ok = Connection.close(server)
   end
+
+  # --- MES-163: the -32022 data lets our own client retry against our own server ---
+
+  @tag oc: :none
+  @tag oc_reason:
+         "SDK client against SDK server: the -32022 data map lets our own client's one-shot version retry succeed; no OC check runs our client against our server (the client leg's retry check uses the harness server)"
+  test "a client stamping an unsupported version recovers via the server's -32022 supported list" do
+    %{client: client} = start_pair(protocol_version: "1999-01-01")
+
+    assert {:ok, result} = Client.connect(client)
+    assert result.protocol_version == "2026-07-28"
+
+    {:ok, list} = Client.list_tools(client)
+    assert Enum.map(list["tools"], & &1["name"]) |> Enum.sort() == ["add", "echo"]
+  end
 end

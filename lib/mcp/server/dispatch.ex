@@ -143,9 +143,28 @@ defmodule MCP.Server.Dispatch do
     reply(id, Error.method_not_found(method), config)
   end
 
-  # --- server/discover: the version-discovery probe (no version gate) ---
+  # --- Everything else, server/discover included: per-request version gate, then route ---
+  # An unsupported version is -32022 whose data names the versions this server
+  # supports and echoes the one requested (basic/versioning.mdx), so a client
+  # can pick a supported version and retry — discover is no exception (MES-163).
 
-  defp handle_request("server/discover", id, _params, _ctx, config) do
+  defp handle_request(method, id, params, ctx, config) do
+    meta = Meta.from_params(params)
+
+    case Meta.validate_protocol_version(meta, target_version(config)) do
+      :ok -> route(method, id, params, ctx, config)
+      {:error, _} -> reply(id, unsupported_version(meta, config), config)
+    end
+  end
+
+  defp unsupported_version(meta, config) do
+    data = %{"supported" => [target_version(config)], "requested" => meta.protocol_version}
+    Error.unsupported_protocol_version(data)
+  end
+
+  # --- server/discover: the version-discovery probe, past the version gate ---
+
+  defp route("server/discover", id, _params, _ctx, config) do
     result =
       Discover.Result.to_map(%Discover.Result{
         supported_versions: [target_version(config)],
@@ -155,17 +174,6 @@ defmodule MCP.Server.Dispatch do
       })
 
     {:reply, success(id, result), config.handler_state}
-  end
-
-  # --- Everything else: per-request version gate, then route ---
-
-  defp handle_request(method, id, params, ctx, config) do
-    meta = Meta.from_params(params)
-
-    case Meta.validate_protocol_version(meta, target_version(config)) do
-      :ok -> route(method, id, params, ctx, config)
-      {:error, _} -> reply(id, Error.unsupported_protocol_version(meta.protocol_version), config)
-    end
   end
 
   # --- Routing to identity-capable handler callbacks (context passed to each) ---

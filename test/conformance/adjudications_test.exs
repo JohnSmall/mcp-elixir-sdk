@@ -2131,8 +2131,8 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert Enum.count(outside, &Map.has_key?(&1, "lines")) == 26
       assert Enum.count(outside, &Map.has_key?(&1, "harness_sha256")) == 36
 
-      # MES-161: 110 of them are prose anchors, and 128 in all are read at `at` (MES-155 anchored one more).
-      assert r["repo_citations_anchored"] == 128
+      # MES-161: 110 are prose anchors; 137 in all read at `at` (MES-155 +1; MES-163 +9 at 36a5082).
+      assert r["repo_citations_anchored"] == 137
 
       assert r["repo_citations_found"] == 820 and
                r["harness_citations_not_verified_in_gate_5"] == 829
