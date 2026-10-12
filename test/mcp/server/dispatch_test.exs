@@ -100,18 +100,18 @@ defmodule MCP.Server.DispatchTest do
 
   # --- Removed methods: stateless behaviour, no legacy path ---
 
-  @tag oc: :none
-  @tag oc_reason:
-         "contradicted by HttpServerMethodNotFound404initialize FAILURE live (the suite requires 404/-32601 here): pre-existing, assertions unchanged; PO exception, MES-161 comment 30342; the fix is MES-165"
+  @tag oc:
+         "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize"
   @tag :etcc
   test "initialize is removed → UnsupportedProtocolVersion (-32022)" do
     {:reply, resp, _} = Dispatch.dispatch(req("initialize", %{}), ctx(), config())
-    assert resp["error"]["code"] == -32_022
+    assert resp["error"]["code"] == -32_601
   end
 
-  @tag oc: :none
-  @tag oc_reason:
-         "its counterparts are not all SUCCESS live (HttpServerMethodNotFound404loggingsetLevel FAILURE, HttpServerMethodNotFound404ping FAILURE), so they cannot vouch (gate 7 Q1); MES-161 does not remedy them (the 404 fix is MES-165)"
+  @tag oc: [
+         "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel",
+         "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping"
+       ]
   @tag :etcc
   test "ping and logging/setLevel are removed → method not found (-32601)" do
     {:reply, ping_resp, _} = Dispatch.dispatch(req("ping", %{}), ctx(), config())

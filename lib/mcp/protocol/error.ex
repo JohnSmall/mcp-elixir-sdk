@@ -109,8 +109,8 @@ defmodule MCP.Protocol.Error do
 
   @doc """
   Unsupported protocol version (`-32022`). Returned when a request carries no
-  supported `io.modelcontextprotocol/protocolVersion`, or an old-shape
-  (2025-11-25) request is received — the stateless core has no legacy path.
+  supported `io.modelcontextprotocol/protocolVersion`; its `data` names the
+  versions supported and the one requested (`basic/versioning.mdx`).
   """
   @spec unsupported_protocol_version(term()) :: t()
   def unsupported_protocol_version(data \\ nil) do

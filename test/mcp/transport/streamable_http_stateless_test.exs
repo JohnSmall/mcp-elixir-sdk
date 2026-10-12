@@ -113,14 +113,14 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
     assert error(conn)["code"] == -32_022
   end
 
-  @tag oc: :none
-  @tag oc_reason:
-         "contradicted by HttpServerMethodNotFound404initialize FAILURE live (the suite requires 404/-32601 here): pre-existing, assertions unchanged; PO exception, MES-161 comment 30342; the fix is MES-165"
+  @tag oc: [
+         "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
+         "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel",
+         "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping"
+       ]
   @tag :etcc
   test "initialize is gone → -32022; ping/logging.setLevel → -32601" do
-    assert error(post(opts(), rpc("initialize", %{})))["code"] == -32_022
-    assert error(post(opts(), rpc("ping", %{})))["code"] == -32_601
-    assert error(post(opts(), rpc("logging/setLevel", %{"level" => "info"})))["code"] == -32_601
+    for m <- ~w(initialize ping logging/setLevel), do: assert_not_found_404(m)
   end
 
   # --- routing headers (SEP-2243) ---
@@ -452,6 +452,14 @@ defmodule MCP.Transport.StreamableHTTPStatelessTest do
 
     {:ok, resp} = Req.post(url, body: body, headers: headers ++ RequiredHeaders.for_body(body))
     resp
+  end
+
+  # MES-165: a removed method is HTTP 404 with -32601 (HttpServerMethodNotFound404*),
+  # sent with a complete `_meta` as the suite sends it. Defined down here so no
+  # line an adjudication record cites moves.
+  defp assert_not_found_404(method) do
+    conn = post(opts(), rpc(method, with_meta(%{})))
+    assert {conn.status, error(conn)["code"]} == {404, -32_601}, method
   end
 
   defp free_port do

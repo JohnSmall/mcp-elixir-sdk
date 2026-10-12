@@ -63,9 +63,9 @@ defmodule MCP.Server.Dispatch do
   > legacy-arity fallback from `call/6`, but the moduledoc still described it
   > (MES-9 review F3). Doc statements about removed behaviour are claims too.
 
-  Removed methods return the stateless behaviour (no legacy path): `initialize`
-  → `UnsupportedProtocolVersion` (-32022); `ping` and `logging/setLevel` →
-  method-not-found.
+  Removed methods return the stateless behaviour (no legacy path): `initialize`,
+  `ping` and `logging/setLevel` → method-not-found (-32601), which the
+  Streamable HTTP Plug sends as HTTP 404.
   """
 
   alias MCP.Protocol.Error
@@ -128,18 +128,18 @@ defmodule MCP.Server.Dispatch do
 
   # --- Removed methods: stateless behaviour, no legacy path ---
 
-  defp handle_request("initialize", id, _params, _ctx, config) do
-    reply(
-      id,
-      Error.unsupported_protocol_version(
-        "the initialize handshake is removed in 2026-07-28; carry protocol version in per-request _meta"
-      ),
-      config
-    )
-  end
-
+  # All three are methods this server does not implement, so each is -32601
+  # Method not found, which the Streamable HTTP Plug sends as HTTP 404
+  # (streamable-http, SEP-2575; HttpServerMethodNotFound404*). `initialize`
+  # was -32022 until MES-165, with a bare-string `data` naming no supported
+  # version: a client following basic/versioning.mdx had nothing to retry
+  # with, and the suite requires 404/-32601 for it like the other two. No
+  # -32022 is now sent without its {supported, requested} map. Written in
+  # the lines the old `initialize` clause held, so nothing below it moves
+  # and no adjudication record's line citation of this file drifts.
+  #
   defp handle_request(method, id, _params, _ctx, config)
-       when method in ["ping", "logging/setLevel"] do
+       when method in ["initialize", "ping", "logging/setLevel"] do
     reply(id, Error.method_not_found(method), config)
   end
 

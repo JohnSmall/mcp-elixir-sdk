@@ -125,7 +125,7 @@ defmodule MCP.Server.RequiredMetaTest do
   @tag oc_reason:
          "the removed methods' exemption is SDK policy (their stateless answers); no OC check probes initialize/ping without _meta"
   test "removed methods keep their stateless answers without _meta" do
-    assert dispatch("initialize", %{})["error"]["code"] == -32_022
+    assert dispatch("initialize", %{})["error"]["code"] == -32_601
     assert dispatch("ping", %{})["error"]["code"] == -32_601
     assert dispatch("logging/setLevel", %{"level" => "info"})["error"]["code"] == -32_601
   end

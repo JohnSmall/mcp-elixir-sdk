@@ -78,7 +78,8 @@
                 45
               ],
               "bytes": "  defp error(conn), do: conn.resp_body |> Jason.decode!() |> Map.get(\"error\")"
-            }
+            },
+            "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
           },
           "check": {
             "requires": "HTTP 404 and JSON-RPC error -32601 for the removed method ping.",
@@ -137,7 +138,8 @@
                 122
               ],
               "bytes": "    assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601",
-              "breaks": "Does NOT break: the line asserts -32601 and never reads the status. Under the R2 fix it stays green and gains the status assertion this disposition records."
+              "breaks": "Does NOT break: the line asserts -32601 and never reads the status. Under the R2 fix it stays green and gains the status assertion this disposition records.",
+              "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
             }
           ],
           "disposition": "extend_test",
@@ -178,7 +180,8 @@
                 45
               ],
               "bytes": "  defp error(conn), do: conn.resp_body |> Jason.decode!() |> Map.get(\"error\")"
-            }
+            },
+            "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
           },
           "check": {
             "requires": "HTTP 404 and JSON-RPC error -32601 for the removed method logging/setLevel.",
@@ -237,7 +240,8 @@
                 123
               ],
               "bytes": "    assert error(post(opts(), rpc(\"logging/setLevel\", %{\"level\" => \"info\"})))[\"code\"] == -32_601",
-              "breaks": "Does NOT break: the line asserts -32601 and never reads the status. Under the R2 fix it stays green and gains the status assertion this disposition records."
+              "breaks": "Does NOT break: the line asserts -32601 and never reads the status. Under the R2 fix it stays green and gains the status assertion this disposition records.",
+              "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
             }
           ],
           "disposition": "extend_test",
@@ -340,7 +344,8 @@
               120,
               122
             ],
-            "bytes": "  test \"initialize is gone → -32022; ping/logging.setLevel → -32601\" do\n    assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022\n    assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601"
+            "bytes": "  test \"initialize is gone → -32022; ping/logging.setLevel → -32601\" do\n    assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022\n    assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601",
+            "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
           },
           "extend_vs_fresh": "This seam cannot be extended, because no HTTP response exists below the transport. A fresh test is not needed either: the transport-seam unit for the same method is extended instead (its extend_test row in this section).",
           "a3_ruling": "match-relation.md §2 and §3: the check is a two-axis conjunction (http_status AND jsonrpc_error_code); this claim agrees on the code and is silent on the status, so the edge is :partial, and (red, green, :partial) is bucket 4b.",
@@ -440,7 +445,8 @@
               120,
               123
             ],
-            "bytes": "  test \"initialize is gone → -32022; ping/logging.setLevel → -32601\" do\n    assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022\n    assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601\n    assert error(post(opts(), rpc(\"logging/setLevel\", %{\"level\" => \"info\"})))[\"code\"] == -32_601"
+            "bytes": "  test \"initialize is gone → -32022; ping/logging.setLevel → -32601\" do\n    assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022\n    assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601\n    assert error(post(opts(), rpc(\"logging/setLevel\", %{\"level\" => \"info\"})))[\"code\"] == -32_601",
+            "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
           },
           "extend_vs_fresh": "This seam cannot be extended, because no HTTP response exists below the transport. A fresh test is not needed either: the transport-seam unit for the same method is extended instead (its extend_test row in this section).",
           "a3_ruling": "match-relation.md §2 and §3: the check is a two-axis conjunction (http_status AND jsonrpc_error_code); this claim agrees on the code and is silent on the status, so the edge is :partial, and (red, green, :partial) is bucket 4b.",
@@ -540,7 +546,8 @@
               1113,
               1114
             ],
-            "bytes": "      assert response.status == 200\n      assert response.body[\"error\"][\"code\"] == -32_601"
+            "bytes": "      assert response.status == 200\n      assert response.body[\"error\"][\"code\"] == -32_601",
+            "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
           },
           "extend_vs_fresh": "This seam cannot be extended. A fresh test is not needed: the transport-seam unit for the same route already asserts the status, and D4a's fix_sdk row moves it from 200 to 404.",
           "a3_ruling": "match-relation.md §2 and §3: the check is a two-axis conjunction (http_status AND jsonrpc_error_code); this claim agrees on the code and is silent on the status, so the edge is :partial, and (red, green, :partial) is bucket 4b.",

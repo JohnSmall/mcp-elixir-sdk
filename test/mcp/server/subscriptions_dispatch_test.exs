@@ -407,9 +407,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
   end
 
   describe "T-5 JSON mode refuses the method outright" do
-    @tag oc: :none
-    @tag oc_reason:
-           "its counterparts are not all SUCCESS live (HttpServerMethodNotFound404 FAILURE), so they cannot vouch (gate 7 Q1); MES-161 does not remedy them (the 404 fix is MES-165)"
+    @tag oc:
+           "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404"
+    @tag oc_reason: "check probes unknown/method; same -32601 → 404 rule: listen, non-streaming"
     @tag :etcc
     test "a non-streaming driver gets -32601, never a silent black hole" do
       json_mode = config(streaming: false)
@@ -432,9 +432,9 @@ defmodule MCP.Server.SubscriptionsDispatchTest do
       assert Subscriptions.permitted_by(json_mode.capabilities) == %{}
     end
 
-    @tag oc: :none
-    @tag oc_reason:
-           "its counterparts are not all SUCCESS live (HttpServerMethodNotFound404 FAILURE), so they cannot vouch (gate 7 Q1); MES-161 does not remedy them (the 404 fix is MES-165)"
+    @tag oc:
+           "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404"
+    @tag oc_reason: "check probes unknown/method; same -32601 → 404 rule: listen, non-streaming"
     @tag :etcc
     test "a handler with no handle_listen/3 also gets -32601" do
       {:ok, no_listen} = Config.build(MCP.Test.StatelessHandler, streaming: true)

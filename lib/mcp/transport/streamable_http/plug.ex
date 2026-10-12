@@ -47,7 +47,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
        the result populates `ToolContext.identity`, never from `params`
        (MC-2/Comment B, MC-3, MC-4). Factory failure → controlled `-32603`,
        no dispatch (MC-6).
-    4. **Dispatch** — `Dispatch.dispatch(message, ctx, config)`; its `-32022` → HTTP 400.
+    4. **Dispatch** — `Dispatch.dispatch(message, ctx, config)`; its `-32022` → HTTP 400, `-32601` → 404.
 
   ## Options
 
@@ -145,8 +145,8 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   ### JSON mode refuses it outright
 
   With `enable_json_response: true` there is no way to hold a stream open, and
-  the listen response *is* an SSE stream — so the method returns `-32601`
-  rather than opening something that silently delivers nothing. Such a
+  the listen response *is* an SSE stream — so the method returns `-32601` (HTTP
+  404) rather than opening something that silently delivers nothing. Such a
   deployment also advertises no subscription capability, so a conforming client
   never calls it.
 
@@ -1000,10 +1000,9 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     end
   end
 
-  # The HTTP status a dispatched reply leaves with. An unsupported protocol
-  # version (-32022, from Dispatch's version gate) is HTTP 400
-  # (streamable-http, SEP-2575); it is sent as plain JSON like the pre-dispatch
-  # 400s, never as an SSE stream. Every other reply is HTTP 200.
+  # The HTTP status a dispatched reply leaves with (streamable-http, SEP-2575):
+  # -32022 (Dispatch's version gate) is 400 and -32601 (Method not found) 404,
+  # sent as plain JSON like the pre-dispatch 400s, never SSE. Others are 200.
   defp send_reply(conn, config, response, notifications) do
     case reply_status(response) do
       200 -> send_response(conn, config, response, notifications)
@@ -1012,6 +1011,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   end
 
   defp reply_status(%{"error" => %{"code" => -32_022}}), do: 400
+  defp reply_status(%{"error" => %{"code" => -32_601}}), do: 404
   defp reply_status(_response), do: 200
 
   defp send_json_response(conn, response) do

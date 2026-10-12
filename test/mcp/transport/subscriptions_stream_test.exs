@@ -1083,9 +1083,9 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   # --- JSON mode ---
 
   describe "JSON mode refuses the method" do
-    @tag oc: :none
-    @tag oc_reason:
-           "contradicted by HttpServerMethodNotFound404 FAILURE live (the suite requires 404/-32601 here): pre-existing, assertions unchanged; PO exception, MES-161 comment 30342; the fix is MES-165"
+    @tag oc:
+           "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404"
+    @tag oc_reason: "check probes unknown/method; same -32601 → 404 rule: listen, non-streaming"
     @tag :etcc
     test "subscriptions/listen returns -32601 rather than an empty stream" do
       port = start_instance(self(), enable_json_response: true)
@@ -1110,7 +1110,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
           headers: [{"content-type", "application/json"}, {"origin", "http://localhost"}]
         )
 
-      assert response.status == 200
+      assert response.status == 404
       assert response.body["error"]["code"] == -32_601
     end
   end

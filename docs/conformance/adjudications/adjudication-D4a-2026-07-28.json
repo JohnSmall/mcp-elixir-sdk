@@ -57,7 +57,8 @@
               109
             ],
             "bytes": "  test \"initialize is removed → UnsupportedProtocolVersion (-32022)\" do\n    {:reply, resp, _} = Dispatch.dispatch(req(\"initialize\", %{}), ctx(), config())\n    assert resp[\"error\"][\"code\"] == -32_022",
-            "asserts": "Dispatch.dispatch/3 answers a request for the removed method initialize with JSON-RPC error -32022. The test drives the dispatch below the transport, so no HTTP status exists at this seam."
+            "asserts": "Dispatch.dispatch/3 answers a request for the removed method initialize with JSON-RPC error -32022. The test drives the dispatch below the transport, so no HTTP status exists at this seam.",
+            "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
           },
           "check": {
             "requires": "HTTP 404 and JSON-RPC error -32601 for the removed method initialize.",
@@ -116,7 +117,8 @@
                   66,
                   68
                 ],
-                "bytes": "  Removed methods return the stateless behaviour (no legacy path): `initialize`\n  → `UnsupportedProtocolVersion` (-32022); `ping` and `logging/setLevel` →\n  method-not-found."
+                "bytes": "  Removed methods return the stateless behaviour (no legacy path): `initialize`\n  → `UnsupportedProtocolVersion` (-32022); `ping` and `logging/setLevel` →\n  method-not-found.",
+                "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
               },
               {
                 "file": "lib/mcp/server/dispatch.ex",
@@ -124,7 +126,8 @@
                   131,
                   139
                 ],
-                "bytes": "  defp handle_request(\"initialize\", id, _params, _ctx, config) do\n    reply(\n      id,\n      Error.unsupported_protocol_version(\n        \"the initialize handshake is removed in 2026-07-28; carry protocol version in per-request _meta\"\n      ),\n      config\n    )\n  end"
+                "bytes": "  defp handle_request(\"initialize\", id, _params, _ctx, config) do\n    reply(\n      id,\n      Error.unsupported_protocol_version(\n        \"the initialize handshake is removed in 2026-07-28; carry protocol version in per-request _meta\"\n      ),\n      config\n    )\n  end",
+                "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
               }
             ]
           },
@@ -136,7 +139,8 @@
                 109
               ],
               "bytes": "  test \"initialize is removed → UnsupportedProtocolVersion (-32022)\" do\n    {:reply, resp, _} = Dispatch.dispatch(req(\"initialize\", %{}), ctx(), config())\n    assert resp[\"error\"][\"code\"] == -32_022",
-              "breaks": "Breaks: initialize would answer -32601, and this line asserts -32022."
+              "breaks": "Breaks: initialize would answer -32601, and this line asserts -32022.",
+              "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
             },
             {
               "file": "test/mcp/transport/streamable_http_stateless_test.exs",
@@ -145,7 +149,8 @@
                 121
               ],
               "bytes": "  test \"initialize is gone → -32022; ping/logging.setLevel → -32601\" do\n    assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022",
-              "breaks": "Breaks: the same assertion, made through the real plug."
+              "breaks": "Breaks: the same assertion, made through the real plug.",
+              "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
             },
             {
               "file": "lib/mcp/server/dispatch.ex",
@@ -154,7 +159,8 @@
                 68
               ],
               "bytes": "  Removed methods return the stateless behaviour (no legacy path): `initialize`\n  → `UnsupportedProtocolVersion` (-32022); `ping` and `logging/setLevel` →\n  method-not-found.",
-              "breaks": "Must change: the moduledoc states the -32022 design. This is lib/, so any change here is an SDK change and not this ticket's."
+              "breaks": "Must change: the moduledoc states the -32022 design. This is lib/, so any change here is an SDK change and not this ticket's.",
+              "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
             },
             {
               "file": "lib/mcp/server/dispatch.ex",
@@ -163,7 +169,8 @@
                 139
               ],
               "bytes": "  defp handle_request(\"initialize\", id, _params, _ctx, config) do\n    reply(\n      id,\n      Error.unsupported_protocol_version(\n        \"the initialize handshake is removed in 2026-07-28; carry protocol version in per-request _meta\"\n      ),\n      config\n    )\n  end",
-              "breaks": "Must change: the clause that returns -32022, and the reason carried in its message."
+              "breaks": "Must change: the clause that returns -32022, and the reason carried in its message.",
+              "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
             }
           ],
           "disposition": "fix_sdk",
@@ -200,7 +207,8 @@
               121
             ],
             "bytes": "  test \"initialize is gone → -32022; ping/logging.setLevel → -32601\" do\n    assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022",
-            "asserts": "Through the real plug, a POST of initialize comes back carrying JSON-RPC error -32022. The response has an HTTP status, and this test does not assert it."
+            "asserts": "Through the real plug, a POST of initialize comes back carrying JSON-RPC error -32022. The response has an HTTP status, and this test does not assert it.",
+            "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
           },
           "check": {
             "requires": "HTTP 404 and JSON-RPC error -32601 for the removed method initialize.",
@@ -260,7 +268,8 @@
                 121
               ],
               "bytes": "  test \"initialize is gone → -32022; ping/logging.setLevel → -32601\" do\n    assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022",
-              "breaks": "Breaks: this line asserts -32022."
+              "breaks": "Breaks: this line asserts -32022.",
+              "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
             },
             {
               "file": "test/mcp/server/dispatch_test.exs",
@@ -269,7 +278,8 @@
                 109
               ],
               "bytes": "  test \"initialize is removed → UnsupportedProtocolVersion (-32022)\" do\n    {:reply, resp, _} = Dispatch.dispatch(req(\"initialize\", %{}), ctx(), config())\n    assert resp[\"error\"][\"code\"] == -32_022",
-              "breaks": "Breaks: the dispatch-level sibling of this edge."
+              "breaks": "Breaks: the dispatch-level sibling of this edge.",
+              "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
             }
           ],
           "disposition": "fix_sdk",
@@ -987,7 +997,8 @@
               1114
             ],
             "bytes": "      assert response.status == 200\n      assert response.body[\"error\"][\"code\"] == -32_601",
-            "asserts": "Over a real socket, a JSON-mode deployment refuses subscriptions/listen with -32601 carried in an HTTP 200 response, and asserts the 200."
+            "asserts": "Over a real socket, a JSON-mode deployment refuses subscriptions/listen with -32601 carried in an HTTP 200 response, and asserts the 200.",
+            "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
           },
           "check": {
             "requires": "HTTP 404 and JSON-RPC error -32601 when the server does not implement the requested method.",
@@ -1044,7 +1055,8 @@
                 1114
               ],
               "bytes": "      assert response.status == 200\n      assert response.body[\"error\"][\"code\"] == -32_601",
-              "breaks": "Breaks: under a -32601 to 404 mapping, the status this line asserts becomes 404. It is the only assertion of HTTP 200 over a -32601 response in test/mcp. The other status-200 assertions sit on success paths or on SSE streams already open when the error is written."
+              "breaks": "Breaks: under a -32601 to 404 mapping, the status this line asserts becomes 404. It is the only assertion of HTTP 200 over a -32601 response in test/mcp. The other status-200 assertions sit on success paths or on SSE streams already open when the error is written.",
+              "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
             },
             {
               "file": "test/mcp/transport/streamable_http_stateless_test.exs",
@@ -1053,7 +1065,8 @@
                 123
               ],
               "bytes": "    assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601\n    assert error(post(opts(), rpc(\"logging/setLevel\", %{\"level\" => \"info\"})))[\"code\"] == -32_601",
-              "breaks": "Does NOT break: these assert -32601 for ping and logging/setLevel and never read the status."
+              "breaks": "Does NOT break: these assert -32601 for ping and logging/setLevel and never read the status.",
+              "at": "3a9db47ef90a48bde980108239b7d74b1478cf50"
             }
           ],
           "disposition": "fix_sdk",
