@@ -61,7 +61,7 @@ defmodule MCP.Protocol do
     cond do
       # Response: has "id" and ("result" or "error")
       Map.has_key?(map, "id") and (Map.has_key?(map, "result") or Map.has_key?(map, "error")) ->
-        {:ok, decode_response(map)}
+        checked_response(map)
 
       # Request: has "id" and "method"
       Map.has_key?(map, "id") and Map.has_key?(map, "method") ->
@@ -108,4 +108,22 @@ defmodule MCP.Protocol do
       params: Map.get(map, "params")
     }
   end
+
+  # JSON-RPC 2.0 §5: a present `error` member "MUST be an Object as defined in
+  # section 5.1", whose `code` "MUST be an integer" and whose `message` is "A
+  # String". Anything else is not a response this decoder can build, so it is
+  # -32600 rather than a raise in `Error.from_map/1` (MES-190). An `error: null`
+  # is read as an absent member, as it was before.
+  defp checked_response(%{"error" => %{"code" => code, "message" => message}} = map)
+       when is_integer(code) and is_binary(message),
+       do: {:ok, decode_response(map)}
+
+  defp checked_response(%{"error" => error}) when not is_nil(error),
+    do:
+      {:error,
+       Error.invalid_request(
+         "a JSON-RPC error member must be an object with an integer code and a string message"
+       )}
+
+  defp checked_response(map), do: {:ok, decode_response(map)}
 end
