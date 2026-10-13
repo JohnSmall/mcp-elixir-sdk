@@ -184,7 +184,7 @@ Worked both ways, and both addresses are in this tree:
 
 | | address | verdict |
 | --- | --- | --- |
-| **not a step** | `plug.ex:1005` — `Jason.encode!(response)` over a map `dispatch.ex:724-728` already built string-keyed | gate 2 survives |
+| **not a step** | `plug.ex:1057` — `Jason.encode!(response)` over a map `dispatch.ex:732-736` already built string-keyed | gate 2 survives |
 | **a step** | `server_capabilities.ex:47-49` — `defimpl Jason.Encoder ... {_key, nil}, acc -> acc` | gate 2 fails |
 
 ### §2.3 The liveness qualifier — *"that produces one"* is RESTRICTIVE
@@ -647,7 +647,7 @@ moved none of them — and example 1's "no SDK step hides here" working are
 
 | # | unit (key = module + test name) | label + deciding gate |
 | --- | --- | --- |
-| 1 | `DispatchTest` / `"initialize is removed → UnsupportedProtocolVersion (-32022)"` (decl line 81) | `ET-CC`. Asserts `resp["error"]["code"] == -32_022` — a JSON-RPC error on the wire (gate 2); SEP-2575 removes `initialize` (gate 3). `falsifiable: yes`. No SDK step hides between the assertion and the wire: `dispatch.ex:724-728` builds already-string-keyed JSON and `plug.ex:1005` does `Jason.encode!` with no reshaping. |
+| 1 | `DispatchTest` / `"initialize is removed → UnsupportedProtocolVersion (-32022)"` (decl line 81) | `ET-CC`. Asserts `resp["error"]["code"] == -32_022` — a JSON-RPC error on the wire (gate 2); SEP-2575 removes `initialize` (gate 3). `falsifiable: yes`. No SDK step hides between the assertion and the wire: `dispatch.ex:732-736` builds already-string-keyed JSON and `plug.ex:1057` does `Jason.encode!` with no reshaping. |
 | 2 | `MethodsTest` / `"request methods"` — decl line 6, 12 assertions | `ET-ADJ`, `mixed: true`. All 12 compare a bare constant from `Methods.*/0` — nothing encoded — so gate 2 fails on every one. 11 of those constants **are** consumed on a wire path (`client.ex:314` passes `Methods.tools_list()` straight to `send_rpc` as the `method` field). **Decided against membership.** |
 | 3 | `ClientConformanceTest` / `"CONTROL ON THE CONTROL: the canary really does count a fetch"` (decl 133) | `ET-CTRL`. Starts a Bandit canary, `Req.get`s it, asserts the counter is 1. **Touches no SDK code at all** — fails 2 and 3 independently. `controls` the `$ref`-is-not-dereferenced test above it. **Decided against membership.** |
 | 4 | `JsonSchema202012Test` — 37 declarations, **47 units** (one decl × 11) | **31 `ET-CC` / 16 `ET-OUT`** — *not* 47/0. **15** decided by **gate 2** (every assertion is on the captured log; two bind the response to `_result` and discard it); **1** decided by **gate 3** — `W-5`, which passes gate 2 cleanly (asserts `tool["outputSchema"] == false` off the round-tripped response) and dies at gate 3 because `schema.ts:2005` types `outputSchema` as an object, so the spec does not govern `false` there. Invariant closes: 31 + 16 = 47. |
@@ -759,7 +759,7 @@ unmechanisable. My declared limb does not reach it.
 **decision procedure** for applying it, and the two sides are not separable at the call
 site. Both addresses in §2.2's table are "Jason encodes this value":
 
-- `plug.ex:1005` — `Jason.encode!(response)` over a plain map. **Not** a step.
+- `plug.ex:1057` — `Jason.encode!(response)` over a plain map. **Not** a step.
 - `server_capabilities.ex:47-49` — `defimpl Jason.Encoder` dropping nils. **A** step.
 
 Distinguishing them requires resolving the **runtime type** of the encoded value and
@@ -821,22 +821,22 @@ commit cannot contain its own hash.
 | `tool_capabilities.ex:20-31` | as above | `defimpl Jason.Encoder` … through `end` | agrees |
 | `client.ex:379` | **`lib/mcp/transport/streamable_http/client.ex`** | `target when is_binary(target) -> [{"mcp-name", HeaderMirror.encode_value(target)}]` | agrees |
 | `header_mirror.ex:140` | `lib/mcp/protocol/header_mirror.ex` | `[{header_name(name), encode_value(string)}]` | agrees |
-| `dispatch.ex:724-728` | `lib/mcp/server/dispatch.ex` | `defp error_response/2`, ending `%{"jsonrpc" => "2.0", "id" => id, "error" => error}` | agrees |
-| `plug.ex:1005` | `lib/mcp/transport/streamable_http/plug.ex` | `\|> Plug.Conn.send_resp(200, Jason.encode!(response))` | agrees |
+| `dispatch.ex:732-736` | `lib/mcp/server/dispatch.ex` | `defp error_response/2`, ending `%{"jsonrpc" => "2.0", "id" => id, "error" => error}` | agrees |
+| `plug.ex:1057` | `lib/mcp/transport/streamable_http/plug.ex` | `\|> Plug.Conn.send_resp(200, Jason.encode!(response))` | agrees |
 | `config.ex:253` | `lib/mcp/server/config.ex` | ``Extensions.normalise(declared, source: "MCP.Server.Config.build/2 `:extensions`")`` | agrees — see note (a) |
 | `client.ex:971` | **`lib/mcp/client.ex`** | `Extensions.normalise(capabilities.extensions,` | agrees — see note (a) |
 | `client.ex:314` | **`lib/mcp/client.ex`** | `Methods.tools_list(),` | agrees |
 | `server_capabilities.ex:43-52` / `:47-49` | `lib/mcp/protocol/capabilities/server_capabilities.ex` | `defimpl Jason.Encoder` …; `:48` is `{_key, nil}, acc -> acc` | agrees |
 | `client_capabilities.ex:37-47` | `lib/mcp/protocol/capabilities/client_capabilities.ex` | `defimpl Jason.Encoder` …; `:42` is `{_key, nil}, acc -> acc` | agrees |
-| `dispatch_test.exs:82` | `test/mcp/server/dispatch_test.exs` | `test "initialize is removed → UnsupportedProtocolVersion (-32022)" do` | agrees |
+| `dispatch_test.exs:106` | `test/mcp/server/dispatch_test.exs` | `test "initialize is removed → UnsupportedProtocolVersion (-32022)" do` | agrees |
 | `methods_test.exs:6` | `test/mcp/protocol/methods_test.exs` | `test "request methods" do` (`:7` is the first assertion) | agrees |
 | `client_conformance_test.exs:134` | `test/mcp/client_conformance_test.exs` | `test "CONTROL ON THE CONTROL: the canary really does count a fetch" do` | agrees |
 | `tool_test.exs:110` / `:109` | `test/mcp/protocol/types/tool_test.exs` | `:108` `for value <- [true, false] do`; `:109` the `test` declaration | agrees |
 | `routing_headers_test.exs:90` | `test/mcp/transport/routing_headers_test.exs` | `test "a request carries the body method", %{agent: agent, url: url} do` | agrees |
 | `census_test.exs:313` | `test/conformance/census_test.exs` | `test "builds a census, once every non-pass is classified" do` | agrees |
 | `capability_honesty_test.exs:25` | `test/mcp/server/capability_honesty_test.exs` | `test "a handler with list callbacks but no handle_listen/3 advertises no listChanged" do` | agrees |
-| `json_schema_2020_12_test.exs:49/:56/:64` | `test/mcp/server/json_schema_2020_12_test.exs` | `defp round_trip(method, params, opts \\ []) do`; the two wrappers | agrees |
-| `json_schema_2020_12_test.exs:195` | as above | `for {label, value} <- [` — the ×11 generator | agrees |
+| `json_schema_2020_12_test.exs:53/:60/:68` | `test/mcp/server/json_schema_2020_12_test.exs` | `defp round_trip(method, params, opts \\ []) do`; the two wrappers | agrees |
+| `json_schema_2020_12_test.exs:209` | as above | `for {label, value} <- [` — the ×11 generator | agrees |
 | `messages/tools_test.exs:131` | `test/mcp/protocol/messages/tools_test.exs` | `for {label, value} <- [` | agrees |
 
 **Note (a) — a precision limit, present at ratification and NOT drift.** `25614` quotes
@@ -996,7 +996,7 @@ ratified criterion decide this?**
 
 | # | the page's case | decided by MES-67? | where |
 | --- | --- | --- | --- |
-| 1 | `dispatch_test.exs:82`, `initialize → -32022` | **yes** — same verdict (`ET-CC`) | §11 ex. 1 |
+| 1 | `dispatch_test.exs:106`, `initialize → -32022` | **yes** — same verdict (`ET-CC`) | §11 ex. 1 |
 | 2 | `methods_test.exs:7`, `Methods.initialize() == "initialize"` | **yes** — decided against membership | §11 ex. 2 |
 | 3 | `client_conformance_test.exs:134`, control on the control | **yes** — same verdict (`ET-CTRL`) | §11 ex. 3 |
 | 4 | `json_schema_2020_12_test.exs` | **yes** — decided **differently** | §11 ex. 4 |
@@ -1844,7 +1844,7 @@ not carried from `etcc-register.md` §5** — F1 is what transcription costs.
 
 | section | worked examples checked | verdict |
 | --- | --- | --- |
-| §2.2 | both addresses — `plug.ex:1005` (not a step), `server_capabilities.ex:47-49` (a step) | **no move.** §2.5 cites §2.2 by name for its negative limb (*"that is a §2.2 step and gate 2 fails"*), so the two are one rule in two positions. A hand-written encoder that drops nils reshapes the value, which §2.5's own words fail. |
+| §2.2 | both addresses — `plug.ex:1057` (not a step), `server_capabilities.ex:47-49` (a step) | **no move.** §2.5 cites §2.2 by name for its negative limb (*"that is a §2.2 step and gate 2 fails"*), so the two are one rule in two positions. A hand-written encoder that drops nils reshapes the value, which §2.5's own words fail. |
 | §2.3 | the worked pair (`client_test.exs:144` survives / `Messages.Tools`, 36 rows, fails) and clauses (a)–(e) | **no move**, and this is the pairing that matters most: 8 of the 52 pass §2.5 and still fail gate 2 on §2.3. Clause (c)'s first bullet is written for exactly them. `Messages.Tools` stays `ET-OUT`. |
 | §2.4 | both rows — `%{}` from `Extensions.from_meta(nil)` **passes**; `:ready` from `Client.status/1` **fails** | **no move.** Both reproduce at this tip: the `from_meta/1 (9)` doctest is `ET-CC`, `start_link/1 starts ready by default` is `ET-OUT`. §2.5(b) states the division explicitly — §2.4 owns the *absence* case, §2.5 the *value* case — so `:ready` fails under both, for the same reason, which is the consistency being checked. |
 | §5.2 | both rows — `valid_identifier?/1` (2 doctests) `ET-ADJ`; `reserved_prefix?/1` (2 doctests) `ET-OUT` | **no move.** Both reproduce. Neither asserts a decoded wire value: a boolean predicate output is SDK-computed, so §2.5 fails them and §5's call-site test — untouched by §2.5 — is what separates them. |

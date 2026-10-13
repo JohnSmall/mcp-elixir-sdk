@@ -575,7 +575,7 @@
     }
    ],
    "et_verdict": "green",
-   "evidence": "self_compatibility_test.exs:195 — `assert {:ok, %{\"tools\" => [%{\"name\" => name}]}} = MCP.Client.list_tools(client)`, with the bound name pinned at self_compatibility_test.exs:196. The PATTERN is what discharges the three axes and it does so more tightly than an equality would: the map pattern requires the `tools` key, the list pattern requires a JSON array of exactly one element, and the inner map pattern requires that element to carry `name`. A JSON object under `tools` decodes to a map and fails the list pattern.\n\nThis is the only member in this file that reaches a check over REAL HTTP through a real Bandit server (self_compatibility_test.exs:178-193) rather than in-process over `MCP.Test.BridgeTransport`, which is why it is filed beside the BridgeTransport `ToolsList` edge rather than collapsed into it: same check, different transport, two claims.",
+   "evidence": "self_compatibility_test.exs:207 — `assert {:ok, %{\"tools\" => [%{\"name\" => name}]}} = MCP.Client.list_tools(client)`, with the bound name pinned at self_compatibility_test.exs:208. The PATTERN is what discharges the three axes and it does so more tightly than an equality would: the map pattern requires the `tools` key, the list pattern requires a JSON array of exactly one element, and the inner map pattern requires that element to carry `name`. A JSON object under `tools` decodes to a map and fails the list pattern.\n\nThis is the only member in this file that reaches a check over REAL HTTP through a real Bandit server (self_compatibility_test.exs:190-205) rather than in-process over `MCP.Test.BridgeTransport`, which is why it is filed beside the BridgeTransport `ToolsList` edge rather than collapsed into it: same check, different transport, two claims.",
    "note": "The second edge onto `ToolsList` from this file; `MCP.IntegrationTest` files the other."
   },
   {
@@ -609,7 +609,7 @@
     }
    ],
    "et_verdict": "green",
-   "evidence": "self_compatibility_test.exs:198 — `assert {:ok, %{\"content\" => [%{\"text\" => \"sunny\"}]}} = MCP.Client.call_tool(client, name)`. The pattern carries four axes: the `content` key, a one-element LIST (so not a map and not empty), and a block whose `text` is the non-empty string the tool returned.\n\nTHE TYPE-DISCRIMINATOR AXIS IS SILENT, and it is the one axis a pattern match makes easy to over-claim. `a_content_block_has_type_text` requires a block carrying `\"type\":\"text\"` in the WIRE spelling; this pattern names only the `text` key, so it would match a block with no `type` at all. The handler does set it (self_compatibility_test.exs:62) — a fixture setting a field is not an assertion reading it."
+   "evidence": "self_compatibility_test.exs:210 — `assert {:ok, %{\"content\" => [%{\"text\" => \"sunny\"}]}} = MCP.Client.call_tool(client, name)`. The pattern carries four axes: the `content` key, a one-element LIST (so not a map and not empty), and a block whose `text` is the non-empty string the tool returned.\n\nTHE TYPE-DISCRIMINATOR AXIS IS SILENT, and it is the one axis a pattern match makes easy to over-claim. `a_content_block_has_type_text` requires a block carrying `\"type\":\"text\"` in the WIRE spelling; this pattern names only the `text` key, so it would match a block with no `type` at all. The handler does set it (self_compatibility_test.exs:65) — a fixture setting a field is not an assertion reading it."
   }
  ],
  "declared_unmatched": [
@@ -894,7 +894,7 @@
    "tag": "oc:none/no-oc-scenario/sse-comment-line-ignored",
    "cg": null,
    "search_id": "ND04",
-   "claim_the_slot_names": "a bare `:`-leading comment line arriving between two events is ignored, and the two events either side are both delivered in order (subscriptions_stream_test.exs:378-381)",
+   "claim_the_slot_names": "a bare `:`-leading comment line arriving between two events is ignored, and the two events either side are both delivered in order (subscriptions_stream_test.exs:396-399)",
    "why_no_counterpart": "`no-oc-scenario` — the suite has no check on SSE frame syntax; ND04's zero over all 175 is the measurement. A comment line is by the SSE grammar a frame carrying no data, so a functional-stream check cannot see one even in principle.",
    "why_this_search_is_this_claims_search": "ND04's subject names the comment-line limb explicitly. The server file's SRV12 records the absence of a check on a server EMITTING keep-alive comments; this claim is the parser IGNORING one, which is the other side of the same gap and is on neither leg.",
    "the_search_that_found_none": "the SYNTAX of a Server-Sent-Events frame as our own codec writes and reads it — a message encoded to `event:`/`id:`/`data:` field lines and parsed back to the same message, and a bare `:`-leading comment line arriving between two events being ignored rather than delivered as an event of its own",
@@ -942,7 +942,7 @@
    "tag": "oc:none/no-oc-fixture-case/routing-header-decoded-before-comparison",
    "cg": null,
    "search_id": "ND07",
-   "claim_the_slot_names": "our client's encoded `Mcp-Name` is decoded by our server's plug before it is compared to `params.name`, so a conforming client of ours is not self-rejected (self_compatibility_test.exs:100 and self_compatibility_test.exs:109)",
+   "claim_the_slot_names": "our client's encoded `Mcp-Name` is decoded by our server's plug before it is compared to `params.name`, so a conforming client of ours is not self-rejected (self_compatibility_test.exs:104 and self_compatibility_test.exs:114)",
    "why_no_counterpart": "`no-oc-fixture-case` — the suite HAS a check on the `Mcp-Name` header against `params.name` and its predicate performs NO decoding, measured over the 1793 bytes holding both routing-header predicates. So the check cannot score this behaviour, and its fixture never provokes the encode that would make the difference visible. The server-side half has no check at all, which is the server file's SRV01 zero over the 119.",
    "why_this_search_is_this_claims_search": "ND07 sweeps the suite's own comparison machinery for any decode and finds none, with `mcp-name`, `params.` and `headers[` returning hits that show it read the right bytes. That is the only population in which this claim's zero is measurable: the manifest rows for `ClientMcpNameHeader_tools_call` exist, so a row sweep would return the near miss as a hit and the entry would have to explain away a zero it could not get.",
    "the_search_that_found_none": "a routing header being DECODED before it is compared to the body value it must agree with — `streamable-http.mdx:501-504`'s server-side MUST, and its client-side counterpart of encoding a non-header-safe `Mcp-Name` in the first place",

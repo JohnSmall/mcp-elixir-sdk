@@ -149,12 +149,12 @@ where a per-**function** measurement resolves a definite leg.* A shared
 | --- | --- | --- |
 | `HeaderMirror.headers_for/2`, `validate_tool/1`, `describe/1` | `client.ex:780,889,894` | client |
 | `HeaderMirror.encode_value/1` | `streamable_http/client.ex:379` | client |
-| `HeaderMirror.decode_value/1` | `plug.ex:906` | **server** |
-| `SSE.encode_event/1`, `encode_message/2`, `comment/0` | `plug.ex:687,713,723,780,1011` | server |
+| `HeaderMirror.decode_value/1` | `plug.ex:944` | **server** |
+| `SSE.encode_event/1`, `encode_message/2`, `comment/0` | `plug.ex:725,751,761,818,1063` | server |
 | `SSE.new_parser/0`, `feed/2` (→ `decode_event/1` at `sse.ex:216`) | `streamable_http/client.ex:569` | **client** |
-| `Discover.Result.to_map/1` | `dispatch.ex:150` | server |
+| `Discover.Result.to_map/1` | `dispatch.ex:169` | server |
 | `Discover.Result.from_map/1` | `client.ex:539` | **client** |
-| `Meta.from_params/1`, `validate_protocol_version/2` | `dispatch.ex:163,165` | server |
+| `Meta.from_params/1`, `validate_protocol_version/2` | `dispatch.ex:152,154` | server |
 | `Messages.Subscriptions.*` (10 functions) | `dispatch.ex`, `subscription.ex` | server |
 | `Extensions.normalise/2` | `client.ex:971` **and** `server/config.ex:253` | both |
 | `Extensions.from_meta/1` | **none on either leg** | neither |
@@ -291,7 +291,7 @@ direction — a superset of candidates, each then adjudicated — and it is stat
 because a reader must not read "47 candidates" as "47 doubtful rows".
 
 **(2) Mutations, on the axis where the round-1 rule broke.** `decode_value/1`
-(server-only, sole `lib/` call site `plug.ex:906`) and `encode_value/1`
+(server-only, sole `lib/` call site `plug.ex:944`) and `encode_value/1`
 (client-only, sole `lib/` call site `streamable_http/client.ex:379`), each
 neutralised to the identity function:
 

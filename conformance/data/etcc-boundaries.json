@@ -290,7 +290,7 @@
           "scenarios_run": 15,
           "script": "conformance/etcc_l2_probe.exs"
         },
-        "call_site_enumeration": "dispatch.ex:150 builds %Discover.Result{capabilities: config.capabilities} and discover.ex:95 encodes it with `Jason.decode!(Jason.encode!(result.capabilities))`. The probe's `server/discover` scenario moves under this mutation: `\"capabilities\":{\"prompts\":{},\"resources\":{},\"tools\":{}}`.",
+        "call_site_enumeration": "dispatch.ex:169 builds %Discover.Result{capabilities: config.capabilities} and discover.ex:95 encodes it with `Jason.decode!(Jason.encode!(result.capabilities))`. The probe's `server/discover` scenario moves under this mutation: `\"capabilities\":{\"prompts\":{},\"resources\":{},\"tools\":{}}`.",
         "ran": true,
         "trigger": "recorded on every split boundary-direction",
         "verdict": "live"
@@ -360,7 +360,7 @@
           "scenarios_run": 0,
           "script": "conformance/etcc_l2_probe.exs"
         },
-        "call_site_enumeration": "`Error.from_map/1` is called at protocol.ex:95 inside `decode_message/1`, which is on every inbound path (client.ex:362, connection.ex:103, plug.ex:324). 18 live-path units redden. The probe's two `decode_message` scenarios cannot run under this mutation at all — the head no longer matches a wire error object — which is itself the strongest possible statement that the decoder is on the live path.",
+        "call_site_enumeration": "`Error.from_map/1` is called at protocol.ex:95 inside `decode_message/1`, which is on every inbound path (client.ex:362, connection.ex:103, plug.ex:1145). 18 live-path units redden. The probe's two `decode_message` scenarios cannot run under this mutation at all — the head no longer matches a wire error object — which is itself the strongest possible statement that the decoder is on the live path.",
         "ran": true,
         "trigger": "recorded on every split boundary-direction",
         "verdict": "live"
@@ -433,7 +433,7 @@
           "scenarios_run": 15,
           "script": "conformance/etcc_l2_probe.exs"
         },
-        "call_site_enumeration": "No lib/ path encodes an %Error{} through its `@derive Jason.Encoder`. The three outbound error paths build the error object BY HAND: dispatch.ex:725-729 (`%{\"code\" => e.code, \"message\" => e.message}`), plug.ex:1019-1023 (send_json_error) and connection.ex:186. The only route that could have reached the derived encoder was Messages.Response, itself recorded dead above. No probe scenario moves.",
+        "call_site_enumeration": "No lib/ path encodes an %Error{} through its `@derive Jason.Encoder`. The three outbound error paths build the error object BY HAND: dispatch.ex:733-737 (`%{\"code\" => e.code, \"message\" => e.message}`), plug.ex:1077-1079 (send_json_error) and connection.ex:186. The only route that could have reached the derived encoder was Messages.Response, itself recorded dead above. No probe scenario moves.",
         "ran": true,
         "trigger": "live count is zero",
         "verdict": "dead"
@@ -513,7 +513,7 @@
           "scenarios_run": 15,
           "script": "conformance/etcc_l2_probe.exs"
         },
-        "call_site_enumeration": "plug.ex:906 `decode_header_name(value)` is `MCP.Protocol.HeaderMirror.decode_value/1`, on the server's inbound header-comparison path. 4 live-path units redden in routing_headers_test and self_compatibility_test.",
+        "call_site_enumeration": "plug.ex:944 `decode_header_name(value)` is `MCP.Protocol.HeaderMirror.decode_value/1`, on the server's inbound header-comparison path. 4 live-path units redden in routing_headers_test and self_compatibility_test.",
         "ran": true,
         "trigger": "recorded on every split boundary-direction",
         "verdict": "live"
@@ -782,7 +782,7 @@
           "scenarios_run": 15,
           "script": "conformance/etcc_l2_probe.exs"
         },
-        "call_site_enumeration": "dispatch.ex:150 `Discover.Result.to_map(...)` IS the server/discover result. The probe's `server/discover` scenario moves under this mutation.",
+        "call_site_enumeration": "dispatch.ex:169 `Discover.Result.to_map(...)` IS the server/discover result. The probe's `server/discover` scenario moves under this mutation.",
         "ran": true,
         "trigger": "recorded on every split boundary-direction",
         "verdict": "live"
@@ -1345,7 +1345,7 @@
           "scenarios_run": 15,
           "script": "conformance/etcc_l2_probe.exs"
         },
-        "call_site_enumeration": "`%Response{}` IS aliased and pattern-matched throughout lib/ (protocol.ex:7, client.ex:98, connection.ex:35, constructed at protocol.ex:98) but every one of those is INBOUND. The narrower claim this verdict rests on: `grep -rnE 'Response\\.(success|error|new)\\(' lib/` returns 0, so no lib/ path ever RE-ENCODES a %Response{}. The SDK builds its outbound responses by hand at dispatch.ex:723-729. No probe scenario moves. (This is the F3/F7 claim in its surviving form — see S7-16.)",
+        "call_site_enumeration": "`%Response{}` IS aliased and pattern-matched throughout lib/ (protocol.ex:7, client.ex:98, connection.ex:35, constructed at protocol.ex:98) but every one of those is INBOUND. The narrower claim this verdict rests on: `grep -rnE 'Response\\.(success|error|new)\\(' lib/` returns 0, so no lib/ path ever RE-ENCODES a %Response{}. The SDK builds its outbound responses by hand at dispatch.ex:731-737. No probe scenario moves. (This is the F3/F7 claim in its surviving form — see S7-16.)",
         "ran": true,
         "trigger": "live count is zero",
         "verdict": "dead"
@@ -2795,7 +2795,7 @@
           "scenarios_run": 15,
           "script": "conformance/etcc_l2_probe.exs"
         },
-        "call_site_enumeration": "conformance/etcc_l2_probe.exs `tools/call text`: a handler returning [%TextContent{text: \"hello\"}] through a real Dispatch.dispatch/3 puts `{\"id\":1,\"jsonrpc\":\"2.0\",\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"hello\"}],\"resultType\":\"complete\"}}` on the wire, and the encode mutation moves those bytes. NOTE, and this narrows round 3's warrant rather than widening it: L1's single 'live' unit for the unsplit boundary was json_schema_2020_12_test.exs:488, which reddens because dispatch.ex:662 pattern-matches %{type: \"text\", text: text} on the STRUCT's FIELDS, not on encoded bytes. A struct-field match is neither encode nor decode, so that signal is NOT cited here (PM, 26058). The encode direction rests on these bytes alone — which is why it survives the split.",
+        "call_site_enumeration": "conformance/etcc_l2_probe.exs `tools/call text`: a handler returning [%TextContent{text: \"hello\"}] through a real Dispatch.dispatch/3 puts `{\"id\":1,\"jsonrpc\":\"2.0\",\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"hello\"}],\"resultType\":\"complete\"}}` on the wire, and the encode mutation moves those bytes. NOTE, and this narrows round 3's warrant rather than widening it: L1's single 'live' unit for the unsplit boundary was json_schema_2020_12_test.exs:552, which reddens because dispatch.ex:670 pattern-matches %{type: \"text\", text: text} on the STRUCT's FIELDS, not on encoded bytes. A struct-field match is neither encode nor decode, so that signal is NOT cited here (PM, 26058). The encode direction rests on these bytes alone — which is why it survives the split.",
         "ran": true,
         "trigger": "live count is zero",
         "verdict": "live"
@@ -3475,7 +3475,7 @@
           "scenarios_run": 15,
           "script": "conformance/etcc_l2_probe.exs"
         },
-        "call_site_enumeration": "Established BY CONSTRUCTION rather than inferred: `NotificationCollector.push/3` then `drain/1` returns `[%{\"jsonrpc\" => \"2.0\", \"method\" => \"notifications/message\", \"params\" => %{\"level\" => \"info\"}}]`, and plug.ex:426 drains the collector into `send_response/4` -> `send_sse_response/3` at :1008, whose :1010 is `(notifications ++ [response]) |> Enum.map_join(&SSE.encode_message/1)`. Run at this tip, that emits the bytes `event: message\\ndata: {\"jsonrpc\":\"2.0\",\"method\":\"notifications/message\",\"params\":{\"level\":\"info\"}}\\n\\n` into the HTTP response body. The mutation reddened only its own unit because the one live test that could have caught it, streamable_http_stateless_test.exs:299, is a REFUTE of a notification's presence — renaming the key leaves the refute passing. Same directional failure as S7-16.",
+        "call_site_enumeration": "Established BY CONSTRUCTION rather than inferred: `NotificationCollector.push/3` then `drain/1` returns `[%{\"jsonrpc\" => \"2.0\", \"method\" => \"notifications/message\", \"params\" => %{\"level\" => \"info\"}}]`, and plug.ex:463 drains the collector into `send_response/4` -> `send_sse_response/3` at :1060, whose :1062 is `(notifications ++ [response]) |> Enum.map_join(&SSE.encode_message/1)`. Run at this tip, that emits the bytes `event: message\\ndata: {\"jsonrpc\":\"2.0\",\"method\":\"notifications/message\",\"params\":{\"level\":\"info\"}}\\n\\n` into the HTTP response body. The mutation reddened only its own unit because the one live test that could have caught it, streamable_http_stateless_test.exs:356, is a REFUTE of a notification's presence — renaming the key leaves the refute passing. Same directional failure as S7-16.",
         "ran": true,
         "trigger": "live count is zero",
         "verdict": "live"
@@ -3493,7 +3493,7 @@
           "to": "(fn m -> if is_map(m) and Map.has_key?(m, \"method\"), do: m |> Map.delete(\"method\") |> Map.put(\"methodX\", m[\"method\"]), else: m end).(Jason.decode!(Jason.encode!(Notification.new(method, params))))"
         }
       ],
-      "note": "Established BY CONSTRUCTION rather than inferred: `NotificationCollector.push/3` then `drain/1` returns `[%{\"jsonrpc\" => \"2.0\", \"method\" => \"notifications/message\", \"params\" => %{\"level\" => \"info\"}}]`, and plug.ex:426 drains the collector into `send_response/4` -> `send_sse_response/3` at :1008, whose :1010 is `(notifications ++ [response]) |> Enum.map_join(&SSE.encode_message/1)`. Run at this tip, that emits the bytes `event: message\\ndata: {\"jsonrpc\":\"2.0\",\"method\":\"notifications/message\",\"params\":{\"level\":\"info\"}}\\n\\n` into the HTTP response body. The mutation reddened only its own unit because the one live test that could have caught it, streamable_http_stateless_test.exs:299, is a REFUTE of a notification's presence — renaming the key leaves the refute passing. Same directional failure as S7-16.",
+      "note": "Established BY CONSTRUCTION rather than inferred: `NotificationCollector.push/3` then `drain/1` returns `[%{\"jsonrpc\" => \"2.0\", \"method\" => \"notifications/message\", \"params\" => %{\"level\" => \"info\"}}]`, and plug.ex:463 drains the collector into `send_response/4` -> `send_sse_response/3` at :1060, whose :1062 is `(notifications ++ [response]) |> Enum.map_join(&SSE.encode_message/1)`. Run at this tip, that emits the bytes `event: message\\ndata: {\"jsonrpc\":\"2.0\",\"method\":\"notifications/message\",\"params\":{\"level\":\"info\"}}\\n\\n` into the HTTP response body. The mutation reddened only its own unit because the one live test that could have caught it, streamable_http_stateless_test.exs:356, is a REFUTE of a notification's presence — renaming the key leaves the refute passing. Same directional failure as S7-16.",
       "own_tests": [
         "test/mcp/server/notification_collector_test.exs"
       ],
@@ -3556,7 +3556,7 @@
           "scenarios_run": 15,
           "script": "conformance/etcc_l2_probe.exs"
         },
-        "call_site_enumeration": "`decode_event/1` is called from `extract_events/2` (sse.ex:215), which backs `SSE.feed/2`, called at streamable_http/client.ex:569 on real response bodies. 20 live-path units redden.",
+        "call_site_enumeration": "`decode_event/1` is called from `extract_events/2` (sse.ex:216), which backs `SSE.feed/2`, called at streamable_http/client.ex:569 on real response bodies. 20 live-path units redden.",
         "ran": true,
         "trigger": "recorded on every split boundary-direction",
         "verdict": "live"
@@ -3668,7 +3668,7 @@
           "scenarios_run": 15,
           "script": "conformance/etcc_l2_probe.exs"
         },
-        "call_site_enumeration": "plug.ex:687, :713, :780 and :1011 chunk `SSE.encode_message/1`'s output straight onto the response body. The probe's `SSE frame of a notification` scenario moves under this mutation.",
+        "call_site_enumeration": "plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response body. The probe's `SSE frame of a notification` scenario moves under this mutation.",
         "ran": true,
         "trigger": "recorded on every split boundary-direction",
         "verdict": "live"
@@ -3852,7 +3852,7 @@
           "to": "send_json(conn, http_status, %{\"jsonrpc\" => \"2.0\", \"id\" => id, \"errorX\" => error})"
         }
       ],
-      "note": "MES-171: the error entry of this direction's mutation was re-anchored; the result entry is byte-identical. The MES-81 prose line it replaced was: lib/mcp/transport/streamable_http/plug.ex: \"error\" => %{\"code\" => code, \"message\" => message, \"data\" => data}  ->  \"errorX\" => %{\"code\" => code, \"message\" => message, \"data\" => data}. At 5047a0e that from sat in send_json_error/5 (plug.ex:1022), which built the body of every JSON-RPC error the Plug raises itself (parse error, header mismatch, invalid request, internal error); the behaviour mutated is the error member of that body. MES-157 (5096a73) moved the body into send_json_error/6, to which send_json_error/5 now delegates, so the old from matched nothing and failed guard 26. The new from is the send_json line of send_json_error/6 (plug.ex:1027), unique in the file. NOT covered by this direction's mutation: send_meta_invalid/3 (plug.ex:371), the -32602 error body MES-161 added, which did not exist at 5047a0e (PM ruling Q1 on MES-171 at 31949). The measurement fields on this row (suite_summary, the reddened counts, live_units, unlocated_failures, verdict, established_by, l2) were taken under the OLD from at 5047a0e and are NOT regenerated here: the verdict has expired under etcc-membership.md section 2.3(e) until the next full --check re-measures it (PM ruling on MES-171 at 31949, following MES-137's Q2 at 29619).",
+      "note": "MES-171: the error entry of this direction's mutation was re-anchored; the result entry is byte-identical. The MES-81 prose line it replaced was: lib/mcp/transport/streamable_http/plug.ex: \"error\" => %{\"code\" => code, \"message\" => message, \"data\" => data}  ->  \"errorX\" => %{\"code\" => code, \"message\" => message, \"data\" => data}. At 5047a0e that from sat in send_json_error/5 (plug.ex:1022), which built the body of every JSON-RPC error the Plug raises itself (parse error, header mismatch, invalid request, internal error); the behaviour mutated is the error member of that body. MES-157 (5096a73) moved the body into send_json_error/6, to which send_json_error/5 now delegates, so the old from matched nothing and failed guard 26. The new from is the send_json line of send_json_error/6 (plug.ex:1079), unique in the file. NOT covered by this direction's mutation: send_meta_invalid/3 (plug.ex:389), the -32602 error body MES-161 added, which did not exist at 5047a0e (PM ruling Q1 on MES-171 at 31949). The measurement fields on this row (suite_summary, the reddened counts, live_units, unlocated_failures, verdict, established_by, l2) were taken under the OLD from at 5047a0e and are NOT regenerated here: the verdict has expired under etcc-membership.md section 2.3(e) until the next full --check re-measures it (PM ruling on MES-171 at 31949, following MES-137's Q2 at 29619).",
       "own_tests": [
         "test/mcp/transport/streamable_http_stateless_test.exs",
         "test/mcp/transport/streamable_http_ac_test.exs",

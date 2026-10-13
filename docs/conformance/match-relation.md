@@ -42,7 +42,7 @@ collapsed.**
 
 | case | resolves to |
 | --- | --- |
-| `streamable_http_stateless_test.exs:88` — one test asserting `initialize → -32022`, `ping → -32601`, `logging/setLevel → -32601` | **3 edges**, three verdicts preserved |
+| `streamable_http_stateless_test.exs:122` — one test asserting `initialize → -32022`, `ping → -32601`, `logging/setLevel → -32601` | **3 edges**, three verdicts preserved |
 | CG4 — two tests, one check (`json-schema-ref-no-deref`) | **1 edge**: the `:133` case is ET-CTRL under MES-67 and contributes none, so "2 tests, 1 check" is "1 claim, 1 control, 1 edge" |
 
 **Chains do not exist, by construction.** The relation is **bipartite** — edges

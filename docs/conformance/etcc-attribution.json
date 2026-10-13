@@ -841,7 +841,7 @@
       "contradicts_oc": null,
       "key": "MCP.Protocol.HeaderMirrorTest/test value encoding — omission and the sentinel's ambiguity rule decode leaves a plain value alone and survives a malformed sentinel",
       "leg": "server",
-      "leg_reason": "Asserts MCP.Protocol.HeaderMirror.decode_value/1, whose only lib/ call site is plug.ex:906 where our SERVER decodes an inbound Mcp-Name.",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror.decode_value/1, whose only lib/ call site is plug.ex:944 where our SERVER decodes an inbound Mcp-Name.",
       "tokens": []
     },
     {
@@ -949,7 +949,7 @@
       "contradicts_oc": null,
       "key": "MCP.Protocol.Messages.DiscoverTest/test to_map/1 produces the schema shape",
       "leg": "server",
-      "leg_reason": "Asserts Discover.Result.to_map/1, called only from server/dispatch.ex:150 (measured).",
+      "leg_reason": "Asserts Discover.Result.to_map/1, called only from server/dispatch.ex:169 (measured).",
       "tokens": []
     },
     {
@@ -958,7 +958,7 @@
       "contradicts_oc": null,
       "key": "MCP.Protocol.MetaTest/test from_params/1 extracts the io.modelcontextprotocol/* keys",
       "leg": "server",
-      "leg_reason": "Asserts MCP.Protocol.Meta.from_params/validate_protocol_version, called only from server/dispatch.ex:163,165 (measured).",
+      "leg_reason": "Asserts MCP.Protocol.Meta.from_params/validate_protocol_version, called only from server/dispatch.ex:152,154 (measured).",
       "tokens": []
     },
     {
@@ -967,7 +967,7 @@
       "contradicts_oc": null,
       "key": "MCP.Protocol.MetaTest/test validate_protocol_version/2 mismatched (e.g. legacy 2025-11-25) → {:error, {:unsupported, got}}",
       "leg": "server",
-      "leg_reason": "Asserts MCP.Protocol.Meta.from_params/validate_protocol_version, called only from server/dispatch.ex:163,165 (measured).",
+      "leg_reason": "Asserts MCP.Protocol.Meta.from_params/validate_protocol_version, called only from server/dispatch.ex:152,154 (measured).",
       "tokens": []
     },
     {
@@ -2143,7 +2143,7 @@
       "contradicts_oc": null,
       "key": "MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: a PLAIN mismatched header is still -32020",
       "leg": "server",
-      "leg_reason": "Asserts MCP.Protocol.HeaderMirror.decode_value/1, whose only lib/ call site is plug.ex:906 where our SERVER decodes an inbound Mcp-Name.",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror.decode_value/1, whose only lib/ call site is plug.ex:944 where our SERVER decodes an inbound Mcp-Name.",
       "tokens": []
     },
     {
@@ -2152,7 +2152,7 @@
       "contradicts_oc": null,
       "key": "MCP.Transport.SelfCompatibilityTest/test NEGATIVE CONTROL: an encoded header naming a DIFFERENT tool is still -32020",
       "leg": "server",
-      "leg_reason": "Asserts MCP.Protocol.HeaderMirror.decode_value/1, whose only lib/ call site is plug.ex:906 where our SERVER decodes an inbound Mcp-Name.",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror.decode_value/1, whose only lib/ call site is plug.ex:944 where our SERVER decodes an inbound Mcp-Name.",
       "tokens": []
     },
     {
@@ -2161,7 +2161,7 @@
       "contradicts_oc": null,
       "key": "MCP.Transport.SelfCompatibilityTest/test REACHABILITY CONTROL: an encoded Mcp-Name is decoded before comparison, so our own client is not self-rejected",
       "leg": "none_determinable",
-      "leg_reason": "TWO INDEPENDENT SINGLE-LEG CLAIMS ON OPPOSITE LEGS, so the mechanical rule makes both legs definite and neither one alone owns the member. :100 `assert String.starts_with?(header, \"=?base64?\")` is about `HeaderMirror.encode_value/1` (client-only: streamable_http/client.ex:379) and is MEASURED to break under an encode_value mutation and under no server mutation; :109 `assert conn.status == 200` is about the plug's decode-before-compare (server-only: plug.ex:906) and is MEASURED to break under a decode_value mutation and to SURVIVE the encode_value mutation once :100 is removed. Same class as capabilities_test.exs:191.",
+      "leg_reason": "TWO INDEPENDENT SINGLE-LEG CLAIMS ON OPPOSITE LEGS, so the mechanical rule makes both legs definite and neither one alone owns the member. :100 `assert String.starts_with?(header, \"=?base64?\")` is about `HeaderMirror.encode_value/1` (client-only: streamable_http/client.ex:379) and is MEASURED to break under an encode_value mutation and under no server mutation; :109 `assert conn.status == 200` is about the plug's decode-before-compare (server-only: plug.ex:944) and is MEASURED to break under a decode_value mutation and to SURVIVE the encode_value mutation once :100 is removed. Same class as capabilities_test.exs:191.",
       "tokens": []
     },
     {
@@ -2170,7 +2170,7 @@
       "contradicts_oc": null,
       "key": "MCP.Transport.SelfCompatibilityTest/test a plain header matching a plain name still passes — decoding leaves it alone",
       "leg": "server",
-      "leg_reason": "Asserts MCP.Protocol.HeaderMirror.decode_value/1, whose only lib/ call site is plug.ex:906 where our SERVER decodes an inbound Mcp-Name.",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror.decode_value/1, whose only lib/ call site is plug.ex:944 where our SERVER decodes an inbound Mcp-Name.",
       "tokens": []
     },
     {
@@ -2179,7 +2179,7 @@
       "contradicts_oc": null,
       "key": "MCP.Transport.SelfCompatibilityTest/test a sentinel-shaped header that is not valid Base64 is compared as-is, not crashed on",
       "leg": "server",
-      "leg_reason": "Asserts MCP.Protocol.HeaderMirror.decode_value/1, whose only lib/ call site is plug.ex:906 where our SERVER decodes an inbound Mcp-Name.",
+      "leg_reason": "Asserts MCP.Protocol.HeaderMirror.decode_value/1, whose only lib/ call site is plug.ex:944 where our SERVER decodes an inbound Mcp-Name.",
       "tokens": []
     },
     {

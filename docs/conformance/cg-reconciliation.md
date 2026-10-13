@@ -224,8 +224,8 @@ one level down: **same words, different subject** — applied to our own side of
 the relation, not just OC's.
 
 Established by measurement, not by reading the register: every `ttl_ms` /
-`cache_scope` site in `lib/` is either the server **emitting** hints
-(`dispatch.ex:494-501`, `plug.ex:967-975`) or the client **parsing** them
+`cache_scope` site in `lib/` is either the server **emitting** hints (`dispatch.ex:502-509`),
+the plug **reading** `:cache_defaults` to warn when identity-scoped responses would be publicly cached (`plug.ex:1005-1013`; it emits no hints), or the client **parsing** them
 (`discover.ex:82-83`). **No store exists**, so nothing can honour anything. The
 register agrees — row CG5 is marked **OUTSTANDING** — and owner **MES-39** can
 act.
