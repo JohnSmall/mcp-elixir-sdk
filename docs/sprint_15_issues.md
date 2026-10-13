@@ -292,15 +292,17 @@ Sprint 15 test additions. Ten live directions also moved their L1 counts (commit
 | `MCP.Protocol.Messages.Discover (decode)` | 33 → 34 | 32 → 33 |
 | `MCP.Protocol.Messages.Discover (encode)` | 21 → 22 | 20 → 21 |
 | `MCP.Protocol.Messages.Request` | 37 → 38 | 34 → 35 |
-| `MCP.Protocol.Meta` | unchanged | 98 → 98 (membership changed) |
+| `MCP.Protocol.Meta` | unchanged | 98 → 98 (unit list changed) |
 | `MCP.Protocol.decode_message/1` | 86 → 99 | 80 → 93 |
 | `MCP.Server.Dispatch` | unchanged | 78 → 77 |
 | `MCP.Transport.SSE (decode)` | 53 → 76 | 42 → 65 |
 | `MCP.Transport.StreamableHTTP.Plug` | 63 → 78 | 36 → 51 |
 
-Every one of the ten was live before and is live now. Nine gained live units, consistent with the
-Sprint 15 tests landing on the paths they fixed. `MCP.Server.Dispatch` lost one live unit
-(`reddened_outside_own` 86 → 85) and stays live on 77.
+Every one of the ten was live before and is live now. Eight gained live units, consistent with the
+Sprint 15 tests landing on the paths they fixed. `MCP.Protocol.Meta` kept 98, and
+`MCP.Server.Dispatch` went 78 → 77 (`reddened_outside_own` 86 → 85). Units are keyed by
+`file:line`, so a test that only moved inside an edited test file shows as one unit removed and one
+added. The unit lists of these two directions were not reconciled test by test.
 
 **No drift, so no ticket.** The committed table still records the 1790-unit measurements. As at
 Sprint 14, refreshing those fields is a data change under `conformance/`. It is left to the next
