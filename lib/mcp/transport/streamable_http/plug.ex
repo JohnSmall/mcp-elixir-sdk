@@ -346,8 +346,8 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
       {:error, %Jason.DecodeError{} = e} ->
         send_json_error(conn, 400, Error.parse_error_code(), "Parse error", inspect(e))
 
-      {:error, {:meta_invalid, id, missing}} ->
-        send_meta_invalid(conn, id, missing)
+      {:error, {:meta_invalid, id, problems}} ->
+        send_meta_invalid(conn, id, problems)
 
       {:error, {:routing_mismatch, detail}} ->
         send_header_mismatch(conn, detail)
@@ -382,9 +382,9 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     end
   end
 
-  # -32602 + HTTP 400, with the request's id; see `decode_well_formed/1`.
-  defp send_meta_invalid(conn, id, missing) do
-    error = Error.missing_required_meta(missing)
+  # -32602 + HTTP 400, with the readable id; see `decode_well_formed/1`.
+  defp send_meta_invalid(conn, id, problems) do
+    error = Error.invalid_params(problems)
     body = %{"code" => error.code, "message" => error.message, "data" => error.data}
     send_json(conn, 400, %{"jsonrpc" => "2.0", "id" => id, "error" => body})
   end
@@ -1143,11 +1143,11 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   # sit below every line the adjudication records cite, so none of those moves.
   defp decode_well_formed(message) do
     case Protocol.decode_message(message) do
-      {:ok, %Request{method: method, id: id, params: params}} = decoded
+      {:ok, %Request{method: method, params: params}} = decoded
       when method not in ["initialize", "ping", "logging/setLevel"] ->
-        case MCP.Protocol.Meta.missing_required(params) do
-          [] -> decoded
-          missing -> {:error, {:meta_invalid, id, missing}}
+        case MCP.Protocol.Meta.required_problems(params) do
+          problems when map_size(problems) == 0 -> decoded
+          problems -> {:error, {:meta_invalid, readable_id(message), problems}}
         end
 
       # A client MUST NOT send a JSON-RPC response (streamable-http.mdx:80-81), and

@@ -188,4 +188,55 @@ defmodule MCP.Protocol.Meta do
                       :erlang.map_get("_meta", params)
                     )
                   )
+
+  # --- The required fields' types (basic/index.mdx:375-377; schema.ts:76, :98) ---
+
+  @doc """
+  Returns the required `_meta` keys whose value is present but of the wrong
+  type, in `required_keys/0` order, or `[]`: `protocolVersion` must be a string
+  and `clientCapabilities` an object. An absent or `null` value is missing
+  (`missing_required/1`), never wrong-typed.
+  """
+  @spec wrong_typed_required(map() | nil) :: [String.t()]
+  def wrong_typed_required(params) do
+    meta = if is_map(params), do: Map.get(params, "_meta"), else: nil
+    meta = if is_map(meta), do: meta, else: %{}
+
+    Enum.reject(@required_keys, fn key ->
+      value = Map.get(meta, key)
+      is_nil(value) or well_typed?(key, value)
+    end)
+  end
+
+  defp well_typed?(@protocol_version_key, value), do: is_binary(value)
+  defp well_typed?(@client_capabilities_key, value), do: is_map(value)
+
+  @doc """
+  The -32602 `data` a malformed request earns, or `%{}` when its required
+  `_meta` fields are all present and well-typed: `"missing"` names the absent
+  keys and `"invalid"` the wrong-typed ones, each only when non-empty. A
+  request missing a field and nothing else gets exactly MES-161's data.
+  Agrees with `is_malformed_required/1` on every input.
+  """
+  @spec required_problems(map() | nil) :: %{optional(String.t()) => [String.t()]}
+  def required_problems(params) do
+    [{"missing", missing_required(params)}, {"invalid", wrong_typed_required(params)}]
+    |> Enum.reject(fn {_k, keys} -> keys == [] end)
+    |> Map.new()
+  end
+
+  @doc """
+  Guard form of `required_problems(params) != %{}`: a required `_meta` field
+  missing, or present with the wrong type. Such a request is rejected with
+  -32602 (HTTP 400), ahead of the -32022 version check, which judges only a
+  version that is a string.
+  """
+  defguard is_malformed_required(params)
+           when is_missing_required(params) or
+                  not is_binary(
+                    :erlang.map_get(@protocol_version_key, :erlang.map_get("_meta", params))
+                  ) or
+                  not is_map(
+                    :erlang.map_get(@client_capabilities_key, :erlang.map_get("_meta", params))
+                  )
 end

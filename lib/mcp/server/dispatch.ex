@@ -117,13 +117,13 @@ defmodule MCP.Server.Dispatch do
     handle_notification(method, params, seal_stream_sink(ctx, nil), config)
   end
 
-  # --- A request missing a required _meta field: -32602, ahead of every route ---
+  # --- A required _meta field missing or wrong-typed: -32602, ahead of every route ---
   # basic/index.mdx has no exemption, so `server/discover` too, and before the
   # -32022 gate below. The removed methods keep their stateless answers.
   defp handle_request(method, id, params, _ctx, config)
        when method not in ["initialize", "ping", "logging/setLevel"] and
-              Meta.is_missing_required(params) do
-    reply(id, Error.missing_required_meta(Meta.missing_required(params)), config)
+              Meta.is_malformed_required(params) do
+    reply(id, Error.invalid_params(Meta.required_problems(params)), config)
   end
 
   # --- Removed methods: stateless behaviour, no legacy path ---
