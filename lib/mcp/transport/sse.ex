@@ -101,10 +101,10 @@ defmodule MCP.Transport.SSE do
   def comment, do: ":\r\n"
 
   @doc """
-  Decodes an SSE event string into an event map.
-
-  Parses the standard SSE fields (event, id, data, retry) from event text whose
-  lines may end in CRLF, CR or LF. Multiple `data:` lines are joined with newlines.
+  Decodes one SSE event block into an event map: the field rules only, not dispatch (`feed/2`).
+  Lines may end in CRLF, CR or LF, and multiple `data:` lines are joined with newlines.
+  A line with no colon is a field with an empty value; an `id` containing NUL, and a
+  `retry` that is not all ASCII digits, are ignored. An id-only block still decodes.
 
   Returns `{:ok, event}` or `{:error, reason}`.
   """
@@ -137,13 +137,13 @@ defmodule MCP.Transport.SSE do
       {events, parser} = MCP.Transport.SSE.feed(parser, chunk2)
   """
   @spec new_parser() :: parser()
-  def new_parser, do: %{buffer: "", cr: false, bom: ""}
+  def new_parser, do: %{buffer: "", cr: false, bom: "", last_id: ""}
 
   @doc """
   Feeds data to a stream parser and returns any complete events.
 
-  Returns `{events, new_parser_state}` where events is a list of
-  decoded event maps.
+  Returns `{events, new_parser_state}`. Per WHATWG dispatch, a block with no `data:` field
+  is not dispatched, and the last event `id` persists into later events (absent while empty).
 
   Lines may end in CRLF, CR or LF, mixed within one stream, as the SSE
   specification allows. A CR that ends one chunk and an LF that starts the
@@ -184,9 +184,9 @@ defmodule MCP.Transport.SSE do
   # dropped; the rest of the value is kept as sent (no trim).
   defp parse_field(line, acc) do
     case String.split(line, ":", parts: 2) do
-      [field, " " <> value] -> apply_field(field, value, acc)
-      [field, value] -> apply_field(field, value, acc)
-      [_no_colon] -> acc
+      [field, " " <> value] -> process_field(field, value, acc)
+      [field, value] -> process_field(field, value, acc)
+      [field] -> process_field(field, "", acc)
     end
   end
 
@@ -194,7 +194,7 @@ defmodule MCP.Transport.SSE do
   defp apply_field("id", value, acc), do: Map.put(acc, :id, value)
 
   defp apply_field("retry", value, acc) do
-    case Integer.parse(value) do
+    case ascii_digits?(value) and Integer.parse(value) do
       {ms, ""} -> Map.put(acc, :retry, ms)
       _ -> acc
     end
@@ -235,7 +235,12 @@ defmodule MCP.Transport.SSE do
   # cr: the last byte fed was CR, so an LF opening the next chunk is its pair.
   # bom: the bytes held while they are still a proper prefix of a UTF-8 BOM at
   #      stream start, or :done once the start of the stream has been passed.
-  @opaque parser :: %{buffer: binary(), cr: boolean(), bom: binary() | :done}
+  @opaque parser :: %{
+            buffer: binary(),
+            cr: boolean(),
+            bom: binary() | :done,
+            last_id: binary()
+          }
 
   @bom <<0xEF, 0xBB, 0xBF>>
 
@@ -265,9 +270,39 @@ defmodule MCP.Transport.SSE do
 
   defp take_lines(%{buffer: buffer, cr: cr} = parser, data) do
     data = if cr, do: drop_leading_lf(data), else: data
-    {events, rest} = extract_events(buffer <> String.replace(data, ["\r\n", "\r"], "\n"), [])
-    {events, %{parser | buffer: rest, cr: String.ends_with?(data, "\r")}}
+    {blocks, rest} = extract_events(buffer <> String.replace(data, ["\r\n", "\r"], "\n"), [])
+    {events, last_id} = dispatch(blocks, parser.last_id, [])
+    {events, %{parser | buffer: rest, cr: String.ends_with?(data, "\r"), last_id: last_id}}
   end
+
+  # WHATWG dispatch: the last event ID persists across events until an `id`
+  # field sets it again (G12), and a block with no `data` field is not
+  # dispatched, though its `id` still takes effect (G11).
+  defp dispatch([], last_id, events), do: {Enum.reverse(events), last_id}
+
+  defp dispatch([block | blocks], last_id, events) do
+    last_id = Map.get(block, :id, last_id)
+
+    case block do
+      %{data: _} -> dispatch(blocks, last_id, [stamp_id(block, last_id) | events])
+      _no_data -> dispatch(blocks, last_id, events)
+    end
+  end
+
+  defp stamp_id(event, ""), do: Map.delete(event, :id)
+  defp stamp_id(event, last_id), do: Map.put(event, :id, last_id)
+
+  # An `id` value containing NUL is ignored (G13); every other field goes
+  # straight to apply_field/3.
+  defp process_field("id", value, acc) do
+    if String.contains?(value, <<0>>), do: acc, else: apply_field("id", value, acc)
+  end
+
+  defp process_field(field, value, acc), do: apply_field(field, value, acc)
+
+  # `retry` takes ASCII digits only: no sign, no space (G14).
+  defp ascii_digits?(""), do: false
+  defp ascii_digits?(value), do: value |> :binary.bin_to_list() |> Enum.all?(&(&1 in ?0..?9))
 
   defp drop_leading_lf("\n" <> rest), do: rest
   defp drop_leading_lf(data), do: data
