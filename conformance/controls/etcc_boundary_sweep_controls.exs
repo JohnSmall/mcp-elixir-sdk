@@ -449,10 +449,12 @@ defmodule ETCCBoundarySweepControls do
   # is shown by MUTATION here rather than asserted from reading the source.
   #
   # Guard 26 is deliberately NOT wired in: it is the only one that is a function of the
-  # TREE rather than the table, and the ratified cadence puts lib/-drift detection at the
-  # sprint boundary (docs/procedure/end-of-sprint.md, step 4). The last case below is
-  # the NEGATIVE control for exactly that — a guard-26 violation must NOT refuse a
-  # register build, and a control that only shows things failing cannot show a boundary.
+  # TREE rather than the table, and anchor drift is DoD gate 8 (`mix conformance.sweep
+  # --verify`, docs/procedure/gate-8.md). The last case below is the NEGATIVE control for
+  # exactly that — a guard-26 violation must NOT refuse a register build, and a control
+  # that only shows things failing cannot show a boundary. Its second limb (MES-176) runs
+  # the SAME mutation through the gate-8 path and requires GUARD 26 to refuse it, so the
+  # build's acceptance is shown to be of a real guard-26 violation rather than a no-op.
   defp register do
     header("REGISTER WIRING — guards 23/24/25/27 fail the register build closed; 26 does not")
 
@@ -494,7 +496,7 @@ defmodule ETCCBoundarySweepControls do
             :ok
 
           {:accept, :accept} ->
-            IO.puts("  ACCEPTED [#{n}] #{name}   <-- as intended: 26 is a sprint-boundary check")
+            IO.puts("  ACCEPTED [#{n}] #{name}   <-- as intended: 26 is gate 8's check")
             :ok
 
           {:refuse, :accept} ->
@@ -509,6 +511,40 @@ defmodule ETCCBoundarySweepControls do
             :error
         end
       end
+
+    # [26], second limb: the same mutated table through `check_table!/2` with the tree
+    # check ON — what gate 8 runs. It must refuse, and for guard 26's own reason.
+    {26, :accept, _, mutate26} = List.last(cases)
+
+    g26 =
+      try do
+        Sweep.check_table!(mutate26.(rows))
+
+        IO.puts(
+          "  ACCEPTED [26] the same mutation through gate 8's path   <-- GUARD 26 DID NOT FIRE"
+        )
+
+        :error
+      rescue
+        e in RuntimeError ->
+          why = first_line(Exception.message(e))
+
+          if String.starts_with?(why, "GUARD 26:") do
+            IO.puts(
+              "  REFUSED  [26] the same mutation through gate 8's path\n           -> #{why}"
+            )
+
+            :ok
+          else
+            IO.puts(
+              "  REFUSED  [26] the same mutation through gate 8's path   <-- NOT BY GUARD 26\n           -> #{why}"
+            )
+
+            :error
+          end
+      end
+
+    results = results ++ [g26]
 
     IO.puts("\n  #{Enum.count(results, &(&1 == :ok))}/#{length(results)} as expected.")
 

@@ -75,7 +75,7 @@ defmodule MCP.Conformance.ETCCRegister do
       outside it, and that residual is named rather than left to be found.
   """
 
-  alias MCP.Conformance.BoundarySweep
+  alias MCP.Conformance.{BoundarySweep, UnitLocator}
 
   @artefact "docs/conformance/etcc-exunit-rows.json"
   @decisions "conformance/data/etcc-decisions.json"
@@ -99,7 +99,9 @@ defmodule MCP.Conformance.ETCCRegister do
   @doc """
   Builds the register map. Raises on any fail-closed condition.
 
-  `opts` may carry `:artefact`, `:decisions` and `:spec_md5s`.
+  `opts` may carry `:artefact`, `:decisions`, `:boundaries` and `:spec_md5s`, and
+  `:source_root` — the directory guard 21 reads test sources from (default `"."`), so a
+  control can point it at a scratch copy.
   """
   def build(opts \\ []) do
     artefact = read_json(Keyword.get(opts, :artefact, @artefact))
@@ -131,7 +133,7 @@ defmodule MCP.Conformance.ETCCRegister do
       |> Enum.sort_by(& &1["key"])
 
     check_controls_targets!(register_rows, by_key)
-    check_attribution!(register_rows, Map.keys(boundaries))
+    check_attribution!(register_rows, Map.keys(boundaries), Keyword.get(opts, :source_root, "."))
 
     counts = Enum.frequencies_by(register_rows, & &1["label"])
     total = Enum.count(in_scope_rows)
@@ -449,7 +451,13 @@ defmodule MCP.Conformance.ETCCRegister do
   # doctest's body is the `@doc` in `lib/`, not the test file at that line, so scanning
   # there would scan the wrong bytes — and a guard that scans the wrong bytes and finds
   # nothing reports a false green. Six ET-CC rows are outside the guard for that reason.
-  defp check_attribution!(rows, boundary_ids) do
+  #
+  # WHICH BODY (MES-176): the unit is found by its NAME (`UnitLocator`), never by the row's
+  # `line`. That line is ExUnit's capture at the artefact's tip and drifts whenever the
+  # file above the test moves — 120 of the 275 member rows had by MES-176 — so trusting
+  # it either refused a row whose line had become a tag continuation or, silently, scanned
+  # the neighbouring test. The reported `file:line` is where the test IS.
+  defp check_attribution!(rows, boundary_ids, root) do
     split = split_modules(boundary_ids)
 
     members = Enum.filter(rows, &(&1["label"] == "ET-CC" and &1["test_type"] == "test"))
@@ -458,26 +466,28 @@ defmodule MCP.Conformance.ETCCRegister do
       members
       |> Enum.map(& &1["file"])
       |> Enum.uniq()
-      |> Map.new(&{&1, &1 |> File.read!() |> String.split("\n")})
+      |> Map.new(fn file ->
+        source = root |> Path.join(file) |> File.read!()
+        {file, {String.split(source, "\n"), UnitLocator.index(source, file)}}
+      end)
 
-    alias_maps = Map.new(sources, fn {file, lines} -> {file, aliases(lines)} end)
+    alias_maps = Map.new(sources, fn {file, {lines, _}} -> {file, aliases(lines)} end)
 
     offenders =
       Enum.flat_map(members, fn row ->
         named = MapSet.new(row["boundary"] || [])
-        lines = Map.fetch!(sources, row["file"])
+        {line, body} = unit_body(row, Map.fetch!(sources, row["file"]))
 
-        row
-        |> unit_body(lines)
+        body
         |> decode_producers_called(Map.fetch!(alias_maps, row["file"]), split)
         |> Enum.reject(&MapSet.member?(named, "#{&1} (decode)"))
-        |> Enum.map(&{row, &1})
+        |> Enum.map(&{row, line, &1})
       end)
 
     if offenders != [] do
       detail =
-        Enum.map_join(offenders, "\n", fn {row, mod} ->
-          "  #{row["file"]}:#{row["line"]} calls #{mod}'s decode side, names #{inspect(row["boundary"])}"
+        Enum.map_join(offenders, "\n", fn {row, line, mod} ->
+          "  #{row["file"]}:#{line} calls #{mod}'s decode side, names #{inspect(row["boundary"])}"
         end)
 
       raise "REFUSING to write: #{length(offenders)} ET-CC row(s) call a split module's " <>
@@ -510,27 +520,30 @@ defmodule MCP.Conformance.ETCCRegister do
     |> Enum.uniq()
   end
 
-  # The unit's own body: its `test` line to the `end` that closes it, which `mix format`
-  # puts at the same column. A body that cannot be delimited RAISES rather than being
-  # skipped — a guard that quietly scans nothing reports a false green.
-  defp unit_body(%{"file" => file, "line" => line}, lines) do
-    first = Enum.at(lines, line - 1)
+  # The unit's own body, found by the unit's NAME: its whole test block rendered from the
+  # AST, so code sharing the declaration or the closing `end` line (CR F1) and code in an
+  # `after`/`rescue`/`catch`/`else` clause ExUnit runs through `try` (CR F2) are scanned
+  # with the rest. Returns `{declaration_line, body_lines}`. A unit that cannot be
+  # located, that two declarations claim, or whose shape `UnitLocator` cannot scan RAISES
+  # rather than being skipped or guessed — a guard that scans nothing, or the wrong thing,
+  # reports a false green.
+  defp unit_body(%{"file" => file, "key" => key, "name" => name}, {_lines, index}) do
+    case UnitLocator.locate_unit(index, name) do
+      {:ok, %{line: line, body: body}} ->
+        {line, String.split(body, "\n")}
 
-    unless is_binary(first) and Regex.match?(~r/^\s*test\s/, first) do
-      raise "REFUSING to write: guard 21 cannot delimit #{file}:#{line} — that line is " <>
-              "#{inspect(first)}, not a `test` declaration"
+      {:unscannable, line, why} ->
+        raise "REFUSING to write: guard 21 cannot scan #{key} in #{file}:#{line}: #{why}"
+
+      :none ->
+        raise "REFUSING to write: guard 21 cannot locate #{key} in #{file}: " <>
+                "no `test` declaration has that name"
+
+      {:ambiguous, lines_found} ->
+        raise "REFUSING to write: guard 21 cannot locate #{key} in #{file}: " <>
+                "#{length(lines_found)} `test` declarations match that name " <>
+                "(lines #{Enum.join(lines_found, ", ")}); it refuses rather than guess"
     end
-
-    indent = String.length(first) - String.length(String.trim_leading(first))
-    closing = String.duplicate(" ", indent) <> "end"
-    rest = Enum.drop(lines, line)
-    body = Enum.take_while(rest, &(&1 != closing))
-
-    if length(body) == length(rest) do
-      raise "REFUSING to write: guard 21 found no closing `end` for #{file}:#{line}"
-    end
-
-    body
   end
 
   defp resolve(name, aliases, split) do
