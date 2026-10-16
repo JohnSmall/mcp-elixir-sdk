@@ -354,7 +354,10 @@ defmodule MCP.Conformance.InputFigures do
 
   @identity_fields ~w(member claim tag module ticket slice definition)
 
-  defp record_ids(list) do
+  # Public so guard 33 (`MCP.Conformance.StringCitations`) addresses a leaf by
+  # exactly this identity rather than by a copy of it.
+  @doc false
+  def record_ids(list) do
     {ids, _} =
       list
       |> Enum.with_index()
@@ -367,21 +370,30 @@ defmodule MCP.Conformance.InputFigures do
     ids
   end
 
-  defp identity(%{"key" => k}) when is_binary(k), do: k
-  defp identity(%{"id" => k}) when is_binary(k), do: k
-
-  defp identity(m) when is_map(m) do
-    case for(f <- @identity_fields, v = identity_part(m[f]), is_binary(v), do: v) do
+  defp identity(m) do
+    case identity_paths(m) do
       [] -> nil
-      parts -> Enum.join(parts, " | ")
+      paths -> Enum.map_join(paths, " | ", &get_in(m, &1))
     end
   end
 
-  defp identity(_), do: nil
+  @doc false
+  # The paths into a record that `record_ids/1` reads as its identity, in the
+  # order it joins them: `key` alone, else `id` alone, else every identity
+  # field holding a string. Guard 33 reads the same function to know which
+  # citations are part of a record's identity.
+  def identity_paths(%{"key" => k}) when is_binary(k), do: [["key"]]
+  def identity_paths(%{"id" => k}) when is_binary(k), do: [["id"]]
+
+  def identity_paths(m) when is_map(m),
+    do: for(f <- @identity_fields, path = identity_path(f, m[f]), path != nil, do: path)
+
+  def identity_paths(_), do: []
 
   # An edge's `member` is a map; its `register_key` is the member's identity.
-  defp identity_part(%{"register_key" => k}) when is_binary(k), do: k
-  defp identity_part(v), do: v
+  defp identity_path(f, %{"register_key" => k}) when is_binary(k), do: [f, "register_key"]
+  defp identity_path(f, v) when is_binary(v), do: [f]
+  defp identity_path(_f, _v), do: nil
 
   defp render(prefix) do
     prefix

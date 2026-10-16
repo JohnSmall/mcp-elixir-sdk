@@ -381,6 +381,10 @@ defmodule MCP.Conformance.Citations do
     end
   end
 
+  @doc "The document guard 29 reads, relative to the repository root."
+  @spec document() :: String.t()
+  def document, do: @document
+
   @doc "The document's prose, read from disk."
   @spec read_document(Path.t()) :: String.t()
   def read_document(root \\ File.cwd!()), do: File.read!(Path.join(root, @document))
