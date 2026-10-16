@@ -22,26 +22,26 @@ defmodule MCP.ClientTest do
     "prompts" => %{"listChanged" => true}
   }
 
-  defp wait_for_sent(transport, count, timeout \\ 1000) do
-    deadline = System.monotonic_time(:millisecond) + timeout
-    do_wait_for_sent(transport, count, deadline)
-  end
-
-  defp do_wait_for_sent(transport, count, deadline) do
-    messages = MockTransport.sent_messages(transport)
-
-    cond do
-      length(messages) >= count ->
-        messages
-
-      System.monotonic_time(:millisecond) >= deadline ->
-        flunk("Timed out waiting for #{count} messages, got #{length(messages)}")
-
-      true ->
-        Process.sleep(5)
-        do_wait_for_sent(transport, count, deadline)
-    end
-  end
+  # MES-191: the wait is event-driven. MockTransport replies to a parked
+  # `{:await_sent, n}` call in the same turn that records the n-th message, so
+  # nothing here polls or sleeps, and a send is seen the moment it happens.
+  #
+  # The helper this replaces (one copy per client test file) polled
+  # `sent_messages/1` every 5 ms against a 1000 ms monotonic deadline, and a
+  # correct client can miss that under host load. At the start of the async
+  # phase, the first call into the client path in each module pays for module
+  # loading while up to 64 cases contend for schedulers. Gate 5 went red with
+  # "Timed out waiting for 1 messages, got 0" on branches that touched no
+  # client code.
+  #
+  # The one bound left is MockTransport's 30 s, under ExUnit's 60 s per-test
+  # timeout: a client that never sends still fails here, with the same message,
+  # and never hangs the suite.
+  #
+  # This block keeps the old helper's 20 lines on purpose. G32's adjudication
+  # records and the ET-CC artefacts cite lines below it by number, so the
+  # replacement is line-neutral rather than shorter.
+  defp wait_for_sent(transport, count), do: MockTransport.wait_for_sent(transport, count)
 
   defp start_client(opts \\ []) do
     {:ok, client} =

@@ -162,7 +162,7 @@ defmodule MCP.ClientConformanceTest do
     # this is the evidence.
     defp discover(client, transport, capabilities) do
       task = Task.async(fn -> Client.connect(client) end)
-      Process.sleep(20)
+      MockTransport.wait_for_sent(transport, 1)
       [request] = MockTransport.sent_messages(transport)
 
       MockTransport.inject(transport, %{
@@ -178,7 +178,7 @@ defmodule MCP.ClientConformanceTest do
         }
       })
 
-      {{:ok, result}, request} = {Task.await(task), request}
+      {{:ok, result}, request} = {Task.await(task, :infinity), request}
       {result, request}
     end
 

@@ -124,7 +124,7 @@ defmodule MCP.Transport.MalformedErrorMemberTest do
             "params" => %{"_meta" => @full}
           })
 
-          wait_for(fn -> sent(transport) != [] end)
+          MockTransport.await_sent(transport, 1)
         end)
 
         # The request's reply is observed through the same capture, so an
@@ -189,17 +189,17 @@ defmodule MCP.Transport.MalformedErrorMemberTest do
     task =
       Task.async(fn ->
         try do
-          Client.list_tools(client, timeout: 2_000)
+          Client.list_tools(client, timeout: 30_000)
         catch
           :exit, {{kind, _stack}, _call} -> {:caller_exit, kind}
           :exit, reason -> {:caller_exit, reason}
         end
       end)
 
-    wait_for(fn -> MockTransport.sent_messages(transport) != [] end)
+    MockTransport.wait_for_sent(transport, 1)
     %{"id" => id} = MockTransport.last_sent(transport)
     MockTransport.inject(transport, response(id, error))
-    Task.await(task, 3_000)
+    Task.await(task, :infinity)
   end
 
   defp post(message) do
@@ -222,19 +222,5 @@ defmodule MCP.Transport.MalformedErrorMemberTest do
     MockTransport.sent_messages(transport)
   catch
     :exit, _ -> :exited
-  end
-
-  defp wait_for(fun, tries \\ 100) do
-    cond do
-      fun.() ->
-        :ok
-
-      tries == 0 ->
-        :timeout
-
-      true ->
-        Process.sleep(10)
-        wait_for(fun, tries - 1)
-    end
   end
 end

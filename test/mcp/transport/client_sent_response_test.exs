@@ -109,14 +109,6 @@ defmodule MCP.Transport.ClientSentResponseTest do
     assert Process.alive?(pid)
   end
 
-  defp wait_for_sent(transport, tries \\ 50) do
-    case MockTransport.sent_messages(transport) do
-      [] when tries > 0 ->
-        Process.sleep(10)
-        wait_for_sent(transport, tries - 1)
-
-      sent ->
-        sent
-    end
-  end
+  # Event-driven, bounded at 30 s (MES-191): it returns at the first sent message.
+  defp wait_for_sent(transport), do: MockTransport.wait_for_sent(transport, 1)
 end
