@@ -372,7 +372,7 @@ defmodule MCP.Client do
 
       {:error, error} ->
         Logger.warning("MCP Client: failed to decode message: #{inspect(error)}")
-        {:noreply, state}
+        fail_pending(message, error, state)
     end
   end
 
@@ -1052,4 +1052,45 @@ defmodule MCP.Client do
     do: list_resource_templates(client, opts)
 
   defp apply_list_operation(client, :list_prompts, opts), do: list_prompts(client, opts)
+
+  # --- Replies the decoder refused (MES-197) ---
+
+  # A reply `Protocol.decode_message/1` refused is still an answer to a request
+  # when it names one we have pending, so that caller fails now rather than at
+  # its request timeout. It ties only on an id this client issued (`next_id/1`
+  # hands out integers, and map keys are strict, so "1" and 1.0 never match 1),
+  # and only on a term that is not request-shaped: a server's request ids live
+  # in the server's namespace, and a collision with ours must not fail our
+  # caller. Everything else stays logged and dropped, as it was (MES-197 Q4).
+  #
+  # The pending entry is the request's whole in-flight state: the -32022 and
+  # MRTR retries re-dispatch under a fresh id and the -32020 refresh is its own
+  # entry, so popping it and cancelling its timer is the clean-up. A late reply
+  # for the id then finds no entry and is logged as unknown.
+  defp fail_pending(%{"id" => id} = message, error, state) when is_integer(id) do
+    with false <- request_shaped?(message),
+         {%{timeout_ref: ref} = entry, pending} <- Map.pop(state.pending_requests, id) do
+      cancel_timeout(ref)
+      GenServer.reply(entry.from, {:error, refused_reply(entry.kind, error)})
+      {:noreply, %{state | pending_requests: pending}}
+    else
+      _ -> {:noreply, state}
+    end
+  end
+
+  defp fail_pending(_message, _error, state), do: {:noreply, state}
+
+  defp request_shaped?(message),
+    do:
+      Map.has_key?(message, "method") and not Map.has_key?(message, "result") and
+        not Map.has_key?(message, "error")
+
+  # Tagged, not a bare %Error{}: the server sent nothing valid, and a bare
+  # -32600 would read as the server's own answer. The refresh is a request made
+  # on the caller's behalf, so, as with M-5, the caller's own answer, the
+  # original HeaderMismatch, rides along.
+  defp refused_reply({:refresh_for_retry, _entry, original_error}, error),
+    do: {:malformed_refresh_response, error, original_error}
+
+  defp refused_reply(_kind, error), do: {:malformed_response, error}
 end

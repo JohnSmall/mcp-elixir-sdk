@@ -12,8 +12,10 @@ defmodule MCP.Transport.MalformedErrorMemberTest do
 
   The decoder now answers every malformed member with -32600, and each caller
   already controls that: the Plug answers 400 by the readable id (MES-168's
-  refusal), and the Connection and the Client log and drop it. A dropped reply
-  leaves a client caller to its request timeout (PM ruling MES-190 Q6).
+  refusal), and the Connection logs and drops it. The Client fails the pending
+  caller at once with `{:malformed_response, %Error{code: -32600}}` (MES-197);
+  before MES-197 it dropped the reply and left the caller to its request
+  timeout (PM ruling MES-190 Q6).
   `error: null` is still read as an absent member (Q5).
   """
   use ExUnit.Case, async: true
@@ -156,7 +158,7 @@ defmodule MCP.Transport.MalformedErrorMemberTest do
   @tag oc: :none
   @tag oc_reason:
          "no OC check sends the client a malformed JSON-RPC error member; searched the pinned dist (a10085d0)"
-  test "the client drops each malformed reply, lives, and its caller ends at the request timeout" do
+  test "the client fails the pending caller at once for each malformed reply, and lives" do
     Process.flag(:trap_exit, true)
 
     outcomes =
@@ -164,18 +166,17 @@ defmodule MCP.Transport.MalformedErrorMemberTest do
         {:ok, client} =
           Client.start_link(
             transport: {MockTransport, []},
-            client_info: %{name: "c", version: "0"},
-            request_timeout: 100
+            client_info: %{name: "c", version: "0"}
           )
 
         transport = Client.transport(client)
 
         {result, _log} = with_log(fn -> answer(client, transport, error) end)
 
-        {name, {Process.alive?(client), result}}
+        {name, {Process.alive?(client), refused?(result)}}
       end
 
-    assert outcomes == for({name, _} <- @malformed, do: {name, {true, {:error, :timeout}}})
+    assert outcomes == for({name, _} <- @malformed, do: {name, {true, :malformed_response}})
 
     # The control: a well-formed error reply still reaches its caller.
     {:ok, client} =
@@ -199,8 +200,25 @@ defmodule MCP.Transport.MalformedErrorMemberTest do
     MockTransport.wait_for_sent(transport, 1)
     %{"id" => id} = MockTransport.last_sent(transport)
     MockTransport.inject(transport, response(id, error))
+
+    # A valid reply for the same id follows, so a client that dropped the
+    # malformed one answers with this instead: the difference is seen by order,
+    # not by a timeout.
+    MockTransport.inject(transport, %{
+      "jsonrpc" => "2.0",
+      "id" => id,
+      "result" => %{"tools" => []}
+    })
+
     Task.await(task, :infinity)
   end
+
+  defp refused?(
+         {:error, {:malformed_response, %Error{code: -32_600, message: "Invalid request"}}}
+       ),
+       do: :malformed_response
+
+  defp refused?(other), do: other
 
   defp post(message) do
     conn =

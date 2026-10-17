@@ -1464,6 +1464,7 @@
       "universe": "Every unit under test/ that configures an MRTR resolver (grep -rn 'on_input_required:' test/), since without a resolver there is no MRTR flow for an unrelated call to leak from.",
       "universe_by_file": {
         "test/mcp/client_defects_test.exs": 4,
+        "test/mcp/client_malformed_reply_test.exs": 1,
         "test/mcp/client_test.exs": 1,
         "test/mcp/integration_test.exs": 1
       },
@@ -1473,12 +1474,22 @@
         "MCP.ClientDefectsTest/test D-1 — MRTR retry omits requestState when the server sent none (CAUGHT REGRESSION) a server requestState is echoed verbatim on the retry (control)",
         "MCP.ClientDefectsTest/test D-2 — a failed transport send fails the call (CAUGHT REGRESSION) a failed send on the MRTR retry path fails the original caller",
         "MCP.ClientTest/test MRTR client retry an input_required result is transparently completed via :on_input_required",
-        "MCP.IntegrationTest/test MRTR: call_tool transparently completes an input-required round-trip"
+        "MCP.IntegrationTest/test MRTR: call_tool transparently completes an input-required round-trip",
+        "MCP.ClientMalformedReplyTest/test N6 a refused reply to the -32022 version retry or the MRTR retry fails the caller"
       ],
       "predicate": "a unit that runs a second call_tool concurrently with one in an input-required flow.",
       "measured_at": "a68b28b",
       "statement": "Looked for and not found: each unit in the universe makes exactly one call_tool. Gate 5 recomputes the universe by file and requires it to equal universe_by_file, so a new resolver-configured unit forces this negative to be re-examined.",
-      "residual": "The per-unit reading (one call_tool each) was made by hand at a68b28b; gate 5 holds the universe, not the reading."
+      "residual": "The per-unit reading (one call_tool each) was made by hand at a68b28b; gate 5 holds the universe, not the reading.",
+      "re_examined": [
+        {
+          "at": "2026-10-17",
+          "by": "MES-197",
+          "at_commit": "0b82468",
+          "unit": "MCP.ClientMalformedReplyTest/test N6 a refused reply to the -32022 version retry or the MRTR retry fails the caller",
+          "reading": "Looked for and not found again. N6 configures a resolver on one client only (test/mcp/client_malformed_reply_test.exs:217) and makes exactly one call_tool on it (test/mcp/client_malformed_reply_test.exs:221). Its -32022 half runs list_prompts on a separate client without a resolver (test/mcp/client_malformed_reply_test.exs:194-215), sequentially, before the MRTR client starts. No second call_tool runs beside the input-required flow."
+        }
+      ]
     },
     {
       "id": "no_unit_sends_a_resolver_configured_client_a_result_without_result_type",
@@ -1487,7 +1498,16 @@
       "predicate": "a unit that delivers a tools/call result with no resultType to a client with a resolver configured.",
       "measured_at": "a68b28b",
       "statement": "Looked for and not found: in the five MockTransport units every injected result carries resultType (input_required, then complete), and the integration unit's first result is input_required and its final result is asserted complete.",
-      "residual": "As above: gate 5 holds the universe, not the reading."
+      "residual": "As above: gate 5 holds the universe, not the reading.",
+      "re_examined": [
+        {
+          "at": "2026-10-17",
+          "by": "MES-197",
+          "at_commit": "0b82468",
+          "unit": "MCP.ClientMalformedReplyTest/test N6 a refused reply to the -32022 version retry or the MRTR retry fails the caller",
+          "reading": "Looked for and not found again, now in the six MockTransport units. N6's resolver-configured client is given an input_required result (test/mcp/client_malformed_reply_test.exs:227), a refused reply that carries no result, and then a complete result (test/mcp/client_malformed_reply_test.exs:240). Every result it is given carries resultType."
+        }
+      ]
     }
   ],
   "findings_for_pm": []
