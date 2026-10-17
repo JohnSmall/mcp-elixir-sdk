@@ -5758,6 +5758,36 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert Enum.all?(m10_rows, fn {r, s} ->
                r["disposition"] == "redundant" and s["remediation_owner"] == "MES-155"
              end)
+
+      # MES-188: M10 went a no-op at 58cb0c0 (MES-155 made the Plug require
+      # the headers itself), so it is retired by marking, not deleted [PM
+      # 33328]. Its `retired` carries the re-measurement at the parent, the
+      # merge and the tip; the parent's red count is the record's own (the
+      # measurement reproduced before it went stale); every M10 second
+      # reading is marked.
+      retired = m10["retired"]
+      assert is_map(retired), "M10 carries no `retired` (MES-188)"
+
+      assert retired["by"] == "MES-188" and
+               retired["made_stale_by"] == %{"commit" => "58cb0c0", "ticket" => "MES-155"},
+             "M10's `retired` names the wrong ticket or merge"
+
+      assert retired["scope_of_record"] =~ "the record's tree, not main",
+             "M10's `retired` does not qualify the kept reddens and second readings [PM 33328 Q4]"
+
+      assert for(m <- retired["measured"], do: {m["commit"], m["module_tests"]}) ==
+               [{"bb68d9f", 46}, {"58cb0c0", 46}, {"148f76d", 47}],
+             "M10's `retired` is not measured at bb68d9f, 58cb0c0 and 148f76d"
+
+      [parent, merge, tip] = Enum.map(retired["measured"], & &1["module_tests_red"])
+
+      assert parent == m10["measured"]["module_tests_red"] and merge == 0 and tip == 0,
+             "M10's `retired` measurement is not red at the parent and green from the merge on"
+
+      for {r, s} <- m10_rows do
+        assert s["retired_by"] == "MES-188",
+               "#{r["tag"]}: its M10 second reading carries no retired_by (MES-188)"
+      end
     end
 
     # CR 29960 B1, PM 29962: M18 enforces basic/index.mdx:380-382 in the filter
@@ -6248,6 +6278,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
     # PM 29945 Q2, applied here: each of the M9 family cited under its own
     # name, and its figures equal the rows whose firing line it reddened.
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the D-record files: it asserts a record-guard property (MES-188 retired M10 by marking), not SDK wire behaviour, so no OC check corresponds"
     test "the M9 family's measured figures equal the rows whose firing line each reddened",
          %{inputs: inputs} do
       {:ok, record} = inputs.records[@d1siii]
@@ -6310,6 +6343,36 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert Enum.all?(m10_rows, fn {r, s} ->
                r["disposition"] == "redundant" and s["remediation_owner"] == "MES-155"
              end)
+
+      # MES-188: M10 went a no-op at 58cb0c0 (MES-155 made the Plug require
+      # the headers itself), so it is retired by marking, not deleted [PM
+      # 33328]. Its `retired` carries the re-measurement at the parent, the
+      # merge and the tip; the parent's red count is the record's own (the
+      # measurement reproduced before it went stale); every M10 second
+      # reading is marked.
+      retired = m10["retired"]
+      assert is_map(retired), "M10 carries no `retired` (MES-188)"
+
+      assert retired["by"] == "MES-188" and
+               retired["made_stale_by"] == %{"commit" => "58cb0c0", "ticket" => "MES-155"},
+             "M10's `retired` names the wrong ticket or merge"
+
+      assert retired["scope_of_record"] =~ "the record's tree, not main",
+             "M10's `retired` does not qualify the kept reddens and second readings [PM 33328 Q4]"
+
+      assert for(m <- retired["measured"], do: {m["commit"], m["module_tests"]}) ==
+               [{"bb68d9f", 24}, {"58cb0c0", 24}, {"148f76d", 24}],
+             "M10's `retired` is not measured at bb68d9f, 58cb0c0 and 148f76d"
+
+      [parent, merge, tip] = Enum.map(retired["measured"], & &1["module_tests_red"])
+
+      assert parent == m10["measured"]["module_tests_red"] and merge == 0 and tip == 0,
+             "M10's `retired` measurement is not red at the parent and green from the merge on"
+
+      for {r, s} <- m10_rows do
+        assert s["retired_by"] == "MES-188",
+               "#{r["tag"]}: its M10 second reading carries no retired_by (MES-188)"
+      end
     end
 
     # The firing mutations M19-M25 and M30' cover the not-a-claim rows, each

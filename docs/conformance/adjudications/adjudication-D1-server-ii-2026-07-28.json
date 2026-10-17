@@ -388,6 +388,34 @@
       },
       "used_by": "second readings only; every member it reddens is already redundant on M9 or M9h, so it moves no verdict [PM 29945 Q3]",
       "remediation_owner": "MES-155",
+      "retired": {
+        "date": "2026-10-17",
+        "by": "MES-188",
+        "made_stale_by": {
+          "commit": "58cb0c0",
+          "ticket": "MES-155"
+        },
+        "why": "MES-155 made the Plug require MCP-Protocol-Version, Mcp-Method and Mcp-Name itself (check_required_headers/2, run before check_header_values/2, the function M10's edit lands in), and moved the slice's tests onto those headers. From that merge on, the alternative M10 realised is this SDK's own behaviour, so its edit still applies once and reddens nothing. Retired, not re-targeted: the only edit that reddens anything now deletes the gate, which is a regression check on MES-155, not M10's role [PM 33328 Q1].",
+        "scope_of_record": "This mutation's reddens and measured, and every rationale and second_readings entry that cites M10, describe the measurement at the record's tree, not main. They are kept unedited as that history; this object is the qualification [PM 33328 Q3, Q4].",
+        "measured": [
+          {
+            "commit": "bb68d9f",
+            "module_tests_red": 39,
+            "module_tests": 46
+          },
+          {
+            "commit": "58cb0c0",
+            "module_tests_red": 0,
+            "module_tests": 46
+          },
+          {
+            "commit": "148f76d",
+            "module_tests_red": 0,
+            "module_tests": 47
+          }
+        ],
+        "run": "the edits above applied, one occurrence each, to a git-archive copy of each commit; the target modules streamable_http_stateless_test.exs and subscriptions_stream_test.exs, --seed 0"
+      },
       "edits": [
         {
           "file": "lib/mcp/transport/streamable_http/plug.ex",
@@ -1942,6 +1970,7 @@
           "second_readings": [
             {
               "mutation": "M10",
+              "retired_by": "MES-188",
               "fails_at": 279,
               "remediation_owner": "MES-155",
               "reading": "A second reading only, and it moves no verdict [PM 29945 Q3]: the request carries neither MCP-Protocol-Version nor Mcp-Method (streamable-http.mdx:252-253, :288-293), which a conforming server that does not serve pre-2025-06-18 clients MUST reject 400/-32020 (:280-281, :597-599, :622-625). Covered and not scored: http-header-validation's ServerRejectsMissingMethodHeader (unscored_server_scenarios.sites.hhv_missm)."
@@ -2067,6 +2096,7 @@
           "second_readings": [
             {
               "mutation": "M10",
+              "retired_by": "MES-188",
               "fails_at": 255,
               "remediation_owner": "MES-155",
               "reading": "A second reading only, and it moves no verdict [PM 29945 Q3]: the request carries neither MCP-Protocol-Version nor Mcp-Method (streamable-http.mdx:252-253, :288-293), which a conforming server that does not serve pre-2025-06-18 clients MUST reject 400/-32020 (:280-281, :597-599, :622-625). Covered and not scored: http-header-validation's ServerRejectsMissingMethodHeader (unscored_server_scenarios.sites.hhv_missm)."
@@ -2387,6 +2417,7 @@
           "second_readings": [
             {
               "mutation": "M10",
+              "retired_by": "MES-188",
               "fails_at": 368,
               "remediation_owner": "MES-155",
               "reading": "A second reading only, and it moves no verdict [PM 29945 Q3]: the request carries neither MCP-Protocol-Version nor Mcp-Method (streamable-http.mdx:252-253, :288-293), which a conforming server that does not serve pre-2025-06-18 clients MUST reject 400/-32020 (:280-281, :597-599, :622-625). Covered and not scored: http-header-validation's ServerRejectsMissingMethodHeader (unscored_server_scenarios.sites.hhv_missm)."
@@ -2532,6 +2563,7 @@
           "second_readings": [
             {
               "mutation": "M10",
+              "retired_by": "MES-188",
               "fails_at": 132,
               "remediation_owner": "MES-155",
               "reading": "A second reading only, and it moves no verdict [PM 29945 Q3]: the request carries neither MCP-Protocol-Version nor Mcp-Method (streamable-http.mdx:252-253, :288-293), which a conforming server that does not serve pre-2025-06-18 clients MUST reject 400/-32020 (:280-281, :597-599, :622-625). Covered and not scored: http-header-validation's ServerRejectsMissingMethodHeader (unscored_server_scenarios.sites.hhv_missm)."
@@ -2662,6 +2694,7 @@
           "second_readings": [
             {
               "mutation": "M10",
+              "retired_by": "MES-188",
               "fails_at": 156,
               "remediation_owner": "MES-155",
               "reading": "A second reading only, and it moves no verdict [PM 29945 Q3]: the request carries neither MCP-Protocol-Version nor Mcp-Method (streamable-http.mdx:252-253, :288-293), which a conforming server that does not serve pre-2025-06-18 clients MUST reject 400/-32020 (:280-281, :597-599, :622-625). Covered and not scored: http-header-validation's ServerRejectsMissingMethodHeader (unscored_server_scenarios.sites.hhv_missm)."
@@ -2820,6 +2853,7 @@
           "second_readings": [
             {
               "mutation": "M10",
+              "retired_by": "MES-188",
               "fails_at": 367,
               "remediation_owner": "MES-155",
               "reading": "A second reading only, and it moves no verdict [PM 29945 Q3]: the request carries neither MCP-Protocol-Version nor Mcp-Method (streamable-http.mdx:252-253, :288-293), which a conforming server that does not serve pre-2025-06-18 clients MUST reject 400/-32020 (:280-281, :597-599, :622-625). Covered and not scored: http-header-validation's ServerRejectsMissingMethodHeader (unscored_server_scenarios.sites.hhv_missm)."
@@ -2978,6 +3012,7 @@
           "second_readings": [
             {
               "mutation": "M10",
+              "retired_by": "MES-188",
               "fails_at": 566,
               "remediation_owner": "MES-155",
               "reading": "A second reading only, and it moves no verdict [PM 29945 Q3]: the request carries neither MCP-Protocol-Version nor Mcp-Method (streamable-http.mdx:252-253, :288-293), which a conforming server that does not serve pre-2025-06-18 clients MUST reject 400/-32020 (:280-281, :597-599, :622-625). Covered and not scored: http-header-validation's ServerRejectsMissingMethodHeader (unscored_server_scenarios.sites.hhv_missm)."
@@ -3096,6 +3131,7 @@
           "second_readings": [
             {
               "mutation": "M10",
+              "retired_by": "MES-188",
               "fails_at": 536,
               "remediation_owner": "MES-155",
               "reading": "A second reading only, and it moves no verdict [PM 29945 Q3]: the request carries neither MCP-Protocol-Version nor Mcp-Method (streamable-http.mdx:252-253, :288-293), which a conforming server that does not serve pre-2025-06-18 clients MUST reject 400/-32020 (:280-281, :597-599, :622-625). Covered and not scored: http-header-validation's ServerRejectsMissingMethodHeader (unscored_server_scenarios.sites.hhv_missm)."
@@ -3212,6 +3248,7 @@
           "second_readings": [
             {
               "mutation": "M10",
+              "retired_by": "MES-188",
               "fails_at": 475,
               "remediation_owner": "MES-155",
               "reading": "A second reading only, and it moves no verdict [PM 29945 Q3]: the request carries neither MCP-Protocol-Version nor Mcp-Method (streamable-http.mdx:252-253, :288-293), which a conforming server that does not serve pre-2025-06-18 clients MUST reject 400/-32020 (:280-281, :597-599, :622-625). Covered and not scored: http-header-validation's ServerRejectsMissingMethodHeader (unscored_server_scenarios.sites.hhv_missm)."
@@ -3380,6 +3417,7 @@
           "second_readings": [
             {
               "mutation": "M10",
+              "retired_by": "MES-188",
               "fails_at": 410,
               "remediation_owner": "MES-155",
               "reading": "A second reading only, and it moves no verdict [PM 29945 Q3]: the request carries neither MCP-Protocol-Version nor Mcp-Method (streamable-http.mdx:252-253, :288-293), which a conforming server that does not serve pre-2025-06-18 clients MUST reject 400/-32020 (:280-281, :597-599, :622-625). Covered and not scored: http-header-validation's ServerRejectsMissingMethodHeader (unscored_server_scenarios.sites.hhv_missm)."
@@ -3548,6 +3586,7 @@
           "second_readings": [
             {
               "mutation": "M10",
+              "retired_by": "MES-188",
               "fails_at": 636,
               "remediation_owner": "MES-155",
               "reading": "A second reading only, and it moves no verdict [PM 29945 Q3]: the request carries neither MCP-Protocol-Version nor Mcp-Method (streamable-http.mdx:252-253, :288-293), which a conforming server that does not serve pre-2025-06-18 clients MUST reject 400/-32020 (:280-281, :597-599, :622-625). Covered and not scored: http-header-validation's ServerRejectsMissingMethodHeader (unscored_server_scenarios.sites.hhv_missm)."
@@ -3662,6 +3701,7 @@
           "second_readings": [
             {
               "mutation": "M10",
+              "retired_by": "MES-188",
               "fails_at": 834,
               "remediation_owner": "MES-155",
               "reading": "A second reading only, and it moves no verdict [PM 29945 Q3]: the request carries neither MCP-Protocol-Version nor Mcp-Method (streamable-http.mdx:252-253, :288-293), which a conforming server that does not serve pre-2025-06-18 clients MUST reject 400/-32020 (:280-281, :597-599, :622-625). Covered and not scored: http-header-validation's ServerRejectsMissingMethodHeader (unscored_server_scenarios.sites.hhv_missm)."
@@ -3742,6 +3782,7 @@
           "second_readings": [
             {
               "mutation": "M10",
+              "retired_by": "MES-188",
               "fails_at": 297,
               "remediation_owner": "MES-155",
               "reading": "A second reading only, and it moves no verdict [PM 29945 Q3]: the request carries neither MCP-Protocol-Version nor Mcp-Method (streamable-http.mdx:252-253, :288-293), which a conforming server that does not serve pre-2025-06-18 clients MUST reject 400/-32020 (:280-281, :597-599, :622-625). Covered and not scored: http-header-validation's ServerRejectsMissingMethodHeader (unscored_server_scenarios.sites.hhv_missm)."
