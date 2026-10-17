@@ -527,10 +527,37 @@
       "edits": [
         {
           "file": "lib/mcp/transport/streamable_http/plug.ex",
+          "old": "        send_json_error(conn, 400, Error.parse_error_code(), \"Parse error\", not_json_detail(e))\n",
+          "new": "        send_json_error(conn, 422, Error.parse_error_code(), \"Parse error\", not_json_detail(e))\n"
+        }
+      ],
+      "repinned": {
+        "date": "2026-10-17",
+        "by": "MES-198",
+        "made_necessary_by": {
+          "commit": "c163f6e",
+          "ticket": "MES-198",
+          "note": "the MES-198 branch commit; the squash-merge onto main carries it under a new id"
+        },
+        "why": "MES-198 rewrote plug.ex:347, the line this edit lands on: the -32700 data became not_json_detail(e) where it was inspect(e), so the recorded old no longer occurred and the mutation could not be applied. Only the edit bytes are re-pinned. The change it makes is the recorded one, a parse error answered 422 instead of 400, and the line stays 347.",
+        "old_was": {
           "old": "        send_json_error(conn, 400, Error.parse_error_code(), \"Parse error\", inspect(e))\n",
           "new": "        send_json_error(conn, 422, Error.parse_error_code(), \"Parse error\", inspect(e))\n"
+        },
+        "scope_of_record": "reddens is kept as recorded. The measurement below shows the re-pinned edit still reddens it, by test name and failing line, so the re-pin keeps the mutation's discrimination and does not merely apply.",
+        "measured": {
+          "commit": "c163f6e",
+          "run": "mix test test/mcp --seed 0",
+          "doctests": 13,
+          "tests": 714,
+          "failures": 3,
+          "reddens": [
+            "streamable_http_stateless_test.exs:348 (a malformed body is a parse error → -32700), the recorded entry",
+            "error_id_test.exs:71 (-32700 parse error → id null), added by MES-157 after this record",
+            "error_data_test.exs:70 (-32700 (plug.ex:347) invalid JSON: the data names the rule and does not echo the body), added by MES-198"
+          ]
         }
-      ]
+      }
     },
     {
       "id": "M17",

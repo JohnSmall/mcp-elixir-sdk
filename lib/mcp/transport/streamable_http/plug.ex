@@ -344,7 +344,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
         send_body_too_large(conn, config.max_body_length)
 
       {:error, %Jason.DecodeError{} = e} ->
-        send_json_error(conn, 400, Error.parse_error_code(), "Parse error", inspect(e))
+        send_json_error(conn, 400, Error.parse_error_code(), "Parse error", not_json_detail(e))
 
       {:error, {:meta_invalid, id, problems}} ->
         send_meta_invalid(conn, id, problems)
@@ -368,7 +368,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
         send_internal_error(conn, id, "notification collector unavailable")
 
       {:error, {:invalid_request, id, error}} ->
-        send_invalid_request(conn, id, inspect(error))
+        send_invalid_request(conn, id, invalid_detail(error))
 
       # Only where no id is readable: a body that is not an object, or unread.
       {:error, reason} ->
@@ -377,7 +377,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
           400,
           Error.invalid_request_code(),
           "Invalid request",
-          inspect(reason)
+          unreadable_detail(reason)
         )
     end
   end
@@ -403,7 +403,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   defp read_body(conn, length) do
     case Plug.Conn.read_body(conn, length: length) do
       {:more, _partial, conn} -> {:error, {:body_too_large, conn}}
-      other -> other
+      other -> tag_read_failure(other)
     end
   end
 
@@ -930,10 +930,10 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
     cond do
       header_method && header_method != method ->
-        {:error, {:routing_mismatch, "Mcp-Method #{header_method} != #{inspect(method)}"}}
+        {:error, {:routing_mismatch, "Mcp-Method #{header_method} != #{quoted(method)}"}}
 
       header_name && target && header_name != target ->
-        {:error, {:routing_mismatch, "Mcp-Name #{header_name} != #{inspect(target)}"}}
+        {:error, {:routing_mismatch, "Mcp-Name #{header_name} != #{quoted(target)}"}}
 
       true ->
         :ok
@@ -1075,7 +1075,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     do: send_json_error(conn, nil, http_status, code, message, data)
 
   defp send_json_error(conn, id, http_status, code, message, data) do
-    error = %{"code" => code, "message" => message, "data" => data}
+    error = %{"code" => code, "message" => message, "data" => wire_text(data)}
     send_json(conn, http_status, %{"jsonrpc" => "2.0", "id" => id, "error" => error})
   end
 
@@ -1220,7 +1220,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
       is_binary(body_version) and header_version != body_version ->
         {:error,
-         {:routing_mismatch, "MCP-Protocol-Version #{header_version} != #{inspect(body_version)}"}}
+         {:routing_mismatch, "MCP-Protocol-Version #{header_version} != #{quoted(body_version)}"}}
 
       true ->
         check_header_values(conn, message)
@@ -1245,4 +1245,63 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
   # a readable id, and the error carries `null` (basic/index.mdx:103).
   defp readable_id(%{"id" => id}) when is_binary(id) or is_number(id), do: id
   defp readable_id(_message), do: nil
+
+  # --- Error `data` on the wire (MES-198) ---
+
+  # The `data` of a Plug error is a plain string naming the rule, never
+  # `inspect/1` of an Elixir term: that leaked struct syntax and module names,
+  # and for a parse error echoed the request body back. Appended below every
+  # line the adjudication records cite, so none of those moves.
+  defp not_json_detail(%Jason.DecodeError{}), do: "the request body is not valid JSON"
+
+  # Only a valid UTF-8 binary `data` is passed through: an Error carrying a
+  # term, or bytes JSON cannot carry, gets the rule string instead. Public
+  # only so a unit can hold the guard (MES-198 F1); nothing reaches it with
+  # such data today.
+  @doc false
+  @spec invalid_detail(Error.t()) :: String.t()
+  def invalid_detail(%Error{data: data}) when is_binary(data) do
+    if String.valid?(data), do: data, else: no_rule_detail()
+  end
+
+  def invalid_detail(%Error{}), do: no_rule_detail()
+
+  defp no_rule_detail, do: "a JSON-RPC message must carry a method, or a result or an error"
+
+  # The catch-all `else` clause sees exactly two shapes: a read failure,
+  # tagged where the body is read, and the decoder's Error for a body that is
+  # not an object. An adapter's reason is logged and never sent, whatever its
+  # shape (MES-198 F1).
+  defp unreadable_detail({:read_failed, reason}) do
+    Logger.error("MCP Plug: could not read the request body: #{inspect(reason)}")
+    "the request body could not be read"
+  end
+
+  defp unreadable_detail(%Error{}),
+    do: "the request body must be a single JSON-RPC request or notification object"
+
+  # `Plug.Conn.read_body/2` may answer `{:error, term}` with any term, so it is
+  # tagged here, where it can only mean the read failed, before the with-chain's
+  # `else` could mistake it for decoder output.
+  defp tag_read_failure({:error, reason}), do: {:error, {:read_failed, reason}}
+  defp tag_read_failure(ok), do: ok
+
+  # Error `data` is JSON text on the wire, so a binary that is not valid UTF-8
+  # (a header value interpolated into a -32020 text, say) has its invalid
+  # bytes replaced by U+FFFD rather than raising in `Jason.encode!/1`.
+  defp wire_text(data) when is_binary(data), do: String.replace_invalid(data)
+  defp wire_text(data), do: data
+
+  # A body value inside a -32020 text: JSON, as the client sent it. For an
+  # ordinary printable string, with no `#{` and nothing to escape, this is the
+  # same bytes `inspect/1` gave; `inspect/1` escapes `#{` and JSON does not.
+  # Anything else is JSON, not Elixir term syntax. Every value rendered here came out of
+  # `Jason.decode/1` of the body, so it encodes; the fallback keeps the wire
+  # path from raising should a caller ever pass anything else.
+  defp quoted(value) do
+    case Jason.encode(value) do
+      {:ok, json} -> json
+      {:error, _} -> "a value that is not JSON"
+    end
+  end
 end
