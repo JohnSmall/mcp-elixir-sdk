@@ -16,11 +16,11 @@
 # rejects the FIRST request with -32022, and
 # `sep-2575-client-retry-supported-version` starts as WARNING and only becomes
 # SUCCESS when a LATER request carries 2026-07-28 in both the header and
-# `_meta`. Our client does **not** retry — the transport discards a JSON-RPC
-# error body carried on a 400 — so the SUCCESS comes from the fixture's
-# re-evaluation rule firing on the NEXT call the adapter makes. A WARNING fails
-# a scenario under `client_summary`. So on this leg, 8/8 is contingent on a
-# policy of ours, not on a property of the SDK.
+# `_meta`. Until MES-189 our client did **not** retry (the transport discarded
+# a JSON-RPC error body carried on a 400), so the SUCCESS came from the
+# fixture's re-evaluation rule firing on the NEXT call, and 8/8 was contingent
+# on a policy of ours. Since MES-189 it retries and `connect/1` succeeds, so the
+# discount lapses. The committed figures are as of f4be9eb, pending MES-205.
 #
 # That is an argument. This file turns it into a measurement: run the SAME
 # scenario, against the SAME fixture, at the SAME tree, changing exactly one

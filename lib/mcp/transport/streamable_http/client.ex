@@ -298,10 +298,10 @@ defmodule MCP.Transport.StreamableHTTP.Client do
         # Accepted (notification/response acknowledged)
         {:ok, state}
 
-      {:ok, %Req.Response{status: status, body: resp_body}} ->
+      {:ok, %Req.Response{status: status, headers: resp_headers, body: resp_body}} ->
         Logger.warning("MCP StreamableHTTP Client: HTTP #{status}: #{inspect(resp_body)}")
 
-        {:error, {:http_error, status, resp_body}}
+        deliver_error_reply(state, message, status, resp_headers, resp_body)
 
       {:error, reason} ->
         Logger.warning("MCP StreamableHTTP Client: POST failed: #{inspect(reason)}")
@@ -611,4 +611,67 @@ defmodule MCP.Transport.StreamableHTTP.Client do
     # Stateless: no session to terminate, so no DELETE is issued (SEP-2567).
     :ok
   end
+
+  # --- A JSON-RPC error carried on a 4xx/5xx (MES-189) ---
+
+  # A server answers a request it refuses with an HTTP error status AND a
+  # JSON-RPC error naming the request's id: 400 for -32022, -32020 or -32602,
+  # 404 for -32601. That body is the server's answer, so it is delivered to the
+  # owner exactly as a 200 JSON reply is, and `MCP.Client` classifies it. That
+  # is what lets the -32022 version retry and the -32020 tools/list refresh run
+  # over HTTP at all. A malformed or dual-member error then fails the caller
+  # with `:malformed_response` (MES-197, MES-199).
+  #
+  # Delivered ONLY when all four hold, checked in this order: the status is
+  # 400-599; the POST was a request (a binary method and a non-nil id); the
+  # response carries no content coding (the same guard as 200/201); and the
+  # body is a JSON object with an `error` member and an `id` that MATCHES the
+  # posted id (strict match: "1" and 1.0 are not 1). Everything else keeps
+  # `{:error, {:http_error, status, body}}`, so the caller still fails at once.
+  # The id rule matters most: an id-null error delivered as a message would be
+  # dropped, and the caller would wait out its timeout (MES-197 O2).
+  #
+  # There is deliberately no content-type check. Req has already decoded any
+  # application/json body at every status. A binary reaches here only with a
+  # non-JSON type, or because any `content-encoding` header, even a literal
+  # `identity`, stops Req decoding. The object/error/id test is the
+  # discriminator. Only `{:ok, %Req.Response{}}` reaches this function: Req's
+  # own `{:error, term}` (transport, redirect or JSON-decode errors) stays on
+  # the clause above, so the `else` below sees only this chain's tagged
+  # returns.
+  #
+  # The moduledoc does not describe this: lines in it are cited by pinned
+  # windows, and a new paragraph there would move every one of them.
+  defp deliver_error_reply(state, message, status, resp_headers, resp_body)
+       when status in 400..599 do
+    with {:request, id} <- posted_request_id(message),
+         nil <- unexpected_content_encoding(resp_headers),
+         {:object, %{"error" => _, "id" => ^id} = reply} <- error_body_object(resp_body) do
+      send(state.owner, {:mcp_message, reply})
+      {:ok, state}
+    else
+      coding when is_binary(coding) -> reject_content_encoding(coding)
+      _ -> {:error, {:http_error, status, resp_body}}
+    end
+  end
+
+  defp deliver_error_reply(_state, _message, status, _resp_headers, resp_body),
+    do: {:error, {:http_error, status, resp_body}}
+
+  defp posted_request_id(%{"method" => method, "id" => id})
+       when is_binary(method) and not is_nil(id),
+       do: {:request, id}
+
+  defp posted_request_id(_message), do: :not_a_request
+
+  defp error_body_object(body) when is_map(body), do: {:object, body}
+
+  defp error_body_object(body) when is_binary(body) do
+    case Jason.decode(body) do
+      {:ok, decoded} when is_map(decoded) -> {:object, decoded}
+      _ -> :not_an_object
+    end
+  end
+
+  defp error_body_object(_body), do: :not_an_object
 end

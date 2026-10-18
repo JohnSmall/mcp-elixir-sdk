@@ -117,19 +117,19 @@ defmodule MCP.Conformance.ClientAdapter do
   # WARNING, and a WARNING fails the scenario, so *something* must follow the
   # rejected request.
   #
-  # CORRECTION (MES-24, measured — this file used to say "the retry is
-  # mandatory", and that is false). Our client does NOT retry: the transport
-  # discards a JSON-RPC error body carried on a 400, so the -32022 recovery in
-  # `MCP.Client` is never reached over Streamable HTTP (escalated as a genuine
-  # SDK gap; see the MES-24 entry in `docs/sprint_4_issues.md`). The SUCCESS
-  # comes from the fixture's re-evaluation rule firing on the NEXT request the
-  # adapter makes, not on a retry of the rejected one.
+  # Since MES-189 our client DOES retry: the transport delivers the JSON-RPC
+  # error carried on the 400, so the one-shot -32022 recovery in `MCP.Client`
+  # re-sends `server/discover` with 2026-07-28 and `connect/1` succeeds. Before
+  # that (MES-24, `docs/sprint_4_issues.md`) the body was discarded, and the
+  # SUCCESS came from the fixture's re-evaluation rule firing on the NEXT
+  # request the adapter made, not on a retry of the rejected one.
   #
-  # So this scenario's 8/8 is contingent on `drive/2` carrying on past a failed
-  # `connect/1`. A consumer that stops at a failed connect scores 7 SUCCESS +
-  # 1 WARNING = FAILED. The carry-on policy is deliberate (see `drive/2`), but
-  # it is a DRIVE POLICY, not an SDK property, and the report names it as its
-  # own axis rather than letting the 8/8 read as eight tested behaviours.
+  # So the drive-policy discount (8/8 resting on `drive/2` carrying on past a
+  # failed `connect/1`) has lapsed at MES-189's tree. The committed probe
+  # census and the figures in `client-2026-07-28-discounts.md` are as of
+  # f4be9eb and still state the discount; MES-205 re-records them. The
+  # carry-on policy itself is unchanged and deliberate (see `drive/2`), and
+  # the report still names it as its own axis.
   defp run_scenario("request-metadata", url) do
     with_client(url, fn client ->
       drive("server/discover", fn -> Client.connect(client) end)
