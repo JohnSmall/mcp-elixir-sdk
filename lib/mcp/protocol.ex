@@ -114,6 +114,18 @@ defmodule MCP.Protocol do
   # String". Anything else is not a response this decoder can build, so it is
   # -32600 rather than a raise in `Error.from_map/1` (MES-190). An `error: null`
   # is read as an absent member, as it was before.
+  #
+  # §5 also says "Either the result member or error member MUST be included, but
+  # both members MUST NOT be included." So a `result` key beside a non-null
+  # `error` is refused first, whatever the error's shape, rather than letting
+  # the error win and the result vanish (MES-199).
+  defp checked_response(%{"result" => _, "error" => error}) when not is_nil(error),
+    do:
+      {:error,
+       Error.invalid_request(
+         "a JSON-RPC response must not carry both a result and an error member"
+       )}
+
   defp checked_response(%{"error" => %{"code" => code, "message" => message}} = map)
        when is_integer(code) and is_binary(message),
        do: {:ok, decode_response(map)}
