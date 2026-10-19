@@ -1,7 +1,7 @@
 defmodule MCPElixirSDK.MixProject do
   use Mix.Project
 
-  @version "2.0.0-dev.100"
+  @version "2.0.0-dev.101"
   @source_url "https://github.com/JohnSmall/mcp-elixir-sdk"
 
   def project do
@@ -105,7 +105,7 @@ defmodule MCPElixirSDK.MixProject do
       # Optional: Streamable HTTP transport
       {:req, "~> 0.5", optional: true},
       {:plug, "~> 1.16", optional: true},
-      {:bandit, "~> 1.5", optional: true},
+      {:bandit, "~> 1.13", optional: true},
 
       # Dev/test
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},

@@ -350,15 +350,48 @@
         },
         {
           "file": "lib/mcp/transport/streamable_http/plug.ex",
-          "old": "         {:ok, message} <- Jason.decode(body),\n         :ok <- check_routing_headers(conn, message),\n",
-          "new": "         {:ok, message} <- Jason.decode(body),\n         :ok <-\n           (if is_binary(message[\"method\"]) and Map.has_key?(message, \"id\") and\n                 not (is_map(message[\"params\"]) and is_map(message[\"params\"][\"_meta\"]) and\n                        Map.has_key?(message[\"params\"][\"_meta\"], \"io.modelcontextprotocol/protocolVersion\") and\n                        Map.has_key?(message[\"params\"][\"_meta\"], \"io.modelcontextprotocol/clientCapabilities\")),\n              do: {:error, :meta_invalid_400},\n              else: :ok),\n         :ok <- check_routing_headers(conn, message),\n"
+          "old": "    with {:ok, message} <- Jason.decode(body),\n         :ok <- check_routing_headers(conn, message),\n",
+          "new": "    with {:ok, message} <- Jason.decode(body),\n         :ok <-\n           (if is_binary(message[\"method\"]) and Map.has_key?(message, \"id\") and\n                 not (is_map(message[\"params\"]) and is_map(message[\"params\"][\"_meta\"]) and\n                        Map.has_key?(message[\"params\"][\"_meta\"], \"io.modelcontextprotocol/protocolVersion\") and\n                        Map.has_key?(message[\"params\"][\"_meta\"], \"io.modelcontextprotocol/clientCapabilities\")),\n              do: {:error, :meta_invalid_400},\n              else: :ok),\n         :ok <- check_routing_headers(conn, message),\n"
         },
         {
           "file": "lib/mcp/transport/streamable_http/plug.ex",
           "old": "      {:error, {:routing_mismatch, detail}} ->\n",
           "new": "      {:error, :meta_invalid_400} ->\n        send_json_error(conn, 400, -32_602, \"Invalid params\", \"missing required _meta field\")\n\n      {:error, {:routing_mismatch, detail}} ->\n"
         }
-      ]
+      ],
+      "repinned": {
+        "date": "2026-10-19",
+        "by": "MES-213",
+        "made_necessary_by": {
+          "ticket": "MES-213",
+          "merged_with": "MES-207"
+        },
+        "why": "MES-213 moved the body read out of handle_post/2's with-chain into a new handle_post/2, so the chain, now handle_body/3, opens with the decode: the recorded old's first line, a continuation of the with, no longer occurred and the mutation could not be applied. Only the edit bytes are re-pinned: that line becomes the with's first clause. The change it makes is the recorded one, the Plug's _meta check placed before check_routing_headers.",
+        "old_was": {
+          "old": "         {:ok, message} <- Jason.decode(body),\n         :ok <- check_routing_headers(conn, message),\n",
+          "new": "         {:ok, message} <- Jason.decode(body),\n         :ok <-\n           (if is_binary(message[\"method\"]) and Map.has_key?(message, \"id\") and\n                 not (is_map(message[\"params\"]) and is_map(message[\"params\"][\"_meta\"]) and\n                        Map.has_key?(message[\"params\"][\"_meta\"], \"io.modelcontextprotocol/protocolVersion\") and\n                        Map.has_key?(message[\"params\"][\"_meta\"], \"io.modelcontextprotocol/clientCapabilities\")),\n              do: {:error, :meta_invalid_400},\n              else: :ok),\n         :ok <- check_routing_headers(conn, message),\n"
+        },
+        "scope_of_record": "reddens is kept as recorded, but it was already not reproduced at main a50d3ac: there the recorded edit, run over the full suite, reddens none of these units (probably since MES-161, bb68d9f). Re-measuring or retiring it is MES-214's. What the re-pin preserves is the measurement below: on the final tree its full-suite red set is the recorded edit's red set at main a50d3ac, with none lost, plus only tests that exist on the final tree alone.",
+        "measured": {
+          "tree": "the final tree of the MES-207 branch (main a50d3ac + MES-207/MES-213)",
+          "run": "mix test --seed 0",
+          "doctests": 24,
+          "tests": 2027,
+          "failures": 42,
+          "against_main": {
+            "commit": "a50d3ac",
+            "edit": "the recorded one (old_was)",
+            "doctests": 24,
+            "tests": 2023,
+            "failures": 40
+          },
+          "lost_against_main": 0,
+          "added_against_main": [
+            "streamable_http_post_error_conn_test.exs:42 (a request with no _meta is a 400 / -32602 JSON-RPC error, not an empty 500), added by MES-213",
+            "streamable_http_post_error_conn_test.exs:67 (a JSON body that is not an object is a 400 / -32600 JSON-RPC error, not an empty 500), added by MES-213"
+          ]
+        }
+      }
     },
     {
       "id": "M10",

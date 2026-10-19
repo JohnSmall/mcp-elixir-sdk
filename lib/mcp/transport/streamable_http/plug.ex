@@ -331,18 +331,18 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   # --- POST: the request/response path ---
 
-  defp handle_post(conn, config) do
-    with {:ok, body, conn} <- read_body(conn, config.max_body_length),
-         {:ok, message} <- Jason.decode(body),
+  defp handle_body(conn, config, body) do
+    # `conn` is the one `read_body/2` returned (`handle_post/2`, at the foot
+    # of this module): every branch below, `else` included, answers on it.
+    # While the read sat in this chain its rebinding never reached `else`
+    # (MES-213). The lines here keep their numbers, which records cite.
+    with {:ok, message} <- Jason.decode(body),
          :ok <- check_routing_headers(conn, message),
          {:ok, decoded} <- decode_well_formed(message),
          {:ok, identity} <- resolve_identity(config.handler_opts, conn, readable_id(message)),
          {:ok, collector} <- start_collector(config.collector_start, readable_id(message)) do
       dispatch(conn, config, decoded, message, identity, collector)
     else
-      {:error, {:body_too_large, conn}} ->
-        send_body_too_large(conn, config.max_body_length)
-
       {:error, %Jason.DecodeError{} = e} ->
         send_json_error(conn, 400, Error.parse_error_code(), "Parse error", not_json_detail(e))
 
@@ -370,7 +370,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
       {:error, {:invalid_request, id, error}} ->
         send_invalid_request(conn, id, invalid_detail(error))
 
-      # Only where no id is readable: a body that is not an object, or unread.
+      # Only where no id is readable: a body that is not a JSON object.
       {:error, reason} ->
         send_json_error(
           conn,
@@ -1302,6 +1302,35 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
     case Jason.encode(value) do
       {:ok, json} -> json
       {:error, _} -> "a value that is not JSON"
+    end
+  end
+
+  # --- POST: read the body first (MES-213) ---
+
+  # The body is read on its own, before `handle_body/3`'s `with`. Plug's
+  # contract is that a caller carries on with the conn a `Plug.Conn` function
+  # returns, and a rebinding inside a `with` does not reach its `else`: while
+  # the read sat in the chain, every error branch answered on the pre-read conn.
+  # Bandit 1.12 tolerated that; 1.13 refuses it ("Guard against stale conn
+  # reuse", #668) and the client got a bare 500 with an empty body. Defined
+  # down here so no line a record cites moves.
+  defp handle_post(conn, config) do
+    case read_body(conn, config.max_body_length) do
+      {:ok, body, conn} ->
+        handle_body(conn, config, body)
+
+      {:error, {:body_too_large, conn}} ->
+        send_body_too_large(conn, config.max_body_length)
+
+      # A failed read returns no conn, so the one passed in is still current.
+      {:error, {:read_failed, _reason} = reason} ->
+        send_json_error(
+          conn,
+          400,
+          Error.invalid_request_code(),
+          "Invalid request",
+          unreadable_detail(reason)
+        )
     end
   end
 end
