@@ -9,6 +9,9 @@
 #     mix run conformance/controls/etcc_boundary_sweep_controls.exs prefix
 #     mix run conformance/controls/etcc_boundary_sweep_controls.exs probe
 #     mix run conformance/controls/etcc_boundary_sweep_controls.exs probe-mutation
+#     mix run conformance/controls/etcc_boundary_sweep_controls.exs census
+#     mix run conformance/controls/etcc_boundary_sweep_controls.exs census-real
+#     mix run conformance/controls/etcc_boundary_sweep_controls.exs census-plant
 #
 # WHY A SCRIPT AND NOT AN ExUnit TEST. Same reason as `etcc_register_controls.exs`: a
 # test file added here lands in the very suite the sweep measures. Under `test/mcp/` it
@@ -32,6 +35,7 @@
 
 defmodule ETCCBoundarySweepControls do
   alias MCP.Conformance.BoundarySweep, as: Sweep
+  alias MCP.Conformance.ExUnitRows
 
   @paths Sweep.paths()
 
@@ -44,10 +48,14 @@ defmodule ETCCBoundarySweepControls do
   def run(["prefix"]), do: prefix()
   def run(["probe"]), do: probe()
   def run(["probe-mutation"]), do: probe_mutation()
+  def run(["census"]), do: census()
+  def run(["census-real"]), do: census_real()
+  def run(["census-plant"]), do: census_plant()
 
   def run(_) do
     IO.puts(
-      "usage: guards | prose | harness | host | drift | register | prefix | probe | probe-mutation"
+      "usage: guards | prose | harness | host | drift | register | prefix | probe | " <>
+        "probe-mutation | census | census-real | census-plant"
     )
 
     System.halt(2)
@@ -384,7 +392,7 @@ defmodule ETCCBoundarySweepControls do
 
     results =
       for {name, line, expected} <- cases do
-        got = Sweep.parse_run("...\n#{line}\n").summary
+        got = Sweep.summary_line(["...", line])
         IO.puts("  SUMMARY SHAPE     #{String.pad_trailing(name, 22)} -> #{inspect(got)}")
         got == expected
       end
@@ -876,6 +884,263 @@ defmodule ETCCBoundarySweepControls do
 
   defp report_limb({name, true}), do: IO.puts("  HOLDS   #{name}")
   defp report_limb({name, false}), do: IO.puts("  FAILS   #{name}   <-- ")
+
+  # --- census: GUARD 34, every kind shown FIRING (MES-208, MES-150 folded in) ---
+
+  # Until MES-208 the sweep parsed ExUnit's CLI transcript for failure headers, and
+  # silently dropped every failure numbered 100 or above and every setup_all-invalidated
+  # test. The PO ruled (`34141`) that every test is recorded, so the units now come off
+  # `MCP.Conformance.ExUnitRows`' rows and GUARD 34 refuses any run whose rows do not
+  # account for every test. Three sections, split so each fits a 10-minute run:
+  #
+  #   * `census` — seconds, pure: a synthetic run of 120 failures (past the old cap),
+  #     16 invalid and 30 passes; the POSITIVE, then one plant per refusal kind, each
+  #     required to refuse with a line starting `GUARD 34: <kind>`. `units` has no pure
+  #     plant (a plant on the artefact cannot make the derivation miscount); M1 in the
+  #     MES-208 close-out is its mutation.
+  #   * `census-real` — POSITIVE on a real run: an ordinary located failure, the Plug
+  #     direction unplanted through `Sweep.sweep/1`; then the same plants on that
+  #     captured pair, so the refusals are shown on real bytes as well.
+  #   * `census-plant` — the real setup_all plant: Plug's `init/1` made to raise on a
+  #     /tmp copy of the table, which invalidates ACTest. Every failure AND every invalid
+  #     test must be keyed.
+  @census_subject "MCP.Transport.StreamableHTTP.Plug"
+  @census_invalid_module "MCP.Transport.StreamableHTTP.ACTest"
+  @census_plant "lib/mcp/transport/streamable_http/plug.ex: def init(opts) do  ->  " <>
+                  "def init(opts) do\n    if opts != :never, do: raise(\"MES-208 plant: " <>
+                  "setup_all invalidation\")"
+
+  defp census do
+    header("CENSUS — GUARD 34, each kind shown refusing, on a synthetic run")
+    {out, artefact} = synthetic_run()
+    run = Sweep.read_run(out, artefact)
+    IO.puts("  synthetic: #{run.summary} | keyed #{length(run.units)} | rows #{run.rows_total}\n")
+
+    positive = [{"120 failures + 16 invalid all keyed (136)", length(run.units) == 136}]
+    Enum.each(positive, &report_limb/1)
+    ok = census_limbs(out, artefact, run.rows_total)
+    if not ok or Enum.any?(positive, fn {_, v} -> not v end), do: System.halt(1)
+  end
+
+  defp census_real do
+    header("CENSUS-REAL — POSITIVE: an ordinary located failure through the real sweep")
+    tmp = census_tmp("real")
+    out_doc = Sweep.sweep(only: [@census_subject], tmp: tmp, log: &IO.puts("    " <> &1))
+    got = row(out_doc, @census_subject)
+    {out, artefact} = captured(tmp)
+    {:ok, s} = ExUnitRows.parse_summary(got["suite_summary"])
+
+    positive = [
+      {"the run passed GUARD 34 (the sweep returned)", true},
+      {"keyed #{got["reddened_total"]} = summary #{s["failures"]} failures + #{s["invalid"]} invalid",
+       got["reddened_total"] == s["failures"] + s["invalid"]},
+      {"unlocated_failures is 0", got["unlocated_failures"] == 0},
+      {"live count #{Sweep.live_count(got)} > 0, verdict #{got["verdict"]}",
+       Sweep.live_count(got) > 0 and got["verdict"] == "live"}
+    ]
+
+    IO.puts("")
+    Enum.each(positive, &report_limb/1)
+    IO.puts("\n  the plants again, on the captured real run:")
+    ok = census_limbs(out, artefact, length(artefact["rows"]))
+    if not ok or Enum.any?(positive, fn {_, v} -> not v end), do: System.halt(1)
+  end
+
+  defp census_plant do
+    header("CENSUS-PLANT — setup_all invalidation: every failure AND every invalid test keyed")
+    doc = read(@paths.boundaries)
+
+    rows =
+      Enum.map(doc["boundaries"], fn b ->
+        if b["id"] == @census_subject do
+          b = Map.put(b, "mutation", [@census_plant])
+          Map.put(b, "mutation_spec", Sweep.derive_spec(b))
+        else
+          b
+        end
+      end)
+
+    path = write_tmp(Map.put(doc, "boundaries", rows))
+    tmp = census_tmp("plant")
+
+    out_doc =
+      try do
+        Sweep.sweep(
+          boundaries: path,
+          only: [@census_subject],
+          tmp: tmp,
+          log: &IO.puts("    " <> &1)
+        )
+      after
+        File.rm(path)
+      end
+
+    got = row(out_doc, @census_subject)
+    {_out, artefact} = captured(tmp)
+    {:ok, s} = ExUnitRows.parse_summary(got["suite_summary"])
+    invalid = Enum.filter(artefact["rows"], &(&1["status"] == "invalid"))
+    by_module = got["reddened_by_module"] || %{}
+
+    limbs = [
+      {"the plant invalidated tests (summary: #{s["invalid"]} invalid)", s["invalid"] > 0},
+      {"keyed #{got["reddened_total"]} = #{s["failures"]} failures + #{s["invalid"]} invalid",
+       got["reddened_total"] == s["failures"] + s["invalid"]},
+      {"more than 99 keyed (#{got["reddened_total"]}) — the old cap is gone",
+       got["reddened_total"] > 99},
+      {"all #{length(invalid)} invalid rows are #{@census_invalid_module}, each with file and line",
+       invalid != [] and
+         Enum.all?(invalid, &(&1["module"] == @census_invalid_module and is_integer(&1["line"])))},
+      {"#{@census_invalid_module} carries #{Map.get(by_module, @census_invalid_module, 0)} red " <>
+         "unit(s), at least its #{length(invalid)} invalid",
+       Map.get(by_module, @census_invalid_module, 0) >= length(invalid)},
+      {"unlocated_failures is 0", got["unlocated_failures"] == 0}
+    ]
+
+    IO.puts("")
+    Enum.each(limbs, &report_limb/1)
+    if Enum.any?(limbs, fn {_, v} -> not v end), do: System.halt(1)
+  end
+
+  # One plant per refusal kind, over a given (transcript, artefact). The POSITIVE is the
+  # pair as given, which must pass. A header-shaped line printed by a test must key
+  # nothing and pass, since stdout is never parsed for units any more.
+  defp census_limbs(out, artefact, population) do
+    rows = artefact["rows"]
+    red = Enum.find(rows, &(&1["status"] in ["failed", "invalid"]))
+    passed = Enum.find(rows, &(&1["status"] == "passed"))
+    [first, second | _] = rows
+    with_run = fn changes -> Map.update!(artefact, "run", &Map.merge(&1, changes)) end
+    with_rows = fn rs -> Map.put(artefact, "rows", rs) end
+    forged_header = "101) test printed by a test (Fake.Mod)"
+    coloured_forgery = IO.ANSI.red() <> "1 doctest, 1 test, 0 failures" <> IO.ANSI.reset()
+    genuine = Sweep.read_run(out, artefact).summary
+    units = length(Sweep.read_run(out, artefact).units)
+
+    plants = [
+      {:no_artefact, "the formatter wrote no rows file", {out, :missing, population}},
+      {:summary, "a passed row dropped", {out, with_rows.(List.delete(rows, passed)), nil}},
+      {:summary_count, "a second summary-shaped line printed by a test",
+       {String.replace(out, "\nFinished in", "\n1 doctest, 1 test, 0 failures\nFinished in",
+          global: false
+        ), artefact, population}},
+      {:summary_count, "a COLOURED summary printed by a test before the genuine one (CR F1)",
+       {String.replace(out, "\nFinished in", "\n#{coloured_forgery}\nFinished in", global: false),
+        artefact, population}},
+      {:summary_count, "a COLOURED summary printed after the genuine one (CR F1)",
+       {out <> coloured_forgery <> "\n", artefact, population}},
+      {:incomplete, "run.complete false", {out, with_run.(%{"complete" => false}), population}},
+      {:cross_check, "a module_finished disagreement",
+       {out,
+        with_run.(%{
+          "module_cross_check" => %{"disagreements" => [%{"module" => first["module"]}]}
+        }), population}},
+      {:collision, "two rows on one key",
+       {out, with_rows.([first, Map.put(second, "key", first["key"]) | Enum.drop(rows, 2)]),
+        population}},
+      {:unlocated, "a red row's line set to nil",
+       {out, with_rows.(Enum.map(rows, &if(&1 == red, do: Map.put(&1, "line", nil), else: &1))),
+        population}},
+      {:population, "a row total off the baseline", {out, artefact, population + 1}}
+    ]
+
+    positive =
+      [
+        {"POSITIVE: the run as given passes GUARD 34",
+         Sweep.census(out, artefact, population) == []},
+        {"a genuine summary that is itself COLOURED passes, and is recorded plain",
+         (fn ->
+            o = String.replace(out, genuine, IO.ANSI.red() <> genuine <> IO.ANSI.reset())
+
+            Sweep.census(o, artefact, population) == [] and
+              Sweep.read_run(o, artefact).summary == genuine
+          end).()},
+        {"a header-shaped line printed by a test keys nothing and passes",
+         (fn ->
+            o =
+              String.replace(out, "\nFinished in", "\n#{forged_header}\nFinished in",
+                global: false
+              )
+
+            Sweep.census(o, artefact, population) == [] and
+              length(Sweep.read_run(o, artefact).units) == units
+          end).()}
+      ]
+
+    Enum.each(positive, &report_limb/1)
+
+    refusals =
+      for {kind, name, {o, a, pop}} <- plants do
+        msg =
+          try do
+            Sweep.census!(o, a, pop)
+            nil
+          rescue
+            e in RuntimeError -> e.message
+          end
+
+        line =
+          msg && Enum.find(String.split(msg, "\n"), &String.starts_with?(&1, "GUARD 34: #{kind}"))
+
+        if line do
+          IO.puts("  REFUSED  [#{kind}] #{name}\n           -> #{line}")
+          true
+        else
+          IO.puts(
+            "  ACCEPTED [#{kind}] #{name}   <-- GUARD 34 DID NOT NAME THIS KIND #{inspect(msg)}"
+          )
+
+          false
+        end
+      end
+
+    IO.puts("  (units: no pure plant — M1, the derivation narrowed to `failed`, is its mutation)")
+    Enum.all?(refusals) and Enum.all?(positive, fn {_, v} -> v end)
+  end
+
+  defp synthetic_run do
+    mk = fn module, name, line, status ->
+      %{
+        "key" => module <> "/" <> name,
+        "module" => module,
+        "name" => name,
+        "test_type" => "test",
+        "file" => "test/fake/" <> Macro.underscore(module) <> ".exs",
+        "line" => line,
+        "status" => status
+      }
+    end
+
+    rows =
+      for(i <- 1..120, do: mk.("Fake.FailTest", "test fails #{i}", 100 + i, "failed")) ++
+        for(i <- 1..16, do: mk.("Fake.InvalidTest", "test invalid #{i}", 20 + i, "invalid")) ++
+        for(i <- 1..30, do: mk.("Fake.PassTest", "test passes #{i}", 10 + i, "passed"))
+
+    run = %{
+      "complete" => true,
+      "key_collisions" => [],
+      "module_cross_check" => %{"disagreements" => []}
+    }
+
+    out =
+      "Running ExUnit with seed: 0, max_cases: 64\n\nFinished in 1.0 seconds\n" <>
+        "0 doctests, 166 tests, 120 failures, 16 invalid\n"
+
+    {out, ExUnitRows.artefact(rows, run)}
+  end
+
+  defp census_tmp(stem) do
+    dir =
+      Path.join(System.tmp_dir!(), "etcc-census-#{stem}-#{System.unique_integer([:positive])}")
+
+    File.mkdir_p!(dir)
+    dir
+  end
+
+  # The sweep's last run in `tmp` is the mutated one; its rows and transcript are kept.
+  defp captured(tmp) do
+    rows = Path.join(tmp, "rows.json")
+    {File.read!(rows <> ".log"), Sweep.read_artefact(rows)}
+  end
 
   # --- helpers ---
 

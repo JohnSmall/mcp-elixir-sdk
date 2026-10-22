@@ -58,6 +58,8 @@ defmodule MCP.Conformance.BoundarySweep do
   `mix conformance.sweep --host`.
   """
 
+  alias MCP.Conformance.ExUnitRows
+
   @boundaries "conformance/data/etcc-boundaries.json"
   @probe "conformance/etcc_l2_probe.exs"
   @register "docs/conformance/etcc-register.json"
@@ -347,61 +349,241 @@ defmodule MCP.Conformance.BoundarySweep do
   # ------------------------------------------------------------------
 
   @doc """
-  Runs `mix test --seed 0` and returns `%{summary:, units:, unlocated:, rc:}`.
+  Runs `mix test --seed 0` and returns `%{summary:, units:, unlocated:, rows_total:, rc:}`.
 
-  `units` are `"file:line (Module)"` strings — the register key shape. ExUnit reports
-  the **declaration** line under the failure header and the **assertion** line in the
-  stacktrace; the declaration line is what the artefact keys on, so it is the one taken.
+  `units` are `"file:line (Module)"` strings — the register key shape — one per red
+  runtime test (failed or `setup_all`-invalidated), multiplicity kept. They are read off
+  the ROWS `MCP.Conformance.ExUnitRows` writes, never off the CLI transcript (MES-208):
+  the run attaches that formatter by naming a rows file in `MCP_ETCC_ROWS` for this
+  `mix test` alone, and reads the file back. Stdout is read for ExUnit's summary line
+  only, as the independent witness GUARD 34 reconciles the rows against.
+
+  Every run passes `census!/3` before anything is returned, so every caller — the sweep
+  baseline, every `measure/6`, `record_host!/1`, `--disambiguate` and the controls —
+  refuses a run whose rows do not account for every test.
+
+  Options: `:seed` (default 0), `:rows` (the rows file; defaults to a fresh path under
+  the system tmp dir) and `:population` (the baseline's row total, which a mutated run
+  must reproduce; `nil` skips that one kind). The transcript is kept beside the rows
+  file as `<rows>.log`, so a refusal can be read after the fact.
   """
   def run_suite(opts \\ []) do
+    rows_path = Keyword.get_lazy(opts, :rows, &fresh_rows_path/0)
+    File.mkdir_p!(Path.dirname(rows_path))
+    File.rm(rows_path)
+
     {out, rc} =
       System.cmd("mix", ["test", "--seed", Integer.to_string(Keyword.get(opts, :seed, 0))],
-        stderr_to_stdout: true
+        stderr_to_stdout: true,
+        env: [{ExUnitRows.env_path_var(), rows_path}]
       )
 
-    parse_run(out) |> Map.put(:rc, rc)
+    File.write!(rows_path <> ".log", out)
+    artefact = read_artefact(rows_path)
+    census!(out, artefact, Keyword.get(opts, :population))
+    read_run(out, artefact) |> Map.put(:rc, rc)
   end
 
-  @doc "Parses a `mix test` transcript. Split out from `run_suite/1` so it is testable."
-  def parse_run(out) do
-    lines = String.split(out, "\n")
-
-    {units, unlocated} =
-      lines
-      |> Enum.with_index()
-      |> Enum.reduce({[], 0}, &accumulate_failure(&1, &2, lines))
-
-    %{summary: summary_line(lines), units: Enum.reverse(units), unlocated: unlocated}
+  defp fresh_rows_path do
+    Path.join([
+      System.tmp_dir!(),
+      "etcc-sweep",
+      "rows-#{System.unique_integer([:positive])}.json"
+    ])
   end
 
-  defp accumulate_failure({line, i}, {acc, un}, lines) do
-    case failure_module(line) do
-      nil -> {acc, un}
-      mod -> locate(mod, lines |> Enum.at(i + 1, "") |> String.trim(), acc, un)
-    end
-  end
-
-  # ExUnit prints the DECLARATION line under the failure header; that is the line the
-  # register keys on, so it is the one taken. A header whose next line is not a
-  # `file.exs:line` is counted as UNLOCATED rather than dropped — a failure the parser
-  # could not key is a gap in the measurement, and silence about it is the S8-13 error.
-  defp locate(mod, loc, acc, un) do
-    case Regex.run(~r/\A(\S+\.exs):(\d+)\z/, loc) do
-      [_, file, no] -> {["#{file}:#{no} (#{mod})" | acc], un}
-      _ -> {acc, un + 1}
-    end
-  end
-
-  # "  1) test NAME (Module)" / "  3) doctest Mod.fun/1 (Module)" / property. The module
-  # is the LAST parenthesised group, because a test name may itself contain parentheses.
-  defp failure_module(line) do
-    with true <- Regex.match?(~r/\A\s+\d+\) (test|doctest|property) /, line),
-         [_, mod] <- Regex.run(~r/\(([A-Z][A-Za-z0-9_.]*)\)\s*\z/, line) do
-      mod
+  @doc """
+  Reads the rows file `run_suite/1` named. `:missing` when it is absent or unreadable —
+  `ExUnitRows` rescues its own write error so as never to take the suite down, and this
+  is where that becomes GUARD 34's `no_artefact` rather than an empty run.
+  """
+  def read_artefact(path) do
+    with {:ok, bytes} <- File.read(path),
+         {:ok, %{"rows" => rows} = artefact} when is_list(rows) <- Jason.decode(bytes) do
+      artefact
     else
-      _ -> nil
+      _ -> :missing
     end
   end
+
+  # The two statuses that are a red unit. `invalid` is a test whose module's `setup_all`
+  # failed: it never ran, but the mutation broke it, and the PO ruled (MES-208 `34141`)
+  # that every test is recorded — so it is keyed like any other red (MES-150).
+  @red ~w(failed invalid)
+
+  @doc """
+  The run, read from its transcript and its rows. Pure, so `census/3` and the unit tests
+  can reach it without a suite run.
+
+  `unlocated` counts red rows with no file or line. GUARD 34 refuses any run where it is
+  not zero, so a measured row always records 0; the field is kept for the table's
+  schema until the regeneration ticket decides it (MES-208 R5).
+  """
+  def read_run(out, artefact) do
+    rows = rows_of(artefact)
+
+    {located, unlocated} =
+      rows |> Enum.filter(&(&1["status"] in @red)) |> Enum.split_with(&located?/1)
+
+    %{
+      summary: summary_line(String.split(out, "\n")),
+      units: Enum.map(located, &unit_key/1),
+      unlocated: length(unlocated),
+      rows_total: length(rows)
+    }
+  end
+
+  defp rows_of(%{"rows" => rows}) when is_list(rows), do: rows
+  defp rows_of(_), do: []
+
+  defp located?(row), do: is_binary(row["file"]) and is_integer(row["line"])
+
+  # The ET-CC unit key. `file` is relative to the checkout and `line` is the DECLARATION
+  # line — `tags.file`/`tags.line`, the same pair ExUnit's CLI location line rendered,
+  # so a key taken here is byte-identical to one the transcript parser took (measured on
+  # MES-208: the old parser's 99 Meta keys are a sub-multiset of the 176 taken here).
+  defp unit_key(row), do: "#{row["file"]}:#{row["line"]} (#{row["module"]})"
+
+  # ------------------------------------------------------------------
+  # GUARD 34 — the census: every test recorded, or refuse
+  # ------------------------------------------------------------------
+
+  # Any line shaped like ExUnit's summary — counts, then failures. Broader than
+  # `@summary_rx` on purpose: kind `summary_count` exists to refuse a FORGED summary a
+  # test prints, and a forgery need not be shaped exactly like the real thing.
+  @summary_shape ~r/\A(?:\d+ \w+, )+\d+ failures?\b/
+
+  # ANSI SGR escapes, removed before any line is matched as a summary. This is the
+  # normalisation `ExUnitRows.parse_summary/1` applies before IT matches, so the count
+  # and the reconciliation witness read one language (MES-208 correction round 1, CR F1
+  # `34182`: a coloured forgery was read as the summary by the witness while the count,
+  # matching raw bytes, did not see it).
+  @ansi ~r/\e\[[0-9;]*m/
+
+  @census_kinds ~w(no_artefact summary summary_count incomplete cross_check collision
+                   unlocated units population)a
+
+  @doc "GUARD 34's kinds, in the order `census/3` reports them."
+  def census_kinds, do: @census_kinds
+
+  @doc """
+  GUARD 34. Every violation, as `{kind, detail}`, `[]` when the rows account for every
+  test. Pure.
+
+  Until MES-208 the sweep parsed the CLI transcript for failure headers, and dropped
+  every failure numbered 100 or above (ExUnit stops padding the counter there,
+  `formatter.ex:719-729`) and every `setup_all`-invalidated test (whose header has no
+  `test` in it) — silently, which is the S8-13 error. This guard is what makes a gap
+  in the measurement LOUD:
+
+    * `no_artefact` — the formatter wrote no readable rows file;
+    * `summary` — `ExUnitRows.reconcile/2` disagrees with ExUnit's own summary (per
+      type, failures, invalid, skipped, excluded), or there is no summary line. Totals
+      are re-derived from the rows here, never taken from the file's own `totals`;
+    * `summary_count` — not exactly one summary-shaped line, so a test that prints one
+      cannot supply the witness;
+    * `incomplete` — the run block does not say `complete`;
+    * `cross_check` — the `module_finished` witness disagrees, or is absent;
+    * `collision` — two rows on one key;
+    * `unlocated` — a red row with no file or line;
+    * `units` — the red units derived are not summary failures + invalid, which holds
+      the projection from rows to units that `reconcile/2` cannot see;
+    * `population` — a mutated run whose row total is not the baseline's.
+  """
+  def census(out, :missing, _population),
+    do: [{:no_artefact, "the formatter wrote no readable rows file"}] ++ summary_count(out)
+
+  def census(out, artefact, population) do
+    rows = rows_of(artefact)
+    run = read_run(out, artefact)
+    meta = artefact["run"] || %{}
+    reconciled = ExUnitRows.reconcile(out, ExUnitRows.derive_totals(rows))
+
+    [
+      summary_violation(reconciled),
+      summary_count(out),
+      if(meta["complete"] != true,
+        do: [{:incomplete, "run.complete is #{inspect(meta["complete"])}"}],
+        else: []
+      ),
+      cross_check_violation(meta["module_cross_check"]),
+      collision_violation(ExUnitRows.key_collisions(rows)),
+      if(run.unlocated > 0,
+        do: [{:unlocated, "#{run.unlocated} red row(s) with no file or line"}],
+        else: []
+      ),
+      units_violation(out, run),
+      population_violation(population, run.rows_total)
+    ]
+    |> List.flatten()
+  end
+
+  @doc "Raises one `GUARD 34: <kind> — <detail>` line per violation; `:ok` when there are none."
+  def census!(out, artefact, population) do
+    case census(out, artefact, population) do
+      [] ->
+        :ok
+
+      violations ->
+        raise Enum.map_join(violations, "\n", fn {kind, detail} ->
+                "GUARD 34: #{kind} — #{detail}"
+              end) <>
+                "\nREFUSING this run: its rows do not account for every test (MES-208)."
+    end
+  end
+
+  defp summary_violation(%{"ok" => true}), do: []
+
+  defp summary_violation(%{"error" => error}), do: [{:summary, error}]
+
+  defp summary_violation(%{"checks" => checks}) do
+    bad = for c <- checks, not c["ok"], do: "#{c["name"]} exunit=#{c["exunit"]} rows=#{c["rows"]}"
+    [{:summary, "rows disagree with ExUnit's summary: " <> Enum.join(bad, "; ")}]
+  end
+
+  defp summary_count(out) do
+    n = out |> String.split("\n") |> Enum.count(&summary_shaped?/1)
+    if n == 1, do: [], else: [{:summary_count, "#{n} summary-shaped line(s), not exactly 1"}]
+  end
+
+  # A line is counted when the reconciliation witness itself would read it as a summary
+  # — `ExUnitRows.parse_summary/1` applied to that line alone, so its grammar and its
+  # ANSI normalisation are reached rather than copied, and every line it accepts is
+  # counted by construction — OR when the broader `@summary_shape` matches it after the
+  # same ANSI normalisation. The second disjunct can only over-count, and an over-count
+  # fails closed.
+  defp summary_shaped?(line) do
+    match?({:ok, _}, ExUnitRows.parse_summary(line)) or
+      Regex.match?(@summary_shape, plain(line))
+  end
+
+  defp plain(line), do: line |> String.replace(@ansi, "") |> String.trim()
+
+  defp cross_check_violation(%{"disagreements" => []}), do: []
+
+  defp cross_check_violation(%{"disagreements" => d}) when is_list(d),
+    do: [{:cross_check, "#{length(d)} module_finished disagreement(s)"}]
+
+  defp cross_check_violation(_),
+    do: [{:cross_check, "the run block carries no module cross-check"}]
+
+  defp collision_violation([]), do: []
+  defp collision_violation(c), do: [{:collision, "#{length(c)} key(s) on more than one row"}]
+
+  defp units_violation(out, run) do
+    with {:ok, %{"failures" => f, "invalid" => i}} <- ExUnitRows.parse_summary(out),
+         n when n != f + i <- length(run.units) do
+      [{:units, "#{n} red unit(s) derived, summary says #{f} failures + #{i} invalid"}]
+    else
+      _ -> []
+    end
+  end
+
+  defp population_violation(nil, _total), do: []
+  defp population_violation(n, n), do: []
+
+  defp population_violation(want, got),
+    do: [{:population, "#{got} rows, the unmutated baseline had #{want}"}]
 
   # The trailing clauses are NOT decoration. ExUnit appends `(N excluded)` when
   # `test_helper.exs` excludes the three `:requires_live_harness` tests — which is
@@ -413,9 +595,10 @@ defmodule MCP.Conformance.BoundarySweep do
   # complete host parses exactly as it did before.
   @summary_rx ~r/\A\d+ doctests?, \d+ tests?, \d+ failures?(, \d+ invalid)?( \(\d+ \w+\))*\z/
 
-  defp summary_line(lines) do
+  @doc "ExUnit's summary line, in the string form `suite_summary` records."
+  def summary_line(lines) do
     lines
-    |> Enum.map(&String.trim/1)
+    |> Enum.map(&plain/1)
     |> Enum.filter(&Regex.match?(@summary_rx, &1))
     |> List.last()
   end
@@ -818,7 +1001,7 @@ defmodule MCP.Conformance.BoundarySweep do
     probe_rec = probe_record(script, base_file, base_probe)
 
     log.("  baseline: mix test --seed 0")
-    base = run_suite()
+    base = run_suite(rows: Path.join(tmp, "rows.json"))
 
     if base.units != [] or base.rc != 0 do
       raise "REFUSING to sweep: the UNMUTATED suite is not green (#{base.summary}). " <>
@@ -839,7 +1022,7 @@ defmodule MCP.Conformance.BoundarySweep do
       |> Enum.with_index(1)
       |> Enum.map(fn {b, i} ->
         log.("  [#{i}/#{length(selected)}] #{b["id"]}")
-        measure(b, doc, {script, base_probe}, tmp, log)
+        measure(b, doc, {script, base_probe}, tmp, log, base.rows_total)
       end)
 
     by_id = Map.new(swept, &{&1["id"], &1})
@@ -911,13 +1094,16 @@ defmodule MCP.Conformance.BoundarySweep do
     end
   end
 
-  defp measure(b, doc, {script, base_probe}, tmp, log) do
+  # `population` is the unmutated baseline's row total: a mutation that makes a test
+  # module vanish from the run (rather than fail) is refused by GUARD 34 `population`,
+  # since neither witness inside the run can see a module that never reached it.
+  defp measure(b, doc, {script, base_probe}, tmp, log, population) do
     spec = spec_of(b)
     backups = apply!(spec)
 
     run =
       try do
-        run_suite()
+        run_suite(rows: Path.join(tmp, "rows.json"), population: population)
       after
         revert!(backups)
       end
