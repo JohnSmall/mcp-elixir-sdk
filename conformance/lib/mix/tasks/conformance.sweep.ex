@@ -11,7 +11,7 @@ defmodule Mix.Tasks.Conformance.Sweep do
       mix conformance.sweep --out PATH       # full sweep, write the regenerated table
       mix conformance.sweep --only ID        # one direction (repeatable)
       mix conformance.sweep --disambiguate   # both readings of an ambiguous mutation_spec
-      mix conformance.sweep --emit-spec PATH # (re)derive mutation_spec from the prose
+      mix conformance.sweep --emit-spec PATH # derive mutation_spec for NEW prose lines
       mix conformance.sweep --record-host    # re-measure the baseline, record control.host
 
   ## Cadence
@@ -24,6 +24,22 @@ defmodule Mix.Tasks.Conformance.Sweep do
 
   `--verify` is the exception: it re-measures nothing, and it is **DoD gate 8** (MES-175);
   when it applies is `docs/procedure/gate-8.md`.
+
+  ## `--emit-spec` never re-counts
+
+  `--emit-spec` derives a `mutation_spec` entry only for a prose line that has none yet: a
+  new row, or a line appended after the row's existing entries. An existing entry is kept
+  exactly as recorded. If its FROM no longer occurs as many times as recorded, the task
+  refuses with `GUARD 26: --emit-spec refuses to re-count`, names each entry, and writes
+  nothing. Re-counting would turn guard 26 green while the verdict the entry supports has
+  expired (MES-173). Re-anchor instead, as MES-171 did: name the behaviour the mutation
+  targets, edit the prose and its entry together by hand, then measure with
+  `--check --only ID`. Any entry, existing or derived, that records `occurrences` other
+  than a positive integer is refused by guard 27.
+
+  **Residual:** "existing" means present in the table as it is read. Deleting a row's
+  `mutation_spec`, or hand-editing a recorded count, and then emitting still derives
+  afresh. Nothing compares the table with its committed history.
 
   ## `--host`, and why a git diff is not enough
 
@@ -281,36 +297,30 @@ defmodule Mix.Tasks.Conformance.Sweep do
     Mix.shell().info("wrote #{path}")
   end
 
-  # --- --emit-spec: derive mutation_spec from the committed prose ---
+  # --- --emit-spec: derive mutation_spec for NEW prose lines, never re-count ---
 
   # `mutation_spec` is an ADDITION, never a replacement: the authored `mutation` prose
   # stays byte-identical so AC1's byte-comparison is about the bytes MES-81 committed.
-  # An existing `replace` is PRESERVED — the reading of a multi-occurrence FROM was
-  # settled by measurement (`--disambiguate`), and re-deriving must not quietly discard
-  # that answer.
+  # An existing entry is carried over VERBATIM, `replace` and `occurrences` included:
+  # `replace` was settled by measurement (`--disambiguate`), and a re-counted
+  # `occurrences` is MES-173's hazard. `Sweep.emit_spec/1` refuses before anything is
+  # written, so a refusal leaves PATH as it was.
   defp emit_spec(path) do
     doc = boundaries()
+    emitted = Sweep.emit_spec(doc)
+    write(emitted, path)
 
-    rows =
-      Enum.map(doc["boundaries"], fn b ->
-        overrides =
-          (b["mutation_spec"] || [])
-          |> Enum.with_index()
-          |> Map.new(fn {e, i} -> {i, e["replace"] || "all"} end)
-
-        Map.put(b, "mutation_spec", Sweep.derive_spec(b, overrides))
-      end)
-
-    doc = %{doc | "boundaries" => rows}
-    Sweep.check_spec_prose!(rows)
-    Sweep.check_spec_resolves!(rows)
-    write(doc, path)
+    kept = spec_total(doc)
+    total = spec_total(emitted)
 
     Mix.shell().info(
-      "  #{Enum.sum(Enum.map(rows, &length(&1["mutation_spec"])))} entries; " <>
+      "  #{total} entries (#{kept} existing, kept as recorded; #{total - kept} derived new); " <>
         "guards 26 and 27 pass over them"
     )
   end
+
+  defp spec_total(doc),
+    do: Enum.sum(Enum.map(doc["boundaries"], &length(&1["mutation_spec"] || [])))
 
   # --- --disambiguate: settle a multi-occurrence FROM by RE-MEASUREMENT ---
 

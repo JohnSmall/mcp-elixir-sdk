@@ -12,6 +12,8 @@
 #     mix run conformance/controls/etcc_boundary_sweep_controls.exs census
 #     mix run conformance/controls/etcc_boundary_sweep_controls.exs census-real
 #     mix run conformance/controls/etcc_boundary_sweep_controls.exs census-plant
+#     mix run conformance/controls/etcc_boundary_sweep_controls.exs emit
+#     mix run conformance/controls/etcc_boundary_sweep_controls.exs emit-mutation
 #
 # WHY A SCRIPT AND NOT AN ExUnit TEST. Same reason as `etcc_register_controls.exs`: a
 # test file added here lands in the very suite the sweep measures. Under `test/mcp/` it
@@ -51,11 +53,13 @@ defmodule ETCCBoundarySweepControls do
   def run(["census"]), do: census()
   def run(["census-real"]), do: census_real()
   def run(["census-plant"]), do: census_plant()
+  def run(["emit"]), do: emit()
+  def run(["emit-mutation"]), do: emit_mutation()
 
   def run(_) do
     IO.puts(
       "usage: guards | prose | harness | host | drift | register | prefix | probe | " <>
-        "probe-mutation | census | census-real | census-plant"
+        "probe-mutation | census | census-real | census-plant | emit | emit-mutation"
     )
 
     System.halt(2)
@@ -72,6 +76,7 @@ defmodule ETCCBoundarySweepControls do
     # Subjects found by PREDICATE, never by id, so a later re-measurement that moves a
     # verdict does not silently leave a control pointing at the wrong row.
     dead = Enum.find(rows, &(&1["verdict"] == "dead"))
+    live = Enum.find(rows, &(&1["verdict"] == "live"))
 
     # Guard 23's distinguishing subject: live count ZERO but verdict LIVE. Guard 20 in
     # etcc_register.ex comprehends over `verdict: "dead"` only, so it cannot see this row
@@ -112,7 +117,12 @@ defmodule ETCCBoundarySweepControls do
       {27, "a mutation_spec with MORE entries than the prose it is a reading of",
        fn rs ->
          put(rs, dead, %{"mutation_spec" => [hd(dead["mutation_spec"]) | dead["mutation_spec"]]})
-       end}
+       end},
+      {27,
+       "a LIVE direction recording occurrences 0 for a FROM that occurs nowhere — no guard saw it before MES-173",
+       fn rs -> put(rs, live, zero_site()) end},
+      {27, "a DEAD direction recording occurrences 0 for a FROM that occurs nowhere",
+       fn rs -> put(rs, dead, zero_site()) end}
     ]
 
     results =
@@ -469,6 +479,7 @@ defmodule ETCCBoundarySweepControls do
     doc = read(@paths.boundaries)
     rows = doc["boundaries"]
     dead = Enum.find(rows, &(&1["verdict"] == "dead"))
+    live = Enum.find(rows, &(&1["verdict"] == "live"))
     zero_live_but_live = Enum.find(rows, &(Sweep.live_count(&1) == 0 and &1["verdict"] == "live"))
 
     cases = [
@@ -480,6 +491,8 @@ defmodule ETCCBoundarySweepControls do
        fn rs -> put(rs, dead, %{"l2" => Map.put(dead["l2"], "call_site_enumeration", "")}) end},
       {27, :refuse, "drift a mutation_spec entry away from its prose",
        fn rs -> put(rs, dead, %{"mutation_spec" => bump(dead, "to", "ZZ_DRIFTED")}) end},
+      {27, :refuse, "record occurrences 0 on a LIVE direction (MES-173)",
+       fn rs -> put(rs, live, zero_site()) end},
       {26, :accept, "break a mutation_spec's resolution against lib/ (NEGATIVE control)",
        fn rs -> put(rs, dead, %{"mutation_spec" => bump(dead, "occurrences", 99)}) end}
     ]
@@ -1140,6 +1153,398 @@ defmodule ETCCBoundarySweepControls do
   defp captured(tmp) do
     rows = Path.join(tmp, "rows.json")
     {File.read!(rows <> ".log"), Sweep.read_artefact(rows)}
+  end
+
+  # --- emit: --emit-spec never re-counts, and no caller accepts a zero-site entry ---
+
+  # MES-173. `--emit-spec` used to re-derive EVERY entry from the prose and then check the
+  # result against the very tree it was counted from, so guard 26 was tautological over
+  # its output: on a drifted tree it wrote Meta widened to 2 sites and Plug's error entry
+  # as a 0-site no-op, and `--verify` then passed. And a 0 on a LIVE row was seen by no
+  # guard at all (24 is DEAD-only; 26 passes a 0 whose FROM is indeed absent).
+  #
+  #   * P1-P4 POSITIVE — the committed table emits unchanged; a new row and an appended
+  #     line still derive; a planted `replace: "first"` survives.
+  #   * E1-E3 — an existing entry is never re-counted, in either direction, and an edited
+  #     existing slot is not quietly treated as new.
+  #   * Z1-Z5 — guard 27's positivity, through every caller: `check_table!/2` with the
+  #     tree check on and off (gate 8 and the register build), `emit_spec/1` and
+  #     `apply!/1`.
+  #   * W1-W2 — the TASK, in process, so the wiring is shown and not just the helper. W2
+  #     plants a duplicate anchor in the real `lib/mcp/protocol/meta.ex` (PM ruling 34227,
+  #     Q3): it refuses to start unless `lib/` is clean, restores the bytes in `after`,
+  #     and halts non-zero if the restore does not compare equal.
+  #
+  # At a tip without `Sweep.emit_spec/1` (main before MES-173) the limbs that call it
+  # report UNDEFINED; that is a red, but not a discriminating one (ruling 34227, Q4). The
+  # discriminating evidence for them is `emit-mutation`.
+  @nowhere "ZZ_MES173_OCCURS_NOWHERE"
+  @w2_file "lib/mcp/protocol/meta.ex"
+
+  defp emit do
+    header("EMIT — --emit-spec never re-counts; a zero-site entry is refused by every caller")
+    results = Enum.map(emit_limbs(), fn {_key, limb} -> limb.() end)
+    IO.puts("")
+    Enum.each(results, &report_limb/1)
+    IO.puts("\n  #{Enum.count(results, &elem(&1, 1))}/#{length(results)} limbs hold.")
+    if Enum.any?(results, fn {_, ok} -> not ok end), do: System.halt(1)
+  end
+
+  defp emit_limbs do
+    [
+      p1: &p1_committed/0,
+      p2: &p2_new_row/0,
+      p3: &p3_appended/0,
+      p4: &p4_replace_first/0,
+      e1: fn -> e_recount("E1 an existing entry widened 1 -> 2 is refused, not re-counted", 2) end,
+      e2: fn ->
+        e_recount("E2 an existing entry narrowed 1 -> 0 is refused, not re-counted", 0)
+      end,
+      e3: &e3_changed_slot/0,
+      z1: fn -> z_table("Z1", "live") end,
+      z2: fn -> z_table("Z2", "dead") end,
+      z3: &z3_new_slot_zero/0,
+      z4: &z4_apply/0,
+      z5: &z5_non_positive/0,
+      w1: &w1_task_committed/0,
+      w2: &w2_task_drift/0
+    ]
+  end
+
+  defp p1_committed do
+    doc = read(@paths.boundaries)
+
+    guarded("P1 the committed table emits unchanged", fn ->
+      out = Sweep.emit_spec(doc)
+      n = Enum.sum(Enum.map(doc["boundaries"], &length(&1["mutation_spec"] || [])))
+      IO.puts("  P1  reach: #{length(doc["boundaries"])} rows, #{n} entries kept as recorded")
+      out == doc and n > 0
+    end)
+  end
+
+  defp p2_new_row do
+    in_fixture("ANCHOR_A\n", fn f ->
+      guarded("P2 a new row (no mutation_spec) derives its count, replace all", fn ->
+        row = fixture_row("live", [prose(f, "ANCHOR_A", "X")], nil)
+        [b] = Sweep.emit_spec(%{"boundaries" => [row]})["boundaries"]
+        b["mutation_spec"] == [entry(f, "ANCHOR_A", "X", 1)]
+      end)
+    end)
+  end
+
+  defp p3_appended do
+    in_fixture("ANCHOR_A ANCHOR_B ANCHOR_B\n", fn f ->
+      guarded("P3 an appended prose line derives; the existing prefix is untouched", fn ->
+        kept = entry(f, "ANCHOR_A", "X", 1)
+        row = fixture_row("live", [prose(f, "ANCHOR_A", "X"), prose(f, "ANCHOR_B", "Y")], [kept])
+        [b] = Sweep.emit_spec(%{"boundaries" => [row]})["boundaries"]
+        b["mutation_spec"] == [kept, entry(f, "ANCHOR_B", "Y", 2)]
+      end)
+    end)
+  end
+
+  defp p4_replace_first do
+    in_fixture("ANCHOR_A ANCHOR_A\n", fn f ->
+      guarded("P4 a planted replace \"first\" survives emission", fn ->
+        kept = entry(f, "ANCHOR_A", "X", 2, "first")
+        row = fixture_row("dead", [prose(f, "ANCHOR_A", "X")], [kept])
+        [b] = Sweep.emit_spec(%{"boundaries" => [row]})["boundaries"]
+        b["mutation_spec"] == [kept]
+      end)
+    end)
+  end
+
+  defp e_recount(name, now) do
+    in_fixture(String.duplicate("ANCHOR_A\n", now), fn f ->
+      guarded(name, fn ->
+        row = fixture_row("live", [prose(f, "ANCHOR_A", "X")], [entry(f, "ANCHOR_A", "X", 1)])
+        msg = refusal_of(fn -> Sweep.emit_spec(%{"boundaries" => [row]}) end)
+        show(name, msg)
+
+        msg != nil and String.starts_with?(msg, "GUARD 26: --emit-spec refuses to re-count") and
+          msg =~ "#{row["id"]} entry 1, #{f}: recorded 1, tree has #{now}" and
+          msg =~ "mix conformance.sweep --check --only #{inspect(row["id"])}"
+      end)
+    end)
+  end
+
+  defp e3_changed_slot do
+    in_fixture("ANCHOR_A ANCHOR_B\n", fn f ->
+      name = "E3 prose edited at an existing slot is refused by guard 27, not treated as new"
+
+      guarded(name, fn ->
+        row = fixture_row("live", [prose(f, "ANCHOR_B", "X")], [entry(f, "ANCHOR_A", "X", 1)])
+        msg = refusal_of(fn -> Sweep.emit_spec(%{"boundaries" => [row]}) end)
+        show(name, msg)
+        msg != nil and msg =~ "GUARD 27: 1 mutation_spec entry/ies do not render back"
+      end)
+    end)
+  end
+
+  # Z1/Z2 — the committed table with one row's mutation made zero-site. Guard 26 ALONE
+  # must accept it (the FROM really is absent), so the refusal is shown to be positivity's
+  # and not a by-product of resolution.
+  defp z_table(tag, verdict) do
+    rows = read(@paths.boundaries)["boundaries"]
+    subject = Enum.find(rows, &(&1["verdict"] == verdict))
+    planted = put(rows, subject, zero_site())
+    name = "#{tag} a #{String.upcase(verdict)} row recording occurrences 0 is refused by guard 27"
+
+    guarded(name, fn ->
+      g26_alone = refusal_of(fn -> Sweep.check_spec_resolves!(planted) end)
+      gate8 = refusal_of(fn -> Sweep.check_table!(planted) end)
+      register = refusal_of(fn -> Sweep.check_table!(planted, check_tree: false) end)
+      emit = refusal_of(fn -> Sweep.emit_spec(%{"boundaries" => planted}) end)
+
+      IO.puts("  #{tag}  on #{subject["id"]}")
+      IO.puts("      guard 26 alone:           #{verdict_of(g26_alone)}")
+      IO.puts("      check_table! (gate 8):    #{verdict_of(gate8)}")
+      IO.puts("      check_table! (register):  #{verdict_of(register)}")
+      IO.puts("      emit_spec/1:              #{verdict_of(emit)}")
+
+      g26_alone == nil and Enum.all?([gate8, register, emit], &siteless?/1)
+    end)
+  end
+
+  defp z3_new_slot_zero do
+    in_fixture("ANCHOR_A\n", fn f ->
+      name = "Z3 a NEW slot that derives occurrences 0 is refused at emission"
+
+      guarded(name, fn ->
+        row = fixture_row("live", [prose(f, @nowhere, "X")], nil)
+        msg = refusal_of(fn -> Sweep.emit_spec(%{"boundaries" => [row]}) end)
+        show(name, msg)
+        siteless?(msg)
+      end)
+    end)
+  end
+
+  defp z4_apply do
+    in_fixture("ANCHOR_A\n", fn f ->
+      name = "Z4 apply! refuses a zero-site entry before writing anything"
+
+      guarded(name, fn ->
+        spec = [entry(f, "ANCHOR_A", "X", 1), entry(f, @nowhere, "Y", 0)]
+        msg = refusal_of(fn -> Sweep.apply!(spec) end)
+        show(name, msg)
+        intact = File.read!(f) == "ANCHOR_A\n"
+        IO.puts("      fixture bytes intact: #{intact}")
+        msg != nil and String.starts_with?(msg, "GUARD 27: mutation_spec entry 2,") and intact
+      end)
+    end)
+  end
+
+  defp z5_non_positive do
+    in_fixture("ANCHOR_A\n", fn f ->
+      name = "Z5 occurrences -1, nil and \"1\" are each refused by guard 27 and by apply!"
+
+      guarded(name, fn ->
+        Enum.all?([-1, nil, "1"], fn n ->
+          e = entry(f, "ANCHOR_A", "X", n)
+          row = fixture_row("live", [prose(f, "ANCHOR_A", "X")], [e])
+          table = refusal_of(fn -> Sweep.check_spec_prose!([row]) end)
+          applied = refusal_of(fn -> Sweep.apply!([e]) end)
+
+          IO.puts(
+            "  Z5  occurrences #{inspect(n)}: guard 27 #{verdict_of(table)}; apply! #{verdict_of(applied)}"
+          )
+
+          siteless?(table) and applied != nil and String.starts_with?(applied, "GUARD 27:")
+        end)
+      end)
+    end)
+  end
+
+  defp w1_task_committed do
+    out = tmp_path("w1.json")
+
+    guarded("W1 the task emits the committed table byte-identically", fn ->
+      Mix.Tasks.Conformance.Sweep.run(["--emit-spec", out])
+      File.read!(out) == File.read!(@paths.boundaries)
+    end)
+  after
+    File.rm(tmp_path("w1.json"))
+  end
+
+  # W2 — the real tree, drifted. Guarded per ruling 34227 Q3.
+  defp w2_task_drift do
+    name = "W2 the task refuses a drifted real anchor and leaves its output untouched"
+
+    unless lib_clean?() do
+      IO.puts("  W2  REFUSING TO START: `git status --porcelain -- lib/` is not empty")
+      System.halt(1)
+    end
+
+    target =
+      read(@paths.boundaries)["boundaries"]
+      |> Enum.flat_map(&(&1["mutation_spec"] || []))
+      |> Enum.find(
+        &(&1["file"] == @w2_file and &1["occurrences"] == 1 and not (&1["from"] =~ "\n"))
+      )
+
+    original = File.read!(@w2_file)
+    out = tmp_path("w2.json")
+    File.write!(out, "SENTINEL\n")
+
+    try do
+      File.write!(@w2_file, original <> "\n# MES-173 control plant: " <> target["from"] <> "\n")
+
+      guarded(name, fn ->
+        msg = refusal_of(fn -> Mix.Tasks.Conformance.Sweep.run(["--emit-spec", out]) end)
+        show(name, msg)
+        untouched = File.read!(out) == "SENTINEL\n"
+        IO.puts("      output untouched: #{untouched}")
+
+        msg != nil and String.starts_with?(msg, "GUARD 26: --emit-spec refuses to re-count") and
+          msg =~ "#{@w2_file}: recorded 1, tree has 2" and untouched
+      end)
+    after
+      File.write!(@w2_file, original)
+      File.rm(out)
+
+      unless File.read!(@w2_file) == original and lib_clean?() do
+        IO.puts("  W2  RESTORE FAILED: #{@w2_file} does not match its saved bytes")
+        System.halt(1)
+      end
+    end
+  end
+
+  # --- emit-mutation: each new refusal shown able to FAIL, in memory ---
+
+  # Recompiles the instrument IN MEMORY with one refusal undone, requires the limbs that
+  # hold it to go RED, then recompiles the committed source and requires them green
+  # again. Nothing is written to disk. Each anchor is required at exactly one occurrence
+  # before it is mutated, so a moved anchor fails loud rather than mutating nothing.
+  #
+  #   * M1 — `emit_spec/1` re-derives every entry again (the pre-MES-173 behaviour).
+  #   * M2 — guard 27's positivity predicate accepts everything.
+  #   * M3 — the TASK's `--emit-spec` reverted to its pre-MES-173 body, so W2 shows the
+  #     wiring and not just the helper.
+  @task_src "conformance/lib/mix/tasks/conformance.sweep.ex"
+
+  defp emit_mutants do
+    [
+      {"M1 emit_spec/1 re-counts existing entries", @sweep_src,
+       "    refuse_recount!(rows)\n\n    emitted =\n      Enum.map(rows, fn b ->\n        spec = spec_of(b)\n" <>
+         "        new = derive_spec(%{\"mutation\" => Enum.drop(b[\"mutation\"] || [], length(spec))})\n" <>
+         "        Map.put(b, \"mutation_spec\", spec ++ new)\n",
+       "    emitted =\n      Enum.map(rows, fn b ->\n" <>
+         "        ov = spec_of(b) |> Enum.with_index() |> Map.new(fn {e, i} -> {i, e[\"replace\"] || \"all\"} end)\n" <>
+         "        Map.put(b, \"mutation_spec\", derive_spec(b, ov))\n", [:e1, :e2]},
+      {"M2 guard 27's positivity predicate accepts everything", @sweep_src,
+       "  def positive_occurrences?(entry),\n    do: is_integer(entry[\"occurrences\"]) and entry[\"occurrences\"] > 0\n",
+       "  def positive_occurrences?(_entry), do: true\n", [:z1, :z2, :z3, :z4, :z5]},
+      {"M3 the task's --emit-spec reverted to re-deriving", @task_src,
+       "    emitted = Sweep.emit_spec(doc)\n",
+       "    rows =\n      Enum.map(doc[\"boundaries\"], fn b ->\n" <>
+         "        ov = (b[\"mutation_spec\"] || []) |> Enum.with_index() |> Map.new(fn {e, i} -> {i, e[\"replace\"] || \"all\"} end)\n" <>
+         "        Map.put(b, \"mutation_spec\", Sweep.derive_spec(b, ov))\n      end)\n\n" <>
+         "    Sweep.check_spec_prose!(rows)\n    Sweep.check_spec_resolves!(rows)\n" <>
+         "    emitted = %{doc | \"boundaries\" => rows}\n", [:w2]}
+    ]
+  end
+
+  defp emit_mutation do
+    header("EMIT-MUTATION — each MES-173 refusal goes RED when undone, green when restored")
+    limbs = emit_limbs()
+    Code.put_compiler_option(:ignore_module_conflict, true)
+
+    results =
+      Enum.flat_map(emit_mutants(), fn {name, path, anchor, mutant, keys} ->
+        src = File.read!(path)
+        n = src |> String.split(anchor) |> length() |> Kernel.-(1)
+        IO.puts("\n  #{name}\n    anchor occurrences in #{path}: #{n} (must be 1)")
+        if n != 1, do: System.halt(1)
+
+        try do
+          Code.compile_string(String.replace(src, anchor, mutant), path)
+          IO.puts("    MUTANT:")
+          red = Enum.map(keys, fn k -> limbs[k].() end)
+
+          Code.compile_string(src, path)
+          IO.puts("    RESTORED:")
+          green = Enum.map(keys, fn k -> limbs[k].() end)
+
+          Enum.map(red, fn {l, ok} -> {"#{name}: #{l} goes RED", not ok} end) ++
+            Enum.map(green, fn {l, ok} -> {"restored: #{l} green again", ok} end)
+        after
+          Code.compile_string(src, path)
+        end
+      end)
+
+    IO.puts("")
+    Enum.each(results, &report_limb/1)
+    IO.puts("\n  #{Enum.count(results, &elem(&1, 1))}/#{length(results)} as expected.")
+    if Enum.any?(results, fn {_, ok} -> not ok end), do: System.halt(1)
+  end
+
+  # --- emit helpers ---
+
+  # A row's mutation made zero-site: a real file, a FROM that occurs nowhere in it, and a
+  # recorded count of 0 — so guard 26 is satisfied and only positivity can refuse it.
+  defp zero_site do
+    %{
+      "mutation" => [prose(@w2_file, @nowhere, "X")],
+      "mutation_spec" => [entry(@w2_file, @nowhere, "X", 0)]
+    }
+  end
+
+  defp fixture_row(verdict, mutation, spec) do
+    base = Enum.find(read(@paths.boundaries)["boundaries"], &(&1["verdict"] == verdict))
+    Map.merge(base, %{"mutation" => mutation, "mutation_spec" => spec})
+  end
+
+  defp prose(f, from, to), do: Sweep.render_prose(%{"file" => f, "from" => from, "to" => to})
+
+  defp entry(f, from, to, n, replace \\ "all"),
+    do: %{"file" => f, "from" => from, "to" => to, "occurrences" => n, "replace" => replace}
+
+  defp in_fixture(bytes, fun) do
+    f = tmp_path("fixture.ex")
+    File.write!(f, bytes)
+
+    try do
+      fun.(f)
+    after
+      File.rm(f)
+    end
+  end
+
+  defp tmp_path(stem), do: Path.join(System.tmp_dir!(), "etcc-emit-#{System.pid()}-#{stem}")
+
+  # A limb as `{name, ok}`. A call to a function this tip does not define is reported as
+  # such and counted red, rather than crashing the mode (main before MES-173).
+  defp guarded(name, fun) do
+    {name, fun.()}
+  rescue
+    e in UndefinedFunctionError ->
+      IO.puts("  UNDEFINED AT THIS TIP  #{name}: #{Exception.message(e)}")
+      {name <> " [UNDEFINED at this tip]", false}
+  end
+
+  defp refusal_of(fun) do
+    fun.()
+    nil
+  rescue
+    e in RuntimeError -> Exception.message(e)
+  end
+
+  defp siteless?(msg),
+    do:
+      msg != nil and
+        msg =~
+          ~r/\AGUARD 27: \d+ mutation_spec entry\/ies do not record a positive integer occurrences:/
+
+  defp verdict_of(nil), do: "ACCEPTED"
+  defp verdict_of(msg), do: "REFUSED -> " <> first_line(msg)
+
+  defp show(name, msg) do
+    IO.puts("  #{name |> String.split(" ") |> hd()}  #{verdict_of(msg)}")
+  end
+
+  defp lib_clean? do
+    {out, 0} = System.cmd("git", ["status", "--porcelain", "--", "lib/"])
+    out == ""
   end
 
   # --- helpers ---

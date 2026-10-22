@@ -28,7 +28,11 @@ it.
   recorded. **This is the one guard that reads the tree**; at `b5b277e` all 194 entries,
   over 50 directions, name files under `lib/`;
 - **27** — every `mutation_spec` entry renders back to its committed `mutation` prose,
-  byte for byte, in order and in count.
+  byte for byte, in order and in count; and, since MES-173, records `occurrences` as a
+  **positive integer**, whatever the direction's verdict. A zero-site mutation replaces
+  nothing, so it reddens nothing and establishes nothing. Guard 24 checks DEAD rows only,
+  and guard 26 passes a recorded 0 whose FROM is indeed absent, so before MES-173 a 0 on a
+  LIVE row was seen by no guard. The pass line and the five scanned keys are unchanged.
 
 **Applicability — the gate-6 form**, three dots, with this exact command (`CLAUDE.md`
 item 8 carries the same bytes):
@@ -116,8 +120,12 @@ included; **29.5 s** cold (no `_build`) — the project compile gates 2 and 5 al
    repaired.
 2. **Count, not meaning.** Guard 26 compares occurrence counts. An edit that keeps FROM's
    count but changes what it means, or moves it into a different function, passes. On the
-   repair side the same hole is MES-173: `--emit-spec` re-counts, and turns 26/27 green
-   without re-anchoring.
+   repair side, MES-173 closed the tool path: `--emit-spec` used to re-count every entry,
+   turning 26/27 green without re-anchoring, and now keeps an existing entry as recorded
+   and refuses (`GUARD 26: --emit-spec refuses to re-count`) when the tree no longer
+   matches it. **Residual:** "existing" means present in the table as read. Deleting a
+   row's `mutation_spec`, or hand-editing a recorded count, then emitting still derives
+   afresh (PM ruling, MES-173 comment 34227, Q2); the review is what sees that.
 3. **First failure only.** The guards raise in order, 23 to 27, so a second violation
    shows only after the first is fixed. Re-run until green.
 4. **Working tree, not git objects.** Guard 26 reads files relative to the cwd. The task
@@ -148,7 +156,9 @@ included; **29.5 s** cold (no `_build`) — the project compile gates 2 and 5 al
 **Repairing a red GUARD 26.** The branch re-anchors the entry to the behaviour its
 mutation targets, as MES-171 did, re-establishing the mutation against that behaviour. It
 does **not** re-count the entry to match the tree — that is MES-173's hazard, and it turns
-the guard green while the verdict it supports has expired.
+the guard green while the verdict it supports has expired. `--emit-spec` refuses to
+re-count since MES-173, so a re-count now has to be made by hand: edit the prose and its
+`mutation_spec` entry together, then measure with `mix conformance.sweep --check --only ID`.
 
 ## Merge-gate checklist item (cite this subsection from the review brief)
 
@@ -165,9 +175,18 @@ the guard green while the verdict it supports has expired.
 
 ## Evidence
 
+`conformance/controls/etcc_boundary_sweep_controls.exs emit` (MES-173) — `--emit-spec`
+never re-counts, and guard 27's positivity refuses through every caller: `check_table!/2`
+with the tree check on and off, `emit_spec/1`, `apply!/1`, and the task driven in process
+(W2 plants a duplicate anchor in `lib/mcp/protocol/meta.ex`, refuses to start unless
+`lib/` is clean, and halts non-zero if the restore does not compare equal).
+`... emit-mutation` undoes each new refusal in memory, requires the limbs holding it to go
+red, then requires them green on the restored source.
+
 `conformance/controls/etcc_boundary_sweep_controls.exs guards` — each guard broken on a
 copy of the table, and the refusal required: **12/12** guard mutations fired, the unmutated
-table passes, reach 50 rows; exit 0, 0.82 s at `b5b277e`. It calls `check_table!/1`
+table passes, reach 50 rows; exit 0, 0.82 s at `b5b277e`. MES-173 adds two guard-27 cases
+(a recorded 0 on a LIVE row and on a DEAD row), so the mode reports **14/14**. It calls `check_table!/1`
 directly, not the task, so the task's exit-status correspondence rests on the cases above;
 a control for it is a separate backlog ticket.
 

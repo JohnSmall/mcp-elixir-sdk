@@ -292,6 +292,86 @@ defmodule MCP.Conformance.BoundarySweep do
     file |> File.read!() |> String.split(from) |> length() |> Kernel.-(1)
   end
 
+  @doc """
+  Guard 27's positivity predicate: a recorded mutation has at least one site.
+
+  `occurrences: 0` is a mutation that replaces nothing, so it reddens nothing and
+  establishes nothing, LIVE or DEAD. Guard 24 cannot see it on a LIVE row, and guard 26
+  passes it whenever FROM is indeed absent. Shared by `check_spec_prose!/1`, `apply!/1`
+  and `emit_spec/1`, so no caller can apply or emit a zero-site mutation (MES-173).
+  """
+  def positive_occurrences?(entry),
+    do: is_integer(entry["occurrences"]) and entry["occurrences"] > 0
+
+  @doc """
+  `--emit-spec`'s reading of a boundaries document. Returns the document with every row's
+  `mutation_spec` completed from its prose, or raises before anything is written.
+
+  An EXISTING entry — index `i` below the length of the row's input `mutation_spec` — is
+  carried over verbatim and never re-derived. Re-counting it is MES-173's hazard: it
+  turns guard 26 green over a tree that moved, while the verdict the entry supports has
+  expired (MES-171's Meta widened to 9 sites, Plug's error entry a 0-site no-op). So,
+  in order:
+
+    1. the existing prefix must render back to its prose and record a positive count
+       (guard 27, on the prefix);
+    2. each existing entry's FROM must still occur as many times as recorded, or the
+       emission refuses under GUARD 26 and names the re-anchor procedure.
+
+  Only NEW slots, prose indices at or beyond the existing prefix, are derived, with
+  `replace: "all"`. The completed document then passes guards 27 and 26 in full, so a new
+  slot that derives zero is refused too.
+
+  Stated residual: this protects the input as presented, not its history. Deleting a
+  row's `mutation_spec`, or hand-editing a recorded count, then emitting, still derives
+  afresh (PM ruling 34227, Q2).
+  """
+  def emit_spec(%{"boundaries" => rows} = doc) do
+    rows |> Enum.map(&existing_prefix/1) |> check_spec_prose!()
+    refuse_recount!(rows)
+
+    emitted =
+      Enum.map(rows, fn b ->
+        spec = spec_of(b)
+        new = derive_spec(%{"mutation" => Enum.drop(b["mutation"] || [], length(spec))})
+        Map.put(b, "mutation_spec", spec ++ new)
+      end)
+
+    check_spec_prose!(emitted)
+    check_spec_resolves!(emitted)
+    %{doc | "boundaries" => emitted}
+  end
+
+  # The row as guard 27 should judge its existing entries: the prose cut to the spec's
+  # length, so a prose line appended for a new slot is not a mismatch. A spec LONGER than
+  # its prose keeps the whole prose, and guard 27's length check refuses it.
+  defp existing_prefix(b),
+    do: Map.put(b, "mutation", Enum.take(b["mutation"] || [], length(spec_of(b))))
+
+  defp refuse_recount!(rows) do
+    drifted =
+      for b <- rows,
+          {e, i} <- Enum.with_index(spec_of(b), 1),
+          actual = occurrences(e["file"], e["from"]),
+          actual != e["occurrences"],
+          do:
+            {b["id"],
+             "#{b["id"]} entry #{i}, #{e["file"]}: recorded #{e["occurrences"]}, tree has #{actual}"}
+
+    if drifted != [] do
+      ids = drifted |> Enum.map(&elem(&1, 0)) |> Enum.uniq()
+
+      raise "GUARD 26: --emit-spec refuses to re-count #{length(drifted)} existing " <>
+              "mutation_spec entry/ies:\n  " <>
+              Enum.map_join(drifted, "\n  ", &elem(&1, 1)) <>
+              "\nRe-counting turns guard 26 green while the verdict it supports has expired." <>
+              "\nRe-anchor instead (MES-171): name the behaviour the mutation targets, edit the" <>
+              "\nmutation prose and its mutation_spec entry together by hand, then measure with\n  " <>
+              Enum.map_join(ids, "\n  ", &"mix conformance.sweep --check --only #{inspect(&1)}") <>
+              "\n(docs/procedure/gate-8.md, 'Repairing a red GUARD 26')."
+    end
+  end
+
   # ------------------------------------------------------------------
   # applying and reverting
   # ------------------------------------------------------------------
@@ -303,10 +383,11 @@ defmodule MCP.Conformance.BoundarySweep do
   Raises before touching anything if any entry does not resolve with its recorded
   occurrence count — a spec that no longer resolves means `lib/` moved under it, which is
   the condition this whole module exists to detect, and it must fail loud rather than
-  mutate something else.
+  mutate something else. An entry recording no site at all is refused first, by guard
+  27's predicate: a zero-site spec would "apply" cleanly and change nothing (MES-173).
   """
   def apply!(spec) do
-    Enum.each(spec, &resolve!/1)
+    spec |> Enum.with_index(1) |> Enum.each(&resolve!/1)
 
     backups =
       spec
@@ -332,7 +413,14 @@ defmodule MCP.Conformance.BoundarySweep do
   @doc "Restores the exact bytes `apply!/1` saved. Always call this from an `after`."
   def revert!(backups), do: Enum.each(backups, fn {path, bytes} -> File.write!(path, bytes) end)
 
-  defp resolve!(%{"file" => f, "from" => from, "occurrences" => n} = e) do
+  defp resolve!({%{"file" => f, "from" => from} = e, i}) do
+    n = e["occurrences"]
+
+    unless positive_occurrences?(e) do
+      raise "GUARD 27: mutation_spec entry #{i}, #{f}: occurrences #{inspect(n)} is not a " <>
+              "positive integer, and a zero-site mutation is a no-op. Nothing was applied."
+    end
+
     actual = occurrences(f, from)
 
     if actual != n do
@@ -923,6 +1011,12 @@ defmodule MCP.Conformance.BoundarySweep do
   MES-81 actually committed and not about a re-serialisation. The duplication is only
   safe if the two cannot drift, so every spec entry must render back to its prose line
   **byte-for-byte**, in order and in count.
+
+  Widened by MES-173 (PM ruling 34227, Q1): every entry's `occurrences` must also be a
+  **positive integer** (`positive_occurrences?/1`), whatever the row's verdict. A zero is
+  a function of the table alone, so it belongs to this table-local guard, which the
+  register build runs too, and not to guard 26, which it skips. Checked before the
+  render comparison, over every entry.
   """
   def check_spec_prose!(rows) do
     entries =
@@ -938,6 +1032,19 @@ defmodule MCP.Conformance.BoundarySweep do
 
         Enum.zip(spec, prose) |> Enum.map(&{b["id"], &1})
       end)
+
+    siteless =
+      for {{id, {e, _line}}, i} <- index_within_rows(entries), not positive_occurrences?(e) do
+        "#{id} entry #{i}, #{e["file"]}: occurrences #{inspect(e["occurrences"])}"
+      end
+
+    if siteless != [] do
+      raise "GUARD 27: #{length(siteless)} mutation_spec entry/ies do not record a " <>
+              "positive integer occurrences:\n  " <>
+              Enum.join(siteless, "\n  ") <>
+              "\nA zero-site mutation is a no-op: it reddens nothing and establishes nothing, " <>
+              "LIVE or DEAD."
+    end
 
     bad =
       for {id, {e, line}} <- entries, render_prose(e) != line do
@@ -961,6 +1068,13 @@ defmodule MCP.Conformance.BoundarySweep do
   defp own_reddened(b), do: (b["reddened_total"] || 0) - (b["reddened_outside_own"] || 0)
 
   defp spec_of(b), do: b["mutation_spec"] || []
+
+  # `{id, pair}` tuples numbered 1-based within their own row, for messages.
+  defp index_within_rows(entries) do
+    entries
+    |> Enum.chunk_by(&elem(&1, 0))
+    |> Enum.flat_map(&Enum.with_index(&1, 1))
+  end
 
   defp blank?(nil), do: true
   defp blank?(""), do: true
