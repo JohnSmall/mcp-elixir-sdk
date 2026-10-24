@@ -86,21 +86,21 @@ defmodule MCP.ClientConformanceTest do
 
     setup do
       {:ok, hits} = Agent.start_link(fn -> 0 end)
-      canary_port = free_port()
-      server_port = free_port()
+      # Each listener binds port 0 and its port is read back once bound, so the
+      # canary's port exists before the URL that names it is built (MES-215).
 
-      {:ok, canary} =
-        Bandit.start_link(
+      {canary, canary_port} =
+        MCP.Test.Listener.bandit!(
           plug: {CanaryPlug, hits},
-          port: canary_port,
+          port: 0,
           ip: {127, 0, 0, 1},
           startup_log: false
         )
 
-      {:ok, server} =
-        Bandit.start_link(
+      {server, server_port} =
+        MCP.Test.Listener.bandit!(
           plug: {ToolServerPlug, "http://127.0.0.1:#{canary_port}/schema.json"},
-          port: server_port,
+          port: 0,
           ip: {127, 0, 0, 1},
           startup_log: false
         )
@@ -112,6 +112,8 @@ defmodule MCP.ClientConformanceTest do
       %{hits: hits, url: "http://127.0.0.1:#{server_port}/mcp", canary_port: canary_port}
     end
 
+    @tag oc:
+           "oc:client/json-schema-ref-no-deref/sep-2106-no-network-ref-deref/NoNetworkRefDereference"
     @tag :etcc
     test "listing and calling a tool whose inputSchema $refs a network URI never fetches it", %{
       hits: hits,
@@ -131,17 +133,19 @@ defmodule MCP.ClientConformanceTest do
       assert Agent.get(hits, & &1) == 0
     end
 
+    @tag oc: :none
+    @tag oc_reason: "instrument control: touches no SDK code; no OC check is about it"
     test "CONTROL ON THE CONTROL: the canary really does count a fetch" do
       # A canary that cannot register a hit would make the test above pass for
       # the wrong reason — the "silently no-ops" failure the gap register
       # confessed to. This proves the instrument works.
       {:ok, hits} = Agent.start_link(fn -> 0 end)
-      port = free_port()
+      # Port 0, read back once bound (MES-215).
 
-      {:ok, canary} =
-        Bandit.start_link(
+      {canary, port} =
+        MCP.Test.Listener.bandit!(
           plug: {CanaryPlug, hits},
-          port: port,
+          port: 0,
           ip: {127, 0, 0, 1},
           startup_log: false
         )
@@ -182,6 +186,8 @@ defmodule MCP.ClientConformanceTest do
       {result, request}
     end
 
+    @tag oc: :none
+    @tag oc_reason: "inbound extensions: no OC client check reads them"
     @tag :etcc
     test "the client can read what the server declared, with the settings map intact" do
       {:ok, client} = Client.start_link(transport: {MockTransport, []})
@@ -208,6 +214,8 @@ defmodule MCP.ClientConformanceTest do
              ]) == 2
     end
 
+    @tag oc: :none
+    @tag oc_reason: "inbound extensions: no OC client check reads them"
     test "a server declaring NO extensions yields nil, not a crash or an invented map" do
       {:ok, client} = Client.start_link(transport: {MockTransport, []})
       transport = Client.transport(client)
@@ -216,6 +224,8 @@ defmodule MCP.ClientConformanceTest do
       assert result.server_capabilities.extensions == nil
     end
 
+    @tag oc: :none
+    @tag oc_reason: "log posture; no OC client check reads inbound extensions"
     test "an unknown extension is not logged as a fault" do
       {:ok, client} = Client.start_link(transport: {MockTransport, []})
       transport = Client.transport(client)
@@ -231,6 +241,8 @@ defmodule MCP.ClientConformanceTest do
       refute log =~ "[warning]"
     end
 
+    @tag oc: :none
+    @tag oc_reason: "no OC client check reads clientCapabilities.extensions"
     @tag :etcc
     test "the OUTBOUND half (MES-16) still rides every request's _meta" do
       {:ok, client} =
@@ -248,12 +260,5 @@ defmodule MCP.ClientConformanceTest do
                "extensions"
              ] == %{"com.example/ext" => %{"setting" => true}}
     end
-  end
-
-  defp free_port do
-    {:ok, socket} = :gen_tcp.listen(0, [:binary, active: false, reuseaddr: true])
-    {:ok, port} = :inet.port(socket)
-    :gen_tcp.close(socket)
-    port
   end
 end

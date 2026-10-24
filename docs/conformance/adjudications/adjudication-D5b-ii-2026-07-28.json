@@ -6301,8 +6301,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              318,
-              351
+              359,
+              392
             ],
             "bytes": "    test \"an annotated tool's arguments are mirrored, unannotated ones are not\", %{\n      agent: agent,\n      url: url\n    } do\n      respond_with(agent, tools_responder([@tool]))\n\n      {:ok, client} = Client.start_link(transport: {HTTPClient, url: url})\n      {:ok, _} = Client.list_tools(client)\n\n      {:ok, _} =\n        Client.call_tool(client, \"test_custom_headers\", %{\n          \"region\" => \"us-west1\",\n          \"priority\" => 42,\n          \"verbose\" => false,\n          \"empty_val\" => \"\",\n          \"non_ascii_val\" => \"Hello, 世界\",\n          \"query\" => \"SELECT 1\"\n        })\n\n      headers = headers_of(agent, 1)\n\n      assert headers[\"mcp-param-region\"] == \"us-west1\"\n      assert headers[\"mcp-param-priority\"] == \"42\"\n      assert headers[\"mcp-param-verbose\"] == \"false\"\n      assert headers[\"mcp-param-nonascii\"] == \"=?base64?SGVsbG8sIOS4lueVjA==?=\"\n      # Present with an EMPTY value — the fixture treats a missing one as a\n      # failure, so this asserts the header survives the HTTP stack at all.\n      assert headers[\"mcp-param-emptyval\"] == \"\"\n      refute Map.has_key?(headers, \"mcp-param-query\")\n\n      # And the routing headers ride the same request.\n      assert headers[\"mcp-method\"] == \"tools/call\"\n      assert headers[\"mcp-name\"] == \"test_custom_headers\"\n    end"
           },
@@ -6485,7 +6485,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:339",
+                "firing": "routing_headers_test.exs:380",
                 "limb_shape": "direct",
                 "oc_harness": "http-custom-headers: 3/18 SUCCESS; FAILURE: ClientSupportsCustomHeaders, ClientCustomHeader_Region, ClientCustomHeader_Priority, ClientCustomHeader_Verbose, ClientCustomHeader_Debug, ClientCustomHeader_EmptyVal, ClientCustomHeader_Method, ClientCustomHeader_NonAscii, ClientCustomHeader_Whitespace, ClientCustomHeader_LeadingSpace, ClientCustomHeader_TrailingSpace, ClientCustomHeader_InternalSpace, ClientCustomHeader_ControlChar, ClientCustomHeader_CrLf, ClientCustomHeader_Tab (harness a10085d0; the row's own check ClientCustomHeader_Region is FAILURE at NAME grain; the member is red)"
               },
@@ -6501,7 +6501,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:339",
+                "firing": "routing_headers_test.exs:380",
                 "limb_shape": "direct",
                 "oc_harness": "http-custom-headers: 12/18 SUCCESS; FAILURE: ClientCustomHeader_Region, ClientCustomHeader_Priority, ClientCustomHeader_Verbose, ClientCustomHeader_Debug, ClientCustomHeader_Method, ClientCustomHeader_InternalSpace (harness a10085d0; the row's own check ClientCustomHeader_Region is FAILURE at NAME grain; the member is red)"
               },
@@ -6517,7 +6517,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:339",
+                "firing": "routing_headers_test.exs:380",
                 "limb_shape": "layer",
                 "limb_reach": "lib/mcp/transport/streamable_http/client.ex request_headers/3: the HTTP transport; a member that calls HeaderMirror directly, or MCP.Client over MockTransport, never reaches it",
                 "oc_harness": "http-custom-headers: 3/18 SUCCESS; FAILURE: ClientSupportsCustomHeaders, ClientCustomHeader_Region, ClientCustomHeader_Priority, ClientCustomHeader_Verbose, ClientCustomHeader_Debug, ClientCustomHeader_EmptyVal, ClientCustomHeader_Method, ClientCustomHeader_NonAscii, ClientCustomHeader_Whitespace, ClientCustomHeader_LeadingSpace, ClientCustomHeader_TrailingSpace, ClientCustomHeader_InternalSpace, ClientCustomHeader_ControlChar, ClientCustomHeader_CrLf, ClientCustomHeader_Tab (harness a10085d0; the row's own check ClientCustomHeader_Region is FAILURE at NAME grain; the member is red)"
@@ -6548,7 +6548,7 @@
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect not_emitted; client-2026-07-28-null-exit0 not_emitted; client-2026-07-28-null-request not_emitted. In every null this check is never emitted (its id is shared in N_S, so only NotObserved backfills appear; every emitted check failed), so the OC green is evidence a do-nothing client could not produce. No discount is owed. ET, measured by scratch lib/ mutation (each edit byte-exact, applied alone, the member run at --seed 0, the real harness run on http-custom-headers against a baseline of 18/18 SUCCESS): V4 (direct) red at routing_headers_test.exs:339; V5 (direct) red at routing_headers_test.exs:339; P1 (layer) red at routing_headers_test.exs:339; P2s (sampling) green. Under P2s the harness reddens ClientCustomHeader_Region at name grain and the member stays green, because the limb breaks the behaviour only on an argument shape the harness's call carries and the member's call does not (a sampling shape; condition_at cites the harness's arguments). So the ET green does not discriminate that failure mode."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect not_emitted; client-2026-07-28-null-exit0 not_emitted; client-2026-07-28-null-request not_emitted. In every null this check is never emitted (its id is shared in N_S, so only NotObserved backfills appear; every emitted check failed), so the OC green is evidence a do-nothing client could not produce. No discount is owed. ET, measured by scratch lib/ mutation (each edit byte-exact, applied alone, the member run at --seed 0, the real harness run on http-custom-headers against a baseline of 18/18 SUCCESS): V4 (direct) red at routing_headers_test.exs:380; V5 (direct) red at routing_headers_test.exs:380; P1 (layer) red at routing_headers_test.exs:380; P2s (sampling) green. Under P2s the harness reddens ClientCustomHeader_Region at name grain and the member stays green, because the limb breaks the behaviour only on an argument shape the harness's call carries and the member's call does not (a sampling shape; condition_at cites the harness's arguments). So the ET green does not discriminate that failure mode."
         },
         {
           "member": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
@@ -6567,8 +6567,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              318,
-              351
+              359,
+              392
             ],
             "bytes": "    test \"an annotated tool's arguments are mirrored, unannotated ones are not\", %{\n      agent: agent,\n      url: url\n    } do\n      respond_with(agent, tools_responder([@tool]))\n\n      {:ok, client} = Client.start_link(transport: {HTTPClient, url: url})\n      {:ok, _} = Client.list_tools(client)\n\n      {:ok, _} =\n        Client.call_tool(client, \"test_custom_headers\", %{\n          \"region\" => \"us-west1\",\n          \"priority\" => 42,\n          \"verbose\" => false,\n          \"empty_val\" => \"\",\n          \"non_ascii_val\" => \"Hello, 世界\",\n          \"query\" => \"SELECT 1\"\n        })\n\n      headers = headers_of(agent, 1)\n\n      assert headers[\"mcp-param-region\"] == \"us-west1\"\n      assert headers[\"mcp-param-priority\"] == \"42\"\n      assert headers[\"mcp-param-verbose\"] == \"false\"\n      assert headers[\"mcp-param-nonascii\"] == \"=?base64?SGVsbG8sIOS4lueVjA==?=\"\n      # Present with an EMPTY value — the fixture treats a missing one as a\n      # failure, so this asserts the header survives the HTTP stack at all.\n      assert headers[\"mcp-param-emptyval\"] == \"\"\n      refute Map.has_key?(headers, \"mcp-param-query\")\n\n      # And the routing headers ride the same request.\n      assert headers[\"mcp-method\"] == \"tools/call\"\n      assert headers[\"mcp-name\"] == \"test_custom_headers\"\n    end"
           },
@@ -6742,7 +6742,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:339",
+                "firing": "routing_headers_test.exs:380",
                 "limb_shape": "direct",
                 "oc_harness": "http-custom-headers: 3/18 SUCCESS; FAILURE: ClientSupportsCustomHeaders, ClientCustomHeader_Region, ClientCustomHeader_Priority, ClientCustomHeader_Verbose, ClientCustomHeader_Debug, ClientCustomHeader_EmptyVal, ClientCustomHeader_Method, ClientCustomHeader_NonAscii, ClientCustomHeader_Whitespace, ClientCustomHeader_LeadingSpace, ClientCustomHeader_TrailingSpace, ClientCustomHeader_InternalSpace, ClientCustomHeader_ControlChar, ClientCustomHeader_CrLf, ClientCustomHeader_Tab (harness a10085d0; the row's own check ClientCustomHeader_Priority is FAILURE at NAME grain; the member is red)"
               },
@@ -6758,7 +6758,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:339",
+                "firing": "routing_headers_test.exs:380",
                 "limb_shape": "direct",
                 "oc_harness": "http-custom-headers: 12/18 SUCCESS; FAILURE: ClientCustomHeader_Region, ClientCustomHeader_Priority, ClientCustomHeader_Verbose, ClientCustomHeader_Debug, ClientCustomHeader_Method, ClientCustomHeader_InternalSpace (harness a10085d0; the row's own check ClientCustomHeader_Priority is FAILURE at NAME grain; the member is red)"
               },
@@ -6774,7 +6774,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:339",
+                "firing": "routing_headers_test.exs:380",
                 "limb_shape": "layer",
                 "limb_reach": "lib/mcp/transport/streamable_http/client.ex request_headers/3: the HTTP transport; a member that calls HeaderMirror directly, or MCP.Client over MockTransport, never reaches it",
                 "oc_harness": "http-custom-headers: 3/18 SUCCESS; FAILURE: ClientSupportsCustomHeaders, ClientCustomHeader_Region, ClientCustomHeader_Priority, ClientCustomHeader_Verbose, ClientCustomHeader_Debug, ClientCustomHeader_EmptyVal, ClientCustomHeader_Method, ClientCustomHeader_NonAscii, ClientCustomHeader_Whitespace, ClientCustomHeader_LeadingSpace, ClientCustomHeader_TrailingSpace, ClientCustomHeader_InternalSpace, ClientCustomHeader_ControlChar, ClientCustomHeader_CrLf, ClientCustomHeader_Tab (harness a10085d0; the row's own check ClientCustomHeader_Priority is FAILURE at NAME grain; the member is red)"
@@ -6805,7 +6805,7 @@
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect not_emitted; client-2026-07-28-null-exit0 not_emitted; client-2026-07-28-null-request not_emitted. In every null this check is never emitted (its id is shared in N_S, so only NotObserved backfills appear; every emitted check failed), so the OC green is evidence a do-nothing client could not produce. No discount is owed. ET, measured by scratch lib/ mutation (each edit byte-exact, applied alone, the member run at --seed 0, the real harness run on http-custom-headers against a baseline of 18/18 SUCCESS): V4 (direct) red at routing_headers_test.exs:339; V5 (direct) red at routing_headers_test.exs:339; P1 (layer) red at routing_headers_test.exs:339; P2s (sampling) green. Under P2s the harness reddens ClientCustomHeader_Priority at name grain and the member stays green, because the limb breaks the behaviour only on an argument shape the harness's call carries and the member's call does not (a sampling shape; condition_at cites the harness's arguments). So the ET green does not discriminate that failure mode."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect not_emitted; client-2026-07-28-null-exit0 not_emitted; client-2026-07-28-null-request not_emitted. In every null this check is never emitted (its id is shared in N_S, so only NotObserved backfills appear; every emitted check failed), so the OC green is evidence a do-nothing client could not produce. No discount is owed. ET, measured by scratch lib/ mutation (each edit byte-exact, applied alone, the member run at --seed 0, the real harness run on http-custom-headers against a baseline of 18/18 SUCCESS): V4 (direct) red at routing_headers_test.exs:380; V5 (direct) red at routing_headers_test.exs:380; P1 (layer) red at routing_headers_test.exs:380; P2s (sampling) green. Under P2s the harness reddens ClientCustomHeader_Priority at name grain and the member stays green, because the limb breaks the behaviour only on an argument shape the harness's call carries and the member's call does not (a sampling shape; condition_at cites the harness's arguments). So the ET green does not discriminate that failure mode."
         },
         {
           "member": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
@@ -6824,8 +6824,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              318,
-              351
+              359,
+              392
             ],
             "bytes": "    test \"an annotated tool's arguments are mirrored, unannotated ones are not\", %{\n      agent: agent,\n      url: url\n    } do\n      respond_with(agent, tools_responder([@tool]))\n\n      {:ok, client} = Client.start_link(transport: {HTTPClient, url: url})\n      {:ok, _} = Client.list_tools(client)\n\n      {:ok, _} =\n        Client.call_tool(client, \"test_custom_headers\", %{\n          \"region\" => \"us-west1\",\n          \"priority\" => 42,\n          \"verbose\" => false,\n          \"empty_val\" => \"\",\n          \"non_ascii_val\" => \"Hello, 世界\",\n          \"query\" => \"SELECT 1\"\n        })\n\n      headers = headers_of(agent, 1)\n\n      assert headers[\"mcp-param-region\"] == \"us-west1\"\n      assert headers[\"mcp-param-priority\"] == \"42\"\n      assert headers[\"mcp-param-verbose\"] == \"false\"\n      assert headers[\"mcp-param-nonascii\"] == \"=?base64?SGVsbG8sIOS4lueVjA==?=\"\n      # Present with an EMPTY value — the fixture treats a missing one as a\n      # failure, so this asserts the header survives the HTTP stack at all.\n      assert headers[\"mcp-param-emptyval\"] == \"\"\n      refute Map.has_key?(headers, \"mcp-param-query\")\n\n      # And the routing headers ride the same request.\n      assert headers[\"mcp-method\"] == \"tools/call\"\n      assert headers[\"mcp-name\"] == \"test_custom_headers\"\n    end"
           },
@@ -6999,7 +6999,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:339",
+                "firing": "routing_headers_test.exs:380",
                 "limb_shape": "direct",
                 "oc_harness": "http-custom-headers: 3/18 SUCCESS; FAILURE: ClientSupportsCustomHeaders, ClientCustomHeader_Region, ClientCustomHeader_Priority, ClientCustomHeader_Verbose, ClientCustomHeader_Debug, ClientCustomHeader_EmptyVal, ClientCustomHeader_Method, ClientCustomHeader_NonAscii, ClientCustomHeader_Whitespace, ClientCustomHeader_LeadingSpace, ClientCustomHeader_TrailingSpace, ClientCustomHeader_InternalSpace, ClientCustomHeader_ControlChar, ClientCustomHeader_CrLf, ClientCustomHeader_Tab (harness a10085d0; the row's own check ClientCustomHeader_Verbose is FAILURE at NAME grain; the member is red)"
               },
@@ -7015,7 +7015,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:339",
+                "firing": "routing_headers_test.exs:380",
                 "limb_shape": "direct",
                 "oc_harness": "http-custom-headers: 12/18 SUCCESS; FAILURE: ClientCustomHeader_Region, ClientCustomHeader_Priority, ClientCustomHeader_Verbose, ClientCustomHeader_Debug, ClientCustomHeader_Method, ClientCustomHeader_InternalSpace (harness a10085d0; the row's own check ClientCustomHeader_Verbose is FAILURE at NAME grain; the member is red)"
               },
@@ -7031,7 +7031,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:339",
+                "firing": "routing_headers_test.exs:380",
                 "limb_shape": "layer",
                 "limb_reach": "lib/mcp/transport/streamable_http/client.ex request_headers/3: the HTTP transport; a member that calls HeaderMirror directly, or MCP.Client over MockTransport, never reaches it",
                 "oc_harness": "http-custom-headers: 3/18 SUCCESS; FAILURE: ClientSupportsCustomHeaders, ClientCustomHeader_Region, ClientCustomHeader_Priority, ClientCustomHeader_Verbose, ClientCustomHeader_Debug, ClientCustomHeader_EmptyVal, ClientCustomHeader_Method, ClientCustomHeader_NonAscii, ClientCustomHeader_Whitespace, ClientCustomHeader_LeadingSpace, ClientCustomHeader_TrailingSpace, ClientCustomHeader_InternalSpace, ClientCustomHeader_ControlChar, ClientCustomHeader_CrLf, ClientCustomHeader_Tab (harness a10085d0; the row's own check ClientCustomHeader_Verbose is FAILURE at NAME grain; the member is red)"
@@ -7062,7 +7062,7 @@
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect not_emitted; client-2026-07-28-null-exit0 not_emitted; client-2026-07-28-null-request not_emitted. In every null this check is never emitted (its id is shared in N_S, so only NotObserved backfills appear; every emitted check failed), so the OC green is evidence a do-nothing client could not produce. No discount is owed. ET, measured by scratch lib/ mutation (each edit byte-exact, applied alone, the member run at --seed 0, the real harness run on http-custom-headers against a baseline of 18/18 SUCCESS): V4 (direct) red at routing_headers_test.exs:339; V5 (direct) red at routing_headers_test.exs:339; P1 (layer) red at routing_headers_test.exs:339; P2s (sampling) green. Under P2s the harness reddens ClientCustomHeader_Verbose at name grain and the member stays green, because the limb breaks the behaviour only on an argument shape the harness's call carries and the member's call does not (a sampling shape; condition_at cites the harness's arguments). So the ET green does not discriminate that failure mode."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect not_emitted; client-2026-07-28-null-exit0 not_emitted; client-2026-07-28-null-request not_emitted. In every null this check is never emitted (its id is shared in N_S, so only NotObserved backfills appear; every emitted check failed), so the OC green is evidence a do-nothing client could not produce. No discount is owed. ET, measured by scratch lib/ mutation (each edit byte-exact, applied alone, the member run at --seed 0, the real harness run on http-custom-headers against a baseline of 18/18 SUCCESS): V4 (direct) red at routing_headers_test.exs:380; V5 (direct) red at routing_headers_test.exs:380; P1 (layer) red at routing_headers_test.exs:380; P2s (sampling) green. Under P2s the harness reddens ClientCustomHeader_Verbose at name grain and the member stays green, because the limb breaks the behaviour only on an argument shape the harness's call carries and the member's call does not (a sampling shape; condition_at cites the harness's arguments). So the ET green does not discriminate that failure mode."
         },
         {
           "member": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
@@ -7081,8 +7081,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              318,
-              351
+              359,
+              392
             ],
             "bytes": "    test \"an annotated tool's arguments are mirrored, unannotated ones are not\", %{\n      agent: agent,\n      url: url\n    } do\n      respond_with(agent, tools_responder([@tool]))\n\n      {:ok, client} = Client.start_link(transport: {HTTPClient, url: url})\n      {:ok, _} = Client.list_tools(client)\n\n      {:ok, _} =\n        Client.call_tool(client, \"test_custom_headers\", %{\n          \"region\" => \"us-west1\",\n          \"priority\" => 42,\n          \"verbose\" => false,\n          \"empty_val\" => \"\",\n          \"non_ascii_val\" => \"Hello, 世界\",\n          \"query\" => \"SELECT 1\"\n        })\n\n      headers = headers_of(agent, 1)\n\n      assert headers[\"mcp-param-region\"] == \"us-west1\"\n      assert headers[\"mcp-param-priority\"] == \"42\"\n      assert headers[\"mcp-param-verbose\"] == \"false\"\n      assert headers[\"mcp-param-nonascii\"] == \"=?base64?SGVsbG8sIOS4lueVjA==?=\"\n      # Present with an EMPTY value — the fixture treats a missing one as a\n      # failure, so this asserts the header survives the HTTP stack at all.\n      assert headers[\"mcp-param-emptyval\"] == \"\"\n      refute Map.has_key?(headers, \"mcp-param-query\")\n\n      # And the routing headers ride the same request.\n      assert headers[\"mcp-method\"] == \"tools/call\"\n      assert headers[\"mcp-name\"] == \"test_custom_headers\"\n    end"
           },
@@ -7256,7 +7256,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:339",
+                "firing": "routing_headers_test.exs:380",
                 "limb_shape": "direct",
                 "oc_harness": "http-custom-headers: 3/18 SUCCESS; FAILURE: ClientSupportsCustomHeaders, ClientCustomHeader_Region, ClientCustomHeader_Priority, ClientCustomHeader_Verbose, ClientCustomHeader_Debug, ClientCustomHeader_EmptyVal, ClientCustomHeader_Method, ClientCustomHeader_NonAscii, ClientCustomHeader_Whitespace, ClientCustomHeader_LeadingSpace, ClientCustomHeader_TrailingSpace, ClientCustomHeader_InternalSpace, ClientCustomHeader_ControlChar, ClientCustomHeader_CrLf, ClientCustomHeader_Tab (harness a10085d0; the row's own check ClientCustomHeader_NonAscii is FAILURE at NAME grain; the member is red)"
               },
@@ -7272,7 +7272,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:342",
+                "firing": "routing_headers_test.exs:383",
                 "limb_shape": "direct",
                 "oc_harness": "http-custom-headers: 11/18 SUCCESS; FAILURE: ClientCustomHeader_NonAscii, ClientCustomHeader_Whitespace, ClientCustomHeader_LeadingSpace, ClientCustomHeader_TrailingSpace, ClientCustomHeader_ControlChar, ClientCustomHeader_CrLf, ClientCustomHeader_Tab (harness a10085d0; the row's own check ClientCustomHeader_NonAscii is FAILURE at NAME grain; the member is red)"
               },
@@ -7288,7 +7288,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:339",
+                "firing": "routing_headers_test.exs:380",
                 "limb_shape": "layer",
                 "limb_reach": "lib/mcp/transport/streamable_http/client.ex request_headers/3: the HTTP transport; a member that calls HeaderMirror directly, or MCP.Client over MockTransport, never reaches it",
                 "oc_harness": "http-custom-headers: 3/18 SUCCESS; FAILURE: ClientSupportsCustomHeaders, ClientCustomHeader_Region, ClientCustomHeader_Priority, ClientCustomHeader_Verbose, ClientCustomHeader_Debug, ClientCustomHeader_EmptyVal, ClientCustomHeader_Method, ClientCustomHeader_NonAscii, ClientCustomHeader_Whitespace, ClientCustomHeader_LeadingSpace, ClientCustomHeader_TrailingSpace, ClientCustomHeader_InternalSpace, ClientCustomHeader_ControlChar, ClientCustomHeader_CrLf, ClientCustomHeader_Tab (harness a10085d0; the row's own check ClientCustomHeader_NonAscii is FAILURE at NAME grain; the member is red)"
@@ -7319,7 +7319,7 @@
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect not_emitted; client-2026-07-28-null-exit0 not_emitted; client-2026-07-28-null-request not_emitted. In every null this check is never emitted (its id is shared in N_S, so only NotObserved backfills appear; every emitted check failed), so the OC green is evidence a do-nothing client could not produce. No discount is owed. ET, measured by scratch lib/ mutation (each edit byte-exact, applied alone, the member run at --seed 0, the real harness run on http-custom-headers against a baseline of 18/18 SUCCESS): V4 (direct) red at routing_headers_test.exs:339; V8 (direct) red at routing_headers_test.exs:342; P1 (layer) red at routing_headers_test.exs:339; P2s (sampling) green. Under P2s the harness reddens ClientCustomHeader_NonAscii at name grain and the member stays green, because the limb breaks the behaviour only on an argument shape the harness's call carries and the member's call does not (a sampling shape; condition_at cites the harness's arguments). So the ET green does not discriminate that failure mode."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect not_emitted; client-2026-07-28-null-exit0 not_emitted; client-2026-07-28-null-request not_emitted. In every null this check is never emitted (its id is shared in N_S, so only NotObserved backfills appear; every emitted check failed), so the OC green is evidence a do-nothing client could not produce. No discount is owed. ET, measured by scratch lib/ mutation (each edit byte-exact, applied alone, the member run at --seed 0, the real harness run on http-custom-headers against a baseline of 18/18 SUCCESS): V4 (direct) red at routing_headers_test.exs:380; V8 (direct) red at routing_headers_test.exs:383; P1 (layer) red at routing_headers_test.exs:380; P2s (sampling) green. Under P2s the harness reddens ClientCustomHeader_NonAscii at name grain and the member stays green, because the limb breaks the behaviour only on an argument shape the harness's call carries and the member's call does not (a sampling shape; condition_at cites the harness's arguments). So the ET green does not discriminate that failure mode."
         },
         {
           "member": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
@@ -7338,8 +7338,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              318,
-              351
+              359,
+              392
             ],
             "bytes": "    test \"an annotated tool's arguments are mirrored, unannotated ones are not\", %{\n      agent: agent,\n      url: url\n    } do\n      respond_with(agent, tools_responder([@tool]))\n\n      {:ok, client} = Client.start_link(transport: {HTTPClient, url: url})\n      {:ok, _} = Client.list_tools(client)\n\n      {:ok, _} =\n        Client.call_tool(client, \"test_custom_headers\", %{\n          \"region\" => \"us-west1\",\n          \"priority\" => 42,\n          \"verbose\" => false,\n          \"empty_val\" => \"\",\n          \"non_ascii_val\" => \"Hello, 世界\",\n          \"query\" => \"SELECT 1\"\n        })\n\n      headers = headers_of(agent, 1)\n\n      assert headers[\"mcp-param-region\"] == \"us-west1\"\n      assert headers[\"mcp-param-priority\"] == \"42\"\n      assert headers[\"mcp-param-verbose\"] == \"false\"\n      assert headers[\"mcp-param-nonascii\"] == \"=?base64?SGVsbG8sIOS4lueVjA==?=\"\n      # Present with an EMPTY value — the fixture treats a missing one as a\n      # failure, so this asserts the header survives the HTTP stack at all.\n      assert headers[\"mcp-param-emptyval\"] == \"\"\n      refute Map.has_key?(headers, \"mcp-param-query\")\n\n      # And the routing headers ride the same request.\n      assert headers[\"mcp-method\"] == \"tools/call\"\n      assert headers[\"mcp-name\"] == \"test_custom_headers\"\n    end"
           },
@@ -7522,7 +7522,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:339",
+                "firing": "routing_headers_test.exs:380",
                 "limb_shape": "direct",
                 "oc_harness": "http-custom-headers: 3/18 SUCCESS; FAILURE: ClientSupportsCustomHeaders, ClientCustomHeader_Region, ClientCustomHeader_Priority, ClientCustomHeader_Verbose, ClientCustomHeader_Debug, ClientCustomHeader_EmptyVal, ClientCustomHeader_Method, ClientCustomHeader_NonAscii, ClientCustomHeader_Whitespace, ClientCustomHeader_LeadingSpace, ClientCustomHeader_TrailingSpace, ClientCustomHeader_InternalSpace, ClientCustomHeader_ControlChar, ClientCustomHeader_CrLf, ClientCustomHeader_Tab (harness a10085d0; the row's own check ClientCustomHeader_EmptyVal is FAILURE at NAME grain; the member is red)"
               },
@@ -7538,7 +7538,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:339",
+                "firing": "routing_headers_test.exs:380",
                 "limb_shape": "layer",
                 "limb_reach": "lib/mcp/transport/streamable_http/client.ex request_headers/3: the HTTP transport; a member that calls HeaderMirror directly, or MCP.Client over MockTransport, never reaches it",
                 "oc_harness": "http-custom-headers: 3/18 SUCCESS; FAILURE: ClientSupportsCustomHeaders, ClientCustomHeader_Region, ClientCustomHeader_Priority, ClientCustomHeader_Verbose, ClientCustomHeader_Debug, ClientCustomHeader_EmptyVal, ClientCustomHeader_Method, ClientCustomHeader_NonAscii, ClientCustomHeader_Whitespace, ClientCustomHeader_LeadingSpace, ClientCustomHeader_TrailingSpace, ClientCustomHeader_InternalSpace, ClientCustomHeader_ControlChar, ClientCustomHeader_CrLf, ClientCustomHeader_Tab (harness a10085d0; the row's own check ClientCustomHeader_EmptyVal is FAILURE at NAME grain; the member is red)"
@@ -7569,7 +7569,7 @@
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect not_emitted; client-2026-07-28-null-exit0 not_emitted; client-2026-07-28-null-request not_emitted. In every null this check is never emitted (its id is shared in N_S, so only NotObserved backfills appear; every emitted check failed), so the OC green is evidence a do-nothing client could not produce. No discount is owed. ET, measured by scratch lib/ mutation (each edit byte-exact, applied alone, the member run at --seed 0, the real harness run on http-custom-headers against a baseline of 18/18 SUCCESS): V4 (direct) red at routing_headers_test.exs:339; P1 (layer) red at routing_headers_test.exs:339; P2s (sampling) green. Under P2s the harness reddens ClientCustomHeader_EmptyVal at name grain and the member stays green, because the limb breaks the behaviour only on an argument shape the harness's call carries and the member's call does not (a sampling shape; condition_at cites the harness's arguments). So the ET green does not discriminate that failure mode."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect not_emitted; client-2026-07-28-null-exit0 not_emitted; client-2026-07-28-null-request not_emitted. In every null this check is never emitted (its id is shared in N_S, so only NotObserved backfills appear; every emitted check failed), so the OC green is evidence a do-nothing client could not produce. No discount is owed. ET, measured by scratch lib/ mutation (each edit byte-exact, applied alone, the member run at --seed 0, the real harness run on http-custom-headers against a baseline of 18/18 SUCCESS): V4 (direct) red at routing_headers_test.exs:380; P1 (layer) red at routing_headers_test.exs:380; P2s (sampling) green. Under P2s the harness reddens ClientCustomHeader_EmptyVal at name grain and the member stays green, because the limb breaks the behaviour only on an argument shape the harness's call carries and the member's call does not (a sampling shape; condition_at cites the harness's arguments). So the ET green does not discriminate that failure mode."
         },
         {
           "member": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
@@ -7588,8 +7588,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              318,
-              351
+              359,
+              392
             ],
             "bytes": "    test \"an annotated tool's arguments are mirrored, unannotated ones are not\", %{\n      agent: agent,\n      url: url\n    } do\n      respond_with(agent, tools_responder([@tool]))\n\n      {:ok, client} = Client.start_link(transport: {HTTPClient, url: url})\n      {:ok, _} = Client.list_tools(client)\n\n      {:ok, _} =\n        Client.call_tool(client, \"test_custom_headers\", %{\n          \"region\" => \"us-west1\",\n          \"priority\" => 42,\n          \"verbose\" => false,\n          \"empty_val\" => \"\",\n          \"non_ascii_val\" => \"Hello, 世界\",\n          \"query\" => \"SELECT 1\"\n        })\n\n      headers = headers_of(agent, 1)\n\n      assert headers[\"mcp-param-region\"] == \"us-west1\"\n      assert headers[\"mcp-param-priority\"] == \"42\"\n      assert headers[\"mcp-param-verbose\"] == \"false\"\n      assert headers[\"mcp-param-nonascii\"] == \"=?base64?SGVsbG8sIOS4lueVjA==?=\"\n      # Present with an EMPTY value — the fixture treats a missing one as a\n      # failure, so this asserts the header survives the HTTP stack at all.\n      assert headers[\"mcp-param-emptyval\"] == \"\"\n      refute Map.has_key?(headers, \"mcp-param-query\")\n\n      # And the routing headers ride the same request.\n      assert headers[\"mcp-method\"] == \"tools/call\"\n      assert headers[\"mcp-name\"] == \"test_custom_headers\"\n    end"
           },
@@ -7763,7 +7763,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:346",
+                "firing": "routing_headers_test.exs:387",
                 "limb_shape": "direct",
                 "oc_harness": "http-custom-headers: 16/18 SUCCESS; FAILURE: ClientCustomHeaderNoMirrorNumber, ClientCustomHeaderNoMirrorUnannotated (harness a10085d0; the row's own check ClientCustomHeaderNoMirrorUnannotated is FAILURE at NAME grain; the member is red)"
               },
@@ -7779,7 +7779,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:346",
+                "firing": "routing_headers_test.exs:387",
                 "limb_shape": "layer",
                 "limb_reach": "lib/mcp/client.ex tool_call_opts/3: MCP.Client's mirroring call; a member that calls HeaderMirror.headers_for/2 directly never reaches it",
                 "oc_harness": "http-custom-headers: 16/18 SUCCESS; FAILURE: ClientCustomHeaderNoMirrorNumber, ClientCustomHeaderNoMirrorUnannotated (harness a10085d0; the row's own check ClientCustomHeaderNoMirrorUnannotated is FAILURE at NAME grain; the member is red)"
@@ -7810,7 +7810,7 @@
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect not_emitted; client-2026-07-28-null-exit0 not_emitted; client-2026-07-28-null-request not_emitted. In every null this check is never emitted (its id is shared in N_S, so only NotObserved backfills appear; every emitted check failed), so the OC green is evidence a do-nothing client could not produce. No discount is owed. ET, measured by scratch lib/ mutation (each edit byte-exact, applied alone, the member run at --seed 0, the real harness run on http-custom-headers against a baseline of 18/18 SUCCESS): V7 (direct) red at routing_headers_test.exs:346; Lall (layer) red at routing_headers_test.exs:346; Sunann (sampling) green. Under Sunann the harness reddens ClientCustomHeaderNoMirrorUnannotated at name grain and the member stays green, because the limb breaks the behaviour only on an argument shape the harness's call carries and the member's call does not (a sampling shape; condition_at cites the harness's arguments). So the ET green does not discriminate that failure mode."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect not_emitted; client-2026-07-28-null-exit0 not_emitted; client-2026-07-28-null-request not_emitted. In every null this check is never emitted (its id is shared in N_S, so only NotObserved backfills appear; every emitted check failed), so the OC green is evidence a do-nothing client could not produce. No discount is owed. ET, measured by scratch lib/ mutation (each edit byte-exact, applied alone, the member run at --seed 0, the real harness run on http-custom-headers against a baseline of 18/18 SUCCESS): V7 (direct) red at routing_headers_test.exs:387; Lall (layer) red at routing_headers_test.exs:387; Sunann (sampling) green. Under Sunann the harness reddens ClientCustomHeaderNoMirrorUnannotated at name grain and the member stays green, because the limb breaks the behaviour only on an argument shape the harness's call carries and the member's call does not (a sampling shape; condition_at cites the harness's arguments). So the ET green does not discriminate that failure mode."
         },
         {
           "member": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client a null argument omits its header",
@@ -7829,8 +7829,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              354,
-              369
+              399,
+              414
             ],
             "bytes": "    test \"a null argument omits its header\", %{agent: agent, url: url} do\n      respond_with(agent, tools_responder([@tool]))\n\n      {:ok, client} = Client.start_link(transport: {HTTPClient, url: url})\n      {:ok, _} = Client.list_tools(client)\n\n      {:ok, _} =\n        Client.call_tool(client, \"test_custom_headers\", %{\n          \"region\" => \"us-east1\",\n          \"verbose\" => nil\n        })\n\n      headers = headers_of(agent, 1)\n      assert headers[\"mcp-param-region\"] == \"us-east1\"\n      refute Map.has_key?(headers, \"mcp-param-verbose\")\n    end"
           },
@@ -8013,7 +8013,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:367",
+                "firing": "routing_headers_test.exs:412",
                 "limb_shape": "direct",
                 "oc_harness": "http-custom-headers: 3/18 SUCCESS; FAILURE: ClientSupportsCustomHeaders, ClientCustomHeader_Region, ClientCustomHeader_Priority, ClientCustomHeader_Verbose, ClientCustomHeader_Debug, ClientCustomHeader_EmptyVal, ClientCustomHeader_Method, ClientCustomHeader_NonAscii, ClientCustomHeader_Whitespace, ClientCustomHeader_LeadingSpace, ClientCustomHeader_TrailingSpace, ClientCustomHeader_InternalSpace, ClientCustomHeader_ControlChar, ClientCustomHeader_CrLf, ClientCustomHeader_Tab (harness a10085d0; the row's own check ClientCustomHeader_Region is FAILURE at NAME grain; the member is red)"
               },
@@ -8029,7 +8029,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:367",
+                "firing": "routing_headers_test.exs:412",
                 "limb_shape": "direct",
                 "oc_harness": "http-custom-headers: 12/18 SUCCESS; FAILURE: ClientCustomHeader_Region, ClientCustomHeader_Priority, ClientCustomHeader_Verbose, ClientCustomHeader_Debug, ClientCustomHeader_Method, ClientCustomHeader_InternalSpace (harness a10085d0; the row's own check ClientCustomHeader_Region is FAILURE at NAME grain; the member is red)"
               },
@@ -8045,7 +8045,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:367",
+                "firing": "routing_headers_test.exs:412",
                 "limb_shape": "layer",
                 "limb_reach": "lib/mcp/transport/streamable_http/client.ex request_headers/3: the HTTP transport; a member that calls HeaderMirror directly, or MCP.Client over MockTransport, never reaches it",
                 "oc_harness": "http-custom-headers: 3/18 SUCCESS; FAILURE: ClientSupportsCustomHeaders, ClientCustomHeader_Region, ClientCustomHeader_Priority, ClientCustomHeader_Verbose, ClientCustomHeader_Debug, ClientCustomHeader_EmptyVal, ClientCustomHeader_Method, ClientCustomHeader_NonAscii, ClientCustomHeader_Whitespace, ClientCustomHeader_LeadingSpace, ClientCustomHeader_TrailingSpace, ClientCustomHeader_InternalSpace, ClientCustomHeader_ControlChar, ClientCustomHeader_CrLf, ClientCustomHeader_Tab (harness a10085d0; the row's own check ClientCustomHeader_Region is FAILURE at NAME grain; the member is red)"
@@ -8076,7 +8076,7 @@
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect not_emitted; client-2026-07-28-null-exit0 not_emitted; client-2026-07-28-null-request not_emitted. In every null this check is never emitted (its id is shared in N_S, so only NotObserved backfills appear; every emitted check failed), so the OC green is evidence a do-nothing client could not produce. No discount is owed. ET, measured by scratch lib/ mutation (each edit byte-exact, applied alone, the member run at --seed 0, the real harness run on http-custom-headers against a baseline of 18/18 SUCCESS): V4 (direct) red at routing_headers_test.exs:367; V5 (direct) red at routing_headers_test.exs:367; P1 (layer) red at routing_headers_test.exs:367; P2s (sampling) green. Under P2s the harness reddens ClientCustomHeader_Region at name grain and the member stays green, because the limb breaks the behaviour only on an argument shape the harness's call carries and the member's call does not (a sampling shape; condition_at cites the harness's arguments). So the ET green does not discriminate that failure mode."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect not_emitted; client-2026-07-28-null-exit0 not_emitted; client-2026-07-28-null-request not_emitted. In every null this check is never emitted (its id is shared in N_S, so only NotObserved backfills appear; every emitted check failed), so the OC green is evidence a do-nothing client could not produce. No discount is owed. ET, measured by scratch lib/ mutation (each edit byte-exact, applied alone, the member run at --seed 0, the real harness run on http-custom-headers against a baseline of 18/18 SUCCESS): V4 (direct) red at routing_headers_test.exs:412; V5 (direct) red at routing_headers_test.exs:412; P1 (layer) red at routing_headers_test.exs:412; P2s (sampling) green. Under P2s the harness reddens ClientCustomHeader_Region at name grain and the member stays green, because the limb breaks the behaviour only on an argument shape the harness's call carries and the member's call does not (a sampling shape; condition_at cites the harness's arguments). So the ET green does not discriminate that failure mode."
         },
         {
           "member": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client a null argument omits its header",
@@ -8095,8 +8095,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              354,
-              369
+              399,
+              414
             ],
             "bytes": "    test \"a null argument omits its header\", %{agent: agent, url: url} do\n      respond_with(agent, tools_responder([@tool]))\n\n      {:ok, client} = Client.start_link(transport: {HTTPClient, url: url})\n      {:ok, _} = Client.list_tools(client)\n\n      {:ok, _} =\n        Client.call_tool(client, \"test_custom_headers\", %{\n          \"region\" => \"us-east1\",\n          \"verbose\" => nil\n        })\n\n      headers = headers_of(agent, 1)\n      assert headers[\"mcp-param-region\"] == \"us-east1\"\n      refute Map.has_key?(headers, \"mcp-param-verbose\")\n    end"
           },
@@ -8270,7 +8270,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:368",
+                "firing": "routing_headers_test.exs:413",
                 "limb_shape": "direct",
                 "oc_harness": "http-custom-headers: 17/18 SUCCESS; FAILURE: ClientCustomHeaderOmitNull (harness a10085d0; the row's own check ClientCustomHeaderOmitNull is FAILURE at NAME grain; the member is red)"
               },
@@ -8286,7 +8286,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:368",
+                "firing": "routing_headers_test.exs:413",
                 "limb_shape": "layer",
                 "limb_reach": "lib/mcp/client.ex tool_call_opts/3: MCP.Client's mirroring call; a member that calls HeaderMirror.headers_for/2 directly never reaches it",
                 "oc_harness": "http-custom-headers: 17/18 SUCCESS; FAILURE: ClientCustomHeaderOmitNull (harness a10085d0; the row's own check ClientCustomHeaderOmitNull is FAILURE at NAME grain; the member is red)"
@@ -8317,7 +8317,7 @@
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect fail; client-2026-07-28-null-exit0 fail; client-2026-07-28-null-request fail. Every null fails it (the id-keyed NotObserved backfill matches this check's id, unique in N_S), so the OC green is evidence a do-nothing client could not produce. No discount is owed. ET, measured by scratch lib/ mutation (each edit byte-exact, applied alone, the member run at --seed 0, the real harness run on http-custom-headers against a baseline of 18/18 SUCCESS): V6 (direct) red at routing_headers_test.exs:368; Lnull (layer) red at routing_headers_test.exs:368; Snull (sampling) green. Under Snull the harness reddens ClientCustomHeaderOmitNull at name grain and the member stays green, because the limb breaks the behaviour only on an argument shape the harness's call carries and the member's call does not (a sampling shape; condition_at cites the harness's arguments). So the ET green does not discriminate that failure mode."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect fail; client-2026-07-28-null-exit0 fail; client-2026-07-28-null-request fail. Every null fails it (the id-keyed NotObserved backfill matches this check's id, unique in N_S), so the OC green is evidence a do-nothing client could not produce. No discount is owed. ET, measured by scratch lib/ mutation (each edit byte-exact, applied alone, the member run at --seed 0, the real harness run on http-custom-headers against a baseline of 18/18 SUCCESS): V6 (direct) red at routing_headers_test.exs:413; Lnull (layer) red at routing_headers_test.exs:413; Snull (sampling) green. Under Snull the harness reddens ClientCustomHeaderOmitNull at name grain and the member stays green, because the limb breaks the behaviour only on an argument shape the harness's call carries and the member's call does not (a sampling shape; condition_at cites the harness's arguments). So the ET green does not discriminate that failure mode."
         },
         {
           "member": "MCP.Protocol.HeaderMirrorTest/test value encoding — the fixture's own 16-value vector every encoded value decodes back to exactly the body value",

@@ -1098,8 +1098,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              192,
-              200
+              211,
+              219
             ],
             "bytes": "      :ok =\n        HTTPClient.send_message(transport, %{\n          \"jsonrpc\" => \"2.0\",\n          \"id\" => 1,\n          \"method\" => \"tools/call\",\n          \"params\" => %{}\n        })\n\n      refute Map.has_key?(headers_of(agent, 0), \"mcp-name\")",
             "asserts": "A tools/call whose params carry no name goes out with no mcp-name header at all."
@@ -1164,8 +1164,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              221,
-              226
+              243,
+              248
             ],
             "bytes": "      header = headers_of(agent, 0)[\"mcp-name\"]\n      assert String.starts_with?(header, \"=?base64?\")\n      assert HeaderMirror.decode_value(header) == name\n\n      # The body still carries the plain name; only the header is encoded.\n      assert Enum.at(requests(agent), 0).message[\"params\"][\"name\"] == name",
             "asserts": "A non-ASCII tool name rides mcp-name as the Base64 sentinel and decodes back to the plain body value, which the body still carries."
@@ -1238,8 +1238,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              260,
-              263
+              287,
+              290
             ],
             "bytes": "      headers = headers_of(agent, 0)\n      assert HeaderMirror.decode_value(headers[\"mcp-name\"]) == hostile\n      refute headers[\"mcp-name\"] =~ \"\\r\"\n      refute Map.has_key?(headers, \"x-injected\")",
             "asserts": "A CRLF-bearing tool name rides mcp-name encoded: it decodes back to the hostile value, carries no raw CR, and injects no header."

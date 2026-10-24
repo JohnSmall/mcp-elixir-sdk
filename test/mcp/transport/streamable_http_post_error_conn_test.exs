@@ -74,26 +74,26 @@ defmodule MCP.Transport.StreamableHTTP.PostErrorConnTest do
   # --- harness ---
 
   defp start_instance(extra_opts \\ []) do
-    port = free_port()
+    # Port 0, read back once bound (MES-215).
 
     plug_opts =
       MCPPlug.init(
         Keyword.merge([server_mod: StatelessHandler, enable_json_response: true], extra_opts)
       )
 
-    {:ok, bandit} =
-      Bandit.start_link(plug: {MCPPlug, plug_opts}, port: port, ip: {127, 0, 0, 1})
+    {bandit, port} =
+      MCP.Test.Listener.bandit!(plug: {MCPPlug, plug_opts}, port: 0, ip: {127, 0, 0, 1})
 
     on_exit(fn -> Process.exit(bandit, :normal) end)
     "http://127.0.0.1:#{port}"
   end
 
-  defp free_port do
-    {:ok, socket} = :gen_tcp.listen(0, [:binary, active: false, reuseaddr: true])
-    {:ok, port} = :inet.port(socket)
-    :gen_tcp.close(socket)
-    port
-  end
+  # MES-215: no port-picking helper here. Every listener in this file binds
+  # port 0 through MCP.Test.Listener.bandit!/2, which reads back the port the OS
+  # assigned, so no port is chosen before it is bound: the window in which
+  # another socket could take it (:eaddrinuse) does not exist. RC3 in
+  # listener_port_race_test.exs holds the whole test tree to that.
+  # It replaced a per-file probe that closed its socket before the bind.
 
   defp rpc(method, params) do
     meta = %{

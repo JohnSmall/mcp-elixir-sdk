@@ -199,13 +199,13 @@ defmodule MCP.Transport.SSELineEndingsTest do
 
   describe "StreamableHTTP client over a text/event-stream response" do
     setup do
-      {:ok, socket} = :gen_tcp.listen(0, [:binary, active: false, reuseaddr: true])
-      {:ok, port} = :inet.port(socket)
-      :gen_tcp.close(socket)
+      # Port 0, read back once bound (MES-215): the probe that stood here closed its
+      # socket before the bind, and in this async module another could take the port.
 
       {:ok, server} =
-        Bandit.start_link(plug: FramingPlug, port: port, ip: {127, 0, 0, 1}, startup_log: false)
+        Bandit.start_link(plug: FramingPlug, port: 0, ip: {127, 0, 0, 1}, startup_log: false)
 
+      {:ok, {_ip, port}} = ThousandIsland.listener_info(server)
       on_exit(fn -> if Process.alive?(server), do: Process.exit(server, :normal) end)
       %{port: port}
     end

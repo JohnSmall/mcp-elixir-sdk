@@ -148,7 +148,7 @@ defmodule MCP.Transport.StreamableHTTPCacheScopeWarningTest do
   @tag oc_reason:
          "not an ET-CC member: etcc-register ET-OUT, excluded at gate 2 (asserts an SDK-internal value, not a wire message); no OC check corresponds"
   test "C3: warning reaches the runtime log when started via Bandit plug: {Mod, opts}" do
-    port = free_port()
+    # Port 0: the port is never read, and nothing is picked before the bind (MES-215).
 
     log =
       capture_log(fn ->
@@ -161,7 +161,7 @@ defmodule MCP.Transport.StreamableHTTPCacheScopeWarningTest do
                  handler_opts: factory(),
                  server_opts: [cache_defaults: {60_000, "public"}]
                ]},
-            port: port,
+            port: 0,
             ip: {127, 0, 0, 1},
             startup_log: false
           )
@@ -175,11 +175,4 @@ defmodule MCP.Transport.StreamableHTTPCacheScopeWarningTest do
 
   defp rpc(method),
     do: %{"jsonrpc" => "2.0", "id" => 1, "method" => method, "params" => %{"_meta" => @meta}}
-
-  defp free_port do
-    {:ok, socket} = :gen_tcp.listen(0, [:binary, active: false, reuseaddr: true])
-    {:ok, port} = :inet.port(socket)
-    :gen_tcp.close(socket)
-    port
-  end
 end

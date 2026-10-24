@@ -4902,6 +4902,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # Q5-Q7 [authored 29733/29734 | ratified 29735]: a member asserting an
     # axis of an in-scope check, directly or by entailment, is redundant, and
     # its counterpart is the full match where there is one.
+    @tag oc: :none
+    @tag oc_reason:
+           "instrument test over the D1-client-ii record and the crosswalk artefact; no wire behaviour"
     test "the redundant rows: each counterpart and its predicate, the one entailed, and all three fire",
          %{inputs: inputs} do
       red = Enum.filter(d1cii_rows(inputs), &(&1["disposition"] == "redundant"))
@@ -4957,12 +4960,12 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert Enum.all?(cited, &(&1 =~ "entail"))
 
       # Q7: the Mcp-Name row is a FULL match, and the crosswalk carries its
-      # sibling's identical claim as an edge at routing_headers_test.exs:350.
+      # sibling's identical claim as an edge at routing_headers_test.exs:391.
       [name] = Enum.filter(red, &(short.(&1) == "CG7-cache-miss-no-mirroring"))
       assert name["rationale"] =~ "both agree, the full match"
 
       assert File.read!("conformance/data/crosswalk-edges-client.json") =~
-               ~s("evidence": "routing_headers_test.exs:350 — `assert headers[\\"mcp-name\\"] == \\"test_custom_headers\\"`)
+               ~s("evidence": "routing_headers_test.exs:391 — `assert headers[\\"mcp-name\\"] == \\"test_custom_headers\\"`)
     end
 
     test "the one wrong_against_spec row POSTs a JSON-RPC response, which the client MUST NOT send",

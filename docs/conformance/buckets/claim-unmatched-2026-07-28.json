@@ -70,7 +70,7 @@
       "the_search_that_found_none": "the `:headers` TRANSPORT OPT `MCP.Client` hands its transport being empty for every request that is not a tools/call"
     },
     {
-      "claim": "a method with no name target carries NO `mcp-name` (routing_headers_test.exs:182 — `refute Map.has_key?(headers, \"mcp-name\")`, on a tools/list)",
+      "claim": "a method with no name target carries NO `mcp-name` (routing_headers_test.exs:198 — `refute Map.has_key?(headers, \"mcp-name\")`, on a tools/list)",
       "disposition": "no counterpart in this file's declared check population",
       "from": "conformance/data/crosswalk-edges-client.json",
       "member": {

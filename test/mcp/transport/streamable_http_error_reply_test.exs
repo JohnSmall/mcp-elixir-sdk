@@ -288,10 +288,10 @@ defmodule MCP.Transport.StreamableHTTPErrorReplyTest do
   end
 
   defp start_server(plug) do
-    port = free_port()
+    # Port 0, read back once bound (MES-215).
 
-    {:ok, server} =
-      Bandit.start_link(plug: plug, port: port, ip: {127, 0, 0, 1}, startup_log: false)
+    {server, port} =
+      MCP.Test.Listener.bandit!(plug: plug, port: 0, ip: {127, 0, 0, 1}, startup_log: false)
 
     on_exit(fn -> if Process.alive?(server), do: Process.exit(server, :normal) end)
     "http://127.0.0.1:#{port}/"
@@ -314,11 +314,4 @@ defmodule MCP.Transport.StreamableHTTPErrorReplyTest do
 
   defp json(status, body, headers \\ []),
     do: {status, [{"content-type", "application/json"} | headers], Jason.encode!(body)}
-
-  defp free_port do
-    {:ok, socket} = :gen_tcp.listen(0, [:binary, active: false, reuseaddr: true])
-    {:ok, port} = :inet.port(socket)
-    :gen_tcp.close(socket)
-    port
-  end
 end

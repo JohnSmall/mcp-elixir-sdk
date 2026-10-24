@@ -14,9 +14,9 @@
         "test/mcp/integration_test.exs:204 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:213 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:221 (MCP.IntegrationTest)",
-        "test/mcp/transport/routing_headers_test.exs:318 (MCP.Transport.RoutingHeadersTest)",
-        "test/mcp/transport/routing_headers_test.exs:354 (MCP.Transport.RoutingHeadersTest)",
-        "test/mcp/transport/routing_headers_test.exs:372 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:359 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:399 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:419 (MCP.Transport.RoutingHeadersTest)",
         "test/mcp/transport/self_compatibility_test.exs:185 (MCP.Transport.SelfCompatibilityTest)"
       ],
       "mutation": [
@@ -144,7 +144,7 @@
         "verdict": "live"
       },
       "live_units": [
-        "test/mcp/client_conformance_test.exs:235 (MCP.ClientConformanceTest)",
+        "test/mcp/client_conformance_test.exs:247 (MCP.ClientConformanceTest)",
         "test/mcp/client_test.exs:488 (MCP.ClientTest)",
         "test/mcp/client_test.exs:500 (MCP.ClientTest)",
         "test/mcp/client_test.exs:528 (MCP.ClientTest)",
@@ -194,7 +194,7 @@
         "verdict": "live"
       },
       "live_units": [
-        "test/mcp/client_conformance_test.exs:186 (MCP.ClientConformanceTest)",
+        "test/mcp/client_conformance_test.exs:192 (MCP.ClientConformanceTest)",
         "test/mcp/client_test.exs:432 (MCP.ClientTest)",
         "test/mcp/client_test.exs:556 (MCP.ClientTest)",
         "test/mcp/client_test.exs:583 (MCP.ClientTest)",
@@ -519,8 +519,8 @@
         "verdict": "live"
       },
       "live_units": [
-        "test/mcp/transport/routing_headers_test.exs:206 (MCP.Transport.RoutingHeadersTest)",
-        "test/mcp/transport/routing_headers_test.exs:248 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:228 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:275 (MCP.Transport.RoutingHeadersTest)",
         "test/mcp/transport/self_compatibility_test.exs:101 (MCP.Transport.SelfCompatibilityTest)",
         "test/mcp/transport/self_compatibility_test.exs:185 (MCP.Transport.SelfCompatibilityTest)"
       ],
@@ -575,13 +575,13 @@
         "test/mcp/client_tool_schemas_test.exs:389 (MCP.ClientToolSchemasTest)",
         "test/mcp/client_tool_schemas_test.exs:427 (MCP.ClientToolSchemasTest)",
         "test/mcp/client_tool_schemas_test.exs:455 (MCP.ClientToolSchemasTest)",
-        "test/mcp/transport/routing_headers_test.exs:137 (MCP.Transport.RoutingHeadersTest)",
-        "test/mcp/transport/routing_headers_test.exs:206 (MCP.Transport.RoutingHeadersTest)",
-        "test/mcp/transport/routing_headers_test.exs:230 (MCP.Transport.RoutingHeadersTest)",
-        "test/mcp/transport/routing_headers_test.exs:248 (MCP.Transport.RoutingHeadersTest)",
-        "test/mcp/transport/routing_headers_test.exs:318 (MCP.Transport.RoutingHeadersTest)",
-        "test/mcp/transport/routing_headers_test.exs:354 (MCP.Transport.RoutingHeadersTest)",
-        "test/mcp/transport/routing_headers_test.exs:372 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:151 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:228 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:254 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:275 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:359 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:399 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:419 (MCP.Transport.RoutingHeadersTest)",
         "test/mcp/transport/self_compatibility_test.exs:101 (MCP.Transport.SelfCompatibilityTest)",
         "test/mcp/transport/self_compatibility_test.exs:185 (MCP.Transport.SelfCompatibilityTest)",
         "test/mcp/transport/streamable_http_ac_test.exs:111 (MCP.Transport.StreamableHTTP.ACTest)",
@@ -661,10 +661,10 @@
         "verdict": "live"
       },
       "live_units": [
-        "test/mcp/client_conformance_test.exs:186 (MCP.ClientConformanceTest)",
-        "test/mcp/client_conformance_test.exs:211 (MCP.ClientConformanceTest)",
+        "test/mcp/client_conformance_test.exs:192 (MCP.ClientConformanceTest)",
         "test/mcp/client_conformance_test.exs:219 (MCP.ClientConformanceTest)",
-        "test/mcp/client_conformance_test.exs:235 (MCP.ClientConformanceTest)",
+        "test/mcp/client_conformance_test.exs:229 (MCP.ClientConformanceTest)",
+        "test/mcp/client_conformance_test.exs:247 (MCP.ClientConformanceTest)",
         "test/mcp/client_test.exs:144 (MCP.ClientTest)",
         "test/mcp/client_test.exs:168 (MCP.ClientTest)",
         "test/mcp/client_test.exs:187 (MCP.ClientTest)",
@@ -1105,7 +1105,7 @@
       "id": "MCP.Protocol.Messages.Request",
       "l2": null,
       "live_units": [
-        "test/mcp/client_conformance_test.exs:116 (MCP.ClientConformanceTest)",
+        "test/mcp/client_conformance_test.exs:118 (MCP.ClientConformanceTest)",
         "test/mcp/client_defects_test.exs:289 (MCP.ClientDefectsTest)",
         "test/mcp/client_test.exs:144 (MCP.ClientTest)",
         "test/mcp/client_test.exs:168 (MCP.ClientTest)",
@@ -1135,9 +1135,9 @@
         "test/mcp/integration_test.exs:204 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:213 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:221 (MCP.IntegrationTest)",
-        "test/mcp/transport/routing_headers_test.exs:318 (MCP.Transport.RoutingHeadersTest)",
-        "test/mcp/transport/routing_headers_test.exs:354 (MCP.Transport.RoutingHeadersTest)",
-        "test/mcp/transport/routing_headers_test.exs:372 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:359 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:399 (MCP.Transport.RoutingHeadersTest)",
+        "test/mcp/transport/routing_headers_test.exs:419 (MCP.Transport.RoutingHeadersTest)",
         "test/mcp/transport/self_compatibility_test.exs:185 (MCP.Transport.SelfCompatibilityTest)"
       ],
       "mutation": [

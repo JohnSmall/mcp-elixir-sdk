@@ -3568,8 +3568,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              269,
-              286
+              300,
+              317
             ],
             "bytes": "    test \"it matches the body _meta, not the transport's configured default\", %{\n      agent: agent,\n      url: url\n    } do\n      transport = start_transport(url, protocol_version: \"2026-07-28\")\n\n      :ok =\n        HTTPClient.send_message(transport, %{\n          \"jsonrpc\" => \"2.0\",\n          \"id\" => 1,\n          \"method\" => \"tools/list\",\n          \"params\" => %{\n            \"_meta\" => %{\"io.modelcontextprotocol/protocolVersion\" => \"2030-01-01\"}\n          }\n        })\n\n      assert headers_of(agent, 0)[\"mcp-protocol-version\"] == \"2030-01-01\"\n    end"
           },
@@ -3781,7 +3781,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:285"
+                "firing": "routing_headers_test.exs:316"
               },
               {
                 "id": "E10n",
@@ -3795,7 +3795,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:285"
+                "firing": "routing_headers_test.exs:316"
               },
               {
                 "id": "CR-Eh",
@@ -3813,7 +3813,7 @@
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect fail; client-2026-07-28-null-exit0 fail; client-2026-07-28-null-request fail. Every null fails it, so the OC green is evidence a do-nothing client could not produce. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E4 (violation) red at routing_headers_test.exs:285; E10n (null) red at routing_headers_test.exs:285. CR-Eh (violation) green, each measured against the real harness as well: the check aggregates over every request the scenario sends, and the member samples one request type, so a client that breaks the behaviour on tools/call ONLY is red in OC and green here (CR B1 on 30093; the sweep is aggregation_sweep). Some mutation leaves the member green, so the ET green does not discriminate that failure mode."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect fail; client-2026-07-28-null-exit0 fail; client-2026-07-28-null-request fail. Every null fails it, so the OC green is evidence a do-nothing client could not produce. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E4 (violation) red at routing_headers_test.exs:316; E10n (null) red at routing_headers_test.exs:316. CR-Eh (violation) green, each measured against the real harness as well: the check aggregates over every request the scenario sends, and the member samples one request type, so a client that breaks the behaviour on tools/call ONLY is red in OC and green here (CR B1 on 30093; the sweep is aggregation_sweep). Some mutation leaves the member green, so the ET green does not discriminate that failure mode."
         },
         {
           "member": "MCP.Transport.RoutingHeadersTest/test the version header rides the message (D-4), on the wire it matches the body _meta, not the transport's configured default",
@@ -3832,8 +3832,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              269,
-              286
+              300,
+              317
             ],
             "bytes": "    test \"it matches the body _meta, not the transport's configured default\", %{\n      agent: agent,\n      url: url\n    } do\n      transport = start_transport(url, protocol_version: \"2026-07-28\")\n\n      :ok =\n        HTTPClient.send_message(transport, %{\n          \"jsonrpc\" => \"2.0\",\n          \"id\" => 1,\n          \"method\" => \"tools/list\",\n          \"params\" => %{\n            \"_meta\" => %{\"io.modelcontextprotocol/protocolVersion\" => \"2030-01-01\"}\n          }\n        })\n\n      assert headers_of(agent, 0)[\"mcp-protocol-version\"] == \"2030-01-01\"\n    end"
           },
@@ -4052,7 +4052,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:285"
+                "firing": "routing_headers_test.exs:316"
               },
               {
                 "id": "E10n",
@@ -4066,7 +4066,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:285"
+                "firing": "routing_headers_test.exs:316"
               },
               {
                 "id": "CR-Em",
@@ -4084,7 +4084,7 @@
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect fail; client-2026-07-28-null-exit0 fail; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E5 (violation) red at routing_headers_test.exs:285; E10n (null) red at routing_headers_test.exs:285. CR-Em (violation) green, each measured against the real harness as well: the check aggregates over every request the scenario sends, and the member samples one request type, so a client that breaks the behaviour on tools/call ONLY is red in OC and green here (CR B1 on 30093; the sweep is aggregation_sweep). Some mutation leaves the member green, so the ET green does not discriminate that failure mode."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect fail; client-2026-07-28-null-exit0 fail; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E5 (violation) red at routing_headers_test.exs:316; E10n (null) red at routing_headers_test.exs:316. CR-Em (violation) green, each measured against the real harness as well: the check aggregates over every request the scenario sends, and the member samples one request type, so a client that breaks the behaviour on tools/call ONLY is red in OC and green here (CR B1 on 30093; the sweep is aggregation_sweep). Some mutation leaves the member green, so the ET green does not discriminate that failure mode."
         },
         {
           "member": "MCP.ClientToolSchemasTest/test W6 — SEP-2243 tool exclusion an invalid tool is dropped and the valid ones are kept",
@@ -4418,8 +4418,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              90,
-              107
+              95,
+              112
             ],
             "bytes": "    test \"a request carries the body method\", %{agent: agent, url: url} do\n      transport = start_transport(url)\n\n      for method <- ~w(server/discover tools/list resources/list prompts/list completion/complete) do\n        :ok =\n          HTTPClient.send_message(transport, %{\n            \"jsonrpc\" => \"2.0\",\n            \"id\" => 1,\n            \"method\" => method,\n            \"params\" => %{}\n          })\n      end\n\n      methods = for r <- requests(agent), do: Map.new(r.headers)[\"mcp-method\"]\n\n      assert methods ==\n               ~w(server/discover tools/list resources/list prompts/list completion/complete)\n    end"
           },
@@ -4525,7 +4525,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:105"
+                "firing": "routing_headers_test.exs:110"
               },
               {
                 "id": "E10n",
@@ -4539,11 +4539,11 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:105"
+                "firing": "routing_headers_test.exs:110"
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10a (violation) red at routing_headers_test.exs:105; E10n (null) red at routing_headers_test.exs:105. Every limb turns the member red, so the ET green discriminates."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10a (violation) red at routing_headers_test.exs:110; E10n (null) red at routing_headers_test.exs:110. Every limb turns the member red, so the ET green discriminates."
         },
         {
           "member": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a request carries the body method",
@@ -4562,8 +4562,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              90,
-              107
+              95,
+              112
             ],
             "bytes": "    test \"a request carries the body method\", %{agent: agent, url: url} do\n      transport = start_transport(url)\n\n      for method <- ~w(server/discover tools/list resources/list prompts/list completion/complete) do\n        :ok =\n          HTTPClient.send_message(transport, %{\n            \"jsonrpc\" => \"2.0\",\n            \"id\" => 1,\n            \"method\" => method,\n            \"params\" => %{}\n          })\n      end\n\n      methods = for r <- requests(agent), do: Map.new(r.headers)[\"mcp-method\"]\n\n      assert methods ==\n               ~w(server/discover tools/list resources/list prompts/list completion/complete)\n    end"
           },
@@ -4669,7 +4669,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:105"
+                "firing": "routing_headers_test.exs:110"
               },
               {
                 "id": "E10n",
@@ -4683,11 +4683,11 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:105"
+                "firing": "routing_headers_test.exs:110"
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10a (violation) red at routing_headers_test.exs:105; E10n (null) red at routing_headers_test.exs:105. Every limb turns the member red, so the ET green discriminates."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10a (violation) red at routing_headers_test.exs:110; E10n (null) red at routing_headers_test.exs:110. Every limb turns the member red, so the ET green discriminates."
         },
         {
           "member": "MCP.Transport.RoutingHeadersTest/test T-CG1a — Mcp-Method on every POST a request carries the body method",
@@ -4706,8 +4706,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              90,
-              107
+              95,
+              112
             ],
             "bytes": "    test \"a request carries the body method\", %{agent: agent, url: url} do\n      transport = start_transport(url)\n\n      for method <- ~w(server/discover tools/list resources/list prompts/list completion/complete) do\n        :ok =\n          HTTPClient.send_message(transport, %{\n            \"jsonrpc\" => \"2.0\",\n            \"id\" => 1,\n            \"method\" => method,\n            \"params\" => %{}\n          })\n      end\n\n      methods = for r <- requests(agent), do: Map.new(r.headers)[\"mcp-method\"]\n\n      assert methods ==\n               ~w(server/discover tools/list resources/list prompts/list completion/complete)\n    end"
           },
@@ -4813,7 +4813,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:105"
+                "firing": "routing_headers_test.exs:110"
               },
               {
                 "id": "E10n",
@@ -4827,11 +4827,11 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:105"
+                "firing": "routing_headers_test.exs:110"
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10a (violation) red at routing_headers_test.exs:105; E10n (null) red at routing_headers_test.exs:105. Every limb turns the member red, so the ET green discriminates."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10a (violation) red at routing_headers_test.exs:110; E10n (null) red at routing_headers_test.exs:110. Every limb turns the member red, so the ET green discriminates."
         },
         {
           "member": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri",
@@ -4850,8 +4850,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              137,
-              163
+              151,
+              177
             ],
             "bytes": "    test \"tools/call and prompts/get take params.name; resources/read takes params.uri\", %{\n      agent: agent,\n      url: url\n    } do\n      transport = start_transport(url)\n\n      sends = [\n        {\"tools/call\", %{\"name\" => \"get_weather\"}, \"get_weather\"},\n        {\"prompts/get\", %{\"name\" => \"summarise\"}, \"summarise\"},\n        {\"resources/read\", %{\"uri\" => \"file:///projects/app/config.json\"},\n         \"file:///projects/app/config.json\"}\n      ]\n\n      for {method, params, _expected} <- sends do\n        :ok =\n          HTTPClient.send_message(transport, %{\n            \"jsonrpc\" => \"2.0\",\n            \"id\" => 1,\n            \"method\" => method,\n            \"params\" => params\n          })\n      end\n\n      for {{_method, _params, expected}, index} <- Enum.with_index(sends) do\n        assert headers_of(agent, index)[\"mcp-name\"] == expected\n      end\n    end"
           },
@@ -4957,7 +4957,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:161"
+                "firing": "routing_headers_test.exs:175"
               },
               {
                 "id": "E10n",
@@ -4971,11 +4971,11 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:161"
+                "firing": "routing_headers_test.exs:175"
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10b (violation) red at routing_headers_test.exs:161; E10n (null) red at routing_headers_test.exs:161. Every limb turns the member red, so the ET green discriminates."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10b (violation) red at routing_headers_test.exs:175; E10n (null) red at routing_headers_test.exs:175. Every limb turns the member red, so the ET green discriminates."
         },
         {
           "member": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri",
@@ -4994,8 +4994,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              137,
-              163
+              151,
+              177
             ],
             "bytes": "    test \"tools/call and prompts/get take params.name; resources/read takes params.uri\", %{\n      agent: agent,\n      url: url\n    } do\n      transport = start_transport(url)\n\n      sends = [\n        {\"tools/call\", %{\"name\" => \"get_weather\"}, \"get_weather\"},\n        {\"prompts/get\", %{\"name\" => \"summarise\"}, \"summarise\"},\n        {\"resources/read\", %{\"uri\" => \"file:///projects/app/config.json\"},\n         \"file:///projects/app/config.json\"}\n      ]\n\n      for {method, params, _expected} <- sends do\n        :ok =\n          HTTPClient.send_message(transport, %{\n            \"jsonrpc\" => \"2.0\",\n            \"id\" => 1,\n            \"method\" => method,\n            \"params\" => params\n          })\n      end\n\n      for {{_method, _params, expected}, index} <- Enum.with_index(sends) do\n        assert headers_of(agent, index)[\"mcp-name\"] == expected\n      end\n    end"
           },
@@ -5101,7 +5101,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:161"
+                "firing": "routing_headers_test.exs:175"
               },
               {
                 "id": "E10n",
@@ -5115,11 +5115,11 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:161"
+                "firing": "routing_headers_test.exs:175"
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10b (violation) red at routing_headers_test.exs:161; E10n (null) red at routing_headers_test.exs:161. Every limb turns the member red, so the ET green discriminates."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10b (violation) red at routing_headers_test.exs:175; E10n (null) red at routing_headers_test.exs:175. Every limb turns the member red, so the ET green discriminates."
         },
         {
           "member": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods tools/call and prompts/get take params.name; resources/read takes params.uri",
@@ -5138,8 +5138,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              137,
-              163
+              151,
+              177
             ],
             "bytes": "    test \"tools/call and prompts/get take params.name; resources/read takes params.uri\", %{\n      agent: agent,\n      url: url\n    } do\n      transport = start_transport(url)\n\n      sends = [\n        {\"tools/call\", %{\"name\" => \"get_weather\"}, \"get_weather\"},\n        {\"prompts/get\", %{\"name\" => \"summarise\"}, \"summarise\"},\n        {\"resources/read\", %{\"uri\" => \"file:///projects/app/config.json\"},\n         \"file:///projects/app/config.json\"}\n      ]\n\n      for {method, params, _expected} <- sends do\n        :ok =\n          HTTPClient.send_message(transport, %{\n            \"jsonrpc\" => \"2.0\",\n            \"id\" => 1,\n            \"method\" => method,\n            \"params\" => params\n          })\n      end\n\n      for {{_method, _params, expected}, index} <- Enum.with_index(sends) do\n        assert headers_of(agent, index)[\"mcp-name\"] == expected\n      end\n    end"
           },
@@ -5245,7 +5245,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:161"
+                "firing": "routing_headers_test.exs:175"
               },
               {
                 "id": "E10n",
@@ -5259,11 +5259,11 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:161"
+                "firing": "routing_headers_test.exs:175"
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10b (violation) red at routing_headers_test.exs:161; E10n (null) red at routing_headers_test.exs:161. Every limb turns the member red, so the ET green discriminates."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10b (violation) red at routing_headers_test.exs:175; E10n (null) red at routing_headers_test.exs:175. Every limb turns the member red, so the ET green discriminates."
         },
         {
           "member": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name",
@@ -5282,8 +5282,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              166,
-              183
+              182,
+              199
             ],
             "bytes": "    test \"a method with no name target carries Mcp-Method but NO Mcp-Name\", %{\n      agent: agent,\n      url: url\n    } do\n      transport = start_transport(url)\n\n      :ok =\n        HTTPClient.send_message(transport, %{\n          \"jsonrpc\" => \"2.0\",\n          \"id\" => 1,\n          \"method\" => \"tools/list\",\n          \"params\" => %{\"cursor\" => \"abc\"}\n        })\n\n      headers = headers_of(agent, 0)\n      assert headers[\"mcp-method\"] == \"tools/list\"\n      refute Map.has_key?(headers, \"mcp-name\")\n    end"
           },
@@ -5389,7 +5389,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:181"
+                "firing": "routing_headers_test.exs:197"
               },
               {
                 "id": "E10n",
@@ -5403,11 +5403,11 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:180"
+                "firing": "routing_headers_test.exs:196"
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10a (violation) red at routing_headers_test.exs:181; E10n (null) red at routing_headers_test.exs:180. Every limb turns the member red, so the ET green discriminates."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10a (violation) red at routing_headers_test.exs:197; E10n (null) red at routing_headers_test.exs:196. Every limb turns the member red, so the ET green discriminates."
         },
         {
           "member": "MCP.Transport.RoutingHeadersTest/test T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel a resource URI with a space is encoded",
@@ -5426,8 +5426,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              230,
-              245
+              254,
+              269
             ],
             "bytes": "    test \"a resource URI with a space is encoded\", %{agent: agent, url: url} do\n      transport = start_transport(url)\n      uri = \"file:///my documents/notes.md\"\n\n      :ok =\n        HTTPClient.send_message(transport, %{\n          \"jsonrpc\" => \"2.0\",\n          \"id\" => 1,\n          \"method\" => \"resources/read\",\n          \"params\" => %{\"uri\" => uri}\n        })\n\n      # Internal spaces are header-safe, so this one stays plain — the rule is\n      # leading/trailing whitespace, not \"contains a space\".\n      assert headers_of(agent, 0)[\"mcp-name\"] == uri\n    end"
           },
@@ -5533,7 +5533,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:244"
+                "firing": "routing_headers_test.exs:268"
               },
               {
                 "id": "E10n",
@@ -5547,11 +5547,11 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:244"
+                "firing": "routing_headers_test.exs:268"
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10b (violation) red at routing_headers_test.exs:244; E10n (null) red at routing_headers_test.exs:244. Every limb turns the member red, so the ET green discriminates."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10b (violation) red at routing_headers_test.exs:268; E10n (null) red at routing_headers_test.exs:268. Every limb turns the member red, so the ET green discriminates."
         },
         {
           "member": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
@@ -5570,8 +5570,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              318,
-              351
+              359,
+              392
             ],
             "bytes": "    test \"an annotated tool's arguments are mirrored, unannotated ones are not\", %{\n      agent: agent,\n      url: url\n    } do\n      respond_with(agent, tools_responder([@tool]))\n\n      {:ok, client} = Client.start_link(transport: {HTTPClient, url: url})\n      {:ok, _} = Client.list_tools(client)\n\n      {:ok, _} =\n        Client.call_tool(client, \"test_custom_headers\", %{\n          \"region\" => \"us-west1\",\n          \"priority\" => 42,\n          \"verbose\" => false,\n          \"empty_val\" => \"\",\n          \"non_ascii_val\" => \"Hello, 世界\",\n          \"query\" => \"SELECT 1\"\n        })\n\n      headers = headers_of(agent, 1)\n\n      assert headers[\"mcp-param-region\"] == \"us-west1\"\n      assert headers[\"mcp-param-priority\"] == \"42\"\n      assert headers[\"mcp-param-verbose\"] == \"false\"\n      assert headers[\"mcp-param-nonascii\"] == \"=?base64?SGVsbG8sIOS4lueVjA==?=\"\n      # Present with an EMPTY value — the fixture treats a missing one as a\n      # failure, so this asserts the header survives the HTTP stack at all.\n      assert headers[\"mcp-param-emptyval\"] == \"\"\n      refute Map.has_key?(headers, \"mcp-param-query\")\n\n      # And the routing headers ride the same request.\n      assert headers[\"mcp-method\"] == \"tools/call\"\n      assert headers[\"mcp-name\"] == \"test_custom_headers\"\n    end"
           },
@@ -5677,7 +5677,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:349"
+                "firing": "routing_headers_test.exs:390"
               },
               {
                 "id": "E10n",
@@ -5691,11 +5691,11 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:325"
+                "firing": "routing_headers_test.exs:366"
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10a (violation) red at routing_headers_test.exs:349; E10n (null) red at routing_headers_test.exs:325. Every limb turns the member red, so the ET green discriminates."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10a (violation) red at routing_headers_test.exs:390; E10n (null) red at routing_headers_test.exs:366. Every limb turns the member red, so the ET green discriminates."
         },
         {
           "member": "MCP.Transport.RoutingHeadersTest/test T-CG7enc — Mcp-Param-* mirroring, driven end to end through MCP.Client an annotated tool's arguments are mirrored, unannotated ones are not",
@@ -5714,8 +5714,8 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              318,
-              351
+              359,
+              392
             ],
             "bytes": "    test \"an annotated tool's arguments are mirrored, unannotated ones are not\", %{\n      agent: agent,\n      url: url\n    } do\n      respond_with(agent, tools_responder([@tool]))\n\n      {:ok, client} = Client.start_link(transport: {HTTPClient, url: url})\n      {:ok, _} = Client.list_tools(client)\n\n      {:ok, _} =\n        Client.call_tool(client, \"test_custom_headers\", %{\n          \"region\" => \"us-west1\",\n          \"priority\" => 42,\n          \"verbose\" => false,\n          \"empty_val\" => \"\",\n          \"non_ascii_val\" => \"Hello, 世界\",\n          \"query\" => \"SELECT 1\"\n        })\n\n      headers = headers_of(agent, 1)\n\n      assert headers[\"mcp-param-region\"] == \"us-west1\"\n      assert headers[\"mcp-param-priority\"] == \"42\"\n      assert headers[\"mcp-param-verbose\"] == \"false\"\n      assert headers[\"mcp-param-nonascii\"] == \"=?base64?SGVsbG8sIOS4lueVjA==?=\"\n      # Present with an EMPTY value — the fixture treats a missing one as a\n      # failure, so this asserts the header survives the HTTP stack at all.\n      assert headers[\"mcp-param-emptyval\"] == \"\"\n      refute Map.has_key?(headers, \"mcp-param-query\")\n\n      # And the routing headers ride the same request.\n      assert headers[\"mcp-method\"] == \"tools/call\"\n      assert headers[\"mcp-name\"] == \"test_custom_headers\"\n    end"
           },
@@ -5821,7 +5821,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:350"
+                "firing": "routing_headers_test.exs:391"
               },
               {
                 "id": "E10n",
@@ -5835,11 +5835,11 @@
                   }
                 ],
                 "result": "red",
-                "firing": "routing_headers_test.exs:325"
+                "firing": "routing_headers_test.exs:366"
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10b (violation) red at routing_headers_test.exs:350; E10n (null) red at routing_headers_test.exs:325. Every limb turns the member red, so the ET green discriminates."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect skipped; client-2026-07-28-null-exit0 skipped; client-2026-07-28-null-request skipped. A do-nothing client does not lose this check under at least one null, so the OC green cannot be taken as evidence the behaviour is present; that is a defect in the INSTRUMENT, not in this SDK, and moves no figure of ours. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E10b (violation) red at routing_headers_test.exs:391; E10n (null) red at routing_headers_test.exs:366. Every limb turns the member red, so the ET green discriminates."
         },
         {
           "member": "MCP.ClientConformanceTest/test CG4 / T-CG4 — the client MUST NOT dereference a network $ref listing and calling a tool whose inputSchema $refs a network URI never fetches it",
@@ -5858,8 +5858,8 @@
           "et_test": {
             "file": "test/mcp/client_conformance_test.exs",
             "lines": [
-              116,
-              132
+              118,
+              134
             ],
             "bytes": "    test \"listing and calling a tool whose inputSchema $refs a network URI never fetches it\", %{\n      hits: hits,\n      url: url\n    } do\n      {:ok, client} = Client.start_link(transport: {HTTPClient, url: url})\n\n      capture_log(fn ->\n        assert {:ok, %{\"tools\" => [tool]}} = Client.list_tools(client)\n        # The $ref survives as inert data — we neither fetch it nor rewrite it.\n        assert %{\"$ref\" => ref} = tool[\"inputSchema\"][\"properties\"][\"profile\"]\n        assert ref =~ \"http://127.0.0.1:\"\n\n        assert {:ok, _} = Client.call_tool(client, \"with_ref\", %{\"profile\" => \"anything\"})\n      end)\n\n      assert Agent.get(hits, & &1) == 0\n    end"
           },
@@ -5961,7 +5961,7 @@
                   }
                 ],
                 "result": "red",
-                "firing": "client_conformance_test.exs:131"
+                "firing": "client_conformance_test.exs:133"
               },
               {
                 "id": "E12n",
@@ -5975,11 +5975,11 @@
                   }
                 ],
                 "result": "red",
-                "firing": "client_conformance_test.exs:123"
+                "firing": "client_conformance_test.exs:125"
               }
             ]
           },
-          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect fail; client-2026-07-28-null-exit0 fail; client-2026-07-28-null-request fail. Every null fails it, so the OC green is evidence a do-nothing client could not produce. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E12 (violation) red at client_conformance_test.exs:131; E12n (null) red at client_conformance_test.exs:123. Every limb turns the member red, so the ET green discriminates."
+          "rationale": "OC, recomputed from the committed null censuses under the counts-entail rule: client-2026-07-28-null-connect fail; client-2026-07-28-null-exit0 fail; client-2026-07-28-null-request fail. Every null fails it, so the OC green is evidence a do-nothing client could not produce. ET, measured by scratch lib/ mutation of the behaviour the check's predicate reads (each edit byte-exact, applied alone, member run alone at --seed 0): E12 (violation) red at client_conformance_test.exs:133; E12n (null) red at client_conformance_test.exs:125. Every limb turns the member red, so the ET green discriminates."
         },
         {
           "member": "MCP.ClientTest/test requests call_tool sends name and arguments",

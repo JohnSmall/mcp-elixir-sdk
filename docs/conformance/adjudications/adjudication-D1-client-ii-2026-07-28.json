@@ -121,13 +121,13 @@
           "et_test": {
             "file": "test/mcp/client_conformance_test.exs",
             "lines": [
-              235,
-              250
+              247,
+              262
             ],
             "bytes": "    test \"the OUTBOUND half (MES-16) still rides every request's _meta\" do\n      {:ok, client} =\n        Client.start_link(\n          transport: {MockTransport, []},\n          client_capabilities: %ClientCapabilities{\n            extensions: %{\"com.example/ext\" => %{\"setting\" => true}}\n          }\n        )\n\n      transport = Client.transport(client)\n      {_result, request} = discover(client, transport, %{\"tools\" => %{}})\n\n      assert request[\"params\"][\"_meta\"][\"io.modelcontextprotocol/clientCapabilities\"][\n               \"extensions\"\n             ] == %{\"com.example/ext\" => %{\"setting\" => true}}\n    end"
           },
           "asserts_read": [
-            "test/mcp/client_conformance_test.exs:247 — assert request[\"params\"][\"_meta\"][\"io.modelcontextprotocol/clientCapabilities\"]["
+            "test/mcp/client_conformance_test.exs:259 — assert request[\"params\"][\"_meta\"][\"io.modelcontextprotocol/clientCapabilities\"]["
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -154,18 +154,18 @@
               ],
               "bytes": "let s=i?.[`io.modelcontextprotocol/clientInfo`],c=i?.[`io.modelcontextprotocol/clientCapabilities`],l=a&&c"
             },
-            "why_a3_missed": "A3 did not see client_conformance_test.exs:247 as the meta_carries_client_capabilities axis (clientCapabilities present on the request); the other axis, protocolVersion, is not asserted, so the edge is partial; the assert reads a key inside clientCapabilities, which entails its presence, the crosswalk's own precedent (conformance/data/crosswalk-edges-client.json:334; conformance/data/crosswalk-edges-client.json:351) [ratified 29735, Q6]."
+            "why_a3_missed": "A3 did not see client_conformance_test.exs:259 as the meta_carries_client_capabilities axis (clientCapabilities present on the request); the other axis, protocolVersion, is not asserted, so the edge is partial; the assert reads a key inside clientCapabilities, which entails its presence, the crosswalk's own precedent (conformance/data/crosswalk-edges-client.json:334; conformance/data/crosswalk-edges-client.json:351) [ratified 29735, Q6]."
           },
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "clientCapabilities carries the capabilities relevant to this request (basic/index.mdx:377), and the spec's own discover example sends `{}` (discover.mdx:27), so the extensions equality at client_conformance_test.exs:247 fails for an SDK that does the same."
+            "reading": "clientCapabilities carries the capabilities relevant to this request (basic/index.mdx:377), and the spec's own discover example sends `{}` (discover.mdx:27), so the extensions equality at client_conformance_test.exs:259 fails for an SDK that does the same."
           },
           "routed_to": {
             "to": "A3",
             "owner": "MES-152",
             "owner_record": "MES-152 comment 29774, item 1"
           },
-          "rationale": "Every assert read (each listed in asserts_read). The assert at client_conformance_test.exs:247-249 reads `_meta[\"io.modelcontextprotocol/clientCapabilities\"][\"extensions\"]` on the server/discover probe (the `discover` helper's `[request]`, client_conformance_test.exs:166), which entails clientCapabilities is present (ENTAILED agreement, ratified 29735 Q6): ClientPopulatesMeta's axis meta_carries_client_capabilities (`c=i?.[`io.modelcontextprotocol/clientCapabilities`]`, oc_counterpart.predicate) agrees; its protocolVersion axis is not asserted. The same shape as MES-139's CG2-stamped-into-discover-probe. So the member HAS an OC counterpart that the crosswalk did not record: the MES-119 missed-edge shape, a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterpart-free counterfactual [authored 29733/29734 | ratified 29735, Q5]: a member with a missed edge is not truly a bucket-1 member, so the D1 premise fails; its reading is still recorded honestly, and it fires. Once MES-152 adds the edge, the member is re-adjudicated in its new bucket. Nothing is relabelled or deleted here."
+          "rationale": "Every assert read (each listed in asserts_read). The assert at client_conformance_test.exs:259-261 reads `_meta[\"io.modelcontextprotocol/clientCapabilities\"][\"extensions\"]` on the server/discover probe (the `discover` helper's `[request]`, client_conformance_test.exs:170), which entails clientCapabilities is present (ENTAILED agreement, ratified 29735 Q6): ClientPopulatesMeta's axis meta_carries_client_capabilities (`c=i?.[`io.modelcontextprotocol/clientCapabilities`]`, oc_counterpart.predicate) agrees; its protocolVersion axis is not asserted. The same shape as MES-139's CG2-stamped-into-discover-probe. So the member HAS an OC counterpart that the crosswalk did not record: the MES-119 missed-edge shape, a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterpart-free counterfactual [authored 29733/29734 | ratified 29735, Q5]: a member with a missed edge is not truly a bucket-1 member, so the D1 premise fails; its reading is still recorded honestly, and it fires. Once MES-152 adds the edge, the member is re-adjudicated in its new bucket. Nothing is relabelled or deleted here."
         },
         {
           "member": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
@@ -178,15 +178,15 @@
           "et_test": {
             "file": "test/mcp/client_conformance_test.exs",
             "lines": [
-              186,
-              209
+              192,
+              215
             ],
             "bytes": "    test \"the client can read what the server declared, with the settings map intact\" do\n      {:ok, client} = Client.start_link(transport: {MockTransport, []})\n      transport = Client.transport(client)\n\n      extensions = %{\n        \"io.modelcontextprotocol/tasks\" => %{},\n        \"com.example/thing\" => %{\"mimeTypes\" => [\"text/html\"], \"nested\" => %{\"depth\" => 2}}\n      }\n\n      {result, _request} =\n        discover(client, transport, %{\"tools\" => %{}, \"extensions\" => extensions})\n\n      assert result.server_capabilities.extensions == extensions\n      assert Client.server_capabilities(client).extensions == extensions\n\n      # An extension we do not implement is neither rejected, nor rewritten,\n      # nor reported as a fault — the posture `extensions.ex:56-61` commits to\n      # in prose and nothing tested.\n      assert get_in(result.server_capabilities.extensions, [\n               \"com.example/thing\",\n               \"nested\",\n               \"depth\"\n             ]) == 2\n    end"
           },
           "asserts_read": [
-            "test/mcp/client_conformance_test.exs:198 — assert result.server_capabilities.extensions == extensions",
-            "test/mcp/client_conformance_test.exs:199 — assert Client.server_capabilities(client).extensions == extensions",
-            "test/mcp/client_conformance_test.exs:204 — assert get_in(result.server_capabilities.extensions, ["
+            "test/mcp/client_conformance_test.exs:204 — assert result.server_capabilities.extensions == extensions",
+            "test/mcp/client_conformance_test.exs:205 — assert Client.server_capabilities(client).extensions == extensions",
+            "test/mcp/client_conformance_test.exs:210 — assert get_in(result.server_capabilities.extensions, ["
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -1086,13 +1086,13 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              110,
-              122
+              117,
+              129
             ],
             "bytes": "    test \"a NOTIFICATION carries it too — the spec says all requests, not all responses-bearing ones\",\n         %{agent: agent, url: url} do\n      transport = start_transport(url)\n\n      :ok =\n        HTTPClient.send_message(transport, %{\n          \"jsonrpc\" => \"2.0\",\n          \"method\" => \"notifications/cancelled\",\n          \"params\" => %{\"requestId\" => 1}\n        })\n\n      assert headers_of(agent, 0)[\"mcp-method\"] == \"notifications/cancelled\"\n    end"
           },
           "asserts_read": [
-            "test/mcp/transport/routing_headers_test.exs:121 — assert headers_of(agent, 0)[\"mcp-method\"] == \"notifications/cancelled\""
+            "test/mcp/transport/routing_headers_test.exs:128 — assert headers_of(agent, 0)[\"mcp-method\"] == \"notifications/cancelled\""
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -1112,7 +1112,7 @@
           "rationale": "Every assert read (each listed in asserts_read). The nearest in-scope check is ClientMcpMethodHeader_notifications_initialized (near_miss: the method list `getChecks` emits Method rows for). Its subject is the notifications/initialized POST, which our stateless client never sends; `checkMcpMethodHeader` would name a notifications/cancelled POST ClientMcpMethodHeader_notifications_cancelled, which is not among the 175 (the view row). A shared header name is not subject identity (the MES-117 lesson), so this is a near miss, and A3 missed nothing. The counterfactual fires (see `counterfactual`), so by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. Nothing is relabelled or deleted here.",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "This revision defines no client-to-server notification over Streamable HTTP (streamable-http.mdx:95-100), so an SDK's HTTP transport may refuse to POST notifications/cancelled, and the `:ok =` match at routing_headers_test.exs:114 fails."
+            "reading": "This revision defines no client-to-server notification over Streamable HTTP (streamable-http.mdx:95-100), so an SDK's HTTP transport may refuse to POST notifications/cancelled, and the `:ok =` match at routing_headers_test.exs:121 fails."
           },
           "routed_to": {
             "to": "A2",
@@ -1131,14 +1131,14 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              125,
-              132
+              134,
+              141
             ],
             "bytes": "    test \"a message with no method carries no routing headers\", %{agent: agent, url: url} do\n      transport = start_transport(url)\n      :ok = HTTPClient.send_message(transport, %{\"jsonrpc\" => \"2.0\", \"id\" => 1, \"result\" => %{}})\n\n      headers = headers_of(agent, 0)\n      refute Map.has_key?(headers, \"mcp-method\")\n      refute Map.has_key?(headers, \"mcp-name\")\n    end"
           },
           "asserts_read": [
-            "test/mcp/transport/routing_headers_test.exs:130 — refute Map.has_key?(headers, \"mcp-method\")",
-            "test/mcp/transport/routing_headers_test.exs:131 — refute Map.has_key?(headers, \"mcp-name\")"
+            "test/mcp/transport/routing_headers_test.exs:139 — refute Map.has_key?(headers, \"mcp-method\")",
+            "test/mcp/transport/routing_headers_test.exs:140 — refute Map.has_key?(headers, \"mcp-name\")"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -1159,10 +1159,10 @@
             "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/transports/streamable-http",
             "quote": "The client **MUST NOT** send JSON-RPC _responses_."
           },
-          "rationale": "Every assert read (each listed in asserts_read). The unit POSTs `{\"jsonrpc\": \"2.0\", \"id\": 1, \"result\": %{}}`, a JSON-RPC response, through the client transport and matches `:ok` (routing_headers_test.exs:127), then asserts what that POST's headers lack (:130-131). streamable-http.mdx:80-81 requires the body of a client POST to be a request or notification and says the client MUST NOT send JSON-RPC responses, so the unit asserts that the client sends a message the specification forbids (N5, 29708). The harness's methodless early return (near_miss) is a precondition, not an axis (the view row), so no check's predicate is asserted and A3 missed nothing. The remedy belongs to remediation, and nothing here edits the test.",
+          "rationale": "Every assert read (each listed in asserts_read). The unit POSTs `{\"jsonrpc\": \"2.0\", \"id\": 1, \"result\": %{}}`, a JSON-RPC response, through the client transport and matches `:ok` (routing_headers_test.exs:136), then asserts what that POST's headers lack (:139-140). streamable-http.mdx:80-81 requires the body of a client POST to be a request or notification and says the client MUST NOT send JSON-RPC responses, so the unit asserts that the client sends a message the specification forbids (N5, 29708). The harness's methodless early return (near_miss) is a precondition, not an axis (the view row), so no check's predicate is asserted and A3 missed nothing. The remedy belongs to remediation, and nothing here edits the test.",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "A conforming SDK MUST NOT send a JSON-RPC response (streamable-http.mdx:80-81), so its transport refuses this one, and the `:ok =` match at routing_headers_test.exs:127 fails."
+            "reading": "A conforming SDK MUST NOT send a JSON-RPC response (streamable-http.mdx:80-81), so its transport refuses this one, and the `:ok =` match at routing_headers_test.exs:136 fails."
           }
         },
         {
@@ -1176,15 +1176,15 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              372,
-              391
+              419,
+              438
             ],
             "bytes": "    test \"with no prior tools/list, nothing is mirrored and the client says so\", %{\n      agent: agent,\n      url: url\n    } do\n      # The C-2 miss policy, observed: the call still goes out, carries its\n      # routing headers, carries NO Mcp-Param-*, and is announced.\n      respond_with(agent, tools_responder([@tool]))\n      {:ok, client} = Client.start_link(transport: {HTTPClient, url: url})\n\n      log =\n        ExUnit.CaptureLog.capture_log(fn ->\n          {:ok, _} =\n            Client.call_tool(client, \"test_custom_headers\", %{\"region\" => \"us-west1\"})\n        end)\n\n      headers = headers_of(agent, 0)\n      assert headers[\"mcp-name\"] == \"test_custom_headers\"\n      refute Map.has_key?(headers, \"mcp-param-region\")\n      assert log =~ \"no cached inputSchema\"\n    end"
           },
           "asserts_read": [
-            "test/mcp/transport/routing_headers_test.exs:388 — assert headers[\"mcp-name\"] == \"test_custom_headers\"",
-            "test/mcp/transport/routing_headers_test.exs:389 — refute Map.has_key?(headers, \"mcp-param-region\")",
-            "test/mcp/transport/routing_headers_test.exs:390 — assert log =~ \"no cached inputSchema\""
+            "test/mcp/transport/routing_headers_test.exs:435 — assert headers[\"mcp-name\"] == \"test_custom_headers\"",
+            "test/mcp/transport/routing_headers_test.exs:436 — refute Map.has_key?(headers, \"mcp-param-region\")",
+            "test/mcp/transport/routing_headers_test.exs:437 — assert log =~ \"no cached inputSchema\""
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -1211,18 +1211,18 @@
               ],
               "bytes": "a?a!==i&&o.push(`Mcp-Name header value"
             },
-            "why_a3_missed": "A3 did not record routing_headers_test.exs:388, an equality of the tools/call's `mcp-name` header with the tool named in the call, as ClientMcpNameHeader_tools_call (both axes, a FULL match, ratified 29735 Q7); the view row saw the claim and left it in claims_without_an_edge for C1b-ii, which then recorded only the sibling's identical claim (the crosswalk edge at routing_headers_test.exs:350)."
+            "why_a3_missed": "A3 did not record routing_headers_test.exs:435, an equality of the tools/call's `mcp-name` header with the tool named in the call, as ClientMcpNameHeader_tools_call (both axes, a FULL match, ratified 29735 Q7); the view row saw the claim and left it in claims_without_an_edge for C1b-ii, which then recorded only the sibling's identical claim (the crosswalk edge at routing_headers_test.exs:391)."
           },
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "The cache-miss warning asserted at routing_headers_test.exs:390 is the SDK's own log text, and no spec text requires it, so an SDK without it fails the unit."
+            "reading": "The cache-miss warning asserted at routing_headers_test.exs:437 is the SDK's own log text, and no spec text requires it, so an SDK without it fails the unit."
           },
           "routed_to": {
             "to": "A3",
             "owner": "MES-152",
             "owner_record": "MES-152 comment 29774, item 3"
           },
-          "rationale": "Every assert read (each listed in asserts_read). The assert at routing_headers_test.exs:388 is an equality of the call's `mcp-name` header with the tool name, `test_custom_headers`, which entails presence (DIRECT agreement): ClientMcpNameHeader_tools_call's axes mcp_name_header_present and mcp_name_header_matches_source_field (`a?a!==i&&o.push(...)`, oc_counterpart.predicate) both agree, the full match. The refute at :389 is NOT an edge onto ClientCustomHeader_Region: that check's input is the tools/call after the fixture's tools/list, and this member's is a call with no prior listing (the view row), so its subject differs. So the member HAS an OC counterpart that the crosswalk did not record: the MES-119 missed-edge shape, a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterpart-free counterfactual [authored 29733/29734 | ratified 29735, Q5]: a member with a missed edge is not truly a bucket-1 member, so the D1 premise fails; its reading is still recorded honestly, and it fires. Once MES-152 adds the edge, the member is re-adjudicated in its new bucket. Nothing is relabelled or deleted here."
+          "rationale": "Every assert read (each listed in asserts_read). The assert at routing_headers_test.exs:435 is an equality of the call's `mcp-name` header with the tool name, `test_custom_headers`, which entails presence (DIRECT agreement): ClientMcpNameHeader_tools_call's axes mcp_name_header_present and mcp_name_header_matches_source_field (`a?a!==i&&o.push(...)`, oc_counterpart.predicate) both agree, the full match. The refute at :436 is NOT an edge onto ClientCustomHeader_Region: that check's input is the tools/call after the fixture's tools/list, and this member's is a call with no prior listing (the view row), so its subject differs. So the member HAS an OC counterpart that the crosswalk did not record: the MES-119 missed-edge shape, a finding against A3, routed to MES-152 and not fixed here. REDUNDANT takes precedence over the counterpart-free counterfactual [authored 29733/29734 | ratified 29735, Q5]: a member with a missed edge is not truly a bucket-1 member, so the D1 premise fails; its reading is still recorded honestly, and it fires. Once MES-152 adds the edge, the member is re-adjudicated in its new bucket. Nothing is relabelled or deleted here."
         },
         {
           "member": "MCP.Transport.SSETest/test decode_event/1 decodes event with JSON data",

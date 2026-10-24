@@ -185,12 +185,12 @@ defmodule MCP.Transport.SelfCompatibilityTest do
   test "END TO END: our client calls our server's non-header-safe tool over real HTTP" do
     # The whole loop — client encodes, server decodes, tool runs. This is the
     # test that would have caught the self-incompatibility as a shipped bug.
-    port = free_port()
+    # Port 0, read back once bound (MES-215).
 
-    {:ok, server} =
-      Bandit.start_link(
+    {server, port} =
+      MCP.Test.Listener.bandit!(
         plug: {MCPPlug, opts()},
-        port: port,
+        port: 0,
         ip: {127, 0, 0, 1},
         startup_log: false
       )
@@ -208,12 +208,5 @@ defmodule MCP.Transport.SelfCompatibilityTest do
     assert name == Handler.tool_name()
 
     assert {:ok, %{"content" => [%{"text" => "sunny"}]}} = MCP.Client.call_tool(client, name)
-  end
-
-  defp free_port do
-    {:ok, socket} = :gen_tcp.listen(0, [:binary, active: false, reuseaddr: true])
-    {:ok, port} = :inet.port(socket)
-    :gen_tcp.close(socket)
-    port
   end
 end

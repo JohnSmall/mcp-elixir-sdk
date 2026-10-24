@@ -50,13 +50,13 @@ defmodule MCP.Transport.RoutingHeadersTest do
   end
 
   setup do
-    port = free_port()
+    # Port 0, read back once bound (MES-215).
     {:ok, agent} = Agent.start_link(fn -> %{requests: [], responder: default_responder()} end)
 
-    {:ok, server} =
-      Bandit.start_link(
+    {server, port} =
+      MCP.Test.Listener.bandit!(
         plug: {CapturePlug, agent},
-        port: port,
+        port: 0,
         ip: {127, 0, 0, 1},
         startup_log: false
       )
@@ -65,12 +65,12 @@ defmodule MCP.Transport.RoutingHeadersTest do
     %{agent: agent, port: port, url: "http://127.0.0.1:#{port}/mcp"}
   end
 
-  defp free_port do
-    {:ok, socket} = :gen_tcp.listen(0, [:binary, active: false, reuseaddr: true])
-    {:ok, port} = :inet.port(socket)
-    :gen_tcp.close(socket)
-    port
-  end
+  # MES-215: no port-picking helper here. Every listener in this file binds
+  # port 0 through MCP.Test.Listener.bandit!/2, which reads back the port the OS
+  # assigned, so no port is chosen before it is bound: the window in which
+  # another socket could take it (:eaddrinuse) does not exist. RC3 in
+  # listener_port_race_test.exs holds the whole test tree to that.
+  # It replaced a per-file probe that closed its socket before the bind.
 
   defp respond_with(agent, fun), do: Agent.update(agent, &%{&1 | responder: fun})
 
@@ -86,6 +86,11 @@ defmodule MCP.Transport.RoutingHeadersTest do
   end
 
   describe "T-CG1a — Mcp-Method on every POST" do
+    @tag oc: [
+           "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_list",
+           "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_resources_list",
+           "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_prompts_list"
+         ]
     @tag :etcc
     test "a request carries the body method", %{agent: agent, url: url} do
       transport = start_transport(url)
@@ -106,6 +111,8 @@ defmodule MCP.Transport.RoutingHeadersTest do
                ~w(server/discover tools/list resources/list prompts/list completion/complete)
     end
 
+    @tag oc: :none
+    @tag oc_reason: "no SUCCESS check: ClientMcpMethodHeader_notifications_initialized is SKIPPED"
     @tag :etcc
     test "a NOTIFICATION carries it too — the spec says all requests, not all responses-bearing ones",
          %{agent: agent, url: url} do
@@ -121,6 +128,8 @@ defmodule MCP.Transport.RoutingHeadersTest do
       assert headers_of(agent, 0)["mcp-method"] == "notifications/cancelled"
     end
 
+    @tag oc: :none
+    @tag oc_reason: "a response carries no routing headers; no OC check sends one"
     @tag :etcc
     test "a message with no method carries no routing headers", %{agent: agent, url: url} do
       transport = start_transport(url)
@@ -133,6 +142,11 @@ defmodule MCP.Transport.RoutingHeadersTest do
   end
 
   describe "T-CG1b — Mcp-Name for the three name-bearing methods" do
+    @tag oc: [
+           "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call",
+           "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_resources_read",
+           "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_prompts_get"
+         ]
     @tag :etcc
     test "tools/call and prompts/get take params.name; resources/read takes params.uri", %{
       agent: agent,
@@ -162,6 +176,8 @@ defmodule MCP.Transport.RoutingHeadersTest do
       end
     end
 
+    @tag oc:
+           "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_list"
     @tag :etcc
     test "a method with no name target carries Mcp-Method but NO Mcp-Name", %{
       agent: agent,
@@ -182,6 +198,9 @@ defmodule MCP.Transport.RoutingHeadersTest do
       refute Map.has_key?(headers, "mcp-name")
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "ClientMcpNameHeader_tools_call contradicts this: crosswalk axis mcp_name_header_present = contradicts; it would score FAILURE on a nameless tools/call"
     @tag :etcc
     test "a tools/call whose params carry no name emits no Mcp-Name rather than an empty one", %{
       agent: agent,
@@ -202,6 +221,9 @@ defmodule MCP.Transport.RoutingHeadersTest do
   end
 
   describe "T-CG1c — a non-header-safe Mcp-Name is carried as the Base64 sentinel" do
+    @tag oc: :none
+    @tag oc_reason:
+           "ClientMcpNameHeader_tools_call contradicts this: crosswalk axis mcp_name_header_matches_source_field = contradicts; it compares the Base64-encoded header with the plain name and scores FAILURE"
     @tag :etcc
     test "a non-ASCII tool name is encoded, and decodes back to the body value", %{
       agent: agent,
@@ -226,6 +248,8 @@ defmodule MCP.Transport.RoutingHeadersTest do
       assert Enum.at(requests(agent), 0).message["params"]["name"] == name
     end
 
+    @tag oc:
+           "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_resources_read"
     @tag :etcc
     test "a resource URI with a space is encoded", %{agent: agent, url: url} do
       transport = start_transport(url)
@@ -244,6 +268,9 @@ defmodule MCP.Transport.RoutingHeadersTest do
       assert headers_of(agent, 0)["mcp-name"] == uri
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "ClientMcpNameHeader_tools_call contradicts this: crosswalk axis mcp_name_header_matches_source_field = contradicts; it compares the encoded, neutralised header with the raw name and scores FAILURE"
     @tag :etcc
     test "a name that would inject a header is neutralised", %{agent: agent, url: url} do
       transport = start_transport(url)
@@ -265,6 +292,10 @@ defmodule MCP.Transport.RoutingHeadersTest do
   end
 
   describe "the version header rides the message (D-4), on the wire" do
+    @tag oc: [
+           "oc:client/request-metadata/sep-2575-http-client-sends-version-header/ClientSendsVersionHeader",
+           "oc:client/request-metadata/sep-2575-http-version-header-matches-meta/ClientVersionHeaderMatchesMeta"
+         ]
     @tag :etcc
     test "it matches the body _meta, not the transport's configured default", %{
       agent: agent,
@@ -314,6 +345,16 @@ defmodule MCP.Transport.RoutingHeadersTest do
       end
     end
 
+    @tag oc: [
+           "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+           "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Priority",
+           "oc:client/http-custom-headers/sep-2243-client-encode-values/ClientCustomHeader_Verbose",
+           "oc:client/http-custom-headers/sep-2243-client-base64-unsafe/ClientCustomHeader_NonAscii",
+           "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_EmptyVal",
+           "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeaderNoMirrorUnannotated",
+           "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpMethodHeader_tools_call",
+           "oc:client/http-standard-headers/sep-2243-client-includes-standard-headers/ClientMcpNameHeader_tools_call"
+         ]
     @tag :etcc
     test "an annotated tool's arguments are mirrored, unannotated ones are not", %{
       agent: agent,
@@ -350,6 +391,10 @@ defmodule MCP.Transport.RoutingHeadersTest do
       assert headers["mcp-name"] == "test_custom_headers"
     end
 
+    @tag oc: [
+           "oc:client/http-custom-headers/sep-2243-client-mirrors-designated-params/ClientCustomHeader_Region",
+           "oc:client/http-custom-headers/sep-2243-client-omit-null/ClientCustomHeaderOmitNull"
+         ]
     @tag :etcc
     test "a null argument omits its header", %{agent: agent, url: url} do
       respond_with(agent, tools_responder([@tool]))
@@ -368,6 +413,8 @@ defmodule MCP.Transport.RoutingHeadersTest do
       refute Map.has_key?(headers, "mcp-param-verbose")
     end
 
+    @tag oc: :none
+    @tag oc_reason: "the OC scenario always lists first; no check covers this"
     @tag :etcc
     test "with no prior tools/list, nothing is mirrored and the client says so", %{
       agent: agent,
@@ -392,6 +439,8 @@ defmodule MCP.Transport.RoutingHeadersTest do
   end
 
   describe "W13 — the rotating-bearer header provider" do
+    @tag oc: :none
+    @tag oc_reason: "header_provider is SDK API; no OC check drives one"
     test "it is called per request, so a rotated credential is actually sent", %{
       agent: agent,
       url: url
@@ -414,6 +463,8 @@ defmodule MCP.Transport.RoutingHeadersTest do
       assert tokens == ["Bearer token-1", "Bearer token-2", "Bearer token-3"]
     end
 
+    @tag oc: :none
+    @tag oc_reason: "header_provider is SDK API; no OC check drives one"
     test "a raising provider fails THAT request and leaves the transport alive", %{url: url} do
       transport = start_transport(url, header_provider: fn -> raise "boom" end)
 
@@ -423,6 +474,8 @@ defmodule MCP.Transport.RoutingHeadersTest do
       assert Process.alive?(transport)
     end
 
+    @tag oc: :none
+    @tag oc_reason: "header_provider is SDK API; no OC check drives one"
     test "a throwing or exiting provider is caught the same way", %{url: url} do
       thrower = start_transport(url, header_provider: fn -> throw(:nope) end)
 
@@ -439,6 +492,8 @@ defmodule MCP.Transport.RoutingHeadersTest do
       assert Process.alive?(exiter)
     end
 
+    @tag oc: :none
+    @tag oc_reason: "header_provider is SDK API; no OC check drives one"
     test "a provider process killed outright still only fails the request", %{url: url} do
       # The case `catch` cannot reach. It is why the provider runs in an
       # UNLINKED process: `Task.async/1` links, and a link would carry this
@@ -454,6 +509,8 @@ defmodule MCP.Transport.RoutingHeadersTest do
       assert Process.alive?(transport)
     end
 
+    @tag oc: :none
+    @tag oc_reason: "header_provider is SDK API; no OC check drives one"
     test "a malformed return value is refused whole — no partial use of a half-valid list", %{
       agent: agent,
       url: url
@@ -469,6 +526,8 @@ defmodule MCP.Transport.RoutingHeadersTest do
       assert requests(agent) == []
     end
 
+    @tag oc: :none
+    @tag oc_reason: "header_provider is SDK API; no OC check drives one"
     test "a HANGING provider fails on a bounded timeout — the case `try` cannot catch", %{
       url: url
     } do
@@ -495,6 +554,8 @@ defmodule MCP.Transport.RoutingHeadersTest do
       assert Process.alive?(transport)
     end
 
+    @tag oc: :none
+    @tag oc_reason: "header_provider is SDK API; no OC check drives one"
     test "a provider failure surfaces through MCP.Client as a failed call, not a dead client", %{
       url: url
     } do
@@ -513,6 +574,8 @@ defmodule MCP.Transport.RoutingHeadersTest do
   end
 
   describe "caller-supplied routing headers are warned about" do
+    @tag oc: :none
+    @tag oc_reason: "a start_link warning is SDK config; no OC check reads it"
     test "start_link names the offending header", %{url: url} do
       log =
         ExUnit.CaptureLog.capture_log(fn ->
@@ -524,6 +587,8 @@ defmodule MCP.Transport.RoutingHeadersTest do
       assert log =~ "APPENDED"
     end
 
+    @tag oc: :none
+    @tag oc_reason: "a caller header is SDK config; no OC check covers it"
     test "an ordinary caller header is not warned about and IS sent", %{agent: agent, url: url} do
       transport = start_transport(url, headers: [{"authorization", "Bearer static"}])
       :ok = HTTPClient.send_message(transport, %{"jsonrpc" => "2.0", "id" => 1})

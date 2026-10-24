@@ -1055,7 +1055,7 @@
         },
         {
           "member": "MCP.Transport.RoutingHeadersTest/test T-CG1b — Mcp-Name for the three name-bearing methods a method with no name target carries Mcp-Method but NO Mcp-Name",
-          "claim": "a method with no name target carries NO `mcp-name` (routing_headers_test.exs:182 — `refute Map.has_key?(headers, \"mcp-name\")`, on a tools/list)",
+          "claim": "a method with no name target carries NO `mcp-name` (routing_headers_test.exs:198 — `refute Map.has_key?(headers, \"mcp-name\")`, on a tools/list)",
           "tag": "oc:none/no-oc-scenario/CG1-no-mcp-name-without-a-name-target",
           "echo": {
             "search_id": "CLV04",
@@ -1064,14 +1064,14 @@
           "et_test": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              166,
-              182
+              182,
+              198
             ],
             "bytes": "    test \"a method with no name target carries Mcp-Method but NO Mcp-Name\", %{\n      agent: agent,\n      url: url\n    } do\n      transport = start_transport(url)\n\n      :ok =\n        HTTPClient.send_message(transport, %{\n          \"jsonrpc\" => \"2.0\",\n          \"id\" => 1,\n          \"method\" => \"tools/list\",\n          \"params\" => %{\"cursor\" => \"abc\"}\n        })\n\n      headers = headers_of(agent, 0)\n      assert headers[\"mcp-method\"] == \"tools/list\"\n      refute Map.has_key?(headers, \"mcp-name\")"
           },
           "asserts_read": [
-            "test/mcp/transport/routing_headers_test.exs:181 — assert headers[\"mcp-method\"] == \"tools/list\"",
-            "test/mcp/transport/routing_headers_test.exs:182 — refute Map.has_key?(headers, \"mcp-name\")"
+            "test/mcp/transport/routing_headers_test.exs:197 — assert headers[\"mcp-method\"] == \"tools/list\"",
+            "test/mcp/transport/routing_headers_test.exs:198 — refute Map.has_key?(headers, \"mcp-name\")"
           ],
           "check": {
             "none": "the tag is oc:none/: this row is on no OC check, and cites no harness span here",
@@ -1080,10 +1080,10 @@
           "root_cause": null,
           "if_conformance_fixed": null,
           "disposition": "not_a_conformance_claim",
-          "rationale": "The counterfactual fires (see `counterfactual`), so by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. The spec requires Mcp-Name for tools/call, resources/read and prompts/get (streamable-http.mdx:291) and says 'if applicable' (:529); it states no MUST NOT, so the refute (routing_headers_test.exs:182) holds one conforming choice. Reach, unchanged: the three ClientMcpNameHeader_* checks each run on a name-bearing method, and none is a predicate on absence. Nothing is relabelled or deleted here.",
+          "rationale": "The counterfactual fires (see `counterfactual`), so by the N5 ruling [authored 29707 N5 | ratified 29708] the asserted behaviour has no normative anchor: an A2 gate-3 failure, routed to A2. The spec requires Mcp-Name for tools/call, resources/read and prompts/get (streamable-http.mdx:291) and says 'if applicable' (:529); it states no MUST NOT, so the refute (routing_headers_test.exs:198) holds one conforming choice. Reach, unchanged: the three ClientMcpNameHeader_* checks each run on a name-bearing method, and none is a predicate on absence. Nothing is relabelled or deleted here.",
           "counterfactual": {
             "conforming_sdk_can_fail": true,
-            "reading": "An SDK may carry Mcp-Name on a tools/list: streamable-http.mdx:291 requires it for three methods and :529 says 'if applicable', and no text forbids it elsewhere; one that does fails the refute at routing_headers_test.exs:182."
+            "reading": "An SDK may carry Mcp-Name on a tools/list: streamable-http.mdx:291 requires it for three methods and :529 says 'if applicable', and no text forbids it elsewhere; one that does fails the refute at routing_headers_test.exs:198."
           },
           "routed_to": {
             "to": "A2",

@@ -56,13 +56,13 @@ defmodule MCP.Transport.StreamableHTTP.ClientTest do
   end
 
   setup do
-    port = free_port()
+    # Port 0, read back once bound (MES-215).
     {:ok, agent} = Agent.start_link(fn -> :unset end)
 
-    {:ok, server} =
-      Bandit.start_link(
+    {server, port} =
+      MCP.Test.Listener.bandit!(
         plug: {ProbePlug, agent},
-        port: port,
+        port: 0,
         ip: {127, 0, 0, 1},
         startup_log: false
       )
@@ -76,19 +76,23 @@ defmodule MCP.Transport.StreamableHTTP.ClientTest do
     pid
   end
 
-  defp free_port do
-    {:ok, socket} = :gen_tcp.listen(0, [:binary, active: false, reuseaddr: true])
-    {:ok, port} = :inet.port(socket)
-    :gen_tcp.close(socket)
-    port
-  end
+  # MES-215: no port-picking helper here. Every listener in this file binds
+  # port 0 through MCP.Test.Listener.bandit!/2, which reads back the port the OS
+  # assigned, so no port is chosen before it is bound: the window in which
+  # another socket could take it (:eaddrinuse) does not exist. RC3 in
+  # listener_port_race_test.exs holds the whole test tree to that.
+  # It replaced a per-file probe that closed its socket before the bind.
 
+  @tag oc: :none
+  @tag oc_reason: "no OC check exercises content-encoding"
   test "CR-11.1: the client sends `accept-encoding: identity`", %{agent: agent, port: port} do
     pid = start_client(port, "/plain-json")
     Client.send_message(pid, %{"jsonrpc" => "2.0", "id" => 1})
     assert Agent.get(agent, & &1) == ["identity"]
   end
 
+  @tag oc: :none
+  @tag oc_reason: "no OC check sends a content-encoded response"
   test "CR-11.2/11.3: a gzip-coded JSON response fails cleanly and names the coding", %{
     port: port
   } do
@@ -100,6 +104,8 @@ defmodule MCP.Transport.StreamableHTTP.ClientTest do
              Client.send_message(pid, %{"jsonrpc" => "2.0", "id" => 1})
   end
 
+  @tag oc: :none
+  @tag oc_reason: "no OC check sends a content-encoded response"
   test "A6-8: the guard covers the SSE path too (gzip text/event-stream)", %{port: port} do
     pid = start_client(port, "/gzip-sse")
 
@@ -107,12 +113,16 @@ defmodule MCP.Transport.StreamableHTTP.ClientTest do
              Client.send_message(pid, %{"jsonrpc" => "2.0", "id" => 1})
   end
 
+  @tag oc: :none
+  @tag oc_reason: "no OC check sends a content-encoding header"
   test "A6-11: `content-encoding: identity` is tolerated and does NOT error", %{port: port} do
     pid = start_client(port, "/identity-json")
     assert :ok = Client.send_message(pid, %{"jsonrpc" => "2.0", "id" => 1})
     assert_receive {:mcp_message, %{"result" => %{"ok" => true}}}, 2_000
   end
 
+  @tag oc: :none
+  @tag oc_reason: "no OC check exercises content-encoding"
   test "A6-11: an absent content-encoding does NOT error (conformant peer)", %{port: port} do
     pid = start_client(port, "/plain-json")
     assert :ok = Client.send_message(pid, %{"jsonrpc" => "2.0", "id" => 1})
@@ -124,6 +134,8 @@ defmodule MCP.Transport.StreamableHTTP.ClientTest do
   # lines is the natural applied order; at a6bd999 (first-value-only) it produced
   # {:json_decode_error, …} — byte-identical to pre-fix. This is the DISCRIMINATING
   # sixth test; it FAILS at a6bd999.
+  @tag oc: :none
+  @tag oc_reason: "no OC check sends a content-encoded response"
   test "CR-12: duplicate lines identity-then-gzip fail cleanly, not json_decode", %{port: port} do
     pid = start_client(port, "/dup-identity-gzip")
 
@@ -133,6 +145,8 @@ defmodule MCP.Transport.StreamableHTTP.ClientTest do
 
   # The other ordering — caught by luck at a6bd999 (gzip is the first value), but
   # asserted so a future refactor cannot silently drop it (both orderings covered).
+  @tag oc: :none
+  @tag oc_reason: "no OC check sends a content-encoded response"
   test "CR-12: duplicate lines gzip-then-identity fail cleanly", %{port: port} do
     pid = start_client(port, "/dup-gzip-identity")
 

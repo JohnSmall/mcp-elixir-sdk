@@ -51,7 +51,7 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
   end
 
   defp start_instance(owner, extra \\ []) do
-    port = free_port()
+    # Port 0, read back once bound (MES-215).
 
     opts =
       Keyword.merge(
@@ -64,10 +64,10 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
         extra
       )
 
-    {:ok, bandit} =
-      Bandit.start_link(
+    {bandit, port} =
+      MCP.Test.Listener.bandit!(
         plug: {MCP.Transport.StreamableHTTP.Plug, opts},
-        port: port,
+        port: 0,
         ip: {127, 0, 0, 1}
       )
 
@@ -75,12 +75,12 @@ defmodule MCP.Transport.SubscriptionsStreamTest do
     port
   end
 
-  defp free_port do
-    {:ok, socket} = :gen_tcp.listen(0, [:binary, active: false, reuseaddr: true])
-    {:ok, port} = :inet.port(socket)
-    :gen_tcp.close(socket)
-    port
-  end
+  # MES-215: no port-picking helper here. Every listener in this file binds
+  # port 0 through MCP.Test.Listener.bandit!/2, which reads back the port the OS
+  # assigned, so no port is chosen before it is bound: the window in which
+  # another socket could take it (:eaddrinuse) does not exist. RC3 in
+  # listener_port_race_test.exs holds the whole test tree to that.
+  # It replaced a per-file probe that closed its socket before the bind.
 
   # Opens a listen stream over a raw socket and returns it once the
   # acknowledgment has arrived, so every test starts from a stream that is

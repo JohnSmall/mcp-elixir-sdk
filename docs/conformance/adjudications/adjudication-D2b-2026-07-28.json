@@ -1032,16 +1032,16 @@
                 "sends": {
                   "file": "test/mcp/transport/routing_headers_test.exs",
                   "lines": [
-                    145,
-                    145
+                    159,
+                    159
                   ],
                   "bytes": "        {\"prompts/get\", %{\"name\" => \"summarise\"}, \"summarise\"},"
                 },
                 "asserts": {
                   "file": "test/mcp/transport/routing_headers_test.exs",
                   "lines": [
-                    161,
-                    161
+                    175,
+                    175
                   ],
                   "bytes": "        assert headers_of(agent, index)[\"mcp-name\"] == expected"
                 },
@@ -1052,8 +1052,8 @@
                 "sends": {
                   "file": "test/mcp/transport/routing_headers_test.exs",
                   "lines": [
-                    93,
-                    93
+                    98,
+                    98
                   ],
                   "bytes": "      for method <- ~w(server/discover tools/list resources/list prompts/list completion/complete) do"
                 },
@@ -1070,8 +1070,8 @@
           "extend_target": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              137,
-              137
+              151,
+              151
             ],
             "bytes": "    test \"tools/call and prompts/get take params.name; resources/read takes params.uri\", %{",
             "reading": "T-CG1b already runs a live Bandit capture server and sends this method; the added assertion needs no new infrastructure."
@@ -1125,16 +1125,16 @@
                 "sends": {
                   "file": "test/mcp/transport/routing_headers_test.exs",
                   "lines": [
-                    146,
-                    146
+                    160,
+                    160
                   ],
                   "bytes": "        {\"resources/read\", %{\"uri\" => \"file:///projects/app/config.json\"},"
                 },
                 "asserts": {
                   "file": "test/mcp/transport/routing_headers_test.exs",
                   "lines": [
-                    161,
-                    161
+                    175,
+                    175
                   ],
                   "bytes": "        assert headers_of(agent, index)[\"mcp-name\"] == expected"
                 },
@@ -1145,8 +1145,8 @@
                 "sends": {
                   "file": "test/mcp/transport/routing_headers_test.exs",
                   "lines": [
-                    93,
-                    93
+                    98,
+                    98
                   ],
                   "bytes": "      for method <- ~w(server/discover tools/list resources/list prompts/list completion/complete) do"
                 },
@@ -1163,8 +1163,8 @@
           "extend_target": {
             "file": "test/mcp/transport/routing_headers_test.exs",
             "lines": [
-              137,
-              137
+              151,
+              151
             ],
             "bytes": "    test \"tools/call and prompts/get take params.name; resources/read takes params.uri\", %{",
             "reading": "T-CG1b already runs a live Bandit capture server and sends this method; the added assertion needs no new infrastructure."

@@ -13,7 +13,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "client_conformance_test.exs:216 — `result.server_capabilities.extensions == nil` when the server declared none. An SDK absence marker with no wire counterpart, so gate 2 fails, and ET-ADJ is unreachable for the same reason as capabilities_test.exs:28: `ServerCapabilities.from_map/1` is consumed only at discover.ex:79 (a client-side decode into client state) and initialize.ex:72 (a module nothing in lib/ uses), neither of which produces a wire artefact.",
+      "evidence": "client_conformance_test.exs:224 — `result.server_capabilities.extensions == nil` when the server declared none. An SDK absence marker with no wire counterpart, so gate 2 fails, and ET-ADJ is unreachable for the same reason as capabilities_test.exs:28: `ServerCapabilities.from_map/1` is consumed only at discover.ex:79 (a client-side decode into client state) and initialize.ex:72 (a module nothing in lib/ uses), neither of which produces a wire artefact.",
       "adjudication": null,
       "boundary": null
     },
@@ -28,7 +28,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "client_conformance_test.exs:230-231 — `refute log =~ \"[error]\"` and `refute log =~ \"[warning]\"` for an unknown extension. Both assertions are on the captured log: operator-facing output, §10 category 8. The posture it pins (an unimplemented extension is neither rejected, rewritten, nor reported as a fault) is real, but nothing about it is on the wire.",
+      "evidence": "client_conformance_test.exs:240-241 — `refute log =~ \"[error]\"` and `refute log =~ \"[warning]\"` for an unknown extension. Both assertions are on the captured log: operator-facing output, §10 category 8. The posture it pins (an unimplemented extension is neither rejected, rewritten, nor reported as a fault) is real, but nothing about it is on the wire.",
       "adjudication": null,
       "boundary": null
     },
@@ -43,7 +43,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "client_conformance_test.exs:247-249 — `request[\"params\"][\"_meta\"][\"io.modelcontextprotocol/clientCapabilities\"][\"extensions\"]` on the RECORDED outbound request equals the declared map with its settings intact. client.ex:868 encodes every send (`Jason.decode!(Jason.encode!(struct))`), so the recorded value is the wire artefact.",
+      "evidence": "client_conformance_test.exs:259-261 — `request[\"params\"][\"_meta\"][\"io.modelcontextprotocol/clientCapabilities\"][\"extensions\"]` on the RECORDED outbound request equals the declared map with its settings intact. client.ex:868 encodes every send (`Jason.decode!(Jason.encode!(struct))`), so the recorded value is the wire artefact.",
       "adjudication": null,
       "boundary": [
         "MCP.Client"
@@ -60,7 +60,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "client_conformance_test.exs:198-208 — the server's declared extensions, injected as a verbatim wire capabilities object at :194, come back byte-for-byte through both `result.server_capabilities.extensions` and the public accessor, INCLUDING a nested settings map two levels deep (`[\"com.example/thing\", \"nested\", \"depth\"] == 2`). Decode boundary; the nested read is what rules out a shallow copy.",
+      "evidence": "client_conformance_test.exs:204-214 — the server's declared extensions, injected as a verbatim wire capabilities object at :200, come back byte-for-byte through both `result.server_capabilities.extensions` and the public accessor, INCLUDING a nested settings map two levels deep (`[\"com.example/thing\", \"nested\", \"depth\"] == 2`). Decode boundary; the nested read is what rules out a shallow copy.",
       "adjudication": null,
       "boundary": [
         "MCP.Client"
@@ -77,7 +77,7 @@
       "controls": "MCP.ClientConformanceTest/test CG4 / T-CG4 — the client MUST NOT dereference a network $ref listing and calling a tool whose inputSchema $refs a network URI never fetches it",
       "escalated": false,
       "question": null,
-      "evidence": "client_conformance_test.exs:151-152 — starts the canary plug, `Req.get`s it directly, and asserts the counter reached 1. §11 EXAMPLE 3, independently reproduced: it TOUCHES NO SDK CODE AT ALL (Bandit, Req and an Agent), so gates 2 and 3 fail independently, and it is apparatus whose responsiveness the unit above depends on — a canary that could not register a hit would make that unit pass for the wrong reason.",
+      "evidence": "client_conformance_test.exs:155-156 — starts the canary plug, `Req.get`s it directly, and asserts the counter reached 1. §11 EXAMPLE 3, independently reproduced: it TOUCHES NO SDK CODE AT ALL (Bandit, Req and an Agent), so gates 2 and 3 fail independently, and it is apparatus whose responsiveness the unit above depends on — a canary that could not register a hit would make that unit pass for the wrong reason.",
       "adjudication": null,
       "boundary": null
     },
@@ -92,7 +92,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "client_conformance_test.exs:123-131 — a REAL HTTP server serves a tool whose inputSchema $refs a live canary; the client lists and CALLS it, the $ref reaches the caller as inert data (`ref =~ \"http://127.0.0.1:\"`), and `Agent.get(hits, & &1) == 0` — the canary was never connected to. Gate 2: the tool list came off the wire through the Streamable HTTP client and the $ref is asserted verbatim. The property is UNGUARDED (it holds because no schema-walker exists), which is exactly why the guard is worth having.",
+      "evidence": "client_conformance_test.exs:125-133 — a REAL HTTP server serves a tool whose inputSchema $refs a live canary; the client lists and CALLS it, the $ref reaches the caller as inert data (`ref =~ \"http://127.0.0.1:\"`), and `Agent.get(hits, & &1) == 0` — the canary was never connected to. Gate 2: the tool list came off the wire through the Streamable HTTP client and the $ref is asserted verbatim. The property is UNGUARDED (it holds because no schema-walker exists), which is exactly why the guard is worth having.",
       "adjudication": null,
       "boundary": [
         "MCP.Client"
@@ -867,7 +867,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "client_tool_schemas_test.exs:247 — `headers_for_call(client, transport, name) == [{\"mcp-param-region\", \"us-west1\"}]` once the tool turns up in a listing. That one assertion is a governed wire fact; the three log assertions around it (M-2: a cache RESET re-arms the warn-once record) are operator-facing and weaker, hence mixed. The asserted artefact is the `:headers` opt the client hands the transport at client.ex:780 (`{[headers: HeaderMirror.headers_for(annotations, arguments)], state}`). It is the wire header set one step short of the socket: the Streamable HTTP client APPENDS these pairs without renaming or dropping, and routing_headers_test.exs:318-350 observes the identical pairs arriving at a real Bandit server. §2.2 — appending an already-formed pair is not a step.",
+      "evidence": "client_tool_schemas_test.exs:247 — `headers_for_call(client, transport, name) == [{\"mcp-param-region\", \"us-west1\"}]` once the tool turns up in a listing. That one assertion is a governed wire fact; the three log assertions around it (M-2: a cache RESET re-arms the warn-once record) are operator-facing and weaker, hence mixed. The asserted artefact is the `:headers` opt the client hands the transport at client.ex:780 (`{[headers: HeaderMirror.headers_for(annotations, arguments)], state}`). It is the wire header set one step short of the socket: the Streamable HTTP client APPENDS these pairs without renaming or dropping, and routing_headers_test.exs:359-391 observes the identical pairs arriving at a real Bandit server. §2.2 — appending an already-formed pair is not a step.",
       "adjudication": null,
       "boundary": [
         "MCP.Client"
@@ -901,7 +901,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "client_tool_schemas_test.exs:287-312 — the wire sequence is asserted message by message: the original `tools/call`, then a CURSOR-LESS `tools/list` refresh (`refute Map.has_key?(refresh[\"params\"], \"cursor\")`), then the original call again now carrying `[{\"mcp-param-region\", \"us-west1\"}]`. The mirrored header on the retry is the governed fact; the recovery POLICY itself (refresh-then-retry after -32020) has no 2026-07-28 anchor, and the log assertion is weaker — hence mixed. The asserted artefact is the `:headers` opt the client hands the transport at client.ex:780 (`{[headers: HeaderMirror.headers_for(annotations, arguments)], state}`). It is the wire header set one step short of the socket: the Streamable HTTP client APPENDS these pairs without renaming or dropping, and routing_headers_test.exs:318-350 observes the identical pairs arriving at a real Bandit server. §2.2 — appending an already-formed pair is not a step.",
+      "evidence": "client_tool_schemas_test.exs:287-312 — the wire sequence is asserted message by message: the original `tools/call`, then a CURSOR-LESS `tools/list` refresh (`refute Map.has_key?(refresh[\"params\"], \"cursor\")`), then the original call again now carrying `[{\"mcp-param-region\", \"us-west1\"}]`. The mirrored header on the retry is the governed fact; the recovery POLICY itself (refresh-then-retry after -32020) has no 2026-07-28 anchor, and the log assertion is weaker — hence mixed. The asserted artefact is the `:headers` opt the client hands the transport at client.ex:780 (`{[headers: HeaderMirror.headers_for(annotations, arguments)], state}`). It is the wire header set one step short of the socket: the Streamable HTTP client APPENDS these pairs without renaming or dropping, and routing_headers_test.exs:359-391 observes the identical pairs arriving at a real Bandit server. §2.2 — appending an already-formed pair is not a step.",
       "adjudication": null,
       "boundary": [
         "MCP.Client"
@@ -984,7 +984,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "client_tool_schemas_test.exs:443 — after a garbage `\"oops\"` listing, the previously-cached tool STILL mirrors `[{\"mcp-param-region\", \"us-west1\"}]`. A garbage listing must not be read as \"the server now has no tools\" and wipe what the last good one established — which is a wire difference on the next call. The `{:malformed_result, \"oops\"}` tuple and the excluded_tools query are weaker, hence mixed. The asserted artefact is the `:headers` opt the client hands the transport at client.ex:780 (`{[headers: HeaderMirror.headers_for(annotations, arguments)], state}`). It is the wire header set one step short of the socket: the Streamable HTTP client APPENDS these pairs without renaming or dropping, and routing_headers_test.exs:318-350 observes the identical pairs arriving at a real Bandit server. §2.2 — appending an already-formed pair is not a step.",
+      "evidence": "client_tool_schemas_test.exs:443 — after a garbage `\"oops\"` listing, the previously-cached tool STILL mirrors `[{\"mcp-param-region\", \"us-west1\"}]`. A garbage listing must not be read as \"the server now has no tools\" and wipe what the last good one established — which is a wire difference on the next call. The `{:malformed_result, \"oops\"}` tuple and the excluded_tools query are weaker, hence mixed. The asserted artefact is the `:headers` opt the client hands the transport at client.ex:780 (`{[headers: HeaderMirror.headers_for(annotations, arguments)], state}`). It is the wire header set one step short of the socket: the Streamable HTTP client APPENDS these pairs without renaming or dropping, and routing_headers_test.exs:359-391 observes the identical pairs arriving at a real Bandit server. §2.2 — appending an already-formed pair is not a step.",
       "adjudication": null,
       "boundary": [
         "MCP.Client"
@@ -1001,7 +1001,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "client_tool_schemas_test.exs:492 — after a malformed REFRESH result, the good annotation SURVIVES and still mirrors `[{\"mcp-param-region\", \"us-west1\"}]`; :467 also carries the wire -32020 verbatim inside the reported term. A cursor-less refresh RESETS the cache, so absorbing an unusable response would have discarded a good annotation. The `{:malformed_refresh_result, ...}` tuple, the log and the message count are weaker, hence mixed. The asserted artefact is the `:headers` opt the client hands the transport at client.ex:780 (`{[headers: HeaderMirror.headers_for(annotations, arguments)], state}`). It is the wire header set one step short of the socket: the Streamable HTTP client APPENDS these pairs without renaming or dropping, and routing_headers_test.exs:318-350 observes the identical pairs arriving at a real Bandit server. §2.2 — appending an already-formed pair is not a step.",
+      "evidence": "client_tool_schemas_test.exs:492 — after a malformed REFRESH result, the good annotation SURVIVES and still mirrors `[{\"mcp-param-region\", \"us-west1\"}]`; :467 also carries the wire -32020 verbatim inside the reported term. A cursor-less refresh RESETS the cache, so absorbing an unusable response would have discarded a good annotation. The `{:malformed_refresh_result, ...}` tuple, the log and the message count are weaker, hence mixed. The asserted artefact is the `:headers` opt the client hands the transport at client.ex:780 (`{[headers: HeaderMirror.headers_for(annotations, arguments)], state}`). It is the wire header set one step short of the socket: the Streamable HTTP client APPENDS these pairs without renaming or dropping, and routing_headers_test.exs:359-391 observes the identical pairs arriving at a real Bandit server. §2.2 — appending an already-formed pair is not a step.",
       "adjudication": null,
       "boundary": [
         "MCP.Client"
@@ -1018,7 +1018,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "client_tool_schemas_test.exs:173-174 — after a cursor-BEARING page and a follow-up page, BOTH pages' tools still mirror (`[{\"mcp-param-one\", ...}]` and `[{\"mcp-param-two\", ...}]`). A wholesale replace would leave only the last page and every earlier tool would silently stop mirroring, which is a wire difference. The asserted artefact is the `:headers` opt the client hands the transport at client.ex:780 (`{[headers: HeaderMirror.headers_for(annotations, arguments)], state}`). It is the wire header set one step short of the socket: the Streamable HTTP client APPENDS these pairs without renaming or dropping, and routing_headers_test.exs:318-350 observes the identical pairs arriving at a real Bandit server. §2.2 — appending an already-formed pair is not a step.",
+      "evidence": "client_tool_schemas_test.exs:173-174 — after a cursor-BEARING page and a follow-up page, BOTH pages' tools still mirror (`[{\"mcp-param-one\", ...}]` and `[{\"mcp-param-two\", ...}]`). A wholesale replace would leave only the last page and every earlier tool would silently stop mirroring, which is a wire difference. The asserted artefact is the `:headers` opt the client hands the transport at client.ex:780 (`{[headers: HeaderMirror.headers_for(annotations, arguments)], state}`). It is the wire header set one step short of the socket: the Streamable HTTP client APPENDS these pairs without renaming or dropping, and routing_headers_test.exs:359-391 observes the identical pairs arriving at a real Bandit server. §2.2 — appending an already-formed pair is not a step.",
       "adjudication": null,
       "boundary": [
         "MCP.Client"
@@ -1035,7 +1035,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "client_tool_schemas_test.exs:184-188 — a cursor-LESS listing RESETS: the kept tool still mirrors and the removed one mirrors NOTHING (`== []`). A stale header from a listing the server has moved on from is exactly what a -32020 is made of. The log assertion at :187 is operator-facing (weaker), hence mixed. The asserted artefact is the `:headers` opt the client hands the transport at client.ex:780 (`{[headers: HeaderMirror.headers_for(annotations, arguments)], state}`). It is the wire header set one step short of the socket: the Streamable HTTP client APPENDS these pairs without renaming or dropping, and routing_headers_test.exs:318-350 observes the identical pairs arriving at a real Bandit server. §2.2 — appending an already-formed pair is not a step.",
+      "evidence": "client_tool_schemas_test.exs:184-188 — a cursor-LESS listing RESETS: the kept tool still mirrors and the removed one mirrors NOTHING (`== []`). A stale header from a listing the server has moved on from is exactly what a -32020 is made of. The log assertion at :187 is operator-facing (weaker), hence mixed. The asserted artefact is the `:headers` opt the client hands the transport at client.ex:780 (`{[headers: HeaderMirror.headers_for(annotations, arguments)], state}`). It is the wire header set one step short of the socket: the Streamable HTTP client APPENDS these pairs without renaming or dropping, and routing_headers_test.exs:359-391 observes the identical pairs arriving at a real Bandit server. §2.2 — appending an already-formed pair is not a step.",
       "adjudication": null,
       "boundary": [
         "MCP.Client"
@@ -1082,7 +1082,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "client_tool_schemas_test.exs:145 — after an excluded tool is called, the `:headers` opt is `[]`. This is the exclusion's WIRE consequence: a rejected tool leaves no annotations behind, so nothing is mirrored. The asserted artefact is the `:headers` opt the client hands the transport at client.ex:780 (`{[headers: HeaderMirror.headers_for(annotations, arguments)], state}`). It is the wire header set one step short of the socket: the Streamable HTTP client APPENDS these pairs without renaming or dropping, and routing_headers_test.exs:318-350 observes the identical pairs arriving at a real Bandit server. §2.2 — appending an already-formed pair is not a step.",
+      "evidence": "client_tool_schemas_test.exs:145 — after an excluded tool is called, the `:headers` opt is `[]`. This is the exclusion's WIRE consequence: a rejected tool leaves no annotations behind, so nothing is mirrored. The asserted artefact is the `:headers` opt the client hands the transport at client.ex:780 (`{[headers: HeaderMirror.headers_for(annotations, arguments)], state}`). It is the wire header set one step short of the socket: the Streamable HTTP client APPENDS these pairs without renaming or dropping, and routing_headers_test.exs:359-391 observes the identical pairs arriving at a real Bandit server. §2.2 — appending an already-formed pair is not a step.",
       "adjudication": null,
       "boundary": [
         "MCP.Client"
@@ -1131,7 +1131,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "client_tool_schemas_test.exs:395-398 — the `tools/list` request carries NO opts at all (`== []`) while the `tools/call` carries exactly `[{\"mcp-param-region\", \"us-west1\"}]`. The negative half is what stops \"always attach headers\" passing. The asserted artefact is the `:headers` opt the client hands the transport at client.ex:780 (`{[headers: HeaderMirror.headers_for(annotations, arguments)], state}`). It is the wire header set one step short of the socket: the Streamable HTTP client APPENDS these pairs without renaming or dropping, and routing_headers_test.exs:318-350 observes the identical pairs arriving at a real Bandit server. §2.2 — appending an already-formed pair is not a step.",
+      "evidence": "client_tool_schemas_test.exs:395-398 — the `tools/list` request carries NO opts at all (`== []`) while the `tools/call` carries exactly `[{\"mcp-param-region\", \"us-west1\"}]`. The negative half is what stops \"always attach headers\" passing. The asserted artefact is the `:headers` opt the client hands the transport at client.ex:780 (`{[headers: HeaderMirror.headers_for(annotations, arguments)], state}`). It is the wire header set one step short of the socket: the Streamable HTTP client APPENDS these pairs without renaming or dropping, and routing_headers_test.exs:359-391 observes the identical pairs arriving at a real Bandit server. §2.2 — appending an already-formed pair is not a step.",
       "adjudication": null,
       "boundary": [
         "MCP.Client"
@@ -7724,7 +7724,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "routing_headers_test.exs:103-106 — five methods sent, five `mcp-method` values observed, IN ORDER. §11 EXAMPLE 7, independently reproduced — and its `for` is INSIDE the test body, so this is ONE unit, which is the whole S6-6 contrast with a for-wrapped `test`. The artefact is the HTTP request headers OBSERVED BY A REAL SERVER: a Bandit CapturePlug records `conn.req_headers` for every POST the client actually made (routing_headers_test.exs:24-44). §2 names \"a transport header\" as a wire artefact in its own right, and there is no SDK step between the recorded header and the socket — the server read it off the connection.",
+      "evidence": "routing_headers_test.exs:108-111 — five methods sent, five `mcp-method` values observed, IN ORDER. §11 EXAMPLE 7, independently reproduced — and its `for` is INSIDE the test body, so this is ONE unit, which is the whole S6-6 contrast with a for-wrapped `test`. The artefact is the HTTP request headers OBSERVED BY A REAL SERVER: a Bandit CapturePlug records `conn.req_headers` for every POST the client actually made (routing_headers_test.exs:24-44). §2 names \"a transport header\" as a wire artefact in its own right, and there is no SDK step between the recorded header and the socket — the server read it off the connection.",
       "adjudication": null,
       "boundary": [
         "MCP.Protocol.HeaderMirror (encode)"
@@ -7912,7 +7912,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "routing_headers_test.exs:464-469 — a `for` inside the body over four malformed provider returns, each yielding `{:invalid_headers, _}`, and then `requests(agent) == []`. The error tuples fail gate 2 as above, but the LAST assertion reaches further: \"no HTTP request was made\" IS a wire fact (an absence observed at a real server). It dies at GATE 3 — no 2026-07-28 requirement governs what a client must do when its own header-provider callback returns nonsense, so the strongest assertion in the unit is excluded at 3 rather than at 2, and that is the gate recorded.",
+      "evidence": "routing_headers_test.exs:521-526 — a `for` inside the body over four malformed provider returns, each yielding `{:invalid_headers, _}`, and then `requests(agent) == []`. The error tuples fail gate 2 as above, but the LAST assertion reaches further: \"no HTTP request was made\" IS a wire fact (an absence observed at a real server). It dies at GATE 3 — no 2026-07-28 requirement governs what a client must do when its own header-provider callback returns nonsense, so the strongest assertion in the unit is excluded at 3 rather than at 2, and that is the gate recorded.",
       "adjudication": null,
       "boundary": null
     },
@@ -7957,7 +7957,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "routing_headers_test.exs:420-423 — `{:error, {:header_provider_failed, {:error, %RuntimeError{}}}}` and the transport still alive. The asserted artefact is an SDK-invented error tuple — `{:header_provider_failed, _}` has no wire counterpart, so gate 2 fails (PM tie-break 26026) — together with BEAM process-liveness. ET-ADJ is unreachable: the tuple is returned to the CALLER (and wrapped as `{:transport_send_failed, _}`), and no lib/ call site consumes it on a path that produces a wire artefact.",
+      "evidence": "routing_headers_test.exs:471-474 — `{:error, {:header_provider_failed, {:error, %RuntimeError{}}}}` and the transport still alive. The asserted artefact is an SDK-invented error tuple — `{:header_provider_failed, _}` has no wire counterpart, so gate 2 fails (PM tie-break 26026) — together with BEAM process-liveness. ET-ADJ is unreachable: the tuple is returned to the CALLER (and wrapped as `{:transport_send_failed, _}`), and no lib/ call site consumes it on a path that produces a wire artefact.",
       "adjudication": null,
       "boundary": null
     },
@@ -7987,7 +7987,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "routing_headers_test.exs:413-414 — three successive requests carry `Bearer token-1/2/3`. GATE 2 PASSES (observed HTTP headers at a real server). Gate 3 FAILS: the behaviour asserted is that OUR header-provider callback is invoked once per request, and the values are test fixtures. The authorization spec governs the FORM of a bearer header, not whether an SDK re-evaluates a callback per request. §10 category 6. The artefact is the HTTP request headers OBSERVED BY A REAL SERVER: a Bandit CapturePlug records `conn.req_headers` for every POST the client actually made (routing_headers_test.exs:24-44). §2 names \"a transport header\" as a wire artefact in its own right, and there is no SDK step between the recorded header and the socket — the server read it off the connection.",
+      "evidence": "routing_headers_test.exs:462-463 — three successive requests carry `Bearer token-1/2/3`. GATE 2 PASSES (observed HTTP headers at a real server). Gate 3 FAILS: the behaviour asserted is that OUR header-provider callback is invoked once per request, and the values are test fixtures. The authorization spec governs the FORM of a bearer header, not whether an SDK re-evaluates a callback per request. §10 category 6. The artefact is the HTTP request headers OBSERVED BY A REAL SERVER: a Bandit CapturePlug records `conn.req_headers` for every POST the client actually made (routing_headers_test.exs:24-44). §2 names \"a transport header\" as a wire artefact in its own right, and there is no SDK step between the recorded header and the socket — the server read it off the connection.",
       "adjudication": null,
       "boundary": null
     },
@@ -8002,7 +8002,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "routing_headers_test.exs:530 — a caller-supplied `authorization: Bearer static` is observed on the wire. GATE 2 PASSES; gate 3 fails: no 2026-07-28 requirement governs pass-through of arbitrary caller-supplied headers, and the value is a test fixture. §10 category 6. The artefact is the HTTP request headers OBSERVED BY A REAL SERVER: a Bandit CapturePlug records `conn.req_headers` for every POST the client actually made (routing_headers_test.exs:24-44). §2 names \"a transport header\" as a wire artefact in its own right, and there is no SDK step between the recorded header and the socket — the server read it off the connection.",
+      "evidence": "routing_headers_test.exs:595 — a caller-supplied `authorization: Bearer static` is observed on the wire. GATE 2 PASSES; gate 3 fails: no 2026-07-28 requirement governs pass-through of arbitrary caller-supplied headers, and the value is a test fixture. §10 category 6. The artefact is the HTTP request headers OBSERVED BY A REAL SERVER: a Bandit CapturePlug records `conn.req_headers` for every POST the client actually made (routing_headers_test.exs:24-44). §2 names \"a transport header\" as a wire artefact in its own right, and there is no SDK step between the recorded header and the socket — the server read it off the connection.",
       "adjudication": null,
       "boundary": null
     },
@@ -8017,7 +8017,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "routing_headers_test.exs:523-524 — both assertions are on the captured log (`\"mcp-method\"` and `\"APPENDED\"`) when a caller supplies a routing header themselves. Operator-facing output, §10 category 8.",
+      "evidence": "routing_headers_test.exs:586-587 — both assertions are on the captured log (`\"mcp-method\"` and `\"APPENDED\"`) when a caller supplies a routing header themselves. Operator-facing output, §10 category 8.",
       "adjudication": null,
       "boundary": null
     },
@@ -8918,7 +8918,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "streamable_http_client_test.exs:112-113 — `content-encoding: identity` is tolerated: `:ok` and the decoded message is delivered to the owner. GATE 2 PASSES on the second assertion — `assert_receive {:mcp_message, %{\"result\" => %{\"ok\" => true}}}` reads a decoded JSON-RPC response that crossed a real HTTP connection. GATE 3 FAILS, established by search rather than assumed: `grep -rn \"ccept-[Ee]ncoding\\|ontent-[Ee]ncoding\\|gzip\"` over the whole pinned docs/specification/2026-07-28 tree and schema.ts returns ZERO hits. Content coding is governed by RFC 9110 §12.5.3 (a SHOULD) and the SDK's choice here is a security decision against EEF-CVE-2026-49755 (req's decompression is opt-in and unbounded — a decompression-bomb DoS), not an MCP requirement. §10 category 6. The `%{\"ok\" => true}` body is a ProbePlug fixture, and the claim the unit makes is about content-coding tolerance, which nothing in the pinned revision governs.",
+      "evidence": "streamable_http_client_test.exs:120-121 — `content-encoding: identity` is tolerated: `:ok` and the decoded message is delivered to the owner. GATE 2 PASSES on the second assertion — `assert_receive {:mcp_message, %{\"result\" => %{\"ok\" => true}}}` reads a decoded JSON-RPC response that crossed a real HTTP connection. GATE 3 FAILS, established by search rather than assumed: `grep -rn \"ccept-[Ee]ncoding\\|ontent-[Ee]ncoding\\|gzip\"` over the whole pinned docs/specification/2026-07-28 tree and schema.ts returns ZERO hits. Content coding is governed by RFC 9110 §12.5.3 (a SHOULD) and the SDK's choice here is a security decision against EEF-CVE-2026-49755 (req's decompression is opt-in and unbounded — a decompression-bomb DoS), not an MCP requirement. §10 category 6. The `%{\"ok\" => true}` body is a ProbePlug fixture, and the claim the unit makes is about content-coding tolerance, which nothing in the pinned revision governs.",
       "adjudication": null,
       "boundary": null
     },
@@ -8963,7 +8963,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "streamable_http_client_test.exs:89 — `Agent.get(agent, & &1) == [\"identity\"]`, the accept-encoding header OBSERVED at a real Bandit server. Gate 2 passes (a transport header, §2's own words). GATE 3 FAILS, established by search rather than assumed: `grep -rn \"ccept-[Ee]ncoding\\|ontent-[Ee]ncoding\\|gzip\"` over the whole pinned docs/specification/2026-07-28 tree and schema.ts returns ZERO hits. Content coding is governed by RFC 9110 §12.5.3 (a SHOULD) and the SDK's choice here is a security decision against EEF-CVE-2026-49755 (req's decompression is opt-in and unbounded — a decompression-bomb DoS), not an MCP requirement. §10 category 6.",
+      "evidence": "streamable_http_client_test.exs:91 — `Agent.get(agent, & &1) == [\"identity\"]`, the accept-encoding header OBSERVED at a real Bandit server. Gate 2 passes (a transport header, §2's own words). GATE 3 FAILS, established by search rather than assumed: `grep -rn \"ccept-[Ee]ncoding\\|ontent-[Ee]ncoding\\|gzip\"` over the whole pinned docs/specification/2026-07-28 tree and schema.ts returns ZERO hits. Content coding is governed by RFC 9110 §12.5.3 (a SHOULD) and the SDK's choice here is a security decision against EEF-CVE-2026-49755 (req's decompression is opt-in and unbounded — a decompression-bomb DoS), not an MCP requirement. §10 category 6.",
       "adjudication": null,
       "boundary": null
     },
@@ -8978,7 +8978,7 @@
       "controls": null,
       "escalated": false,
       "question": null,
-      "evidence": "streamable_http_client_test.exs:99-100 — `{:error, {:unexpected_content_encoding, \"gzip\"}}`. DISCRIMINATING: at the pre-fix SHA this returns `{:error, {:json_decode_error, …}}`, so the exact structured match is the fail-then-pass discriminator. The asserted artefact is `{:unexpected_content_encoding, _}`, an SDK-invented error tuple with no wire counterpart, so gate 2 fails (PM tie-break 26026); and no lib/ call site consumes it on a wire-producing path, so ET-ADJ is unreachable. Even had gate 2 passed, gate 3 would fail — see :86.",
+      "evidence": "streamable_http_client_test.exs:103-104 — `{:error, {:unexpected_content_encoding, \"gzip\"}}`. DISCRIMINATING: at the pre-fix SHA this returns `{:error, {:json_decode_error, …}}`, so the exact structured match is the fail-then-pass discriminator. The asserted artefact is `{:unexpected_content_encoding, _}`, an SDK-invented error tuple with no wire counterpart, so gate 2 fails (PM tie-break 26026); and no lib/ call site consumes it on a wire-producing path, so ET-ADJ is unreachable. Even had gate 2 passed, gate 3 would fail — see :88.",
       "adjudication": null,
       "boundary": null
     },
