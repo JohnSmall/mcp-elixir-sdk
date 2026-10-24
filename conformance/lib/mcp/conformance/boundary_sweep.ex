@@ -1059,6 +1059,81 @@ defmodule MCP.Conformance.BoundarySweep do
     length(entries)
   end
 
+  @scanned_keys ~w(guard_23_scanned guard_24_scanned guard_25_scanned guard_26_scanned
+                   guard_27_scanned)a
+
+  @doc """
+  The population refusal (MES-179) — `--verify`'s positive control, made a refusal.
+
+  `scanned` is `check_table!/2`'s return and `total` the table's `mutation_spec` entry
+  count, which the caller counts from the document itself, outside the guards. Three
+  limbs, checked in this order, each with its own message:
+
+    * **shape** — each of the five keys `guard_23_scanned` … `guard_27_scanned` is present
+      and a non-negative integer. A missing key, a negative value, a non-integer or
+      `:skipped` refuses, naming the key and its value. With the zero limb, every count
+      must be a positive integer (MES-179 correction round 1, F3).
+    * **zero** — any scanned count of `0`. A guard that scanned nothing reports no
+      violation either, so an emptied table passed with every count at 0 (MES-175 RF), and
+      a table with no DEAD row passed with 24 and 25 at 0. **Residual, by design:** a
+      future table that legitimately has no DEAD row refuses here until this code changes.
+    * **equality** — `guard_26_scanned` or `guard_27_scanned` other than `total`, each
+      half checked on its own. Today's scans `flat_map` over every entry, so no table can
+      fire this limb: it is entailed by the scan as written, and is a tripwire against a
+      future scan that skips or short-counts.
+
+  **Residual:** a table short by whole rows that leaves no count at zero passes all three.
+  Only a floor from outside the table would see it, and nothing compares the table with
+  its committed history.
+
+  Only the task's `--verify` calls this. `MCP.Conformance.ETCCRegister` skips guard 26 by
+  design, so its `:skipped` is not a refusal there.
+  """
+  def check_population!(scanned, total) when is_map(scanned) and is_integer(total) do
+    malformed =
+      for k <- @scanned_keys, not well_formed?(Map.fetch(scanned, k)) do
+        "#{k} #{shown(Map.fetch(scanned, k))}"
+      end
+
+    if malformed != [] do
+      raise "POPULATION: --verify refuses a malformed scan: #{Enum.join(malformed, ", ")}. " <>
+              "Each of guard_23_scanned .. guard_27_scanned must be present and a positive " <>
+              "integer."
+    end
+
+    vacuous = for {k, v} <- Enum.sort(scanned), v == 0, do: "#{k} 0"
+
+    if vacuous != [] do
+      raise "POPULATION: --verify refuses a vacuous scan: #{Enum.join(vacuous, ", ")}. A guard " <>
+              "that scanned nothing also reports no violation (MES-175 RF). A table with no " <>
+              "DEAD direction refuses here too, by design (MES-179 Q2): that is a code change, " <>
+              "not a table edit."
+    end
+
+    equal_26? = scanned.guard_26_scanned == total
+    equal_27? = scanned.guard_27_scanned == total
+
+    short =
+      for {k, false} <- [guard_26_scanned: equal_26?, guard_27_scanned: equal_27?] do
+        "#{k} #{inspect(scanned[k])}"
+      end
+
+    if short != [] do
+      raise "POPULATION: #{Enum.join(short, ", ")} is not the table's mutation_spec total " <>
+              "#{total}; the guard did not reach every entry."
+    end
+
+    scanned
+  end
+
+  defp well_formed?({:ok, n}), do: is_integer(n) and n >= 0
+  defp well_formed?(:error), do: false
+
+  defp shown(:error), do: "absent"
+  defp shown({:ok, v}), do: inspect(v)
+
+  defp shown_pair({k, v}), do: "#{k}: #{inspect(v)}"
+
   @doc "§2.3(d)'s trigger, as a function of the recorded live count and nothing else."
   def l2_trigger?(b), do: live_count(b) == 0
 
@@ -1102,7 +1177,9 @@ defmodule MCP.Conformance.BoundarySweep do
 
     refuse_dirty_lib!()
     scanned = check_table!(rows)
-    log.("  guards 23-27 scanned #{inspect(scanned)}")
+    # Keys in sorted order, so the line does not depend on atom-table order (OTP prints
+    # a small atom-keyed map in atom-index order, which MES-179's new code shifted).
+    log.("  guards 23-27 scanned %{#{Enum.map_join(Enum.sort(scanned), ", ", &shown_pair/1)}}")
 
     tmp = Keyword.get(opts, :tmp, Path.join(System.tmp_dir!(), "etcc-sweep"))
     File.mkdir_p!(tmp)

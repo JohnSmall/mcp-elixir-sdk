@@ -4,7 +4,8 @@
 > *Definition-of-Done Gates*; "the gate-6 form" is gate 6's applicability rule there. The
 > trigger command's home is the fenced block under *Applicability* below; `CLAUDE.md` carries
 > a byte-identical copy, and `test/conformance/gate_8_trigger_test.exs` holds the two equal.
-> Guards 23-27 are `MCP.Conformance.BoundarySweep.check_table!/2`.
+> Guards 23-27 are `MCP.Conformance.BoundarySweep.check_table!/2`; the population refusal
+> and the `ETCC-VERIFY` verdict line are MES-179's.
 
 **PO ruling, 2026-10-11.** `mix conformance.sweep --verify` is a Definition-of-Done gate
 for every ticket whose branch changes `lib/` — a gate, not only a review-checklist item.
@@ -66,48 +67,109 @@ needing its own controls.
 mix conformance.sweep --verify
 ```
 
-**Verdict forms, and the exit status** (measured 2026-10-11 at `b5b277e`, cases below):
+**Verdict forms, and the exit status** (MES-179; re-measured 2026-10-22 at `d9aaff1`, and
+held by the `verify` control below). **The verdict is the last non-blank line.**
 
-- **Pass** — exit **0**, and the output contains `GUARDS 23-27 — no violation.`
-  followed by the five scanned counts (`29 / 19 / 19 / 194 / 194` at `b5b277e`); compile
-  output (`Compiling N files`, `Generated …`) may come first. The counts are the positive
-  control, and a pass **requires** them: **every count is non-zero**, and
-  `guard_26_scanned` = `guard_27_scanned` = the table's `mutation_spec` entry total,
-  counted from the committed table with
+- **Pass** — exit **0**, and the last line is
+
+  ```
+  ETCC-VERIFY PASS (scanned 23:29 24:19 25:19 26:194 27:194; mutation_spec total 194)
+  ```
+
+  (the counts as at `d9aaff1`). Above it, unchanged: `GUARDS 23-27 — no violation.`, the
+  five scanned counts and a note; compile output (`Compiling N files`, `Generated …`) may
+  come first. The counts are the positive control, and **the task refuses them itself**
+  (`MCP.Conformance.BoundarySweep.check_population!/2`): any scanned count of **zero**, or
+  a `guard_26_scanned` / `guard_27_scanned` other than the table's `mutation_spec` entry
+  total, counted by the task from the decoded table outside the guards, is a
+  `POPULATION` refusal. An optional cross-check of that total, independent of the
+  instrument:
 
   ```bash
   python3 -I -c 'import json;d=json.load(open("conformance/data/etcc-boundaries.json"));print(sum(len(b.get("mutation_spec") or []) for b in d["boundaries"]))'
   ```
 
-  (**194** at `b5b277e`). A zero count, or a 26/27 count that differs from that total, is
-  a **fail** whatever the exit status: a guard that scanned nothing also reports no
-  violation (case RF).
-- **Fail** — exit **1**, through an uncaught exception and a stack trace. There is **no
-  final verdict line**: the verdict is the first `** (...)` line —
-  `** (RuntimeError) GUARD n: …` naming the guard and the entries, or another exception
-  (`** (File.Error)` when the table is missing). A `lib/` file that does not compile
-  prints its compile-error banner before the `**` line. Any exception is a fail.
+  (**194** at `d9aaff1`).
+- **Fail** — exit **1**. The original exception, throw or exit is printed in full, stack
+  trace included, and the last line names the kind:
+  - `** (Mix) ETCC-VERIFY REFUSE: GUARD n`, **n = 23-27 only**, after
+    `** (RuntimeError) GUARD n: …` naming the guard and the entries;
+  - `** (Mix) ETCC-VERIFY REFUSE: POPULATION`, after `** (RuntimeError) POPULATION: …`
+    naming the limb and the keys;
+  - `** (Mix) ETCC-VERIFY REFUSE: ERROR <exception>`, for any other exception — `ERROR
+    File.Error` when the table is missing, and `ERROR RuntimeError` for a RuntimeError
+    that is not one of the five guards' (`GUARD 999: …`, case G999);
+  - `** (Mix) ETCC-VERIFY REFUSE: THROW`, after `** (throw) …`, and
+    `** (Mix) ETCC-VERIFY REFUSE: EXIT`, after `** (exit) …`. `exit(:normal)` is caught
+    too: uncaught, it ends mix at status 0 with no verdict line (MES-179 round 1, F1).
 
-Exit 0 occurred if and only if the pass line was printed, in every case run. **Exit 0 does
-not exclude a vacuous pass** (RF): adjudicate on the counts as well as the line. In RF the
-**zero** rule decides; the total is counted from the same emptied table, so the 26/27
-equality holds at 0. A table that is short but not empty passes both rules. Making
-`--verify` refuse an empty or short table itself is a code change, in MES-179's scope.
+  A `lib/` or `conformance/lib/` file that does not compile stops mix before the task
+  runs: exit 1, a `** (CompileError)` line and **no** `ETCC-VERIFY` line. That is a fail.
 
-| case | planted, on a throwaway copy | exit | printed |
+  **The boundary of the last-line promise.** Two things are outside it. `System.halt/1`
+  ends the VM where no `try` can see it, so it prints no verdict and its status is
+  whatever it was given. And output that an `at_exit` callback writes after the verdict
+  becomes the last line; a reader judging on the last line already rejects it, because
+  that line is not `ETCC-VERIFY PASS`.
+
+**The three population limbs, and what they do not see** (PM rulings, MES-179 comments
+34240 and 34253). They run in this order, each with its own message:
+
+- **Shape.** Each of `guard_23_scanned` … `guard_27_scanned` must be present and a
+  non-negative integer. A missing key, a negative value, a non-integer or `:skipped`
+  refuses as `POPULATION: --verify refuses a malformed scan: <key> <value>`, the value
+  `absent` for a missing key. With the zero limb, every count must be a positive integer
+  (round 1, F3). No table can produce a malformed scan today, so its controls plant the
+  scan's return (S1 `-1`, S2 an absent key, S3 `:skipped`) or the call (EQ1,
+  `check_tree: false`, which makes guard 26 `:skipped`).
+
+- **Zero.** Any of the five counts at 0 refuses. It closes the vacuous pass CR found on
+  MES-175 (case RF: `boundaries` emptied, counts `0/0/0/0/0`, exit 0) and two partial ones
+  measured on MES-179: every DEAD row deleted (`10/0/0/76/76`) and every `mutation_spec`
+  removed with its prose (`29/19/19/0/0`). **Residual:** a future table that legitimately
+  has no DEAD direction refuses gate 8 until the code changes. Fail-closed by ruling (Q2).
+- **Equality.** `guard_26_scanned` and `guard_27_scanned` must each equal the total; the
+  two halves are checked, and controlled, separately. **This limb is entailed by today's
+  scan**: guards 26 and 27 `flat_map` over every entry, so no table can fire it. It is a
+  tripwire against a future scan that skips or short-counts, and its controls plant the
+  instrument, not the table (EQ2 for 26, EQ3 for 27; Q3).
+- **Residual: a table short by whole rows.** Deleting a row that leaves no count at zero
+  passes all three limbs (case RS1: `29/19/19/193/193`, total 193, exit 0). Only a floor from
+  outside the table would see it, and nothing compares the table with its committed
+  history (Q1). The `verify` control pins RS1 as passing, so a change is seen.
+
+| case | planted, on a throwaway copy | exit | last line |
 |---|---|---|---|
-| G0 | nothing (3 runs) | 0 | the pass line, `29/19/19/194/194` |
-| NA | a comment appended to `lib/mcp/client.ex`, no anchor touched | 0 | the pass line |
-| RA | the `MCP.Client` anchor `Jason.decode!(Jason.encode!(struct))` edited away in `lib/mcp/client.ex` | 1 | `GUARD 26: … lib/mcp/client.ex has 0, spec records 1` |
-| RB | the same anchor appended a second time, as a comment | 1 | `GUARD 26: … has 2, spec records 1` |
-| RC | `" x"` appended to the first `mutation` prose line of the first row with a `mutation_spec` | 1 | `GUARD 27: … do not render back to their committed prose` |
-| RD | `l2` removed from the first row with a live count of zero | 1 | `GUARD 23: … no L2 record` |
-| RE | the table file moved away | 1 | `** (File.Error) could not read file …` |
-| RF | the table's `boundaries` emptied (CR, MES-175 round 1) | 0 | the pass line, counts `0/0/0/0/0` — a **fail** by the count rule |
+| G0 | nothing | 0 | `ETCC-VERIFY PASS (scanned 23:29 24:19 25:19 26:194 27:194; mutation_spec total 194)` |
+| NA | a comment appended to `lib/mcp/client.ex`, no anchor touched | 0 | the same |
+| RA | the `MCP.Client` anchor `Jason.decode!(Jason.encode!(struct))` edited to `Jason.decode!( Jason.encode!(struct))` | 1 | `… REFUSE: GUARD 26` (`has 0, spec records 1`) |
+| RA′ | the same anchor edited so the file does not compile | 1 | `** (CompileError) …` — no `ETCC-VERIFY` line |
+| RB | the same anchor appended a second time, as a comment | 1 | `… REFUSE: GUARD 26` (`has 2, spec records 1`) |
+| RC | `" x"` appended to the first `mutation` prose line of the first row with a `mutation_spec` | 1 | `… REFUSE: GUARD 27` (`do not render back`) |
+| RZ2 | a LIVE row's first entry made zero-site, its prose rendered to match | 1 | `… REFUSE: GUARD 27` (`positive integer occurrences`) |
+| RD | `l2` removed from the first LIVE row with a live count of zero | 1 | `… REFUSE: GUARD 23` |
+| R24 | the first DEAD row made impotent | 1 | `… REFUSE: GUARD 24` |
+| R25 | the first DEAD row's `byte_probe` removed | 1 | `… REFUSE: GUARD 25` |
+| RE | the table file moved away | 1 | `… REFUSE: ERROR File.Error` |
+| RF | the table's `boundaries` emptied (CR, MES-175 round 1) | 1 | `… REFUSE: POPULATION` (zero) |
+| RS2 | every DEAD row deleted | 1 | `… REFUSE: POPULATION` (zero) |
+| RS4 | every `mutation_spec` and its `mutation` prose removed | 1 | `… REFUSE: POPULATION` (zero) |
+| EQ1 | instrument plant: the task calls `check_table!` with `check_tree: false` | 1 | `… REFUSE: POPULATION` (shape: `guard_26_scanned :skipped`) |
+| EQ2 | instrument plant: guard 26's scan counts one short | 1 | `… REFUSE: POPULATION` (`guard_26_scanned 193`) |
+| EQ3 | instrument plant: guard 27's scan counts one short | 1 | `… REFUSE: POPULATION` (`guard_27_scanned 193`) |
+| S1 | instrument plant: the scan returns `guard_23_scanned` -1 | 1 | `… REFUSE: POPULATION` (shape: `guard_23_scanned -1`) |
+| S2 | instrument plant: the scan returns no `guard_24_scanned` | 1 | `… REFUSE: POPULATION` (shape: `guard_24_scanned absent`) |
+| S3 | instrument plant: the scan returns `guard_25_scanned` `:skipped` | 1 | `… REFUSE: POPULATION` (shape: `guard_25_scanned :skipped`) |
+| THROW | instrument plant: `verify/0` throws | 1 | `… REFUSE: THROW` |
+| EXIT | instrument plant: `verify/0` calls `exit(:normal)` | 1 | `… REFUSE: EXIT` (exit 0 before round 1) |
+| G999 | instrument plant: `verify/0` raises `"GUARD 999: …"` | 1 | `… REFUSE: ERROR RuntimeError` |
+| RS1 | the first row deleted — **the residual** | 0 | `ETCC-VERIFY PASS (… 26:193 27:193; mutation_spec total 193)` |
 
-To re-run a case: copy the worktree, **remove the copy's `.git` link first** (a copied
-worktree shares the original's index), plant the change, run the task, then delete the
-copy.
+Exit 0 occurred if and only if `GUARDS 23-27 — no violation.` and the `ETCC-VERIFY PASS`
+line were printed, in every case. Before MES-179 RF, RS2 and RS4 exited 0. To re-run a
+case by hand: copy the worktree, **remove the copy's `.git` link first** (a copied worktree
+shares the original's index), plant the change, run the task, then delete the copy. The
+`verify` control does exactly that.
 
 **Cost, measured on the CC seat 2026-10-11** (Elixir 1.19.5 / OTP 28): warm
 **569 / 601 / 570 ms** (three runs); **793-830 ms** after a one-file `lib/` edit, recompile
@@ -164,14 +226,16 @@ re-count since MES-173, so a re-count now has to be made by hand: edit the prose
 
 > **ET-CC anchor check (gate 8).** Run the applicability diff and paste it. If it
 > applies, check out `{TICKET_KEY}` with a clean tree, run `mix conformance.sweep --verify`
-> and paste its output, with the `mutation_spec` total counted by the command under
-> *Verdict forms*. Adjudicate on what it prints: a pass is `GUARDS 23-27 — no violation.`
-> with **every** scanned count non-zero and `guard_26_scanned` = `guard_27_scanned` = that
-> total (194 at `b5b277e`); a zero or a mismatch is a fail even at exit 0. A
-> `** (RuntimeError) GUARD n:` line, or any other exception, is a fail. For a red GUARD
-> 26, check that the branch re-anchors the entry to the behaviour its mutation targets
-> (MES-171) and does not merely re-count it (MES-173). If it cannot run at your seat,
-> report **that**, and do not record the check as done.
+> and paste its output. Adjudicate on the **last line**: a pass is exit 0 with a last line
+> beginning `ETCC-VERIFY PASS` (`ETCC-VERIFY PASS (scanned 23:29 24:19 25:19 26:194 27:194;
+> mutation_spec total 194)` at `d9aaff1`). Since MES-179 the task itself refuses a scanned count
+> that is missing or not a positive integer, and a guard 26/27 count that differs from the
+> table's `mutation_spec` total. Any other last line is a fail:
+> `** (Mix) ETCC-VERIFY REFUSE: GUARD n`, `… REFUSE: POPULATION`,
+> `… REFUSE: ERROR <exception>`, `… REFUSE: THROW`, `… REFUSE: EXIT`, or no `ETCC-VERIFY`
+> line at all (a compile error). For a red GUARD 26, check that the branch re-anchors the entry to the
+> behaviour its mutation targets (MES-171) and does not merely re-count it (MES-173). If
+> it cannot run at your seat, report **that**, and do not record the check as done.
 
 ## Evidence
 
@@ -187,8 +251,23 @@ red, then requires them green on the restored source.
 copy of the table, and the refusal required: **12/12** guard mutations fired, the unmutated
 table passes, reach 50 rows; exit 0, 0.82 s at `b5b277e`. MES-173 adds two guard-27 cases
 (a recorded 0 on a LIVE row and on a DEAD row), so the mode reports **14/14**. It calls `check_table!/1`
-directly, not the task, so the task's exit-status correspondence rests on the cases above;
-a control for it is a separate backlog ticket.
+directly, not the task; the task is `verify`'s.
+
+`conformance/controls/etcc_boundary_sweep_controls.exs verify` (MES-179) drives the
+**task** in its own OS process (`System.cmd("env", ["-i", …, "mix", "conformance.sweep",
+"--verify"])`, so the status is mix's own, with no pipeline) against a throwaway copy of
+the worktree with its `.git` link removed: the 23 cases in the table above (RA′ aside),
+every plant restored byte-exactly in the copy. It refuses to start unless `git status
+--porcelain` is empty, and halts 1 if the real table's sha256 or the porcelain output
+moved. Each case is held on exit 0 ⇔ the pass line, exit 0 ⇔ a last line of
+`ETCC-VERIFY PASS`, and its own verdict: a pass's exact line, with the counts counted by
+the control from the planted table; a refusal's original message, a stack trace, and the
+`ETCC-VERIFY REFUSE` line for its own guard.
+`... verify-mutation` plants 19 mutants (V0, V23-V26, V27r, V27p, VZ, VE26, VE27, VS, VP,
+VX, VL, VN, VR, VF, VCT, VCE) into the copy's instrument, each anchor required at exactly
+one occurrence. It requires every control a mutant names to go red, the controls it names
+as unaffected to stay green (VE26 keeps EQ3, VE27 keeps EQ2), and then all of them
+green on the restored bytes.
 
 `test/conformance/gate_8_trigger_test.exs` (MES-180, under gate 5) — the trigger command,
 extracted from this page and required byte-identical in `CLAUDE.md`, run against a throwaway

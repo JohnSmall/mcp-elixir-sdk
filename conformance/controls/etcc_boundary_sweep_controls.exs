@@ -14,6 +14,8 @@
 #     mix run conformance/controls/etcc_boundary_sweep_controls.exs census-plant
 #     mix run conformance/controls/etcc_boundary_sweep_controls.exs emit
 #     mix run conformance/controls/etcc_boundary_sweep_controls.exs emit-mutation
+#     mix run conformance/controls/etcc_boundary_sweep_controls.exs verify
+#     mix run conformance/controls/etcc_boundary_sweep_controls.exs verify-mutation
 #
 # WHY A SCRIPT AND NOT AN ExUnit TEST. Same reason as `etcc_register_controls.exs`: a
 # test file added here lands in the very suite the sweep measures. Under `test/mcp/` it
@@ -55,11 +57,14 @@ defmodule ETCCBoundarySweepControls do
   def run(["census-plant"]), do: census_plant()
   def run(["emit"]), do: emit()
   def run(["emit-mutation"]), do: emit_mutation()
+  def run(["verify"]), do: verify_mode()
+  def run(["verify-mutation"]), do: verify_mutation()
 
   def run(_) do
     IO.puts(
       "usage: guards | prose | harness | host | drift | register | prefix | probe | " <>
-        "probe-mutation | census | census-real | census-plant | emit | emit-mutation"
+        "probe-mutation | census | census-real | census-plant | emit | emit-mutation | " <>
+        "verify | verify-mutation"
     )
 
     System.halt(2)
@@ -1545,6 +1550,604 @@ defmodule ETCCBoundarySweepControls do
   defp lib_clean? do
     {out, 0} = System.cmd("git", ["status", "--porcelain", "--", "lib/"])
     out == ""
+  end
+
+  # --- verify: the TASK, in its own OS process, against a throwaway copy (MES-179) ---
+
+  # `guards` calls check_table!/1 in process, so it cannot see what the TASK prints or how
+  # it exits. These modes run `mix conformance.sweep --verify` as a child process, from
+  # `env -i`, in a copy of this worktree whose .git link is removed. Every plant goes into
+  # the copy; the real table's sha256 and `git status --porcelain` are taken before and
+  # after, and a move in either halts 1. `System.cmd/3` returns the child's own exit
+  # status: `env` execs mix, and there is no shell and no pipeline.
+  #
+  # Each case is adjudicated on these limbs:
+  #   (i)   exit 0 iff "GUARDS 23-27 — no violation." is printed;
+  #   (ii)  exit 0 iff the last non-blank line begins "ETCC-VERIFY PASS";
+  #   (iii) the expected verdict. A pass: exit 0, and the last line equal to the PASS line
+  #         whose counts THIS script counts from the copy's table, not the instrument. A
+  #         refusal: exit non-zero, the original exception's own lines, a stack trace, and
+  #         a last line `** (Mix) ETCC-VERIFY REFUSE: <kind>` naming the case's own guard;
+  #   (iv)  the plant restored byte-exactly in the copy.
+  @verify_pass "GUARDS 23-27 — no violation."
+  @refuse "** (Mix) ETCC-VERIFY REFUSE: "
+  @plant_note "\n# MES-179 control plant: "
+
+  defp verify_mode do
+    header("VERIFY — the task, in its own OS process, against a throwaway copy (MES-179)")
+
+    results =
+      with_copy(fn copy ->
+        Enum.map(verify_cases(), &report_case(&1, run_case(&1, copy)))
+      end)
+
+    ran =
+      Enum.filter(results, fn {_, limbs} -> String.starts_with?(elem(hd(limbs), 0), "(i)") end)
+
+    iff = Enum.count(ran, fn {_, limbs} -> Enum.all?(Enum.take(limbs, 2), &elem(&1, 1)) end)
+    IO.puts("\n  exit 0 iff a pass line printed: #{iff}/#{length(ran)} cases run")
+    ok = Enum.count(results, fn {_, limbs} -> Enum.all?(limbs, &elem(&1, 1)) end)
+    IO.puts("  #{ok}/#{length(results)} cases as expected.")
+    if ok != length(results), do: System.halt(1)
+  end
+
+  defp verify_mutation do
+    header("VERIFY-MUTATION — each control goes RED under a mutant, green when restored")
+    cases = Map.new(verify_cases(), &{&1.id, &1})
+
+    results =
+      with_copy(fn copy ->
+        verify_mutants()
+        |> Enum.map(fn
+          {n, p, a, m, ids} -> {n, p, a, m, ids, []}
+          six -> six
+        end)
+        |> Enum.flat_map(fn {name, path, anchor, mutant, ids, stay} ->
+          p = Path.join(copy, path)
+          src = File.read!(p)
+          n = src |> String.split(anchor) |> length() |> Kernel.-(1)
+          IO.puts("\n  #{name}\n    anchor occurrences in #{path}: #{n} (must be 1)")
+
+          if n == 1 do
+            try do
+              copy_write!(p, String.replace(src, anchor, mutant))
+              IO.puts("    MUTANT:")
+              red = Enum.map(ids, &report_case(cases[&1], run_case(cases[&1], copy), "      "))
+              kept = Enum.map(stay, &report_case(cases[&1], run_case(cases[&1], copy), "      "))
+              copy_write!(p, src)
+              IO.puts("    RESTORED (bytes equal: #{File.read!(p) == src}):")
+
+              green =
+                Enum.map(
+                  ids ++ stay,
+                  &report_case(cases[&1], run_case(cases[&1], copy), "      ")
+                )
+
+              Enum.map(red, fn {id, l} -> {"#{name}: #{id} goes RED", not all_hold?(l)} end) ++
+                Enum.map(kept, fn {id, l} ->
+                  {"#{name}: #{id} stays as expected", all_hold?(l)}
+                end) ++
+                Enum.map(green, fn {id, l} -> {"restored: #{id} as expected", all_hold?(l)} end)
+            after
+              copy_write!(p, src)
+            end
+          else
+            [{"#{name}: anchor occurs #{n} times, NOT RUN", false}]
+          end
+        end)
+      end)
+
+    IO.puts("")
+    Enum.each(results, &report_limb/1)
+    IO.puts("\n  #{Enum.count(results, &elem(&1, 1))}/#{length(results)} as expected.")
+    if Enum.any?(results, fn {_, ok} -> not ok end), do: System.halt(1)
+  end
+
+  # Subjects by PREDICATE over the committed table, never by id.
+  defp verify_cases do
+    rows = read(@paths.boundaries)["boundaries"]
+    t = @paths.boundaries
+    dead = Enum.find(rows, &(&1["verdict"] == "dead"))
+    zero_live = Enum.find(rows, &(zero_live?(&1) and &1["verdict"] == "live"))
+    first_spec = Enum.find(rows, &((&1["mutation_spec"] || []) != []))
+    live_spec = Enum.find(rows, &(&1["verdict"] == "live" and (&1["mutation_spec"] || []) != []))
+    total = spec_count(rows)
+
+    anchor =
+      rows
+      |> Enum.flat_map(&(&1["mutation_spec"] || []))
+      |> Enum.find(fn e ->
+        String.starts_with?(e["file"], "lib/") and e["occurrences"] == 1 and
+          not (e["from"] =~ "\n") and e["from"] =~ "("
+      end)
+
+    # RA: a space after the anchor's first "(" — still compiles, no longer matches.
+    [head, tail] = String.split(anchor["from"], "(", parts: 2)
+    moved = head <> "( " <> tail
+    f = anchor["file"]
+    zero = entry(hd(live_spec["mutation_spec"])["file"], @nowhere, "X", 0)
+    g = fn n, s -> "** (RuntimeError) GUARD #{n}: " <> s end
+    rc_prose = List.update_at(first_spec["mutation"], 0, &(&1 <> " x"))
+
+    [
+      vcase("G0", "nothing planted", [], fn _ -> :ok end, :pass),
+      vcase(
+        "NA",
+        "a comment appended to #{f}, no anchor touched",
+        [f],
+        &append(&1, f, "a comment, no anchor touched"),
+        :pass
+      ),
+      vcase(
+        "RA",
+        "#{anchor["from"]} in #{f} edited to #{moved}",
+        [f],
+        &replace(&1, f, anchor["from"], moved),
+        {:refuse, "GUARD 26", [g.(26, "1 mutation_spec"), "#{f} has 0, spec records 1"]}
+      ),
+      vcase(
+        "RB",
+        "the same anchor appended to #{f} again, as a comment",
+        [f],
+        &append(&1, f, anchor["from"]),
+        {:refuse, "GUARD 26", [g.(26, "1 mutation_spec"), "#{f} has 2, spec records 1"]}
+      ),
+      vcase(
+        "RC",
+        "\" x\" appended to #{first_spec["id"]}'s first mutation prose line",
+        [t],
+        &edit_table(&1, fn rs ->
+          put(rs, first_spec, %{
+            "mutation" => rc_prose
+          })
+        end),
+        {:refuse, "GUARD 27", [g.(27, "1 mutation_spec entry/ies do not render back")]}
+      ),
+      vcase(
+        "RZ2",
+        "#{live_spec["id"]} (LIVE): entry 1 made zero-site, prose rendered to match",
+        [t],
+        &edit_table(&1, fn rs ->
+          put(rs, live_spec, %{
+            "mutation_spec" => [zero | tl(live_spec["mutation_spec"])],
+            "mutation" => [Sweep.render_prose(zero) | tl(live_spec["mutation"])]
+          })
+        end),
+        {:refuse, "GUARD 27",
+         [g.(27, "1 mutation_spec entry/ies do not record a positive integer occurrences")]}
+      ),
+      vcase(
+        "RD",
+        "l2 removed from #{zero_live["id"]} (live count 0, LIVE)",
+        [t],
+        &edit_table(&1, fn rs -> put(rs, zero_live, %{"l2" => nil}) end),
+        {:refuse, "GUARD 23",
+         [
+           g.(
+             23,
+             "1 direction(s) have a live count of ZERO and no L2 record (#{zero_live["id"]})"
+           )
+         ]}
+      ),
+      vcase(
+        "R24",
+        "#{dead["id"]} (DEAD) made impotent",
+        [t],
+        &edit_table(&1, fn rs ->
+          put(rs, dead, %{"reddened_outside_own" => dead["reddened_total"]})
+        end),
+        {:refuse, "GUARD 24",
+         [
+           g.(
+             24,
+             "1 DEAD direction(s) whose mutation reddened NONE of their own units (#{dead["id"]})"
+           )
+         ]}
+      ),
+      vcase(
+        "R25",
+        "#{dead["id"]} (DEAD) byte_probe removed",
+        [t],
+        &edit_table(&1, fn rs ->
+          put(rs, dead, %{"l2" => Map.put(dead["l2"], "byte_probe", nil)})
+        end),
+        {:refuse, "GUARD 25", [g.(25, "1 DEAD direction(s) are missing an L2 conjunct")]}
+      ),
+      vcase(
+        "RE",
+        "the table moved away",
+        [t, t <> ".moved"],
+        &File.rename!(Path.join(&1, t), Path.join(&1, t <> ".moved")),
+        {:refuse, "ERROR File.Error", ["** (File.Error) could not read file \"#{t}\""]}
+      ),
+      vcase(
+        "RF",
+        "boundaries emptied (CR F2 on MES-175)",
+        [t],
+        &edit_table(&1, fn _ -> [] end),
+        {:refuse, "POPULATION",
+         [
+           "** (RuntimeError) POPULATION: --verify refuses a vacuous scan: guard_23_scanned 0, " <>
+             "guard_24_scanned 0, guard_25_scanned 0, guard_26_scanned 0, guard_27_scanned 0."
+         ]}
+      ),
+      vcase(
+        "RS2",
+        "every DEAD row deleted",
+        [t],
+        &edit_table(&1, fn rs -> Enum.reject(rs, fn b -> b["verdict"] == "dead" end) end),
+        {:refuse, "POPULATION",
+         ["POPULATION: --verify refuses a vacuous scan: guard_24_scanned 0, guard_25_scanned 0."]}
+      ),
+      vcase(
+        "RS4",
+        "every mutation_spec and its mutation prose removed",
+        [t],
+        &edit_table(&1, fn rs ->
+          Enum.map(rs, fn b -> Map.drop(b, ["mutation_spec", "mutation"]) end)
+        end),
+        {:refuse, "POPULATION",
+         ["POPULATION: --verify refuses a vacuous scan: guard_26_scanned 0, guard_27_scanned 0."]}
+      ),
+      vcase(
+        "EQ1",
+        "instrument plant: the task calls check_table! with check_tree: false (shape limb)",
+        [@task_src],
+        &replace(
+          &1,
+          @task_src,
+          eq1_anchor(),
+          "doc[\"boundaries\"] |> Sweep.check_table!(check_tree: false)"
+        ),
+        {:refuse, "POPULATION",
+         ["POPULATION: --verify refuses a malformed scan: guard_26_scanned :skipped."]}
+      ),
+      vcase(
+        "EQ2",
+        "instrument plant: guard 26's scan short-counts by one",
+        [@sweep_src],
+        &replace(
+          &1,
+          @sweep_src,
+          eq2_anchor(),
+          String.replace(eq2_anchor(), "length(entries)", "length(entries) - 1")
+        ),
+        {:refuse, "POPULATION",
+         [
+           "POPULATION: guard_26_scanned #{total - 1} is not the table's mutation_spec total #{total}"
+         ]}
+      ),
+      vcase(
+        "EQ3",
+        "instrument plant: guard 27's scan short-counts by one",
+        [@sweep_src],
+        &replace(
+          &1,
+          @sweep_src,
+          eq3_anchor(),
+          String.replace(eq3_anchor(), "length(entries)", "length(entries) - 1")
+        ),
+        {:refuse, "POPULATION",
+         [
+           "POPULATION: guard_27_scanned #{total - 1} is not the table's mutation_spec total #{total}"
+         ]}
+      ),
+      scan_plant("S1", "guard_23_scanned -1", "Map.put(:guard_23_scanned, -1)"),
+      scan_plant("S2", "guard_24_scanned absent", "Map.delete(:guard_24_scanned)"),
+      scan_plant("S3", "guard_25_scanned :skipped", "Map.put(:guard_25_scanned, :skipped)"),
+      verify_plant(
+        "THROW",
+        "throw(:mes179_control)",
+        {:refuse, "THROW", ["** (throw) :mes179_control"]}
+      ),
+      verify_plant("EXIT", "exit(:normal)", {:refuse, "EXIT", ["** (exit) normal"]}),
+      verify_plant(
+        "G999",
+        "raise(\"GUARD 999: MES-179 control plant\")",
+        {:refuse, "ERROR RuntimeError", ["** (RuntimeError) GUARD 999: MES-179 control plant"]}
+      ),
+      vcase(
+        "RS1",
+        "RESIDUAL (MES-179 Q1): the first row deleted, no count at zero — PASSES",
+        [t],
+        &edit_table(&1, fn rs -> tl(rs) end),
+        :pass
+      )
+    ]
+  end
+
+  defp eq1_anchor, do: "doc[\"boundaries\"] |> Sweep.check_table!()"
+
+  defp eq3_anchor, do: "    length(entries)\n  end\n\n  @scanned_keys"
+
+  # The scan's RETURN doctored before check_population! sees it: the shape limb's cases.
+  defp scan_plant(id, what, change) do
+    vcase(
+      id,
+      "instrument plant: the scan returns #{what} (shape limb)",
+      [@task_src],
+      &replace(
+        &1,
+        @task_src,
+        " |> Sweep.check_population!(total)",
+        " |> #{change} |> Sweep.check_population!(total)"
+      ),
+      {:refuse, "POPULATION", ["POPULATION: --verify refuses a malformed scan: #{what}."]}
+    )
+  end
+
+  # A throw, an exit or a stray RuntimeError raised inside verify/0 (F1, F4).
+  defp verify_plant(id, expr, expect) do
+    vcase(
+      id,
+      "instrument plant: verify/0 runs #{expr}",
+      [@task_src],
+      &replace(
+        &1,
+        @task_src,
+        "    total = spec_total(doc)\n",
+        "    total = spec_total(doc)\n    if total > 0, do: #{expr}\n"
+      ),
+      expect
+    )
+  end
+
+  defp eq2_anchor,
+    do:
+      "Enum.join(bad, \"\\n  \")\n    end\n\n    length(entries)\n  end\n\n  @doc \"\"\"\n  Guard 27"
+
+  @refusing ~w(RA RB RC RZ2 RD R24 R25 RE RF RS2 RS4 EQ1 EQ2 EQ3 S1 S2 S3 THROW EXIT G999)
+
+  # Each mutant undoes one thing a control holds, in the COPY's instrument, and names the
+  # controls that must go red. The task runs in another OS process, so an in-memory
+  # recompile cannot reach it.
+  defp verify_mutants do
+    s = @sweep_src
+    k = @task_src
+    off = fn a -> String.replace(a, ~r/if \w+ != \[\] do/, "if false do", global: false) end
+
+    [
+      {"V0 the population check refuses everything", s, "    if vacuous != [] do\n",
+       "    if true do\n", ~w(G0 NA)},
+      {"V23 guard 23 never raises", s, "    if naked != [] do\n", off.("    if naked != [] do\n"),
+       ~w(RD)},
+      {"V24 guard 24 never raises", s, "    if impotent != [] do\n",
+       off.("    if impotent != [] do\n"), ~w(R24)},
+      {"V25 guard 25 never raises", s, "    if missing != [] do\n",
+       off.("    if missing != [] do\n"), ~w(R25)},
+      {"V26 guard 26 never raises", s, v26_anchor(), off.(v26_anchor()), ~w(RA RB)},
+      {"V27r guard 27's render comparison never raises", s, v27_anchor(), off.(v27_anchor()),
+       ~w(RC)},
+      {"V27p guard 27's positivity predicate accepts everything", s,
+       "  def positive_occurrences?(entry),\n    do: is_integer(entry[\"occurrences\"]) and entry[\"occurrences\"] > 0\n",
+       "  def positive_occurrences?(_entry), do: true\n", ~w(RZ2)},
+      {"VZ the zero limb removed", s,
+       "    vacuous = for {k, v} <- Enum.sort(scanned), v == 0, do: \"\#{k} 0\"\n",
+       "    vacuous = []\n", ~w(RF RS2 RS4)},
+      {"VE26 the equality limb's guard-26 half bypassed", s,
+       "    equal_26? = scanned.guard_26_scanned == total\n", "    equal_26? = true\n", ~w(EQ2),
+       ~w(EQ3)},
+      {"VE27 the equality limb's guard-27 half bypassed", s,
+       "    equal_27? = scanned.guard_27_scanned == total\n", "    equal_27? = true\n", ~w(EQ3),
+       ~w(EQ2)},
+      {"VS the shape limb removed", s,
+       "      for k <- @scanned_keys, not well_formed?(Map.fetch(scanned, k)) do\n",
+       "      for k <- [], not well_formed?(Map.fetch(scanned, k)) do\n", ~w(S1 S2 S3 EQ1)},
+      {"VP the task never calls check_population!", k, " |> Sweep.check_population!(total)", "",
+       ~w(RF RS2 RS4 EQ1 EQ2 EQ3)},
+      {"VX the task prints REFUSE but exits 0", k,
+       "    Mix.raise(\"ETCC-VERIFY REFUSE: \" <> kind)\n",
+       "    Mix.shell().error(\"ETCC-VERIFY REFUSE: \" <> kind)\n", @refusing},
+      {"VL the pass line printed before the guards run", k,
+       "  defp verify do\n    doc = boundaries()\n",
+       "  defp verify do\n    Mix.shell().info(\"#{@verify_pass}\")\n    doc = boundaries()\n",
+       @refusing},
+      {"VN the REFUSE line always names GUARD 23", k,
+       "      {n, \":\" <> _} when n in 23..27 -> \"GUARD \#{n}\"\n",
+       "      {n, \":\" <> _} when n in 23..27 -> \"GUARD 23\"\n", ~w(RA RB RC RZ2 R24 R25)},
+      {"VR GUARD n labelled for any n, not 23-27 only", k,
+       "      {n, \":\" <> _} when n in 23..27 ->", "      {n, \":\" <> _} ->", ~w(G999)},
+      {"VF the rescue narrowed to RuntimeError", k, "  rescue\n    e -> refuse!(",
+       "  rescue\n    e in RuntimeError -> refuse!(", ~w(RE)},
+      {"VCT the :throw catch clause removed", k,
+       "    :throw, reason -> refuse!(Exception.format(:throw, reason, __STACKTRACE__), \"THROW\")\n",
+       "", ~w(THROW)},
+      {"VCE the :exit catch clause removed", k,
+       "    :exit, reason -> refuse!(Exception.format(:exit, reason, __STACKTRACE__), \"EXIT\")\n",
+       "", ~w(EXIT)}
+    ]
+  end
+
+  defp v26_anchor,
+    do:
+      "    if bad != [] do\n      raise \"GUARD 26: \#{length(bad)} mutation_spec entry/ies no longer resolve"
+
+  defp v27_anchor,
+    do:
+      "    if bad != [] do\n      raise \"GUARD 27: \#{length(bad)} mutation_spec entry/ies do not render back"
+
+  defp vcase(id, what, files, plant, expect),
+    do: %{id: id, what: what, files: files, plant: plant, expect: expect}
+
+  # Plant, run, restore, then adjudicate. A pass's expected line is computed from the
+  # PLANTED table before the run, by counting here.
+  # A plant that cannot be applied (an instrument anchor absent at this tip, as at main
+  # before MES-179) is a RED case, not a crash, and the task is not run.
+  defp run_case(c, copy) do
+    saved = Map.new(c.files, &{&1, File.read(Path.join(copy, &1))})
+
+    {run, limbs} =
+      try do
+        c.plant.(copy)
+        expected = if c.expect == :pass, do: pass_line(read(Path.join(copy, @paths.boundaries)))
+        run = run_task(copy)
+        {run, adjudicate(c.expect, run, expected)}
+      rescue
+        e in RuntimeError ->
+          {{"", "NOT RUN"}, [{"plant applied: #{Exception.message(e)}", false}]}
+      after
+        Enum.each(saved, fn
+          {f, {:ok, bytes}} -> copy_write!(Path.join(copy, f), bytes)
+          {f, {:error, _}} -> File.rm(Path.join(copy, f))
+        end)
+      end
+
+    restored = Enum.all?(saved, fn {f, was} -> File.read(Path.join(copy, f)) == was end)
+    {run, limbs ++ [{"(iv) plant restored byte-exactly", restored}]}
+  end
+
+  defp run_task(copy) do
+    env = [
+      "-i",
+      "PATH=" <> System.fetch_env!("PATH"),
+      "HOME=" <> System.fetch_env!("HOME"),
+      "LANG=C.UTF-8"
+    ]
+
+    run =
+      System.cmd("env", env ++ ["mix", "conformance.sweep", "--verify"],
+        cd: copy,
+        stderr_to_stdout: true
+      )
+
+    Process.put(:etcc_last_run, System.os_time(:second))
+    run
+  end
+
+  defp adjudicate(expect, {out, status}, expected) do
+    last = last_line(out)
+
+    [
+      {"(i) exit 0 iff the pass line", status == 0 == String.contains?(out, @verify_pass)},
+      {"(ii) exit 0 iff the last line is ETCC-VERIFY PASS",
+       status == 0 == String.starts_with?(last, "ETCC-VERIFY PASS")}
+    ] ++ expected_limbs(expect, out, status, last, expected)
+  end
+
+  defp expected_limbs(:pass, _out, status, last, expected),
+    do: [{"(iii) exit 0", status == 0}, {"(iii) last line is #{expected}", last == expected}]
+
+  defp expected_limbs({:refuse, kind, needles}, out, status, last, _) do
+    [{"(iii) exit non-zero", status != 0}] ++
+      Enum.map(needles, &{"(iii) prints #{inspect(&1)}", String.contains?(out, &1)}) ++
+      [
+        {"(iii) prints a stack trace", out =~ ~r/^    \(\S+ [^)]+\) \S+:\d+: /m},
+        {"(iii) last line is #{@refuse}#{kind}", last == @refuse <> kind}
+      ]
+  end
+
+  defp report_case(c, {{out, status}, limbs}, indent \\ "  ") do
+    tag = if all_hold?(limbs), do: "OK ", else: "RED"
+    held = Enum.count(limbs, &elem(&1, 1))
+
+    IO.puts(
+      "#{indent}#{tag} #{String.pad_trailing(c.id, 4)} exit #{status}  " <>
+        "#{held}/#{length(limbs)} limbs  #{c.what}"
+    )
+
+    first = out |> String.split("\n") |> Enum.find(&String.starts_with?(&1, "** ("))
+
+    if first && first != last_line(out),
+      do: IO.puts("#{indent}       #{String.slice(first, 0, 150)}")
+
+    IO.puts("#{indent}       last: #{String.slice(last_line(out), 0, 150)}")
+    for {l, false} <- limbs, do: IO.puts("#{indent}       FAILS #{l}")
+    {c.id, limbs}
+  end
+
+  defp all_hold?(limbs), do: Enum.all?(limbs, &elem(&1, 1))
+
+  defp last_line(out),
+    do: out |> String.split("\n") |> Enum.reject(&(String.trim(&1) == "")) |> List.last() || ""
+
+  # Counted HERE, from the table, not by the instrument: 23 over live count 0, 24 and 25
+  # over DEAD rows, 26 and 27 over mutation_spec entries.
+  defp pass_line(doc) do
+    rows = doc["boundaries"]
+    dead = Enum.count(rows, &(&1["verdict"] == "dead"))
+    n = spec_count(rows)
+
+    "ETCC-VERIFY PASS (scanned 23:#{Enum.count(rows, &zero_live?/1)} 24:#{dead} 25:#{dead} " <>
+      "26:#{n} 27:#{n}; mutation_spec total #{n})"
+  end
+
+  defp zero_live?(b), do: (b["reddened_outside_own_and_dead"] || 0) == 0
+  defp spec_count(rows), do: Enum.sum(Enum.map(rows, &length(&1["mutation_spec"] || [])))
+
+  # Every write into the copy lands in a LATER second than the last task run. Mix's stale
+  # check works in whole seconds: a plant, its compile and its restore inside one second
+  # leave the mutant's beam in place, and the next case then runs it (found on MES-179:
+  # EQ3 ran EQ2's plant, both a same-size edit to boundary_sweep.ex).
+  defp copy_write!(path, bytes, modes \\ []) do
+    settle(Process.get(:etcc_last_run, 0))
+    File.write!(path, bytes, modes)
+  end
+
+  defp settle(last) do
+    if System.os_time(:second) <= last do
+      Process.sleep(50)
+      settle(last)
+    end
+  end
+
+  defp edit_table(copy, fun) do
+    p = Path.join(copy, @paths.boundaries)
+    doc = read(p)
+    copy_write!(p, Jason.encode!(%{doc | "boundaries" => fun.(doc["boundaries"])}, pretty: true))
+  end
+
+  defp append(copy, f, text),
+    do: copy_write!(Path.join(copy, f), @plant_note <> text <> "\n", [:append])
+
+  defp replace(copy, f, from, to) do
+    p = Path.join(copy, f)
+    src = File.read!(p)
+    n = src |> String.split(from) |> length() |> Kernel.-(1)
+    if n != 1, do: raise("plant anchor occurs #{n} times in #{f} (must be 1)")
+    copy_write!(p, String.replace(src, from, to))
+  end
+
+  # One copy per mode, refused unless the tree is clean, fingerprinted before and after.
+  defp with_copy(fun) do
+    if porcelain() != "" do
+      IO.puts("  REFUSING TO START: `git status --porcelain` is not empty")
+      System.halt(1)
+    end
+
+    {head, 0} = System.cmd("git", ["rev-parse", "--short", "HEAD"])
+    before = fingerprint()
+    IO.puts("  HEAD #{String.trim(head)}; real table sha256 #{elem(before, 0)}\n")
+
+    copy =
+      Path.join(
+        System.tmp_dir!(),
+        "etcc-verify-#{System.pid()}-#{System.unique_integer([:positive])}"
+      )
+
+    File.mkdir_p!(copy)
+
+    try do
+      {_, 0} = System.cmd("cp", ["-a", File.cwd!() <> "/.", copy])
+      File.rm!(Path.join(copy, ".git"))
+      fun.(copy)
+    after
+      File.rm_rf!(copy)
+
+      if fingerprint() != before do
+        IO.puts("  THE REAL TREE MOVED: table sha256 or `git status --porcelain` differs")
+        System.halt(1)
+      end
+    end
+  end
+
+  defp fingerprint do
+    sha = :crypto.hash(:sha256, File.read!(@paths.boundaries)) |> Base.encode16(case: :lower)
+    {sha, porcelain()}
+  end
+
+  defp porcelain do
+    {out, 0} = System.cmd("git", ["status", "--porcelain"])
+    out
   end
 
   # --- helpers ---

@@ -25,6 +25,18 @@ defmodule Mix.Tasks.Conformance.Sweep do
   `--verify` is the exception: it re-measures nothing, and it is **DoD gate 8** (MES-175);
   when it applies is `docs/procedure/gate-8.md`.
 
+  ## `--verify`'s verdict is its last line (MES-179)
+
+  `ETCC-VERIFY PASS (scanned 23:… 27:…; mutation_spec total N)` at exit 0, or
+  `** (Mix) ETCC-VERIFY REFUSE: GUARD n | POPULATION | ERROR <exception> | THROW | EXIT`
+  at exit 1, after the original exception, throw or exit and its stack trace.
+  `POPULATION` is `MCP.Conformance.BoundarySweep.check_population!/2`: a scanned count
+  missing or not a positive integer, or a guard 26/27 count other than the table's
+  `mutation_spec` total, which this task counts from the table outside the guards. A
+  compile error stops mix first, so it prints no `ETCC-VERIFY` line. Held by
+  `conformance/controls/etcc_boundary_sweep_controls.exs` `verify` and `verify-mutation`,
+  which drive this task in its own OS process.
+
   ## `--emit-spec` never re-counts
 
   `--emit-spec` derives a `mutation_spec` entry only for a prose line that has none yet: a
@@ -121,9 +133,13 @@ defmodule Mix.Tasks.Conformance.Sweep do
 
   # --- --verify: the guards alone, with their populations printed ---
 
+  # The last line is the verdict (MES-179): `ETCC-VERIFY PASS (...)` at exit 0, or
+  # `** (Mix) ETCC-VERIFY REFUSE: <kind>` at exit 1, after the original exception and its
+  # stack trace. A compile error stops mix before this runs: no ETCC-VERIFY line, a fail.
   defp verify do
-    rows = boundaries()["boundaries"]
-    scanned = Sweep.check_table!(rows)
+    doc = boundaries()
+    total = spec_total(doc)
+    scanned = doc["boundaries"] |> Sweep.check_table!() |> Sweep.check_population!(total)
 
     Mix.shell().info("GUARDS 23-27 — no violation. Populations actually scanned:")
 
@@ -133,12 +149,49 @@ defmodule Mix.Tasks.Conformance.Sweep do
 
     Mix.shell().info("""
 
-    The counts above are the POSITIVE control. A guard reporting zero violations is
-    otherwise indistinguishable between "the predicate fired and nothing matched" and
-    "the sweep never reached the population". Only a mutation proves the predicate can
-    fire: conformance/controls/etcc_boundary_sweep_controls.exs guards.
+    The counts above are the POSITIVE control, and the task refuses them itself: a count
+    missing or not a positive integer, or a guard 26/27 count other than the table's
+    mutation_spec total, is POPULATION (MES-179). Only a mutation proves a predicate can
+    fire:
+    conformance/controls/etcc_boundary_sweep_controls.exs guards, verify, verify-mutation.
     """)
+
+    Mix.shell().info(
+      "ETCC-VERIFY PASS (scanned #{scanned_line(scanned)}; mutation_spec total #{total})"
+    )
+  rescue
+    e -> refuse!(Exception.format(:error, e, __STACKTRACE__), refusal_kind(e))
+  catch
+    :throw, reason -> refuse!(Exception.format(:throw, reason, __STACKTRACE__), "THROW")
+    :exit, reason -> refuse!(Exception.format(:exit, reason, __STACKTRACE__), "EXIT")
   end
+
+  # The original exception, throw or exit, stack trace included, then the verdict line.
+  # `exit(:normal)` is caught too: left alone it ends mix at status 0 with no verdict.
+  # Not covered: `System.halt/1`, which no `try` can see, and output an `at_exit` callback
+  # writes after the verdict (the last line is then not ETCC-VERIFY, so it reads as a fail).
+  @spec refuse!(String.t(), String.t()) :: no_return()
+  defp refuse!(formatted, kind) do
+    Mix.shell().error(formatted)
+    Mix.raise("ETCC-VERIFY REFUSE: " <> kind)
+  end
+
+  defp scanned_line(scanned) do
+    Enum.map_join(Enum.sort(scanned), " ", fn {k, v} ->
+      "#{k |> to_string() |> String.replace(~r/\Aguard_(\d+)_scanned\z/, "\\1")}:#{v}"
+    end)
+  end
+
+  # GUARD n only for the five guards --verify runs; any other RuntimeError is an ERROR.
+  defp refusal_kind(%RuntimeError{message: "GUARD " <> rest} = e) do
+    case Integer.parse(rest) do
+      {n, ":" <> _} when n in 23..27 -> "GUARD #{n}"
+      _ -> "ERROR " <> inspect(e.__struct__)
+    end
+  end
+
+  defp refusal_kind(%RuntimeError{message: "POPULATION:" <> _}), do: "POPULATION"
+  defp refusal_kind(e), do: "ERROR " <> inspect(e.__struct__)
 
   # --- --host: skip condition (c), the one a git diff cannot express ---
 
