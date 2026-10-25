@@ -114,7 +114,7 @@ defmodule MCP.Server.Connection do
 
       {:error, error} ->
         Logger.warning("MCP.Server.Connection: failed to decode message: #{inspect(error)}")
-        {:noreply, state}
+        refuse_invalid(message, error, state)
     end
   end
 
@@ -216,4 +216,52 @@ defmodule MCP.Server.Connection do
       {:error, reason} -> {:error, reason}
     end
   end
+
+  # --- Refusing a message that is not a request (MES-210) ---
+
+  # JSON that is not a request or notification gets -32600 (JSON-RPC 2.0 §5),
+  # one message on the transport, as the Plug answers it: by the readable id,
+  # else `null` (MES-157). A reply, malformed or not, is still dropped: a server
+  # answers no reply (MES-199, MES-190). Appended below every line a record
+  # cites, so none of those moves.
+  defp refuse_invalid(message, error, state) do
+    if response_shaped?(message) do
+      {:noreply, state}
+    else
+      body = %{
+        "code" => Error.invalid_request_code(),
+        "message" => "Invalid request",
+        "data" => invalid_detail(message, error)
+      }
+
+      reply = %{"jsonrpc" => "2.0", "id" => readable_id(message), "error" => body}
+      state.transport_module.send_message(state.transport_pid, reply)
+      {:noreply, state}
+    end
+  end
+
+  defp response_shaped?(message) when is_map(message),
+    do:
+      not Map.has_key?(message, "method") and
+        (Map.has_key?(message, "result") or Map.has_key?(message, "error"))
+
+  defp response_shaped?(_message), do: false
+
+  # The id where it can be read: a string or a number in an object. Anything
+  # else is not a readable id, and the error carries `null`.
+  defp readable_id(%{"id" => id}) when is_binary(id) or is_number(id), do: id
+  defp readable_id(_message), do: nil
+
+  # `data` is a plain string naming the rule, never `inspect/1` of a term
+  # (MES-198): the decoder's own rule when it is valid UTF-8 text, else ours.
+  defp invalid_detail(message, %Error{data: data}) when is_map(message) and is_binary(data) do
+    if String.valid?(data), do: data, else: no_member_detail()
+  end
+
+  defp invalid_detail(message, _error) when is_map(message), do: no_member_detail()
+
+  defp invalid_detail(_message, _error),
+    do: "the message must be a single JSON-RPC request or notification object"
+
+  defp no_member_detail, do: "a JSON-RPC message must carry a method, or a result or an error"
 end

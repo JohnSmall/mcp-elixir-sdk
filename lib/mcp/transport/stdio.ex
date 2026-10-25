@@ -136,7 +136,7 @@ defmodule MCP.Transport.Stdio do
         send(state.owner, {:mcp_message, decoded})
 
       {:error, reason} ->
-        Logger.warning("MCP Stdio: failed to decode JSON from stdin: #{inspect(reason)}")
+        refuse_unparseable(reason, state)
     end
 
     {:noreply, state}
@@ -265,5 +265,24 @@ defmodule MCP.Transport.Stdio do
       [incomplete] ->
         {[], incomplete}
     end
+  end
+
+  # Server mode: a line that is not JSON gets -32700 with a `null` id (JSON-RPC
+  # 2.0 §5), one framed line, as the Plug answers a body that is not JSON. The
+  # `data` names the rule and never echoes the line (MES-198). Only the
+  # transport sees bytes, so this is answered here; JSON that is not a request
+  # is the Connection's to refuse. The client path stays silent: a client
+  # answers no reply. Appended below every line a record cites, so none of
+  # those moves (MES-210).
+  defp refuse_unparseable(reason, state) do
+    Logger.warning("MCP Stdio: failed to decode JSON from stdin: #{inspect(reason)}")
+
+    error = %{
+      "code" => MCP.Protocol.Error.parse_error_code(),
+      "message" => "Parse error",
+      "data" => "the line is not valid JSON"
+    }
+
+    do_send(state, %{"jsonrpc" => "2.0", "id" => nil, "error" => error})
   end
 end
