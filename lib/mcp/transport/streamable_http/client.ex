@@ -586,13 +586,34 @@ defmodule MCP.Transport.StreamableHTTP.Client do
 
   defp deliver_json_response(state, body) when is_binary(body) do
     case Jason.decode(body) do
-      {:ok, decoded} ->
+      {:ok, decoded} when is_map(decoded) ->
         send(state.owner, {:mcp_message, decoded})
         {:ok, state}
+
+      {:ok, decoded} ->
+        reject_non_object_body(decoded)
 
       {:error, reason} ->
         {:error, {:json_decode_error, reason}}
     end
+  end
+
+  # MES-204. A 200 JSON body that is valid JSON but not an object (an array, a
+  # number, a boolean or null) is no JSON-RPC message, and has no id to tie it
+  # to a caller. Req decodes it before it gets here, so without this clause it
+  # matched neither clause above and the FunctionClauseError killed the client.
+  # It fails the sending caller at once instead: delivered to the owner, it
+  # would be dropped and the caller would wait out its request timeout.
+  defp deliver_json_response(_state, body), do: reject_non_object_body(body)
+
+  # The body is the peer's, so the log line is bounded: 20 items, 100 bytes each.
+  defp reject_non_object_body(body) do
+    Logger.warning(
+      "MCP StreamableHTTP Client: JSON body is not an object: " <>
+        inspect(body, limit: 20, printable_limit: 100)
+    )
+
+    {:error, {:non_object_json_body, body}}
   end
 
   defp deliver_decoded(owner, data) when is_binary(data) do

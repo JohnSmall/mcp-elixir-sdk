@@ -53,9 +53,9 @@ defmodule MCP.Protocol do
   end
 
   @doc """
-  Classifies a decoded JSON map into the appropriate message struct.
+  Classifies a decoded JSON term into the appropriate message struct.
   """
-  @spec decode_message(map()) ::
+  @spec decode_message(term()) ::
           {:ok, Request.t() | Response.t() | Notification.t()} | {:error, Error.t()}
   def decode_message(%{"jsonrpc" => "2.0"} = map) do
     cond do
