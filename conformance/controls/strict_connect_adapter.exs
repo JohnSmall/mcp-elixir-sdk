@@ -3,7 +3,7 @@
 #
 # ## What this exists to establish, and why reading the code could not
 #
-# Sprint 4's client figure carries two discounts, and this file re-derives the
+# Sprint 4's client figure carried two discounts, and this file re-derives the
 # first of them BY MEASUREMENT on the tree under test rather than inheriting it
 # from a ticket comment.
 #
@@ -20,7 +20,8 @@
 # a JSON-RPC error body carried on a 400), so the SUCCESS came from the
 # fixture's re-evaluation rule firing on the NEXT call, and 8/8 was contingent
 # on a policy of ours. Since MES-189 it retries and `connect/1` succeeds, so the
-# discount lapses. The committed figures are as of f4be9eb, pending MES-205.
+# discount has lapsed: MES-205 re-recorded this probe at a356b41, where
+# `request-metadata` passes under it too (8 SUCCESS, 0 WARNING).
 #
 # That is an argument. This file turns it into a measurement: run the SAME
 # scenario, against the SAME fixture, at the SAME tree, changing exactly one
@@ -28,6 +29,10 @@
 # harness. If `request-metadata` goes red here and stays green under the
 # measurement adapter, the discount holds ON THIS TREE. If it stays green, the
 # discount has lapsed, and that is a finding worth more than the number.
+#
+# At a356b41 it stays green (MES-205). That is the lapse, not a dead probe:
+# with the -32022 retry disabled in `MCP.Client` it goes red again, as measured
+# in the MES-205 plan measurement (comment 34511).
 #
 # ## Why it is NARROW, deliberately
 #

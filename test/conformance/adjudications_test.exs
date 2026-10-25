@@ -8471,6 +8471,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
              }
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the committed client censuses and the D5b-i record: it asserts the drive-policy discount's recomputation, an instrument property, not SDK wire behaviour, so no OC check corresponds"
     test "a WARNING is red on the client leg (Q3), its raw status kept", %{ctx: ctx} do
       tag =
         "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion"
@@ -8480,9 +8483,12 @@ defmodule MCP.Conformance.AdjudicationsTest do
                "outcome" => "fail"
              }
 
+      # The probe's WARNING lapsed with MES-189's retry (re-recorded at a356b41
+      # by MES-205): the strict-connect probe now scores the check SUCCESS. The
+      # planted-probe unit below holds that a WARNING there is still red.
       assert A.null_outcome(ctx, @c_probe, tag) == %{
-               "raw_status" => "WARNING",
-               "outcome" => "fail"
+               "raw_status" => "SUCCESS",
+               "outcome" => "pass"
              }
     end
 
@@ -8562,6 +8568,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
     # G32's scenario-grain discounts are Discounts' own subtractions, over every
     # in-scope client scenario: the predicate is not a second copy that can drift.
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the committed client censuses and the D5b-i record: it asserts the drive-policy discount's recomputation, an instrument property, not SDK wire behaviour, so no OC check corresponds"
     test "the scenario-grain discounts equal MCP.Conformance.Discounts' sets", %{ctx: ctx} do
       nulls = Map.new(A.d5_legs()["client"]["nulls"], &{&1, json(&1)})
 
@@ -8588,7 +8597,94 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
       assert Enum.sort(owed.("null")) == d.null_passable_removed
       assert Enum.sort(owed.("drive_policy")) == d.drive_policy_removed
-      assert d.null_passable_removed != [] and d.drive_policy_removed != []
+
+      # The drive-policy discount lapsed with MES-189's retry (re-recorded at
+      # a356b41 by MES-205), so on the committed censuses its equality holds
+      # over two empty sets. The planted-probe unit below is what keeps that
+      # equality from being vacuous.
+      assert d.null_passable_removed != []
+      assert d.drive_policy_removed == []
+    end
+
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the committed client censuses and the D5b-i record: it asserts the drive-policy discount's recomputation, an instrument property, not SDK wire behaviour, so no OC check corresponds"
+    test "a probe census that reddens request-metadata re-owes the drive-policy discount, at both grains, equal to Discounts' set",
+         %{ctx: ctx} do
+      sc = "request-metadata"
+
+      retry =
+        "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion"
+
+      # The f4be9eb shape of the probe's request-metadata: the retry check
+      # WARNING, so the scenario fails under client_summary.
+      red = fn s ->
+        c = s["checks"]
+
+        %{
+          s
+          | "checks" => %{c | "SUCCESS" => c["SUCCESS"] - 1, "WARNING" => c["WARNING"] + 1},
+            "failed_checks" => [
+              %{
+                "id" => "sep-2575-client-retry-supported-version",
+                "message" => nil,
+                "name" => "ClientRetrySupportedVersion",
+                "status" => "WARNING"
+              }
+            ],
+            "passes" =>
+              Map.merge(s["passes"], %{
+                "client_summary" => false,
+                "server_summary_or_client_summary" => false
+              })
+        }
+      end
+
+      planted =
+        update_in(ctx.censuses[@c_probe]["scenarios"], fn ss ->
+          Enum.map(ss, &if(&1["id"] == sc, do: red.(&1), else: &1))
+        end)
+
+      dp = &%{"type" => "drive_policy", "grain" => &1, "sources" => [@c_probe]}
+
+      tags =
+        for {t, %{"leg" => "client"}} <- ctx.checks,
+            String.starts_with?(t, "oc:client/#{sc}/"),
+            do: t
+
+      assert retry in tags
+
+      for t <- tags do
+        refute Enum.any?(A.owed_discounts(ctx, t), &(&1["type"] == "drive_policy")), t
+        owed = A.owed_discounts(planted, t)
+        assert dp.("scenario") in owed, t
+        assert dp.("check") in owed == (t == retry), t
+      end
+
+      d =
+        MCP.Conformance.Discounts.derive(
+          measurement: json(@c_meas),
+          nulls: Map.new(A.d5_legs()["client"]["nulls"], &{&1, json(&1)}),
+          probe: planted.censuses[@c_probe],
+          probe_scope: MCP.Conformance.Adapters.scope(:client, "strict_connect")
+        )
+
+      assert d.drive_policy_removed == [sc]
+
+      # Under the plant, D5b-i's stated discounts are refused on exactly its
+      # request-metadata rows: a regression of the retry, re-recorded, goes red.
+      [section] =
+        json("docs/conformance/adjudications/adjudication-D5b-i-2026-07-28.json")["sections"]
+
+      drifted =
+        for r <- section["rows"], r["discounts"] != A.owed_discounts(planted, r["tag"]), do: r
+
+      assert drifted != []
+
+      assert drifted ==
+               Enum.filter(section["rows"], &String.starts_with?(&1["tag"], "oc:client/#{sc}/"))
+
+      assert Enum.all?(section["rows"], &(&1["discounts"] == A.owed_discounts(ctx, &1["tag"])))
     end
   end
 
@@ -8674,6 +8770,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
       end
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the committed client censuses and the D5b-i record: it asserts the drive-policy discount's recomputation, an instrument property, not SDK wire behaviour, so no OC check corresponds"
     test "the counts are the rows' enumeration, negatives included: by disposition, by discount, by null outcome",
          %{record: record, rows: rows} do
       item = &%{"member" => &1["member"], "tag" => &1["tag"]}
@@ -8710,8 +8809,8 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert counts.(by_discount) == %{
                "null/check" => 17,
                "null/scenario" => 10,
-               "drive_policy/check" => 1,
-               "drive_policy/scenario" => 10
+               "drive_policy/check" => 0,
+               "drive_policy/scenario" => 0
              }
 
       by_outcome =
@@ -8758,14 +8857,13 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert for(r <- rows, item.(r) not in oc_vacuous, uniq: true, do: r["disposition"]) ==
                ~w(discriminating vacuous_et)
 
-      # The drive-policy discount is never merged with null: at scenario grain
-      # it is the request-metadata rows, at check grain ClientRetrySupportedVersion's.
-      assert Enum.map(by_discount["drive_policy/scenario"]["rows"], & &1["tag"])
-             |> Enum.all?(&String.starts_with?(&1, "oc:client/request-metadata/"))
-
-      assert Enum.map(by_discount["drive_policy/check"]["rows"], & &1["tag"]) == [
-               "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion"
-             ]
+      # The drive-policy discount is never merged with null. At f4be9eb it was
+      # the request-metadata rows at scenario grain and ClientRetrySupportedVersion's
+      # at check grain; it lapsed with MES-189's retry (re-recorded at a356b41 by
+      # MES-205), so no row carries it. The planted-probe unit holds that a
+      # reddened probe re-owes it on exactly those rows.
+      assert by_discount["drive_policy/scenario"]["rows"] == []
+      assert by_discount["drive_policy/check"]["rows"] == []
 
       assert Enum.map(by_discount["null/scenario"]["rows"], & &1["tag"])
              |> Enum.all?(&String.starts_with?(&1, "oc:client/http-standard-headers/"))
@@ -9341,6 +9439,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
     # exactly its share of the enumeration, so a record's counts cannot drift
     # from the whole. The mirror page (conformance/controls/bucket5b_mirror.exs)
     # prints the same figures.
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the committed client censuses and the D5b-i record: it asserts the drive-policy discount's recomputation, an instrument property, not SDK wire behaviour, so no OC check corresponds"
     test "the bucket-5b view, whole (MES-146): 67 rows = 7 discriminating / 11 vacuous_oc / 43 vacuous_et / 6 vacuous_both / 0 not_established, from the walk over both records",
          %{inputs: inputs, view: view} do
       secs =
@@ -9393,8 +9494,8 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert counts.(whole["by_discount"]) == %{
                "null/check" => 17,
                "null/scenario" => 10,
-               "drive_policy/check" => 1,
-               "drive_policy/scenario" => 10
+               "drive_policy/check" => 0,
+               "drive_policy/scenario" => 0
              }
 
       assert counts.(whole["by_null_outcome_any_census"]) == %{

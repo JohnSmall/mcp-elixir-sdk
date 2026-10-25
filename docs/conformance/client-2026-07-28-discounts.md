@@ -3,7 +3,7 @@
 Rendered from `MCP.Conformance.Discounts`, which reads the committed censuses.
 Do not edit: regenerate with `mix conformance.discounts`.
 
-Measurement run: commit `f4be9eb4624813ebcf5418898180f0ca433ab562`, harness
+Measurement run: commit `a356b413a0d4ee826556655bbb2428da9da0be74`, harness
 `0.2.0-alpha.11`, requirements `2026-07-28`.
 
 ## The headline, and every subtraction behind it
@@ -15,16 +15,16 @@ Every verdict below is under the leg's own summary reducer
 | figure | value | scenarios removed |
 | --- | --- | --- |
 | as driven | **7 of 7** | — |
-| after drive-policy only | **6 of 7** | `request-metadata` |
+| after drive-policy only | **7 of 7** | none |
 | after null-passable only | **6 of 7** | `http-standard-headers` |
-| **surviving BOTH** | **5 of 7** | `request-metadata`, `http-standard-headers` |
+| **surviving BOTH** | **6 of 7** | `http-standard-headers` |
 
 The two middle rows are published rather than the endpoints because they are
 the same number over **different sets**. Two units independently produced
 "6 of 7" from those two rows before anyone noticed they were answering
 different questions.
 
-Surviving both: `http-custom-headers`, `http-invalid-tool-headers`, `json-schema-ref-no-deref`, `sep-2322-client-request-state`, `tools_call`.
+Surviving both: `http-custom-headers`, `http-invalid-tool-headers`, `json-schema-ref-no-deref`, `request-metadata`, `sep-2322-client-request-state`, `tools_call`.
 
 ## The in-scope denominator
 
@@ -55,7 +55,7 @@ not results and are not shown. Reading them as failures would report
 
 | scenario | measurement | strict-connect probe |
 | --- | --- | --- |
-| `request-metadata` | PASS | FAIL |
+| `request-metadata` | PASS | PASS |
 
 ## Discount 2 — null-passable, and which null
 

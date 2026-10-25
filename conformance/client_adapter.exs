@@ -125,9 +125,9 @@ defmodule MCP.Conformance.ClientAdapter do
   # request the adapter made, not on a retry of the rejected one.
   #
   # So the drive-policy discount (8/8 resting on `drive/2` carrying on past a
-  # failed `connect/1`) has lapsed at MES-189's tree. The committed probe
-  # census and the figures in `client-2026-07-28-discounts.md` are as of
-  # f4be9eb and still state the discount; MES-205 re-records them. The
+  # failed `connect/1`) has lapsed at MES-189's tree. MES-205 re-recorded the
+  # probe census and `client-2026-07-28-discounts.md` at a356b41, where
+  # neither states the discount any more. The
   # carry-on policy itself is unchanged and deliberate (see `drive/2`), and
   # the report still names it as its own axis.
   defp run_scenario("request-metadata", url) do

@@ -240,24 +240,24 @@
       "judged_by": "MCP.Conformance.Manifest.judge/3",
       "verdict": "accepted"
     },
-    "branch": "MES-57",
-    "commit": "f4be9eb4624813ebcf5418898180f0ca433ab562",
-    "console_sha256": "d626fdf8603232febe41c9d1d2b52408950efa958caaecb63b851153fa4c2511",
+    "branch": "MES-205",
+    "commit": "a356b413a0d4ee826556655bbb2428da9da0be74",
+    "console_sha256": "36fd981c30f8b9e6254e51509497a88f0d91a93ffcccb9b46857523421e85990",
     "expected_sha256": "8eccf948ba9fc01968161db4d884cbc27baa9c4d4fe645182212f03dacc06023",
     "harness_dist_sha256": "a10085d0cfc9dd9192cc227f0f4dd6f1af9a94f6a0d3e30af08d4a0bcf268aae",
     "harness_exit_code": 1,
     "harness_version_reported": "0.2.0-alpha.11",
     "leg": "client",
-    "manifest_sha256": "69d3b14f74add3918b6560f1cfc7c081712dbd99d9afc87a8770bbd2d60a38c0",
+    "manifest_sha256": "d326e6dcefb69b010a510735119caf5af36996e437cacdc32ea73c9726555dda",
     "requirements_md5": "d6eb2061b2d35c7c71a86059b08bb928",
     "requirements_revision": "2026-07-28",
     "role": "probe",
-    "run_dir": "/tmp/mes57-f/strict_connect",
-    "started_at": "2026-08-21T07:25:36.825313Z"
+    "run_dir": "/tmp/mes205/strict_connect",
+    "started_at": "2026-10-25T02:50:42.063942Z"
   },
   "scenarios": [
     {
-      "artefact_dir": "auth/authorization-server-migration-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/authorization-server-migration-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -295,7 +295,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/basic-cimd-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/basic-cimd-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -333,7 +333,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/client-credentials-basic-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/client-credentials-basic-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -371,7 +371,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/client-credentials-jwt-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/client-credentials-jwt-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -409,7 +409,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/dpop-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/dpop-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 3,
         "INFO": 0,
@@ -459,7 +459,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/dpop-nonce-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/dpop-nonce-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 5,
         "INFO": 0,
@@ -521,7 +521,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/enterprise-managed-authorization-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/enterprise-managed-authorization-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 2,
         "INFO": 0,
@@ -565,7 +565,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/iss-normalized-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/iss-normalized-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -603,7 +603,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/iss-not-advertised-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/iss-not-advertised-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -641,7 +641,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/iss-supported-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/iss-supported-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -679,7 +679,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/iss-supported-missing-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/iss-supported-missing-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -717,7 +717,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/iss-unexpected-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/iss-unexpected-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -755,7 +755,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/iss-wrong-issuer-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/iss-wrong-issuer-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -793,7 +793,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/metadata-default-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/metadata-default-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 5,
         "INFO": 0,
@@ -855,7 +855,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/metadata-issuer-mismatch-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/metadata-issuer-mismatch-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -893,7 +893,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/metadata-var1-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/metadata-var1-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 5,
         "INFO": 0,
@@ -955,7 +955,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/metadata-var2-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/metadata-var2-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 4,
         "INFO": 0,
@@ -1011,7 +1011,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/metadata-var3-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/metadata-var3-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 4,
         "INFO": 0,
@@ -1067,7 +1067,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/offline-access-not-supported-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/offline-access-not-supported-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -1105,7 +1105,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/offline-access-scope-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/offline-access-scope-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 1,
@@ -1143,7 +1143,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/pre-registration-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/pre-registration-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -1181,7 +1181,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/resource-mismatch-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/resource-mismatch-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 0,
         "INFO": 0,
@@ -1208,7 +1208,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/scope-from-scopes-supported-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/scope-from-scopes-supported-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -1246,7 +1246,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/scope-from-www-authenticate-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/scope-from-www-authenticate-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -1284,7 +1284,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/scope-omitted-when-undefined-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/scope-omitted-when-undefined-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -1322,7 +1322,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/scope-retry-limit-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/scope-retry-limit-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -1360,7 +1360,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/scope-step-up-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/scope-step-up-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 3,
         "INFO": 0,
@@ -1410,7 +1410,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/token-endpoint-auth-basic-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/token-endpoint-auth-basic-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 3,
         "INFO": 0,
@@ -1460,7 +1460,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/token-endpoint-auth-none-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/token-endpoint-auth-none-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 3,
         "INFO": 0,
@@ -1510,7 +1510,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/token-endpoint-auth-post-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/token-endpoint-auth-post-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 3,
         "INFO": 0,
@@ -1560,7 +1560,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "auth/wif-jwt-bearer-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "auth/wif-jwt-bearer-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -1598,7 +1598,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "http-custom-headers-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "http-custom-headers-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 5,
         "INFO": 0,
@@ -1656,7 +1656,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "http-invalid-tool-headers-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "http-invalid-tool-headers-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 2,
         "INFO": 0,
@@ -1696,7 +1696,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "http-standard-headers-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "http-standard-headers-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 0,
         "INFO": 0,
@@ -1723,7 +1723,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "json-schema-2020-12-preservation-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "json-schema-2020-12-preservation-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 2,
         "INFO": 0,
@@ -1763,7 +1763,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "json-schema-ref-no-deref-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "json-schema-ref-no-deref-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -1797,41 +1797,34 @@
       "threw": null
     },
     {
-      "artefact_dir": "request-metadata-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "request-metadata-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 0,
         "INFO": 0,
         "SKIPPED": 0,
-        "SUCCESS": 7,
-        "WARNING": 1,
+        "SUCCESS": 8,
+        "WARNING": 0,
         "total": 8
       },
       "checks_source": "artefacts",
       "classification": null,
       "control": null,
       "empty": false,
-      "failed_checks": [
-        {
-          "id": "sep-2575-client-retry-supported-version",
-          "message": null,
-          "name": "ClientRetrySupportedVersion",
-          "status": "WARNING"
-        }
-      ],
+      "failed_checks": [],
       "harness_reason": null,
       "id": "request-metadata",
       "leg": "client",
       "passes": {
-        "client_summary": false,
+        "client_summary": true,
         "requirements_exit": true,
         "server_summary": true,
-        "server_summary_or_client_summary": false
+        "server_summary_or_client_summary": true
       },
       "scored": true,
       "threw": null
     },
     {
-      "artefact_dir": "sep-2322-client-request-state-2026-08-21T07-25-37-131Z",
+      "artefact_dir": "sep-2322-client-request-state-2026-10-25T02-50-42-375Z",
       "checks": {
         "FAILURE": 5,
         "INFO": 0,
@@ -1889,7 +1882,7 @@
       "threw": null
     },
     {
-      "artefact_dir": "tools_call-2026-08-21T07-25-37-130Z",
+      "artefact_dir": "tools_call-2026-10-25T02-50-42-374Z",
       "checks": {
         "FAILURE": 1,
         "INFO": 0,
@@ -1966,11 +1959,10 @@
             "http-invalid-tool-headers",
             "json-schema-2020-12-preservation",
             "json-schema-ref-no-deref",
-            "request-metadata",
             "sep-2322-client-request-state",
             "tools_call"
           ],
-          "passed": 2,
+          "passed": 3,
           "total": 39
         },
         "scored": {
@@ -2002,11 +1994,10 @@
             "http-custom-headers",
             "http-invalid-tool-headers",
             "json-schema-ref-no-deref",
-            "request-metadata",
             "sep-2322-client-request-state",
             "tools_call"
           ],
-          "passed": 2,
+          "passed": 3,
           "total": 32
         }
       },
@@ -2174,16 +2165,16 @@
         "FAILURE": 75,
         "INFO": 1,
         "SKIPPED": 17,
-        "SUCCESS": 20,
-        "WARNING": 1,
+        "SUCCESS": 21,
+        "WARNING": 0,
         "total": 114
       },
       "scored": {
         "FAILURE": 60,
         "INFO": 1,
         "SKIPPED": 11,
-        "SUCCESS": 20,
-        "WARNING": 1,
+        "SUCCESS": 21,
+        "WARNING": 0,
         "total": 93
       }
     },

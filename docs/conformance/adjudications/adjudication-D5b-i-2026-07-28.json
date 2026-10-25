@@ -18,7 +18,7 @@
   "method": {
     "oc_side": "Not taken from the row: G32 recomputes each oc_null entry (null_outcome/3, counts-entail) and each discount (owed_discounts/2) from the committed censuses and refuses a row that states otherwise. A check absent from failed_checks is never read as a pass. A null outcome of pass or skipped makes the OC side vacuous (Q2); statuses are reduced under client_summary, so a WARNING is red, and raw_status keeps what the census said (Q3).",
     "requirements_exit_alternative": "Under the requirements_exit reducer, where a WARNING does not fail, the edges on ClientSendsClientInfo and on ClientRetrySupportedVersion would also be OC-vacuous under null-request, where their raw status is WARNING. Recorded here and not applied (Q3).",
-    "drive_policy": "Kept separate from the null discount and never merged with it (MES-19; Q4). At SCENARIO grain every request-metadata edge carries it (the scenario passes as driven and not under the strict-connect probe); at CHECK grain only ClientRetrySupportedVersion does (the probe's own outcome for it is not a pass).",
+    "drive_policy": "Kept separate from the null discount and never merged with it (MES-19; Q4). At f4be9eb (MES-145) every request-metadata edge carried it at SCENARIO grain, and ClientRetrySupportedVersion's at CHECK grain, because the scenario passed as driven and not under the strict-connect probe. Since MES-189 the client retries the -32022 itself and connect/1 succeeds, so at a356b41 (MES-205) request-metadata passes under the probe too, and no edge carries it at either grain. It has lapsed, not been withdrawn: G32 recomputes it from the committed probe census, so a probe census that reddens request-metadata re-owes it on these rows.",
     "et_side": "Each edge's check predicate was read in the harness build and mapped to a VIOLATION limb (the client does what the predicate refuses) and, where such a limb reaches the member, a NULL limb (the relevant send never happens). Each mutation is byte-exact {file, old, new} edits in lib/, each old string asserted to occur once, applied alone; the member test run alone by file:line at --seed 0 against an unmutated baseline of every targeted member green. A red result's firing is the innermost frame inside the member's own test; inside capture_log the bare (test) frame is the call line, so the firing is the assertion ExUnit prints as `code:`; where no frame is in the test body the mutation carries firing_basis. A member green under any limb makes the ET side vacuous (ratified 30077).",
     "scope_limit": "G32 checks the shape of et_null, the firing's placement inside the member's test, the OC recomputation and the derivation. Whether a mutation is the strongest violating or do-nothing alternative is the reviewer's call, not G32's (Q5)."
   },
@@ -298,58 +298,12 @@
         ]
       },
       "drive_policy/check": {
-        "count": 1,
-        "rows": [
-          {
-            "member": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 naming a version we support is retried exactly once",
-            "tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion"
-          }
-        ]
+        "count": 0,
+        "rows": []
       },
       "drive_policy/scenario": {
-        "count": 10,
-        "rows": [
-          {
-            "member": "MCP.ClientDefectsTest/test D-3 — one-shot retry on -32022 (POSITIVE CONTROL) a -32022 naming a version we support is retried exactly once",
-            "tag": "oc:client/request-metadata/sep-2575-client-retry-supported-version/ClientRetrySupportedVersion"
-          },
-          {
-            "member": "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) it falls back to its configured default when the message carries no _meta version",
-            "tag": "oc:client/request-metadata/sep-2575-http-client-sends-version-header/ClientSendsVersionHeader"
-          },
-          {
-            "member": "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) the transport derives mcp-protocol-version from the message's own _meta",
-            "tag": "oc:client/request-metadata/sep-2575-http-client-sends-version-header/ClientSendsVersionHeader"
-          },
-          {
-            "member": "MCP.ClientDefectsTest/test D-4 — the version header and _meta move in lockstep (POSITIVE CONTROL) the transport derives mcp-protocol-version from the message's own _meta",
-            "tag": "oc:client/request-metadata/sep-2575-http-version-header-matches-meta/ClientVersionHeaderMatchesMeta"
-          },
-          {
-            "member": "MCP.ClientTest/test per-request _meta every request carries protocolVersion + client identity/capabilities",
-            "tag": "oc:client/request-metadata/sep-2575-client-populates-meta/ClientPopulatesMeta"
-          },
-          {
-            "member": "MCP.ClientTest/test per-request _meta every request carries protocolVersion + client identity/capabilities",
-            "tag": "oc:client/request-metadata/sep-2575-client-sends-client-info/ClientSendsClientInfo"
-          },
-          {
-            "member": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON",
-            "tag": "oc:client/request-metadata/sep-2575-client-declares-roots-capability/ClientDeclaresRootsCapability"
-          },
-          {
-            "member": "MCP.Protocol.CapabilitiesTest/test ClientCapabilities round-trips through JSON",
-            "tag": "oc:client/request-metadata/sep-2575-client-declares-sampling-capability/ClientDeclaresSamplingCapability"
-          },
-          {
-            "member": "MCP.Transport.RoutingHeadersTest/test the version header rides the message (D-4), on the wire it matches the body _meta, not the transport's configured default",
-            "tag": "oc:client/request-metadata/sep-2575-http-client-sends-version-header/ClientSendsVersionHeader"
-          },
-          {
-            "member": "MCP.Transport.RoutingHeadersTest/test the version header rides the message (D-4), on the wire it matches the body _meta, not the transport's configured default",
-            "tag": "oc:client/request-metadata/sep-2575-http-version-header-matches-meta/ClientVersionHeaderMatchesMeta"
-          }
-        ]
+        "count": 0,
+        "rows": []
       }
     },
     "by_null_outcome_any_census": {
@@ -1386,22 +1340,7 @@
               "scenario": "request-metadata"
             }
           ],
-          "discounts": [
-            {
-              "grain": "check",
-              "sources": [
-                "docs/conformance/client-2026-07-28-probe-strict-connect.json"
-              ],
-              "type": "drive_policy"
-            },
-            {
-              "grain": "scenario",
-              "sources": [
-                "docs/conformance/client-2026-07-28-probe-strict-connect.json"
-              ],
-              "type": "drive_policy"
-            }
-          ],
+          "discounts": [],
           "et_null": {
             "measured": true,
             "mutations": [
@@ -1685,15 +1624,7 @@
               "scenario": "request-metadata"
             }
           ],
-          "discounts": [
-            {
-              "grain": "scenario",
-              "sources": [
-                "docs/conformance/client-2026-07-28-probe-strict-connect.json"
-              ],
-              "type": "drive_policy"
-            }
-          ],
+          "discounts": [],
           "et_null": {
             "measured": true,
             "mutations": [
@@ -1935,15 +1866,7 @@
               "scenario": "request-metadata"
             }
           ],
-          "discounts": [
-            {
-              "grain": "scenario",
-              "sources": [
-                "docs/conformance/client-2026-07-28-probe-strict-connect.json"
-              ],
-              "type": "drive_policy"
-            }
-          ],
+          "discounts": [],
           "et_null": {
             "measured": true,
             "mutations": [
@@ -2186,13 +2109,6 @@
             }
           ],
           "discounts": [
-            {
-              "grain": "scenario",
-              "sources": [
-                "docs/conformance/client-2026-07-28-probe-strict-connect.json"
-              ],
-              "type": "drive_policy"
-            },
             {
               "grain": "check",
               "sources": [
@@ -2654,15 +2570,7 @@
               "scenario": "request-metadata"
             }
           ],
-          "discounts": [
-            {
-              "grain": "scenario",
-              "sources": [
-                "docs/conformance/client-2026-07-28-probe-strict-connect.json"
-              ],
-              "type": "drive_policy"
-            }
-          ],
+          "discounts": [],
           "et_null": {
             "measured": true,
             "mutations": [
@@ -2932,15 +2840,7 @@
               "scenario": "request-metadata"
             }
           ],
-          "discounts": [
-            {
-              "grain": "scenario",
-              "sources": [
-                "docs/conformance/client-2026-07-28-probe-strict-connect.json"
-              ],
-              "type": "drive_policy"
-            }
-          ],
+          "discounts": [],
           "et_null": {
             "measured": true,
             "mutations": [
@@ -3197,13 +3097,6 @@
             }
           ],
           "discounts": [
-            {
-              "grain": "scenario",
-              "sources": [
-                "docs/conformance/client-2026-07-28-probe-strict-connect.json"
-              ],
-              "type": "drive_policy"
-            },
             {
               "grain": "check",
               "sources": [
@@ -3488,13 +3381,6 @@
           ],
           "discounts": [
             {
-              "grain": "scenario",
-              "sources": [
-                "docs/conformance/client-2026-07-28-probe-strict-connect.json"
-              ],
-              "type": "drive_policy"
-            },
-            {
               "grain": "check",
               "sources": [
                 "docs/conformance/client-2026-07-28-null-request.json"
@@ -3757,15 +3643,7 @@
               "scenario": "request-metadata"
             }
           ],
-          "discounts": [
-            {
-              "grain": "scenario",
-              "sources": [
-                "docs/conformance/client-2026-07-28-probe-strict-connect.json"
-              ],
-              "type": "drive_policy"
-            }
-          ],
+          "discounts": [],
           "et_null": {
             "measured": true,
             "mutations": [
@@ -4022,13 +3900,6 @@
             }
           ],
           "discounts": [
-            {
-              "grain": "scenario",
-              "sources": [
-                "docs/conformance/client-2026-07-28-probe-strict-connect.json"
-              ],
-              "type": "drive_policy"
-            },
             {
               "grain": "check",
               "sources": [
