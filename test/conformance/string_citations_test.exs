@@ -13,8 +13,8 @@ defmodule MCP.Conformance.StringCitationsTest do
   The controls come from `MCP.Conformance.StringCitationControls`, the one
   implementation `conformance/controls/string_citations_controls.exs` also
   drives. Each plants one defect into a synthetic universe held in memory and
-  requires its refusal KIND, with the `G33` prefix. That script shows each one
-  fail with its limb neutralised. Nothing here writes a file.
+  requires its own refusal: kind, `G33` prefix, key and cause (MES-202). That
+  script shows each one fail with its limb neutralised. Nothing writes a file.
 
   Synchronous on purpose: the real-tree audit decodes about 12 MB of JSON, and
   beside the async client tests whose wall-clock deadlines MES-191 records as

@@ -8,8 +8,11 @@
 #   P   positive      the REAL tree audits clean, and the planted universe of
 #                     `MCP.Conformance.StringCitationControls` audits clean
 #                     before any plant.
-#   K   planted       every control (C1-C17 with their letters) holds: it
-#                     produces its refusal KIND, and the line names G33; or,
+#   K   planted       every control holds: a refusal control produces its
+#                     OWN refusal, of its kind and naming G33, with the art,
+#                     key and detail of its `cause` (MES-202); the limb prints
+#                     how many refusal controls name a cause, and one that
+#                     names none fails; or,
 #                     for C17a-b (expect: moved), --resolve re-addresses the
 #                     window without that refusal and the result audits clean;
 #                     for C19a-b (expect: clean), the planted universe audits
@@ -23,7 +26,11 @@
 #                     the same recompiled guard, so a red here is the limb's
 #                     absence and not a broken build. A control with several
 #                     reverts (C27a) is run under each; a revert that names
-#                     matrix cells must fail every one of them.
+#                     matrix cells must fail every one of them. Each refusal
+#                     control is also run under its DECOYS (MES-202): guard
+#                     mutants that still make a refusal of its kind, but not
+#                     the one carrying its planted key and cause; it must FAIL
+#                     under each. The limb ends with counts per revert class.
 #   B   restored      the compiled .beam is reloaded; its md5 must equal the one
 #                     recorded before P, every control holds again, and the
 #                     guard's source sha256 is unchanged.
@@ -56,7 +63,10 @@ defmodule StringCitationsControls do
     check(real == [], "P: the real tree audits with #{length(real)} defect(s)")
     check(C.positive() == [], "P: the unplanted universe is not clean")
 
-    header("K — planted: each control is refused with its kind, naming G33")
+    header("K — planted: each control is refused with its own refusal, naming G33")
+    {with, of} = C.cause_census()
+    IO.puts("  refusal controls with cause: #{with}/#{of}")
+    check(of > 0 and with == of, "K: #{of - with} refusal control(s) name no cause")
     for c <- C.controls(), do: line(c, C.holds?(c), expected(c))
 
     header("R — reverted: each control's limb neutralised in memory; the control must FAIL")
@@ -66,6 +76,7 @@ defmodule StringCitationsControls do
       clean = C.positive() == []
       {held, failed} = C.verdict(c)
       missed = Map.get(r, :cells, []) -- failed
+      tally(r, held, not held and clean and missed == [])
 
       line(
         c,
@@ -74,6 +85,8 @@ defmodule StringCitationsControls do
           cells_note(r, failed, missed)
       )
     end
+
+    summary()
 
     header("B — restored: the compiled .beam reloaded")
     :code.purge(S)
@@ -101,6 +114,23 @@ defmodule StringCitationsControls do
   # F3 identity predicate, MES-192 correction round 1).
   defp mutate(source, %{stub: {anchor, clause}}), do: compile_with(source, anchor, clause)
 
+  # A decoy: literal substitutions, each of which must match exactly once.
+  defp mutate(source, %{swap: pairs}) do
+    mutated =
+      Enum.reduce(pairs, source, fn {from, to}, src ->
+        case length(String.split(src, from)) - 1 do
+          1 ->
+            String.replace(src, from, to)
+
+          n ->
+            fail("R: decoy anchor #{inspect(from)} matches #{n} time(s), not once")
+            src
+        end
+      end)
+
+    {_, _diagnostics} = Code.with_diagnostics(fn -> Code.compile_string(mutated, @src) end)
+  end
+
   defp mutate(source, %{limb: limb}),
     do: compile_with(source, "  defp limb(", "  defp limb(#{inspect(limb)}, _ctx), do: []\n\n")
 
@@ -123,7 +153,7 @@ defmodule StringCitationsControls do
   defp expected(%{mode: :field_list}),
     do: "#{length(C.matrix_fields())} fields read from the guard's schema declaration"
 
-  defp expected(%{kind: k}), do: "refused #{k}"
+  defp expected(%{kind: k}), do: "refused #{k}, its own cause"
 
   # A revert that names cells: the matrix cells it failed, and any it should
   # have failed and did not.
@@ -133,6 +163,7 @@ defmodule StringCitationsControls do
   defp cells_note(%{cells: _}, _failed, missed), do: "; cells NOT failed #{inspect(missed)}"
   defp cells_note(_r, _failed, _missed), do: ""
 
+  defp neutralised(%{decoy: name}), do: "decoy #{name}"
   defp neutralised(%{stub: {anchor, _}}), do: String.trim(anchor) <> "...)"
   defp neutralised(%{limb: limb}), do: "limb #{limb}"
 
@@ -142,6 +173,24 @@ defmodule StringCitationsControls do
     )
 
     unless ok, do: Process.put(:failed, [c.id | Process.get(:failed, [])])
+  end
+
+  # Per revert class: {reverts, ok, still holding}.
+  defp tally(r, held, ok) do
+    class = if Map.has_key?(r, :decoy), do: :decoy, else: :own
+    {n, k, h} = Process.get({:tally, class}, {0, 0, 0})
+
+    Process.put(
+      {:tally, class},
+      {n + 1, k + if(ok, do: 1, else: 0), h + if(held, do: 1, else: 0)}
+    )
+  end
+
+  defp summary do
+    {n, k, h} = Process.get({:tally, :own}, {0, 0, 0})
+    {dn, dk, dh} = Process.get({:tally, :decoy}, {0, 0, 0})
+    IO.puts("  limb/stub reverts: #{k}/#{n} ok, #{h} STILL hold")
+    IO.puts("  decoy reverts: #{dk}/#{dn} ok (the control fails), #{dh} STILL hold")
   end
 
   defp check(true, _why), do: :ok

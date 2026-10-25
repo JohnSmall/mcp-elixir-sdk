@@ -13,8 +13,19 @@ defmodule MCP.Conformance.StringCitationControls do
   `--reverted` run can neutralise exactly that limb and show the control fail.
 
   `run/1` returns the defects the planted universe audits to; `holds?/1` is the
-  control's verdict: the expected kind is among them and its rendered line
-  starts with `G33`.
+  control's verdict. A refusal control (`refusal_control?/1`) holds only on its
+  OWN refusal: one of its kind, on a `G33` line, carrying the art, key and
+  detail it names in `cause` (a bad_row control: the schema's refusal of the
+  `row` it plants, as `refuses_row?/2`). Another refusal of the same kind
+  never satisfies it, and a refusal control naming no cause fails (MES-202).
+  Its decoys (`decoys/1`) show each fail when its refusal loses its key or
+  cause while the kind is still refused.
+
+  Residuals, named: C13b's two plants (a column, an ordinal) are refused with
+  one detail, `"lib/a.ex:3" is not an address`, since the guard shows the
+  token without its tail, so only their keys (`#1`, `#2`) tell them apart;
+  C18a and C18b produce one and the same refusal (the schema refuses the
+  class whatever the holder reads), so their causes cannot tell them apart.
   """
 
   alias MCP.Conformance.StringCitations, as: S
@@ -200,6 +211,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "moved, path form",
         limb: :window,
         kind: :window_drift,
+        cause: [
+          {@json, "rows[r1].evidence `lib/a.ex:3`#1",
+           "lib/a.ex:3-3 no longer holds its pinned bytes; the pinned bytes are now at line 4 (moved)"}
+        ],
         inputs: fn ->
           inputs(%{tip: %{sources() | "lib/a.ex" => insert_line(@a_ex, 2, "  @moduledoc false")}})
         end
@@ -209,6 +224,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "moved, basename form",
         limb: :window,
         kind: :window_drift,
+        cause: [
+          {@json, "rows[r2].evidence `a_test.exs:2-3`#1",
+           "test/a_test.exs:2-3 no longer holds its pinned bytes; the pinned bytes are now at line 3 (moved)"}
+        ],
         inputs: fn ->
           inputs(%{
             tip: %{sources() | "test/a_test.exs" => insert_line(@a_test, 2, "  use ExUnit.Case")}
@@ -220,6 +239,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "changed",
         limb: :window,
         kind: :window_drift,
+        cause: [
+          {@json, "rows[r1].evidence `lib/a.ex:3`#1",
+           "lib/a.ex:3-3 no longer holds its pinned bytes; the pinned bytes occur nowhere in the file (changed)"}
+        ],
         inputs: fn ->
           inputs(%{
             tip: %{
@@ -234,6 +257,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "ambiguous",
         limb: :window,
         kind: :window_drift,
+        cause: [
+          {@json, "rows[r1].evidence `lib/a.ex:3`#1",
+           "lib/a.ex:3-3 no longer holds its pinned bytes; the pinned bytes occur at lines [4, 6] (ambiguous)"}
+        ],
         inputs: fn ->
           src =
             @a_ex |> insert_line(2, "  @moduledoc false") |> insert_line(6, "  def two, do: 2")
@@ -246,6 +273,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "doubled basename, target swapped",
         limb: :window,
         kind: :window_drift,
+        cause: [
+          {@json, "rows[r3].evidence `client.ex:2`#1",
+           "lib/y/client.ex:2-2 no longer holds its pinned bytes; the pinned bytes occur nowhere in the file (changed)"}
+        ],
         inputs: fn ->
           l = decoded()
 
@@ -272,6 +303,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "doubled basename, a new plain basename row",
         limb: :resolution,
         kind: :doubled_basename,
+        cause: [
+          {@json, "rows[r3].evidence `client.ex:2`#1",
+           "client.ex names [\"lib/x/client.ex\", \"lib/y/client.ex\"]"}
+        ],
         inputs: fn ->
           inputs(%{
             ledger:
@@ -284,6 +319,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "doubled basename, order-resolved rows beyond the ceiling",
         limb: :ceilings,
         kind: :stale_over_ceiling,
+        cause: [
+          {nil, "order MES-196",
+           over_ceiling({"order", "MES-196"}, ceiling({"order", "MES-196"}) + 1)}
+        ],
         inputs: fn -> order_beyond_ceiling() end
       },
       %{
@@ -291,6 +330,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "doubled basename, concatenated typo",
         limb: :resolution,
         kind: :unresolved,
+        cause: [
+          {@json, "rows[r2].evidence `a_test.exsa_test.exs:2-3`#1",
+           "a_test.exsa_test.exs names no tracked .ex/.exs"}
+        ],
         inputs: fn ->
           ev = [
             {"r1", "see lib/a.ex:3 for two/0"},
@@ -315,6 +358,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "a cite added to an artefact",
         limb: :universe,
         kind: :unledgered,
+        cause: [
+          {@json, "rows[r4].evidence `lib/a.ex:2`#1",
+           "a citation in the artefact with no ledger row"}
+        ],
         inputs: fn ->
           ev = default_evidence() ++ [{"r4", "and lib/a.ex:2 for one/0"}]
           inputs(%{docs: %{@json => json(ev), @md => md()}, ledger: S.encode_ledger(decoded())})
@@ -325,6 +372,13 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "a cite removed from an artefact",
         limb: :universe,
         kind: :ledger_orphan,
+        cause: [
+          {@json, "rows[r1].evidence `lib/a.ex:3`#1",
+           "a ledger row with no citation in its artefact"},
+          {nil, "lib/a.ex:3-3", "a window no pin or at row references"}
+        ],
+        # The row orphan off; the window orphan its removal also makes stays.
+        natural: [{"N-row-orphan-off", [{"r <- Enum.take(rs, 1),", "r <- Enum.take(rs, 0),"}]}],
         inputs: fn ->
           ev = [
             {"r1", "see two/0"},
@@ -340,6 +394,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "a ledger row with no cite",
         limb: :universe,
         kind: :ledger_orphan,
+        cause: [
+          {@json, "rows[r1].evidence `lib/a.ex:2`#1",
+           "a ledger row with no citation in its artefact"}
+        ],
         inputs: fn ->
           l = decoded()
 
@@ -360,6 +418,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "a reader that drops a cite",
         limb: :parity,
         kind: :structured_parity,
+        cause: [
+          {@json, nil,
+           "the structured reader found 2 citation(s), the raw scan 3; first difference at position 1: \"a_test.exs:2-3\" vs \"lib/a.ex:3\""}
+        ],
         seam: &drop_r1/2,
         inputs: fn ->
           inputs()
@@ -370,6 +432,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "a held label on an arbitrary cite",
         limb: :states,
         kind: :state_unwarranted,
+        cause: [
+          {@json, "rows[r1].evidence `lib/a.ex:3`#1",
+           "held:g32_prose_anchor, but that holder does not read this occurrence"}
+        ],
         inputs: fn -> inputs(%{ledger: held_on_r1()}) end
       },
       %{
@@ -377,6 +443,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "an at row naming no ancestor",
         limb: :anchors,
         kind: :anchor_invalid,
+        cause: [
+          {@md, "## §1 Findings `lib/a.ex:4`#1",
+           "3333333333333333333333333333333333333333 is not a full sha of an ancestor of HEAD"}
+        ],
         inputs: fn ->
           inputs(%{ledger: retarget_at("3333333333333333333333333333333333333333")})
         end
@@ -386,6 +456,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "an at row whose commit lacks the bytes",
         limb: :anchors,
         kind: :at_drift,
+        cause: [
+          {@md, "## §1 Findings `lib/a.ex:4`#1",
+           "lib/a.ex:4-4 at 2222222 does not hold the pinned bytes"}
+        ],
         inputs: fn -> inputs(%{ledger: retarget_at(@unrelated)}) end
       },
       %{
@@ -393,6 +467,7 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "a stale row over its owner's ceiling",
         limb: :ceilings,
         kind: :stale_over_ceiling,
+        cause: [{nil, "stale MES-999", over_ceiling({"stale", "MES-999"}, 1)}],
         inputs: fn -> inputs(%{ledger: stale_on_r1("MES-999")}) end
       },
       %{
@@ -400,6 +475,7 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "a stale row with no owning ticket",
         limb: :rows,
         kind: :bad_row,
+        row: fn -> stale_row(r1_row(%{}), "none") end,
         inputs: fn -> inputs(%{ledger: stale_on_r1("none")}) end
       },
       %{
@@ -407,6 +483,15 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "grammar: :0 and a reversed range",
         limb: :shape,
         kind: :bad_range,
+        cause: [
+          {@json, "rows[r9].evidence `lib/a.ex:0`#1", "\"lib/a.ex:0\" is not an address"},
+          {@json, "rows[r9].evidence `lib/a.ex:4-3`#1", "\"lib/a.ex:4-3\" is not an address"}
+        ],
+        # Each plant's refusal off in turn; the other plant's stays.
+        natural: [
+          {"N-zero-admitted", [{"a == 0 or b < a ->", "b < a ->"}]},
+          {"N-reversed-admitted", [{"a == 0 or b < a ->", "a == 0 ->"}]}
+        ],
         inputs: fn -> grammar(["lib/a.ex:0", "lib/a.ex:4-3"]) end
       },
       %{
@@ -414,6 +499,15 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "grammar: a column and an ordinal",
         limb: :shape,
         kind: :bad_shape,
+        cause: [
+          {@json, "rows[r9].evidence `lib/a.ex:3`#1", "\"lib/a.ex:3\" is not an address"},
+          {@json, "rows[r9].evidence `lib/a.ex:3`#2", "\"lib/a.ex:3\" is not an address"}
+        ],
+        # The column admitted; the ordinal's refusal stays.
+        natural: [
+          {"N-column-admitted",
+           [{~S"@after_bad ~r/\A(?::\d|(?:st|", ~S"@after_bad ~r/\A(?:(?:st|"}]}
+        ],
         inputs: fn -> grammar(["lib/a.ex:3:4", "lib/a.ex:3rd"]) end
       },
       %{
@@ -421,6 +515,7 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "the ledger not in canonical form",
         limb: :ledger,
         kind: :ledger_not_canonical,
+        cause: [{nil, nil, "the ledger is not in its canonical encoding"}],
         inputs: fn ->
           {:ok, bin} = inputs().ledger
           inputs(%{ledger: String.replace(bin, "\n", "\n ", global: false)})
@@ -432,6 +527,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "F1: the leaf names the other doubled file, the row is pinned by order",
         limb: :resolution,
         kind: :target_contradicted,
+        cause: [
+          {@json, "rows[r3].evidence `client.ex:2`#1",
+           "the leaf binds lib/y/client.ex to this cite, the row pins lib/x/client.ex"}
+        ],
         inputs: fn ->
           ev = [
             {"r1", "see lib/a.ex:3 for two/0"},
@@ -452,6 +551,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "F2: held g32_bytes outside G32's records",
         limb: :states,
         kind: :state_unwarranted,
+        cause: [
+          {"conformance/data/fixture-g32.json", "quote.bytes `lib/a.ex:3`#1",
+           "held:g32_bytes, but that holder does not read this occurrence"}
+        ],
         inputs: fn ->
           universe(
             %{"conformance/data/fixture-g32.json" => g32_like()},
@@ -464,6 +567,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "F2: held g32_anchor_entry outside G32's records",
         limb: :states,
         kind: :state_unwarranted,
+        cause: [
+          {"conformance/data/fixture-g32.json", "holder.prose_anchors[#0].cite `lib/a.ex:3`#1",
+           "held:g32_anchor_entry, but that holder does not read this occurrence"}
+        ],
         inputs: fn ->
           universe(
             %{"conformance/data/fixture-g32.json" => g32_like()},
@@ -479,6 +586,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "F2: held g32_prose_anchor outside G32's records",
         limb: :states,
         kind: :state_unwarranted,
+        cause: [
+          {"conformance/data/fixture-g32.json", "holder.note `lib/a.ex:3`#1",
+           "held:g32_prose_anchor, but that holder does not read this occurrence"}
+        ],
         inputs: fn ->
           universe(
             %{"conformance/data/fixture-g32.json" => g32_like()},
@@ -491,6 +602,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "F2: held attribution_citations in an artefact the holder does not read",
         limb: :states,
         kind: :state_unwarranted,
+        cause: [
+          {@json, "rows[r1].evidence `a_test.exs:2`#1",
+           "held:attribution_citations, but that holder does not read this occurrence"}
+        ],
         inputs: fn ->
           ev = [
             {"r1", "the assert a_test.exs:2 holds"},
@@ -509,6 +624,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "F2: held attribution_citations in a section the holder does not audit",
         limb: :states,
         kind: :state_unwarranted,
+        cause: [
+          {attribution_md(), "## §2.3 Class `a_test.exs:2`#1",
+           "held:attribution_citations, but that holder does not read this occurrence"}
+        ],
         inputs: fn ->
           universe(
             %{attribution_md() => attribution_doc("§2.3")},
@@ -521,6 +640,9 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "F2: held g5_asserts_read on a list no holder test enumerates (R1: no such class)",
         limb: :rows,
         kind: :bad_row,
+        row: fn ->
+          held_row(@g32_record, "asserts_read[#0]", "test/a_test.exs:3", "g5_asserts_read")
+        end,
         inputs: fn ->
           doc = ~s|{"asserts_read": ["test/a_test.exs:3 \u2014 assert A.two() == 2"]}\n|
 
@@ -536,6 +658,7 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "F2: held g29 in a section G29 does not permit",
         limb: :states,
         kind: :state_unwarranted,
+        cause: [{register_md(), "§9 client.ex:868", "1 held:g29 row(s), G29 permits 0"}],
         inputs: fn ->
           universe(
             %{register_md() => "# Register\n\n## §9 Other\n\nquoted `client.ex:868` here\n"},
@@ -548,6 +671,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "F2: held g29 in an artefact G29 does not read",
         limb: :states,
         kind: :state_unwarranted,
+        cause: [
+          {@json, "rows[r1].evidence `lib/a.ex:3`#1",
+           "held:g29, but that holder does not read this occurrence"}
+        ],
         inputs: fn -> universe(%{}, [{@json, "rows[r1].evidence", "g29"}]) end
       },
       %{
@@ -577,6 +704,20 @@ defmodule MCP.Conformance.StringCitationControls do
         expect: :refused,
         stub: {"  defp in_identity?(", "  defp in_identity?(_o), do: false\n\n"},
         kind: :in_record_identity,
+        cause: [
+          {"docs/conformance/fixture-identity.json", "rows[lib/a.ex:3].module `lib/a.ex:3`#1",
+           "lib/a.ex:3 is part of a record's identity"}
+        ],
+        # Refused by --resolve's row_edit/2, not by a limb: the decoys rewrite
+        # that one refusal.
+        decoys: [
+          {"T-key",
+           [
+             {"{:refuse, d(:in_record_identity, r,",
+              ~S|{:refuse, d(:in_record_identity, Map.put(r, "at_path", "decoy"),|}
+           ]},
+          {"T-detail", [{~S|is part of a record's identity")}|, ~S|is part of a decoy")}|}]}
+        ],
         inputs: fn -> moved_universe(~s({"rows": [{"module": "lib/a.ex:3"}]}\n)) end
       },
       # --- MES-192 correction round 2 (32833, 32835): R1 and R2 ---------------
@@ -585,6 +726,14 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "R1: held g5_asserts_read on a holder-enumerated row is no longer a class",
         limb: :rows,
         kind: :bad_row,
+        row: fn ->
+          held_row(
+            @g32_record,
+            "sections[#0].rows[t1].asserts_read[#0]",
+            "test/a_test.exs:3",
+            "g5_asserts_read"
+          )
+        end,
         inputs: fn -> g5_universe(holder_source()) end
       },
       %{
@@ -592,6 +741,14 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "R1: held g5_asserts_read under a holder loop filtered to no rows",
         limb: :rows,
         kind: :bad_row,
+        row: fn ->
+          held_row(
+            @g32_record,
+            "sections[#0].rows[t1].asserts_read[#0]",
+            "test/a_test.exs:3",
+            "g5_asserts_read"
+          )
+        end,
         inputs: fn ->
           g5_universe(
             String.replace(
@@ -607,6 +764,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "R1: an et_test_at row whose et_test file is not the cited file",
         limb: :states,
         kind: :state_unwarranted,
+        cause: [
+          {"docs/conformance/fixture-anchored.json", "rows[t1].reading `lib/a.ex:3`#1",
+           "et_test_at, but the row's et_test is {\"1111111111111111111111111111111111111111\", \"test/a_test.exs\"}"}
+        ],
         inputs: fn -> anchored_universe("test/a_test.exs") end
       },
       %{
@@ -633,14 +794,24 @@ defmodule MCP.Conformance.StringCitationControls do
         id: "C19c",
         what: "R2: both doubled files associated with the cite is ambiguous",
         stub: {"  defp associated(", "  defp associated(_o, _cands), do: []\n\n"},
+        decoy_limb: :resolution,
         kind: :target_ambiguous,
+        cause: [
+          {@json, "rows[r3].evidence `client.ex:2`#1",
+           "the leaf binds lib/x/client.ex and lib/y/client.ex to this cite"}
+        ],
         inputs: fn -> r3_universe("client.ex:2 is lib/y/client.ex or lib/x/client.ex") end
       },
       %{
         id: "C19d",
         what: "R2: the :851 form still refuses a wrong pin",
         stub: {"  defp associated(", "  defp associated(_o, _cands), do: []\n\n"},
+        decoy_limb: :resolution,
         kind: :target_contradicted,
+        cause: [
+          {@json, "rows[r3].evidence `client.ex:2`#1",
+           "the leaf binds lib/y/client.ex to this cite, the row pins lib/x/client.ex"}
+        ],
         inputs: fn -> r3_universe("`client.ex:2` is `lib/y/client.ex`; see connect/0") end
       },
       # --- MES-192 correction round 3 (32842): S1-S4 ---------------------------
@@ -649,6 +820,9 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "S1: a pin row whose window hash is null, its source drifted",
         limb: :rows,
         kind: :bad_window,
+        cause: [
+          {nil, "lib/a.ex:3-3", "window lib/a.ex:3-3 is nil, not a lowercase 64-hex sha256"}
+        ],
         inputs: fn ->
           moved = %{sources() | "lib/a.ex" => insert_line(@a_ex, 2, "  @moduledoc false")}
           inputs(%{tip: moved, ledger: with_window("lib/a.ex:3-3", nil)})
@@ -659,6 +833,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "S1: an at row whose window hash is null, its commit's bytes drifted",
         limb: :rows,
         kind: :bad_window,
+        cause: [
+          {nil, "lib/a.ex:4-4@1111111111111111111111111111111111111111",
+           "window lib/a.ex:4-4@1111111111111111111111111111111111111111 is nil, not a lowercase 64-hex sha256"}
+        ],
         inputs: fn ->
           inputs(%{
             at: %{{@old, "lib/a.ex"} => "x\ny\nz\nw\n"},
@@ -671,6 +849,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "S1: a window hash that is not lowercase 64-hex",
         limb: :rows,
         kind: :bad_window,
+        cause: [
+          {nil, "lib/a.ex:3-3",
+           "window lib/a.ex:3-3 is FE1740C35B31F6124BDF064283513C4834C5DBD8F2FECF70735F7ABB531CB001, not a lowercase 64-hex sha256"}
+        ],
         inputs: fn ->
           l = decoded()
           inputs(%{ledger: with_window("lib/a.ex:3-3", String.upcase(l.windows["lib/a.ex:3-3"]))})
@@ -681,6 +863,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "S2: a scalar named live_units outside the sweep's records",
         limb: :states,
         kind: :state_unwarranted,
+        cause: [
+          {MCP.Conformance.BoundarySweep.paths().boundaries, "cr_note.live_units `lib/a.ex:2`#1",
+           "sweep_measurement, but this is not an element of a list the sweep generates"}
+        ],
         inputs: fn ->
           sweep_universe([{"cr_note.live_units", "snapshot", "sweep_measurement"}])
         end
@@ -690,6 +876,11 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "S2: a lookalike nested live_units list outside the sweep's records",
         limb: :states,
         kind: :state_unwarranted,
+        cause: [
+          {MCP.Conformance.BoundarySweep.paths().boundaries,
+           "elsewhere.live_units[#0] `lib/a.ex:2`#1",
+           "sweep_measurement, but this is not an element of a list the sweep generates"}
+        ],
         inputs: fn ->
           sweep_universe([{"elsewhere.live_units[#0]", "snapshot", "sweep_measurement"}])
         end
@@ -699,6 +890,10 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "S2: another field of a sweep record",
         limb: :states,
         kind: :state_unwarranted,
+        cause: [
+          {MCP.Conformance.BoundarySweep.paths().boundaries, "boundaries[b1].note `lib/a.ex:2`#1",
+           "sweep_measurement, but this is not an element of a list the sweep generates"}
+        ],
         inputs: fn ->
           sweep_universe([{"boundaries[b1].note", "snapshot", "sweep_measurement"}])
         end
@@ -772,6 +967,7 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "T2: relabelling cites external beyond its ceiling",
         limb: :ceilings,
         kind: :stale_over_ceiling,
+        cause: [{nil, "external -", over_ceiling({"external", "-"}, 6)}],
         inputs: fn ->
           gone = Enum.map_join(1..6, ", ", &"lib/gone.ex:#{&1}")
           ev = default_evidence() ++ [{"r6", "removed: " <> gone}]
@@ -783,6 +979,7 @@ defmodule MCP.Conformance.StringCitationControls do
         what: "T2: relabelling cites not_a_cite beyond its ceiling",
         limb: :ceilings,
         kind: :stale_over_ceiling,
+        cause: [{nil, "not_a_cite fixture", over_ceiling({"not_a_cite", "fixture"}, 2)}],
         inputs: fn ->
           ev = default_evidence() ++ [{"r7", "fixtures: lib/a.ex:98 and lib/a.ex:99"}]
           fields = %{"state" => "not_a_cite", "class" => "fixture", "target" => "lib/a.ex"}
@@ -1413,26 +1610,38 @@ defmodule MCP.Conformance.StringCitationControls do
 
   defp stale_on_r1(owner) do
     l = decoded()
-
-    rows =
-      Enum.map(
-        l.rows,
-        &if(row?(&1, "lib/a.ex:3"),
-          do: %{
-            "art" => &1["art"],
-            "at_path" => &1["at_path"],
-            "cite" => &1["cite"],
-            "nth" => 1,
-            "state" => "stale",
-            "owner" => owner,
-            "reason" => "planted"
-          },
-          else: &1
-        )
-      )
+    rows = Enum.map(l.rows, &if(row?(&1, "lib/a.ex:3"), do: stale_row(&1, owner), else: &1))
 
     S.encode_ledger(%{l | rows: rows, windows: Map.delete(l.windows, "lib/a.ex:3-3")})
   end
+
+  # r's occurrence as a stale row owned by `owner` (C12a, C12b).
+  defp stale_row(r, owner),
+    do: %{
+      "art" => r["art"],
+      "at_path" => r["at_path"],
+      "cite" => r["cite"],
+      "nth" => 1,
+      "state" => "stale",
+      "owner" => owner,
+      "reason" => "planted"
+    }
+
+  # The held row universe/3 plants on an occurrence (the first, nth 1).
+  defp held_row(art, at_path, cite, class),
+    do: %{
+      "art" => art,
+      "at_path" => at_path,
+      "cite" => cite,
+      "nth" => 1,
+      "state" => "held",
+      "class" => class
+    }
+
+  # A ceiling refusal's detail: `n` rows over the guard's live ceiling, which
+  # only shrinks; read, never copied (MES-202 34529 Q3).
+  defp ceiling(key), do: Map.get(S.ceilings(), key, 0)
+  defp over_ceiling(key, n), do: "#{n} row(s), ceiling #{ceiling(key)}"
 
   defp retarget_at(sha) do
     l = decoded()
@@ -1558,20 +1767,111 @@ defmodule MCP.Conformance.StringCitationControls do
       S.audit(applied(i, r)).defects == []
   end
 
-  def holds?(c) do
-    Enum.any?(run(c), fn d ->
-      d.kind == c.kind and String.starts_with?(S.format_defect(d), S.guard() <> " ")
+  # A refusal control holds only on its own refusal (MES-202): every entry
+  # `{art, key, detail}` of its `cause`, or, for a bad_row control, the
+  # schema's refusal of its planted `row`; each of its kind, on a G33 line.
+  # Another refusal of the same kind never satisfies it. A refusal control
+  # with neither holds nothing: it fails closed.
+  def holds?(%{kind: :bad_row, row: row} = c) do
+    planted = row.()
+    Enum.any?(run(c), &(refuses_row?(&1, planted) and g33?(&1)))
+  end
+
+  def holds?(%{cause: [_ | _] = cause} = c) do
+    defects = run(c)
+
+    Enum.all?(cause, fn {art, key, detail} ->
+      Enum.any?(
+        defects,
+        &(&1.kind == c.kind and &1.art == art and &1.key == key and &1.detail == detail and
+            g33?(&1))
+      )
     end)
+  end
+
+  def holds?(_c), do: false
+
+  defp g33?(d), do: String.starts_with?(S.format_defect(d), S.guard() <> " ")
+
+  @doc "Whether the refusal control `c` names its own refusal: a `cause`, or a bad_row `row`."
+  def cause?(%{kind: :bad_row, row: row}) when is_function(row, 0), do: true
+  def cause?(%{cause: [_ | _]}), do: true
+  def cause?(_c), do: false
+
+  @doc """
+  `{with, of}`: of the refusal controls (`refusal_control?/1`, read from
+  `controls/0`), how many name their own refusal (`cause?/1`).
+  """
+  def cause_census do
+    refusal = Enum.filter(controls(), &refusal_control?/1)
+    {Enum.count(refusal, &cause?/1), length(refusal)}
   end
 
   @doc """
   The reverts of a control for the `--reverted` limb: its `stubs`, its one
-  `stub`, or its `limb`. A revert may name `cells`, the `state.field` cells
-  of the type matrix it must fail.
+  `stub`, or its `limb`; then, for a refusal control, its decoys. A revert may
+  name `cells`, the `state.field` cells of the type matrix it must fail.
   """
-  def reverts(%{stubs: stubs}), do: stubs
-  def reverts(%{stub: stub}), do: [%{stub: stub}]
-  def reverts(%{limb: limb}), do: [%{limb: limb}]
+  def reverts(c), do: own_reverts(c) ++ decoys(c)
+
+  defp own_reverts(%{stubs: stubs}), do: stubs
+  defp own_reverts(%{stub: stub}), do: [%{stub: stub}]
+  defp own_reverts(%{limb: limb}), do: [%{limb: limb}]
+
+  @doc """
+  Whether `c` is a refusal control: one that holds on a refusal of its kind
+  (not `expect: :clean` or `:moved`, and no mode of its own but `:resolve`).
+  """
+  def refusal_control?(c),
+    do: Map.get(c, :expect) not in [:clean, :moved] and Map.get(c, :mode) in [nil, :resolve]
+
+  @doc """
+  A refusal control's decoys (MES-202): guard mutants under which a refusal of
+  the control's kind is still made, but no longer carries the cause it plants,
+  so the control must FAIL. Each is `%{decoy: name, swap: [{from, to}]}`,
+  literal substitutions in the guard's source, each matching exactly once.
+
+    * natural (`natural:`): one plant's refusal weakened where the control's
+      universe makes a second refusal of its kind (C7, C13a, C13b);
+    * T-key / T-detail: the control's limb (`limb:`, or `decoy_limb:`) still
+      returns every refusal of the kind, each with `key` or `detail` replaced
+      by `"decoy"`; or, where the refusal is not a limb's (C17c), the same
+      rewrite of that one refusal (`decoys:`).
+
+  For most controls no second refusal of the kind occurs naturally, so the
+  T decoys stand in for one (PM ruling, MES-202 34529 Q5).
+  """
+  def decoys(c) do
+    if refusal_control?(c) do
+      natural = for {name, swap} <- Map.get(c, :natural, []), do: %{decoy: name, swap: swap}
+      ts = Map.get_lazy(c, :decoys, fn -> transforms(decoy_limb(c), c.kind) end)
+      natural ++ for {name, swap} <- ts, do: %{decoy: name, swap: swap}
+    else
+      []
+    end
+  end
+
+  defp decoy_limb(%{decoy_limb: limb}), do: limb
+  defp decoy_limb(%{limb: limb}), do: limb
+
+  defp transforms(limb, kind),
+    do: [{"T-key", rewrap(limb, kind, :key)}, {"T-detail", rewrap(limb, kind, :detail)}]
+
+  # The real clause renamed to `limb({:real, limb}, ctx)`, behind a clause that
+  # rewrites `field` of each refusal of `kind` it returns. An empty list stays
+  # empty, so the unplanted universe stays clean.
+  defp rewrap(limb, kind, field) do
+    head = "  defp limb(#{inspect(limb)}, ctx) do"
+    real = "limb({:real, #{inspect(limb)}}, ctx)"
+
+    [
+      {head,
+       "  defp limb(#{inspect(limb)}, ctx),\n" <>
+         "    do: Enum.map(#{real}, &if(&1.kind == #{inspect(kind)}, " <>
+         "do: %{&1 | #{field}: \"decoy\"}, else: &1))\n\n" <>
+         "  defp #{real} do"}
+    ]
+  end
 
   @doc """
   `{holds, failed}`: the control's verdict, and for the type matrix the
