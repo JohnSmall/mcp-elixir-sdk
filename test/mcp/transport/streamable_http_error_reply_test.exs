@@ -13,8 +13,11 @@ defmodule MCP.Transport.StreamableHTTPErrorReplyTest do
 
   Now, a 4xx/5xx answering a POSTed **request** whose body is a JSON object
   with an `error` member and the request's own `id` is delivered exactly as a
-  200 JSON reply would be. Every other answer keeps `:http_error`, which is
-  what the named CONTROLS below pin.
+  200 JSON reply would be. Since MES-206, so is one whose `id` is null and
+  whose `error` is not: JSON-RPC 2.0 §5 sends a null id when the server could
+  not read the request's, and over HTTP the POST it answers names the request,
+  so the transport rewrites the null to the posted id. Every other answer keeps
+  `:http_error`, which is what the named CONTROLS below pin.
 
   The first three tests run against the SDK's own server. The rest use
   `MCP.Test.HTTPErrorStubPlug`, which can force a status, header or body.
@@ -161,6 +164,111 @@ defmodule MCP.Transport.StreamableHTTPErrorReplyTest do
     end
   end
 
+  # MES-206. JSON-RPC 2.0 §5: "If there was an error in detecting the id in the
+  # Request object (e.g. Parse error/Invalid Request), it MUST be Null." Each
+  # POST carries one request, so the null-id error answers that request.
+  describe "MES-206: a JSON-RPC error with a null id on a 4xx/5xx" do
+    @tag oc: :none
+    @tag oc_reason: "no OC client check sends a null-id -32700 on a 4xx"
+    test "400 / -32700 with a null id reaches the caller as %Error{code: -32700}" do
+      client = stub_client(fn _ -> json(400, error_reply(nil, -32_700, "Parse error")) end)
+
+      assert {:error, %Error{code: -32_700, message: "Parse error"}} =
+               MCP.Client.call_tool(client, "x")
+
+      assert Process.alive?(client)
+      assert {:ok, %{"tools" => []}} = MCP.Client.list_tools(client)
+    end
+
+    @tag oc: :none
+    @tag oc_reason: "no OC client check sends a null-id error on a 5xx"
+    test "500 / -32603 with a null id reaches the caller as the exact %Error{}" do
+      client =
+        stub_client(fn _ ->
+          json(500, error_reply(nil, -32_603, "Internal error", %{"detail" => "boom"}))
+        end)
+
+      assert {:error,
+              %Error{code: -32_603, message: "Internal error", data: %{"detail" => "boom"}}} =
+               MCP.Client.call_tool(client, "x")
+    end
+
+    @tag oc: :none
+    @tag oc_reason: "no OC client check sends a malformed null-id error on a 4xx"
+    test "a null-id 4xx whose error member is malformed fails the caller at once with :malformed_response" do
+      client =
+        stub_client(fn _ -> json(400, %{"jsonrpc" => "2.0", "id" => nil, "error" => "oops"}) end)
+
+      assert {:error, {:malformed_response, %Error{}}} = MCP.Client.call_tool(client, "x")
+    end
+
+    @tag oc: :none
+    @tag oc_reason: "no OC client check sends a null-id reply with both result and error"
+    test "a null-id 4xx carrying both result and error fails the caller at once with :malformed_response" do
+      client =
+        stub_client(fn _ ->
+          json(400, Map.put(error_reply(nil, -32_700, "Parse error"), "result", %{}))
+        end)
+
+      assert {:error, {:malformed_response, %Error{}}} = MCP.Client.call_tool(client, "x")
+    end
+
+    @tag oc: :none
+    @tag oc_reason: "control; no OC client check sends a null-id 4xx whose error is null"
+    test "CONTROL: a null-id 4xx whose error is null keeps :http_error" do
+      assert_http_error(400, fn _ ->
+        json(400, %{"jsonrpc" => "2.0", "id" => nil, "error" => nil})
+      end)
+    end
+
+    @tag oc: :none
+    @tag oc_reason: "no OC client scenario answers with a null-id -32022"
+    test "a null-id 400 / -32022 is retried once with the server's version and answered" do
+      url =
+        start_server(
+          {HTTPErrorStubPlug,
+           test: self(),
+           respond: fn
+             %{
+               "params" => %{
+                 "_meta" => %{"io.modelcontextprotocol/protocolVersion" => "2025-11-25"}
+               }
+             } ->
+               json(
+                 400,
+                 error_reply(nil, -32_022, "Unsupported protocol version", %{
+                   "supported" => ["2026-07-28"],
+                   "requested" => "2025-11-25"
+                 })
+               )
+
+             %{"id" => id} ->
+               json(200, %{"jsonrpc" => "2.0", "id" => id, "result" => %{"tools" => []}})
+           end}
+        )
+
+      client = start_client(url, protocol_version: "2025-11-25", request_timeout: 5_000)
+
+      assert {:ok, %{"tools" => []}} = MCP.Client.list_tools(client)
+
+      assert_received {:stub_posted,
+                       %{
+                         "params" => %{
+                           "_meta" => %{"io.modelcontextprotocol/protocolVersion" => "2025-11-25"}
+                         }
+                       }}
+
+      assert_received {:stub_posted,
+                       %{
+                         "params" => %{
+                           "_meta" => %{"io.modelcontextprotocol/protocolVersion" => "2026-07-28"}
+                         }
+                       }}
+
+      refute_received {:stub_posted, _}
+    end
+  end
+
   # CONTROLS: green before and after MES-189. Each one pins a shape that must
   # keep today's `:http_error`, and then shows the client is still alive by
   # completing a later request.
@@ -171,12 +279,6 @@ defmodule MCP.Transport.StreamableHTTPErrorReplyTest do
       assert_http_error(400, fn %{"id" => id} ->
         json(400, error_reply(id + 1000, -32_602, "Invalid params"))
       end)
-    end
-
-    @tag oc: :none
-    @tag oc_reason: "control; no OC client check observes the client's handling of an id-null 4xx"
-    test "CONTROL: an error with a null id" do
-      assert_http_error(400, fn _ -> json(400, error_reply(nil, -32_602, "Invalid params")) end)
     end
 
     @tag oc: :none

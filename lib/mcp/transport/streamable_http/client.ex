@@ -646,11 +646,23 @@ defmodule MCP.Transport.StreamableHTTP.Client do
   # Delivered ONLY when all four hold, checked in this order: the status is
   # 400-599; the POST was a request (a binary method and a non-nil id); the
   # response carries no content coding (the same guard as 200/201); and the
-  # body is a JSON object with an `error` member and an `id` that MATCHES the
-  # posted id (strict match: "1" and 1.0 are not 1). Everything else keeps
+  # body is a JSON object with an `error` member that `correlate/2` ties to the
+  # posted id. It ties two shapes. One is an `id` that MATCHES the posted id
+  # (strict match: "1" and 1.0 are not 1), delivered as it is. The other
+  # (MES-206) is a null `id` beside a non-null `error`, which JSON-RPC 2.0 §5
+  # sends when the server could not read the request's id. That one is
+  # delivered with its id REWRITTEN to the posted id. Everything else keeps
   # `{:error, {:http_error, status, body}}`, so the caller still fails at once.
-  # The id rule matters most: an id-null error delivered as a message would be
-  # dropped, and the caller would wait out its timeout (MES-197 O2).
+  #
+  # The rewrite is what lets a null id through safely. Delivered with its null,
+  # the reply would match no pending entry and be dropped, and the caller would
+  # wait out its timeout (MES-197 O2). Rewritten, it names the one request this
+  # POST carried. That holds because the POST is synchronous inside
+  # `handle_call/3`, so one transport has one request in flight, and the id
+  # comes from the same message the body answers. If MES-38 makes POSTs
+  # concurrent, the id must still be read from that message. An `error: null`
+  # is no error, and is not tied: as a success with a nil result it would crash
+  # `MCP.Client` on a tools/call.
   #
   # There is deliberately no content-type check. Req has already decoded any
   # application/json body at every status. A binary reaches here only with a
@@ -667,7 +679,8 @@ defmodule MCP.Transport.StreamableHTTP.Client do
        when status in 400..599 do
     with {:request, id} <- posted_request_id(message),
          nil <- unexpected_content_encoding(resp_headers),
-         {:object, %{"error" => _, "id" => ^id} = reply} <- error_body_object(resp_body) do
+         {:object, %{"error" => _} = body} <- error_body_object(resp_body),
+         {:correlated, reply} <- correlate(body, id) do
       send(state.owner, {:mcp_message, reply})
       {:ok, state}
     else
@@ -678,6 +691,13 @@ defmodule MCP.Transport.StreamableHTTP.Client do
 
   defp deliver_error_reply(_state, _message, status, _resp_headers, resp_body),
     do: {:error, {:http_error, status, resp_body}}
+
+  defp correlate(%{"id" => id} = body, id), do: {:correlated, body}
+
+  defp correlate(%{"id" => nil, "error" => error} = body, id) when not is_nil(error),
+    do: {:correlated, Map.put(body, "id", id)}
+
+  defp correlate(_body, _id), do: :uncorrelated
 
   defp posted_request_id(%{"method" => method, "id" => id})
        when is_binary(method) and not is_nil(id),
