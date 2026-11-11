@@ -81,8 +81,10 @@ defmodule MCP.Conformance.Classification do
                    "so the coverage gap is visible rather than absent; failing it costs " <>
                    "nothing against the conformance denominator."
 
+  # `http-header-validation` left this table in MES-232: it passes 14 of 14
+  # once the plug trims OWS from routing-header values itself, and a passing
+  # scenario that keeps an entry refuses the census as CLASSIFICATION_STALE.
   @pending_scenarios %{
-    "http-header-validation" => "SEP-2243 Mcp-Method/Mcp-Name routing headers",
     "http-custom-header-server-validation" => "SEP-2243 custom-header validation"
   }
 
@@ -332,4 +334,52 @@ defmodule MCP.Conformance.Classification do
   @doc "The classification for `scenario`, or `nil` if it has none."
   @spec fetch(String.t()) :: entry() | nil
   def fetch(scenario), do: Map.get(@table, scenario)
+
+  # --- Retired entries (MES-232, PM ruling 34937) -----------------------------
+  #
+  # An entry leaves the table when its scenario starts to pass: the census
+  # refuses a passing scenario that is still classified (CLASSIFICATION_STALE).
+  # The dated committed censuses in docs/conformance were generated while the
+  # entry was live, and they are records, not regenerated here. So their block
+  # for that id would name a scenario the table no longer carries, and
+  # `ClassificationTest` refuses that as an unchecked block.
+  #
+  # The retired set keeps those blocks CHECKED rather than exempt. Each entry is
+  # the class, why and owner the table held for that id, frozen as literals
+  # byte-for-byte, so a committed block must still equal it exactly. It is data
+  # for that test only: `table/0` and `fetch/1` never return it, and the census
+  # reads `fetch/1`, so a fresh run never classifies a retired id.
+  @retired %{
+    "http-header-validation" => %{
+      ticket: "MES-232",
+      class: :pending,
+      why:
+        "SEP-2243 Mcp-Method/Mcp-Name routing headers. Not scored: the suite's own " <>
+          "reference fixture cannot pass it yet, so a failure here is not evidence about " <>
+          "this SDK either way. Run for visibility. Re-examine when the upstream fixture " <>
+          "catches up.",
+      owner: "upstream conformance suite"
+    }
+  }
+
+  @live_and_retired @retired |> Map.keys() |> Enum.filter(&Map.has_key?(@table, &1))
+
+  if @live_and_retired != [] do
+    raise "MCP.Conformance.Classification: #{inspect(@live_and_retired)} is both in the " <>
+            "table and retired. A retired entry is the frozen text of one that LEFT the " <>
+            "table; an id cannot be both."
+  end
+
+  @typedoc "A retired classification: the entry as it was frozen, and the ticket that retired it."
+  @type retired_entry :: %{ticket: String.t(), class: atom(), why: String.t(), owner: String.t()}
+
+  @doc """
+  Entries that have left the table, keyed by scenario id, each frozen as it was.
+
+  Only for checking the dated committed censuses that still carry a block for
+  such an id. Never a live classification: `table/0` and `fetch/1` do not
+  return these, and the census does not read them.
+  """
+  @spec retired() :: %{String.t() => retired_entry()}
+  def retired, do: @retired
 end

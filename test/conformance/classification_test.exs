@@ -84,16 +84,16 @@ defmodule MCP.Conformance.ClassificationTest do
       end
     end
 
+    @tag oc: :none
+    @tag oc_reason: "a unit of the census classification table; no OC check exercises it"
     test "the merged table holds every entry its four sources contribute" do
-      # SERVER: 2 ours + 9 extension + 2 pending = 13.
-      # CLIENT (MES-57): 24 out_of_scope_adr_003 + 6 extension = 30.
-      # A collision cannot change this number in the safe direction: any overlap
-      # makes the table SMALLER, so a count is a sufficient oracle here even
-      # though a count usually is not.
-      assert map_size(Classification.table()) == 43
+      # SERVER: 2 ours + 9 extension + 1 pending (MES-232) = 12. CLIENT (MES-57): 24 + 6 = 30.
+      # Any overlap makes the table SMALLER, so a count is a sufficient oracle
+      # here even though a count usually is not.
+      assert map_size(Classification.table()) == 42
 
       by_class = Enum.frequencies_by(Map.values(Classification.table()), & &1.class)
-      assert by_class == %{real_gap: 2, extension: 15, pending: 2, out_of_scope_adr_003: 24}
+      assert by_class == %{real_gap: 2, extension: 15, pending: 1, out_of_scope_adr_003: 24}
     end
 
     test "every scenario the CLIENT leg classifies survives the merge as ours" do
@@ -187,6 +187,8 @@ defmodule MCP.Conformance.ClassificationTest do
                "this run: #{inspect(skipped)}"
     end
 
+    @tag oc: :none
+    @tag oc_reason: "a unit over the committed census artefacts; no OC check exercises it"
     test "every classification block equals what Classification.fetch/1 returns" do
       {censuses, _malformed, _skipped} = classify_glob_matches()
 
@@ -201,24 +203,14 @@ defmodule MCP.Conformance.ClassificationTest do
             block != nil,
             do: {basename, scenario["id"], block}
 
-      unknown = for {b, id, _} <- blocks, Classification.fetch(id) == nil, do: {b, id}
+      # MES-232: a block for an id that LEFT the table is judged against its frozen
+      # entry in Classification.retired/0, byte for byte; it is never exempt.
+      {unknown, drift} = MCP.Test.ClassificationBlocks.judge(blocks, Classification.retired())
 
       assert unknown == [],
              "these committed classification blocks name scenario ids this table does not " <>
                "carry, so nothing checked them — a classification for an unknown scenario " <>
                "is not a passing check, it is an unasked question: #{inspect(Enum.uniq(unknown))}"
-
-      drift =
-        for {basename, id, block} <- blocks,
-            entry = Classification.fetch(id),
-            entry != nil,
-            expected = %{
-              "class" => to_string(entry.class),
-              "why" => entry.why,
-              "owner" => entry.owner
-            },
-            block != expected,
-            do: {basename, id}
 
       assert drift == [],
              "these committed classification blocks are not what this table says today — " <>

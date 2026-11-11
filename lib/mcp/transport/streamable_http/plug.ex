@@ -1102,7 +1102,7 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
 
   defp first_header(conn, name) do
     case Plug.Conn.get_req_header(conn, name) do
-      [value | _] -> value
+      [value | _] -> trim_ows(value)
       [] -> nil
     end
   end
@@ -1332,5 +1332,30 @@ defmodule MCP.Transport.StreamableHTTP.Plug do
           unreadable_detail(reason)
         )
     end
+  end
+
+  # --- Field-value OWS (MES-232) ---
+
+  # RFC 9110 §5.5: a field value excludes leading and trailing whitespace, and
+  # that whitespace is OWS, SP or HTAB only (§5.6.3). `first_header/2` reads the
+  # three routing headers through this, so a padded `Mcp-Name`, `Mcp-Method` or
+  # `MCP-Protocol-Version` compares as its value, before any Base64-sentinel
+  # decoding, whatever the adapter does. Before MES-232 the plug compared the
+  # raw value: bandit from 1.14.1 trims trailing OWS on HTTP/1 itself, so the
+  # result depended on the adapter. Not `String.trim/1`: that also strips CR,
+  # LF, VT and Unicode spaces, which are not OWS, so such a value still
+  # mismatches. Interior whitespace is never touched. Appended at the foot of
+  # the module so no line a record cites moves.
+  defp trim_ows(value), do: value |> trim_leading_ows() |> trim_trailing_ows()
+
+  defp trim_leading_ows(<<c, rest::binary>>) when c in [?\s, ?\t], do: trim_leading_ows(rest)
+  defp trim_leading_ows(value), do: value
+
+  defp trim_trailing_ows(value) do
+    size = byte_size(value)
+
+    if size > 0 and :binary.last(value) in [?\s, ?\t],
+      do: trim_trailing_ows(binary_part(value, 0, size - 1)),
+      else: value
   end
 end
