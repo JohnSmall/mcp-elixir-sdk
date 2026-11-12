@@ -20,8 +20,9 @@ WP pin Global v2 · Methodology pin Global v1.
 | [ADR-001](0001-target-2025-11-25-defer-2026-07-28.md) | Target MCP spec revision 2025-11-25 only; defer 2026-07-28 | Accepted (retroactive) · **deferral superseded** | — | ADR-002 (deferral only) |
 | [ADR-002](0002-adopt-2026-07-28-stateless-core-migration.md) | Adopt MCP 2026-07-28; migrate transport to the stateless core (2.0.0) | **Accepted** (2026-07-20) | ADR-001 (the deferral) | — |
 | [ADR-003](0003-2.0.0-conformance-scope.md) | 2.0.0 conformance scope — core only, authorization profile excluded, client held to the same bar | **Accepted** (2026-08-02) | — | — |
+| [ADR-004](0004-error-reply-id-null-on-unreadable-id.md) | An error reply whose request id cannot be read carries `"id": null` (JSON-RPC 2.0 §5), not an omitted id — a ruled deviation from the pinned schema | **Accepted** (2026-11-08) | — | — |
 
-**Next ADR number: ADR-004.**
+**Next ADR number: ADR-005.**
 
 ADR-002 supersedes **only the deferral** in ADR-001, not the whole decision: ADR-001's choice to _ship_
 1.1.0 against 2025-11-25 stands and is already released. ADR-002 governs what comes next — adopt
@@ -32,10 +33,16 @@ ADR-002's "in its entirety" conformance commitment — 2.0.0 targets the **core 
 _and_ client, **excluding** the authorization profile and the extension track, with the claim worded to
 that scope.
 
+ADR-004 **records a ruled deviation** (it supersedes and refines nothing). The pinned schema's
+`JSONRPCErrorResponse` makes the id optional and not nullable (`schema.ts:300`). JSON-RPC 2.0 §5 makes it
+required, and Null when the request's id cannot be read. The PO ruled that JSON-RPC 2.0 governs, so the
+server keeps `"id": null` on both transports (MES-226).
+
 Confluence mirror: [ADR register](https://vidhya-trading.atlassian.net/wiki/spaces/ElixirMCPS/pages/232980491)
 · [ADR-001](https://vidhya-trading.atlassian.net/wiki/spaces/ElixirMCPS/pages/232194078)
 · [ADR-002](https://vidhya-trading.atlassian.net/wiki/spaces/ElixirMCPS/pages/232620042)
-· [ADR-003](https://vidhya-trading.atlassian.net/wiki/spaces/ElixirMCPS/pages/249724984).
+· [ADR-003](https://vidhya-trading.atlassian.net/wiki/spaces/ElixirMCPS/pages/249724984)
+· ADR-004: mirror pending; the PM publishes it after the MES-226 merge.
 
 ## Verification notes
 
