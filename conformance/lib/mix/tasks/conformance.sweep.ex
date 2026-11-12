@@ -79,8 +79,17 @@ defmodule Mix.Tasks.Conformance.Sweep do
   ## The L2 byte probe (MES-174)
 
   The sweep runs the probe on the unmutated tree FIRST and refuses a blind baseline —
-  scenarios sharing bytes, or a dispatched scenario that did not reach its path — before
-  any test runs. The probe's `scenarios_moved` and `scenarios_run` are measurement
+  scenarios sharing bytes, a dispatched scenario that did not reach its path, or (MES-178)
+  a scenario that raised — before any test runs.
+
+  Since MES-178 the probe runs on every direction whose live count is zero AND on every
+  direction that carries a `byte_probe` block (the L1-live split directions, whose blocks
+  were hand-recorded until then); on the latter it re-measures the block only, never the
+  verdict. Each scenario runs isolated: one that raises under a mutation is recorded in
+  `scenarios_raised`, never in `scenarios_moved`. Refused by name: `L2 PROBE
+  missing_output` (no output file), `L2 PROBE key_set` (the mutated run's scenarios are
+  not the baseline's) and `L2 PROBE raised_on_trigger` (a raise on a direction L2
+  decides). The probe's `scenarios_moved` and `scenarios_run` are measurement
   fields, and `--check` prints two further reported sections: the baseline probe's
   fingerprint when it differs from `control.probe` (a re-baseline of the probe, not a move
   in `lib/`), and the LIVE verdicts L2 carried forward over a probe that moved nothing.
@@ -292,8 +301,9 @@ defmodule Mix.Tasks.Conformance.Sweep do
   defp report_delta(d) do
     Mix.shell().info("    #{d["id"]}: #{Enum.join(d["fields"], ", ")}")
 
-    if m = d["scenarios_moved"],
-      do: Mix.shell().info("      scenarios_moved: #{inspect(m["was"])} -> #{inspect(m["now"])}")
+    for key <- ["scenarios_moved", "scenarios_raised"], m = d[key] do
+      Mix.shell().info("      #{key}: #{inspect(m["was"])} -> #{inspect(m["now"])}")
+    end
   end
 
   defp report_probe(nil) do

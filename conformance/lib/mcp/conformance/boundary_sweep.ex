@@ -26,11 +26,16 @@ defmodule MCP.Conformance.BoundarySweep do
   on 12 directions, L2 was run on the 3 the sweeper had a hunch about, and CODE_REVIEWER
   then found **6 of the remaining 9 were LIVE**.
 
+  Since MES-178 the probe ALSO runs on every direction that carries a `byte_probe` block,
+  which is a key's presence and so just as mechanical; on those L1-live rows it
+  re-measures the block and nothing else (`measure_l2/6`).
+
   ## What is measured, and what is consumed as recorded
 
   * **Measured** — `suite_summary`, `unlocated_failures`, `reddened_total`,
     `reddened_by_module`, `reddened_outside_own`, `reddened_outside_own_and_dead`,
-    `live_units`, and the L2 byte probe's `scenarios_run` / `scenarios_moved`. Every one
+    `live_units`, and the L2 byte probe's `scenarios_run` / `scenarios_moved` /
+    `scenarios_raised` (the last since MES-178). Every one
     of these is in `@measurement_fields`, so every one is REPORTED by `--check`. Until
     MES-174 the two byte-probe fields were listed here and reported nowhere, and the
     probe went blind (MES-161) with neither section of the MES-171 sweep showing it.
@@ -86,10 +91,15 @@ defmodule MCP.Conformance.BoundarySweep do
   # verdict they feed, `l2.verdict`, is already compared, and comparing the probe's bytes
   # as verdicts would report every re-baseline of the probe (this ticket's included) as
   # drift. Their re-baseline is made legible by `control.probe` instead.
+  #
+  # TEN since MES-178: `scenarios_raised`, the scenarios that raised under the mutation
+  # rather than returning bytes. Kept apart from `scenarios_moved` so the L2 criterion —
+  # bytes moved — is unchanged; reported like the other two.
   @measurement_fields ~w(suite_summary reddened_total reddened_by_module
                          reddened_outside_own reddened_outside_own_and_dead live_units
                          unlocated_failures
-                         l2.byte_probe.scenarios_moved l2.byte_probe.scenarios_run)
+                         l2.byte_probe.scenarios_moved l2.byte_probe.scenarios_run
+                         l2.byte_probe.scenarios_raised)
 
   @doc "Paths, so the task, the controls and this module cannot drift apart."
   def paths, do: %{boundaries: @boundaries, probe: @probe, register: @register}
@@ -709,7 +719,16 @@ defmodule MCP.Conformance.BoundarySweep do
   """
   def probe(out_path, script \\ @probe) do
     File.rm(out_path)
-    {_out, _rc} = System.cmd("mix", ["run", script, out_path], stderr_to_stdout: true)
+    {out, rc} = System.cmd("mix", ["run", script, out_path], stderr_to_stdout: true)
+
+    unless File.exists?(out_path) do
+      # MES-178. Every scenario runs isolated, so a raising one is RECORDED, and a run
+      # with no file at all is a probe that could not start (a compile error, a crash
+      # outside the scenarios). Refused by name rather than left to `File.read!`'s
+      # File.Error, which named nothing.
+      raise "L2 PROBE missing_output: #{script} wrote no #{out_path} (mix exited #{rc}).\n" <>
+              (out |> String.split("\n") |> Enum.take(-15) |> Enum.join("\n"))
+    end
 
     out_path
     |> File.read!()
@@ -730,6 +749,34 @@ defmodule MCP.Conformance.BoundarySweep do
     |> Enum.sort()
   end
 
+  @doc """
+  Whether a probe value is the probe's raised marker, `{:raised, "<Module>"}` as written
+  by `inspect/1` (MES-178). A scenario's ordinary value is a string, which `inspect/1`
+  writes in double quotes, so the two cannot be confused.
+  """
+  def raised_value?(value) when is_binary(value), do: String.starts_with?(value, "{:raised, ")
+
+  @doc """
+  A mutated probe run read against the baseline (MES-178): `%{moved: [...], raised:
+  [...]}`, disjoint and sorted. A scenario that RAISED under the mutation is in `raised`
+  and NOT in `moved`: L2's criterion is bytes moved, and a raise is not bytes. Refuses
+  (`L2 PROBE key_set`) unless the run has exactly the baseline's scenarios — a different
+  key set would make a missing or extra scenario read as a move.
+  """
+  def probe_outcome!(id, baseline, mutated) do
+    if Enum.sort(Map.keys(baseline)) != Enum.sort(Map.keys(mutated)) do
+      missing = Map.keys(baseline) -- Map.keys(mutated)
+      extra = Map.keys(mutated) -- Map.keys(baseline)
+
+      raise "L2 PROBE key_set: #{id}: the mutated probe's scenarios are not the baseline's " <>
+              "(missing #{inspect(Enum.sort(missing))}, extra #{inspect(Enum.sort(extra))})."
+    end
+
+    changed = scenarios_moved(baseline, mutated)
+    {raised, moved} = Enum.split_with(changed, &raised_value?(mutated[&1]))
+    %{moved: moved, raised: raised}
+  end
+
   # The probe scenarios whose reply is DESIGNED to be a JSON-RPC error, with the code it
   # must carry. Every other scenario whose value is a JSON-RPC response must be a result.
   # Declared, never inferred: an exception the predicate worked out for itself would be
@@ -743,11 +790,74 @@ defmodule MCP.Conformance.BoundarySweep do
   # `{:noreply, state}`, which the probe writes as `inspect/1` of it) passed silently. A
   # declared name that DOES come back as a reply is refused too, so the list cannot go
   # stale without saying so.
+  #
+  # MES-178 adds the three path scenarios. None is a JSON-RPC reply: two are a bare
+  # notification, one is an HTTP status followed by the SSE body's notification payloads.
   @probe_not_a_response [
     "SSE frame of a notification",
     "decode_message of a wire error",
-    "decode_message of a wire result"
+    "decode_message of a wire result",
+    "Connection notification to its transport",
+    "Plug SSE body notification (NotificationCollector)",
+    "Stdio pipe frame of a notification"
   ]
+
+  # The three path scenarios carry a NOTIFICATION, and on the unmutated baseline each must
+  # actually hold one (MES-178 correction round 1, CR F1, `34987`). Being declared
+  # not-a-response says only what they are not: an empty X1, an X2 of `200` with no data
+  # payload, or an X3 `timeout` is also "not a reply", and before this round all three
+  # passed as sighted — so a scenario that never reached its path read as an L2 silence.
+  # `:bare` is one or more notification frames joined by " | "; `:http_200` is the HTTP
+  # status `200`, a space, then the same. Checked on the BASELINE only: under a mutation
+  # the bytes must stay free to move (a renamed `method` is the move L2 looks for), so
+  # nothing here is asserted inside the probe.
+  @probe_notifications %{
+    "Connection notification to its transport" => :bare,
+    "Plug SSE body notification (NotificationCollector)" => :http_200,
+    "Stdio pipe frame of a notification" => :bare
+  }
+  @probe_notification_method "notifications/message"
+
+  @doc "The notification scenarios, and the shape each baseline value must have."
+  def probe_notifications, do: @probe_notifications
+
+  @doc """
+  `:ok` when a notification scenario's baseline value holds a notification of the shape
+  its declaration names, or `{:error, why}`. A notification frame is a JSON object with
+  `"jsonrpc": "2.0"`, `"method": "notifications/message"` and no `"id"`; every
+  " | "-separated frame must be one, and there must be at least one.
+  """
+  def notification_reach(shape, value) when shape in [:bare, :http_200] and is_binary(value) do
+    with {:ok, text} when is_binary(text) <- Code.string_to_quoted(value),
+         {:ok, payload} <- notification_payload(shape, text) do
+      payload |> String.split(" | ") |> Enum.reduce_while(:ok, &notification_frame/2)
+    else
+      {:error, why} when is_binary(why) -> {:error, why}
+      _ -> {:error, "not a string value"}
+    end
+  end
+
+  defp notification_payload(:bare, ""), do: {:error, "empty: no notification"}
+  defp notification_payload(:bare, text), do: {:ok, text}
+  defp notification_payload(:http_200, "200 "), do: {:error, "HTTP 200 with no data payload"}
+  defp notification_payload(:http_200, "200 " <> payload), do: {:ok, payload}
+
+  defp notification_payload(:http_200, text),
+    do: {:error, "not HTTP 200: #{inspect(String.slice(text, 0, 40))}"}
+
+  defp notification_frame(frame, :ok) do
+    case Jason.decode(frame) do
+      {:ok, %{"jsonrpc" => "2.0", "method" => @probe_notification_method} = m}
+      when not is_map_key(m, "id") ->
+        {:cont, :ok}
+
+      _ ->
+        {:halt,
+         {:error,
+          "not a #{@probe_notification_method} notification: " <>
+            inspect(String.slice(frame, 0, 60))}}
+    end
+  end
 
   @doc "The probe scenarios whose baseline reply must be a JSON-RPC error, and its code."
   def probe_expected_errors, do: @probe_expected_errors
@@ -777,8 +887,9 @@ defmodule MCP.Conformance.BoundarySweep do
   end
 
   @doc """
-  The violations of a sighted baseline, `[]` when there are none. Two conjuncts, each
-  independent of the other (MES-174, ratified in `31975`):
+  The violations of a sighted baseline, `[]` when there are none. Four conjuncts, each
+  independent of the others (the first two MES-174, ratified in `31975`; the last two
+  MES-178):
 
     * `:distinct` — no two scenarios share bytes. Scenarios that collide can only move
       together, so the probe cannot say which path a mutation reached. This is the
@@ -789,6 +900,13 @@ defmodule MCP.Conformance.BoundarySweep do
       `result`. A declared scenario absent from the baseline is a violation too. This
       catches a probe that is blind on ONE scenario, which `:distinct` cannot see —
       including a dispatched one that produced no reply at all.
+    * `:raised` — no scenario carries the raised marker (`raised_value?/1`). A scenario
+      that raises on the unmutated tree measures nothing, and under a mutation its
+      raise would be indistinguishable from the baseline's. `:reached` cannot see it for
+      a scenario declared not-a-response, because the marker is not a reply either.
+    * `:notified` — every scenario in `probe_notifications/0` holds a notification of its
+      declared shape (`notification_reach/2`). `:reached` cannot see an empty, payload-less
+      or timed-out one: each of those is "not a reply" too (MES-178 round 1, CR F1).
   """
   def probe_baseline_violations(baseline) do
     groups =
@@ -809,7 +927,22 @@ defmodule MCP.Conformance.BoundarySweep do
     declared = Map.keys(@probe_expected_errors) ++ @probe_not_a_response
     absent = for k <- declared, not Map.has_key?(baseline, k), do: k
 
-    [{:distinct, groups}, {:reached, unreached ++ Enum.map(absent, &{&1, :absent, :declared})}]
+    raised = for {k, v} <- Enum.sort(baseline), raised_value?(v), do: k
+
+    unnotified =
+      for {k, shape} <- Enum.sort(@probe_notifications),
+          v = Map.get(baseline, k),
+          is_binary(v),
+          not raised_value?(v),
+          {:error, why} <- [notification_reach(shape, v)],
+          do: {k, why}
+
+    [
+      {:distinct, groups},
+      {:reached, unreached ++ Enum.map(absent, &{&1, :absent, :declared})},
+      {:raised, raised},
+      {:notified, unnotified}
+    ]
     |> Enum.reject(fn {_c, found} -> found == [] end)
   end
 
@@ -838,7 +971,8 @@ defmodule MCP.Conformance.BoundarySweep do
           distinct: baseline |> Map.values() |> Enum.uniq() |> length(),
           results: Enum.count(classes, &(&1 == :result)),
           expected_errors: Enum.count(classes, &match?({:error, _}, &1)),
-          not_a_response: Enum.count(classes, &(&1 == :not_a_response))
+          not_a_response: Enum.count(classes, &(&1 == :not_a_response)),
+          notified: Enum.count(@probe_notifications, fn {k, _} -> Map.has_key?(baseline, k) end)
         }
 
       violations ->
@@ -856,6 +990,17 @@ defmodule MCP.Conformance.BoundarySweep do
         "    #{length(g)} x #{String.slice(baseline[k], 0, 120)}: " <>
           Enum.join(g, ", ")
       end)
+  end
+
+  defp describe_violation({:notified, rows}, _baseline) do
+    "  [notified] #{length(rows)} notification scenario(s) carry no notification on the " <>
+      "UNMUTATED tree, so they never reached the path they probe:\n" <>
+      Enum.map_join(rows, "\n", fn {k, why} -> "    #{k}: #{why}" end)
+  end
+
+  defp describe_violation({:raised, names}, _baseline) do
+    "  [raised] #{length(names)} scenario(s) raised on the UNMUTATED tree, so no mutation " <>
+      "can move them: #{Enum.join(names, ", ")}"
   end
 
   defp describe_violation({:reached, rows}, _baseline) do
@@ -876,6 +1021,7 @@ defmodule MCP.Conformance.BoundarySweep do
       "script" => script,
       "scenarios" => map_size(baseline),
       "distinct" => baseline |> Map.values() |> Enum.uniq() |> length(),
+      "scenario_names" => baseline |> Map.keys() |> Enum.sort(),
       "sha256" => :crypto.hash(:sha256, File.read!(file)) |> Base.encode16(case: :lower)
     }
   end
@@ -1304,23 +1450,7 @@ defmodule MCP.Conformance.BoundarySweep do
 
     live = Enum.reject(outside, live_column_excluded(doc))
 
-    l2 =
-      if live == [] do
-        log.("      live count 0 -> L2 fires (MECHANICAL, §2.3(d))")
-        backups2 = apply!(spec)
-
-        {moved, ran} =
-          try do
-            mutated = probe(Path.join(tmp, "probe-mutated.txt"), script)
-            {scenarios_moved(base_probe, mutated), map_size(base_probe)}
-          after
-            revert!(backups2)
-          end
-
-        merge_l2(b, moved, ran)
-      else
-        b["l2"]
-      end
+    l2 = measure_l2(b, live == [], spec, {script, base_probe}, tmp, log)
 
     verdict = verdict_for(live, l2)
 
@@ -1346,27 +1476,106 @@ defmodule MCP.Conformance.BoundarySweep do
     end)
   end
 
+  # Which rows the byte probe runs on, and what it may change.
+  #
+  #   * live count zero — L2's trigger (§2.3(d)), a number, as before. The probe's
+  #     result feeds the row's verdict through `merge_l2/3`.
+  #   * live count NOT zero, but the row carries a `byte_probe` block — MES-178. These
+  #     are the 12 split directions MES-81 recorded a block on by hand ("recorded on every
+  #     split boundary-direction"), which no sweep ever re-measured: three of them were
+  #     incoherent (MES-178). They are probed now so that every block in the table is a
+  #     measurement, and `merge_probe/3` replaces the measured fields ONLY — the trigger,
+  #     `l2.verdict` and the row's verdict stay as recorded, because L1 established it.
+  #
+  # Both selections are mechanical — a count and the presence of a key — so "the rows the
+  # sweeper suspects" is still not expressible.
+  defp measure_l2(b, trigger?, spec, probe_pair, tmp, log) do
+    if trigger? or recorded_probe?(b) do
+      log.(
+        if trigger?,
+          do: "      live count 0 -> L2 fires (MECHANICAL, §2.3(d))",
+          else: "      byte_probe recorded -> probe re-measured (MES-178); verdict stays L1's"
+      )
+
+      {_script, base_probe} = probe_pair
+      outcome = l2_probe!(b, trigger?, spec, probe_pair, tmp)
+      merge_outcome(b, trigger?, outcome, map_size(base_probe))
+    else
+      b["l2"]
+    end
+  end
+
+  defp recorded_probe?(b), do: is_map(b["l2"]) and is_map(b["l2"]["byte_probe"])
+
+  @doc """
+  One mutated probe run for row `b` (MES-178): applies `spec`, runs `script`, reverts,
+  and reads the run against `base_probe` with `probe_outcome!/3`. Refuses by name —
+  `L2 PROBE missing_output`, `L2 PROBE key_set`, and, when `trigger?` (the row's live
+  count is zero, so L2 decides its verdict), `L2 PROBE raised_on_trigger`. Public so the
+  controls can drive this exact path with fixture probes and an empty `spec`, without a
+  suite run.
+  """
+  def l2_probe!(b, trigger?, spec, {script, base_probe}, tmp) do
+    backups = apply!(spec)
+
+    outcome =
+      try do
+        probe_outcome!(b["id"], base_probe, probe(Path.join(tmp, "probe-mutated.txt"), script))
+      after
+        revert!(backups)
+      end
+
+    refuse_raise_on_trigger!(b["id"], trigger?, outcome)
+    outcome
+  end
+
+  @doc """
+  Row `b`'s `l2` after a probe `outcome` (MES-178). On a trigger row, `merge_l2/3`: the
+  probe can turn a recorded `dead` into `live`. On an L1-live row, the `byte_probe`
+  block's measured fields ONLY — trigger, `l2.verdict`, `ran` and the authored
+  enumeration stay exactly as recorded.
+  """
+  def merge_outcome(b, true, outcome, scenarios_run), do: merge_l2(b, outcome, scenarios_run)
+  def merge_outcome(b, false, outcome, scenarios_run), do: merge_probe(b, outcome, scenarios_run)
+
+  # A row whose verdict L2 decides cannot be decided over a raise: L2's criterion is bytes
+  # moved, a raise is neither a move nor a silence, and choosing one would be a criterion
+  # change (MES-178 plan, PM acceptance `34958`). Fail closed and say which.
+  defp refuse_raise_on_trigger!(id, true, %{raised: [_ | _] = raised}) do
+    raise "L2 PROBE raised_on_trigger: #{id} has a live count of zero, so L2 decides its " <>
+            "verdict, and its mutation made #{inspect(raised)} raise rather than return " <>
+            "bytes. A raise is neither a move nor a silence: this needs a ruling, not a default."
+  end
+
+  defp refuse_raise_on_trigger!(_id, _trigger?, _outcome), do: :ok
+
   # L2's conjunct (ii) is authored, not derived — the module keeps what is recorded and
   # replaces only what it measured, the byte probe. §2.3(d): L2 can only turn DEAD into
   # LIVE, so a probe that moves a scenario overrides a recorded `dead`, and a probe that
   # moves nothing never overrides a recorded `live`.
-  defp merge_l2(b, moved, scenarios_run) do
+  defp merge_l2(b, %{moved: moved} = outcome, scenarios_run) do
     prior = b["l2"] || %{}
-
-    probe_block =
-      (prior["byte_probe"] || %{})
-      |> Map.merge(%{
-        "script" => @probe,
-        "scenarios_run" => scenarios_run,
-        "scenarios_moved" => moved
-      })
 
     prior
     |> Map.merge(%{
       "ran" => true,
       "trigger" => "live count is zero",
-      "byte_probe" => probe_block,
+      "byte_probe" => probe_block(prior, outcome, scenarios_run),
       "verdict" => if(moved != [], do: "live", else: prior["verdict"] || "dead")
+    })
+  end
+
+  # An L1-live row's recorded block, re-measured (MES-178): the probe's fields only.
+  defp merge_probe(b, outcome, scenarios_run),
+    do: Map.put(b["l2"], "byte_probe", probe_block(b["l2"], outcome, scenarios_run))
+
+  defp probe_block(prior, %{moved: moved, raised: raised}, scenarios_run) do
+    (prior["byte_probe"] || %{})
+    |> Map.merge(%{
+      "script" => @probe,
+      "scenarios_run" => scenarios_run,
+      "scenarios_moved" => moved,
+      "scenarios_raised" => raised
     })
   end
 
@@ -1439,7 +1648,8 @@ defmodule MCP.Conformance.BoundarySweep do
 
     * `measurement_deltas` — §2.3(e)'s stated delta. Where a row's `scenarios_moved`
       moved, the entry also carries it, was and now, because a field NAME alone is what
-      let the MES-171 collapse read as routine (MES-174).
+      let the MES-171 collapse read as routine (MES-174); likewise `scenarios_raised`
+      (MES-178).
     * `carried_forward` — `carried_forward/1` over the generated document.
     * `control_probe` — the baseline probe's fingerprint, when it differs. A changed
       fingerprint is a RE-BASELINE of the probe, and it is the cause to read every
@@ -1482,14 +1692,20 @@ defmodule MCP.Conformance.BoundarySweep do
   end
 
   @moved "l2.byte_probe.scenarios_moved"
+  @raised "l2.byte_probe.scenarios_raised"
 
+  # The two lists' was/now ride on the entry, not only their field names (MES-174 for
+  # moved; MES-178 for raised, the same reason).
   defp measurement_delta(id, diffs) do
     entry = %{"id" => id, "fields" => Enum.map(diffs, & &1["field"])}
 
-    case Enum.find(diffs, &(&1["field"] == @moved)) do
-      nil -> entry
-      d -> Map.put(entry, "scenarios_moved", Map.take(d, ["was", "now"]))
-    end
+    [{@moved, "scenarios_moved"}, {@raised, "scenarios_raised"}]
+    |> Enum.reduce(entry, fn {field, key}, acc ->
+      case Enum.find(diffs, &(&1["field"] == field)) do
+        nil -> acc
+        d -> Map.put(acc, key, Map.take(d, ["was", "now"]))
+      end
+    end)
   end
 
   @doc """

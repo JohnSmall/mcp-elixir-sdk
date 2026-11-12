@@ -6,6 +6,8 @@
       "id": "MCP.Client",
       "l2": null,
       "live_units": [
+        "test/mcp/client_malformed_reply_test.exs:169 (MCP.ClientMalformedReplyTest)",
+        "test/mcp/client_malformed_reply_test.exs:193 (MCP.ClientMalformedReplyTest)",
         "test/mcp/integration_test.exs:128 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:139 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:160 (MCP.IntegrationTest)",
@@ -14,10 +16,40 @@
         "test/mcp/integration_test.exs:204 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:213 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:221 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:234 (MCP.IntegrationTest)",
         "test/mcp/transport/routing_headers_test.exs:359 (MCP.Transport.RoutingHeadersTest)",
         "test/mcp/transport/routing_headers_test.exs:399 (MCP.Transport.RoutingHeadersTest)",
         "test/mcp/transport/routing_headers_test.exs:419 (MCP.Transport.RoutingHeadersTest)",
-        "test/mcp/transport/self_compatibility_test.exs:185 (MCP.Transport.SelfCompatibilityTest)"
+        "test/mcp/transport/self_compatibility_test.exs:185 (MCP.Transport.SelfCompatibilityTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:109 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:121 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:144 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:156 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:173 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:185 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:198 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:207 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:218 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:226 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:278 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:286 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:292 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:300 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:306 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:314 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:322 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:39 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:56 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:72 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:85 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:98 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_non_object_body_test.exs:35 (MCP.Transport.StreamableHTTPNonObjectBodyTest)",
+        "test/mcp/transport/streamable_http_non_object_body_test.exs:42 (MCP.Transport.StreamableHTTPNonObjectBodyTest)",
+        "test/mcp/transport/streamable_http_non_object_body_test.exs:49 (MCP.Transport.StreamableHTTPNonObjectBodyTest)",
+        "test/mcp/transport/streamable_http_non_object_body_test.exs:56 (MCP.Transport.StreamableHTTPNonObjectBodyTest)",
+        "test/mcp/transport/streamable_http_non_object_body_test.exs:63 (MCP.Transport.StreamableHTTPNonObjectBodyTest)",
+        "test/mcp/transport/streamable_http_non_object_body_test.exs:70 (MCP.Transport.StreamableHTTPNonObjectBodyTest)",
+        "test/mcp/transport/streamable_http_non_object_body_test.exs:77 (MCP.Transport.StreamableHTTPNonObjectBodyTest)"
       ],
       "mutation": [
         "lib/mcp/client.ex: Jason.decode!(Jason.encode!(struct))  ->  (fn m -> if is_map(m) and Map.has_key?(m, \"method\"), do: m |> Map.delete(\"method\") |> Map.put(\"methodX\", m[\"method\"]), else: m end).(Jason.decode!(Jason.encode!(struct)))"
@@ -41,16 +73,20 @@
       "reddened_by_module": {
         "MCP.ClientConformanceTest": 1,
         "MCP.ClientDefectsTest": 1,
+        "MCP.ClientMalformedReplyTest": 2,
         "MCP.ClientTest": 18,
         "MCP.ClientToolSchemasTest": 2,
-        "MCP.IntegrationTest": 8,
+        "MCP.Conformance.StringCitationsTest": 1,
+        "MCP.IntegrationTest": 9,
         "MCP.Transport.RoutingHeadersTest": 3,
-        "MCP.Transport.SelfCompatibilityTest": 1
+        "MCP.Transport.SelfCompatibilityTest": 1,
+        "MCP.Transport.StreamableHTTPErrorReplyTest": 22,
+        "MCP.Transport.StreamableHTTPNonObjectBodyTest": 7
       },
-      "reddened_outside_own": 12,
-      "reddened_outside_own_and_dead": 12,
-      "reddened_total": 34,
-      "suite_summary": "24 doctests, 1790 tests, 34 failures",
+      "reddened_outside_own": 45,
+      "reddened_outside_own_and_dead": 44,
+      "reddened_total": 67,
+      "suite_summary": "24 doctests, 2089 tests, 67 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -61,7 +97,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`ClientCapabilities.from_map/1` has exactly ONE lib/ call site — `messages/initialize.ex:28` — inside MCP.Protocol.Messages.Initialize, recorded DEAD above. The server does NOT decode client capabilities into this struct: meta.ex:105 keeps `io.modelcontextprotocol/clientCapabilities` as a RAW MAP. No probe scenario moves. *** This is the boundary L1 got wrong, and it is why the exclusion set is unit-aware: both of L1's two 'live' units were in initialize_test.exs, the own-tests of an orphaned module that the round-3 table never recorded as a boundary at all. See S7-21. ***",
@@ -118,13 +155,14 @@
         "test/mcp/protocol/capabilities_test.exs"
       ],
       "reddened_by_module": {
+        "MCP.Conformance.StringCitationsTest": 1,
         "MCP.Protocol.CapabilitiesTest": 3,
         "MCP.Protocol.Messages.InitializeTest": 2
       },
-      "reddened_outside_own": 2,
+      "reddened_outside_own": 3,
       "reddened_outside_own_and_dead": 0,
-      "reddened_total": 5,
-      "suite_summary": "24 doctests, 1790 tests, 5 failures",
+      "reddened_total": 6,
+      "suite_summary": "24 doctests, 2089 tests, 6 failures",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -135,7 +173,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "client.ex:825 puts `encode(state.client_capabilities)` into every outbound request's `_meta[\"io.modelcontextprotocol/clientCapabilities\"]`, through client.ex:868's `Jason.decode!(Jason.encode!(struct))` — the struct's own defimpl. The server-side probe cannot reach a client-side emit path, so this verdict rests on L1's 5 live-path units plus that address.",
@@ -168,13 +207,14 @@
       "reddened_by_module": {
         "MCP.ClientConformanceTest": 1,
         "MCP.ClientTest": 4,
+        "MCP.Conformance.StringCitationsTest": 1,
         "MCP.Protocol.CapabilitiesTest": 2,
         "MCP.Protocol.Messages.InitializeTest": 1
       },
-      "reddened_outside_own": 6,
+      "reddened_outside_own": 7,
       "reddened_outside_own_and_dead": 5,
-      "reddened_total": 8,
-      "suite_summary": "24 doctests, 1790 tests, 8 failures",
+      "reddened_total": 9,
+      "suite_summary": "24 doctests, 2089 tests, 9 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -185,7 +225,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`ServerCapabilities.from_map/1` has two lib/ call sites: `messages/discover.ex:79` — on the live client decode path, `Discover.Result.from_map/1` <- client.ex:539 — and `messages/initialize.ex:72` (orphaned). The first is enough: 6 live-path units redden, in client_test, client_conformance_test and integration_test.",
@@ -267,14 +308,15 @@
       "reddened_by_module": {
         "MCP.ClientConformanceTest": 1,
         "MCP.ClientTest": 4,
+        "MCP.Conformance.StringCitationsTest": 1,
         "MCP.IntegrationTest": 1,
         "MCP.Protocol.CapabilitiesTest": 4,
         "MCP.Protocol.Messages.InitializeTest": 1
       },
-      "reddened_outside_own": 7,
+      "reddened_outside_own": 8,
       "reddened_outside_own_and_dead": 6,
-      "reddened_total": 11,
-      "suite_summary": "24 doctests, 1790 tests, 11 failures",
+      "reddened_total": 12,
+      "suite_summary": "24 doctests, 2089 tests, 12 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -287,7 +329,8 @@
           "scenarios_moved": [
             "server/discover"
           ],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "dispatch.ex:169 builds %Discover.Result{capabilities: config.capabilities} and discover.ex:95 encodes it with `Jason.decode!(Jason.encode!(result.capabilities))`. The probe's `server/discover` scenario moves under this mutation: `\"capabilities\":{\"prompts\":{},\"resources\":{},\"tools\":{}}`.",
@@ -322,15 +365,16 @@
         "test/mcp/protocol/capabilities_test.exs"
       ],
       "reddened_by_module": {
+        "MCP.Conformance.StringCitationsTest": 1,
         "MCP.IntegrationTest": 1,
         "MCP.Protocol.CapabilitiesTest": 3,
         "MCP.Server.CapabilityHonestyTest": 1,
         "MCP.Server.ExtensionsNegotiationTest": 7
       },
-      "reddened_outside_own": 9,
+      "reddened_outside_own": 10,
       "reddened_outside_own_and_dead": 9,
-      "reddened_total": 12,
-      "suite_summary": "24 doctests, 1790 tests, 12 failures",
+      "reddened_total": 13,
+      "suite_summary": "24 doctests, 2089 tests, 13 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -340,27 +384,14 @@
       "id": "MCP.Protocol.Error (decode)",
       "l2": {
         "byte_probe": {
-          "scenarios_moved": [
-            "SSE frame of a notification",
-            "decode_message of a wire error",
-            "decode_message of a wire result",
-            "error response (unknown method)",
-            "prompts/get",
-            "prompts/list",
-            "resources/list",
-            "resources/read",
-            "server/discover",
-            "tools/call audio",
-            "tools/call embedded",
-            "tools/call image",
-            "tools/call link",
-            "tools/call text",
-            "tools/list"
+          "scenarios_moved": [],
+          "scenarios_raised": [
+            "decode_message of a wire error"
           ],
-          "scenarios_run": 0,
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
-        "call_site_enumeration": "`Error.from_map/1` is called at protocol.ex:95 inside `decode_message/1`, which is on every inbound path (client.ex:362, connection.ex:103, plug.ex:1145). 18 live-path units redden. The probe's two `decode_message` scenarios cannot run under this mutation at all — the head no longer matches a wire error object — which is itself the strongest possible statement that the decoder is on the live path.",
+        "call_site_enumeration": "`Error.from_map/1` is called at protocol.ex:95 inside `decode_message/1`, which is on every inbound path (client.ex:362, connection.ex:103, plug.ex:1145). 18 live-path units redden. Under this mutation the probe's `decode_message of a wire error` scenario raises (FunctionClauseError: the head no longer matches a wire error object), which is itself a strong statement that the decoder is on the live path; `decode_message of a wire result` is unchanged (measured on MES-178). Until MES-178 that one raise killed the whole probe run, and this row's hand-recorded block encoded it as a probe that ran nothing.",
         "ran": true,
         "trigger": "recorded on every split boundary-direction",
         "verdict": "live"
@@ -372,6 +403,8 @@
         "test/mcp/client_defects_test.exs:367 (MCP.ClientDefectsTest)",
         "test/mcp/client_defects_test.exs:400 (MCP.ClientDefectsTest)",
         "test/mcp/client_defects_test.exs:416 (MCP.ClientDefectsTest)",
+        "test/mcp/client_malformed_reply_test.exs:169 (MCP.ClientMalformedReplyTest)",
+        "test/mcp/client_malformed_reply_test.exs:193 (MCP.ClientMalformedReplyTest)",
         "test/mcp/client_test.exs:126 (MCP.ClientTest)",
         "test/mcp/client_test.exs:208 (MCP.ClientTest)",
         "test/mcp/client_tool_schemas_test.exs:279 (MCP.ClientToolSchemasTest)",
@@ -382,8 +415,21 @@
         "test/mcp/integration_test.exs:139 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:160 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:178 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:234 (MCP.IntegrationTest)",
         "test/mcp/protocol_test.exs:114 (MCP.ProtocolTest)",
-        "test/mcp/protocol_test.exs:158 (MCP.ProtocolTest)"
+        "test/mcp/protocol_test.exs:158 (MCP.ProtocolTest)",
+        "test/mcp/transport/client_sent_response_test.exs:61 (MCP.Transport.ClientSentResponseTest)",
+        "test/mcp/transport/malformed_error_member_test.exs:161 (MCP.Transport.MalformedErrorMemberTest)",
+        "test/mcp/transport/malformed_error_member_test.exs:84 (MCP.Transport.MalformedErrorMemberTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:121 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:156 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:173 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:185 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:226 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:39 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:56 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:72 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:85 (MCP.Transport.StreamableHTTPErrorReplyTest)"
       ],
       "mutation": [
         "lib/mcp/protocol/error.ex: def from_map(%{\"code\" => code, \"message\" => message} = map) do  ->  def from_map(%{\"ZZcode\" => code, \"ZZmessage\" => message} = map) do",
@@ -410,16 +456,20 @@
       ],
       "reddened_by_module": {
         "MCP.ClientDefectsTest": 6,
+        "MCP.ClientMalformedReplyTest": 2,
         "MCP.ClientTest": 2,
         "MCP.ClientToolSchemasTest": 5,
-        "MCP.IntegrationTest": 3,
+        "MCP.IntegrationTest": 4,
         "MCP.Protocol.ErrorTest": 2,
-        "MCP.ProtocolTest": 2
+        "MCP.ProtocolTest": 2,
+        "MCP.Transport.ClientSentResponseTest": 1,
+        "MCP.Transport.MalformedErrorMemberTest": 2,
+        "MCP.Transport.StreamableHTTPErrorReplyTest": 9
       },
-      "reddened_outside_own": 18,
-      "reddened_outside_own_and_dead": 18,
-      "reddened_total": 20,
-      "suite_summary": "24 doctests, 1790 tests, 20 failures",
+      "reddened_outside_own": 33,
+      "reddened_outside_own_and_dead": 33,
+      "reddened_total": 35,
+      "suite_summary": "24 doctests, 2089 tests, 35 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -430,7 +480,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "No lib/ path encodes an %Error{} through its `@derive Jason.Encoder`. The three outbound error paths build the error object BY HAND: dispatch.ex:733-737 (`%{\"code\" => e.code, \"message\" => e.message}`), plug.ex:1077-1079 (send_json_error) and connection.ex:186. The only route that could have reached the derived encoder was Messages.Response, itself recorded dead above. No probe scenario moves.",
@@ -457,13 +508,14 @@
       ],
       "reddened_by_module": {
         "MCP.Conformance.AdjudicationsTest": 7,
+        "MCP.Conformance.StringCitationsTest": 1,
         "MCP.Protocol.ErrorTest": 2,
         "MCP.ProtocolTest": 1
       },
-      "reddened_outside_own": 8,
+      "reddened_outside_own": 9,
       "reddened_outside_own_and_dead": 0,
-      "reddened_total": 10,
-      "suite_summary": "24 doctests, 1790 tests, 10 failures",
+      "reddened_total": 11,
+      "suite_summary": "24 doctests, 2089 tests, 11 failures",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -493,13 +545,14 @@
       ],
       "reddened_by_module": {
         "MCP.Conformance.AdjudicationsTest": 7,
+        "MCP.Conformance.StringCitationsTest": 1,
         "MCP.Protocol.ExtensionsTest": 3,
         "MCP.Server.ExtensionsNegotiationTest": 1
       },
-      "reddened_outside_own": 8,
+      "reddened_outside_own": 9,
       "reddened_outside_own_and_dead": 1,
-      "reddened_total": 11,
-      "suite_summary": "24 doctests, 1790 tests, 11 failures",
+      "reddened_total": 12,
+      "suite_summary": "24 doctests, 2089 tests, 12 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -510,7 +563,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "plug.ex:944 `decode_header_name(value)` is `MCP.Protocol.HeaderMirror.decode_value/1`, on the server's inbound header-comparison path. 4 live-path units redden in routing_headers_test and self_compatibility_test.",
@@ -519,6 +573,9 @@
         "verdict": "live"
       },
       "live_units": [
+        "test/mcp/transport/error_data_test.exs:312 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:124 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:177 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
         "test/mcp/transport/routing_headers_test.exs:228 (MCP.Transport.RoutingHeadersTest)",
         "test/mcp/transport/routing_headers_test.exs:275 (MCP.Transport.RoutingHeadersTest)",
         "test/mcp/transport/self_compatibility_test.exs:101 (MCP.Transport.SelfCompatibilityTest)",
@@ -543,12 +600,14 @@
         "MCP.Conformance.AdjudicationsTest": 1,
         "MCP.Protocol.HeaderMirrorTest": 2,
         "MCP.Transport.RoutingHeadersTest": 2,
-        "MCP.Transport.SelfCompatibilityTest": 2
+        "MCP.Transport.SelfCompatibilityTest": 2,
+        "MCP.Transport.StreamableHTTP.ErrorDataTest": 1,
+        "MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest": 2
       },
-      "reddened_outside_own": 5,
-      "reddened_outside_own_and_dead": 4,
-      "reddened_total": 7,
-      "suite_summary": "24 doctests, 1790 tests, 7 failures",
+      "reddened_outside_own": 8,
+      "reddened_outside_own_and_dead": 7,
+      "reddened_total": 10,
+      "suite_summary": "24 doctests, 2089 tests, 10 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -559,7 +618,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "client.ex:780 `HeaderMirror.headers_for(annotations, arguments)` becomes HTTP request headers, and streamable_http/client.ex:379 `HeaderMirror.encode_value(target)` becomes the `mcp-name` header. 16 live-path units redden, read off a REAL server (a Bandit CapturePlug records conn.req_headers).",
@@ -597,6 +657,7 @@
         "test/mcp/transport/streamable_http_ac_test.exs:275 (MCP.Transport.StreamableHTTP.ACTest)",
         "test/mcp/transport/streamable_http_ac_test.exs:290 (MCP.Transport.StreamableHTTP.ACTest)",
         "test/mcp/transport/streamable_http_ac_test.exs:333 (MCP.Transport.StreamableHTTP.ACTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:56 (MCP.Transport.StreamableHTTPErrorReplyTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:100 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:192 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:209 (MCP.Transport.StreamableHTTPStatelessTest)",
@@ -636,12 +697,13 @@
         "MCP.Transport.RoutingHeadersTest": 7,
         "MCP.Transport.SelfCompatibilityTest": 2,
         "MCP.Transport.StreamableHTTP.ACTest": 13,
+        "MCP.Transport.StreamableHTTPErrorReplyTest": 1,
         "MCP.Transport.StreamableHTTPStatelessTest": 9
       },
-      "reddened_outside_own": 38,
-      "reddened_outside_own_and_dead": 38,
-      "reddened_total": 55,
-      "suite_summary": "24 doctests, 1790 tests, 55 failures",
+      "reddened_outside_own": 39,
+      "reddened_outside_own_and_dead": 39,
+      "reddened_total": 56,
+      "suite_summary": "24 doctests, 2089 tests, 56 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -652,7 +714,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "client.ex:539 `Discover.Result.from_map(result)` is how the client reads every discover response. 32 live-path units redden.",
@@ -692,7 +755,8 @@
         "test/mcp/integration_test.exs:193 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:204 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:213 (MCP.IntegrationTest)",
-        "test/mcp/integration_test.exs:221 (MCP.IntegrationTest)"
+        "test/mcp/integration_test.exs:221 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:234 (MCP.IntegrationTest)"
       ],
       "mutation": [
         "lib/mcp/protocol/messages/discover.ex: Map.get(map, \"_meta\"  ->  Map.get(map, \"ZZ_meta\"",
@@ -760,13 +824,14 @@
       "reddened_by_module": {
         "MCP.ClientConformanceTest": 4,
         "MCP.ClientTest": 20,
-        "MCP.IntegrationTest": 8,
+        "MCP.Conformance.StringCitationsTest": 1,
+        "MCP.IntegrationTest": 9,
         "MCP.Protocol.Messages.DiscoverTest": 1
       },
-      "reddened_outside_own": 32,
-      "reddened_outside_own_and_dead": 32,
-      "reddened_total": 33,
-      "suite_summary": "24 doctests, 1790 tests, 33 failures",
+      "reddened_outside_own": 34,
+      "reddened_outside_own_and_dead": 33,
+      "reddened_total": 35,
+      "suite_summary": "24 doctests, 2089 tests, 35 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -779,7 +844,8 @@
           "scenarios_moved": [
             "server/discover"
           ],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "dispatch.ex:169 `Discover.Result.to_map(...)` IS the server/discover result. The probe's `server/discover` scenario moves under this mutation.",
@@ -796,6 +862,7 @@
         "test/mcp/integration_test.exs:204 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:213 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:221 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:234 (MCP.IntegrationTest)",
         "test/mcp/server/dispatch_test.exs:158 (MCP.Server.DispatchTest)",
         "test/mcp/server/extensions_negotiation_test.exs:122 (MCP.Server.ExtensionsNegotiationTest)",
         "test/mcp/server/extensions_negotiation_test.exs:134 (MCP.Server.ExtensionsNegotiationTest)",
@@ -873,16 +940,17 @@
         "test/mcp/protocol/messages/discover_test.exs"
       ],
       "reddened_by_module": {
-        "MCP.IntegrationTest": 8,
+        "MCP.Conformance.StringCitationsTest": 1,
+        "MCP.IntegrationTest": 9,
         "MCP.Protocol.Messages.DiscoverTest": 1,
         "MCP.Server.DispatchTest": 1,
         "MCP.Server.ExtensionsNegotiationTest": 10,
         "MCP.Transport.StreamableHTTPStatelessTest": 1
       },
-      "reddened_outside_own": 20,
-      "reddened_outside_own_and_dead": 20,
-      "reddened_total": 21,
-      "suite_summary": "24 doctests, 1790 tests, 21 failures",
+      "reddened_outside_own": 22,
+      "reddened_outside_own_and_dead": 21,
+      "reddened_total": 23,
+      "suite_summary": "24 doctests, 2089 tests, 23 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -893,7 +961,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`grep -rnE '\\bInitialize\\b' lib/` returns one line, doc prose at server/handler.ex:81 (\"Initialize handler state\"), and zero code references — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. No probe scenario moves.",
@@ -958,12 +1027,13 @@
         "test/mcp/protocol/messages/initialize_test.exs"
       ],
       "reddened_by_module": {
+        "MCP.Conformance.StringCitationsTest": 1,
         "MCP.Protocol.Messages.InitializeTest": 5
       },
-      "reddened_outside_own": 0,
+      "reddened_outside_own": 1,
       "reddened_outside_own_and_dead": 0,
-      "reddened_total": 5,
-      "suite_summary": "24 doctests, 1790 tests, 5 failures",
+      "reddened_total": 6,
+      "suite_summary": "24 doctests, 2089 tests, 6 failures",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -974,7 +1044,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`grep -rnE '\\bInitialize\\b' lib/` returns one line, doc prose at server/handler.ex:81 (\"Initialize handler state\"), and zero code references — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. The 2026-07-28 core has no initialize handshake (SEP-2575/2567), so the module is a survival of the removed one. No probe scenario moves.",
@@ -1044,7 +1115,7 @@
       "reddened_outside_own": 0,
       "reddened_outside_own_and_dead": 0,
       "reddened_total": 2,
-      "suite_summary": "24 doctests, 1790 tests, 2 failures",
+      "suite_summary": "24 doctests, 2089 tests, 2 failures",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -1087,15 +1158,16 @@
       ],
       "reddened_by_module": {
         "MCP.ClientTest": 1,
+        "MCP.Conformance.StringCitationsTest": 1,
         "MCP.ProtocolTest": 1,
         "MCP.Server.NotificationCollectorTest": 1,
         "MCP.Server.SubscriptionsDispatchTest": 3,
         "MCP.Transport.SubscriptionsStreamTest": 9
       },
-      "reddened_outside_own": 14,
+      "reddened_outside_own": 15,
       "reddened_outside_own_and_dead": 14,
-      "reddened_total": 15,
-      "suite_summary": "24 doctests, 1790 tests, 15 failures",
+      "reddened_total": 16,
+      "suite_summary": "24 doctests, 2089 tests, 16 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -1107,6 +1179,8 @@
       "live_units": [
         "test/mcp/client_conformance_test.exs:118 (MCP.ClientConformanceTest)",
         "test/mcp/client_defects_test.exs:289 (MCP.ClientDefectsTest)",
+        "test/mcp/client_malformed_reply_test.exs:169 (MCP.ClientMalformedReplyTest)",
+        "test/mcp/client_malformed_reply_test.exs:193 (MCP.ClientMalformedReplyTest)",
         "test/mcp/client_test.exs:144 (MCP.ClientTest)",
         "test/mcp/client_test.exs:168 (MCP.ClientTest)",
         "test/mcp/client_test.exs:187 (MCP.ClientTest)",
@@ -1135,10 +1209,40 @@
         "test/mcp/integration_test.exs:204 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:213 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:221 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:234 (MCP.IntegrationTest)",
         "test/mcp/transport/routing_headers_test.exs:359 (MCP.Transport.RoutingHeadersTest)",
         "test/mcp/transport/routing_headers_test.exs:399 (MCP.Transport.RoutingHeadersTest)",
         "test/mcp/transport/routing_headers_test.exs:419 (MCP.Transport.RoutingHeadersTest)",
-        "test/mcp/transport/self_compatibility_test.exs:185 (MCP.Transport.SelfCompatibilityTest)"
+        "test/mcp/transport/self_compatibility_test.exs:185 (MCP.Transport.SelfCompatibilityTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:109 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:121 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:144 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:156 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:173 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:185 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:198 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:207 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:218 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:226 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:278 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:286 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:292 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:300 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:306 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:314 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:322 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:39 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:56 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:72 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:85 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:98 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_non_object_body_test.exs:35 (MCP.Transport.StreamableHTTPNonObjectBodyTest)",
+        "test/mcp/transport/streamable_http_non_object_body_test.exs:42 (MCP.Transport.StreamableHTTPNonObjectBodyTest)",
+        "test/mcp/transport/streamable_http_non_object_body_test.exs:49 (MCP.Transport.StreamableHTTPNonObjectBodyTest)",
+        "test/mcp/transport/streamable_http_non_object_body_test.exs:56 (MCP.Transport.StreamableHTTPNonObjectBodyTest)",
+        "test/mcp/transport/streamable_http_non_object_body_test.exs:63 (MCP.Transport.StreamableHTTPNonObjectBodyTest)",
+        "test/mcp/transport/streamable_http_non_object_body_test.exs:70 (MCP.Transport.StreamableHTTPNonObjectBodyTest)",
+        "test/mcp/transport/streamable_http_non_object_body_test.exs:77 (MCP.Transport.StreamableHTTPNonObjectBodyTest)"
       ],
       "mutation": [
         "lib/mcp/protocol/messages/request.ex: method: struct.method  ->  methodX: struct.method"
@@ -1159,17 +1263,21 @@
       "reddened_by_module": {
         "MCP.ClientConformanceTest": 1,
         "MCP.ClientDefectsTest": 1,
+        "MCP.ClientMalformedReplyTest": 2,
         "MCP.ClientTest": 18,
         "MCP.ClientToolSchemasTest": 2,
-        "MCP.IntegrationTest": 8,
+        "MCP.Conformance.StringCitationsTest": 1,
+        "MCP.IntegrationTest": 9,
         "MCP.ProtocolTest": 3,
         "MCP.Transport.RoutingHeadersTest": 3,
-        "MCP.Transport.SelfCompatibilityTest": 1
+        "MCP.Transport.SelfCompatibilityTest": 1,
+        "MCP.Transport.StreamableHTTPErrorReplyTest": 22,
+        "MCP.Transport.StreamableHTTPNonObjectBodyTest": 7
       },
-      "reddened_outside_own": 34,
-      "reddened_outside_own_and_dead": 34,
-      "reddened_total": 37,
-      "suite_summary": "24 doctests, 1790 tests, 37 failures",
+      "reddened_outside_own": 67,
+      "reddened_outside_own_and_dead": 66,
+      "reddened_total": 70,
+      "suite_summary": "24 doctests, 2089 tests, 70 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -1180,7 +1288,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`grep -rnE '\\bResources\\b' lib/` returns nothing outside its own file — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. No probe scenario moves.",
@@ -1253,12 +1362,13 @@
         "test/mcp/protocol/messages/resources_test.exs"
       ],
       "reddened_by_module": {
+        "MCP.Conformance.StringCitationsTest": 1,
         "MCP.Protocol.Messages.ResourcesTest": 5
       },
-      "reddened_outside_own": 0,
+      "reddened_outside_own": 1,
       "reddened_outside_own_and_dead": 0,
-      "reddened_total": 5,
-      "suite_summary": "24 doctests, 1790 tests, 5 failures",
+      "reddened_total": 6,
+      "suite_summary": "24 doctests, 2089 tests, 6 failures",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -1269,7 +1379,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`grep -rnE '\\bResources\\b' lib/` returns nothing outside its own file — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. No probe scenario moves.",
@@ -1331,7 +1442,7 @@
       "reddened_outside_own": 0,
       "reddened_outside_own_and_dead": 0,
       "reddened_total": 1,
-      "suite_summary": "24 doctests, 1790 tests, 1 failure",
+      "suite_summary": "24 doctests, 2089 tests, 1 failure",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -1342,7 +1453,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`%Response{}` IS aliased and pattern-matched throughout lib/ (protocol.ex:7, client.ex:98, connection.ex:35, constructed at protocol.ex:98) but every one of those is INBOUND. The narrower claim this verdict rests on: `grep -rnE 'Response\\.(success|error|new)\\(' lib/` returns 0, so no lib/ path ever RE-ENCODES a %Response{}. The SDK builds its outbound responses by hand at dispatch.ex:731-737. No probe scenario moves. (This is the F3/F7 claim in its surviving form — see S7-16.)",
@@ -1383,12 +1495,13 @@
         "test/mcp/protocol_test.exs"
       ],
       "reddened_by_module": {
+        "MCP.Conformance.StringCitationsTest": 1,
         "MCP.ProtocolTest": 2
       },
-      "reddened_outside_own": 0,
+      "reddened_outside_own": 1,
       "reddened_outside_own_and_dead": 0,
-      "reddened_total": 2,
-      "suite_summary": "24 doctests, 1790 tests, 2 failures",
+      "reddened_total": 3,
+      "suite_summary": "24 doctests, 2089 tests, 3 failures",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -1399,7 +1512,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`grep -rnE '\\bSampling\\b' lib/` returns nothing outside its own file — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. No probe scenario moves.",
@@ -1520,12 +1634,13 @@
         "test/mcp/protocol/messages/sampling_test.exs"
       ],
       "reddened_by_module": {
+        "MCP.Conformance.StringCitationsTest": 1,
         "MCP.Protocol.Messages.SamplingTest": 4
       },
-      "reddened_outside_own": 0,
+      "reddened_outside_own": 1,
       "reddened_outside_own_and_dead": 0,
-      "reddened_total": 4,
-      "suite_summary": "24 doctests, 1790 tests, 4 failures",
+      "reddened_total": 5,
+      "suite_summary": "24 doctests, 2089 tests, 5 failures",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -1536,7 +1651,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`grep -rnE '\\bSampling\\b' lib/` returns nothing outside its own file — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. No probe scenario moves.",
@@ -1662,7 +1778,7 @@
       "reddened_outside_own": 0,
       "reddened_outside_own_and_dead": 0,
       "reddened_total": 2,
-      "suite_summary": "24 doctests, 1790 tests, 2 failures",
+      "suite_summary": "24 doctests, 2089 tests, 2 failures",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -1673,7 +1789,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": null,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`parse_filter/1` is called on the inbound subscriptions/listen params in dispatch.ex. 22 live-path units redden, most of them off a real socket in subscriptions_stream_test.",
@@ -1738,7 +1855,7 @@
       "reddened_outside_own": 24,
       "reddened_outside_own_and_dead": 23,
       "reddened_total": 44,
-      "suite_summary": "24 doctests, 1790 tests, 44 failures",
+      "suite_summary": "24 doctests, 2089 tests, 44 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -1749,7 +1866,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": null,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`acknowledgment/2`, `close_response/1` and `stamp/2` are the listen ack, the graceful-close response and every streamed frame; plug.ex chunks them through SSE.encode_message/1. 6 live-path units redden.",
@@ -1803,7 +1921,7 @@
       "reddened_outside_own": 6,
       "reddened_outside_own_and_dead": 6,
       "reddened_total": 12,
-      "suite_summary": "24 doctests, 1790 tests, 12 failures",
+      "suite_summary": "24 doctests, 2089 tests, 12 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -1814,7 +1932,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`grep -rnE '\\bTools\\b' lib/` returns two lines, both doc prose (types/tool.ex:5, client.ex:223), and zero code references — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. No probe scenario moves.",
@@ -1895,12 +2014,13 @@
         "test/mcp/protocol/messages/tools_test.exs"
       ],
       "reddened_by_module": {
+        "MCP.Conformance.StringCitationsTest": 1,
         "MCP.Protocol.Messages.ToolsTest": 20
       },
-      "reddened_outside_own": 0,
+      "reddened_outside_own": 1,
       "reddened_outside_own_and_dead": 0,
-      "reddened_total": 20,
-      "suite_summary": "24 doctests, 1790 tests, 20 failures",
+      "reddened_total": 21,
+      "suite_summary": "24 doctests, 2089 tests, 21 failures",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -1911,7 +2031,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`grep -rnE '\\bTools\\b' lib/` returns two lines, both doc prose (types/tool.ex:5, client.ex:223), and zero code references — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. No probe scenario moves.",
@@ -2013,7 +2134,7 @@
       "reddened_outside_own": 0,
       "reddened_outside_own_and_dead": 0,
       "reddened_total": 27,
-      "suite_summary": "24 doctests, 1790 tests, 27 failures",
+      "suite_summary": "24 doctests, 2089 tests, 27 failures",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -2023,22 +2144,37 @@
       "id": "MCP.Protocol.Meta",
       "l2": null,
       "live_units": [
+        "test/mcp/integration_test.exs:128 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:139 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:160 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:178 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:193 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:204 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:213 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:221 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:234 (MCP.IntegrationTest)",
+        "test/mcp/server/dispatch_test.exs:158 (MCP.Server.DispatchTest)",
         "test/mcp/server/dispatch_test.exs:179 (MCP.Server.DispatchTest)",
         "test/mcp/server/dispatch_test.exs:208 (MCP.Server.DispatchTest)",
+        "test/mcp/server/dispatch_test.exs:236 (MCP.Server.DispatchTest)",
         "test/mcp/server/dispatch_test.exs:48 (MCP.Server.DispatchTest)",
         "test/mcp/server/dispatch_test.exs:55 (MCP.Server.DispatchTest)",
         "test/mcp/server/dispatch_test.exs:67 (MCP.Server.DispatchTest)",
         "test/mcp/server/dispatch_test.exs:74 (MCP.Server.DispatchTest)",
         "test/mcp/server/dispatch_test.exs:83 (MCP.Server.DispatchTest)",
         "test/mcp/server/dispatch_test.exs:96 (MCP.Server.DispatchTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:122 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:134 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:145 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:156 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:168 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:206 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:232 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:258 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:297 (MCP.Server.ExtensionsNegotiationTest)",
         "test/mcp/server/extensions_negotiation_test.exs:316 (MCP.Server.ExtensionsNegotiationTest)",
         "test/mcp/server/extensions_negotiation_test.exs:359 (MCP.Server.ExtensionsNegotiationTest)",
+        "test/mcp/server/extensions_negotiation_test.exs:369 (MCP.Server.ExtensionsNegotiationTest)",
         "test/mcp/server/extensions_negotiation_test.exs:379 (MCP.Server.ExtensionsNegotiationTest)",
         "test/mcp/server/extensions_negotiation_test.exs:391 (MCP.Server.ExtensionsNegotiationTest)",
         "test/mcp/server/extensions_negotiation_test.exs:430 (MCP.Server.ExtensionsNegotiationTest)",
@@ -2066,10 +2202,29 @@
         "test/mcp/server/json_schema_2020_12_test.exs:279 (MCP.Server.JsonSchema202012Test)",
         "test/mcp/server/json_schema_2020_12_test.exs:288 (MCP.Server.JsonSchema202012Test)",
         "test/mcp/server/json_schema_2020_12_test.exs:298 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:332 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:351 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:365 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:376 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:391 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:432 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:452 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:478 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:498 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:517 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:532 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:579 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:608 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:639 (MCP.Server.JsonSchema202012Test)",
         "test/mcp/server/json_schema_2020_12_test.exs:92 (MCP.Server.JsonSchema202012Test)",
         "test/mcp/server/json_schema_2020_12_test.exs:98 (MCP.Server.JsonSchema202012Test)",
         "test/mcp/server/required_meta_test.exs:214 (MCP.Server.RequiredMetaTest)",
+        "test/mcp/server/required_meta_test.exs:223 (MCP.Server.RequiredMetaTest)",
         "test/mcp/server/required_meta_test.exs:99 (MCP.Server.RequiredMetaTest)",
+        "test/mcp/server/required_meta_types_test.exs:157 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/server/required_meta_types_test.exs:174 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/server/required_meta_types_test.exs:246 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/server/required_meta_types_test.exs:273 (MCP.Server.RequiredMetaTypesTest)",
         "test/mcp/server/subscriptions_dispatch_test.exs:189 (MCP.Server.SubscriptionsDispatchTest)",
         "test/mcp/server/subscriptions_dispatch_test.exs:197 (MCP.Server.SubscriptionsDispatchTest)",
         "test/mcp/server/subscriptions_dispatch_test.exs:210 (MCP.Server.SubscriptionsDispatchTest)",
@@ -2099,8 +2254,27 @@
         "test/mcp/server/tool_order_test.exs:155 (MCP.Server.ToolOrderTest)",
         "test/mcp/server/tool_order_test.exs:164 (MCP.Server.ToolOrderTest)",
         "test/mcp/server/tool_order_test.exs:98 (MCP.Server.ToolOrderTest)",
+        "test/mcp/transport/client_sent_response_test.exs:93 (MCP.Transport.ClientSentResponseTest)",
+        "test/mcp/transport/dual_member_response_test.exs:116 (MCP.Transport.DualMemberResponseTest)",
         "test/mcp/transport/error_id_test.exs:231 (MCP.Transport.StreamableHTTP.ErrorIdTest)",
+        "test/mcp/transport/malformed_error_member_test.exs:109 (MCP.Transport.MalformedErrorMemberTest)",
+        "test/mcp/transport/request_body_limit_test.exs:180 (MCP.Transport.RequestBodyLimitTest)",
+        "test/mcp/transport/request_body_limit_test.exs:200 (MCP.Transport.RequestBodyLimitTest)",
+        "test/mcp/transport/request_body_limit_test.exs:75 (MCP.Transport.RequestBodyLimitTest)",
+        "test/mcp/transport/request_body_limit_test.exs:91 (MCP.Transport.RequestBodyLimitTest)",
         "test/mcp/transport/required_headers_test.exs:195 (MCP.Transport.StreamableHTTP.RequiredHeadersTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:100 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:108 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:116 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:124 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:93 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/self_compatibility_test.exs:101 (MCP.Transport.SelfCompatibilityTest)",
+        "test/mcp/transport/self_compatibility_test.exs:151 (MCP.Transport.SelfCompatibilityTest)",
+        "test/mcp/transport/self_compatibility_test.exs:185 (MCP.Transport.SelfCompatibilityTest)",
+        "test/mcp/transport/stdio_invalid_line_test.exs:159 (MCP.Transport.StdioInvalidLineTest)",
+        "test/mcp/transport/stdio_invalid_line_test.exs:181 (MCP.Transport.StdioInvalidLineTest)",
+        "test/mcp/transport/stdio_invalid_line_test.exs:236 (MCP.Transport.StdioInvalidLineTest)",
+        "test/mcp/transport/stdio_invalid_line_test.exs:279 (MCP.Transport.StdioInvalidLineTest)",
         "test/mcp/transport/streamable_http_ac_test.exs:111 (MCP.Transport.StreamableHTTP.ACTest)",
         "test/mcp/transport/streamable_http_ac_test.exs:124 (MCP.Transport.StreamableHTTP.ACTest)",
         "test/mcp/transport/streamable_http_ac_test.exs:136 (MCP.Transport.StreamableHTTP.ACTest)",
@@ -2113,14 +2287,46 @@
         "test/mcp/transport/streamable_http_ac_test.exs:290 (MCP.Transport.StreamableHTTP.ACTest)",
         "test/mcp/transport/streamable_http_ac_test.exs:321 (MCP.Transport.StreamableHTTP.ACTest)",
         "test/mcp/transport/streamable_http_ac_test.exs:333 (MCP.Transport.StreamableHTTP.ACTest)",
+        "test/mcp/transport/streamable_http_cache_scope_warning_test.exs:118 (MCP.Transport.StreamableHTTPCacheScopeWarningTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:39 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:56 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:72 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_stateless_test.exs:130 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:149 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:192 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:209 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:229 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:298 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:356 (MCP.Transport.StreamableHTTPStatelessTest)",
+        "test/mcp/transport/streamable_http_stateless_test.exs:405 (MCP.Transport.StreamableHTTPStatelessTest)",
+        "test/mcp/transport/streamable_http_stateless_test.exs:478 (MCP.Transport.StreamableHTTPStatelessTest)",
+        "test/mcp/transport/streamable_http_stateless_test.exs:59 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:71 (MCP.Transport.StreamableHTTPStatelessTest)",
-        "test/mcp/transport/streamable_http_stateless_test.exs:90 (MCP.Transport.StreamableHTTPStatelessTest)"
+        "test/mcp/transport/streamable_http_stateless_test.exs:90 (MCP.Transport.StreamableHTTPStatelessTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:1038 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:1090 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:277 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:295 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:314 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:338 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:357 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:404 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:434 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:453 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:469 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:515 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:534 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:569 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:624 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:669 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:696 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:740 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:766 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:787 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:831 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:873 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:912 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:976 (MCP.Transport.SubscriptionsStreamTest)"
       ],
       "mutation": [
         "lib/mcp/protocol/meta.ex: Map.get(params, \"_meta\") || %{}  ->  Map.get(params, \"_metaX\") || %{}"
@@ -2139,23 +2345,35 @@
         "test/mcp/protocol/meta_test.exs"
       ],
       "reddened_by_module": {
-        "MCP.IntegrationTest": 6,
+        "MCP.Conformance.StringCitationsTest": 1,
+        "MCP.IntegrationTest": 9,
         "MCP.Protocol.MetaTest": 1,
-        "MCP.Server.DispatchTest": 8,
-        "MCP.Server.ExtensionsNegotiationTest": 5,
-        "MCP.Server.JsonSchema202012Test": 26,
-        "MCP.Server.RequiredMetaTest": 2,
+        "MCP.Server.DispatchTest": 10,
+        "MCP.Server.ExtensionsNegotiationTest": 15,
+        "MCP.Server.JsonSchema202012Test": 40,
+        "MCP.Server.RequiredMetaTest": 3,
+        "MCP.Server.RequiredMetaTypesTest": 4,
         "MCP.Server.SubscriptionsDispatchTest": 22,
         "MCP.Server.ToolOrderTest": 7,
+        "MCP.Transport.ClientSentResponseTest": 1,
+        "MCP.Transport.DualMemberResponseTest": 1,
+        "MCP.Transport.MalformedErrorMemberTest": 1,
+        "MCP.Transport.RequestBodyLimitTest": 4,
+        "MCP.Transport.SelfCompatibilityTest": 3,
+        "MCP.Transport.StdioInvalidLineTest": 4,
         "MCP.Transport.StreamableHTTP.ACTest": 12,
         "MCP.Transport.StreamableHTTP.ErrorIdTest": 1,
         "MCP.Transport.StreamableHTTP.RequiredHeadersTest": 1,
-        "MCP.Transport.StreamableHTTPStatelessTest": 8
+        "MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest": 5,
+        "MCP.Transport.StreamableHTTPCacheScopeWarningTest": 1,
+        "MCP.Transport.StreamableHTTPErrorReplyTest": 3,
+        "MCP.Transport.StreamableHTTPStatelessTest": 12,
+        "MCP.Transport.SubscriptionsStreamTest": 24
       },
-      "reddened_outside_own": 98,
-      "reddened_outside_own_and_dead": 98,
-      "reddened_total": 99,
-      "suite_summary": "24 doctests, 1790 tests, 139 failures",
+      "reddened_outside_own": 184,
+      "reddened_outside_own_and_dead": 183,
+      "reddened_total": 185,
+      "suite_summary": "24 doctests, 2089 tests, 185 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -2166,7 +2384,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`Content.from_map/1` has four lib/ call sites — `messages/tools.ex:167`, `messages/sampling.ex:105`, `types/prompt_message.ex:20` and `types/sampling_message.ex:20`. The first two are inside orphaned modules; PromptMessage.from_map/1 is called only from `messages/prompts.ex:111` and SamplingMessage.from_map/1 only from `messages/sampling.ex:41`, both also orphaned (`grep -rnE '\\bPrompts\\b|\\bSampling\\b' lib/` returns nothing outside their own files). Every chain terminates in a module lib/ never uses. No probe scenario moves.",
@@ -2191,14 +2410,15 @@
         "test/mcp/protocol/types/content_test.exs"
       ],
       "reddened_by_module": {
+        "MCP.Conformance.StringCitationsTest": 1,
         "MCP.Protocol.Messages.SamplingTest": 4,
         "MCP.Protocol.Messages.ToolsTest": 3,
         "MCP.Protocol.Types.ContentTest": 6
       },
-      "reddened_outside_own": 7,
+      "reddened_outside_own": 8,
       "reddened_outside_own_and_dead": 0,
-      "reddened_total": 13,
-      "suite_summary": "24 doctests, 1790 tests, 13 failures",
+      "reddened_total": 14,
+      "suite_summary": "24 doctests, 2089 tests, 14 failures",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -2209,7 +2429,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`AudioContent.from_map/1` is reached only through the `Content.from_map/1` dispatcher (content.ex:33-36), recorded DEAD above. No probe scenario moves.",
@@ -2263,7 +2484,7 @@
       "reddened_outside_own": 0,
       "reddened_outside_own_and_dead": 0,
       "reddened_total": 1,
-      "suite_summary": "24 doctests, 1790 tests, 1 failure",
+      "suite_summary": "24 doctests, 2089 tests, 1 failure",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -2276,7 +2497,8 @@
           "scenarios_moved": [
             "tools/call audio"
           ],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "conformance/etcc_l2_probe.exs `tools/call audio`: a handler returning that struct through a real Dispatch.dispatch/3 puts `content:[{\"data\":\"BBB\",\"type\":\"audio\",\"mimeType\":\"audio/wav\"}]` on the wire, and the encode mutation moves those bytes.",
@@ -2322,7 +2544,7 @@
       "reddened_outside_own": 0,
       "reddened_outside_own_and_dead": 0,
       "reddened_total": 1,
-      "suite_summary": "24 doctests, 1790 tests, 1 failure",
+      "suite_summary": "24 doctests, 2089 tests, 1 failure",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -2333,7 +2555,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`EmbeddedResource.from_map/1` is reached only through the `Content.from_map/1` dispatcher (content.ex:33-36), recorded DEAD above. No probe scenario moves.",
@@ -2379,7 +2602,7 @@
       "reddened_outside_own": 0,
       "reddened_outside_own_and_dead": 0,
       "reddened_total": 1,
-      "suite_summary": "24 doctests, 1790 tests, 1 failure",
+      "suite_summary": "24 doctests, 2089 tests, 1 failure",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -2392,7 +2615,8 @@
           "scenarios_moved": [
             "tools/call embedded"
           ],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "conformance/etcc_l2_probe.exs `tools/call embedded`: a handler returning that struct through a real Dispatch.dispatch/3 puts `content:[{\"type\":\"resource\",\"resource\":{\"text\":\"z\",\"uri\":\"file:///r\"}}]` on the wire, and the encode mutation moves those bytes.",
@@ -2430,7 +2654,7 @@
       "reddened_outside_own": 0,
       "reddened_outside_own_and_dead": 0,
       "reddened_total": 1,
-      "suite_summary": "24 doctests, 1790 tests, 1 failure",
+      "suite_summary": "24 doctests, 2089 tests, 1 failure",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -2441,7 +2665,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`ImageContent.from_map/1` is reached only through the `Content.from_map/1` dispatcher (content.ex:33-36), recorded DEAD above. No probe scenario moves.",
@@ -2495,7 +2720,7 @@
       "reddened_outside_own": 0,
       "reddened_outside_own_and_dead": 0,
       "reddened_total": 1,
-      "suite_summary": "24 doctests, 1790 tests, 1 failure",
+      "suite_summary": "24 doctests, 2089 tests, 1 failure",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -2508,7 +2733,8 @@
           "scenarios_moved": [
             "tools/call image"
           ],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "conformance/etcc_l2_probe.exs `tools/call image`: a handler returning that struct through a real Dispatch.dispatch/3 puts `content:[{\"data\":\"AAA\",\"type\":\"image\",\"mimeType\":\"image/png\"}]` on the wire, and the encode mutation moves those bytes.",
@@ -2554,7 +2780,7 @@
       "reddened_outside_own": 0,
       "reddened_outside_own_and_dead": 0,
       "reddened_total": 1,
-      "suite_summary": "24 doctests, 1790 tests, 1 failure",
+      "suite_summary": "24 doctests, 2089 tests, 1 failure",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -2565,7 +2791,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`ResourceLink.from_map/1` is reached only through the `Content.from_map/1` dispatcher (content.ex:33-36), recorded DEAD above. No probe scenario moves.",
@@ -2659,7 +2886,7 @@
       "reddened_outside_own": 0,
       "reddened_outside_own_and_dead": 0,
       "reddened_total": 1,
-      "suite_summary": "24 doctests, 1790 tests, 1 failure",
+      "suite_summary": "24 doctests, 2089 tests, 1 failure",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -2672,7 +2899,8 @@
           "scenarios_moved": [
             "tools/call link"
           ],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "conformance/etcc_l2_probe.exs `tools/call link`: a handler returning that struct through a real Dispatch.dispatch/3 puts `content:[{\"name\":\"x\",\"type\":\"resource_link\",\"uri\":\"file:///x\"}]` on the wire, and the encode mutation moves those bytes.",
@@ -2719,7 +2947,7 @@
       "reddened_outside_own": 1,
       "reddened_outside_own_and_dead": 0,
       "reddened_total": 2,
-      "suite_summary": "24 doctests, 1790 tests, 2 failures",
+      "suite_summary": "24 doctests, 2089 tests, 2 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -2730,7 +2958,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`TextContent.from_map/1` is reached only through the `Content.from_map/1` dispatcher (content.ex:32), recorded DEAD above. No probe scenario moves. *** The two rows content_test.exs:15 and :24 were ET-CC at round 3 on TextContent's ENCODE liveness; under the split they lose that warrant and leave. ***",
@@ -2778,7 +3007,7 @@
       "reddened_outside_own": 7,
       "reddened_outside_own_and_dead": 0,
       "reddened_total": 9,
-      "suite_summary": "24 doctests, 1790 tests, 9 failures",
+      "suite_summary": "24 doctests, 2089 tests, 9 failures",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -2792,7 +3021,8 @@
             "prompts/get",
             "tools/call text"
           ],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "conformance/etcc_l2_probe.exs `tools/call text`: a handler returning [%TextContent{text: \"hello\"}] through a real Dispatch.dispatch/3 puts `{\"id\":1,\"jsonrpc\":\"2.0\",\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"hello\"}],\"resultType\":\"complete\"}}` on the wire, and the encode mutation moves those bytes. NOTE, and this narrows round 3's warrant rather than widening it: L1's single 'live' unit for the unsplit boundary was json_schema_2020_12_test.exs:552, which reddens because dispatch.ex:670 pattern-matches %{type: \"text\", text: text} on the STRUCT's FIELDS, not on encoded bytes. A struct-field match is neither encode nor decode, so that signal is NOT cited here (PM, 26058). The encode direction rests on these bytes alone — which is why it survives the split.",
@@ -2830,7 +3060,7 @@
       "reddened_outside_own": 0,
       "reddened_outside_own_and_dead": 0,
       "reddened_total": 1,
-      "suite_summary": "24 doctests, 1790 tests, 1 failure",
+      "suite_summary": "24 doctests, 2089 tests, 1 failure",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -2841,7 +3071,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`Resource.from_map/1` has exactly ONE lib/ call site — `messages/resources.ex:57` — and `grep -rnE '\\bResources\\b' lib/` returns nothing outside its own file — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. No probe scenario moves.",
@@ -2936,7 +3167,7 @@
       "reddened_outside_own": 1,
       "reddened_outside_own_and_dead": 0,
       "reddened_total": 5,
-      "suite_summary": "24 doctests, 1790 tests, 5 failures",
+      "suite_summary": "24 doctests, 2089 tests, 5 failures",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -2949,10 +3180,11 @@
           "scenarios_moved": [
             "resources/list"
           ],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
-        "call_site_enumeration": "conformance/etcc_l2_probe.exs `resources/list`: a handler returning %Resource{uri: \"file:///a\", name: \"a\", mime_type: \"text/plain\"} through a real Dispatch.dispatch/3 puts `{\"resources\":[{\"name\":\"a\",\"uri\":\"file:///a\",\"mimeType\":\"text/plain\"}]}` on the wire; the `mimeType` camelisation exists only in resource.ex's own defimpl (:50).",
+        "call_site_enumeration": "conformance/etcc_l2_probe.exs `resources/list`: a handler returning %Resource{uri: \"file:///a\", name: \"a\", mime_type: \"text/plain\"} through a real Dispatch.dispatch/3 puts `\"resources\":[{\"name\":\"a\",\"uri\":\"file:///a\",\"mimeType\":\"text/plain\"}]` on the wire, inside the result object; the `mimeType` camelisation exists only in resource.ex's own defimpl (:50).",
         "ran": true,
         "trigger": "live count is zero",
         "verdict": "live"
@@ -2995,7 +3227,7 @@
       "reddened_outside_own": 0,
       "reddened_outside_own_and_dead": 0,
       "reddened_total": 1,
-      "suite_summary": "24 doctests, 1790 tests, 1 failure",
+      "suite_summary": "24 doctests, 2089 tests, 1 failure",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -3006,7 +3238,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`Tool.from_map/1` has exactly ONE lib/ call site — `messages/tools.ex:57` (`Enum.map(&Tool.from_map/1)`) — and `grep -rnE '\\bTools\\b' lib/` returns two lines, both doc prose (types/tool.ex:5, client.ex:223), and zero code references — the module is referenced NOWHERE in lib/ outside its own file, so nothing routes it to a transport in either direction. No probe scenario moves under the decode mutation.",
@@ -3087,13 +3320,14 @@
         "test/mcp/protocol/types/tool_test.exs"
       ],
       "reddened_by_module": {
+        "MCP.Conformance.StringCitationsTest": 1,
         "MCP.Protocol.Messages.ToolsTest": 2,
         "MCP.Protocol.Types.ToolTest": 11
       },
-      "reddened_outside_own": 2,
+      "reddened_outside_own": 3,
       "reddened_outside_own_and_dead": 0,
-      "reddened_total": 13,
-      "suite_summary": "24 doctests, 1790 tests, 13 failures",
+      "reddened_total": 14,
+      "suite_summary": "24 doctests, 2089 tests, 14 failures",
       "unlocated_failures": 0,
       "verdict": "dead"
     },
@@ -3106,10 +3340,11 @@
           "scenarios_moved": [
             "tools/list"
           ],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
-        "call_site_enumeration": "conformance/etcc_l2_probe.exs `tools/list`: a handler returning %Tool{name: \"t\", description: \"d\", input_schema: %{\"type\" => \"object\"}} through a real Dispatch.dispatch/3 puts `{\"tools\":[{\"name\":\"t\",\"description\":\"d\",\"inputSchema\":{\"type\":\"object\"}}]}` on the wire, and the camelisation of `inputSchema` exists ONLY in tool.ex's own defimpl (:104). Mutating that defimpl moves the probe's tools/list bytes. dispatch.ex encodes the handler's tool list straight into the result.",
+        "call_site_enumeration": "conformance/etcc_l2_probe.exs `tools/list`: a handler returning %Tool{name: \"t\", description: \"d\", input_schema: %{\"type\" => \"object\"}} through a real Dispatch.dispatch/3 puts `\"tools\":[{\"name\":\"t\",\"description\":\"d\",\"inputSchema\":{\"type\":\"object\"}}]` on the wire, inside the result object, and the camelisation of `inputSchema` exists ONLY in tool.ex's own defimpl (:104). Mutating that defimpl moves the probe's tools/list bytes. dispatch.ex encodes the handler's tool list straight into the result.",
         "ran": true,
         "trigger": "live count is zero",
         "verdict": "live"
@@ -3162,7 +3397,7 @@
       "reddened_outside_own": 2,
       "reddened_outside_own_and_dead": 0,
       "reddened_total": 6,
-      "suite_summary": "24 doctests, 1790 tests, 6 failures",
+      "suite_summary": "24 doctests, 2089 tests, 6 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -3182,22 +3417,47 @@
         "test/mcp/integration_test.exs:204 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:213 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:221 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:234 (MCP.IntegrationTest)",
         "test/mcp/server/required_meta_test.exs:173 (MCP.Server.RequiredMetaTest)",
         "test/mcp/server/required_meta_test.exs:182 (MCP.Server.RequiredMetaTest)",
         "test/mcp/server/required_meta_test.exs:193 (MCP.Server.RequiredMetaTest)",
         "test/mcp/server/required_meta_test.exs:214 (MCP.Server.RequiredMetaTest)",
         "test/mcp/server/required_meta_test.exs:223 (MCP.Server.RequiredMetaTest)",
         "test/mcp/server/required_meta_test.exs:248 (MCP.Server.RequiredMetaTest)",
+        "test/mcp/server/required_meta_types_test.exs:174 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/server/required_meta_types_test.exs:208 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/server/required_meta_types_test.exs:218 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/server/required_meta_types_test.exs:230 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/server/required_meta_types_test.exs:246 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/server/required_meta_types_test.exs:256 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/server/required_meta_types_test.exs:273 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/server/required_meta_types_test.exs:329 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/transport/client_sent_response_test.exs:93 (MCP.Transport.ClientSentResponseTest)",
+        "test/mcp/transport/dual_member_response_test.exs:116 (MCP.Transport.DualMemberResponseTest)",
         "test/mcp/transport/error_id_test.exs:207 (MCP.Transport.StreamableHTTP.ErrorIdTest)",
         "test/mcp/transport/error_id_test.exs:219 (MCP.Transport.StreamableHTTP.ErrorIdTest)",
         "test/mcp/transport/error_id_test.exs:231 (MCP.Transport.StreamableHTTP.ErrorIdTest)",
+        "test/mcp/transport/malformed_error_member_test.exs:109 (MCP.Transport.MalformedErrorMemberTest)",
+        "test/mcp/transport/request_body_limit_test.exs:180 (MCP.Transport.RequestBodyLimitTest)",
+        "test/mcp/transport/request_body_limit_test.exs:200 (MCP.Transport.RequestBodyLimitTest)",
+        "test/mcp/transport/request_body_limit_test.exs:75 (MCP.Transport.RequestBodyLimitTest)",
+        "test/mcp/transport/request_body_limit_test.exs:91 (MCP.Transport.RequestBodyLimitTest)",
         "test/mcp/transport/required_headers_test.exs:136 (MCP.Transport.StreamableHTTP.RequiredHeadersTest)",
         "test/mcp/transport/required_headers_test.exs:163 (MCP.Transport.StreamableHTTP.RequiredHeadersTest)",
         "test/mcp/transport/required_headers_test.exs:175 (MCP.Transport.StreamableHTTP.RequiredHeadersTest)",
         "test/mcp/transport/required_headers_test.exs:195 (MCP.Transport.StreamableHTTP.RequiredHeadersTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:100 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:108 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:116 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:124 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:93 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
         "test/mcp/transport/self_compatibility_test.exs:101 (MCP.Transport.SelfCompatibilityTest)",
         "test/mcp/transport/self_compatibility_test.exs:151 (MCP.Transport.SelfCompatibilityTest)",
         "test/mcp/transport/self_compatibility_test.exs:185 (MCP.Transport.SelfCompatibilityTest)",
+        "test/mcp/transport/stdio_invalid_line_test.exs:159 (MCP.Transport.StdioInvalidLineTest)",
+        "test/mcp/transport/stdio_invalid_line_test.exs:181 (MCP.Transport.StdioInvalidLineTest)",
+        "test/mcp/transport/stdio_invalid_line_test.exs:236 (MCP.Transport.StdioInvalidLineTest)",
+        "test/mcp/transport/stdio_invalid_line_test.exs:279 (MCP.Transport.StdioInvalidLineTest)",
         "test/mcp/transport/streamable_http_ac_test.exs:111 (MCP.Transport.StreamableHTTP.ACTest)",
         "test/mcp/transport/streamable_http_ac_test.exs:124 (MCP.Transport.StreamableHTTP.ACTest)",
         "test/mcp/transport/streamable_http_ac_test.exs:136 (MCP.Transport.StreamableHTTP.ACTest)",
@@ -3213,8 +3473,13 @@
         "test/mcp/transport/streamable_http_ac_test.exs:321 (MCP.Transport.StreamableHTTP.ACTest)",
         "test/mcp/transport/streamable_http_ac_test.exs:333 (MCP.Transport.StreamableHTTP.ACTest)",
         "test/mcp/transport/streamable_http_cache_scope_warning_test.exs:118 (MCP.Transport.StreamableHTTPCacheScopeWarningTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:39 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:56 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:72 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_post_error_conn_test.exs:42 (MCP.Transport.StreamableHTTP.PostErrorConnTest)",
+        "test/mcp/transport/streamable_http_post_error_conn_test.exs:52 (MCP.Transport.StreamableHTTP.PostErrorConnTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:100 (MCP.Transport.StreamableHTTPStatelessTest)",
-        "test/mcp/transport/streamable_http_stateless_test.exs:120 (MCP.Transport.StreamableHTTPStatelessTest)",
+        "test/mcp/transport/streamable_http_stateless_test.exs:122 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:130 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:149 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:192 (MCP.Transport.StreamableHTTPStatelessTest)",
@@ -3225,6 +3490,7 @@
         "test/mcp/transport/streamable_http_stateless_test.exs:298 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:356 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:405 (MCP.Transport.StreamableHTTPStatelessTest)",
+        "test/mcp/transport/streamable_http_stateless_test.exs:478 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:59 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:71 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:90 (MCP.Transport.StreamableHTTPStatelessTest)",
@@ -3272,21 +3538,30 @@
       "reddened_by_module": {
         "MCP.ClientTest": 2,
         "MCP.Conformance.AdjudicationsTest": 1,
-        "MCP.IntegrationTest": 8,
+        "MCP.IntegrationTest": 9,
         "MCP.ProtocolTest": 5,
         "MCP.Server.RequiredMetaTest": 6,
+        "MCP.Server.RequiredMetaTypesTest": 8,
+        "MCP.Transport.ClientSentResponseTest": 1,
+        "MCP.Transport.DualMemberResponseTest": 1,
+        "MCP.Transport.MalformedErrorMemberTest": 1,
+        "MCP.Transport.RequestBodyLimitTest": 4,
         "MCP.Transport.SelfCompatibilityTest": 3,
+        "MCP.Transport.StdioInvalidLineTest": 4,
         "MCP.Transport.StreamableHTTP.ACTest": 14,
         "MCP.Transport.StreamableHTTP.ErrorIdTest": 3,
+        "MCP.Transport.StreamableHTTP.PostErrorConnTest": 2,
         "MCP.Transport.StreamableHTTP.RequiredHeadersTest": 4,
+        "MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest": 5,
         "MCP.Transport.StreamableHTTPCacheScopeWarningTest": 1,
-        "MCP.Transport.StreamableHTTPStatelessTest": 15,
+        "MCP.Transport.StreamableHTTPErrorReplyTest": 3,
+        "MCP.Transport.StreamableHTTPStatelessTest": 16,
         "MCP.Transport.SubscriptionsStreamTest": 24
       },
-      "reddened_outside_own": 81,
-      "reddened_outside_own_and_dead": 80,
-      "reddened_total": 86,
-      "suite_summary": "24 doctests, 1790 tests, 86 failures",
+      "reddened_outside_own": 112,
+      "reddened_outside_own_and_dead": 111,
+      "reddened_total": 117,
+      "suite_summary": "24 doctests, 2089 tests, 117 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -3296,11 +3571,14 @@
       "id": "MCP.Server.Connection",
       "l2": {
         "byte_probe": {
-          "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_moved": [
+            "Connection notification to its transport"
+          ],
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
-        "call_site_enumeration": "connection.ex:203-204 — `reply_sink/1` hands `Notification.new(method, params) |> encode()` straight to `transport_module.send_message/2`. That IS a lib/ call site routing the boundary's output to a transport, so ruling A's antecedent is false by inspection with the address. The mutation is SILENT (0 reddened) because no unit in the tree asserts a Connection-emitted notification's `method` — a coverage fact about the suite, not a reachability fact about lib/. No row turns on this: all six rows carrying MCP.Server.Connection also carry MCP.Client and MCP.Server.Dispatch, both live by L1.",
+        "call_site_enumeration": "connection.ex:203-204 — `reply_sink/1` hands `Notification.new(method, params) |> encode()` straight to `transport_module.send_message/2`. That IS a lib/ call site routing the boundary's output to a transport, so ruling A's antecedent is false by inspection with the address. The mutation is SILENT (0 reddened) because no unit in the tree asserts a Connection-emitted notification's `method` — a coverage fact about the suite, not a reachability fact about lib/. No row turns on this: all six rows carrying MCP.Server.Connection also carry MCP.Client and MCP.Server.Dispatch, both live by L1. Measured since MES-178 by the probe scenario `Connection notification to its transport`: a handler notification emitted through `reply_sink/1` is captured at the call into `transport_module.send_message/2`, and this direction's mutation moves it while no other probed row's mutation does. Residual: the transport there is the probe's capture module, not a real transport, so what is measured is the call site this enumeration names, not a transport's framing.",
         "ran": true,
         "trigger": "live count is zero",
         "verdict": "live"
@@ -3318,13 +3596,15 @@
           "to": "(fn m -> if is_map(m) and Map.has_key?(m, \"method\"), do: m |> Map.delete(\"method\") |> Map.put(\"methodX\", m[\"method\"]), else: m end).(Jason.decode!(Jason.encode!(struct)))"
         }
       ],
-      "note": "connection.ex:203-204 — `reply_sink/1` hands `Notification.new(method, params) |> encode()` straight to `transport_module.send_message/2`. That IS a lib/ call site routing the boundary's output to a transport, so ruling A's antecedent is false by inspection with the address. The mutation is SILENT (0 reddened) because no unit in the tree asserts a Connection-emitted notification's `method` — a coverage fact about the suite, not a reachability fact about lib/. No row turns on this: all six rows carrying MCP.Server.Connection also carry MCP.Client and MCP.Server.Dispatch, both live by L1.",
+      "note": "connection.ex:203-204 — `reply_sink/1` hands `Notification.new(method, params) |> encode()` straight to `transport_module.send_message/2`. That IS a lib/ call site routing the boundary's output to a transport, so ruling A's antecedent is false by inspection with the address. The mutation is SILENT (0 reddened) because no unit in the tree asserts a Connection-emitted notification's `method` — a coverage fact about the suite, not a reachability fact about lib/. No row turns on this: all six rows carrying MCP.Server.Connection also carry MCP.Client and MCP.Server.Dispatch, both live by L1. Measured since MES-178 by the probe scenario `Connection notification to its transport`: a handler notification emitted through `reply_sink/1` is captured at the call into `transport_module.send_message/2`, and this direction's mutation moves it while no other probed row's mutation does. Residual: the transport there is the probe's capture module, not a real transport, so what is measured is the call site this enumeration names, not a transport's framing.",
       "own_tests": [],
-      "reddened_by_module": {},
-      "reddened_outside_own": 0,
+      "reddened_by_module": {
+        "MCP.Conformance.StringCitationsTest": 1
+      },
+      "reddened_outside_own": 1,
       "reddened_outside_own_and_dead": 0,
-      "reddened_total": 0,
-      "suite_summary": "24 doctests, 1790 tests, 0 failures",
+      "reddened_total": 1,
+      "suite_summary": "24 doctests, 2089 tests, 1 failure",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -3342,6 +3622,7 @@
         "test/mcp/integration_test.exs:204 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:213 (MCP.IntegrationTest)",
         "test/mcp/integration_test.exs:221 (MCP.IntegrationTest)",
+        "test/mcp/integration_test.exs:234 (MCP.IntegrationTest)",
         "test/mcp/server/extensions_negotiation_test.exs:122 (MCP.Server.ExtensionsNegotiationTest)",
         "test/mcp/server/extensions_negotiation_test.exs:134 (MCP.Server.ExtensionsNegotiationTest)",
         "test/mcp/server/extensions_negotiation_test.exs:145 (MCP.Server.ExtensionsNegotiationTest)",
@@ -3366,6 +3647,25 @@
         "test/mcp/server/json_schema_2020_12_test.exs:226 (MCP.Server.JsonSchema202012Test)",
         "test/mcp/server/json_schema_2020_12_test.exs:226 (MCP.Server.JsonSchema202012Test)",
         "test/mcp/server/json_schema_2020_12_test.exs:226 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:226 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:226 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:226 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:226 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:226 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:226 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:241 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:248 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:256 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:266 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:332 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:351 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:376 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:391 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:432 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:452 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:478 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:498 (MCP.Server.JsonSchema202012Test)",
+        "test/mcp/server/json_schema_2020_12_test.exs:639 (MCP.Server.JsonSchema202012Test)",
         "test/mcp/server/json_schema_2020_12_test.exs:92 (MCP.Server.JsonSchema202012Test)",
         "test/mcp/server/json_schema_2020_12_test.exs:98 (MCP.Server.JsonSchema202012Test)",
         "test/mcp/server/required_meta_test.exs:107 (MCP.Server.RequiredMetaTest)",
@@ -3376,6 +3676,14 @@
         "test/mcp/server/required_meta_test.exs:81 (MCP.Server.RequiredMetaTest)",
         "test/mcp/server/required_meta_test.exs:89 (MCP.Server.RequiredMetaTest)",
         "test/mcp/server/required_meta_test.exs:99 (MCP.Server.RequiredMetaTest)",
+        "test/mcp/server/required_meta_types_test.exs:113 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/server/required_meta_types_test.exs:124 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/server/required_meta_types_test.exs:135 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/server/required_meta_types_test.exs:146 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/server/required_meta_types_test.exs:157 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/server/required_meta_types_test.exs:174 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/server/required_meta_types_test.exs:246 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/server/required_meta_types_test.exs:301 (MCP.Server.RequiredMetaTypesTest)",
         "test/mcp/server/subscriptions_dispatch_test.exs:189 (MCP.Server.SubscriptionsDispatchTest)",
         "test/mcp/server/subscriptions_dispatch_test.exs:414 (MCP.Server.SubscriptionsDispatchTest)",
         "test/mcp/server/subscriptions_dispatch_test.exs:439 (MCP.Server.SubscriptionsDispatchTest)",
@@ -3389,7 +3697,24 @@
         "test/mcp/server/tool_order_test.exs:155 (MCP.Server.ToolOrderTest)",
         "test/mcp/server/tool_order_test.exs:164 (MCP.Server.ToolOrderTest)",
         "test/mcp/server/tool_order_test.exs:98 (MCP.Server.ToolOrderTest)",
+        "test/mcp/transport/client_sent_response_test.exs:93 (MCP.Transport.ClientSentResponseTest)",
+        "test/mcp/transport/dual_member_response_test.exs:116 (MCP.Transport.DualMemberResponseTest)",
+        "test/mcp/transport/malformed_error_member_test.exs:109 (MCP.Transport.MalformedErrorMemberTest)",
+        "test/mcp/transport/request_body_limit_test.exs:180 (MCP.Transport.RequestBodyLimitTest)",
+        "test/mcp/transport/request_body_limit_test.exs:200 (MCP.Transport.RequestBodyLimitTest)",
+        "test/mcp/transport/request_body_limit_test.exs:75 (MCP.Transport.RequestBodyLimitTest)",
+        "test/mcp/transport/request_body_limit_test.exs:91 (MCP.Transport.RequestBodyLimitTest)",
         "test/mcp/transport/required_headers_test.exs:195 (MCP.Transport.StreamableHTTP.RequiredHeadersTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:100 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:108 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:116 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:93 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/self_compatibility_test.exs:101 (MCP.Transport.SelfCompatibilityTest)",
+        "test/mcp/transport/self_compatibility_test.exs:185 (MCP.Transport.SelfCompatibilityTest)",
+        "test/mcp/transport/stdio_invalid_line_test.exs:159 (MCP.Transport.StdioInvalidLineTest)",
+        "test/mcp/transport/stdio_invalid_line_test.exs:181 (MCP.Transport.StdioInvalidLineTest)",
+        "test/mcp/transport/stdio_invalid_line_test.exs:236 (MCP.Transport.StdioInvalidLineTest)",
+        "test/mcp/transport/stdio_invalid_line_test.exs:279 (MCP.Transport.StdioInvalidLineTest)",
         "test/mcp/transport/streamable_http_ac_test.exs:111 (MCP.Transport.StreamableHTTP.ACTest)",
         "test/mcp/transport/streamable_http_ac_test.exs:124 (MCP.Transport.StreamableHTTP.ACTest)",
         "test/mcp/transport/streamable_http_ac_test.exs:136 (MCP.Transport.StreamableHTTP.ACTest)",
@@ -3402,16 +3727,24 @@
         "test/mcp/transport/streamable_http_ac_test.exs:290 (MCP.Transport.StreamableHTTP.ACTest)",
         "test/mcp/transport/streamable_http_ac_test.exs:321 (MCP.Transport.StreamableHTTP.ACTest)",
         "test/mcp/transport/streamable_http_ac_test.exs:333 (MCP.Transport.StreamableHTTP.ACTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:39 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:56 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:72 (MCP.Transport.StreamableHTTPErrorReplyTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:100 (MCP.Transport.StreamableHTTPStatelessTest)",
-        "test/mcp/transport/streamable_http_stateless_test.exs:120 (MCP.Transport.StreamableHTTPStatelessTest)",
+        "test/mcp/transport/streamable_http_stateless_test.exs:122 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:149 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:192 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:209 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:229 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:298 (MCP.Transport.StreamableHTTPStatelessTest)",
+        "test/mcp/transport/streamable_http_stateless_test.exs:478 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:59 (MCP.Transport.StreamableHTTPStatelessTest)",
         "test/mcp/transport/streamable_http_stateless_test.exs:71 (MCP.Transport.StreamableHTTPStatelessTest)",
-        "test/mcp/transport/streamable_http_stateless_test.exs:90 (MCP.Transport.StreamableHTTPStatelessTest)"
+        "test/mcp/transport/streamable_http_stateless_test.exs:90 (MCP.Transport.StreamableHTTPStatelessTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:1090 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:696 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:873 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:912 (MCP.Transport.SubscriptionsStreamTest)"
       ],
       "mutation": [
         "lib/mcp/server/dispatch.ex: \"resultType\", \"complete\"  ->  \"resultTypeX\", \"complete\"",
@@ -3447,21 +3780,32 @@
       ],
       "reddened_by_module": {
         "MCP.Conformance.AdjudicationsTest": 8,
-        "MCP.IntegrationTest": 8,
-        "MCP.Server.DispatchTest": 13,
+        "MCP.Conformance.StringCitationsTest": 1,
+        "MCP.IntegrationTest": 9,
+        "MCP.Server.DispatchTest": 14,
         "MCP.Server.ExtensionsNegotiationTest": 13,
-        "MCP.Server.JsonSchema202012Test": 13,
+        "MCP.Server.JsonSchema202012Test": 32,
         "MCP.Server.RequiredMetaTest": 8,
+        "MCP.Server.RequiredMetaTypesTest": 8,
         "MCP.Server.SubscriptionsDispatchTest": 6,
         "MCP.Server.ToolOrderTest": 7,
+        "MCP.Transport.ClientSentResponseTest": 1,
+        "MCP.Transport.DualMemberResponseTest": 1,
+        "MCP.Transport.MalformedErrorMemberTest": 1,
+        "MCP.Transport.RequestBodyLimitTest": 4,
+        "MCP.Transport.SelfCompatibilityTest": 2,
+        "MCP.Transport.StdioInvalidLineTest": 4,
         "MCP.Transport.StreamableHTTP.ACTest": 12,
         "MCP.Transport.StreamableHTTP.RequiredHeadersTest": 1,
-        "MCP.Transport.StreamableHTTPStatelessTest": 10
+        "MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest": 4,
+        "MCP.Transport.StreamableHTTPErrorReplyTest": 3,
+        "MCP.Transport.StreamableHTTPStatelessTest": 11,
+        "MCP.Transport.SubscriptionsStreamTest": 4
       },
-      "reddened_outside_own": 86,
-      "reddened_outside_own_and_dead": 78,
-      "reddened_total": 99,
-      "suite_summary": "24 doctests, 1790 tests, 124 failures",
+      "reddened_outside_own": 140,
+      "reddened_outside_own_and_dead": 131,
+      "reddened_total": 154,
+      "suite_summary": "24 doctests, 2089 tests, 154 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -3471,11 +3815,14 @@
       "id": "MCP.Server.NotificationCollector",
       "l2": {
         "byte_probe": {
-          "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_moved": [
+            "Plug SSE body notification (NotificationCollector)"
+          ],
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
-        "call_site_enumeration": "Established BY CONSTRUCTION rather than inferred: `NotificationCollector.push/3` then `drain/1` returns `[%{\"jsonrpc\" => \"2.0\", \"method\" => \"notifications/message\", \"params\" => %{\"level\" => \"info\"}}]`, and plug.ex:463 drains the collector into `send_response/4` -> `send_sse_response/3` at :1060, whose :1062 is `(notifications ++ [response]) |> Enum.map_join(&SSE.encode_message/1)`. Run at this tip, that emits the bytes `event: message\\ndata: {\"jsonrpc\":\"2.0\",\"method\":\"notifications/message\",\"params\":{\"level\":\"info\"}}\\n\\n` into the HTTP response body. The mutation reddened only its own unit because the one live test that could have caught it, streamable_http_stateless_test.exs:356, is a REFUTE of a notification's presence — renaming the key leaves the refute passing. Same directional failure as S7-16.",
+        "call_site_enumeration": "Established BY CONSTRUCTION rather than inferred: `NotificationCollector.push/3` then `drain/1` returns `[%{\"jsonrpc\" => \"2.0\", \"method\" => \"notifications/message\", \"params\" => %{\"level\" => \"info\"}}]`, and plug.ex:463 drains the collector into `send_response/4` -> `send_sse_response/3` at :1060, whose :1062 is `(notifications ++ [response]) |> Enum.map_join(&SSE.encode_message/1)`. Run at this tip, that emits the bytes `event: message\\ndata: {\"jsonrpc\":\"2.0\",\"method\":\"notifications/message\",\"params\":{\"level\":\"info\"}}\\n\\n` into the HTTP response body. The mutation reddened only its own unit because the one live test that could have caught it, streamable_http_stateless_test.exs:356, is a REFUTE of a notification's presence — renaming the key leaves the refute passing. Same directional failure as S7-16. Measured since MES-178 by the probe scenario `Plug SSE body notification (NotificationCollector)`: a handler notification emitted through the Plug's `reply_sink` in SSE mode is read back off the response body, and this direction's mutation moves it while no other probed row's mutation does. The payload is taken by splitting each body line at its first colon-space, not by the SSE decoder, so an SSE framing mutation leaves it alone; `SSE frame of a notification` measures the framing.",
         "ran": true,
         "trigger": "live count is zero",
         "verdict": "live"
@@ -3493,17 +3840,18 @@
           "to": "(fn m -> if is_map(m) and Map.has_key?(m, \"method\"), do: m |> Map.delete(\"method\") |> Map.put(\"methodX\", m[\"method\"]), else: m end).(Jason.decode!(Jason.encode!(Notification.new(method, params))))"
         }
       ],
-      "note": "Established BY CONSTRUCTION rather than inferred: `NotificationCollector.push/3` then `drain/1` returns `[%{\"jsonrpc\" => \"2.0\", \"method\" => \"notifications/message\", \"params\" => %{\"level\" => \"info\"}}]`, and plug.ex:463 drains the collector into `send_response/4` -> `send_sse_response/3` at :1060, whose :1062 is `(notifications ++ [response]) |> Enum.map_join(&SSE.encode_message/1)`. Run at this tip, that emits the bytes `event: message\\ndata: {\"jsonrpc\":\"2.0\",\"method\":\"notifications/message\",\"params\":{\"level\":\"info\"}}\\n\\n` into the HTTP response body. The mutation reddened only its own unit because the one live test that could have caught it, streamable_http_stateless_test.exs:356, is a REFUTE of a notification's presence — renaming the key leaves the refute passing. Same directional failure as S7-16.",
+      "note": "Established BY CONSTRUCTION rather than inferred: `NotificationCollector.push/3` then `drain/1` returns `[%{\"jsonrpc\" => \"2.0\", \"method\" => \"notifications/message\", \"params\" => %{\"level\" => \"info\"}}]`, and plug.ex:463 drains the collector into `send_response/4` -> `send_sse_response/3` at :1060, whose :1062 is `(notifications ++ [response]) |> Enum.map_join(&SSE.encode_message/1)`. Run at this tip, that emits the bytes `event: message\\ndata: {\"jsonrpc\":\"2.0\",\"method\":\"notifications/message\",\"params\":{\"level\":\"info\"}}\\n\\n` into the HTTP response body. The mutation reddened only its own unit because the one live test that could have caught it, streamable_http_stateless_test.exs:356, is a REFUTE of a notification's presence — renaming the key leaves the refute passing. Same directional failure as S7-16. Measured since MES-178 by the probe scenario `Plug SSE body notification (NotificationCollector)`: a handler notification emitted through the Plug's `reply_sink` in SSE mode is read back off the response body, and this direction's mutation moves it while no other probed row's mutation does. The payload is taken by splitting each body line at its first colon-space, not by the SSE decoder, so an SSE framing mutation leaves it alone; `SSE frame of a notification` measures the framing.",
       "own_tests": [
         "test/mcp/server/notification_collector_test.exs"
       ],
       "reddened_by_module": {
+        "MCP.Conformance.StringCitationsTest": 1,
         "MCP.Server.NotificationCollectorTest": 1
       },
-      "reddened_outside_own": 0,
+      "reddened_outside_own": 1,
       "reddened_outside_own_and_dead": 0,
-      "reddened_total": 1,
-      "suite_summary": "24 doctests, 1790 tests, 1 failure",
+      "reddened_total": 2,
+      "suite_summary": "24 doctests, 2089 tests, 2 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -3536,13 +3884,14 @@
         "test/mcp/server/subscriptions_dispatch_test.exs"
       ],
       "reddened_by_module": {
+        "MCP.Conformance.StringCitationsTest": 1,
         "MCP.Server.SubscriptionsDispatchTest": 1,
         "MCP.Transport.SubscriptionsStreamTest": 5
       },
-      "reddened_outside_own": 5,
+      "reddened_outside_own": 6,
       "reddened_outside_own_and_dead": 5,
-      "reddened_total": 6,
-      "suite_summary": "24 doctests, 1790 tests, 6 failures",
+      "reddened_total": 7,
+      "suite_summary": "24 doctests, 2089 tests, 7 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -3553,7 +3902,8 @@
       "l2": {
         "byte_probe": {
           "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "`decode_event/1` is called from `extract_events/2` (sse.ex:216), which backs `SSE.feed/2`, called at streamable_http/client.ex:569 on real response bodies. 20 live-path units redden.",
@@ -3562,6 +3912,30 @@
         "verdict": "live"
       },
       "live_units": [
+        "test/mcp/client_malformed_reply_test.exs:252 (MCP.ClientMalformedReplyTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:105 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:112 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:119 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:126 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:135 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:142 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:150 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:157 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:166 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:17 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:173 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:180 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:187 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:194 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:203 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:212 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:24 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:31 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:61 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:68 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:75 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:85 (MCP.Transport.SSEDispatchTest)",
+        "test/mcp/transport/sse_dispatch_test.exs:95 (MCP.Transport.SSEDispatchTest)",
         "test/mcp/transport/sse_line_endings_test.exs:100 (MCP.Transport.SSELineEndingsTest)",
         "test/mcp/transport/sse_line_endings_test.exs:107 (MCP.Transport.SSELineEndingsTest)",
         "test/mcp/transport/sse_line_endings_test.exs:114 (MCP.Transport.SSELineEndingsTest)",
@@ -3645,14 +4019,16 @@
         "test/mcp/transport/sse_test.exs"
       ],
       "reddened_by_module": {
+        "MCP.ClientMalformedReplyTest": 1,
+        "MCP.Transport.SSEDispatchTest": 23,
         "MCP.Transport.SSELineEndingsTest": 22,
         "MCP.Transport.SSETest": 11,
         "MCP.Transport.SubscriptionsStreamTest": 20
       },
-      "reddened_outside_own": 42,
-      "reddened_outside_own_and_dead": 42,
-      "reddened_total": 53,
-      "suite_summary": "24 doctests, 1790 tests, 53 failures",
+      "reddened_outside_own": 66,
+      "reddened_outside_own_and_dead": 66,
+      "reddened_total": 77,
+      "suite_summary": "24 doctests, 2089 tests, 77 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -3665,7 +4041,8 @@
           "scenarios_moved": [
             "SSE frame of a notification"
           ],
-          "scenarios_run": 15,
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
         "call_site_enumeration": "plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response body. The probe's `SSE frame of a notification` scenario moves under this mutation.",
@@ -3743,7 +4120,7 @@
       "reddened_outside_own": 21,
       "reddened_outside_own_and_dead": 21,
       "reddened_total": 26,
-      "suite_summary": "24 doctests, 1790 tests, 26 failures",
+      "suite_summary": "24 doctests, 2089 tests, 26 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -3753,11 +4130,14 @@
       "id": "MCP.Transport.Stdio",
       "l2": {
         "byte_probe": {
-          "scenarios_moved": [],
-          "scenarios_run": 15,
+          "scenarios_moved": [
+            "Stdio pipe frame of a notification"
+          ],
+          "scenarios_raised": [],
+          "scenarios_run": 18,
           "script": "conformance/etcc_l2_probe.exs"
         },
-        "call_site_enumeration": "The boundary IS the transport: stdio.ex:231 and :239 `Jason.encode!(message)` and write the framed line to the pipe. Ruling A's antecedent — 'no lib/ call site routes it to a transport' — cannot hold of the transport itself. The mutation reddened 5 units and all 5 are in StdioTest, but those units read their asserted bytes off a REAL subprocess pipe, so they are live-path units, not unit tests of an unreachable module. This is where the redness proxy is blind and the antecedent has to be read literally: see S7-19.",
+        "call_site_enumeration": "The boundary IS the transport: stdio.ex:231 and :239 `Jason.encode!(message)` and write the framed line to the pipe. Ruling A's antecedent — 'no lib/ call site routes it to a transport' — cannot hold of the transport itself. The mutation reddened 5 units and all 5 are in StdioTest, but those units read their asserted bytes off a REAL subprocess pipe, so they are live-path units, not unit tests of an unreachable module. This is where the redness proxy is blind and the antecedent has to be read literally: see S7-19. Measured since MES-178 by the probe scenario `Stdio pipe frame of a notification`: a notification written by `send_message/2` onto a real pipe (`cat`) and read back off it. This direction's mutation, at both sites, moves it while no other probed row's mutation does.",
         "ran": true,
         "trigger": "live count is zero",
         "verdict": "live"
@@ -3775,17 +4155,18 @@
           "to": "json = Jason.encode!((fn m -> if is_map(m) and Map.has_key?(m, \"method\"), do: m |> Map.delete(\"method\") |> Map.put(\"methodX\", m[\"method\"]), else: m end).(message))"
         }
       ],
-      "note": "The boundary IS the transport: stdio.ex:231 and :239 `Jason.encode!(message)` and write the framed line to the pipe. Ruling A's antecedent — 'no lib/ call site routes it to a transport' — cannot hold of the transport itself. The mutation reddened 5 units and all 5 are in StdioTest, but those units read their asserted bytes off a REAL subprocess pipe, so they are live-path units, not unit tests of an unreachable module. This is where the redness proxy is blind and the antecedent has to be read literally: see S7-19.",
+      "note": "The boundary IS the transport: stdio.ex:231 and :239 `Jason.encode!(message)` and write the framed line to the pipe. Ruling A's antecedent — 'no lib/ call site routes it to a transport' — cannot hold of the transport itself. The mutation reddened 5 units and all 5 are in StdioTest, but those units read their asserted bytes off a REAL subprocess pipe, so they are live-path units, not unit tests of an unreachable module. This is where the redness proxy is blind and the antecedent has to be read literally: see S7-19. Measured since MES-178 by the probe scenario `Stdio pipe frame of a notification`: a notification written by `send_message/2` onto a real pipe (`cat`) and read back off it. This direction's mutation, at both sites, moves it while no other probed row's mutation does.",
       "own_tests": [
         "test/mcp/transport/stdio_test.exs"
       ],
       "reddened_by_module": {
+        "MCP.Conformance.StringCitationsTest": 1,
         "MCP.Transport.StdioTest": 5
       },
-      "reddened_outside_own": 0,
+      "reddened_outside_own": 1,
       "reddened_outside_own_and_dead": 0,
-      "reddened_total": 5,
-      "suite_summary": "24 doctests, 1790 tests, 5 failures",
+      "reddened_total": 6,
+      "suite_summary": "24 doctests, 2089 tests, 6 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     },
@@ -3798,6 +4179,31 @@
         "test/mcp/server/required_meta_test.exs:205 (MCP.Server.RequiredMetaTest)",
         "test/mcp/server/required_meta_test.exs:214 (MCP.Server.RequiredMetaTest)",
         "test/mcp/server/required_meta_test.exs:248 (MCP.Server.RequiredMetaTest)",
+        "test/mcp/server/required_meta_types_test.exs:246 (MCP.Server.RequiredMetaTypesTest)",
+        "test/mcp/transport/client_sent_response_test.exs:53 (MCP.Transport.ClientSentResponseTest)",
+        "test/mcp/transport/client_sent_response_test.exs:61 (MCP.Transport.ClientSentResponseTest)",
+        "test/mcp/transport/client_sent_response_test.exs:70 (MCP.Transport.ClientSentResponseTest)",
+        "test/mcp/transport/client_sent_response_test.exs:86 (MCP.Transport.ClientSentResponseTest)",
+        "test/mcp/transport/dual_member_response_test.exs:157 (MCP.Transport.DualMemberResponseTest)",
+        "test/mcp/transport/error_data_test.exs:102 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/error_data_test.exs:116 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/error_data_test.exs:128 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/error_data_test.exs:141 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/error_data_test.exs:152 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/error_data_test.exs:167 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/error_data_test.exs:181 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/error_data_test.exs:205 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/error_data_test.exs:219 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/error_data_test.exs:247 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/error_data_test.exs:258 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/error_data_test.exs:269 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/error_data_test.exs:295 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/error_data_test.exs:312 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/error_data_test.exs:332 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/error_data_test.exs:351 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/error_data_test.exs:69 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/error_data_test.exs:79 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
+        "test/mcp/transport/error_data_test.exs:89 (MCP.Transport.StreamableHTTP.ErrorDataTest)",
         "test/mcp/transport/error_id_test.exs:102 (MCP.Transport.StreamableHTTP.ErrorIdTest)",
         "test/mcp/transport/error_id_test.exs:114 (MCP.Transport.StreamableHTTP.ErrorIdTest)",
         "test/mcp/transport/error_id_test.exs:122 (MCP.Transport.StreamableHTTP.ErrorIdTest)",
@@ -3815,6 +4221,14 @@
         "test/mcp/transport/error_id_test.exs:77 (MCP.Transport.StreamableHTTP.ErrorIdTest)",
         "test/mcp/transport/error_id_test.exs:85 (MCP.Transport.StreamableHTTP.ErrorIdTest)",
         "test/mcp/transport/error_id_test.exs:94 (MCP.Transport.StreamableHTTP.ErrorIdTest)",
+        "test/mcp/transport/malformed_error_member_test.exs:146 (MCP.Transport.MalformedErrorMemberTest)",
+        "test/mcp/transport/request_body_limit_test.exs:105 (MCP.Transport.RequestBodyLimitTest)",
+        "test/mcp/transport/request_body_limit_test.exs:180 (MCP.Transport.RequestBodyLimitTest)",
+        "test/mcp/transport/request_body_limit_test.exs:200 (MCP.Transport.RequestBodyLimitTest)",
+        "test/mcp/transport/request_body_limit_test.exs:75 (MCP.Transport.RequestBodyLimitTest)",
+        "test/mcp/transport/request_body_limit_test.exs:82 (MCP.Transport.RequestBodyLimitTest)",
+        "test/mcp/transport/request_body_limit_test.exs:91 (MCP.Transport.RequestBodyLimitTest)",
+        "test/mcp/transport/request_body_limit_test.exs:98 (MCP.Transport.RequestBodyLimitTest)",
         "test/mcp/transport/required_headers_test.exs:101 (MCP.Transport.StreamableHTTP.RequiredHeadersTest)",
         "test/mcp/transport/required_headers_test.exs:113 (MCP.Transport.StreamableHTTP.RequiredHeadersTest)",
         "test/mcp/transport/required_headers_test.exs:124 (MCP.Transport.StreamableHTTP.RequiredHeadersTest)",
@@ -3825,12 +4239,28 @@
         "test/mcp/transport/required_headers_test.exs:59 (MCP.Transport.StreamableHTTP.RequiredHeadersTest)",
         "test/mcp/transport/required_headers_test.exs:72 (MCP.Transport.StreamableHTTP.RequiredHeadersTest)",
         "test/mcp/transport/required_headers_test.exs:84 (MCP.Transport.StreamableHTTP.RequiredHeadersTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:100 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:108 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:116 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:134 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:147 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:158 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:169 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:177 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
+        "test/mcp/transport/routing_header_ows_test.exs:93 (MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest)",
         "test/mcp/transport/self_compatibility_test.exs:101 (MCP.Transport.SelfCompatibilityTest)",
         "test/mcp/transport/self_compatibility_test.exs:121 (MCP.Transport.SelfCompatibilityTest)",
         "test/mcp/transport/self_compatibility_test.exs:137 (MCP.Transport.SelfCompatibilityTest)",
         "test/mcp/transport/self_compatibility_test.exs:168 (MCP.Transport.SelfCompatibilityTest)",
         "test/mcp/transport/self_compatibility_test.exs:185 (MCP.Transport.SelfCompatibilityTest)",
-        "test/mcp/transport/subscriptions_stream_test.exs:569 (MCP.Transport.SubscriptionsStreamTest)"
+        "test/mcp/transport/streamable_http_error_reply_test.exs:39 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_error_reply_test.exs:56 (MCP.Transport.StreamableHTTPErrorReplyTest)",
+        "test/mcp/transport/streamable_http_post_error_conn_test.exs:33 (MCP.Transport.StreamableHTTP.PostErrorConnTest)",
+        "test/mcp/transport/streamable_http_post_error_conn_test.exs:52 (MCP.Transport.StreamableHTTP.PostErrorConnTest)",
+        "test/mcp/transport/streamable_http_post_error_conn_test.exs:67 (MCP.Transport.StreamableHTTP.PostErrorConnTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:1038 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:569 (MCP.Transport.SubscriptionsStreamTest)",
+        "test/mcp/transport/subscriptions_stream_test.exs:976 (MCP.Transport.SubscriptionsStreamTest)"
       ],
       "mutation": [
         "lib/mcp/transport/streamable_http/plug.ex: Plug.Conn.send_resp(200, Jason.encode!(response))  ->  Plug.Conn.send_resp(200, Jason.encode!((fn m -> if is_map(m) and Map.has_key?(m, \"result\"), do: m |> Map.delete(\"result\") |> Map.put(\"resultX\", m[\"result\"]), else: m end).(response)))",
@@ -3859,18 +4289,28 @@
         "test/mcp/transport/streamable_http_cache_scope_warning_test.exs"
       ],
       "reddened_by_module": {
+        "MCP.Conformance.StringCitationsTest": 1,
         "MCP.Server.RequiredMetaTest": 3,
+        "MCP.Server.RequiredMetaTypesTest": 1,
+        "MCP.Transport.ClientSentResponseTest": 4,
+        "MCP.Transport.DualMemberResponseTest": 1,
+        "MCP.Transport.MalformedErrorMemberTest": 1,
+        "MCP.Transport.RequestBodyLimitTest": 7,
         "MCP.Transport.SelfCompatibilityTest": 5,
         "MCP.Transport.StreamableHTTP.ACTest": 14,
+        "MCP.Transport.StreamableHTTP.ErrorDataTest": 19,
         "MCP.Transport.StreamableHTTP.ErrorIdTest": 17,
+        "MCP.Transport.StreamableHTTP.PostErrorConnTest": 3,
         "MCP.Transport.StreamableHTTP.RequiredHeadersTest": 10,
+        "MCP.Transport.StreamableHTTP.RoutingHeaderOwsTest": 9,
+        "MCP.Transport.StreamableHTTPErrorReplyTest": 2,
         "MCP.Transport.StreamableHTTPStatelessTest": 13,
-        "MCP.Transport.SubscriptionsStreamTest": 1
+        "MCP.Transport.SubscriptionsStreamTest": 3
       },
-      "reddened_outside_own": 36,
-      "reddened_outside_own_and_dead": 36,
-      "reddened_total": 63,
-      "suite_summary": "24 doctests, 1790 tests, 63 failures",
+      "reddened_outside_own": 86,
+      "reddened_outside_own_and_dead": 85,
+      "reddened_total": 113,
+      "suite_summary": "24 doctests, 2089 tests, 113 failures",
       "unlocated_failures": 0,
       "verdict": "live"
     }
@@ -3884,15 +4324,35 @@
       "node": "v24.13.0"
     },
     "node": "v24.13.0",
-    "note": "GENERATED by `mix conformance.sweep` — do not hand-edit. Unmutated control run before the sweep: 24 doctests, 1790 tests, 0 failures, node v24.13.0. Every mutation was applied, measured and REVERTED, and lib/ verified clean against the committed bytes afterwards. The suite total is a fact about THIS run, not a constant of the procedure (§2.3(e) as extended: L1's measurements expire when the unit population moves), and the population is a function of the host as well as the tree — which is what `host` records: node=v24.13.0 harness=available. A skip of the end-of-sprint sweep requires that fingerprint to match the host it is being skipped on (CLAUDE.md, End-of-Sprint Procedure step 4, condition (c)); `mix conformance.sweep --host` compares the two and exits nonzero when they differ, when no host is recorded, or when the current one cannot be read.",
+    "note": "GENERATED by `mix conformance.sweep` — do not hand-edit. Unmutated control run before the sweep: 24 doctests, 2089 tests, 0 failures, node v24.13.0. Every mutation was applied, measured and REVERTED, and lib/ verified clean against the committed bytes afterwards. The suite total is a fact about THIS run, not a constant of the procedure (§2.3(e) as extended: L1's measurements expire when the unit population moves), and the population is a function of the host as well as the tree — which is what `host` records: node=v24.13.0 harness=available. A skip of the end-of-sprint sweep requires that fingerprint to match the host it is being skipped on (docs/procedure/end-of-sprint.md, step 4, condition (c)); `mix conformance.sweep --host` compares the two and exits nonzero when they differ, when no host is recorded, or when the current one cannot be read.",
     "probe": {
-      "distinct": 15,
-      "scenarios": 15,
+      "distinct": 18,
+      "scenario_names": [
+        "Connection notification to its transport",
+        "Plug SSE body notification (NotificationCollector)",
+        "SSE frame of a notification",
+        "Stdio pipe frame of a notification",
+        "decode_message of a wire error",
+        "decode_message of a wire result",
+        "error response (unknown method)",
+        "prompts/get",
+        "prompts/list",
+        "resources/list",
+        "resources/read",
+        "server/discover",
+        "tools/call audio",
+        "tools/call embedded",
+        "tools/call image",
+        "tools/call link",
+        "tools/call text",
+        "tools/list"
+      ],
+      "scenarios": 18,
       "script": "conformance/etcc_l2_probe.exs",
-      "sha256": "f4529f901ec3c9b1ae0e2fea5b7573a6175692ec7a454a1e2494a1b3e8371e09"
+      "sha256": "4f9549ffb7066059c1f7a8487d8c15d7421f69ac39e1fdd80f8c67c6ce3650c5"
     },
     "seed": 0,
-    "suite_total": 1790
+    "suite_total": 2089
   },
   "live_column_excluded_files": [
     "test/mcp/protocol/messages/initialize_test.exs",

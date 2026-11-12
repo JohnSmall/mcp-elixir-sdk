@@ -10799,12 +10799,6 @@
     {
       "file": "conformance/data/etcc-boundaries.json",
       "nth": 1,
-      "path": "boundaries[MCP.Protocol.Error (decode)].l2.call_site_enumeration",
-      "phrase": "two `decode_message` scenarios"
-    },
-    {
-      "file": "conformance/data/etcc-boundaries.json",
-      "nth": 1,
       "path": "boundaries[MCP.Protocol.Types.Content.TextContent (decode)].l2.call_site_enumeration",
       "phrase": "two rows"
     },

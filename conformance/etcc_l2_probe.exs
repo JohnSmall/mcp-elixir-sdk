@@ -33,7 +33,7 @@ defmodule MCP.Conformance.L2Probe do
 
   alias MCP.Protocol.Messages.{Notification, Request}
   alias MCP.Protocol.Types.{Implementation, Prompt, Resource, ResourceContents, Tool}
-  alias MCP.Server.{Dispatch, ToolContext}
+  alias MCP.Server.{Connection, Dispatch, ToolContext}
   alias MCP.Transport.SSE
 
   @version "2026-07-28"
@@ -67,7 +67,45 @@ defmodule MCP.Conformance.L2Probe do
   end
 
   @impl true
+  # MES-178. Three scenarios drive the paths no dispatched scenario reaches: a handler
+  # notification through `MCP.Server.Connection`'s `reply_sink/1` to its transport, the
+  # same notification through the HTTP Plug's `NotificationCollector` into an SSE body,
+  # and a notification framed onto a real pipe by `MCP.Transport.Stdio`. And every
+  # scenario now runs in its OWN monitored process: one that raises (or whose linked
+  # process dies) under a mutation is written as `{:raised, "<Module>"}` instead of
+  # killing the whole run. Before MES-178 one raise — `Error (decode)`'s, in
+  # `decode_message of a wire error` — left no output file at all, and the sweep could
+  # only abort. New code sits BELOW the lines other records cite (`:46`, G33), so their
+  # pinned bytes do not move.
+  @behaviour MCP.Transport
+
+  def handle_call_tool("notify", _args, ctx, state) do
+    # Emitted through the per-request sink, which is the path under test. The reply's
+    # content is EMPTY on purpose, so no content encoder can move these scenarios.
+    :ok = ctx.reply_sink.("notifications/message", %{"level" => "info", "data" => "etcc"})
+    {:ok, [], %{}, state}
+  end
+
   def handle_call_tool(name, _args, _ctx, state), do: {:ok, content_for(name), %{}, state}
+
+  # MCP.Transport, as a CAPTURE transport for the Connection scenario: `start_link/1`
+  # hands back the scenario's own process, so whatever `Connection` sends its transport
+  # arrives there as a message. What is measured is Connection's call into
+  # `transport_module.send_message/2` — the boundary — not a real transport's framing.
+  @impl MCP.Transport
+  def start_link(opts), do: {:ok, Keyword.fetch!(opts, :sink)}
+
+  @impl MCP.Transport
+  def send_message(pid, message) do
+    send(pid, {:etcc_captured, message})
+    :ok
+  end
+
+  @impl MCP.Transport
+  def send_message(pid, message, _opts), do: send_message(pid, message)
+
+  @impl MCP.Transport
+  def close(_pid), do: :ok
 
   defp content_for("text"), do: [%TextContent{text: "hello"}]
   defp content_for("image"), do: [%ImageContent{data: "AAA", mime_type: "image/png"}]
@@ -114,37 +152,184 @@ defmodule MCP.Conformance.L2Probe do
 
   defp call(tool), do: dispatched("tools/call", %{"name" => tool, "arguments" => %{}})
 
-  @doc "scenario => the bytes a real lib/ path puts on the wire (or the decoded value)."
-  def scenarios do
+  defp notify_request do
     %{
-      "server/discover" => dispatched("server/discover", %{}),
-      "tools/list" => dispatched("tools/list", %{}),
-      "resources/list" => dispatched("resources/list", %{}),
-      "resources/read" => dispatched("resources/read", %{"uri" => "file:///r"}),
-      "prompts/list" => dispatched("prompts/list", %{}),
-      "prompts/get" => dispatched("prompts/get", %{"name" => "p", "arguments" => %{}}),
-      "tools/call text" => call("text"),
-      "tools/call image" => call("image"),
-      "tools/call audio" => call("audio"),
-      "tools/call link" => call("link"),
-      "tools/call embedded" => call("embedded"),
-      "error response (unknown method)" => dispatched("no/such/method", %{}),
-      "SSE frame of a notification" =>
+      "jsonrpc" => "2.0",
+      "id" => 1,
+      "method" => "tools/call",
+      "params" => %{"name" => "notify", "arguments" => %{}, "_meta" => meta()}
+    }
+  end
+
+  # Only the frames without an `id` — the notifications. The reply frame is another
+  # direction's business, and keeping it out is what lets each of these three scenarios
+  # move under its own boundary's mutation alone.
+  defp notifications_only(maps), do: Enum.reject(maps, &Map.has_key?(&1, "id"))
+
+  # MCP.Server.Connection: a handler notification through `reply_sink/1` to the transport.
+  defp via_connection do
+    {:ok, server} =
+      Connection.start_link(
+        transport: {__MODULE__, [sink: self()]},
+        handler: {__MODULE__, []},
+        server_info: %Implementation{name: "probe", version: "0"}
+      )
+
+    send(server, {:mcp_message, notify_request()})
+    sent = captured([])
+    Connection.close(server)
+    sent |> notifications_only() |> Enum.map_join(" | ", &Jason.encode!/1)
+  end
+
+  defp captured(acc) do
+    receive do
+      {:etcc_captured, %{"id" => _} = reply} -> Enum.reverse([reply | acc])
+      {:etcc_captured, message} -> captured([message | acc])
+    after
+      5_000 -> Enum.reverse([%{"timeout" => true} | acc])
+    end
+  end
+
+  # MCP.Server.NotificationCollector: the same notification through the real HTTP Plug in
+  # SSE mode. The payloads are taken off the frames by splitting each line at its first
+  # ": ", NOT by `SSE`'s decoder and not by field name, so an SSE framing mutation (a
+  # renamed field) leaves this value alone; `SSE frame of a notification` measures that.
+  defp via_plug_sse do
+    opts =
+      MCP.Transport.StreamableHTTP.Plug.init(server_mod: __MODULE__, enable_json_response: false)
+
+    message = notify_request()
+
+    # The required request headers, written out rather than built by the SDK client's
+    # `build_headers/2`: that goes through `HeaderMirror`, and a HeaderMirror mutation
+    # would then move this scenario too (measured on MES-178 before this change).
+    headers = [
+      {"mcp-protocol-version", @version},
+      {"mcp-method", "tools/call"},
+      {"mcp-name", "notify"}
+    ]
+
+    request = Plug.Test.conn(:post, "http://localhost/", Jason.encode!(message))
+
+    [
+      {"content-type", "application/json"},
+      {"accept", "application/json, text/event-stream"},
+      {"origin", "http://localhost"} | headers
+    ]
+    |> Enum.reduce(request, fn {k, v}, c -> Plug.Conn.put_req_header(c, k, v) end)
+    |> MCP.Transport.StreamableHTTP.Plug.call(opts)
+    |> then(fn c -> "#{c.status} " <> Enum.join(sse_notifications(c.resp_body), " | ") end)
+  end
+
+  defp sse_notifications(body) do
+    body
+    |> String.split("\n")
+    |> Enum.flat_map(fn line ->
+      case String.split(line, ": ", parts: 2) do
+        [_field, "{" <> _ = json] -> [json]
+        _ -> []
+      end
+    end)
+    |> Enum.reject(&Map.has_key?(Jason.decode!(&1), "id"))
+  end
+
+  # MCP.Transport.Stdio: a notification framed onto a real pipe (`cat`) and read back.
+  defp via_stdio do
+    {:ok, t} =
+      MCP.Transport.Stdio.start_link(
+        owner: self(),
+        command: System.find_executable("cat"),
+        args: []
+      )
+
+    :ok =
+      MCP.Transport.Stdio.send_message(t, %{
+        "jsonrpc" => "2.0",
+        "method" => "notifications/message",
+        "params" => %{"level" => "info"}
+      })
+
+    read =
+      receive do
+        {:mcp_message, m} -> Jason.encode!(m)
+      after
+        5_000 -> "timeout"
+      end
+
+    MCP.Transport.Stdio.close(t)
+    read
+  end
+
+  # Each scenario in its own monitored, UNLINKED process. Its value comes back as a
+  # message sent before the process ends, so it always arrives ahead of the :DOWN. No
+  # value means the scenario raised, threw, exited, or a process linked to it died: the
+  # marker names the exception module only, so it is the same bytes on every run.
+  defp isolated(fun) do
+    parent = self()
+    tag = make_ref()
+    {pid, mon} = spawn_monitor(fn -> send(parent, {tag, fun.()}) end)
+
+    receive do
+      {:DOWN, ^mon, :process, ^pid, reason} ->
+        receive do
+          {^tag, value} -> value
+        after
+          0 -> {:raised, raised(reason)}
+        end
+    after
+      60_000 ->
+        Process.exit(pid, :kill)
+        {:raised, "timeout"}
+    end
+  end
+
+  defp raised({%{__exception__: true, __struct__: mod}, _stack}), do: inspect(mod)
+  defp raised({{:nocatch, _}, _stack}), do: "throw"
+  defp raised(_reason), do: "exit"
+
+  @doc """
+  scenario => the bytes a real lib/ path puts on the wire (or the decoded value), or
+  `{:raised, "<Module>"}` for a scenario that did not return one (see `isolated/1`).
+  """
+  def scenarios, do: Map.new(thunks(), fn {k, f} -> {k, isolated(f)} end)
+
+  @doc "scenario => the zero-arity function that produces it."
+  def thunks do
+    %{
+      "server/discover" => fn -> dispatched("server/discover", %{}) end,
+      "tools/list" => fn -> dispatched("tools/list", %{}) end,
+      "resources/list" => fn -> dispatched("resources/list", %{}) end,
+      "resources/read" => fn -> dispatched("resources/read", %{"uri" => "file:///r"}) end,
+      "prompts/list" => fn -> dispatched("prompts/list", %{}) end,
+      "prompts/get" => fn -> dispatched("prompts/get", %{"name" => "p", "arguments" => %{}}) end,
+      "tools/call text" => fn -> call("text") end,
+      "tools/call image" => fn -> call("image") end,
+      "tools/call audio" => fn -> call("audio") end,
+      "tools/call link" => fn -> call("link") end,
+      "tools/call embedded" => fn -> call("embedded") end,
+      "error response (unknown method)" => fn -> dispatched("no/such/method", %{}) end,
+      "SSE frame of a notification" => fn ->
         SSE.encode_message(
           Jason.decode!(Jason.encode!(Notification.new("notifications/message")))
-        ),
-      "decode_message of a wire error" =>
+        )
+      end,
+      "decode_message of a wire error" => fn ->
         inspect(
           Protocol.decode_message(%{
             "jsonrpc" => "2.0",
             "id" => 1,
             "error" => %{"code" => -32_601, "message" => "nope", "data" => "d"}
           })
-        ),
-      "decode_message of a wire result" =>
+        )
+      end,
+      "decode_message of a wire result" => fn ->
         inspect(
           Protocol.decode_message(%{"jsonrpc" => "2.0", "id" => 1, "result" => %{"ok" => true}})
         )
+      end,
+      "Connection notification to its transport" => &via_connection/0,
+      "Plug SSE body notification (NotificationCollector)" => &via_plug_sse/0,
+      "Stdio pipe frame of a notification" => &via_stdio/0
     }
   end
 end
@@ -165,8 +350,10 @@ end
 #
 # The no-argument form is byte-identical to the pre-MES-88 behaviour, so anything that
 # reads the old stdout form still works.
+scenarios = MCP.Conformance.L2Probe.scenarios()
+
 rendered =
-  MCP.Conformance.L2Probe.scenarios()
+  scenarios
   |> Enum.sort()
   |> Enum.map_join(fn {k, v} -> k <> "\t" <> inspect(v) <> "\n" end)
 
@@ -174,9 +361,7 @@ case System.argv() do
   [path | _] ->
     File.write!(path, rendered)
 
-    IO.puts(
-      "[etcc-l2-probe] wrote #{path} (#{map_size(MCP.Conformance.L2Probe.scenarios())} scenarios)"
-    )
+    IO.puts("[etcc-l2-probe] wrote #{path} (#{map_size(scenarios)} scenarios)")
 
   [] ->
     IO.write(rendered)

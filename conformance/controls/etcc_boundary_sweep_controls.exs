@@ -689,15 +689,17 @@ defmodule ETCCBoundarySweepControls do
 
       sighted = Sweep.probe(Path.join(dir, "p1.txt"))
 
-      results = [
-        p1(sighted),
-        r1(blind, dir),
-        r2(sighted),
-        r3(sighted),
-        r4(sighted),
-        r5(sighted),
-        w1(blind, dir)
-      ]
+      results =
+        [
+          p1(sighted),
+          r1(blind, dir),
+          r2(sighted),
+          r3(sighted),
+          r4(sighted),
+          r5(sighted),
+          r6(sighted),
+          w1(blind, dir)
+        ] ++ notified_cases(sighted) ++ [w2(dir)] ++ l2_cases(sighted, dir)
 
       IO.puts("")
       Enum.each(results, &report_limb/1)
@@ -719,14 +721,14 @@ defmodule ETCCBoundarySweepControls do
     ok =
       try do
         IO.puts("      passes: #{inspect(Sweep.check_probe_baseline!(sighted))}")
-        map_size(sighted) == 15
+        map_size(sighted) == 18
       rescue
         e in RuntimeError ->
           IO.puts("      REFUSED (unexpected): #{first_line(e.message)}")
           false
       end
 
-    {"P1 committed probe passes, all 15 scenarios classified", ok}
+    {"P1 committed probe passes, all 18 scenarios classified", ok}
   end
 
   # R1 — the natural red case: the probe as committed at the blind tip, RUN, not mocked.
@@ -736,11 +738,15 @@ defmodule ETCCBoundarySweepControls do
     msg = refusal(base)
     print_refusal(msg)
 
+    # 15 under [reached] since MES-178: the 12 collided dispatch scenarios, plus the three
+    # path scenarios this probe predates, each `:absent` against its declaration.
+    absent = Enum.count(Sweep.probe_not_a_response(), &(msg =~ "#{&1}: got :absent"))
+
     ok =
       msg != nil and msg =~ "[distinct] 1 group(s)" and msg =~ "    12 x " and
-        msg =~ "[reached] 12 scenario(s)"
+        msg =~ "[reached] 15 scenario(s)" and absent == 3
 
-    {"R1 blind probe refused on BOTH conjuncts, 12 collided and 12 unreached", ok}
+    {"R1 blind probe refused on BOTH conjuncts, 12 collided, 12 unreached + 3 absent", ok}
   end
 
   # R2 — one scenario errors, with bytes of its own: only :reached can see it.
@@ -807,6 +813,289 @@ defmodule ETCCBoundarySweepControls do
     {"R5 a stale not-a-response declaration refused by [reached] alone", ok}
   end
 
+  # R6 — a scenario that RAISED on the unmutated tree (MES-178). The marker is not a
+  # JSON-RPC reply, so for a scenario declared not-a-response `[reached]` is satisfied;
+  # only `[raised]` sees it, and it must name the scenario.
+  defp r6(sighted) do
+    IO.puts("\n  R6  a declared not-a-response scenario turned into the raised marker")
+    # A declared not-a-response scenario that is NOT a notification one, so that only
+    # `[raised]` can see it (`[notified]` would also see a raise on X1-X3).
+    k = "SSE frame of a notification"
+    msg = refusal(Map.put(sighted, k, inspect({:raised, "RuntimeError"})))
+    print_refusal(msg)
+
+    ok =
+      msg != nil and msg =~ "[raised] 1 scenario(s)" and msg =~ k and
+        not (msg =~ "[reached]") and not (msg =~ "[distinct]")
+
+    {"R6 a raising baseline scenario refused by [raised] alone, named", ok}
+  end
+
+  # --- [notified] (MES-178 correction round 1, CR F1): the notification scenarios ---
+  #
+  # N0 is the positive limb: the committed probe's baseline passes, and all three
+  # notification scenarios were scanned. N1-N9 plant, one at a time, the three ways a
+  # notification scenario can be "not a reply" without having reached its path — empty,
+  # no notification, timed out — on each of X1, X2 and X3. Every plant classifies as
+  # not-a-response, so `[reached]` stays silent and `[notified]` must refuse ALONE, naming
+  # the scenario. W2 is the CR's real path: the committed probe with the handler's
+  # emission removed, RUN, then the sweep driven with it.
+
+  @x1 "Connection notification to its transport"
+  @x2 "Plug SSE body notification (NotificationCollector)"
+  @x3 "Stdio pipe frame of a notification"
+
+  defp notified_cases(sighted) do
+    no_method = inspect(~s({"jsonrpc":"2.0","params":{"level":"info"}}))
+    # X2's committed payload, read as data (parsed, never evaluated), under another status.
+    {:ok, "200 " <> x2_payload} = Code.string_to_quoted(sighted[@x2])
+
+    plants = [
+      {"N1 X1 empty", @x1, inspect(""), "empty: no notification"},
+      {"N2 X1 no notification (a frame with no method)", @x1, no_method,
+       "not a notifications/message"},
+      {"N3 X1 timed out (the scenario's own timeout frame)", @x1, inspect(~s({"timeout":true})),
+       "not a notifications/message"},
+      {"N4 X2 nothing at all", @x2, inspect(""), "not HTTP 200"},
+      {"N5 X2 HTTP 200 with no data payload", @x2, inspect("200 "),
+       "HTTP 200 with no data payload"},
+      {"N6 X2 a notification under a non-200 status", @x2, inspect("400 " <> x2_payload),
+       "not HTTP 200"},
+      {"N7 X3 empty", @x3, inspect(""), "empty: no notification"},
+      {"N8 X3 no notification (a frame with no method)", @x3, no_method,
+       "not a notifications/message"},
+      {"N9 X3 timed out", @x3, inspect("timeout"), "not a notifications/message"}
+    ]
+
+    [n0(sighted) | Enum.map(plants, &notified_case(sighted, &1))]
+  end
+
+  defp n0(sighted) do
+    name = "N0 the committed baseline: all three notification scenarios hold one"
+    IO.puts("\n  #{name}")
+
+    got =
+      try do
+        Sweep.check_probe_baseline!(sighted)
+      rescue
+        e in RuntimeError -> {:refused, first_line(e.message)}
+      end
+
+    reach =
+      for {k, shape} <- Sweep.probe_notifications(),
+          do: Sweep.notification_reach(shape, sighted[k])
+
+    IO.puts("      -> #{inspect(got)}; reach #{inspect(reach)}")
+    {name, match?(%{notified: 3}, got) and Enum.all?(reach, &(&1 == :ok))}
+  end
+
+  defp notified_case(sighted, {name, k, planted, why}) do
+    IO.puts("\n  #{name}")
+    msg = refusal(Map.put(sighted, k, planted))
+    print_refusal(msg)
+
+    ok =
+      msg != nil and msg =~ "[notified] 1 notification scenario(s)" and msg =~ "#{k}: #{why}" and
+        not (msg =~ "[reached]") and not (msg =~ "[distinct]") and not (msg =~ "[raised]")
+
+    {"#{name}: refused by [notified] alone", ok}
+  end
+
+  # W2 — the CR's planted case on the real path (`34987`): the committed probe with the
+  # notify tool's `reply_sink` emission deleted, run for real. X1 and X2 then carry no
+  # notification (X3 does not use the handler), and both the baseline check and the sweep
+  # itself must refuse before any suite run or mutation.
+  @emission "    :ok = ctx.reply_sink.(\"notifications/message\", %{\"level\" => \"info\", \"data\" => \"etcc\"})\n"
+
+  defp w2(dir) do
+    name = "W2 a silent notify (CR F1, real path) refused by [notified], sweep stops first"
+    IO.puts("\n  #{name}")
+    src = File.read!(@paths.probe)
+    n = src |> String.split(@emission) |> length() |> Kernel.-(1)
+    IO.puts("      emission line occurrences in the committed probe: #{n} (must be 1)")
+
+    if n != 1 do
+      {name, false}
+    else
+      silent = Path.join(dir, "silent_probe.exs")
+      File.write!(silent, String.replace(src, @emission, ""))
+      base = Sweep.probe(Path.join(dir, "w2.txt"), silent)
+      msg = refusal(base)
+      print_refusal(msg)
+      {:ok, lines} = Agent.start_link(fn -> [] end)
+      log = fn l -> Agent.update(lines, &[l | &1]) end
+
+      swept =
+        try do
+          Sweep.sweep(only: ["MCP.Server.Connection"], probe: silent, tmp: dir, log: log)
+          nil
+        rescue
+          e in RuntimeError -> e.message
+        end
+
+      logged = Agent.get(lines, &Enum.reverse/1)
+      Agent.stop(lines)
+      ran = Enum.any?(logged, &(&1 =~ "mix test")) or Enum.any?(logged, &(&1 =~ "[1/"))
+      IO.puts("      sweep refused: #{swept != nil}; ran a suite or a mutation: #{ran}")
+
+      ok =
+        msg != nil and msg =~ "[notified] 2 notification scenario(s)" and msg =~ "#{@x1}: empty" and
+          msg =~ "#{@x2}: HTTP 200 with no data payload" and not (msg =~ "#{@x3}:") and
+          swept != nil and swept =~ "[notified]" and not ran
+
+      {name, ok}
+    end
+  end
+
+  # --- the mutated probe (MES-178): Sweep.l2_probe!/5 and Sweep.merge_outcome/4 ---
+  #
+  # Driven through the sweep's own path — `l2_probe!/5` runs `probe/2` (a real `mix run`)
+  # and `probe_outcome!/3` — with an EMPTY mutation_spec, so `lib/` is never touched, and
+  # a fixture script in place of the probe that writes a planted output. Each refusal is
+  # required with its own named cause, and the others' causes absent.
+
+  @l2_causes ~w(missing_output key_set raised_on_trigger)
+
+  defp l2_cases(sighted, dir) do
+    raised_k = "decode_message of a wire error"
+    moved_k = "tools/list"
+    raised = Map.put(sighted, raised_k, inspect({:raised, "FunctionClauseError"}))
+    both = Map.put(raised, moved_k, inspect("moved bytes"))
+
+    [
+      l2_case("O1 an unmoved run: moved [], raised []", sighted, dir, sighted, false, fn
+        {:ok, o} -> o == %{moved: [], raised: []}
+        _ -> false
+      end),
+      l2_case("O2 a raise and a move kept apart (L1-live row)", sighted, dir, both, false, fn
+        {:ok, o} -> o == %{moved: [moved_k], raised: [raised_k]}
+        _ -> false
+      end),
+      l2_case(
+        "T1 a raise on a live-count-zero row refused: raised_on_trigger",
+        sighted,
+        dir,
+        raised,
+        true,
+        &refused?(&1, "raised_on_trigger", raised_k)
+      ),
+      l2_case(
+        "K1 a mutated run missing a scenario refused: key_set",
+        sighted,
+        dir,
+        Map.delete(sighted, moved_k),
+        false,
+        &refused?(&1, "key_set", "missing [\"#{moved_k}\"]")
+      ),
+      l2_case(
+        "K2 a mutated run with an extra scenario refused: key_set",
+        sighted,
+        dir,
+        Map.put(sighted, "zz extra", inspect("x")),
+        false,
+        &refused?(&1, "key_set", "extra [\"zz extra\"]")
+      ),
+      l2_case(
+        "M1 a probe that writes no file refused: missing_output",
+        sighted,
+        dir,
+        :no_file,
+        false,
+        &refused?(&1, "missing_output", "mix exited")
+      ),
+      merge_l1_live(sighted),
+      merge_trigger(sighted)
+    ]
+  end
+
+  defp l2_case(name, sighted, dir, planted, trigger?, judge) do
+    IO.puts("\n  #{name}")
+    script = fixture_probe(dir, planted)
+    b = %{"id" => "FIXTURE"}
+
+    got =
+      try do
+        {:ok, Sweep.l2_probe!(b, trigger?, [], {script, sighted}, dir)}
+      rescue
+        e in RuntimeError -> {:refused, e.message}
+        # Any other exception is neither the named refusal nor a result: a fail, held as
+        # data so a mutant that crashes the path reads RED rather than killing the run.
+        e -> {:crashed, inspect(e.__struct__)}
+      end
+
+    IO.puts("      -> " <> first_line(inspect(got, limit: 6, printable_limit: 200)))
+    {name, judge.(got)}
+  end
+
+  defp refused?({:refused, msg}, cause, detail) do
+    msg =~ "L2 PROBE #{cause}:" and msg =~ detail and
+      Enum.all?(@l2_causes -- [cause], &(not (msg =~ "L2 PROBE #{&1}:")))
+  end
+
+  defp refused?(_got, _cause, _detail), do: false
+
+  # A probe stand-in: `mix run SCRIPT OUT` copies a planted rendering to OUT, exactly as
+  # the probe renders (sorted, `k <TAB> v`, one per line), or raises and writes nothing.
+  defp fixture_probe(dir, :no_file) do
+    path = Path.join(dir, "fixture_no_file.exs")
+    File.write!(path, ~s|raise "fixture probe: deliberately writes no output"\n|)
+    path
+  end
+
+  defp fixture_probe(dir, planted) do
+    n = System.unique_integer([:positive])
+    data = Path.join(dir, "fixture_#{n}.txt")
+    File.write!(data, Enum.map_join(Enum.sort(planted), fn {k, v} -> k <> "\t" <> v <> "\n" end))
+    path = Path.join(dir, "fixture_#{n}.exs")
+
+    File.write!(
+      path,
+      "[out | _] = System.argv()\nFile.write!(out, File.read!(#{inspect(data)}))\n"
+    )
+
+    path
+  end
+
+  # G1 — an L1-live row re-measured: the byte_probe fields move, nothing else does.
+  defp merge_l1_live(sighted) do
+    name = "G1 L1-live row: only byte_probe moves; trigger, verdict, ran, enumeration kept"
+    IO.puts("\n  #{name}")
+    b = row(Jason.decode!(File.read!(@paths.boundaries)), "MCP.Protocol.Error (decode)")
+    outcome = %{moved: [], raised: ["decode_message of a wire error"]}
+    l2 = Sweep.merge_outcome(b, false, outcome, map_size(sighted))
+    IO.puts("      -> #{inspect(l2["byte_probe"])}")
+
+    kept = Map.drop(l2, ["byte_probe"]) == Map.drop(b["l2"], ["byte_probe"])
+
+    probe_ok =
+      l2["byte_probe"] == %{
+        "script" => @paths.probe,
+        "scenarios_run" => 18,
+        "scenarios_moved" => [],
+        "scenarios_raised" => ["decode_message of a wire error"]
+      }
+
+    {name, kept and probe_ok and l2["trigger"] == b["l2"]["trigger"]}
+  end
+
+  # G2 — a trigger row: a move turns a recorded dead into live (§2.3(d), unchanged).
+  defp merge_trigger(sighted) do
+    name = "G2 trigger row: a move turns recorded dead into live; trigger rewritten"
+    IO.puts("\n  #{name}")
+    b = row(Jason.decode!(File.read!(@paths.boundaries)), "MCP.Protocol.Types.Tool (decode)")
+    l2 = Sweep.merge_outcome(b, true, %{moved: ["tools/list"], raised: []}, map_size(sighted))
+
+    IO.puts(
+      "      -> verdict #{b["l2"]["verdict"]} -> #{l2["verdict"]}, trigger #{l2["trigger"]}"
+    )
+
+    ok =
+      b["l2"]["verdict"] == "dead" and l2["verdict"] == "live" and
+        l2["trigger"] == "live count is zero" and l2["byte_probe"]["scenarios_raised"] == []
+
+    {name, ok}
+  end
+
   # --- probe-mutation: R4 is shown able to FAIL, and it is the fix that makes it pass ---
 
   # Recompiles `MCP.Conformance.BoundarySweep` IN MEMORY with correction round 1's fix
@@ -820,7 +1109,7 @@ defmodule ETCCBoundarySweepControls do
               "          got != want,"
 
   defp probe_mutation do
-    header("PROBE-MUTATION — R4 goes red when the F1 fix is reverted")
+    header("PROBE-MUTATION — R4, and MES-178's seven mechanisms, each go red when undone")
 
     src = File.read!(@sweep_src)
     n = src |> String.split(@fix_anchor) |> length() |> Kernel.-(1)
@@ -842,10 +1131,11 @@ defmodule ETCCBoundarySweepControls do
       IO.puts("\n  RESTORED (committed source):")
       {_, restored_ok} = r4(sighted)
 
-      results = [
-        {"R4 goes RED under the reverted fix", not mutant_ok},
-        {"R4 is green again on the committed source", restored_ok}
-      ]
+      results =
+        [
+          {"R4 goes RED under the reverted fix", not mutant_ok},
+          {"R4 is green again on the committed source", restored_ok}
+        ] ++ Enum.flat_map(mes178_mutants(), &run_mutant(&1, src, sighted, dir))
 
       IO.puts("")
       Enum.each(results, &report_limb/1)
@@ -854,6 +1144,57 @@ defmodule ETCCBoundarySweepControls do
       Code.compile_string(src, @sweep_src)
       File.rm_rf!(dir)
     end
+  end
+
+  # MES-178's mutants: each undoes ONE new mechanism in memory and names the controls
+  # that must go red under it. `run_mutant/4` requires the anchor at exactly one
+  # occurrence, the named controls RED under the mutant, and GREEN on the committed
+  # source recompiled straight after.
+  defp mes178_mutants do
+    [
+      {"MU1 the [raised] conjunct dropped", "      {:raised, raised},\n",
+       "      {:raised, []},\n", ~w(R6)},
+      {"MU2 the key-set check disabled",
+       "    if Enum.sort(Map.keys(baseline)) != Enum.sort(Map.keys(mutated)) do\n",
+       "    if false do\n", ~w(K1 K2)},
+      {"MU3 raises counted as moves",
+       "    {raised, moved} = Enum.split_with(changed, &raised_value?(mutated[&1]))\n",
+       "    {raised, moved} = {[], changed}\n", ~w(O2 T1)},
+      {"MU4 the raised_on_trigger refusal disabled",
+       "  defp refuse_raise_on_trigger!(id, true, %{raised: [_ | _] = raised}) do\n",
+       "  defp refuse_raise_on_trigger!(id, :never, %{raised: [_ | _] = raised}) do\n", ~w(T1)},
+      {"MU5 the missing_output refusal disabled", "    unless File.exists?(out_path) do\n",
+       "    unless true do\n", ~w(M1)},
+      {"MU7 the [notified] conjunct dropped (CR F1)", "      {:notified, unnotified}\n",
+       "      {:notified, []}\n", ~w(N1 N2 N3 N4 N5 N6 N7 N8 N9 W2)},
+      {"MU6 L1-live rows merged as trigger rows",
+       "  def merge_outcome(b, false, outcome, scenarios_run), do: merge_probe(b, outcome, scenarios_run)\n",
+       "  def merge_outcome(b, false, outcome, scenarios_run), do: merge_l2(b, outcome, scenarios_run)\n",
+       ~w(G1)}
+    ]
+  end
+
+  defp run_mutant({label, anchor, replacement, names}, src, sighted, dir) do
+    n = src |> String.split(anchor) |> length() |> Kernel.-(1)
+    IO.puts("\n  #{label}: anchor occurrences #{n} (must be 1)")
+
+    if n != 1 do
+      [{"#{label}: anchor found exactly once", false}]
+    else
+      Code.compile_string(String.replace(src, anchor, replacement), @sweep_src)
+      red = mes178_controls(names, sighted, dir)
+      Code.compile_string(src, @sweep_src)
+      green = mes178_controls(names, sighted, dir)
+
+      for {{name, mut_ok}, {_, ok}} <- Enum.zip(red, green) do
+        {"#{label}: #{name} RED under the mutant, green restored", not mut_ok and ok}
+      end
+    end
+  end
+
+  defp mes178_controls(names, sighted, dir) do
+    all = [r6(sighted)] ++ notified_cases(sighted) ++ [w2(dir)] ++ l2_cases(sighted, dir)
+    Enum.filter(all, fn {name, _} -> hd(String.split(name)) in names end)
   end
 
   # W1 — the refusal is WIRED: the sweep, driven with the blind probe, refuses before it
