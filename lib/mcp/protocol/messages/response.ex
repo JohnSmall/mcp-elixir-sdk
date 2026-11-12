@@ -12,7 +12,7 @@ defmodule MCP.Protocol.Messages.Response do
 
   @type t :: %__MODULE__{
           jsonrpc: String.t(),
-          id: integer() | String.t(),
+          id: integer() | String.t() | nil,
           result: map() | nil,
           error: Error.t() | nil
         }

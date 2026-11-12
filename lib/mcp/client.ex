@@ -419,8 +419,8 @@ defmodule MCP.Client do
         route_response(response, entry, %{state | pending_requests: pending})
 
       {nil, _} ->
-        Logger.warning("MCP Client: response for unknown request id=#{inspect(id)}")
-        {:noreply, state}
+        # No entry for this id; a null-id error may still name one (MES-211).
+        unknown_response(response, state)
     end
   end
 
@@ -1093,4 +1093,34 @@ defmodule MCP.Client do
     do: {:malformed_refresh_response, error, original_error}
 
   defp refused_reply(_kind, error), do: {:malformed_response, error}
+
+  # --- An error reply with a null id (MES-211) ---
+
+  # JSON-RPC 2.0 §5 sends `"id": null` when the server could not read the
+  # request's id, and this SDK's own stdio server does so (ADR-004). Over HTTP
+  # the POST ties it to one request (MES-206); over stdio nothing does. With
+  # exactly one request pending, it is the only request the error can answer,
+  # so the null id is read as that request's id and the reply takes the normal
+  # path, recoveries included, as MES-206's rewrite does over HTTP. With none,
+  # or several, nothing ties it: it is logged, and every caller keeps its own
+  # timeout. A null id beside a result is not a §5 reply and is never tied.
+  defp unknown_response(%Response{id: nil, error: %Error{} = error} = response, state) do
+    case Map.keys(state.pending_requests) do
+      [id] ->
+        handle_response(%{response | id: id}, state)
+
+      ids ->
+        Logger.warning(
+          "MCP Client: error reply with a null id (#{error.code}: #{error.message}) " <>
+            "ties to no request: #{length(ids)} pending"
+        )
+
+        {:noreply, state}
+    end
+  end
+
+  defp unknown_response(%Response{id: id}, state) do
+    Logger.warning("MCP Client: response for unknown request id=#{inspect(id)}")
+    {:noreply, state}
+  end
 end
