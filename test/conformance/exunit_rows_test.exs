@@ -438,5 +438,156 @@ defmodule MCP.Conformance.ExUnitRowsTest do
       assert a["run"]["tree_clean"] == true
       assert a["run"]["tip"] =~ ~r/^[0-9a-f]{40}$/
     end
+
+    # These sit in this describe, at the END of the file, deliberately: gate 7
+    # treats a new describe block as a file-context change (every test in the
+    # file would need a declaration), and inserting them earlier would move the
+    # line pins the D3+D6 record holds on this file (G33). They do not use the
+    # describe's `setup`.
+    # MES-228. A test process that DIES — killed by a crash in a process linked
+    # to it — is recorded by ExUnit with the tuple kind `{:EXIT, pid}`
+    # (`runner.ex:498`; `:383` for a `setup_all`). Before MES-228, `to_string/1`
+    # on that kind raised inside the formatter, killed it, and no artefact was
+    # written. The control `exunit_rows_controls.exs exit` shows the same shape
+    # out of a real run; these pin the rendering and the fail-closed path.
+    @tag oc: :none
+    @tag oc_reason: "instrument self-test: ExUnitRows row rendering, no MCP wire behaviour"
+    test "MES-228: an {:EXIT, pid} kind renders as EXIT and the crash is unwrapped" do
+      reason =
+        {%RuntimeError{message: "linked crash"},
+         [{Some.Module, :crash, 0, [file: ~c"test/mcp/example_test.exs", line: 50]}]}
+
+      r = row(state: {:failed, [{{:EXIT, self()}, reason, []}]})
+
+      assert r["status"] == "failed"
+
+      assert [
+               %{
+                 "kind" => "EXIT",
+                 "exception" => "RuntimeError",
+                 "message" => "linked crash",
+                 "at" => "test/mcp/example_test.exs:50"
+               }
+             ] = r["failure"]
+    end
+
+    @tag oc: :none
+    @tag oc_reason: "instrument self-test: ExUnitRows row rendering, no MCP wire behaviour"
+    test "MES-228: a BEAM function_clause exit reason is unwrapped to FunctionClauseError" do
+      r =
+        row(
+          state:
+            {:failed,
+             [
+               {{:EXIT, self()},
+                {:function_clause,
+                 [{Some.Module, :crash, 0, [file: ~c"test/mcp/example_test.exs", line: 50]}]}, []}
+             ]}
+        )
+
+      assert [%{"kind" => "EXIT", "exception" => "FunctionClauseError"}] = r["failure"]
+    end
+
+    @tag oc: :none
+    @tag oc_reason: "instrument self-test: ExUnitRows row rendering, no MCP wire behaviour"
+    test "MES-228: a plain exit reason is kept as the reason, with no pid in the kind" do
+      r = row(state: {:failed, [{{:EXIT, self()}, :killed, []}]})
+
+      assert [%{"kind" => "EXIT", "exception" => "EXIT", "message" => ":killed", "at" => nil}] =
+               r["failure"]
+    end
+
+    @tag oc: :none
+    @tag oc_reason: "instrument self-test: ExUnitRows row rendering, no MCP wire behaviour"
+    test "MES-228: EXIT appears only in failure detail: the key is the test's key, unchanged" do
+      r = row(state: {:failed, [{{:EXIT, self()}, :killed, []}]})
+      assert r["key"] == "Some.Module/test a"
+      assert r["key"] == row(state: nil)["key"]
+    end
+
+    @tag oc: :none
+    @tag oc_reason: "instrument self-test: ExUnitRows row rendering, no MCP wire behaviour"
+    test "MES-228: a setup_all process that dies makes an invalid row with an EXIT failure" do
+      module = %ExUnit.TestModule{
+        name: Some.Module,
+        state:
+          {:failed,
+           [
+             {{:EXIT, self()},
+              {%RuntimeError{message: "setup"},
+               [{Some.Module, :crash, 0, [file: ~c"test/mcp/example_test.exs", line: 50]}]}, []}
+           ]}
+      }
+
+      r = row(state: {:invalid, module})
+      assert r["status"] == "invalid"
+      assert [%{"kind" => "EXIT", "exception" => "RuntimeError"}] = r["failure"]
+    end
+
+    @tag oc: :none
+    @tag oc_reason: "instrument self-test: ExUnitRows row rendering, no MCP wire behaviour"
+    test "MES-228: kind_name/1 is total: atoms, the EXIT tuple, and anything else" do
+      assert ExUnitRows.kind_name(:error) == "error"
+      assert ExUnitRows.kind_name(:exit) == "exit"
+      assert ExUnitRows.kind_name({:EXIT, self()}) == "EXIT"
+      assert ExUnitRows.kind_name({:something, :else}) == "{:something, :else}"
+    end
+
+    @tag oc: :none
+    @tag oc_reason: "instrument self-test: ExUnitRows row rendering, no MCP wire behaviour"
+    test "MES-228: the formatter survives an EXIT test and the run stays complete" do
+      {:ok, state} = ExUnitRows.init([])
+      exit_test = test_struct(state: {:failed, [{{:EXIT, self()}, :killed, []}]})
+
+      assert {:noreply, state} = ExUnitRows.handle_cast({:test_finished, exit_test}, state)
+      assert [%{"status" => "failed"}] = state.rows
+      assert state.row_errors == []
+
+      path =
+        Path.join(System.tmp_dir!(), "mes228_unit_#{System.unique_integer([:positive])}.json")
+
+      on_exit(fn -> File.rm(path) end)
+
+      ExUnit.CaptureIO.capture_io(:stderr, fn ->
+        ExUnitRows.handle_cast({:suite_finished, %{}}, %{state | path: path})
+      end)
+
+      artefact = path |> File.read!() |> Jason.decode!()
+      assert artefact["run"]["complete"] == true
+      assert artefact["run"]["row_errors"] == []
+    end
+
+    @tag oc: :none
+    @tag oc_reason: "instrument self-test: ExUnitRows row rendering, no MCP wire behaviour"
+    test "MES-228: an event that cannot be recorded is NAMED and makes the run incomplete" do
+      {:ok, state} = ExUnitRows.init([])
+      # A name that is not an atom: `key/2` has no clause for it, so building
+      # the row raises — standing in for any failure shape not yet anticipated.
+      bad = %{test_struct([]) | name: 123}
+
+      {{:noreply, state}, stderr} =
+        ExUnit.CaptureIO.with_io(:stderr, fn ->
+          ExUnitRows.handle_cast({:test_finished, bad}, state)
+        end)
+
+      assert stderr =~ "[etcc-rows] ROW ERROR test_finished"
+      assert state.rows == []
+
+      assert [%{"event" => "test_finished", "error" => "FunctionClauseError: " <> _}] =
+               state.row_errors
+
+      path =
+        Path.join(System.tmp_dir!(), "mes228_unit_#{System.unique_integer([:positive])}.json")
+
+      on_exit(fn -> File.rm(path) end)
+
+      ExUnit.CaptureIO.capture_io(:stderr, fn ->
+        ExUnitRows.handle_cast({:suite_finished, %{}}, %{state | path: path})
+      end)
+
+      artefact = path |> File.read!() |> Jason.decode!()
+      assert artefact["run"]["complete"] == false
+      assert [%{"event" => "test_finished"}] = artefact["run"]["row_errors"]
+    end
   end
 end

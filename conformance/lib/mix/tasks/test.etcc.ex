@@ -164,7 +164,7 @@ defmodule Mix.Tasks.Test.Etcc do
       run["complete"] != true ->
         refuse(
           "the capture is incomplete: #{run["modules_started"]} modules started, " <>
-            "#{run["modules_finished"]} finished"
+            "#{run["modules_finished"]} finished, row_errors #{inspect(run["row_errors"])}"
         )
 
       run["key_collisions"] != [] ->

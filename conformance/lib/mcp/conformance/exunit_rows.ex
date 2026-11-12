@@ -498,7 +498,8 @@ defmodule MCP.Conformance.ExUnitRows do
        event_keys: %{},
        modules_started: 0,
        modules_finished: 0,
-       max_failures_reached: false
+       max_failures_reached: false,
+       row_errors: []
      }}
   end
 
@@ -507,7 +508,71 @@ defmodule MCP.Conformance.ExUnitRows do
     {:noreply, %{state | modules_started: state.modules_started + 1}}
   end
 
+  # MES-228. Every event handler that BUILDS something runs under
+  # `guarded/4`: an exception there is recorded in `row_errors` and the
+  # formatter lives on. Before MES-228 an unrescued raise here (`to_string/1` on
+  # a `{:EXIT, pid}` failure kind) killed the formatter, which ExUnit adds with
+  # `restart: :temporary`, so `:suite_finished` was never handled, no artefact
+  # was written and nothing was printed. A recorded error makes `complete`
+  # false, so the run is still REFUSED by every reader that checks it — now
+  # with the cause named instead of a missing file.
   def handle_cast({:test_finished, %ExUnit.Test{} = test}, state) do
+    guarded(state, "test_finished", fn -> safe_key(test.module, test.name) end, fn ->
+      record_test(test, state)
+    end)
+  end
+
+  def handle_cast({:module_finished, %ExUnit.TestModule{} = test_module}, state) do
+    guarded(state, "module_finished", fn -> inspect(test_module.name) end, fn ->
+      record_module(test_module, state)
+    end)
+  end
+
+  def handle_cast(:max_failures_reached, state) do
+    {:noreply, %{state | max_failures_reached: true}}
+  end
+
+  def handle_cast({:suite_finished, _times}, state) do
+    write(state)
+    {:noreply, state}
+  end
+
+  def handle_cast(_event, state), do: {:noreply, state}
+
+  @doc false
+  # Public for the MES-228 unit test, which drives a raising builder through it.
+  @spec guarded(map(), String.t(), (-> String.t()), (-> map())) :: {:noreply, map()}
+  def guarded(state, event, subject_fun, build_fun) do
+    {:noreply, build_fun.()}
+  rescue
+    error ->
+      entry = %{
+        "event" => event,
+        "subject" => subject_fun.(),
+        "error" => inspect(error.__struct__) <> ": " <> safe_message(error)
+      }
+
+      IO.puts(
+        :stderr,
+        "[etcc-rows] ROW ERROR #{entry["event"]} #{entry["subject"]}: #{entry["error"]}"
+      )
+
+      {:noreply, %{state | row_errors: [entry | state.row_errors]}}
+  end
+
+  defp safe_key(module, name) do
+    key(module, name)
+  rescue
+    _ -> inspect({module, name})
+  end
+
+  defp safe_message(error) do
+    Exception.message(error)
+  rescue
+    _ -> inspect(error)
+  end
+
+  defp record_test(test, state) do
     row = row(test, state.cwd)
     module = row["module"]
 
@@ -523,31 +588,19 @@ defmodule MCP.Conformance.ExUnitRows do
         state.event_keys
       end
 
-    {:noreply, %{state | rows: [row | state.rows], event_keys: event_keys}}
+    %{state | rows: [row | state.rows], event_keys: event_keys}
   end
 
-  def handle_cast({:module_finished, %ExUnit.TestModule{} = test_module}, state) do
+  defp record_module(test_module, state) do
     module = inspect(test_module.name)
     keys = MapSet.new(test_module.tests, &key(&1.module, &1.name))
 
-    {:noreply,
-     %{
-       state
-       | modules_finished: state.modules_finished + 1,
-         module_keys: Map.update(state.module_keys, module, keys, &MapSet.union(&1, keys))
-     }}
+    %{
+      state
+      | modules_finished: state.modules_finished + 1,
+        module_keys: Map.update(state.module_keys, module, keys, &MapSet.union(&1, keys))
+    }
   end
-
-  def handle_cast(:max_failures_reached, state) do
-    {:noreply, %{state | max_failures_reached: true}}
-  end
-
-  def handle_cast({:suite_finished, _times}, state) do
-    write(state)
-    {:noreply, state}
-  end
-
-  def handle_cast(_event, state), do: {:noreply, state}
 
   defp write(%{path: nil}), do: :noop
 
@@ -556,6 +609,15 @@ defmodule MCP.Conformance.ExUnitRows do
     File.mkdir_p!(Path.dirname(state.path))
     File.write!(state.path, encode(artefact))
     IO.puts(:stderr, "[etcc-rows] wrote #{state.path} (#{length(state.rows)} rows)")
+
+    if state.row_errors != [] do
+      IO.puts(
+        :stderr,
+        "[etcc-rows] INCOMPLETE: #{length(state.row_errors)} event(s) could not be recorded; " <>
+          "run.complete is false and run.row_errors names them"
+      )
+    end
+
     :ok
   rescue
     error ->
@@ -583,7 +645,9 @@ defmodule MCP.Conformance.ExUnitRows do
       "elixir" => System.version(),
       "otp" => System.otp_release(),
       "complete" =>
-        not state.max_failures_reached and state.modules_started == state.modules_finished,
+        not state.max_failures_reached and state.modules_started == state.modules_finished and
+          state.row_errors == [],
+      "row_errors" => Enum.reverse(state.row_errors),
       "modules_started" => state.modules_started,
       "modules_finished" => state.modules_finished,
       "key_collisions" => key_collisions(state.rows),
@@ -659,8 +723,10 @@ defmodule MCP.Conformance.ExUnitRows do
   # run. `at` is the first stack frame inside the checkout, relativised.
   defp format_failures(failures) when is_list(failures) do
     Enum.map(failures, fn {kind, reason, stacktrace} ->
+      {reason, stacktrace} = exit_payload(kind, reason, stacktrace)
+
       %{
-        "kind" => to_string(kind),
+        "kind" => kind_name(kind),
         "exception" => exception_name(kind, reason),
         "message" => failure_message(kind, reason),
         "at" => first_frame(stacktrace)
@@ -673,10 +739,39 @@ defmodule MCP.Conformance.ExUnitRows do
   defp module_failure({:failed, failures}), do: format_failures(failures)
   defp module_failure(_), do: nil
 
-  defp exception_name(:error, %{__struct__: struct}), do: inspect(struct)
-  defp exception_name(kind, _reason), do: to_string(kind)
+  @doc """
+  Render an ExUnit failure kind as a string. Total over every kind ExUnit emits.
 
-  defp failure_message(:error, %{__struct__: _} = exception), do: Exception.message(exception)
+  `:error`, `:exit` and `:throw` are atoms. A test process that dies — typically
+  because a process linked to it crashed — is recorded by ExUnit as
+  `{:EXIT, test_pid}` (`runner.ex:498`, and `:383` for a `setup_all`). That
+  kind renders as `"EXIT"`: the pid moves on every run and would break the
+  artefact's determinism (`etcc-row-key.md` §5), so it is dropped. Anything
+  else unexpected renders through `inspect/1` rather than raising (MES-228).
+  """
+  @spec kind_name(term()) :: String.t()
+  def kind_name({:EXIT, _pid}), do: "EXIT"
+  def kind_name(kind) when is_atom(kind), do: Atom.to_string(kind)
+  def kind_name(kind), do: inspect(kind)
+
+  # An `{:EXIT, pid}` failure whose reason is `{exception, stacktrace}` carries
+  # the real exception one level down, as ExUnit's own formatter unwraps it
+  # (`formatter.ex` `linked_or_trapped_exit/2`). Unwrapped here so `exception`,
+  # `message` and `at` describe the crash instead of an opaque tuple.
+  defp exit_payload({:EXIT, _pid}, {inner, [_ | _] = stack}, _stacktrace)
+       when is_exception(inner) or inner == :function_clause,
+       do: {Exception.normalize(:error, inner, stack), stack}
+
+  defp exit_payload(_kind, reason, stacktrace), do: {reason, stacktrace}
+
+  defp exception_name(:error, %{__struct__: struct}), do: inspect(struct)
+  defp exception_name({:EXIT, _}, %{__struct__: struct}), do: inspect(struct)
+  defp exception_name(kind, _reason), do: kind_name(kind)
+
+  defp failure_message(kind, %{__struct__: _} = exception)
+       when kind == :error or (is_tuple(kind) and elem(kind, 0) == :EXIT),
+       do: Exception.message(exception)
+
   defp failure_message(_kind, reason), do: inspect(reason)
 
   defp first_frame(stacktrace) when is_list(stacktrace) do

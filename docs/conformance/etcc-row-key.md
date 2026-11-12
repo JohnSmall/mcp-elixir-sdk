@@ -94,7 +94,7 @@ instrument, not on ExUnit.
 | `tags` | the whole tag map minus the deny-list below. |
 | `status` | one of the five in §4. |
 | `reason` | ExUnit's own reason for `excluded`, `skipped` and `invalid`; `null` otherwise. |
-| `failure` | for `failed` and `invalid`: `kind`, `exception`, `message`, `at`. `null` otherwise. |
+| `failure` | for `failed` and `invalid`: `kind`, `exception`, `message`, `at`. `null` otherwise. `kind` is `error`, `exit` or `throw`, or `EXIT` when the test or `setup_all` process **died** (ExUnit's `{:EXIT, pid}` kind; the pid is dropped, and a `{exception, stack}` exit reason is unwrapped into `exception`/`message`/`at`). MES-228. `EXIT` never enters a `key`. |
 
 ### The tag deny-list, and why it is a deny-list
 
@@ -187,6 +187,17 @@ rather than asserting agreement. Row *order* is canonical (sorted by
 * **Failure-detail text.** It can embed runtime values. A green suite has no
   failure rows, so a sweep never exercises the field, and claiming a bound the
   sweep cannot test would be worse than saying so.
+
+### `run.row_errors` and `run.complete` (MES-228)
+
+`run.row_errors` is always present, and is `[]` on a run whose every event was
+recorded. An event the formatter could not turn into a row or a module entry is
+listed there as `{event, subject, error}` instead of killing the formatter, and
+any entry makes `run.complete` **false**. Every reader that checks `complete`
+(`mix test.etcc`, GUARD 34 in `mix conformance.sweep`) therefore refuses such a
+run, with the cause written into the artefact and printed as
+`[etcc-rows] ROW ERROR …` on stderr. `rows_md5` covers `rows` only, so the new
+key moves no recorded md5.
 
 ### §5.1 The committed copy is HOST-DEPENDENT. Read a diff against this list.
 

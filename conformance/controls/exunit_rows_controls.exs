@@ -5,6 +5,7 @@
 #     mix run conformance/controls/exunit_rows_controls.exs flip
 #     mix run conformance/controls/exunit_rows_controls.exs reconcile
 #     mix run conformance/controls/exunit_rows_controls.exs sweep [seeds]
+#     mix run conformance/controls/exunit_rows_controls.exs exit
 #     mix run conformance/controls/exunit_rows_controls.exs all
 #
 # ## What this exists to establish (hazard 4)
@@ -25,6 +26,11 @@
 #   * `reconcile` — AC1. The row count against ExUnit's OWN summary, per test
 #                   type, on the full suite.
 #   * `sweep`     — AC5. Row content across ~20 seeds.
+#   * `exit`      — MES-228. A test process, and a `setup_all` process, that
+#                   DIE because a linked process crashed: ExUnit's
+#                   `{:EXIT, pid}` failure kind. Before MES-228 that kind
+#                   killed the formatter and no artefact was written, so this
+#                   control read CONTROL DID NOT FIRE at the pre-fix tip.
 #
 # ## S7-4 — the instrument must be shown to have FIRED
 #
@@ -46,6 +52,8 @@ defmodule ExUnitRowsControls do
 
   @fixture "conformance/controls/exunit_rows_control_fixture.exs"
   @invalid_fixture "conformance/controls/exunit_rows_invalid_fixture.exs"
+  @exit_fixture "conformance/controls/exunit_rows_exit_fixture.exs"
+  @exit_setup_all_fixture "conformance/controls/exunit_rows_exit_setup_all_fixture.exs"
   @exclude_tag "mes83_control_excluded"
   @seed "0"
   @default_seeds 20
@@ -61,6 +69,18 @@ defmodule ExUnitRowsControls do
     "MES83.InvalidFixture/test never runs, and is invalid rather than failed" => "invalid"
   }
 
+  # MES-228. The three planted deaths, and what each row must carry. `kind` is
+  # "EXIT" for all three; `exception` is the crash unwrapped from the exit
+  # reason, the way ExUnit's own formatter unwraps it.
+  @expected_exit %{
+    "MES228.ExitFixture/test a linked process raises and takes the test process down" =>
+      {"failed", "RuntimeError"},
+    "MES228.ExitFixture/test a linked process hits a function clause and takes the test process down" =>
+      {"failed", "FunctionClauseError"},
+    "MES228.ExitSetupAllFixture/test never runs, because its setup_all process died" =>
+      {"invalid", "RuntimeError"}
+  }
+
   def main(argv) do
     before = tree_state()
 
@@ -71,6 +91,7 @@ defmodule ExUnitRowsControls do
         ["reconcile"] -> reconcile()
         ["sweep"] -> sweep(@default_seeds)
         ["sweep", n] -> sweep(String.to_integer(n))
+        ["exit"] -> exit_kind()
         ["all"] -> all()
         _ -> usage()
       end
@@ -80,13 +101,14 @@ defmodule ExUnitRowsControls do
   end
 
   defp usage do
-    IO.puts("usage: mix run #{__ENV__.file} states|flip|reconcile|sweep [seeds]|all")
+    IO.puts("usage: mix run #{__ENV__.file} states|flip|reconcile|sweep [seeds]|exit|all")
   end
 
   defp all do
     states()
     flip()
     reconcile()
+    exit_kind()
   end
 
   # --- positive control: all five states, from one real run ------------------
@@ -120,6 +142,59 @@ defmodule ExUnitRowsControls do
       IO.puts("all five statuses present in one run: #{Enum.join(present, " ")}")
     else
       halt("statuses present were #{inspect(present)}")
+    end
+  end
+
+  # --- MES-228: a test process that DIES must still produce its row ----------
+
+  defp exit_kind do
+    section("EXIT — test and setup_all processes killed by a linked crash (MES-228)")
+
+    # `capture/2` halts with CONTROL DID NOT FIRE when no artefact is written:
+    # the pre-fix outcome, since the formatter died on the first EXIT row.
+    {out, artefact} = capture([@exit_fixture, @exit_setup_all_fixture], [])
+
+    print_rows(artefact["rows"])
+    IO.puts("\nExUnit's own summary: #{summary_line(out)}")
+    IO.puts("CLI 'EXIT from' lines: #{length(Regex.scan(~r/\(EXIT from #PID</, out))}")
+
+    run = artefact["run"]
+    IO.puts("run.complete:   #{inspect(run["complete"])}")
+    IO.puts("run.row_errors: #{inspect(run["row_errors"])}")
+
+    by_key = Map.new(artefact["rows"], &{&1["key"], &1})
+
+    misses =
+      for {key, {status, exception}} <- @expected_exit,
+          row = by_key[key],
+          f = row && List.first(row["failure"] || []),
+          not (row && row["status"] == status && f && f["kind"] == "EXIT" &&
+                 f["exception"] == exception),
+          do: {key, status, exception, row && row["status"], f}
+
+    absent = for {key, _} <- @expected_exit, not Map.has_key?(by_key, key), do: key
+
+    cond do
+      run["row_errors"] != [] ->
+        halt("row_errors is #{inspect(run["row_errors"])} — a death was not recorded as a row")
+
+      run["complete"] != true ->
+        halt("run.complete is #{inspect(run["complete"])}")
+
+      absent != [] ->
+        halt("no row for #{inspect(absent)}")
+
+      misses != [] ->
+        for m <- misses, do: IO.puts("MISS  #{inspect(m)}")
+        halt("an EXIT row did not carry its expected status, kind and exception")
+
+      Map.keys(by_key) |> Enum.sort() != @expected_exit |> Map.keys() |> Enum.sort() ->
+        halt("row keys are not exactly the planted keys: #{inspect(Map.keys(by_key))}")
+
+      true ->
+        IO.puts(
+          "\nall three deaths produced a row: kind EXIT, crash unwrapped, keys unchanged: OK"
+        )
     end
   end
 
