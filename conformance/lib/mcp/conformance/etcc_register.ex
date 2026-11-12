@@ -7,10 +7,22 @@ defmodule MCP.Conformance.ETCCRegister do
 
   Labels, gates, spec anchors and evidence are authored by hand in
   `conformance/data/etcc-decisions.json` and live nowhere else. Every other field
-  on a register row (`module`, `name`, `file`, `line`, `test_type`, `describe`) is
+  on a register row (`module`, `name`, `file`, `test_type`, `describe`) is
   **joined** from `docs/conformance/etcc-exunit-rows.json` and is never re-derived
   here. So a label has exactly one home, and a reviewer reproduces the register by
   re-running the build and diffing.
+
+  `line` is the one exception (MES-229, PM ruling `35131`): for a `test_type: "test"`
+  row it is the line of the test's declaration **at this tree**, located by the
+  test's runtime name with `UnitLocator`, the same locator guard 21 reads bodies
+  with. The artefact's `line` is ExUnit's capture at its own tip and drifts whenever
+  the file above a test moves; every consumer of the register (`ETCCTags`,
+  `AttributionCitations`) reads `{file, line}` as where the test IS. A row whose test
+  cannot be located, or that two declarations claim, is refused rather than given
+  the captured line. **Doctest rows keep the joined line** (a stated residual): a moved
+  `doctest` directive is unseen here and by `reproduce`; `mix conformance.etcc_tags
+  --check` sees it only for a source-marked directive (measured on header_mirror_test.exs,
+  not on extensions_test.exs's name-selected one). `etcc-register.md` §14 has the detail.
 
   The criterion itself is `docs/conformance/etcc-membership.md` and the row key is
   `docs/conformance/etcc-row-key.md` §1. Neither is restated here — this module
@@ -85,6 +97,8 @@ defmodule MCP.Conformance.ETCCRegister do
   @labels ~w(ET-CC ET-CTRL ET-ADJ ET-OUT)
   @in_scope_prefix "test/mcp/"
 
+  # `line` is joined here and then, for every `test` row, replaced by `locate_lines/2`
+  # with the declaration line at this tree (MES-229). Only doctest rows keep it as joined.
   @joined_fields ~w(module name file line test_type describe)
 
   @doc "Paths, so a control script and the build script cannot drift apart."
@@ -127,13 +141,22 @@ defmodule MCP.Conformance.ETCCRegister do
     check_key_sets!(in_scope_keys, decided_keys)
     Enum.each(decisions, &check_decision!(&1, by_key, boundaries))
 
-    register_rows =
+    root = Keyword.get(opts, :source_root, ".")
+
+    joined_rows =
       decisions
       |> Enum.map(&join(&1, Map.fetch!(by_key, &1["key"])))
       |> Enum.sort_by(& &1["key"])
 
-    check_controls_targets!(register_rows, by_key)
-    check_attribution!(register_rows, Map.keys(boundaries), Keyword.get(opts, :source_root, "."))
+    # Guard 21 and the controls-target check run on the JOINED rows, before any line
+    # is emitted. Guard 21 locates by name and never reads `line`, so the order does
+    # not change what it sees, but it does decide which refusal a defective tree gets:
+    # emitting first meets an unlocatable or ambiguous NON-member before guard 21 ever
+    # reaches the member, and refuses for the wrong reason (MES-229 plan, `35128`).
+    check_controls_targets!(joined_rows, by_key)
+    check_attribution!(joined_rows, Map.keys(boundaries), root)
+
+    register_rows = locate_lines(joined_rows, root)
 
     counts = Enum.frequencies_by(register_rows, & &1["label"])
     total = Enum.count(in_scope_rows)
@@ -532,7 +555,7 @@ defmodule MCP.Conformance.ETCCRegister do
       {:ok, %{line: line, body: body}} ->
         {line, String.split(body, "\n")}
 
-      {:unscannable, line, why} ->
+      {tag, line, why} when tag in [:unscannable, :unnamed] ->
         raise "REFUSING to write: guard 21 cannot scan #{key} in #{file}:#{line}: #{why}"
 
       :none ->
@@ -618,6 +641,56 @@ defmodule MCP.Conformance.ETCCRegister do
   end
 
   # --- assembly ---
+
+  # `line` for every `test_type: "test"` row: its declaration line at this tree, found
+  # by name (MES-229). Doctest rows keep the joined line (see the moduledoc). An
+  # unscannable shape still has a declaration line, so it is located; only a name
+  # nothing matches, or two declarations match, is refused.
+  defp locate_lines(rows, root) do
+    index =
+      rows
+      |> Enum.filter(&(&1["test_type"] == "test"))
+      |> Enum.map(& &1["file"])
+      |> Enum.uniq()
+      |> Map.new(fn file ->
+        {file, root |> Path.join(file) |> File.read!() |> UnitLocator.index(file)}
+      end)
+
+    Enum.map(rows, fn
+      %{"test_type" => "test"} = row ->
+        Map.put(row, "line", located_line(row, Map.fetch!(index, row["file"])))
+
+      row ->
+        row
+    end)
+  end
+
+  defp located_line(%{"file" => file, "key" => key, "name" => name}, index) do
+    case UnitLocator.locate(index, name) do
+      {:ok, line, _end} ->
+        line
+
+      {:unscannable, line, _why} ->
+        line
+
+      # The only declaration this name matched has no literal identity, so the match is
+      # a wildcard, not a location (CR finding 1 at `35147`). Emitting its line would
+      # publish an arbitrary current address for a test that may no longer exist.
+      {:unnamed, line, why} ->
+        raise "REFUSING to write: cannot locate #{key} in #{file} to emit its line: " <>
+                "the only declaration its name matches, at :#{line}, cannot establish " <>
+                "identity — #{why}"
+
+      :none ->
+        raise "REFUSING to write: cannot locate #{key} in #{file} to emit its line: " <>
+                "no `test` declaration has that name"
+
+      {:ambiguous, lines_found} ->
+        raise "REFUSING to write: cannot locate #{key} in #{file} to emit its line: " <>
+                "#{length(lines_found)} `test` declarations match that name " <>
+                "(lines #{Enum.join(lines_found, ", ")}); it refuses rather than guess"
+    end
+  end
 
   defp join(decision, row) do
     joined = Map.take(row, @joined_fields)

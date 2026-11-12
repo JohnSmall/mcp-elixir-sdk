@@ -40,9 +40,11 @@ defmodule MCP.Conformance.UnitLocator do
   name that is neither a string literal nor a template with literal text — an attribute,
   a variable, a call, or a pure interpolation such as `"\#{x}"` — says nothing about the
   runtime name, so its matcher is a bare wildcard, and a wildcard that is the only match
-  is not proof of identity. Such a test is indexed UNSCANNABLE: its wildcard still
-  catches every row it could stand for, and each of those rows is refused, alone or
-  alongside a literal match. A template that carries literal text is matched as a
+  is not proof of identity. Such a test is indexed UNNAMED (MES-229; it was indexed
+  unscannable until then): its wildcard still catches every row it could stand for, and
+  `locate_unit/2` returns `{:unnamed, line, reason}` for a row it alone matches, or
+  `{:ambiguous, lines}` alongside a literal match, so no caller can mistake it for a
+  location. A template that carries literal text is matched as a
   template (the stated residual: a stale row that still fits a template's literal text
   resolves to that template, and is scanned against the template's body — the body every
   instance of it runs).
@@ -57,7 +59,7 @@ defmodule MCP.Conformance.UnitLocator do
   """
   @type entry ::
           {Regex.t(), pos_integer(), pos_integer(),
-           {:ok, String.t()} | {:unscannable, String.t()}}
+           {:ok, String.t()} | {:unscannable, String.t()} | {:unnamed, String.t()}}
 
   @doc "Indexes every `test` call in `source`, whatever its shape."
   @spec index(String.t(), String.t()) :: [entry()]
@@ -75,6 +77,7 @@ defmodule MCP.Conformance.UnitLocator do
   @spec locate([entry()], String.t()) ::
           {:ok, pos_integer(), pos_integer()}
           | {:unscannable, pos_integer(), String.t()}
+          | {:unnamed, pos_integer(), String.t()}
           | :none
           | {:ambiguous, [pos_integer()]}
   def locate(index, name) do
@@ -87,16 +90,25 @@ defmodule MCP.Conformance.UnitLocator do
   @doc """
   As `locate/2`, with what guard 21 scans: `{:ok, %{line: _, last: _, body: _}}` with the
   rendered block, or `{:unscannable, line, reason}` for a shape whose body cannot be read.
+
+  `{:unnamed, line, reason}` (MES-229) is the one match that is NOT a location: the only
+  declaration the name matched is one whose test or `describe` name has no literal
+  identity, so it matched as a bare wildcard and says nothing about WHICH test it is. It
+  used to share `:unscannable` with the body shapes, and a caller that accepts an
+  identified-but-unscannable unit's line also accepted this one's, for any name at all
+  (CR at `35147`). A caller that needs the unit's identity must refuse it.
   """
   @spec locate_unit([entry()], String.t()) ::
           {:ok, %{line: pos_integer(), last: pos_integer(), body: String.t()}}
           | {:unscannable, pos_integer(), String.t()}
+          | {:unnamed, pos_integer(), String.t()}
           | :none
           | {:ambiguous, [pos_integer()]}
   def locate_unit(index, name) do
     case Enum.filter(index, fn {re, _, _, _} -> Regex.match?(re, name) end) do
       [{_, line, last, {:ok, body}}] -> {:ok, %{line: line, last: last, body: body}}
       [{_, line, _, {:unscannable, why}}] -> {:unscannable, line, why}
+      [{_, line, _, {:unnamed, why}}] -> {:unnamed, line, why}
       [] -> :none
       many -> {:ambiguous, Enum.map(many, &elem(&1, 1))}
     end
@@ -137,7 +149,7 @@ defmodule MCP.Conformance.UnitLocator do
   defp identity?(_expression), do: false
 
   defp unnamed(kind, name) do
-    {:unscannable,
+    {:unnamed,
      "its #{kind} name #{Macro.to_string(name)} is not a string literal or a template " <>
        "with literal text, so the runtime name cannot be established"}
   end

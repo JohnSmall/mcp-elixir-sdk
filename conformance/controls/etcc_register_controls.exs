@@ -6,6 +6,13 @@
 #     mix run conformance/controls/etcc_register_controls.exs reproduce
 #     mix run conformance/controls/etcc_register_controls.exs spec <dir>
 #     mix run conformance/controls/etcc_register_controls.exs delimit
+#     mix run conformance/controls/etcc_register_controls.exs f4
+#     mix run conformance/controls/etcc_register_controls.exs identity
+#     mix run conformance/controls/etcc_register_controls.exs all
+#
+# `all` (MES-229) runs guards, totality, keysets, reproduce, delimit, f4 and identity, each in its
+# own `mix run`, and exits 1 if any of them fails. `spec` is NOT in it: it needs a
+# materialised spec tree at 5f5440bb passed as <dir>, which no tree carries.
 #
 # WHY A SCRIPT AND NOT AN ExUnit TEST. Any test file added here lands in the very
 # suite the register enumerates: under `test/mcp/` it would add members to the
@@ -29,10 +36,49 @@ defmodule ETCCRegisterControls do
   def run(["reproduce"]), do: reproduce()
   def run(["spec", dir]), do: spec(dir)
   def run(["delimit"]), do: delimit()
+  def run(["f4"]), do: f4()
+  def run(["identity"]), do: identity()
+  def run(["all"]), do: all()
 
   def run(_) do
-    IO.puts("usage: guards | totality | keysets | reproduce | spec <dir> | delimit")
+    IO.puts(
+      "usage: guards | totality | keysets | reproduce | spec <dir> | delimit | f4 | identity | all\n" <>
+        "       (all = every mode but spec, which needs a materialised spec tree as <dir>)"
+    )
+
     System.halt(2)
+  end
+
+  # --- all: every mode but spec, each in its own VM, one verdict per mode ---
+
+  # Each mode is its own `mix run`, because the modes signal failure by halting the VM;
+  # running them in-process would end `all` at the first red instead of reporting
+  # every mode.
+  @all_modes ~w(guards totality keysets reproduce delimit f4 identity)
+
+  defp all do
+    header("ALL — #{Enum.join(@all_modes, ", ")} (spec excluded: it needs a spec tree)")
+    mix = System.find_executable("mix") || raise "mix is not on PATH"
+
+    results =
+      for mode <- @all_modes do
+        {_, status} =
+          System.cmd(mix, ["run", __ENV__.file, mode],
+            into: IO.stream(:stdio, :line),
+            stderr_to_stdout: true
+          )
+
+        {mode, status}
+      end
+
+    IO.puts("\n== ALL — verdicts ==\n")
+
+    for {mode, status} <- results,
+        do: IO.puts("  #{if status == 0, do: "ok  ", else: "FAIL"}  #{mode}  (exit #{status})")
+
+    failed = Enum.count(results, fn {_, st} -> st != 0 end)
+    IO.puts("\n  #{length(results) - failed}/#{length(results)} modes green.")
+    if failed > 0, do: System.halt(1)
   end
 
   # --- guards: every fail-closed condition, shown FIRING ---
@@ -278,6 +324,12 @@ defmodule ETCCRegisterControls do
 
   # --- reproduce: rebuild in place and diff ---
 
+  # Red from MES-161 (bb68d9f) to MES-229: the register was hand-edited (196 `line` fields,
+  # and `provenance.decisions_md5` left at a superseded decisions file) while build() went
+  # on joining the artefact's captured line. MES-229 made `line` the located one (PM
+  # `35131`) and rebuilt the register, so it is green again. It goes red whenever a commit
+  # moves a `test/mcp/` test without rebuilding, and that is the drift it exists to show.
+
   defp reproduce do
     header("REPRODUCE — rebuild the register and diff against the committed copy")
     before = File.read!(@paths.register)
@@ -314,6 +366,254 @@ defmodule ETCCRegisterControls do
       unless actual == expected, do: IO.puts("         got #{actual}")
     end
   end
+
+  # --- f4: a row whose line lands on ANOTHER test (MES-194 F4, MES-229) ---
+
+  # F4 on MES-194 was the silent case: a guard that delimits a unit at its captured line
+  # scans whatever test that line now lands on, and reports nothing. MES-176 made guard 21
+  # locate by name, and MES-229 made the register's `line` the located one. This mode is
+  # the pair the PM accepted at `35131` (b), planted on the COMMITTED artefact (its real
+  # drift left in place):
+  #
+  #   * F4-pos: member R's captured line is pointed at a neighbour test in its file that
+  #     calls no producer, and R's decisions are intact. The build ACCEPTS, and the line it
+  #     emits for R is R's own declaration, not the planted one.
+  #   * F4-neg: the same plant, with R's (decode) boundary dropped. The build REFUSES for
+  #     guard 21, naming R's OWN line. Code that trusted the planted line would scan the
+  #     neighbour, find no producer call, and accept.
+  #
+  # A line that lands on another test is NOT refused for that alone: 262 of 994 captured
+  # lines do, legitimately, until MES-230 re-captures the artefact. What is refused is a
+  # defect in the NAMED test's own body.
+  defp f4 do
+    header("F4 — a row whose captured line lands on another test")
+
+    artefact = read(@paths.artefact)
+    doc = read(@paths.decisions)
+    labels = Map.new(doc["decisions"], &{&1["key"], &1["label"]})
+    tests = Enum.filter(artefact["rows"], &(&1["test_type"] == "test"))
+    sources = tests |> Enum.map(& &1["file"]) |> Enum.uniq() |> Map.new(&{&1, File.read!(&1)})
+    oracle = oracle_lines(tests, sources)
+    members = tests |> Enum.filter(&(labels[&1["key"]] == "ET-CC")) |> Enum.sort_by(& &1["key"])
+
+    with {r, ds} <- pick_decode_member(artefact, doc, members),
+         t when t != nil <- quiet_neighbour(r, artefact, sources, oracle) do
+      own = oracle[r["key"]]
+      planted = oracle[t["key"]]
+      art = mutate_rows(artefact, r["key"], %{"line" => planted})
+
+      IO.puts(
+        "  R = #{r["file"]}:#{own} (#{r["name"]})\n" <>
+          "  planted line :#{planted} = #{t["name"]}, a test that calls no producer\n"
+      )
+
+      results = [f4_pos(art, r, own, planted), f4_neg(art, ds, r, own)]
+      IO.puts("\n  #{Enum.count(results, &(&1 == :ok))}/#{length(results)} as expected.")
+      if Enum.any?(results, &(&1 == :error)), do: System.halt(1)
+    else
+      _ ->
+        IO.puts("  FAIL  no member found to plant")
+        System.halt(1)
+    end
+  end
+
+  defp f4_pos(art, r, own, planted) do
+    IO.puts("  F4-pos — decisions intact: the build must ACCEPT and emit R's own line")
+    path = write_tmp_named("etcc-f4-artefact", art)
+
+    emitted =
+      try do
+        ETCCRegister.build(artefact: path)
+        |> Map.fetch!("rows")
+        |> Enum.find(&(&1["key"] == r["key"]))
+        |> Map.fetch!("line")
+      rescue
+        e in RuntimeError -> {:refused, first_line(Exception.message(e))}
+      after
+        File.rm(path)
+      end
+
+    case emitted do
+      ^own ->
+        IO.puts("    ok  ACCEPTED; R emitted at :#{own}, not the planted :#{planted}")
+        :ok
+
+      {:refused, why} ->
+        IO.puts("    FAIL  REFUSED -> #{why}")
+        :error
+
+      other ->
+        IO.puts(
+          "    FAIL  ACCEPTED but R emitted at :#{other} (own :#{own}, planted :#{planted})"
+        )
+
+        :error
+    end
+  end
+
+  defp f4_neg(art, ds, r, own) do
+    IO.puts(
+      "\n  F4-neg — R's (decode) dropped: the build must REFUSE for guard 21 at R's own line"
+    )
+
+    body = Regex.escape("#{r["file"]}:#{own} calls")
+
+    expect_refusal(
+      %{artefact: art, decisions: ds},
+      Regex.compile!("\\(guard 21\\)\\.\\n.*" <> body, "s"),
+      full: true
+    )
+  end
+
+  # --- identity: the emitted line needs an ESTABLISHED identity (MES-229 round 1) ---
+
+  # CR finding 1 at `35147`: emitting a located line for every test row reached the rows
+  # guard 21 never reads, the NON-members, and it accepted a match that cannot establish
+  # identity. A test or `describe` named by an attribute matches as a bare wildcard, so
+  # four different registered names all "located" at one unrelated test. That match is
+  # a wildcard, not a location.
+  #
+  # Planted on a NON-member row R, in a file with no ET-CC row (so guard 21 never reads
+  # it and the refusal can only come from line emission), in a scratch copy of the
+  # sources (`source_root:`). Every other row of R's file is re-declared literally, so it
+  # locates, and only R's declaration varies:
+  #
+  #   * I-pos: R declared literally too. The build ACCEPTS. This is the control on the
+  #     control: the rewritten file is itself locatable, so the cases below discriminate.
+  #   * I-none: R not declared. Refused: no `test` declaration has that name.
+  #   * I-ambiguous: R declared twice. Refused: 2 `test` declarations match.
+  #   * I-test-attr: R's TEST named by `@attr`, inside R's own describe. Refused: it
+  #     cannot establish identity.
+  #   * I-describe-attr: R's DESCRIBE named by `@attr`. Refused for the same reason.
+  #
+  # Each refusal must name R's key. A refusal for another row, or for another reason,
+  # counts as a failure.
+  defp identity do
+    header("IDENTITY — a line is emitted only for a test whose identity is established")
+
+    artefact = read(@paths.artefact)
+    labels = Map.new(read(@paths.decisions)["decisions"], &{&1["key"], &1["label"]})
+    in_scope = Enum.filter(artefact["rows"], &String.starts_with?(&1["file"], "test/mcp/"))
+
+    picked =
+      in_scope
+      |> Enum.group_by(& &1["file"])
+      |> Enum.sort()
+      |> Enum.find_value(fn {file, rows} ->
+        r =
+          Enum.all?(rows, &(&1["test_type"] == "test" and labels[&1["key"]] != "ET-CC")) &&
+            rows |> Enum.sort_by(& &1["key"]) |> Enum.find(&solo_describe?(&1, rows))
+
+        if r, do: {file, rows, r}
+      end)
+
+    case picked do
+      nil ->
+        IO.puts("  FAIL  no non-member file with a single-test describe to plant on")
+        System.halt(1)
+
+      {file, rows, r} ->
+        IO.puts(
+          "  R = #{r["key"]}\n      (#{labels[r["key"]]}, in #{file}: #{length(rows)} test rows, none ET-CC)\n"
+        )
+
+        others = Enum.reject(rows, &(&1["key"] == r["key"]))
+        mine = Regex.escape("cannot locate #{r["key"]} in #{file} to emit its line: ")
+
+        unnamed =
+          mine <> "the only declaration its name matches, at :\\d+, cannot establish identity"
+
+        cases = [
+          {"I-pos — R declared literally: ACCEPT", [decl(r)], nil},
+          {"I-none — R not declared", [], mine <> "no `test` declaration has that name"},
+          {"I-ambiguous — R declared twice", [decl(r), decl(r)],
+           mine <> "2 `test` declarations match"},
+          {"I-test-attr — R's test named by @attr", [attr_test(r)],
+           unnamed <> " — its test name @mes229_name"},
+          {"I-describe-attr — R's describe named by @attr", [attr_describe(r)],
+           unnamed <> " — its describe name @mes229_describe"}
+        ]
+
+        results =
+          Enum.map(cases, fn {name, r_decls, pattern} ->
+            IO.puts("  #{name}")
+            identity_case(in_scope, file, Enum.map(others, &decl/1) ++ r_decls, pattern)
+          end)
+
+        IO.puts("\n  #{Enum.count(results, &(&1 == :ok))}/#{length(results)} as expected.")
+        if Enum.any?(results, &(&1 == :error)), do: System.halt(1)
+    end
+  end
+
+  defp identity_case(in_scope, file, decls, pattern) do
+    root = Path.join(System.tmp_dir!(), "etcc-identity-#{System.unique_integer([:positive])}")
+
+    try do
+      for f <- in_scope |> Enum.map(& &1["file"]) |> Enum.uniq() do
+        dst = Path.join(root, f)
+        File.mkdir_p!(Path.dirname(dst))
+        File.cp!(f, dst)
+      end
+
+      File.write!(
+        Path.join(root, file),
+        "defmodule MES229IdentityScratch do\n  use ExUnit.Case\n\n" <>
+          Enum.join(decls, "\n") <> "end\n"
+      )
+
+      case {attempt(%{source_root: root}), pattern} do
+        {:accepted, nil} ->
+          IO.puts("    ok  ACCEPTED")
+          :ok
+
+        {:accepted, _} ->
+          IO.puts("    FAIL  ACCEPTED — the emitted line was not refused")
+          :error
+
+        {{:refused, why}, nil} ->
+          IO.puts("    FAIL  REFUSED -> #{why}")
+          :error
+
+        {{:refused, why}, pattern} ->
+          if Regex.match?(Regex.compile!(pattern, "u"), why) do
+            IO.puts("    ok  REFUSED -> #{why}")
+            :ok
+          else
+            IO.puts("    FAIL  REFUSED FOR THE WRONG REASON -> #{why}")
+            :error
+          end
+      end
+    after
+      File.rm_rf!(root)
+    end
+  end
+
+  defp solo_describe?(r, rows),
+    do: r["describe"] != nil and Enum.count(rows, &(&1["describe"] == r["describe"])) == 1
+
+  # The test's own name: the runtime name less "test " and the describe prefix.
+  defp tail(%{"name" => "test " <> rest, "describe" => nil}), do: rest
+
+  defp tail(%{"name" => "test " <> rest, "describe" => d}),
+    do: String.replace_prefix(rest, d <> " ", "")
+
+  defp decl(%{"describe" => nil} = r),
+    do: "  test #{inspect(tail(r))} do\n    assert true\n  end\n"
+
+  defp decl(%{"describe" => d} = r),
+    do:
+      "  describe #{inspect(d)} do\n    test #{inspect(tail(r))} do\n      assert true\n" <>
+        "    end\n  end\n"
+
+  defp attr_test(%{"describe" => d}),
+    do:
+      "  @mes229_name \"unrelated replacement\"\n  describe #{inspect(d)} do\n" <>
+        "    test @mes229_name do\n      assert true\n    end\n  end\n"
+
+  defp attr_describe(r),
+    do:
+      "  @mes229_describe \"unrelated\"\n  describe @mes229_describe do\n" <>
+        "    test #{inspect(tail(r))} do\n      assert true\n    end\n  end\n"
 
   # --- delimit: guard 21 finds a unit by its NAME, never by its captured line (MES-176) ---
 

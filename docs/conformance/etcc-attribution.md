@@ -480,17 +480,17 @@ accuses **nothing**: every sweep hit is already assigned a CG.
 
 ### §3.3 The assignments, per item
 
-**CG1 — 10** (A4: 9). `routing_headers_test.exs:90,110,125,137,166,186,206,230,248`
+**CG1 — 10** (A4: 9). `routing_headers_test.exs:95,117,134,151,182,205,228,254,275`
 (client) + `self_compatibility_test.exs:185` (`none_determinable`; CG1's T-CG1c
 sentinel claim asserted end to end).
 
-**CG2 — 14** (A4: 4 units, of which 2 are ET-CC). `client_conformance_test.exs:186,235`;
+**CG2 — 14** (A4: 4 units, of which 2 are ET-CC). `client_conformance_test.exs:192,247`;
 `client_test.exs:488,500,512,528,556,583,616,644,672`;
 `capabilities_test.exs:140,151` (client) and `:191` (`none_determinable`).
 
 **CG3 — 0.** No ET-CC member. Not implemented; owned by MES-38. Agrees with A4.
 
-**CG4 — 1.** `client_conformance_test.exs:116`. Agrees with A4.
+**CG4 — 1.** `client_conformance_test.exs:118`. Agrees with A4.
 
 **CG5 — 0.** No ET-CC member. `discover_test.exs:37` **mentions** `cacheScope`
 and asserts it **parses**; CG5 requires the client to **honour** it. Recorded as
@@ -501,7 +501,7 @@ exclusion rather than re-deciding it, and agreeing with it.
 
 **CG7 — 31** (A4 named 3 discharge sites). `header_mirror_test.exs:31` (×4
 doctests), `:134,207,330,336,345,354,382,389,402,410,422,472,479` (client) and
-`:367,438` (`none_determinable`); `routing_headers_test.exs:318,354,372`;
+`:367,438` (`none_determinable`); `routing_headers_test.exs:359,399,419`;
 `client_tool_schemas_test.exs:83,125,156,178,235,279,389,427,455`.
 
 **CG7 was 35 in round 1. Four rows left on review finding F2 — see §4.5**, which

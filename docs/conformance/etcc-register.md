@@ -144,10 +144,10 @@ tree and are ruled out of scope above.
     docs/conformance/etcc-register.json       <- DERIVED. Never hand-edited.
 
 Every judgement lives in the decisions file and nowhere else. Every other field on
-a register row — `module`, `name`, `file`, `line`, `test_type`, `describe` — is
-**joined** from MES-83's artefact and is never re-derived, so the population is
-never re-counted from source and HAZARD 1 is discharged by the join rather than by
-care.
+a register row — `module`, `name`, `file`, `test_type`, `describe` — is **joined**
+from MES-83's artefact and never re-derived, so the population is never re-counted
+from source and HAZARD 1 is discharged by the join. **`line` is located by name; the
+other joined fields stay joined** (MES-229, PM `35131`; §14 at the end of this file).
 
     mix run conformance/build_etcc_register.exs                       # rebuild
     mix run conformance/controls/etcc_register_controls.exs reproduce # rebuild and diff
@@ -1984,3 +1984,35 @@ rows moved: 0** — no row names `Error (encode)` (Step 3, last column), and
   shift). The residual is stated in the criterion instead: a `test/conformance/` unit that
   really executes `lib/` is excluded too, but it is already an instrument test by gate 1, so
   the two rules fail together. Ruled at `29619` (Q3); no ticket raised.
+
+## §14 MES-229 — `line` is located by name; the other joined fields stay joined
+
+PM ruling `35131` (MES-229). For a `test` row, `line` is the line of the test's
+declaration in the tree the build runs on. It is found by the test's runtime name with
+the locator guard 21 uses (`MCP.Conformance.UnitLocator`). The artefact's own `line` is
+ExUnit's capture at its tip. It drifts whenever the file above a test moves, and every
+consumer of the register (`mix conformance.etcc_tags`, the attribution prose check)
+reads `{file, line}` as where the test is now.
+
+* **The population is still the artefact's.** Locating changes no key and adds or drops
+  no row. A row whose test cannot be located, or that two declarations claim, is
+  refused rather than given its captured line. So is a row whose only match is a
+  declaration with no literal identity (a test or `describe` named by an attribute, a
+  variable or a pure interpolation). That match is a wildcard, not a location, and
+  emitting its line would publish an address for a test that may no longer exist (CR
+  finding 1 at `35147`, correction round 1).
+* **Doctest rows keep the joined `line`.** That is a stated residual: a `doctest`
+  directive is not a `test` declaration, so the locator does not index it. A moved
+  directive is therefore unseen by the build, and by `reproduce` too, which only
+  re-serialises the same build. `mix conformance.etcc_tags --check` sees it only when
+  the directive carries the source mark. This was measured by moving each directive to
+  the end of its module with every other line kept in place.
+  The directive in `header_mirror_test.exs` (marked) gave "0 missing, 1 stale, 1
+  stray". The one in `extensions_test.exs` (name-selected, so unmarked) gave "agree,
+  both directions: OK", which means that move is unseen. Detecting it is out of scope
+  here.
+* **The consequence.** After a commit that moves a `test/mcp/` test, the `reproduce`
+  control goes red until the register is rebuilt, and that is what makes the drift
+  visible. From MES-161 to MES-229 the register was hand-maintained instead: 196 `line`
+  fields were edited in place, and `provenance.decisions_md5` was left at a superseded
+  decisions file.
