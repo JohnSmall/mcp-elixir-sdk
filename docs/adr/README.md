@@ -42,7 +42,7 @@ Confluence mirror: [ADR register](https://vidhya-trading.atlassian.net/wiki/spac
 · [ADR-001](https://vidhya-trading.atlassian.net/wiki/spaces/ElixirMCPS/pages/232194078)
 · [ADR-002](https://vidhya-trading.atlassian.net/wiki/spaces/ElixirMCPS/pages/232620042)
 · [ADR-003](https://vidhya-trading.atlassian.net/wiki/spaces/ElixirMCPS/pages/249724984)
-· ADR-004: mirror pending; the PM publishes it after the MES-226 merge.
+· [ADR-004](https://vidhya-trading.atlassian.net/wiki/spaces/ElixirMCPS/pages/359170077)
 
 ## Verification notes
 
