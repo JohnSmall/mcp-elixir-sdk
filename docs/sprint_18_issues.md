@@ -97,7 +97,8 @@ CC and the binding CR run.
   MES-231**; no DoD gate is. One branch, three review hops (G1 52, G2 53, G3 127), a single merge.
 - Hop 1 is built and corrected (tip `20cc8c8`): G1 = ET-CC 41, ET-CTRL 5, ET-ADJ 3, ET-OUT 3. CR
   F1 moved 8 client rows from ET-OUT to ET-CC (mixed) on Part A §6, and CC applied the same rule
-  to 4 more; F2 removed an unexecuted producer from a boundary list.
+  to 4 more; F2 removed an unexecuted producer from a boundary list. **The CR approved hop 1 at
+  `20cc8c8` on 2026-11-13** (35222/35223, 22/22 seeds); hop 2 was dispatched the same day (35224).
 - PM §9 ruling: a removed method sent without `_meta` falls under index.mdx:380-382's -32602
   MUST, so the SDK's -32601 test is ET-OUT at gate 3. Whether the SDK is wrong → **MES-238**
   (Bug, backlog, blocked by MES-230), opened at the PO's request.
@@ -110,8 +111,8 @@ CC and the binding CR run.
   `usage_limit_exceeded` / `workspace_owner_credits_depleted`, after posting parts 1 and 2 but
   before its verdict part and its 22-seed run. acm's `seat_status` reported the engine's own error.
 - The PM routed the findings already stated (part 2 says REQUEST CHANGES); the seed record moved to
-  CC's correction run. **The PO ruled not to switch the CR engine and will top up codex.** MES-230
-  holds with the PM until then.
+  CC's correction run. **The PO ruled not to switch the CR engine and topped up codex** on
+  2026-11-13; the hop-1 re-review then ran on codex.
 - Separately: `seat_status` on a later CC handle (`d42ceb1692b0`) returned "unknown handle" after
   the turn ended, though the turn had posted its close-out. Effect was read from the ticket.
 
@@ -195,6 +196,6 @@ no ticket was opened.
 
 ## Carried into Sprint 19
 
-- **MES-230** hops 2 and 3 (G2 53, G3 127), after the CR re-reviews hop 1; then MES-231.
+- **MES-230** hops 2 and 3 (G2 53, G3 127; hop 1 approved, hop 2 in progress); then MES-231.
 - **MES-214** (stale M9h/M9f/M10 reddens), not started.
 - Backlog raised this sprint: MES-233, 234, 235 (PO: option A), 236, 237, 238.
