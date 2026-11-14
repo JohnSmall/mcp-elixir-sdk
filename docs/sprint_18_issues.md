@@ -206,6 +206,63 @@ reports this delta but does not raise on it; no verdict field moved. The probe b
 is unchanged, so the L2 verdicts were not decided over a blind probe. Nothing was refused, and
 no ticket was opened.
 
+## End-of-sprint sweeps re-run at the final tip, `cb757bf`
+
+MES-230 merged after the first sweeps, so the sprint's final tip moved from `dea3afe` to
+`cb757bf` and steps 2, 4 and 5 were run again there on 2026-11-14.
+
+### Gate 6, two-step
+
+```
+EMFA_names=0
+cb757bf
+No retired or security advisory packages found
+gate6 exit=0
+```
+
+6a printed no `GATE 6 FAILS` line; 6b exit 0. **Clean.**
+
+### Publication (`mix origin.sync`)
+
+`IN SYNC`, main = origin/main at `cb757bf`; `2.0.0-dev.118` (`1d1367af64b6`) is annotated, on
+origin as the same object, and peels into main.
+
+### Boundary-liveness sweep
+
+```
+(a) git diff --name-only dea3afe...HEAD -- lib/
+    (empty)
+(b) git diff --name-only dea3afe...HEAD -- test/ test/support/ conformance/lib/
+    test/fixtures/conformance/string-citations-ledger.json
+    test/mcp/transport/error_data_test.exs
+(c) mix conformance.sweep --host
+    recorded with the table: node=v24.13.0 harness=available
+    this host:               node=v24.13.0 harness=available
+    HOST MATCHES — condition (c) is satisfied.  (exit 0)
+```
+
+(b) is non-empty (MES-230 renamed describe blocks in `error_data_test.exs`), so the sweep ran in
+a detached worktree at `cb757bf` under `env -i … --norc --noprofile`.
+
+```
+EMFA_names=0
+HEAD cb757bf start 2026-11-14T08:55:19Z
+== MEASUREMENT DELTA (§2.3(e), reported not raised on) ==
+  50 direction(s) differ on measurement fields only
+== BASELINE PROBE (reported not raised on) ==
+  unchanged — the probe's baseline fingerprint matches control.probe.
+== L2 CARRIED FORWARD (reported not raised on) ==
+  0 LIVE verdict(s) decided by L2 stand over a probe that moved NOTHING this run
+== VERDICT DIFF (AC5 — this is the loud one) ==
+  none — every verdict field reproduces byte-exactly.
+SWEEP EXIT=0 end 2026-11-14T11:18:58Z
+```
+
+**50/50 directions, 0 verdicts moved, 2 h 24 m. The last completed sweep tip is now `cb757bf`.**
+The measurement delta is the same as at `dea3afe`, against the same committed table. A leaf diff
+of the two runs' `--out` files found no field that differs. Nothing was refused, and no ticket
+was opened.
+
 ## Carried into Sprint 19
 
 - **MES-231** (register rebuild; `keysets`/`reproduce` red at main until it lands). MES-230 merged
