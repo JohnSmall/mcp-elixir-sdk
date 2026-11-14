@@ -8,8 +8,8 @@ The planned order was MES-227, 228, 178, 226, 211, 229, 230, with MES-214 as the
 
 The intended end, 2026-11-09, passed with MES-228 parked behind a gate-7 red from main (S18-2). The
 PO moved the end to 2026-11-13. Eight tickets merged, `2.0.0-dev.111` → `2.0.0-dev.117`, the seven
-planned ones that finished plus MES-232, which the PO ruled in on 2026-11-11. **MES-230 carries
-over** (S18-7); MES-214 was not started. Every turn was started through acm. CODE_CREATOR ran on
+planned ones that finished plus MES-232, which the PO ruled in on 2026-11-11. **MES-230 carried
+past the end date** and merged on 2026-11-14 as `2.0.0-dev.118` (S18-7); MES-214 was not started. Every turn was started through acm. CODE_CREATOR ran on
 claude and CODE_REVIEWER on codex throughout, until codex ran out of credits on 2026-11-12 (S18-8).
 
 | dev | ticket | what landed |
@@ -87,7 +87,7 @@ CC and the binding CR run.
   line, and a doctest residual claimed coverage the `reproduce` control does not give. Both fixed:
   UnitLocator now returns `{:unnamed, …}` and build refuses it.
 
-## S18-7 — MES-230 carries over
+## S18-7 — MES-230 ran past the end date, merged as dev.118
 
 - Measured with the instrument at `dea3afe`: **232 new in-scope units in 20 files** (survey: ~210
   in 18), and 262 of 994 old test rows whose captured line had drifted (the survey's heuristic
@@ -102,8 +102,20 @@ CC and the binding CR run.
 - PM §9 ruling: a removed method sent without `_meta` falls under index.mdx:380-382's -32602
   MUST, so the SDK's -32601 test is ET-OUT at gate 3. Whether the SDK is wrong → **MES-238**
   (Bug, backlog, blocked by MES-230), opened at the PO's request.
-- Raised for the PO, not built: a sprint-boundary freshness capture, and running `reproduce` on
-  tickets that touch `test/mcp/`.
+- Hop 2 (G2 = ET-CC 50, ET-OUT 3): the CR's F1 led to the PM §9 ruling 35229. WHATWG §9.2.6's
+  "For web browsers" dispatch steps are SDK policy, sorted by P/B mutants on `sse.ex`. 44 units
+  were escalated and adjudicated. Applying the same ruling to the pre-existing SSE rows → **MES-239**.
+  The CR approved hop 2 at `55f046e` (35233/35234).
+- Hop 3 (G3 = ET-CC 107, ET-CTRL 2, ET-ADJ 6, ET-OUT 12). PM rulings 35238: E1 YES, a notification's
+  null id is ADR-004 policy, so mixed; E2 NO, no Streamable HTTP client-transport boundary, so ET-OUT.
+  The CR's F1/F2 (one missing `inherited_from`, the rulings not yet recorded) were corrected at
+  `d8e82f1`. **The CR approved at `d8e82f1` (35246)**: 22/22 seeds, all gates green, state B.
+- **Merged on 2026-11-14 as `2.0.0-dev.118` (`b439347`)**, after the moved end date, while sprint
+  2280 was still open in Jira. The PO approved the state-B merge in session the same day. Totals over
+  the 232: ET-CC 198, ET-CTRL 7, ET-ADJ 9, ET-OUT 18; mixed 156; 47 escalated, all adjudicated.
+- The PO said YES in session on 2026-11-14 to three backlog tickets, all blocked by MES-231:
+  **MES-240** (fresh capture at the sprint boundary), **MES-241** (`reproduce` on tickets that touch
+  `test/mcp/`) and **MES-242** (whether to add a Streamable HTTP client-transport boundary).
 
 ## S18-8 — the reviewer engine ran out of credits mid-review
 
@@ -196,6 +208,7 @@ no ticket was opened.
 
 ## Carried into Sprint 19
 
-- **MES-230** hops 2 and 3 (G2 53, G3 127; hop 1 approved, hop 2 in progress); then MES-231.
+- **MES-231** (register rebuild; `keysets`/`reproduce` red at main until it lands). MES-230 merged
+  as `2.0.0-dev.118` on 2026-11-14 (S18-7).
 - **MES-214** (stale M9h/M9f/M10 reddens), not started.
-- Backlog raised this sprint: MES-233, 234, 235 (PO: option A), 236, 237, 238.
+- Backlog raised this sprint: MES-233, 234, 235 (PO: option A), 236, 237, 238, 239, 240, 241, 242.
