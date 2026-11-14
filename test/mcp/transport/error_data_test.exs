@@ -9,7 +9,7 @@ defmodule MCP.Transport.StreamableHTTP.ErrorDataTest do
   `<<…>>`).
 
   Each unit asserts the whole reply: the HTTP status and the whole JSON body,
-  so `code`, `message`, `id` and `data` together.
+  so `code`, `message`, `id` and `data` together. The Plug sites each describe covers (they were in the describe names before MES-230): -32700 plug.ex:347; -32600 with a readable id :371; with no readable id :380; -32020 :933, :936, :1223.
 
   OC: `HttpServerHeaderMismatch400` drives the `MCP-Protocol-Version` vs `_meta`
   comparison and checks HTTP 400 with -32020, so the two units on that path
@@ -62,7 +62,7 @@ defmodule MCP.Transport.StreamableHTTP.ErrorDataTest do
   defp invalid(id, data), do: {400, reply(id, -32_600, "Invalid request", data)}
   defp mismatch(id, data), do: {400, reply(id, -32_020, "Header mismatch", data)}
 
-  describe "-32700 (plug.ex:347)" do
+  describe "-32700 parse error" do
     @tag oc: :none
     @tag oc_reason:
            "no in-scope OC check POSTs invalid JSON to the server; searched in-scope-2026-07-28.json and the pinned dist (a10085d0)"
@@ -72,7 +72,7 @@ defmodule MCP.Transport.StreamableHTTP.ErrorDataTest do
     end
   end
 
-  describe "-32600 with a readable id (plug.ex:371)" do
+  describe "-32600 with a readable id" do
     @tag oc: :none
     @tag oc_reason:
            "no in-scope OC check POSTs a JSON-RPC response to the server; searched in-scope-2026-07-28.json and the pinned dist (a10085d0)"
@@ -121,7 +121,7 @@ defmodule MCP.Transport.StreamableHTTP.ErrorDataTest do
     end
   end
 
-  describe "-32600 with no readable id (plug.ex:380)" do
+  describe "-32600 with no readable id" do
     @tag oc: :none
     @tag oc_reason:
            "no in-scope OC check POSTs a batch to the server; searched in-scope-2026-07-28.json and the pinned dist (a10085d0)"
@@ -160,7 +160,7 @@ defmodule MCP.Transport.StreamableHTTP.ErrorDataTest do
     end
   end
 
-  describe "-32020 renders a body value as JSON (plug.ex:933, :936, :1223)" do
+  describe "-32020 renders a body value as JSON" do
     @tag oc: :none
     @tag oc_reason:
            "HttpServerHeaderMismatch400 drives only the MCP-Protocol-Version comparison; no OC check sends a mismatched Mcp-Method; searched the pinned dist (a10085d0)"

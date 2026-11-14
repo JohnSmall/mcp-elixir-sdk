@@ -8,10 +8,11 @@
 #     mix run conformance/controls/etcc_register_controls.exs delimit
 #     mix run conformance/controls/etcc_register_controls.exs f4
 #     mix run conformance/controls/etcc_register_controls.exs identity
+#     mix run conformance/controls/etcc_register_controls.exs oracle
 #     mix run conformance/controls/etcc_register_controls.exs all
 #
-# `all` (MES-229) runs guards, totality, keysets, reproduce, delimit, f4 and identity, each in its
-# own `mix run`, and exits 1 if any of them fails. `spec` is NOT in it: it needs a
+# `all` (MES-229) runs guards, totality, keysets, reproduce, delimit, f4, identity and oracle
+# (MES-230), each in its own `mix run`, and exits 1 if any of them fails. `spec` is NOT in it: it needs a
 # materialised spec tree at 5f5440bb passed as <dir>, which no tree carries.
 #
 # WHY A SCRIPT AND NOT AN ExUnit TEST. Any test file added here lands in the very
@@ -29,6 +30,7 @@ defmodule ETCCRegisterControls do
   alias MCP.Conformance.{ETCCRegister, OcGateDeclarations}
 
   @paths ETCCRegister.paths()
+  @in_scope "test/mcp/"
 
   def run(["guards"]), do: guards()
   def run(["totality"]), do: totality()
@@ -38,11 +40,12 @@ defmodule ETCCRegisterControls do
   def run(["delimit"]), do: delimit()
   def run(["f4"]), do: f4()
   def run(["identity"]), do: identity()
+  def run(["oracle"]), do: oracle()
   def run(["all"]), do: all()
 
   def run(_) do
     IO.puts(
-      "usage: guards | totality | keysets | reproduce | spec <dir> | delimit | f4 | identity | all\n" <>
+      "usage: guards | totality | keysets | reproduce | spec <dir> | delimit | f4 | identity | oracle | all\n" <>
         "       (all = every mode but spec, which needs a materialised spec tree as <dir>)"
     )
 
@@ -54,7 +57,7 @@ defmodule ETCCRegisterControls do
   # Each mode is its own `mix run`, because the modes signal failure by halting the VM;
   # running them in-process would end `all` at the first red instead of reporting
   # every mode.
-  @all_modes ~w(guards totality keysets reproduce delimit f4 identity)
+  @all_modes ~w(guards totality keysets reproduce delimit f4 identity oracle)
 
   defp all do
     header("ALL — #{Enum.join(@all_modes, ", ")} (spec excluded: it needs a spec tree)")
@@ -367,6 +370,109 @@ defmodule ETCCRegisterControls do
     end
   end
 
+  # --- oracle: delimit and f4's oracle covers the register's rows, all of them (MES-230) ---
+
+  # PM `35180` Q4. `oracle_lines/2` raises when a row's name matches other than exactly
+  # one declaration, and that raise is what makes delimit and f4 trust it. MES-230
+  # restricts it to `register_tests/1`. Two cases, on the committed artefact:
+  #
+  #   * O-out: the out-of-scope `Gate8TriggerTest` row ("E1 (observed, residual 6)…") is
+  #     in the artefact and is AMBIGUOUS to the unrestricted oracle (the control on the
+  #     control: without it the case below shows nothing). Over `register_tests/1` the
+  #     oracle does not raise, and the row is not in its population.
+  #   * O-in: a planted in-scope ambiguity, an exact copy of an in-scope test's whole
+  #     block written under it in a copy of its source, still raises, naming that row.
+  #     The restriction drops out-of-scope rows, never an in-scope one.
+  @o_out_key "MCP.Conformance.Gate8TriggerTest/test the verdict on each fixture " <>
+               "E1 (observed, residual 6): an unresolvable ref reads as silent"
+
+  defp oracle do
+    header("ORACLE — delimit and f4's oracle covers exactly the register's rows")
+
+    artefact = read(@paths.artefact)
+    all_tests = Enum.filter(artefact["rows"], &(&1["test_type"] == "test"))
+    tests = register_tests(artefact)
+    sources = all_tests |> Enum.map(& &1["file"]) |> Enum.uniq() |> Map.new(&{&1, File.read!(&1)})
+
+    results = [oracle_out(artefact, all_tests, tests, sources), oracle_in(tests, sources)]
+    IO.puts("\n  #{Enum.count(results, &(&1 == :ok))}/#{length(results)} as expected.")
+    if Enum.any?(results, &(&1 == :error)), do: System.halt(1)
+  end
+
+  defp oracle_out(artefact, all_tests, tests, sources) do
+    IO.puts("  O-out — the out-of-scope Gate8TriggerTest row cannot stop the oracle")
+    row = Enum.find(artefact["rows"], &(&1["key"] == @o_out_key))
+    unrestricted = oracle_attempt([row], sources)
+    restricted = oracle_attempt(tests, sources)
+    in_population = Enum.any?(tests, &(&1["key"] == @o_out_key))
+
+    cond do
+      row == nil ->
+        IO.puts("    FAIL  the row is not in the artefact, so this case shows nothing")
+        :error
+
+      not match?({:raised, "oracle: " <> _}, unrestricted) ->
+        IO.puts(
+          "    FAIL  control: unrestricted, the row did not raise -> #{inspect(unrestricted)}"
+        )
+
+        :error
+
+      in_population or not match?({:ok, _}, restricted) ->
+        IO.puts(
+          "    FAIL  restricted: #{inspect(restricted, limit: 3)}; in population: #{in_population}"
+        )
+
+        :error
+
+      true ->
+        {:raised, why} = unrestricted
+        {:ok, lines} = restricted
+
+        IO.puts(
+          "    ok  control: unrestricted it raises -> #{why}\n" <>
+            "    ok  restricted: #{map_size(lines)} of #{length(all_tests)} test rows located, " <>
+            "none raised, the row is not among them"
+        )
+
+        :ok
+    end
+  end
+
+  defp oracle_in(tests, sources) do
+    IO.puts("\n  O-in — a planted in-scope ambiguity still raises, naming its row")
+    {:ok, base} = oracle_attempt(tests, sources)
+
+    r =
+      Enum.find(tests, fn r ->
+        lines = String.split(sources[r["file"]], "\n")
+        Enum.at(lines, base[r["key"]] - 1) =~ ~r/^\s+test "[^"#]*" do$/
+      end)
+
+    lines = String.split(sources[r["file"]], "\n")
+    first = base[r["key"]]
+    last = closing_end(lines, first)
+    block = Enum.slice(lines, (first - 1)..(last - 1))
+    planted = Enum.join(Enum.take(lines, last) ++ block ++ Enum.drop(lines, last), "\n")
+    want = "oracle: #{r["key"]} matches 2 declarations in #{r["file"]}"
+
+    case oracle_attempt(tests, Map.put(sources, r["file"], planted)) do
+      {:raised, ^want} ->
+        IO.puts("    ok  #{r["file"]}:#{first}-#{last} copied below itself -> #{want}")
+        :ok
+
+      other ->
+        IO.puts("    FAIL  expected `#{want}`, got #{inspect(other, limit: 3)}")
+        :error
+    end
+  end
+
+  defp oracle_attempt(rows, sources) do
+    {:ok, oracle_lines(rows, sources)}
+  rescue
+    e in RuntimeError -> {:raised, Exception.message(e)}
+  end
+
   # --- f4: a row whose line lands on ANOTHER test (MES-194 F4, MES-229) ---
 
   # F4 on MES-194 was the silent case: a guard that delimits a unit at its captured line
@@ -383,15 +489,15 @@ defmodule ETCCRegisterControls do
   #     neighbour, find no producer call, and accept.
   #
   # A line that lands on another test is NOT refused for that alone: 262 of 994 captured
-  # lines do, legitimately, until MES-230 re-captures the artefact. What is refused is a
-  # defect in the NAMED test's own body.
+  # lines did at dea3afe, legitimately, and MES-230's re-capture took that to 0 of the 798
+  # in-scope test rows. What is refused is a defect in the NAMED test's own body.
   defp f4 do
     header("F4 — a row whose captured line lands on another test")
 
     artefact = read(@paths.artefact)
     doc = read(@paths.decisions)
     labels = Map.new(doc["decisions"], &{&1["key"], &1["label"]})
-    tests = Enum.filter(artefact["rows"], &(&1["test_type"] == "test"))
+    tests = register_tests(artefact)
     sources = tests |> Enum.map(& &1["file"]) |> Enum.uniq() |> Map.new(&{&1, File.read!(&1)})
     oracle = oracle_lines(tests, sources)
     members = tests |> Enum.filter(&(labels[&1["key"]] == "ET-CC")) |> Enum.sort_by(& &1["key"])
@@ -666,7 +772,7 @@ defmodule ETCCRegisterControls do
     artefact = read(@paths.artefact)
     doc = read(@paths.decisions)
     labels = Map.new(doc["decisions"], &{&1["key"], &1["label"]})
-    tests = Enum.filter(artefact["rows"], &(&1["test_type"] == "test"))
+    tests = register_tests(artefact)
     sources = tests |> Enum.map(& &1["file"]) |> Enum.uniq() |> Map.new(&{&1, File.read!(&1)})
     oracle = oracle_lines(tests, sources)
     moved = Enum.count(tests, &(&1["line"] != oracle[&1["key"]]))
@@ -1027,7 +1133,9 @@ defmodule ETCCRegisterControls do
           Enum.map(art["rows"], &if(&1["key"] == key, do: Map.merge(&1, changes), else: &1))
     }
 
-  defp reline(%{"test_type" => "test", "key" => k} = r, oracle),
+  # Only the rows the register emits are re-lined: the oracle covers exactly those
+  # (`register_tests/1`), and an out-of-scope row's line is never emitted (MES-230).
+  defp reline(%{"test_type" => "test", "key" => k, "file" => @in_scope <> _} = r, oracle),
     do: %{r | "line" => Map.fetch!(oracle, k)}
 
   defp reline(r, _oracle), do: r
@@ -1073,6 +1181,19 @@ defmodule ETCCRegisterControls do
       Enum.each(paths, fn {_, p} -> File.rm(p) end)
     end
   end
+
+  # The rows the register emits a line for: `test` rows under `test/mcp/`. The oracle
+  # runs over these and nothing else (MES-230, PM `35180` Q4). Before MES-230 it ran
+  # over every artefact row, and the re-captured artefact's out-of-scope
+  # `Gate8TriggerTest` row, which a `for`-generated template in its own describe also
+  # matches, stopped delimit and f4 for a row the register never locates. `oracle`
+  # below shows the restriction drops that row and no in-scope ambiguity.
+  defp register_tests(artefact),
+    do:
+      Enum.filter(
+        artefact["rows"],
+        &(&1["test_type"] == "test" and String.starts_with?(&1["file"], @in_scope))
+      )
 
   # key -> the line gate 7's reader puts that test's declaration at. Exactly one
   # declaration must match, or the oracle itself is not usable and the mode stops.
