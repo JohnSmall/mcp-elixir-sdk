@@ -10527,15 +10527,21 @@
       "key": "MCP.Transport.SSETest/test decode_event/1 decodes event with JSON data",
       "label": "ET-CC",
       "excluding_gate": null,
-      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:88-92 (\"the server **MUST** return either `Content-Type: application/json` … or `Content-Type: text/event-stream` (an SSE response stream). The client **MUST** support both\") — the SSE field syntax is governed by reference from there",
+      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:88-92 (\"the server **MUST** return either `Content-Type: application/json` … or `Content-Type: text/event-stream` (an SSE response stream). The client **MUST** support both\") — the SSE parsing rules are governed by reference from there (WHATWG HTML §§9.2.5-6: BOM, line endings, the first colon and one space, data concatenation, the id field, retry digits, and the all-user-agent minimum that the data and event-type buffers are cleared at dispatch); the web-browser dispatch steps are not (PM §9 ruling 35229)",
       "falsifiable": "yes",
-      "mixed": false,
+      "mixed": true,
       "consumed_at": null,
       "controls": null,
-      "escalated": false,
-      "question": null,
-      "evidence": ":95-96 — a JSON payload survives decode BYTE-IDENTICALLY, which is what makes the frame a usable JSON-RPC carrier. The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket.",
-      "adjudication": null,
+      "escalated": true,
+      "question": "§9, raised by CR 35227 F1: does MCP's requirement to support text/event-stream (streamable-http.mdx:88-92) require this non-browser SDK to adopt WHATWG's web-browser dispatch steps, despite WHATWG's explicit allowance that other user agents' dispatch is implementation dependent?",
+      "evidence": "sse_test.exs:105-107 — a JSON payload survives decode BYTE-IDENTICALLY, which is what makes the frame a usable JSON-RPC carrier. The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket. Limbs, sorted under PM ruling 35229 (§9, NO), applied by MES-239 to this pre-existing decision: WHATWG's web-browser dispatch steps are SDK policy here, not a 2026-07-28 anchor. Anchored (WHATWG §§9.2.5-6 parsing): measured by mutants P1 (the single space after the colon kept), P10 (the field name runs to the LAST colon), each of which turns it red. Browser-only, SDK policy, no anchor: removal of the trailing LF (B1: the trailing LF kept on the data), which turns it red. Both classes are asserted, hence mixed; the anchored limbs keep it ET-CC.",
+      "adjudication": {
+        "ruling": "MES-230 hop-2 §9: NO",
+        "comment": "35229",
+        "date": "2026-11-13",
+        "outcome": "ET-CC kept, mixed: anchored parsing limbs and browser-only dispatch limbs",
+        "raised_by": "PM"
+      },
       "boundary": [
         "MCP.Transport.SSE (decode)"
       ]
@@ -10544,15 +10550,21 @@
       "key": "MCP.Transport.SSETest/test decode_event/1 decodes event with all fields",
       "label": "ET-CC",
       "excluding_gate": null,
-      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:88-92 (\"the server **MUST** return either `Content-Type: application/json` … or `Content-Type: text/event-stream` (an SSE response stream). The client **MUST** support both\") — the SSE field syntax is governed by reference from there",
+      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:88-92 (\"the server **MUST** return either `Content-Type: application/json` … or `Content-Type: text/event-stream` (an SSE response stream). The client **MUST** support both\") — the SSE parsing rules are governed by reference from there (WHATWG HTML §§9.2.5-6: BOM, line endings, the first colon and one space, data concatenation, the id field, retry digits, and the all-user-agent minimum that the data and event-type buffers are cleared at dispatch); the web-browser dispatch steps are not (PM §9 ruling 35229)",
       "falsifiable": "yes",
       "mixed": true,
       "consumed_at": null,
       "controls": null,
-      "escalated": false,
-      "question": null,
-      "evidence": ":80-83 — a complete frame decodes to its four fields, `retry` coerced to the integer 3000. Client side: streamable_http/client.ex:569 feeds real response bodies to this parser. The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket.",
-      "adjudication": null,
+      "escalated": true,
+      "question": "§9, raised by CR 35227 F1: does MCP's requirement to support text/event-stream (streamable-http.mdx:88-92) require this non-browser SDK to adopt WHATWG's web-browser dispatch steps, despite WHATWG's explicit allowance that other user agents' dispatch is implementation dependent?",
+      "evidence": "sse_test.exs:87-92 — a complete frame decodes to its four fields, `retry` coerced to the integer 3000. Client side: streamable_http/client.ex:569 feeds real response bodies to this parser. The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket. Limbs, sorted under PM ruling 35229 (§9, NO), applied by MES-239 to this pre-existing decision: WHATWG's web-browser dispatch steps are SDK policy here, not a 2026-07-28 anchor. Anchored (WHATWG §§9.2.5-6 parsing): measured by mutants P1 (the single space after the colon kept), each of which turns it red. Browser-only, SDK policy, no anchor: removal of the trailing LF (B1: the trailing LF kept on the data), which turns it red. Both classes are asserted, hence mixed; the anchored limbs keep it ET-CC. It was already mixed before MES-239 (the retry value coerced to an integer).",
+      "adjudication": {
+        "ruling": "MES-230 hop-2 §9: NO",
+        "comment": "35229",
+        "date": "2026-11-13",
+        "outcome": "ET-CC kept, mixed: anchored parsing limbs and browser-only dispatch limbs",
+        "raised_by": "PM"
+      },
       "boundary": [
         "MCP.Transport.SSE (decode)"
       ]
@@ -10561,15 +10573,21 @@
       "key": "MCP.Transport.SSETest/test decode_event/1 decodes event with only data",
       "label": "ET-CC",
       "excluding_gate": null,
-      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:88-92 (\"the server **MUST** return either `Content-Type: application/json` … or `Content-Type: text/event-stream` (an SSE response stream). The client **MUST** support both\") — the SSE field syntax is governed by reference from there",
+      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:88-92 (\"the server **MUST** return either `Content-Type: application/json` … or `Content-Type: text/event-stream` (an SSE response stream). The client **MUST** support both\") — the SSE parsing rules are governed by reference from there (WHATWG HTML §§9.2.5-6: BOM, line endings, the first colon and one space, data concatenation, the id field, retry digits, and the all-user-agent minimum that the data and event-type buffers are cleared at dispatch); the web-browser dispatch steps are not (PM §9 ruling 35229)",
       "falsifiable": "yes",
-      "mixed": false,
+      "mixed": true,
       "consumed_at": null,
       "controls": null,
-      "escalated": false,
-      "question": null,
-      "evidence": ":87-90 — a data-only frame decodes with no `:event` or `:id` key at all. Absence rather than nil, so a consumer can tell \"not sent\" from \"sent empty\". The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket.",
-      "adjudication": null,
+      "escalated": true,
+      "question": "§9, raised by CR 35227 F1: does MCP's requirement to support text/event-stream (streamable-http.mdx:88-92) require this non-browser SDK to adopt WHATWG's web-browser dispatch steps, despite WHATWG's explicit allowance that other user agents' dispatch is implementation dependent?",
+      "evidence": "sse_test.exs:97-100 — a data-only frame decodes with no `:event` or `:id` key at all. Absence rather than nil, so a consumer can tell \"not sent\" from \"sent empty\". The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket. Limbs, sorted under PM ruling 35229 (§9, NO), applied by MES-239 to this pre-existing decision: WHATWG's web-browser dispatch steps are SDK policy here, not a 2026-07-28 anchor. Anchored (WHATWG §§9.2.5-6 parsing): measured by mutants P1 (the single space after the colon kept), each of which turns it red. Browser-only, SDK policy, no anchor: removal of the trailing LF (B1: the trailing LF kept on the data), which turns it red. Both classes are asserted, hence mixed; the anchored limbs keep it ET-CC.",
+      "adjudication": {
+        "ruling": "MES-230 hop-2 §9: NO",
+        "comment": "35229",
+        "date": "2026-11-13",
+        "outcome": "ET-CC kept, mixed: anchored parsing limbs and browser-only dispatch limbs",
+        "raised_by": "PM"
+      },
       "boundary": [
         "MCP.Transport.SSE (decode)"
       ]
@@ -10578,15 +10596,21 @@
       "key": "MCP.Transport.SSETest/test decode_event/1 handles fields without space after colon",
       "label": "ET-CC",
       "excluding_gate": null,
-      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:88-92 (\"the server **MUST** return either `Content-Type: application/json` … or `Content-Type: text/event-stream` (an SSE response stream). The client **MUST** support both\") — the SSE field syntax is governed by reference from there",
+      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:88-92 (\"the server **MUST** return either `Content-Type: application/json` … or `Content-Type: text/event-stream` (an SSE response stream). The client **MUST** support both\") — the SSE parsing rules are governed by reference from there (WHATWG HTML §§9.2.5-6: BOM, line endings, the first colon and one space, data concatenation, the id field, retry digits, and the all-user-agent minimum that the data and event-type buffers are cleared at dispatch); the web-browser dispatch steps are not (PM §9 ruling 35229)",
       "falsifiable": "yes",
-      "mixed": false,
+      "mixed": true,
       "consumed_at": null,
       "controls": null,
-      "escalated": false,
-      "question": null,
-      "evidence": ":123-124 — `data:hello` with NO space after the colon decodes to \"hello\". The SSE format makes the single leading space optional, so refusing it would reject legal frames. The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket.",
-      "adjudication": null,
+      "escalated": true,
+      "question": "§9, raised by CR 35227 F1: does MCP's requirement to support text/event-stream (streamable-http.mdx:88-92) require this non-browser SDK to adopt WHATWG's web-browser dispatch steps, despite WHATWG's explicit allowance that other user agents' dispatch is implementation dependent?",
+      "evidence": "sse_test.exs:137-139 — `data:hello` with NO space after the colon decodes to \"hello\". The SSE format makes the single leading space optional, so refusing it would reject legal frames. The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket. Limbs, sorted under PM ruling 35229 (§9, NO), applied by MES-239 to this pre-existing decision: WHATWG's web-browser dispatch steps are SDK policy here, not a 2026-07-28 anchor. Anchored (WHATWG §§9.2.5-6 parsing): measured by mutants P12 (the whole remainder after a colon with no following space not taken as the value; added by MES-239), each of which turns it red. Browser-only, SDK policy, no anchor: removal of the trailing LF (B1: the trailing LF kept on the data), which turns it red. Both classes are asserted, hence mixed; the anchored limbs keep it ET-CC. P12 is an instrument addition made by MES-239 under PM ruling 35318 (E1, option b), not one of the fifteen mutants of 35230: in lib/mcp/transport/sse.ex at 1502703 the anchor \"[field, value] -> process_field(field, value, acc)\" matches exactly once and is replaced by \"[field, value] -> process_field(field, binary_part(value, min(1, byte_size(value)), byte_size(value) - min(1, byte_size(value))), acc)\"; the mutated file differs from the original (sha256 206425dc2a47… against 02995d7d473f…), so it is not a no-op. Over sse_test, subscriptions_stream_test, sse_dispatch_test and sse_line_endings_test (--seed 0) it turns exactly 2 of 96 units red, this one and SSELineEndingsTest \"the field name runs to the first colon, even with no space after it\", and moves no other unit's sort. Before P12 the fifteen turned this unit red by B1 alone; the PM ruled (35318) that this was a gap in the instrument, not a missing anchor, because ruling 35229 sorts by whether an anchored limb is present.",
+      "adjudication": {
+        "ruling": "MES-230 hop-2 §9: NO",
+        "comment": "35229",
+        "date": "2026-11-13",
+        "outcome": "ET-CC kept, mixed: anchored parsing limb (P12, added by MES-239 under PM ruling 35318) and a browser-only dispatch limb",
+        "raised_by": "PM"
+      },
       "boundary": [
         "MCP.Transport.SSE (decode)"
       ]
@@ -10595,15 +10619,21 @@
       "key": "MCP.Transport.SSETest/test decode_event/1 ignores comment lines",
       "label": "ET-CC",
       "excluding_gate": null,
-      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:151-153 (\"Per the [SSE specification][sse], any line beginning with a colon is a comment that carries no event data; clients must ignore such lines and must not treat them as malformed input\"), :146-150 (keep-alive comment lines on long-lived streams)",
+      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:151-153 (\"Per the [SSE specification][sse], any line beginning with a colon is a comment that carries no event data; clients must ignore such lines and must not treat them as malformed input\"), :146-150 (keep-alive comment lines on long-lived streams); the SSE parsing rules are governed by reference from streamable-http.mdx:88-92 (WHATWG HTML §§9.2.5-6: BOM, line endings, the first colon and one space, data concatenation, the id field, retry digits, and the all-user-agent minimum that the data and event-type buffers are cleared at dispatch); the web-browser dispatch steps are not (PM §9 ruling 35229)",
       "falsifiable": "yes",
-      "mixed": false,
+      "mixed": true,
       "consumed_at": null,
       "controls": null,
-      "escalated": false,
-      "question": null,
-      "evidence": ":107-108 — a comment line is ignored and the event still decodes. Directly anchored: the spec makes this a client obligation BY NAME, and it is load-bearing because MCP servers are encouraged to emit `:\\r\\n` keep-alives on subscriptions/listen streams. The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket.",
-      "adjudication": null,
+      "escalated": true,
+      "question": "§9, raised by CR 35227 F1: does MCP's requirement to support text/event-stream (streamable-http.mdx:88-92) require this non-browser SDK to adopt WHATWG's web-browser dispatch steps, despite WHATWG's explicit allowance that other user agents' dispatch is implementation dependent?",
+      "evidence": "sse_test.exs:119-121 — a comment line is ignored and the event still decodes. Directly anchored: the spec makes this a client obligation BY NAME, and it is load-bearing because MCP servers are encouraged to emit `:\\r\\n` keep-alives on subscriptions/listen streams. The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket. Limbs, sorted under PM ruling 35229 (§9, NO), applied by MES-239 to this pre-existing decision: WHATWG's web-browser dispatch steps are SDK policy here, not a 2026-07-28 anchor. Anchored (WHATWG §§9.2.5-6 parsing): measured by mutants P1 (the single space after the colon kept), each of which turns it red. Browser-only, SDK policy, no anchor: removal of the trailing LF (B1: the trailing LF kept on the data), which turns it red. Both classes are asserted, hence mixed; the anchored limbs keep it ET-CC.",
+      "adjudication": {
+        "ruling": "MES-230 hop-2 §9: NO",
+        "comment": "35229",
+        "date": "2026-11-13",
+        "outcome": "ET-CC kept, mixed: anchored parsing limbs and browser-only dispatch limbs",
+        "raised_by": "PM"
+      },
       "boundary": [
         "MCP.Transport.SSE (decode)"
       ]
@@ -10612,15 +10642,21 @@
       "key": "MCP.Transport.SSETest/test decode_event/1 ignores unknown fields",
       "label": "ET-CC",
       "excluding_gate": null,
-      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:88-92 (\"the server **MUST** return either `Content-Type: application/json` … or `Content-Type: text/event-stream` (an SSE response stream). The client **MUST** support both\") — the SSE field syntax is governed by reference from there",
+      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:88-92 (\"the server **MUST** return either `Content-Type: application/json` … or `Content-Type: text/event-stream` (an SSE response stream). The client **MUST** support both\") — the SSE parsing rules are governed by reference from there (WHATWG HTML §§9.2.5-6: BOM, line endings, the first colon and one space, data concatenation, the id field, retry digits, and the all-user-agent minimum that the data and event-type buffers are cleared at dispatch); the web-browser dispatch steps are not (PM §9 ruling 35229)",
       "falsifiable": "yes",
-      "mixed": false,
+      "mixed": true,
       "consumed_at": null,
       "controls": null,
-      "escalated": false,
-      "question": null,
-      "evidence": ":113-114 — unknown SSE fields are ignored rather than treated as errors, which is what lets the format be extended without breaking clients. The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket.",
-      "adjudication": null,
+      "escalated": true,
+      "question": "§9, raised by CR 35227 F1: does MCP's requirement to support text/event-stream (streamable-http.mdx:88-92) require this non-browser SDK to adopt WHATWG's web-browser dispatch steps, despite WHATWG's explicit allowance that other user agents' dispatch is implementation dependent?",
+      "evidence": "sse_test.exs:126-128 — unknown SSE fields are ignored rather than treated as errors, which is what lets the format be extended without breaking clients. The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket. Limbs, sorted under PM ruling 35229 (§9, NO), applied by MES-239 to this pre-existing decision: WHATWG's web-browser dispatch steps are SDK policy here, not a 2026-07-28 anchor. Anchored (WHATWG §§9.2.5-6 parsing): measured by mutants P1 (the single space after the colon kept), each of which turns it red. Browser-only, SDK policy, no anchor: removal of the trailing LF (B1: the trailing LF kept on the data), which turns it red. Both classes are asserted, hence mixed; the anchored limbs keep it ET-CC.",
+      "adjudication": {
+        "ruling": "MES-230 hop-2 §9: NO",
+        "comment": "35229",
+        "date": "2026-11-13",
+        "outcome": "ET-CC kept, mixed: anchored parsing limbs and browser-only dispatch limbs",
+        "raised_by": "PM"
+      },
       "boundary": [
         "MCP.Transport.SSE (decode)"
       ]
@@ -10629,15 +10665,21 @@
       "key": "MCP.Transport.SSETest/test decode_event/1 joins multiple data lines with newlines",
       "label": "ET-CC",
       "excluding_gate": null,
-      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:88-92 (\"the server **MUST** return either `Content-Type: application/json` … or `Content-Type: text/event-stream` (an SSE response stream). The client **MUST** support both\") — the SSE field syntax is governed by reference from there",
+      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:88-92 (\"the server **MUST** return either `Content-Type: application/json` … or `Content-Type: text/event-stream` (an SSE response stream). The client **MUST** support both\") — the SSE parsing rules are governed by reference from there (WHATWG HTML §§9.2.5-6: BOM, line endings, the first colon and one space, data concatenation, the id field, retry digits, and the all-user-agent minimum that the data and event-type buffers are cleared at dispatch); the web-browser dispatch steps are not (PM §9 ruling 35229)",
       "falsifiable": "yes",
-      "mixed": false,
+      "mixed": true,
       "consumed_at": null,
       "controls": null,
-      "escalated": false,
-      "question": null,
-      "evidence": ":101-102 — multiple data lines join with newlines, the inverse of :34. Together they are the round trip that matters for a multi-line payload. The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket.",
-      "adjudication": null,
+      "escalated": true,
+      "question": "§9, raised by CR 35227 F1: does MCP's requirement to support text/event-stream (streamable-http.mdx:88-92) require this non-browser SDK to adopt WHATWG's web-browser dispatch steps, despite WHATWG's explicit allowance that other user agents' dispatch is implementation dependent?",
+      "evidence": "sse_test.exs:112-114 — multiple data lines join with newlines, the inverse of sse_test.exs:41. Together they are the round trip that matters for a multi-line payload. The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket. Limbs, sorted under PM ruling 35229 (§9, NO), applied by MES-239 to this pre-existing decision: WHATWG's web-browser dispatch steps are SDK policy here, not a 2026-07-28 anchor. Anchored (WHATWG §§9.2.5-6 parsing): measured by mutants P1 (the single space after the colon kept), P2 (data lines joined without LF), each of which turns it red. Browser-only, SDK policy, no anchor: removal of the trailing LF (B1: the trailing LF kept on the data), which turns it red. Both classes are asserted, hence mixed; the anchored limbs keep it ET-CC.",
+      "adjudication": {
+        "ruling": "MES-230 hop-2 §9: NO",
+        "comment": "35229",
+        "date": "2026-11-13",
+        "outcome": "ET-CC kept, mixed: anchored parsing limbs and browser-only dispatch limbs",
+        "raised_by": "PM"
+      },
       "boundary": [
         "MCP.Transport.SSE (decode)"
       ]
@@ -10797,15 +10839,21 @@
       "key": "MCP.Transport.SSETest/test stream parser buffers incomplete events",
       "label": "ET-CC",
       "excluding_gate": null,
-      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:88-92 (\"the server **MUST** return either `Content-Type: application/json` … or `Content-Type: text/event-stream` (an SSE response stream). The client **MUST** support both\") — the SSE field syntax is governed by reference from there",
+      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:88-92 (\"the server **MUST** return either `Content-Type: application/json` … or `Content-Type: text/event-stream` (an SSE response stream). The client **MUST** support both\") — the SSE parsing rules are governed by reference from there (WHATWG HTML §§9.2.5-6: BOM, line endings, the first colon and one space, data concatenation, the id field, retry digits, and the all-user-agent minimum that the data and event-type buffers are cleared at dispatch); the web-browser dispatch steps are not (PM §9 ruling 35229)",
       "falsifiable": "yes",
-      "mixed": false,
+      "mixed": true,
       "consumed_at": null,
       "controls": null,
-      "escalated": false,
-      "question": null,
-      "evidence": ":144-149 — an INCOMPLETE event yields nothing and is buffered; the next chunk completes it. This is the property that makes SSE usable over a chunked HTTP body at all — a frame may be split anywhere. The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket.",
-      "adjudication": null,
+      "escalated": true,
+      "question": "§9, raised by CR 35227 F1: does MCP's requirement to support text/event-stream (streamable-http.mdx:88-92) require this non-browser SDK to adopt WHATWG's web-browser dispatch steps, despite WHATWG's explicit allowance that other user agents' dispatch is implementation dependent?",
+      "evidence": "sse_test.exs:160-166 — an INCOMPLETE event yields nothing and is buffered; the next chunk completes it. This is the property that makes SSE usable over a chunked HTTP body at all — a frame may be split anywhere. The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket. Limbs, sorted under PM ruling 35229 (§9, NO), applied by MES-239 to this pre-existing decision: WHATWG's web-browser dispatch steps are SDK policy here, not a 2026-07-28 anchor. Anchored (WHATWG §§9.2.5-6 parsing): measured by mutants P1 (the single space after the colon kept), each of which turns it red. Browser-only, SDK policy, no anchor: removal of the trailing LF (B1: the trailing LF kept on the data), which turns it red. Both classes are asserted, hence mixed; the anchored limbs keep it ET-CC.",
+      "adjudication": {
+        "ruling": "MES-230 hop-2 §9: NO",
+        "comment": "35229",
+        "date": "2026-11-13",
+        "outcome": "ET-CC kept, mixed: anchored parsing limbs and browser-only dispatch limbs",
+        "raised_by": "PM"
+      },
       "boundary": [
         "MCP.Transport.SSE (decode)"
       ]
@@ -10814,15 +10862,21 @@
       "key": "MCP.Transport.SSETest/test stream parser handles multiple chunks",
       "label": "ET-CC",
       "excluding_gate": null,
-      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:88-92 (\"the server **MUST** return either `Content-Type: application/json` … or `Content-Type: text/event-stream` (an SSE response stream). The client **MUST** support both\") — the SSE field syntax is governed by reference from there",
+      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:88-92 (\"the server **MUST** return either `Content-Type: application/json` … or `Content-Type: text/event-stream` (an SSE response stream). The client **MUST** support both\") — the SSE parsing rules are governed by reference from there (WHATWG HTML §§9.2.5-6: BOM, line endings, the first colon and one space, data concatenation, the id field, retry digits, and the all-user-agent minimum that the data and event-type buffers are cleared at dispatch); the web-browser dispatch steps are not (PM §9 ruling 35229)",
       "falsifiable": "yes",
-      "mixed": false,
+      "mixed": true,
       "consumed_at": null,
       "controls": null,
-      "escalated": false,
-      "question": null,
-      "evidence": ":156-165 — three chunks, three events, one at a time, with parser state carried across. The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket.",
-      "adjudication": null,
+      "escalated": true,
+      "question": "§9, raised by CR 35227 F1: does MCP's requirement to support text/event-stream (streamable-http.mdx:88-92) require this non-browser SDK to adopt WHATWG's web-browser dispatch steps, despite WHATWG's explicit allowance that other user agents' dispatch is implementation dependent?",
+      "evidence": "sse_test.exs:173-183 — three chunks, three events, one at a time, with parser state carried across. The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket. Limbs, sorted under PM ruling 35229 (§9, NO), applied by MES-239 to this pre-existing decision: WHATWG's web-browser dispatch steps are SDK policy here, not a 2026-07-28 anchor. Anchored (WHATWG §§9.2.5-6 parsing): measured by mutants P1 (the single space after the colon kept), each of which turns it red. Browser-only, SDK policy, no anchor: removal of the trailing LF (B1: the trailing LF kept on the data), which turns it red. Both classes are asserted, hence mixed; the anchored limbs keep it ET-CC.",
+      "adjudication": {
+        "ruling": "MES-230 hop-2 §9: NO",
+        "comment": "35229",
+        "date": "2026-11-13",
+        "outcome": "ET-CC kept, mixed: anchored parsing limbs and browser-only dispatch limbs",
+        "raised_by": "PM"
+      },
       "boundary": [
         "MCP.Transport.SSE (decode)"
       ]
@@ -10831,15 +10885,21 @@
       "key": "MCP.Transport.SSETest/test stream parser parses complete events",
       "label": "ET-CC",
       "excluding_gate": null,
-      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:88-92 (\"the server **MUST** return either `Content-Type: application/json` … or `Content-Type: text/event-stream` (an SSE response stream). The client **MUST** support both\") — the SSE field syntax is governed by reference from there",
+      "spec_anchor": "docs/specification/2026-07-28/basic/transports/streamable-http.mdx:88-92 (\"the server **MUST** return either `Content-Type: application/json` … or `Content-Type: text/event-stream` (an SSE response stream). The client **MUST** support both\") — the SSE parsing rules are governed by reference from there (WHATWG HTML §§9.2.5-6: BOM, line endings, the first colon and one space, data concatenation, the id field, retry digits, and the all-user-agent minimum that the data and event-type buffers are cleared at dispatch); the web-browser dispatch steps are not (PM §9 ruling 35229)",
       "falsifiable": "yes",
-      "mixed": false,
+      "mixed": true,
       "consumed_at": null,
       "controls": null,
-      "escalated": false,
-      "question": null,
-      "evidence": ":134-136 — two complete events in one chunk parse as two events in order. The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket.",
-      "adjudication": null,
+      "escalated": true,
+      "question": "§9, raised by CR 35227 F1: does MCP's requirement to support text/event-stream (streamable-http.mdx:88-92) require this non-browser SDK to adopt WHATWG's web-browser dispatch steps, despite WHATWG's explicit allowance that other user agents' dispatch is implementation dependent?",
+      "evidence": "sse_test.exs:149-152 — two complete events in one chunk parse as two events in order. The bytes asserted ARE the wire bytes: plug.ex:725, :751, :818 and :1063 chunk `SSE.encode_message/1`'s output straight onto the response connection, and streamable_http/client.ex:569 feeds a real response body to the same parser. Nothing stands between this string and the socket. Limbs, sorted under PM ruling 35229 (§9, NO), applied by MES-239 to this pre-existing decision: WHATWG's web-browser dispatch steps are SDK policy here, not a 2026-07-28 anchor. Anchored (WHATWG §§9.2.5-6 parsing): measured by mutants P1 (the single space after the colon kept), each of which turns it red. Browser-only, SDK policy, no anchor: removal of the trailing LF (B1: the trailing LF kept on the data), which turns it red. Both classes are asserted, hence mixed; the anchored limbs keep it ET-CC.",
+      "adjudication": {
+        "ruling": "MES-230 hop-2 §9: NO",
+        "comment": "35229",
+        "date": "2026-11-13",
+        "outcome": "ET-CC kept, mixed: anchored parsing limbs and browser-only dispatch limbs",
+        "raised_by": "PM"
+      },
       "boundary": [
         "MCP.Transport.SSE (decode)"
       ]
