@@ -2048,11 +2048,23 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
     # The covered_elsewhere universe, recomputed from the register with the
     # needle pinned HERE, not read from the record it checks.
+    @tag oc: :none
+    @tag oc_reason:
+           "instrument unit (conformance artefact check, pinned ET-CC register, MES-231); no OC counterpart"
     test "D2a-ii's covered-elsewhere universe is measured from the register", %{inputs: inputs} do
       {:ok, record} = inputs.records[@d2aii]
       [neg] = Enum.filter(record["negatives"], &(&1["id"] == "covered_elsewhere_universe"))
       assert neg["needle"] == Regex.source(@d2aii_needle)
-      assert neg["units"] == non_etcc_units(@d2aii_needle)
+      # Pinned (MES-231): D2a-ii was measured over the 579-row register, so its
+      # universe is re-derived from MCP.Conformance.PinnedRegister. Removed, or made
+      # permanent, by MES-244.
+      pinned_units =
+        MCP.Conformance.PinnedRegister.decode!()["rows"]
+        |> Enum.group_by(& &1["file"])
+        |> Enum.flat_map(fn {file, rows} -> non_etcc_units(file, rows, @d2aii_needle) end)
+        |> Enum.sort()
+
+      assert neg["units"] == pinned_units
       assert length(neg["units"]) == 36
 
       for r <- d2aii_rows(inputs),
@@ -6954,12 +6966,17 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert both_ways(red, []) == {:error, {MapSet.new([cell_key(c)]), MapSet.new()}}
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "instrument unit (conformance artefact check, pinned ET-CC register, MES-231); no OC counterpart"
     test "the run as recorded: 281 statuses over EXACTLY the register's ET-CC members; red members and red cells follow from them" do
       m = d3d6(A.load())["mechanism"]
       run = m["criterion_run"]
 
+      # Pinned (MES-231): the D3+D6 run selected the 281-member register.
+      # Removed, or made permanent, by MES-244.
       etcc =
-        for r <- json("docs/conformance/etcc-register.json")["rows"],
+        for r <- MCP.Conformance.PinnedRegister.decode!()["rows"],
             r["label"] == "ET-CC",
             do: r["key"]
 
@@ -6992,6 +7009,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert red_cells(cells, Map.delete(statuses, edged)) != []
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "instrument unit (conformance artefact check, pinned ET-CC register, MES-231); no OC counterpart"
     test "the excluded tests: the search over test/ EQUALS the record's hits; no tagged test is a register row" do
       e = d3d6(A.load())["excluded_tests"]
 
@@ -7011,7 +7031,9 @@ defmodule MCP.Conformance.AdjudicationsTest do
       assert both_ways(tagged, Enum.map(e["tagged"], &"#{&1["file"]}:#{hd(&1["lines"])}")) ==
                :ok
 
-      rows = json("docs/conformance/etcc-register.json")["rows"]
+      # Pinned (MES-231): the D3+D6 record counted the 579-row register.
+      # Removed, or made permanent, by MES-244.
+      rows = MCP.Conformance.PinnedRegister.decode!()["rows"]
       assert e["register_rows"] == length(rows)
 
       assert e["register_rows_under_test_conformance"] ==

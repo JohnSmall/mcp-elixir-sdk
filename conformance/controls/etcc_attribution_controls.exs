@@ -28,6 +28,7 @@
 defmodule ETCCAttributionControls do
   alias MCP.Conformance.AttributionCitations
   alias MCP.Conformance.ETCCAttribution
+  alias MCP.Conformance.PinnedRegister
 
   @paths ETCCAttribution.paths()
 
@@ -137,7 +138,8 @@ defmodule ETCCAttributionControls do
       had used it cannot survive this; a build that had not, cannot fail it.
     """)
 
-    register = read(@paths.register)
+    # Pinned (MES-231): B2b is measured over the 281-member register. Removed by MES-243.
+    register = PinnedRegister.decode!()
     rows = Map.fetch!(register, "rows")
 
     carried = Enum.count(rows, &Map.has_key?(&1, "boundary"))
@@ -177,7 +179,8 @@ defmodule ETCCAttributionControls do
   defp sweep do
     header("SWEEP — the term-driven instrument, run as a control on the enumeration")
 
-    register = read(@paths.register)
+    # Pinned (MES-231): B2b is measured over the 281-member register. Removed by MES-243.
+    register = PinnedRegister.decode!()
     enriched = read(@paths.enriched)
 
     by_key = Map.new(Map.fetch!(register, "rows"), &{&1["key"], &1})
@@ -386,7 +389,8 @@ defmodule ETCCAttributionControls do
   # including the one authored for the row at `:422` that had drifted onto
   # another live member's `:410`. `mutation` shows both, on fixtures.
   defp enumeration_check(prose) do
-    register = read(@paths.register)
+    # Pinned (MES-231): B2b is measured over the 281-member register. Removed by MES-243.
+    register = PinnedRegister.decode!()
     enriched = read(@paths.enriched)
     report = AttributionCitations.audit(prose, register, enriched)
 
@@ -454,7 +458,8 @@ defmodule ETCCAttributionControls do
   defp mutation do
     header("MUTATION — the enumeration check, shown able to fail, and the delta it buys")
 
-    register = read(@paths.register)
+    # Pinned (MES-231): B2b is measured over the 281-member register. Removed by MES-243.
+    register = PinnedRegister.decode!()
     enriched = read(@paths.enriched)
     prose = File.read!(@paths.prose)
 
@@ -662,7 +667,8 @@ defmodule ETCCAttributionControls do
   defp proxy do
     header("BOUNDARY PROXY — both readings implemented, so §1(b) is reproducible")
 
-    register = read(@paths.register)
+    # Pinned (MES-231): B2b is measured over the 281-member register. Removed by MES-243.
+    register = PinnedRegister.decode!()
     enriched = read(@paths.enriched)
 
     by_key = Map.new(Map.fetch!(register, "rows"), &{&1["key"], &1})

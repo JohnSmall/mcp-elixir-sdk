@@ -1360,16 +1360,26 @@ defmodule MCP.Conformance.CrosswalkTest do
       refute u["anchor"] =~ "etcc-attribution.json"
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "instrument unit (conformance artefact check, pinned ET-CC register, MES-231); no OC counterpart"
     test "the universe is what etcc_universe/1 derives from the register it names", %{a: a} do
       u = a["population"]["outside_the_population"]["whole_crosswalk_totality"]
-      register = u["anchor"] |> File.read!() |> Jason.decode!()
+      # Pinned (MES-231): the crosswalk was measured over the 281-member register.
+      # Removed by MES-244.
+      register = MCP.Conformance.PinnedRegister.read_for!(u["anchor"])
 
       assert length(Crosswalk.etcc_universe(register)) == u["universe"]
     end
 
+    @tag oc: :none
+    @tag oc_reason:
+           "instrument unit (conformance artefact check, pinned ET-CC register, MES-231); no OC counterpart"
     test "and it IS the union of every declared population, re-derived here", %{a: a} do
       u = a["population"]["outside_the_population"]["whole_crosswalk_totality"]
-      register = u["anchor"] |> File.read!() |> Jason.decode!()
+      # Pinned (MES-231): the crosswalk was measured over the 281-member register.
+      # Removed by MES-244.
+      register = MCP.Conformance.PinnedRegister.read_for!(u["anchor"])
 
       homed =
         a["population"]["files"]

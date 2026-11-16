@@ -498,7 +498,8 @@ defmodule CrosswalkControls do
     halt_unless(u["universe"] == u["homed"])
 
     # --- FIRE ---------------------------------------------------------------
-    reg = read(@register)
+    # Pinned (MES-231): the crosswalk is measured over the 281-member register. Removed by MES-244.
+    reg = MCP.Conformance.PinnedRegister.decode!()
 
     probe =
       reg["rows"]
@@ -1460,7 +1461,8 @@ defmodule CrosswalkControls do
     refuses("8  a member in the population that its own selector does not denote", "G15a", fn ->
       key = "MCP.G15aProbeTest/test an ET-CC member no file's selector denotes"
 
-      register = read(@register)
+      # Pinned (MES-231): the crosswalk is measured over the 281-member register. Removed by MES-244.
+      register = MCP.Conformance.PinnedRegister.decode!()
 
       row =
         register["rows"]

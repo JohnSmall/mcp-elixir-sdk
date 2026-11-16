@@ -62,6 +62,8 @@ defmodule MCP.Conformance.ETCCAttribution do
   "absent" (A2d).
   """
 
+  alias MCP.Conformance.PinnedRegister
+
   @register "docs/conformance/etcc-register.json"
   @authored "conformance/data/etcc-attribution.json"
   @enriched "docs/conformance/etcc-attribution.json"
@@ -83,9 +85,14 @@ defmodule MCP.Conformance.ETCCAttribution do
 
   `opts` may carry `:register` and `:authored` — both used by the controls to
   drive the same code over a mutated input.
+
+  The register is read through `MCP.Conformance.PinnedRegister.read_for!/1`, so
+  the default `@register` is the PINNED 281-member register, not the live file
+  (MES-231). MES-243 removes the pin once the 198 new members are attributed.
   """
   def build(opts \\ []) do
-    register = read_json(Keyword.get(opts, :register, @register))
+    # Pinned (MES-231): see MCP.Conformance.PinnedRegister. Removed by MES-243.
+    register = PinnedRegister.read_for!(Keyword.get(opts, :register, @register))
     authored = read_json(Keyword.get(opts, :authored, @authored))
 
     register_rows = Map.fetch!(register, "rows")

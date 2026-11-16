@@ -44,7 +44,6 @@
 defmodule Bucket36Controls do
   @record "docs/conformance/adjudications/adjudication-D3-D6-2026-07-28.json"
   @crosswalk "docs/conformance/crosswalk-2026-07-28.json"
-  @register "docs/conformance/etcc-register.json"
   @name "BUCKET-3/6 CONTROL"
 
   def run(["live"]), do: live(capture!()) && IO.puts("\nPASS live")
@@ -140,18 +139,25 @@ defmodule Bucket36Controls do
     record = @record |> File.read!() |> Jason.decode!()
     cells = (@crosswalk |> File.read!() |> Jason.decode!())["cells"]
 
-    etcc =
-      for r <- (@register |> File.read!() |> Jason.decode!())["rows"],
-          r["label"] == "ET-CC",
-          do: r["key"]
+    {record, cells, etcc_members()}
+  end
 
-    {record, cells, etcc}
+  # Pinned (MES-231): the D3+D6 record (MES-144) was measured over the 281-member
+  # register, so the run is held to that member set, read through
+  # MCP.Conformance.PinnedRegister (one pin, md5-checked, fail-closed), never the
+  # live file. Removed, or made permanent, by MES-244, which owns D3+D6's status.
+  # Public so the gate-5 control in pinned_register_test.exs can call it.
+  def etcc_members do
+    for r <- MCP.Conformance.PinnedRegister.decode!()["rows"],
+        r["label"] == "ET-CC",
+        do: r["key"]
   end
 
   # --- live ---------------------------------------------------------------------
 
   def live(statuses) do
     header("live — the record's zero against a run at this tip")
+    IO.puts("  register: pinned #{MCP.Conformance.PinnedRegister.ref()} (MES-231; MES-244)")
     {record, cells, etcc} = inputs()
     rs = refusals(statuses, cells, record, etcc)
 

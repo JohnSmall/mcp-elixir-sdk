@@ -180,7 +180,7 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     edges_docs = edges_docs!(opts)
     manifest = opts |> require!(:manifest) |> read_json!()
     denominator = opts |> require!(:denominator) |> read_json!()
-    register = opts |> require!(:register) |> read_json!()
+    register = opts |> require!(:register) |> register!()
     attribution = opts |> require!(:attribution) |> read_json!()
     a3_axes = opts |> require!(:a3_axes) |> read_json!()
     c1_axes = opts |> require!(:c1_axes) |> read_json!()
@@ -2573,6 +2573,13 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
   end
 
   defp read_json!(path), do: path |> File.read!() |> Jason.decode!()
+
+  @doc false
+  # Pinned (MES-231): the crosswalk was measured over the 281-member register, so
+  # `--register docs/conformance/etcc-register.json` reads the PINNED blob
+  # (MCP.Conformance.PinnedRegister), and a control's planted copy reads as
+  # planted. Removed by MES-244.
+  def register!(path), do: MCP.Conformance.PinnedRegister.read_for!(path)
 
   defp require!(opts, key),
     do: Keyword.get(opts, key) || Mix.raise("--#{key} is required.\n#{@usage}")

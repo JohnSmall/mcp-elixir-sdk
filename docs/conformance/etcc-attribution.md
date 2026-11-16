@@ -813,21 +813,21 @@ join was most likely to drop:**
 
 | member | leg | contradicts |
 | --- | --- | --- |
-| `dispatch_test.exs:107` — *"initialize is removed → -32022"* | server | `oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize` |
-| `streamable_http_stateless_test.exs:120` — *"initialize is gone → -32022; ping/logging.setLevel → -32601"* | server | the same check |
+| `dispatch_test.exs:106` — *"initialize is removed → -32022"* | server | `oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize` |
+| `streamable_http_stateless_test.exs:122` — *"initialize is gone → -32022; ping/logging.setLevel → -32601"* | server | the same check |
 
 The check requires **404 + -32601**; both members assert **-32022**. They are
 `ET-CC` in B2a's register **deliberately** — excluding them would empty bucket 4a
 by construction, and 4a is a finding this epic exists to surface.
 `etcc-membership.md` §B.4(i-b) records why that rule is not in Part A.
 
-`streamable_http_stateless_test.exs:120` bundles three claims and only the
+`streamable_http_stateless_test.exs:122` bundles three claims and only the
 `initialize` one contradicts; the two `-32601` claims agree. Under
 `match-relation.md` §1 that member contributes **three edges**, and C1 preserves
 all three verdicts — this file records the contradiction at member granularity
 and does not collapse them.
 
-`test/conformance/etcc_attribution_test.exs` asserts the `dispatch_test.exs:107`
+`test/conformance/etcc_attribution_test.exs` asserts the `dispatch_test.exs:106`
 row by name, so the one row most likely to be lost cannot be lost silently.
 
 ---

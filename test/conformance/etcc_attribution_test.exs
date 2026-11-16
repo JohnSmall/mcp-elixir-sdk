@@ -65,9 +65,14 @@ defmodule MCP.Conformance.ETCCAttributionTest do
   end
 
   describe "AC5 — the enriched register JOINS B2a's and does not duplicate it" do
+    @tag oc: :none
+    @tag oc_reason:
+           "instrument unit (conformance artefact check, pinned ET-CC register, MES-231); no OC counterpart"
     test "the member sets are equal, and a disagreement fails HERE", ctx do
+      # Pinned (MES-231): B2b joined the 281-member register, the one
+      # ETCCAttribution.build/1 now reads. Removed by MES-243.
       members =
-        ctx.register["rows"]
+        MCP.Conformance.PinnedRegister.decode!()["rows"]
         |> Enum.filter(&(&1["label"] == "ET-CC"))
         |> MapSet.new(& &1["key"])
 
