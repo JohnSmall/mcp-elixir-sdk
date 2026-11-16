@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 1106223,
+      "bytes": 1108011,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "447d8651844d4093adf96c8fd73519e1c6e62ebdaa816c092dfdd10c5811118b"
+      "sha256": "50cc50d788ca97a1e89ef00cad6eedee790d8e93d41946f909f0bd12e7820068"
     }
   },
   "revision": "2026-07-28",
@@ -36,7 +36,11 @@
       "bucket_attributes": [],
       "claim": "a removed `ping` over HTTP yields JSON-RPC error -32601",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:90 — `assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601`, which is the code the check requires. The HTTP status is not asserted.",
+      "evidence": "At bd99a39, streamable_http_stateless_test.exs:90 — `assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601`, which is the code the check requires. The HTTP status is not asserted.",
+      "evidence_at": {
+        "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+        "owner": "MES-193"
+      },
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
@@ -75,7 +79,11 @@
       "bucket_attributes": [],
       "claim": "a removed `logging/setLevel` over HTTP yields JSON-RPC error -32601",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:91 — `assert error(post(opts(), rpc(\"logging/setLevel\", %{\"level\" => \"info\"})))[\"code\"] == -32_601`. Same shape as the ping claim, a different removed method.",
+      "evidence": "At bd99a39, streamable_http_stateless_test.exs:91 — `assert error(post(opts(), rpc(\"logging/setLevel\", %{\"level\" => \"info\"})))[\"code\"] == -32_601`. Same shape as the ping claim, a different removed method.",
+      "evidence_at": {
+        "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+        "owner": "MES-193"
+      },
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
@@ -114,7 +122,7 @@
       "bucket_attributes": [],
       "claim": "a dispatched `ping` is answered with -32601 method-not-found",
       "escalation": null,
-      "evidence": "dispatch_test.exs:88-95 — `assert ping_resp[\"error\"][\"code\"] == -32_601`. The OC axis `i?.error?.code!==-32601` is `fail_when_true`, so -32601 is the passing direction and our claim agrees. The check is nonetheless RED, and its message says why: `Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601` — the code half is satisfied and the status half is not. the ET claim is asserted at `MCP.Server.Dispatch`, BELOW the transport — the unit never constructs an HTTP response, so nothing in it has an HTTP status as its subject and the axis is silent by `how_a_silent_axis_was_decided`'s rule rather than by omission.",
+      "evidence": "dispatch_test.exs:116-123 — `assert ping_resp[\"error\"][\"code\"] == -32_601`. The OC axis `i?.error?.code!==-32601` is `fail_when_true`, so -32601 is the passing direction and our claim agrees. The check is nonetheless RED, and its message says why: `Expected HTTP 404 and code -32601 for removed methods, got HTTP 200 and code -32601` — the code half is satisfied and the status half is not. the ET claim is asserted at `MCP.Server.Dispatch`, BELOW the transport — the unit never constructs an HTTP response, so nothing in it has an HTTP status as its subject and the axis is silent by `how_a_silent_axis_was_decided`'s rule rather than by omission.",
       "member": {
         "module": "MCP.Server.DispatchTest",
         "register_key": "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)",
@@ -153,7 +161,7 @@
       "bucket_attributes": [],
       "claim": "a dispatched `logging/setLevel` is answered with -32601 method-not-found",
       "escalation": null,
-      "evidence": "dispatch_test.exs:88-95 — `assert log_resp[\"error\"][\"code\"] == -32_601` for `logging/setLevel`. One unit, two claims, two checks: the OC suite keys the removed methods one row per method (the `id_template_prefix` loop over `[`initialize`,`ping`,`logging/setLevel`,`resources/subscribe`,`resources/unsubscribe`]`), so collapsing them into one edge would have lost a row. the ET claim is asserted at `MCP.Server.Dispatch`, BELOW the transport — the unit never constructs an HTTP response, so nothing in it has an HTTP status as its subject and the axis is silent by `how_a_silent_axis_was_decided`'s rule rather than by omission.",
+      "evidence": "dispatch_test.exs:116-123 — `assert log_resp[\"error\"][\"code\"] == -32_601` for `logging/setLevel`. One unit, two claims, two checks: the OC suite keys the removed methods one row per method (the `id_template_prefix` loop over `[`initialize`,`ping`,`logging/setLevel`,`resources/subscribe`,`resources/unsubscribe`]`), so collapsing them into one edge would have lost a row. the ET claim is asserted at `MCP.Server.Dispatch`, BELOW the transport — the unit never constructs an HTTP response, so nothing in it has an HTTP status as its subject and the axis is silent by `how_a_silent_axis_was_decided`'s rule rather than by omission.",
       "member": {
         "module": "MCP.Server.DispatchTest",
         "register_key": "MCP.Server.DispatchTest/test ping and logging/setLevel are removed → method not found (-32601)",
@@ -192,7 +200,7 @@
       "bucket_attributes": [],
       "claim": "a deployment that cannot serve subscriptions/listen answers it with -32601, never a silent black hole",
       "escalation": null,
-      "evidence": "subscriptions_dispatch_test.exs:368-373 — `json_mode = config(streaming: false)`, then `Dispatch.dispatch(listen_request(%{\"toolsListChanged\" => true}), ctx(), json_mode)` and `assert error[\"code\"] == -32_601`. The OC check is the GENERIC unimplemented-method row, not one of the five removed-method rows, and a deployment that does not implement `subscriptions/listen` is exactly its case. Asserted below the transport, so the status axis is silent.",
+      "evidence": "subscriptions_dispatch_test.exs:415-420 — `json_mode = config(streaming: false)`, then `Dispatch.dispatch(listen_request(%{\"toolsListChanged\" => true}), ctx(), json_mode)` and `assert error[\"code\"] == -32_601`. The OC check is the GENERIC unimplemented-method row, not one of the five removed-method rows, and a deployment that does not implement `subscriptions/listen` is exactly its case. Asserted below the transport, so the status axis is silent.",
       "member": {
         "module": "MCP.Server.SubscriptionsDispatchTest",
         "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-5 JSON mode refuses the method outright a non-streaming driver gets -32601, never a silent black hole",
@@ -231,7 +239,7 @@
       "bucket_attributes": [],
       "claim": "a handler that implements no handle_listen/3 likewise yields -32601 for subscriptions/listen",
       "escalation": null,
-      "evidence": "subscriptions_dispatch_test.exs:388-389 — `assert {:reply, %{\"error\" => %{\"code\" => -32_601}}, _} =` for a config built over a handler with no `handle_listen/3`. The second of the two routes into the same refusal; both are filed because the claims differ even though the check does not.",
+      "evidence": "subscriptions_dispatch_test.exs:441-442 — `assert {:reply, %{\"error\" => %{\"code\" => -32_601}}, _} =` for a config built over a handler with no `handle_listen/3`. The second of the two routes into the same refusal; both are filed because the claims differ even though the check does not.",
       "member": {
         "module": "MCP.Server.SubscriptionsDispatchTest",
         "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-5 JSON mode refuses the method outright a handler with no handle_listen/3 also gets -32601",

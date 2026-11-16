@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 1106223,
+      "bytes": 1108011,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "447d8651844d4093adf96c8fd73519e1c6e62ebdaa816c092dfdd10c5811118b"
+      "sha256": "50cc50d788ca97a1e89ef00cad6eedee790d8e93d41946f909f0bd12e7820068"
     }
   },
   "revision": "2026-07-28",
@@ -161,7 +161,7 @@
       "escalation_cause": "adapter_path_unexercised",
       "escalation_owner": "MES-126 (D4a)",
       "escalation_reason": "inconsistent_verdict_pair",
-      "evidence": "streamable_http_stateless_test.exs:248 — `assert is_list(first[\"inputRequests\"])`, where `first` is the decoded body of a real HTTP response our `MCP.Transport.StreamableHTTP.Plug` produced (streamable_http_stateless_test.exs:245 — `first = post(opts(), rpc(\"tools/call\", with_meta(%{\"name\" => \"needs_input\"}))) |> result()`). The axis filters the validator's violation list by `origin`, keeping only violations attributed to the implementation: every message OUR side put on the wire must validate against the pinned spec schema. The binding definition is addressed on the axis row as `input_requests_schema_definition`, and it declares `InputRequests` an object type whose `additionalProperties` reference `InputRequest`. A JSON ARRAY is not an object, so the message this assertion is about is one the axis's predicate rejects, and the unit asserts it and PASSES.",
+      "evidence": "streamable_http_stateless_test.exs:302 — `assert is_list(first[\"inputRequests\"])`, where `first` is the decoded body of a real HTTP response our `MCP.Transport.StreamableHTTP.Plug` produced (streamable_http_stateless_test.exs:299 — `first = post(opts(), rpc(\"tools/call\", with_meta(%{\"name\" => \"needs_input\"}))) |> result()`). The axis filters the validator's violation list by `origin`, keeping only violations attributed to the implementation: every message OUR side put on the wire must validate against the pinned spec schema. The binding definition is addressed on the axis row as `input_requests_schema_definition`, and it declares `InputRequests` an object type whose `additionalProperties` reference `InputRequest`. A JSON ARRAY is not an object, so the message this assertion is about is one the axis's predicate rejects, and the unit asserts it and PASSES.",
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",

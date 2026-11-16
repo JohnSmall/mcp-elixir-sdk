@@ -7,6 +7,7 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
 
       mix conformance.crosswalk \\
         --edges conformance/data/crosswalk-edges-client.json \\
+        --edges conformance/data/crosswalk-edges-server.json \\
         --edges conformance/data/crosswalk-edges.json \\
         --manifest docs/conformance/in-scope-2026-07-28.json \\
         --denominator docs/conformance/bucket-0-2026-07-28.json \\
@@ -1180,6 +1181,8 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
     squashed_build = if build, do: CitationVerbatim.squash(build)
     records = Enum.flat_map(edges_docs, fn {path, doc} -> records_of(path, doc) end)
 
+    dated = dated_limb!(records)
+
     ctx = %{axes: axis_rows, build: build, squashed_build: squashed_build}
     result = CitationVerbatim.audit(records, &Crosswalk.citation_windows(&1, ctx))
 
@@ -1194,7 +1197,47 @@ defmodule Mix.Tasks.Conformance.Crosswalk do
       refused outright — fragment-matching `A … B` is the composed-quote hole re-opened.
     """)
 
-    citation_verbatim_report(result)
+    result |> citation_verbatim_report() |> Map.put("dated_limb", dated)
+  end
+
+  # G30's DATED limb (MES-234): every record carrying `evidence_at` must be in
+  # the pinned set, owned, ceilinged, named in its own leaf and anchored at an
+  # ancestor commit that holds the cited file. Refused BY NAME before the audit,
+  # because an unplaced quote would hide which of those it was.
+  defp dated_limb!(records) do
+    path = Crosswalk.dated_pins_path()
+
+    pins =
+      case File.read(path) do
+        {:ok, bytes} -> Jason.decode!(bytes)
+        {:error, why} -> Mix.raise("G30 (dated limb) — cannot read #{path}: #{inspect(why)}")
+      end
+
+    defects = Crosswalk.dated_defects(records, pins)
+
+    refuse_unless(defects == [], """
+    G30 (dated limb) — #{length(defects)} refusal(s) over the records carrying `evidence_at`. A
+    dated lift is checked at its own commit, so it is allowed only inside the pinned set
+    #{path}, owned, under its ceiling, and naming its commit in its own leaf:
+    #{Enum.map_join(defects, "\n", &"      #{&1["kind"]} — #{&1["row"]}\n        #{&1["detail"]}")}
+    """)
+
+    dated = Enum.filter(records, &Map.has_key?(&1, "evidence_at"))
+
+    %{
+      "pinned_set" => path,
+      "ceiling" => pins["ceiling"],
+      "compiled_ceiling" => Crosswalk.dated_ceiling(),
+      "records_dated" => length(dated),
+      "commits" => dated |> Enum.map(& &1["evidence_at"]["commit"]) |> Enum.uniq() |> Enum.sort(),
+      "owners" => dated |> Enum.map(& &1["evidence_at"]["owner"]) |> Enum.uniq() |> Enum.sort(),
+      "what_it_checks" =>
+        "A record carrying `evidence_at` is a DATED lift. Its ET windows are read at that " <>
+          "commit and never at the tip, and it is refused by name unless it is in the pinned " <>
+          "set, names an owner ticket, is under the ceiling (which only goes down), names " <>
+          "the commit's short sha in its own leaf, and the commit resolves, is an ancestor " <>
+          "of HEAD and holds every file the evidence cites."
+    }
   end
 
   # Every top-level list of objects, in the order the file writes them.

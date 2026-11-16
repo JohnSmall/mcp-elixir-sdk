@@ -363,7 +363,14 @@ defmodule MCP.Conformance.Crosswalk do
       "evidence" => edge["evidence"],
       "note" => edge["note"]
     }
+    |> Map.merge(dated_field(edge))
   end
+
+  # A DATED edge (G30's dated limb, MES-234) carries its `evidence_at` into the
+  # cell, so the artefact says which commit the evidence describes. An undated
+  # edge gains no key at all, so its cell is byte-identical to before.
+  defp dated_field(%{"evidence_at" => at}), do: %{"evidence_at" => at}
+  defp dated_field(_edge), do: %{}
 
   @doc """
   `bucket = f(verdict pair, edge shape)`, with the all-silent case intercepted
@@ -844,16 +851,36 @@ defmodule MCP.Conformance.Crosswalk do
   `:broad` is the same sources with their addresses thrown away — the whole
   file, the whole build. The generator never asks for it; it exists so a control
   can drop the WINDOWING limb and measure what that limb is worth.
+
+  A record carrying `evidence_at` (G30's dated limb, MES-234) has its ET
+  windows read AT THAT COMMIT through `ctx[:resolver]` (default
+  `git_resolver/0`), labelled `et@<short>:`, and never at the tip.
+  `dated_defects/3` decides whether such a record may be dated at all.
   """
   @spec citation_windows(map(), map()) ::
           CitationVerbatim.windows()
   def citation_windows(record, ctx) do
-    citation_windows(record, ctx.axes, Map.get(ctx, :build), Map.get(ctx, :squashed_build))
+    citation_windows(
+      record,
+      ctx.axes,
+      Map.get(ctx, :build),
+      Map.get(ctx, :squashed_build),
+      Map.get_lazy(ctx, :resolver, &git_resolver/0)
+    )
   end
 
-  defp citation_windows(record, axes, build, squashed_build) do
+  defp citation_windows(record, axes, build, squashed_build, resolver) do
     evidence = record["evidence"] || ""
-    et = et_windows(evidence)
+
+    # Any record carrying `evidence_at` is read ONLY at that commit, never at
+    # the tip: a malformed one gets no ET window, so its quotes go unplaced.
+    # `dated_defects/3` names the reason before the audit runs.
+    et =
+      case record do
+        %{"evidence_at" => at} -> et_windows_at(evidence, at, resolver)
+        _ -> et_windows(evidence)
+      end
+
     rows = axis_rows(window_tag(record), axes)
 
     %{
@@ -885,6 +912,241 @@ defmodule MCP.Conformance.Crosswalk do
         Enum.map(files, fn {path, src} ->
           {"et-file:#{path}", CitationVerbatim.squash(src)}
         end)
+    }
+  end
+
+  defp et_windows_at(evidence, %{"commit" => commit}, r) when is_binary(commit) do
+    short = String.slice(commit, 0, 7)
+
+    read =
+      for {file, from, to} <- CitationVerbatim.cited_line_spans(evidence),
+          {:ok, path} <- [r.file_at.(commit, file)],
+          {:ok, source} <- [r.show.(commit, path)],
+          do: {file, from, to, path, source}
+
+    %{
+      narrow:
+        for {file, from, to, _path, source} <- read do
+          {"et@#{short}:#{file}:#{from}-#{to}", CitationVerbatim.line_window(source, from, to)}
+        end,
+      broad:
+        read
+        |> Enum.uniq_by(fn {_f, _a, _b, path, _s} -> path end)
+        |> Enum.map(fn {_f, _a, _b, path, source} ->
+          {"et-file@#{short}:#{path}", CitationVerbatim.squash(source)}
+        end)
+    }
+  end
+
+  defp et_windows_at(_evidence, _malformed, _r), do: %{narrow: [], broad: []}
+
+  # --- G30's DATED limb (MES-234) ---------------------------------------------
+  #
+  # A crosswalk cell is a measurement: its OC side is the accepted run, its ET
+  # side the tree its evidence was lifted from. When the tree moves under an
+  # edge and the edge is NOT re-measured, the honest record is a DATED one: the
+  # evidence names the commit it describes, and G30 checks its bytes there. The
+  # danger is the obvious one: a dated lift is a way to keep a stale citation
+  # green. So the dated set is PINNED IN DATA, closed, owned and ratcheted, and
+  # every way out of it is a refusal BY NAME rather than an unplaced quote.
+
+  @dated_pins_path "conformance/data/crosswalk-dated-evidence.json"
+  # The most dated records the pinned set may ever declare. It only goes DOWN:
+  # the data file's own ceiling may not exceed it, so raising it is a code
+  # change a reviewer sees.
+  @dated_ceiling 8
+
+  @doc "Where the pinned set of dated edges lives."
+  @spec dated_pins_path() :: String.t()
+  def dated_pins_path, do: @dated_pins_path
+
+  @doc "The compiled-in ceiling the pinned set's own ceiling may not exceed."
+  @spec dated_ceiling() :: non_neg_integer()
+  def dated_ceiling, do: @dated_ceiling
+
+  @doc """
+  **G30's dated-limb refusals**, over every record carrying `evidence_at`,
+  against the pinned set `pins` (the decoded `#{@dated_pins_path}`).
+
+  Each refusal is `%{"kind", "row", "detail"}` and the kinds are:
+
+    * `dated_ceiling_raised` — the pinned set's `ceiling` is not an integer
+      between 0 and `dated_ceiling/0`.
+    * `dated_over_ceiling` — more pins, or more dated records, than the ceiling.
+    * `dated_pin_unused` — a pin no dated record matches (remove the pin).
+    * `dated_without_owner` — `evidence_at.owner` is not a ticket key.
+    * `dated_not_pinned` — the record is not pinned, or is pinned at another
+      commit or owner.
+    * `dated_commit_unresolved` — `evidence_at.commit` is not a full sha naming
+      a commit in this repository.
+    * `dated_commit_not_ancestor` — the commit is not an ancestor of `HEAD`.
+    * `dated_file_absent` — a file the evidence cites is not at that commit.
+    * `dated_leaf_unnamed` — the evidence leaf does not name the commit's
+      short sha, so a reader of the leaf alone would take it for the tip.
+
+  `resolver` is the git seam (`git_resolver/0` by default), so the decision
+  logic is testable without a repository.
+  """
+  @spec dated_defects([map()], map(), map()) :: [map()]
+  def dated_defects(records, pins, resolver \\ git_resolver()) do
+    dated = Enum.filter(records, &Map.has_key?(&1, "evidence_at"))
+    pinned = if is_list(pins["records"]), do: pins["records"], else: []
+    ceiling = pins["ceiling"]
+    by_key = Map.new(pinned, &{pin_key(&1), &1})
+    dated_keys = MapSet.new(dated, &dated_key/1)
+
+    ceiling_defects =
+      if is_integer(ceiling) and ceiling in 0..@dated_ceiling//1 do
+        for {what, n} <- [{"pins", length(pinned)}, {"dated records", length(dated)}],
+            n > ceiling,
+            do: dd(:dated_over_ceiling, what, "#{n} #{what} against a ceiling of #{ceiling}")
+      else
+        [
+          dd(
+            :dated_ceiling_raised,
+            "pinned set",
+            "ceiling #{inspect(ceiling)} is not an integer from 0 to #{@dated_ceiling}"
+          )
+        ]
+      end
+
+    unused =
+      for p <- pinned,
+          pin_key(p) not in dated_keys,
+          do:
+            dd(
+              :dated_pin_unused,
+              pin_label(p),
+              "pinned, but no record carrying evidence_at matches it; remove the pin"
+            )
+
+    ceiling_defects ++ unused ++ Enum.flat_map(dated, &dated_record_defects(&1, by_key, resolver))
+  end
+
+  defp dated_record_defects(record, by_key, r) do
+    at = record["evidence_at"]
+    {commit, owner} = if is_map(at), do: {at["commit"], at["owner"]}, else: {nil, nil}
+    row = dated_label(record)
+
+    owner_defects =
+      if is_binary(owner) and owner =~ ~r/\AMES-\d+\z/,
+        do: [],
+        else: [
+          dd(:dated_without_owner, row, "evidence_at names no owner ticket: #{inspect(owner)}")
+        ]
+
+    pin_defects =
+      case Map.get(by_key, dated_key(record)) do
+        nil ->
+          [dd(:dated_not_pinned, row, "this record is not in #{@dated_pins_path}")]
+
+        %{"commit" => ^commit, "owner" => ^owner} ->
+          []
+
+        pin ->
+          [
+            dd(
+              :dated_not_pinned,
+              row,
+              "pinned at #{inspect(pin["commit"])} owned by #{inspect(pin["owner"])}, " <>
+                "but the record says #{inspect(commit)} owned by #{inspect(owner)}"
+            )
+          ]
+      end
+
+    owner_defects ++ pin_defects ++ commit_defects(record, commit, row, r)
+  end
+
+  defp commit_defects(record, commit, row, r) do
+    evidence = record["evidence"] || ""
+
+    cond do
+      not (is_binary(commit) and commit =~ ~r/\A[0-9a-f]{40}\z/) ->
+        [dd(:dated_commit_unresolved, row, "not a full 40-hex sha: #{inspect(commit)}")]
+
+      r.resolve.(commit) != {:ok, commit} ->
+        [dd(:dated_commit_unresolved, row, "#{commit} names no commit in this repository")]
+
+      not r.ancestor?.(commit) ->
+        [dd(:dated_commit_not_ancestor, row, "#{commit} is not an ancestor of HEAD")]
+
+      true ->
+        short = String.slice(commit, 0, 7)
+
+        absent =
+          for {file, _a, _b} <- CitationVerbatim.cited_line_spans(evidence),
+              r.file_at.(commit, file) == :error,
+              uniq: true,
+              do: dd(:dated_file_absent, row, "#{file} is not a single file at #{short}")
+
+        leaf =
+          if String.contains?(evidence, short),
+            do: [],
+            else: [dd(:dated_leaf_unnamed, row, "the evidence leaf does not name #{short}")]
+
+        absent ++ leaf
+    end
+  end
+
+  defp dd(kind, row, detail),
+    do: %{"kind" => Atom.to_string(kind), "row" => row, "detail" => detail}
+
+  defp dated_key(record),
+    do:
+      {record["__file"], get_in(record, ["member", "register_key"]), record["claim"],
+       record["tag"]}
+
+  defp pin_key(pin), do: {pin["file"], pin["register_key"], pin["claim"], pin["tag"]}
+
+  defp dated_label(record),
+    do: "#{record["__file"]}: #{get_in(record, ["member", "register_key"])} | #{record["claim"]}"
+
+  defp pin_label(pin), do: "#{pin["file"]}: #{pin["register_key"]} | #{pin["claim"]}"
+
+  @doc """
+  The git seam of the dated limb: `resolve/1` (full sha or `:error`),
+  `ancestor?/1` (of `HEAD`), `file_at/2` (the ONE repo path under `test/`,
+  `lib/` or `conformance/` with that basename at that commit, else `:error`)
+  and `show/2` (its bytes there).
+  """
+  @spec git_resolver() :: map()
+  def git_resolver do
+    %{
+      resolve: fn sha ->
+        case System.cmd("git", ["rev-parse", "--verify", "--quiet", sha <> "^{commit}"],
+               stderr_to_stdout: true
+             ) do
+          {out, 0} -> {:ok, String.trim(out)}
+          _ -> :error
+        end
+      end,
+      ancestor?: fn sha ->
+        match?(
+          {_, 0},
+          System.cmd("git", ["merge-base", "--is-ancestor", sha, "HEAD"], stderr_to_stdout: true)
+        )
+      end,
+      file_at: fn sha, basename ->
+        with {out, 0} <-
+               System.cmd("git", ["ls-tree", "-r", "--name-only", sha], stderr_to_stdout: true),
+             [path] <-
+               out
+               |> String.split("\n", trim: true)
+               |> Enum.filter(
+                 &(Path.basename(&1) == basename and
+                     String.starts_with?(&1, ["test/", "lib/", "conformance/"]))
+               ) do
+          {:ok, path}
+        else
+          _ -> :error
+        end
+      end,
+      show: fn sha, path ->
+        case System.cmd("git", ["show", "#{sha}:#{path}"], stderr_to_stdout: true) do
+          {source, 0} -> {:ok, source}
+          _ -> :error
+        end
+      end
     }
   end
 

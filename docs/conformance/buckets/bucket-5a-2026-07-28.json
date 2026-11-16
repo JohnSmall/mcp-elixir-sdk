@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 1106223,
+      "bytes": 1108011,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "447d8651844d4093adf96c8fd73519e1c6e62ebdaa816c092dfdd10c5811118b"
+      "sha256": "50cc50d788ca97a1e89ef00cad6eedee790d8e93d41946f909f0bd12e7820068"
     }
   },
   "revision": "2026-07-28",
@@ -118,7 +118,7 @@
       ],
       "claim": "a real server/discover dispatch returns a result carrying supportedVersions",
       "escalation": null,
-      "evidence": "dispatch_test.exs:122-129 — `assert result[\"supportedVersions\"] == [@version]` off a REAL `Dispatch.dispatch/3`, with `refute Map.has_key?(result, \"protocolVersions\")` pinning the pre-fix shape as gone. Unlike the `to_map/1` unit this one asserts nothing about `capabilities`, so that axis is silent here even though the sibling edge agrees on it — the two are different members and the adjudication is per claim.",
+      "evidence": "dispatch_test.exs:164-171 — `assert result[\"supportedVersions\"] == [@version]` off a REAL `Dispatch.dispatch/3`, with `refute Map.has_key?(result, \"protocolVersions\")` pinning the pre-fix shape as gone. Unlike the `to_map/1` unit this one asserts nothing about `capabilities`, so that axis is silent here even though the sibling edge agrees on it — the two are different members and the adjudication is per claim.",
       "member": {
         "module": "MCP.Server.DispatchTest",
         "register_key": "MCP.Server.DispatchTest/test server/discover: schema shape (supportedVersions + CacheableResult fields; serverInfo in _meta)",
@@ -159,7 +159,7 @@
       ],
       "claim": "a real server/discover dispatch puts the server's name in the result's _meta serverInfo",
       "escalation": null,
-      "evidence": "dispatch_test.exs:126-129 — `assert result[\"_meta\"][\"io.modelcontextprotocol/serverInfo\"][\"name\"] == \"mcp_elixir_sdk\"`, with `refute Map.has_key?(result, \"serverInfo\")` pinning that it is NOT top-level. No assertion reads `version`, so that axis is silent.",
+      "evidence": "dispatch_test.exs:168-171 — `assert result[\"_meta\"][\"io.modelcontextprotocol/serverInfo\"][\"name\"] == \"mcp_elixir_sdk\"`, with `refute Map.has_key?(result, \"serverInfo\")` pinning that it is NOT top-level. No assertion reads `version`, so that axis is silent.",
       "member": {
         "module": "MCP.Server.DispatchTest",
         "register_key": "MCP.Server.DispatchTest/test server/discover: schema shape (supportedVersions + CacheableResult fields; serverInfo in _meta)",
@@ -200,7 +200,7 @@
       ],
       "claim": "server/discover over real HTTP returns a result carrying supportedVersions",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:55 — `assert r[\"supportedVersions\"] == [@version]`, where `r` is the decoded `result` of a POST through the real plug. `capabilities` is not asserted anywhere in this unit.",
+      "evidence": "streamable_http_stateless_test.exs:63 — `assert r[\"supportedVersions\"] == [@version]`, where `r` is the decoded `result` of a POST through the real plug. `capabilities` is not asserted anywhere in this unit.",
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test server/discover returns the schema-shaped result with no version gate",
@@ -241,7 +241,7 @@
       ],
       "claim": "server/discover over real HTTP puts the server's name in the result's _meta serverInfo",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:57 — `assert r[\"_meta\"][\"io.modelcontextprotocol/serverInfo\"][\"name\"]`. It asserts PRESENCE and not a value, which is exactly what the OC axis `!e?.name` tests; `version` is untouched.",
+      "evidence": "streamable_http_stateless_test.exs:65 — `assert r[\"_meta\"][\"io.modelcontextprotocol/serverInfo\"][\"name\"]`. It asserts PRESENCE and not a value, which is exactly what the OC axis `!e?.name` tests; `version` is untouched.",
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test server/discover returns the schema-shaped result with no version gate",
@@ -280,7 +280,11 @@
       "bucket_attributes": [],
       "claim": "a server/discover request carrying no clientInfo is SERVED — HTTP 200 with a result, not an error",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:52-55 — `conn = post(opts(), rpc(\"server/discover\", %{}))` sends `params` with NO `_meta` at all, and the unit then asserts `assert conn.status == 200` and reads `result` back with `assert r[\"supportedVersions\"] == [@version]`. Both axes are covered: the status assertion is the HTTP-200 axis literally, and reading the `result` key is the no-error axis — `result(conn)` returns `nil` for an error body and the equality would redden. THE FIXTURES DIFFER AND THE DIFFERENCE IS STATED: the OC probe omits `clientInfo` ALONE (it sends protocolVersion and clientCapabilities), while this unit omits the whole `_meta`. For `server/discover` the two coincide — the unit's own name says `with no version gate`, and the check's own scenario places it on a method that applies none — so the claim entails the check's case rather than merely resembling it. On any OTHER method it would not, and this edge must not be read as licensing that.",
+      "evidence": "At bd99a39, streamable_http_stateless_test.exs:52-55 — `conn = post(opts(), rpc(\"server/discover\", %{}))` sends `params` with NO `_meta` at all, and the unit then asserts `assert conn.status == 200` and reads `result` back with `assert r[\"supportedVersions\"] == [@version]`. Both axes are covered: the status assertion is the HTTP-200 axis literally, and reading the `result` key is the no-error axis — `result(conn)` returns `nil` for an error body and the equality would redden. THE FIXTURES DIFFER AND THE DIFFERENCE IS STATED: the OC probe omits `clientInfo` ALONE (it sends protocolVersion and clientCapabilities), while this unit omits the whole `_meta`. For `server/discover` the two coincide — the unit's own name says `with no version gate`, and the check's own scenario places it on a method that applies none — so the claim entails the check's case rather than merely resembling it. On any OTHER method it would not, and this edge must not be read as licensing that.",
+      "evidence_at": {
+        "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+        "owner": "MES-193"
+      },
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test server/discover returns the schema-shaped result with no version gate",
@@ -321,7 +325,7 @@
       ],
       "claim": "a server advertising the tools capability answers tools/list with a tools array",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:62-63 — `list = post(opts(), rpc(\"tools/list\", with_meta(%{}))) |> result()` and `assert Enum.any?(list[\"tools\"], &(&1[\"name\"] == \"whoami\"))`: `tools/list` answers with a list, and it contains a real tool. The second axis is the OTHER arm of the check's `h.tools` CASE SPLIT — what a server that does NOT advertise the capability must do — and this SDK advertises it, so no unit of ours can take that branch. Silent, and silent for a reason that is a property of the check rather than a gap in the suite.",
+      "evidence": "streamable_http_stateless_test.exs:72-73 — `list = post(opts(), rpc(\"tools/list\", with_meta(%{}))) |> result()` and `assert Enum.any?(list[\"tools\"], &(&1[\"name\"] == \"whoami\"))`: `tools/list` answers with a list, and it contains a real tool. The second axis is the OTHER arm of the check's `h.tools` CASE SPLIT — what a server that does NOT advertise the capability must do — and this SDK advertises it, so no unit of ours can take that branch. Silent, and silent for a reason that is a property of the check rather than a gap in the suite.",
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/list then tools/call work directly, no initialize first",
@@ -356,7 +360,7 @@
       "bucket_attributes": [],
       "claim": "the acknowledgement carries this subscription's id in params._meta under io.modelcontextprotocol/subscriptionId",
       "escalation": null,
-      "evidence": "subscriptions_dispatch_test.exs:105-112 — the whole acknowledgement compared against the pinned example, including `\"_meta\" => %{@sub_id_key => \"listen-1\"}` inside `\"params\" => %{`. The OC axis quantifies over EVERY `notifications/*` frame on a listen stream — `t=N.filter(e=>typeof e?.method==`string`&&e.method.startsWith(`notifications/`))` — and the acknowledgement's own method is `notifications/subscriptions/acknowledged`, so the ack is inside that population and this claim covers the axis over it.",
+      "evidence": "subscriptions_dispatch_test.exs:113-120 — the whole acknowledgement compared against the pinned example, including `\"_meta\" => %{@sub_id_key => \"listen-1\"}` inside `\"params\" => %{`. The OC axis quantifies over EVERY `notifications/*` frame on a listen stream — `t=N.filter(e=>typeof e?.method==`string`&&e.method.startsWith(`notifications/`))` — and the acknowledgement's own method is `notifications/subscriptions/acknowledged`, so the ack is inside that population and this claim covers the axis over it.",
       "member": {
         "module": "MCP.Server.SubscriptionsDispatchTest",
         "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) the acknowledgment matches the pinned SubscriptionsAcknowledgedNotification example",
@@ -391,7 +395,7 @@
       "bucket_attributes": [],
       "claim": "a resources/updated notification frame carries the subscription id in params._meta",
       "escalation": null,
-      "evidence": "subscriptions_dispatch_test.exs:138-149 — the framed notification compared whole, carrying `\"_meta\" => %{@sub_id_key => \"listen-1\"}` beside `\"uri\" => \"file:///project/src/main.rs\"`. `Methods.resources_updated()` is a `notifications/` method, so this frame is in the axis's population.",
+      "evidence": "subscriptions_dispatch_test.exs:149-160 — the framed notification compared whole, carrying `\"_meta\" => %{@sub_id_key => \"listen-1\"}` beside `\"uri\" => \"file:///project/src/main.rs\"`. `Methods.resources_updated()` is a `notifications/` method, so this frame is in the axis's population.",
       "member": {
         "module": "MCP.Server.SubscriptionsDispatchTest",
         "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-1 wire shapes (pinned to schema/2026-07-28 examples) a resources/updated frame matches the pinned notification example",
@@ -426,7 +430,7 @@
       "bucket_attributes": [],
       "claim": "the acknowledgement's params._meta subscriptionId is the id the request was opened with, uncoerced",
       "escalation": null,
-      "evidence": "subscriptions_dispatch_test.exs:219-221 — `assert sub.ack[\"params\"][\"_meta\"][Meta.subscription_id_key()] == 42` and `assert sub.ack[\"method\"] == Methods.subscriptions_acknowledged()` for a subscription opened with `id: 42`. The key is reached through `Meta.subscription_id_key()` rather than spelled out, and that function's value is what the axis names — the indirection is why this evidence quotes the call and not the string.",
+      "evidence": "subscriptions_dispatch_test.exs:241-243 — `assert sub.ack[\"params\"][\"_meta\"][Meta.subscription_id_key()] == 42` and `assert sub.ack[\"method\"] == Methods.subscriptions_acknowledged()` for a subscription opened with `id: 42`. The key is reached through `Meta.subscription_id_key()` rather than spelled out, and that function's value is what the axis names — the indirection is why this evidence quotes the call and not the string.",
       "member": {
         "module": "MCP.Server.SubscriptionsDispatchTest",
         "register_key": "MCP.Server.SubscriptionsDispatchTest/test T-2 the acknowledgment reports what was honoured the ack carries this subscription's id in _meta",
@@ -461,7 +465,7 @@
       "bucket_attributes": [],
       "claim": "the first frame a subscriptions/listen stream carries is notifications/subscriptions/acknowledged",
       "escalation": null,
-      "evidence": "subscriptions_stream_test.exs:272-276 — `assert {:ok, event, _stream} = next_event(stream)` on a freshly opened stream, then `assert ack[\"method\"] == \"notifications/subscriptions/acknowledged\"`. The FIRST event off the socket, which is the axis's `t=N[0]` exactly: the OC predicate is `t?.method===`notifications/subscriptions/acknowledged``, and the position lives in the binding rather than in the comparison on both sides.",
+      "evidence": "subscriptions_stream_test.exs:279-283 — `assert {:ok, event, _stream} = next_event(stream)` on a freshly opened stream, then `assert ack[\"method\"] == \"notifications/subscriptions/acknowledged\"`. The FIRST event off the socket, which is the axis's `t=N[0]` exactly: the OC predicate is `t?.method===`notifications/subscriptions/acknowledged``, and the position lives in the binding rather than in the comparison on both sides.",
       "member": {
         "module": "MCP.Transport.SubscriptionsStreamTest",
         "register_key": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the first message is notifications/subscriptions/acknowledged",
@@ -496,7 +500,7 @@
       "bucket_attributes": [],
       "claim": "that first frame carries the subscription id in params._meta",
       "escalation": null,
-      "evidence": "subscriptions_stream_test.exs:277 — `assert ack[\"params\"][\"_meta\"][@sub_id_key] == \"listen-1\"`, read off a REAL SSE socket rather than off a constructed map. One member, two claims, two checks: the position claim is the sibling edge on `ServerSendsSubscriptionAck`.",
+      "evidence": "subscriptions_stream_test.exs:284 — `assert ack[\"params\"][\"_meta\"][@sub_id_key] == \"listen-1\"`, read off a REAL SSE socket rather than off a constructed map. One member, two claims, two checks: the position claim is the sibling edge on `ServerSendsSubscriptionAck`.",
       "member": {
         "module": "MCP.Transport.SubscriptionsStreamTest",
         "register_key": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment the first message is notifications/subscriptions/acknowledged",
@@ -531,7 +535,7 @@
       "bucket_attributes": [],
       "claim": "even a handler that emits inside handle_listen/3 cannot get a frame out ahead of the acknowledgement",
       "escalation": null,
-      "evidence": "subscriptions_stream_test.exs:308-310 — `assert {:ok, first, stream} = next_event(stream)` and `assert decode(first)[\"method\"] == \"notifications/subscriptions/acknowledged\"` against `SubscribingHandler`, which emits INSIDE `handle_listen/3` — i.e. strictly before the ack can have been written. The OC check reads the first frame of a stream opened against a cooperative server; this unit reads it against one built to violate the ordering, so it agrees with the axis on a harder instance than the check itself constructs.",
+      "evidence": "subscriptions_stream_test.exs:320-322 — `assert {:ok, first, stream} = next_event(stream)` and `assert decode(first)[\"method\"] == \"notifications/subscriptions/acknowledged\"` against `SubscribingHandler`, which emits INSIDE `handle_listen/3` — i.e. strictly before the ack can have been written. The OC check reads the first frame of a stream opened against a cooperative server; this unit reads it against one built to violate the ordering, so it agrees with the axis on a harder instance than the check itself constructs.",
       "member": {
         "module": "MCP.Transport.SubscriptionsStreamTest",
         "register_key": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment nothing bearing this subscription's id precedes its acknowledgment",
@@ -566,7 +570,7 @@
       "bucket_attributes": [],
       "claim": "the notification that follows the acknowledgement carries the same subscription id",
       "escalation": null,
-      "evidence": "subscriptions_stream_test.exs:313-314 — `assert decode(second)[\"method\"] == \"notifications/tools/list_changed\"` and `assert decode(second)[\"params\"][\"_meta\"][@sub_id_key] == \"eager\"`. The SECOND frame, so this claim covers the axis over a delivered notification where the sibling edges cover it over the acknowledgement — between them the two halves of the axis's population.",
+      "evidence": "subscriptions_stream_test.exs:325-326 — `assert decode(second)[\"method\"] == \"notifications/tools/list_changed\"` and `assert decode(second)[\"params\"][\"_meta\"][@sub_id_key] == \"eager\"`. The SECOND frame, so this claim covers the axis over a delivered notification where the sibling edges cover it over the acknowledgement — between them the two halves of the axis's population.",
       "member": {
         "module": "MCP.Transport.SubscriptionsStreamTest",
         "register_key": "MCP.Transport.SubscriptionsStreamTest/test the stream opens with its acknowledgment nothing bearing this subscription's id precedes its acknowledgment",
@@ -601,7 +605,7 @@
       "bucket_attributes": [],
       "claim": "a notification delivered over the wire is stamped with the subscription id in params._meta",
       "escalation": null,
-      "evidence": "subscriptions_stream_test.exs:334-335 — `assert frame[\"method\"] == \"notifications/tools/list_changed\"` and `assert frame[\"params\"][\"_meta\"][@sub_id_key] == \"listen-1\"`, read off a real SSE socket after a push at the handler's sink.",
+      "evidence": "subscriptions_stream_test.exs:348-349 — `assert frame[\"method\"] == \"notifications/tools/list_changed\"` and `assert frame[\"params\"][\"_meta\"][@sub_id_key] == \"listen-1\"`, read off a real SSE socket after a push at the handler's sink.",
       "member": {
         "module": "MCP.Transport.SubscriptionsStreamTest",
         "register_key": "MCP.Transport.SubscriptionsStreamTest/test delivery over the wire an opted-in notification arrives, stamped with the subscription id",
@@ -636,7 +640,7 @@
       "bucket_attributes": [],
       "claim": "a notification type the filter did not request never reaches the stream",
       "escalation": null,
-      "evidence": "subscriptions_stream_test.exs:348-356 — three unrequested pushes (`sink.(\"notifications/prompts/list_changed\", %{})` among them), then one that IS opted in, and `assert decode(event)[\"method\"] == \"notifications/tools/list_changed\"`: the NEXT event off the socket is the requested one, so none of the three arrived. The opted-in push is the positive control the OC check does not have — without it the assertion would pass just as well on a dead stream.",
+      "evidence": "subscriptions_stream_test.exs:364-372 — three unrequested pushes (`sink.(\"notifications/prompts/list_changed\", %{})` among them), then one that IS opted in, and `assert decode(event)[\"method\"] == \"notifications/tools/list_changed\"`: the NEXT event off the socket is the requested one, so none of the three arrived. The opted-in push is the positive control the OC check does not have — without it the assertion would pass just as well on a dead stream.",
       "member": {
         "module": "MCP.Transport.SubscriptionsStreamTest",
         "register_key": "MCP.Transport.SubscriptionsStreamTest/test delivery over the wire an unrequested type never reaches the wire",
@@ -671,7 +675,7 @@
       "bucket_attributes": [],
       "claim": "a live subscription goes on delivering frames stamped with its own id after another client's crafted request fails",
       "escalation": null,
-      "evidence": "subscriptions_stream_test.exs:992-994 — `assert :ok = sink.(\"notifications/tools/list_changed\", %{})` and `assert decode(event)[\"params\"][\"_meta\"][@sub_id_key] == \"sub-A\"` after a second client's crafted request, whose body set that same id at subscriptions_stream_test.exs:978 (`\"id\" => \"sub-A\",`), has been refused with 500. The continued delivery is what carries the claim; the tag on it is what covers this axis.",
+      "evidence": "subscriptions_stream_test.exs:1071-1073 — `assert :ok = sink.(\"notifications/tools/list_changed\", %{})` and `assert decode(event)[\"params\"][\"_meta\"][@sub_id_key] == \"sub-A\"` after a second client's crafted request, whose body set that same id at subscriptions_stream_test.exs:1057 (`\"id\" => \"sub-A\",`), has been refused with 500. The continued delivery is what carries the claim; the tag on it is what covers this axis.",
       "member": {
         "module": "MCP.Transport.SubscriptionsStreamTest",
         "register_key": "MCP.Transport.SubscriptionsStreamTest/test the obligation is armed off the decoded message a second client cannot tear down a live subscription it does not own (R4)",
@@ -706,7 +710,7 @@
       "bucket_attributes": [],
       "claim": "the SSE-framed error a refused listen produces carries the JSON-RPC id of the request that provoked it",
       "escalation": null,
-      "evidence": "subscriptions_stream_test.exs:683-685 — `refusal = Jason.decode!(event.data)`, `assert refusal[\"id\"] == \"refuse-me\"` and `assert refusal[\"error\"][\"code\"] == -32_603`, against a request whose body set `\"id\" => \"refuse-me\"` at subscriptions_stream_test.exs:666 (`\"id\" => \"refuse-me\",`). The OC predicate is `e.id!==t` at the helper `u=(e,t)=>{e&&e.error&&e.id!==t&&r.push` — an error response whose id differs from the request's is the failure — and this is that comparison made by hand on a real response.",
+      "evidence": "subscriptions_stream_test.exs:727-729 — `refusal = Jason.decode!(event.data)`, `assert refusal[\"id\"] == \"refuse-me\"` and `assert refusal[\"error\"][\"code\"] == -32_603`, against a request whose body set `\"id\" => \"refuse-me\"` at subscriptions_stream_test.exs:707 (`\"id\" => \"refuse-me\",`). The OC predicate is `e.id!==t` at the helper `u=(e,t)=>{e&&e.error&&e.id!==t&&r.push` — an error response whose id differs from the request's is the failure — and this is that comparison made by hand on a real response.",
       "member": {
         "module": "MCP.Transport.SubscriptionsStreamTest",
         "register_key": "MCP.Transport.SubscriptionsStreamTest/test every exit from a listen runs teardown a REFUSED listen tells the handler and kills the sink (F1)",
@@ -741,7 +745,7 @@
       "bucket_attributes": [],
       "claim": "a handler-side exit during teardown does not cost the error response its request id",
       "escalation": null,
-      "evidence": "subscriptions_stream_test.exs:876-877 — `assert refusal[\"id\"] == \"exit-in-teardown\"` and `assert refusal[\"error\"][\"code\"] == -32_603` for a request that set `\"id\" => \"exit-in-teardown\"` at subscriptions_stream_test.exs:854 (`\"id\" => \"exit-in-teardown\",`). The same axis as the refusal edge, on the path where the SDK's own teardown faults — an instance the OC probe set cannot construct, because it has no way to make a conforming server's teardown exit.",
+      "evidence": "subscriptions_stream_test.exs:947-948 — `assert refusal[\"id\"] == \"exit-in-teardown\"` and `assert refusal[\"error\"][\"code\"] == -32_603` for a request that set `\"id\" => \"exit-in-teardown\"` at subscriptions_stream_test.exs:922 (`\"id\" => \"exit-in-teardown\",`). The same axis as the refusal edge, on the path where the SDK's own teardown faults — an instance the OC probe set cannot construct, because it has no way to make a conforming server's teardown exit.",
       "member": {
         "module": "MCP.Transport.SubscriptionsStreamTest",
         "register_key": "MCP.Transport.SubscriptionsStreamTest/test the exits that raise before a branch is chosen a handler-side exit in teardown does not replace the refusal response (R3)",
@@ -788,7 +792,7 @@
       "bucket_attributes": [],
       "claim": "a `tools/call` whose inputs have not yet been supplied is answered with a RESULT whose `resultType` is `input_required`",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:246 — `assert first[\"resultType\"] == \"input_required\"`, over a real HTTP POST through `MCP.Transport.StreamableHTTP.Plug`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold. The first two axes are therefore covered by the SAME observation read at a coarser grain, not inferred from an unobserved behaviour — which is why they are `agrees` and not `silent`. The third axis is `` `resultType`in r `` — PRESENCE — and the fourth is the VALUE; an equality assertion against `\"input_required\"` cannot hold unless the key is there, so it covers both.",
+      "evidence": "streamable_http_stateless_test.exs:300 — `assert first[\"resultType\"] == \"input_required\"`, over a real HTTP POST through `MCP.Transport.StreamableHTTP.Plug`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold. The first two axes are therefore covered by the SAME observation read at a coarser grain, not inferred from an unobserved behaviour — which is why they are `agrees` and not `silent`. The third axis is `` `resultType`in r `` — PRESENCE — and the fourth is the VALUE; an equality assertion against `\"input_required\"` cannot hold unless the key is there, so it covers both.",
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
@@ -841,7 +845,7 @@
       ],
       "claim": "a `tools/call` whose inputs have not yet been supplied is answered with a RESULT whose `resultType` is `input_required`",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:246 — `assert first[\"resultType\"] == \"input_required\"`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold. The first two axes are therefore covered by the SAME observation read at a coarser grain, not inferred from an unobserved behaviour — which is why they are `agrees` and not `silent`. The last three axes are about `requestState` and `inputRequests`, which THIS claim says nothing about; the member's other two claims do, and carry their own edges against the same check rather than being collapsed into this one (A3 §1).",
+      "evidence": "streamable_http_stateless_test.exs:300 — `assert first[\"resultType\"] == \"input_required\"`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold. The first two axes are therefore covered by the SAME observation read at a coarser grain, not inferred from an unobserved behaviour — which is why they are `agrees` and not `silent`. The last three axes are about `requestState` and `inputRequests`, which THIS claim says nothing about; the member's other two claims do, and carry their own edges against the same check rather than being collapsed into this one (A3 §1).",
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
@@ -890,7 +894,7 @@
       ],
       "claim": "a `tools/call` whose inputs have not yet been supplied is answered with a RESULT whose `resultType` is `input_required`",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:246 — `assert first[\"resultType\"] == \"input_required\"`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold. The first two axes are therefore covered by the SAME observation read at a coarser grain, not inferred from an unobserved behaviour — which is why they are `agrees` and not `silent`.",
+      "evidence": "streamable_http_stateless_test.exs:300 — `assert first[\"resultType\"] == \"input_required\"`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold. The first two axes are therefore covered by the SAME observation read at a coarser grain, not inferred from an unobserved behaviour — which is why they are `agrees` and not `silent`.",
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
@@ -943,7 +947,7 @@
       ],
       "claim": "that InputRequiredResult carries a `requestState` continuation token, and it is the string the server minted",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:247 — `assert first[\"requestState\"] == \"rs-token-1\"`. Equality against a STRING LITERAL covers both the presence axis (`r.requestState||push`) and the type axis `the_request_state_is_a_string`: a `requestState` that were absent, or a number, could not equal `\"rs-token-1\"`. The check scores those two separately — an absent token pushes onto BOTH — and this one assertion is about both.",
+      "evidence": "streamable_http_stateless_test.exs:301 — `assert first[\"requestState\"] == \"rs-token-1\"`. Equality against a STRING LITERAL covers both the presence axis (`r.requestState||push`) and the type axis `the_request_state_is_a_string`: a `requestState` that were absent, or a number, could not equal `\"rs-token-1\"`. The check scores those two separately — an absent token pushes onto BOTH — and this one assertion is about both.",
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
@@ -992,7 +996,7 @@
       ],
       "claim": "that InputRequiredResult carries a `requestState` continuation token, and it is the string the server minted",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:247 — `assert first[\"requestState\"] == \"rs-token-1\"`, which is the round-1 `requestState` the R1 conjunct `r.requestState&&(i=!0)` tests for.",
+      "evidence": "streamable_http_stateless_test.exs:301 — `assert first[\"requestState\"] == \"rs-token-1\"`, which is the round-1 `requestState` the R1 conjunct `r.requestState&&(i=!0)` tests for.",
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
@@ -1045,7 +1049,7 @@
       ],
       "claim": "that InputRequiredResult carries `inputRequests`, and the SDK puts that value on the wire as a JSON ARRAY",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:248 — `assert is_list(first[\"inputRequests\"])`. The axis is `r.inputRequests||push` — PRESENCE and nothing more, which the axis row states in as many words (`PRESENCE ONLY: this scenario never indexes into it, so nothing here scores its SHAPE`). A list is truthy, so the claim agrees with this axis.",
+      "evidence": "streamable_http_stateless_test.exs:302 — `assert is_list(first[\"inputRequests\"])`. The axis is `r.inputRequests||push` — PRESENCE and nothing more, which the axis row states in as many words (`PRESENCE ONLY: this scenario never indexes into it, so nothing here scores its SHAPE`). A list is truthy, so the claim agrees with this axis.",
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
@@ -1094,7 +1098,7 @@
       ],
       "claim": "that InputRequiredResult carries `inputRequests`, and the SDK puts that value on the wire as a JSON ARRAY",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:248 — `assert is_list(first[\"inputRequests\"])`. The R1 conjunct is `r.inputRequests&&`, a truthiness test, which a non-empty list satisfies.",
+      "evidence": "streamable_http_stateless_test.exs:302 — `assert is_list(first[\"inputRequests\"])`. The R1 conjunct is `r.inputRequests&&`, a truthiness test, which a non-empty list satisfies.",
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
@@ -1137,7 +1141,7 @@
       "bucket_attributes": [],
       "claim": "a retry carrying the server's `requestState` back together with `inputResponses` is answered with a COMPLETE result whose content reflects the supplied input",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:254-255 builds the retry — `\"requestState\" => first[\"requestState\"],` and `\"inputResponses\" => [%{\"name\" => \"Ada\"}]` — and streamable_http_stateless_test.exs:259-260 asserts the outcome: `assert final[\"resultType\"] == \"complete\"` and `assert hd(final[\"content\"])[\"text\"] == \"hello Ada\"`. The check's three axes are no-error, result-present and `z(a)` (the result is COMPLETE); asserting the final `resultType` is `complete` is `z`'s own test written the other way round, and the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold. The first two axes are therefore covered by the SAME observation read at a coarser grain, not inferred from an unobserved behaviour — which is why they are `agrees` and not `silent`.",
+      "evidence": "streamable_http_stateless_test.exs:308-309 builds the retry — `\"requestState\" => first[\"requestState\"],` and `\"inputResponses\" => [%{\"name\" => \"Ada\"}]` — and streamable_http_stateless_test.exs:313-314 asserts the outcome: `assert final[\"resultType\"] == \"complete\"` and `assert hd(final[\"content\"])[\"text\"] == \"hello Ada\"`. The check's three axes are no-error, result-present and `z(a)` (the result is COMPLETE); asserting the final `resultType` is `complete` is `z`'s own test written the other way round, and the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold. The first two axes are therefore covered by the SAME observation read at a coarser grain, not inferred from an unobserved behaviour — which is why they are `agrees` and not `silent`.",
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test tools/call input-required → retry with requestState → completion",
@@ -1184,7 +1188,7 @@
       "bucket_attributes": [],
       "claim": "a `tools/call` whose inputs have not yet been supplied is answered with a RESULT whose `resultType` is `input_required`",
       "escalation": null,
-      "evidence": "streamable_http_ac_test.exs:248 — `assert result(first)[\"resultType\"] == \"input_required\"`, over a real HTTP POST at streamable_http_ac_test.exs:247 — `first = post(url, \"tools/call\", with_meta(%{\"name\" => \"needs_input_id\"}), role: \"PM\")`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference. Equality against `\"input_required\"` covers both the presence axis and the value axis.",
+      "evidence": "streamable_http_ac_test.exs:293 — `assert result(first)[\"resultType\"] == \"input_required\"`, over a real HTTP POST at streamable_http_ac_test.exs:292 — `first = post(url, \"tools/call\", with_meta(%{\"name\" => \"needs_input_id\"}), role: \"PM\")`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference. Equality against `\"input_required\"` covers both the presence axis and the value axis.",
       "member": {
         "module": "MCP.Transport.StreamableHTTP.ACTest",
         "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
@@ -1237,7 +1241,7 @@
       ],
       "claim": "a `tools/call` whose inputs have not yet been supplied is answered with a RESULT whose `resultType` is `input_required`",
       "escalation": null,
-      "evidence": "streamable_http_ac_test.exs:248 — `assert result(first)[\"resultType\"] == \"input_required\"`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference. This claim says nothing about `requestState` or `inputRequests`; the member's next claim covers the first of them.",
+      "evidence": "streamable_http_ac_test.exs:293 — `assert result(first)[\"resultType\"] == \"input_required\"`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference. This claim says nothing about `requestState` or `inputRequests`; the member's next claim covers the first of them.",
       "member": {
         "module": "MCP.Transport.StreamableHTTP.ACTest",
         "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
@@ -1286,7 +1290,7 @@
       ],
       "claim": "a `tools/call` whose inputs have not yet been supplied is answered with a RESULT whose `resultType` is `input_required`",
       "escalation": null,
-      "evidence": "streamable_http_ac_test.exs:248 — `assert result(first)[\"resultType\"] == \"input_required\"`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference.",
+      "evidence": "streamable_http_ac_test.exs:293 — `assert result(first)[\"resultType\"] == \"input_required\"`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference.",
       "member": {
         "module": "MCP.Transport.StreamableHTTP.ACTest",
         "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
@@ -1339,7 +1343,7 @@
       ],
       "claim": "that InputRequiredResult carries a `requestState`, and it is the string token the server minted",
       "escalation": null,
-      "evidence": "streamable_http_ac_test.exs:249 — `assert result(first)[\"requestState\"] == \"rs-token-id\"`. Equality against a string literal covers presence and type both: an absent or non-string `requestState` could not equal `\"rs-token-id\"`.",
+      "evidence": "streamable_http_ac_test.exs:294 — `assert result(first)[\"requestState\"] == \"rs-token-id\"`. Equality against a string literal covers presence and type both: an absent or non-string `requestState` could not equal `\"rs-token-id\"`.",
       "member": {
         "module": "MCP.Transport.StreamableHTTP.ACTest",
         "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
@@ -1388,7 +1392,7 @@
       ],
       "claim": "that InputRequiredResult carries a `requestState`, and it is the string token the server minted",
       "escalation": null,
-      "evidence": "streamable_http_ac_test.exs:249 — `assert result(first)[\"requestState\"] == \"rs-token-id\"`, which is what R1's last conjunct `r.requestState&&(i=!0)` tests for.",
+      "evidence": "streamable_http_ac_test.exs:294 — `assert result(first)[\"requestState\"] == \"rs-token-id\"`, which is what R1's last conjunct `r.requestState&&(i=!0)` tests for.",
       "member": {
         "module": "MCP.Transport.StreamableHTTP.ACTest",
         "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
@@ -1431,7 +1435,7 @@
       "bucket_attributes": [],
       "claim": "a retry echoing the server's own `requestState` back is answered with a COMPLETE result",
       "escalation": null,
-      "evidence": "streamable_http_ac_test.exs:262-263 — `final = post(url, \"tools/call\", retry_params, role: \"REVIEWER\")` and `assert result(final)[\"resultType\"] == \"complete\"`, where `retry_params` echoes the minted token at streamable_http_ac_test.exs:255 — `\"requestState\" => result(first)[\"requestState\"],`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference. Asserting the final `resultType` is `complete` is `z(a)`'s test written the other way round.",
+      "evidence": "streamable_http_ac_test.exs:307-308 — `final = post(url, \"tools/call\", retry_params, role: \"REVIEWER\")` and `assert result(final)[\"resultType\"] == \"complete\"`, where `retry_params` echoes the minted token at streamable_http_ac_test.exs:300 — `\"requestState\" => result(first)[\"requestState\"],`. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference. Asserting the final `resultType` is `complete` is `z(a)`'s test written the other way round.",
       "member": {
         "module": "MCP.Transport.StreamableHTTP.ACTest",
         "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
@@ -1474,7 +1478,7 @@
       "bucket_attributes": [],
       "claim": "the retry's `inputResponses` entry carries an unrecognised extra field alongside the recognised one, and the call still completes",
       "escalation": null,
-      "evidence": "streamable_http_ac_test.exs:256 — `\"inputResponses\" => [%{\"name\" => \"x\", \"identity\" => \"PM-SPOOF\"}]` — and streamable_http_ac_test.exs:263 — `assert result(final)[\"resultType\"] == \"complete\"`. The recognised field is `\"name\"`; `\"identity\"` is not part of any InputResponse this server asked for. The call completes, so the unrecognised field was ignored rather than rejected. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference.",
+      "evidence": "streamable_http_ac_test.exs:301 — `\"inputResponses\" => [%{\"name\" => \"x\", \"identity\" => \"PM-SPOOF\"}]` — and streamable_http_ac_test.exs:308 — `assert result(final)[\"resultType\"] == \"complete\"`. The recognised field is `\"name\"`; `\"identity\"` is not part of any InputResponse this server asked for. The call completes, so the unrecognised field was ignored rather than rejected. the test's `result/1` helper returns the response's `result` member, so an error response yields `nil` and the assertion could not hold — the no-error and result-present axes are the same observation read at a coarser grain, not an inference.",
       "member": {
         "module": "MCP.Transport.StreamableHTTP.ACTest",
         "register_key": "MCP.Transport.StreamableHTTP.ACTest/test spoof — MRTR retry with planted identity is ignored; identity re-resolved fresh",
@@ -2191,13 +2195,13 @@
       ],
       "claim": "a handler's extras map carrying a true is_error puts isError on the wire as true, and a false one puts no isError there at all",
       "escalation": null,
-      "evidence": "json_schema_2020_12_test.exs:237 — `assert call(\"structured\", %{\"isError\" => true, \"content\" => []})[\"isError\"] == true` — and json_schema_2020_12_test.exs:238 — `refute Map.has_key?(call(\"structured\", %{\"isError\" => false, \"content\" => []}), \"isError\")`. The first assertion is exactly the check's isError axis: that axis is an IDENTITY test against boolean true rather than a truthiness test, so a truthy non-boolean does not satisfy it, and an equality assertion against true is the same predicate. The second axis is about the error result's FIRST content block carrying a non-empty text field — the failure being DESCRIBED and not merely flagged — and this unit asserts nothing about content at all. Its result's content array is empty, but it is empty BY CONSTRUCTION: the tool is driven with an empty content list on the same line, so the handler returns exactly what the unit handed it. The axis quantifies over the content of a result from a tool that described its failure; this unit's subject is the isError flag's round trip. Silent by the GRAIN of the claim, not by a reading of it.",
+      "evidence": "json_schema_2020_12_test.exs:257 — `assert call(\"structured\", %{\"isError\" => true, \"content\" => []})[\"isError\"] == true` — and json_schema_2020_12_test.exs:258 — `refute Map.has_key?(call(\"structured\", %{\"isError\" => false, \"content\" => []}), \"isError\")`. The first assertion is exactly the check's isError axis: that axis is an IDENTITY test against boolean true rather than a truthiness test, so a truthy non-boolean does not satisfy it, and an equality assertion against true is the same predicate. The second axis is about the error result's FIRST content block carrying a non-empty text field — the failure being DESCRIBED and not merely flagged — and this unit asserts nothing about content at all. Its result's content array is empty, but it is empty BY CONSTRUCTION: the tool is driven with an empty content list on the same line, so the handler returns exactly what the unit handed it. The axis quantifies over the content of a result from a tool that described its failure; this unit's subject is the isError flag's round trip. Silent by the GRAIN of the claim, not by a reading of it.",
       "member": {
         "module": "MCP.Server.JsonSchema202012Test",
         "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value the extras map also carries isError, and false does not become absent",
         "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value the extras map also carries isError, and false does not become absent"
       },
-      "note": "THE SECOND ASSERTION IS SHARPER THAN THE AXIS AND THE SUITE HAS NO PLACE FOR IT. json_schema_2020_12_test.exs:238 pins that a FALSE is_error does not become an ABSENT isError — the absent-versus-false distinction SEP-2106 makes on the output side. `ToolsCallError` has no axis about a NON-error result at all: its whole subject is a tool that reported one. So the refute is covered by no axis of this check and by no other check in the declared population, and NO REGISTERED SEARCH CARRIES IT, and that is stated rather than borrowed: SRV24's subject is `outputSchema` and `structuredContent`, not `isError`, so this refute is not one of the thirteen zeros that entry records. It is recorded on this edge because the member is edge-bearing and therefore cannot appear in `declared_unmatched` at all — THE SAME RESIDUAL AS THE W-4 MEMBER'S CLAIM, AND NOT THE SAME PLACEMENT — this clause said `the same placement` and that was wrong, corrected here on MES-119's FINDING 2. Three uncovered sub-claims on this leg, three different homes: W-4's claim got a structured `claims_without_an_edge` row, THIS refute got edge-prose only, and the `:244` case got SRV24's zero. What the three share is the RESIDUAL — a sub-claim inside an edge-bearing member that no axis of any declared check reaches — and what they do not share is where the file puts it. MES-119's FINDING 2 MOVES NO FIGURE — the correction is to this clause's prose and to nothing else, and `claim_level_unmatched` would read 6 with it made or unmade. It read SEVEN at C1c-iv-a's tip for an unrelated reason belonging to that same slice: C1c-iv added a `claims_without_an_edge` row for `MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)`, whose `it is the DEFAULT` claim no caching axis can reach. Two changes in one commit, one figure, and they are separated here so the 6 → 7 is not read as this correction's doing. Until MES-110 the file had NO CRITERION for choosing among the three placements, which is why one member's sub-claim could end up in any of them; supplying that criterion was MES-110's gap and was not invented here. MES-110's rule B (A3 §6) supplies part of it: it says what an `oc:none` token on an edge-bearing member is, so the structured-row placement now has a criterion behind it. It does not say that an uncovered sub-claim must take that form, so this refute is still edge prose; whether it must migrate is MES-133's (D1) question. The residual itself is named in `the_w4_claim_and_the_registry_no_claim_level_row_can_reach`. The F-10 legacy-boolean edge makes the identical observation from the other slot-3 shape and points here rather than repeating it.",
+      "note": "THE SECOND ASSERTION IS SHARPER THAN THE AXIS AND THE SUITE HAS NO PLACE FOR IT. json_schema_2020_12_test.exs:258 pins that a FALSE is_error does not become an ABSENT isError — the absent-versus-false distinction SEP-2106 makes on the output side. `ToolsCallError` has no axis about a NON-error result at all: its whole subject is a tool that reported one. So the refute is covered by no axis of this check and by no other check in the declared population, and NO REGISTERED SEARCH CARRIES IT, and that is stated rather than borrowed: SRV24's subject is `outputSchema` and `structuredContent`, not `isError`, so this refute is not one of the thirteen zeros that entry records. It is recorded on this edge because the member is edge-bearing and therefore cannot appear in `declared_unmatched` at all — THE SAME RESIDUAL AS THE W-4 MEMBER'S CLAIM, AND NOT THE SAME PLACEMENT — this clause said `the same placement` and that was wrong, corrected here on MES-119's FINDING 2. Three uncovered sub-claims on this leg, three different homes: W-4's claim got a structured `claims_without_an_edge` row, THIS refute got edge-prose only, and the `:244` case got SRV24's zero. What the three share is the RESIDUAL — a sub-claim inside an edge-bearing member that no axis of any declared check reaches — and what they do not share is where the file puts it. MES-119's FINDING 2 MOVES NO FIGURE — the correction is to this clause's prose and to nothing else, and `claim_level_unmatched` would read 6 with it made or unmade. It read SEVEN at C1c-iv-a's tip for an unrelated reason belonging to that same slice: C1c-iv added a `claims_without_an_edge` row for `MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)`, whose `it is the DEFAULT` claim no caching axis can reach. Two changes in one commit, one figure, and they are separated here so the 6 → 7 is not read as this correction's doing. Until MES-110 the file had NO CRITERION for choosing among the three placements, which is why one member's sub-claim could end up in any of them; supplying that criterion was MES-110's gap and was not invented here. MES-110's rule B (A3 §6) supplies part of it: it says what an `oc:none` token on an edge-bearing member is, so the structured-row placement now has a criterion behind it. It does not say that an uncovered sub-claim must take that form, so this refute is still edge prose; whether it must migrate is MES-133's (D1) question. The residual itself is named in `the_w4_claim_and_the_registry_no_claim_level_row_can_reach`. The F-10 legacy-boolean edge makes the identical observation from the other slot-3 shape and points here rather than repeating it.",
       "oc_key": [
         "server",
         "tools-call-error",
@@ -2242,13 +2246,13 @@
       "bucket_attributes": [],
       "claim": "a handler returning the bare pre-SEP-2106 content list still puts exactly that list on the wire",
       "escalation": null,
-      "evidence": "json_schema_2020_12_test.exs:243 — `assert call(\"plain\", %{})[\"content\"] == [%{\"type\" => \"text\", \"text\" => \"ok\"}]`. ONE equality against a literal one-block array covers all five axes of this check, and each for its own reason rather than by a single wave: the result carries a content member and that member is a JSON array, because an equality against a list cannot hold if the member is absent or is not a list; the array is not empty, because the literal has one element; that element carries the discriminator spelled lower-case on the wire, which is the WIRE spelling the axis names; and its text field is the non-empty string in the same literal. The handler under it is the pre-SEP-2106 clause of `MCP.Test.SchemaHandler`, which returns a bare content list and no extras map — so the agreement is about the SDK's UNCHANGED path rather than about the structured-content one this module is named for.",
+      "evidence": "json_schema_2020_12_test.exs:267 — `assert call(\"plain\", %{})[\"content\"] == [%{\"type\" => \"text\", \"text\" => \"ok\"}]`. ONE equality against a literal one-block array covers all five axes of this check, and each for its own reason rather than by a single wave: the result carries a content member and that member is a JSON array, because an equality against a list cannot hold if the member is absent or is not a list; the array is not empty, because the literal has one element; that element carries the discriminator spelled lower-case on the wire, which is the WIRE spelling the axis names; and its text field is the non-empty string in the same literal. The handler under it is the pre-SEP-2106 clause of `MCP.Test.SchemaHandler`, which returns a bare content list and no extras map — so the agreement is about the SDK's UNCHANGED path rather than about the structured-content one this module is named for.",
       "member": {
         "module": "MCP.Server.JsonSchema202012Test",
         "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value the pre-SEP-2106 return shapes still work unchanged",
         "test": "test W-1 — a handler can emit structuredContent, and it may be any JSON value the pre-SEP-2106 return shapes still work unchanged"
       },
-      "note": "THE ONLY FULL-AGREEMENT EDGE THIS SLICE ADDS, and it comes from the one member of the W-1 describe block whose subject is BACKWARD COMPATIBILITY rather than from any of the thirteen whose subject is the new field. That is the result worth recording: the official suite scores the shape SEP-2106 left alone and scores nothing about the shape it added. This member also asserts at json_schema_2020_12_test.exs:244 that no structuredContent key appears on that response; that half reaches no axis of this check and no check in the declared population, and it is SRV24's zero rather than a fourteenth home for it.",
+      "note": "THE ONLY FULL-AGREEMENT EDGE THIS SLICE ADDS, and it comes from the one member of the W-1 describe block whose subject is BACKWARD COMPATIBILITY rather than from any of the thirteen whose subject is the new field. That is the result worth recording: the official suite scores the shape SEP-2106 left alone and scores nothing about the shape it added. This member also asserts at json_schema_2020_12_test.exs:268 that no structuredContent key appears on that response; that half reaches no axis of this check and no check in the declared population, and it is SRV24's zero rather than a fourteenth home for it.",
       "oc_key": [
         "server",
         "tools-call-simple-text",
@@ -2283,7 +2287,7 @@
       ],
       "claim": "a handler returning the pre-SEP-2106 error shape still puts isError true on the wire",
       "escalation": null,
-      "evidence": "json_schema_2020_12_test.exs:245 — `assert call(\"plain_error\", %{})[\"isError\"] == true`. The handler clause behind `plain_error` returns the legacy four-tuple whose third element is the boolean true, and the assertion is an identity test against true, which is what this check's isError axis requires. This result DOES carry a described failure — its content is a one-block text array — but the unit does not assert it, so the description axis is silent on the unit's choice of assertions rather than on the data. That is the same silence json_schema_2020_12_test.exs:243 does NOT have for the non-error sibling, which is why the two claims of this member are two edges and not one.",
+      "evidence": "json_schema_2020_12_test.exs:269 — `assert call(\"plain_error\", %{})[\"isError\"] == true`. The handler clause behind `plain_error` returns the legacy four-tuple whose third element is the boolean true, and the assertion is an identity test against true, which is what this check's isError axis requires. This result DOES carry a described failure — its content is a one-block text array — but the unit does not assert it, so the description axis is silent on the unit's choice of assertions rather than on the data. That is the same silence json_schema_2020_12_test.exs:267 does NOT have for the non-error sibling, which is why the two claims of this member are two edges and not one.",
       "member": {
         "module": "MCP.Server.JsonSchema202012Test",
         "register_key": "MCP.Server.JsonSchema202012Test/test W-1 — a handler can emit structuredContent, and it may be any JSON value the pre-SEP-2106 return shapes still work unchanged",
@@ -2336,13 +2340,13 @@
       ],
       "claim": "a tools/call on the tool whose inputSchema $refs a network URI returns a result whose content array is not empty",
       "escalation": null,
-      "evidence": "json_schema_2020_12_test.exs:184 — `assert resp[\"result\"][\"content\"] != []` — over the response to a real tools/call, beside json_schema_2020_12_test.exs:183 — `refute Map.has_key?(resp, \"error\")`. The agreement is exact rather than approximate: the axis fails exactly when the content member is present and its array is empty, and this assertion fails exactly when the content member is the empty array. Same predicate, same polarity. The four silences are the other side of the same precision. An inequality against the empty list is satisfied by an ABSENT content member as well as by a non-empty one, so it establishes nothing about presence and nothing about the member being a JSON array; and the unit never reads a block's type or its text field, so the two type-text axes have nothing of this unit's to be about.",
+      "evidence": "json_schema_2020_12_test.exs:198 — `assert resp[\"result\"][\"content\"] != []` — over the response to a real tools/call, beside json_schema_2020_12_test.exs:197 — `refute Map.has_key?(resp, \"error\")`. The agreement is exact rather than approximate: the axis fails exactly when the content member is present and its array is empty, and this assertion fails exactly when the content member is the empty array. Same predicate, same polarity. The four silences are the other side of the same precision. An inequality against the empty list is satisfied by an ABSENT content member as well as by a non-empty one, so it establishes nothing about presence and nothing about the member being a JSON array; and the unit never reads a block's type or its text field, so the two type-text axes have nothing of this unit's to be about.",
       "member": {
         "module": "MCP.Server.JsonSchema202012Test",
         "register_key": "MCP.Server.JsonSchema202012Test/test W-4 — no $ref is ever dereferenced: a canary listener is never connected to",
         "test": "test W-4 — no $ref is ever dereferenced: a canary listener is never connected to"
       },
-      "note": "WHY THIS MEMBER CARRIES AN EDGE AT ALL, AND THE READING A REVIEWER MAY WANT TO CONTEST. The unit's own comment at json_schema_2020_12_test.exs:180-182 says these two lines exist so that the canary measures a non-dereference rather than a short-circuit: the author's MOTIVE is `the handler ran`, and `the content array is not empty` is the proxy chosen for it. `how_a_silent_axis_was_decided` is a rule about the ASSERTION's subject and not about the author's motive, and this assertion's predicate IS the axis's predicate — so filing the member as bucket 1 to keep its subject-claim inside the search registry would credit the suite with LESS coverage than it has, which is the error FINDING 1 was ratified against. THE COST IS STATED RATHER THAN ABSORBED. A member carrying an edge cannot also sit in `declared_unmatched` (one member, one home), so this member's SEP-2106 MUST NOT claim goes to `claims_without_an_edge`, where until MES-110 no registry entry and no control re-ran its zero. That residual is named in `the_w4_claim_and_the_registry_no_claim_level_row_can_reach`, not left to be noticed. Since MES-110 (rule B, A3 §6) the row carries the registered search CLV06, and the absence control re-runs it.",
+      "note": "WHY THIS MEMBER CARRIES AN EDGE AT ALL, AND THE READING A REVIEWER MAY WANT TO CONTEST. The unit's own comment at json_schema_2020_12_test.exs:194-196 says these two lines exist so that the canary measures a non-dereference rather than a short-circuit: the author's MOTIVE is `the handler ran`, and `the content array is not empty` is the proxy chosen for it. `how_a_silent_axis_was_decided` is a rule about the ASSERTION's subject and not about the author's motive, and this assertion's predicate IS the axis's predicate — so filing the member as bucket 1 to keep its subject-claim inside the search registry would credit the suite with LESS coverage than it has, which is the error FINDING 1 was ratified against. THE COST IS STATED RATHER THAN ABSORBED. A member carrying an edge cannot also sit in `declared_unmatched` (one member, one home), so this member's SEP-2106 MUST NOT claim goes to `claims_without_an_edge`, where until MES-110 no registry entry and no control re-ran its zero. That residual is named in `the_w4_claim_and_the_registry_no_claim_level_row_can_reach`, not left to be noticed. Since MES-110 (rule B, A3 §6) the row carries the registered search CLV06, and the absence control re-runs it.",
       "oc_key": [
         "server",
         "tools-call-simple-text",
@@ -2377,7 +2381,7 @@
       ],
       "claim": "an extras STRUCT carrying a true is_error field puts isError true on the wire, exactly as a plain extras map would",
       "escalation": null,
-      "evidence": "json_schema_2020_12_test.exs:387 — `assert result[\"isError\"] == true` — over the result of a tools/call whose slot 3 is the struct built at json_schema_2020_12_test.exs:382 — `extras = %ExtrasStruct{structured_content: [1, 2], is_error: true}`. An identity test against true, which is this check's isError axis. What makes the edge worth having rather than a duplicate of the plain-map one is the ROUTE: a struct IS a map, so dispatch reads the two fields off it, and this unit is the one that pins the read actually reaching the wire. The second axis is about the error result's FIRST content block carrying a non-empty text field — the failure being DESCRIBED and not merely flagged — and this unit asserts nothing about content at all. Its result's content array is empty, but it is empty BY CONSTRUCTION: the tool is driven with an empty content list on the same line, so the handler returns exactly what the unit handed it. The axis quantifies over the content of a result from a tool that described its failure; this unit's subject is the isError flag's round trip. Silent by the GRAIN of the claim, not by a reading of it.",
+      "evidence": "json_schema_2020_12_test.exs:438 — `assert result[\"isError\"] == true` — over the result of a tools/call whose slot 3 is the struct built at json_schema_2020_12_test.exs:433 — `extras = %ExtrasStruct{structured_content: [1, 2], is_error: true}`. An identity test against true, which is this check's isError axis. What makes the edge worth having rather than a duplicate of the plain-map one is the ROUTE: a struct IS a map, so dispatch reads the two fields off it, and this unit is the one that pins the read actually reaching the wire. The second axis is about the error result's FIRST content block carrying a non-empty text field — the failure being DESCRIBED and not merely flagged — and this unit asserts nothing about content at all. Its result's content array is empty, but it is empty BY CONSTRUCTION: the tool is driven with an empty content list on the same line, so the handler returns exactly what the unit handed it. The axis quantifies over the content of a result from a tool that described its failure; this unit's subject is the isError flag's round trip. Silent by the GRAIN of the claim, not by a reading of it.",
       "member": {
         "module": "MCP.Server.JsonSchema202012Test",
         "register_key": "MCP.Server.JsonSchema202012Test/test F-9 — the struct warning describes what the code did, not the opposite a struct that DOES carry the fields has them read, and the warning says so",
@@ -2418,7 +2422,7 @@
       ],
       "claim": "an extras struct carrying a true is_error beside a nil structured_content still puts isError true on the wire",
       "escalation": null,
-      "evidence": "json_schema_2020_12_test.exs:410 — `assert result[\"isError\"] == true` — over the struct built at json_schema_2020_12_test.exs:401 — `extras = %ExtrasStruct{structured_content: nil, is_error: true}`. The same identity test as its sibling and NOT the same observation: the sibling's struct carries both fields set, this one carries a nil alongside, and the claim is that the nil neighbour does not cost the isError its place. The second axis is about the error result's FIRST content block carrying a non-empty text field — the failure being DESCRIBED and not merely flagged — and this unit asserts nothing about content at all. Its result's content array is empty, but it is empty BY CONSTRUCTION: the tool is driven with an empty content list on the same line, so the handler returns exactly what the unit handed it. The axis quantifies over the content of a result from a tool that described its failure; this unit's subject is the isError flag's round trip. Silent by the GRAIN of the claim, not by a reading of it.",
+      "evidence": "json_schema_2020_12_test.exs:462 — `assert result[\"isError\"] == true` — over the struct built at json_schema_2020_12_test.exs:453 — `extras = %ExtrasStruct{structured_content: nil, is_error: true}`. The same identity test as its sibling and NOT the same observation: the sibling's struct carries both fields set, this one carries a nil alongside, and the claim is that the nil neighbour does not cost the isError its place. The second axis is about the error result's FIRST content block carrying a non-empty text field — the failure being DESCRIBED and not merely flagged — and this unit asserts nothing about content at all. Its result's content array is empty, but it is empty BY CONSTRUCTION: the tool is driven with an empty content list on the same line, so the handler returns exactly what the unit handed it. The axis quantifies over the content of a result from a tool that described its failure; this unit's subject is the isError flag's round trip. Silent by the GRAIN of the claim, not by a reading of it.",
       "member": {
         "module": "MCP.Server.JsonSchema202012Test",
         "register_key": "MCP.Server.JsonSchema202012Test/test F-9 — the struct warning describes what the code did, not the opposite a struct carrying one of the two fields names that one, and only that one",
@@ -2459,13 +2463,13 @@
       ],
       "claim": "the pre-SEP-2106 boolean slot 3 still puts isError true on the wire when it is true",
       "escalation": null,
-      "evidence": "json_schema_2020_12_test.exs:447 — `assert errored[\"isError\"] == true` — where the result comes from json_schema_2020_12_test.exs:444 — `{errored, error_log} = with_log(fn -> call(\"raw_extras\", %{\"extras\" => true}) end)`, a slot 3 that is the bare boolean rather than a map. An identity test against true, which is this check's isError axis. The second axis is about the error result's FIRST content block carrying a non-empty text field — the failure being DESCRIBED and not merely flagged — and this unit asserts nothing about content at all. Its result's content array is empty, but it is empty BY CONSTRUCTION: the tool is driven with an empty content list on the same line, so the handler returns exactly what the unit handed it. The axis quantifies over the content of a result from a tool that described its failure; this unit's subject is the isError flag's round trip. Silent by the GRAIN of the claim, not by a reading of it.",
+      "evidence": "json_schema_2020_12_test.exs:502 — `assert errored[\"isError\"] == true` — where the result comes from json_schema_2020_12_test.exs:499 — `{errored, error_log} = with_log(fn -> call(\"raw_extras\", %{\"extras\" => true}) end)`, a slot 3 that is the bare boolean rather than a map. An identity test against true, which is this check's isError axis. The second axis is about the error result's FIRST content block carrying a non-empty text field — the failure being DESCRIBED and not merely flagged — and this unit asserts nothing about content at all. Its result's content array is empty, but it is empty BY CONSTRUCTION: the tool is driven with an empty content list on the same line, so the handler returns exactly what the unit handed it. The axis quantifies over the content of a result from a tool that described its failure; this unit's subject is the isError flag's round trip. Silent by the GRAIN of the claim, not by a reading of it.",
       "member": {
         "module": "MCP.Server.JsonSchema202012Test",
         "register_key": "MCP.Server.JsonSchema202012Test/test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named the legacy boolean slot 3 still works, in both directions, and warns about nothing",
         "test": "test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named the legacy boolean slot 3 still works, in both directions, and warns about nothing"
       },
-      "note": "THE OTHER DIRECTION OF THIS MEMBER REACHES NO AXIS, AND THAT IS THE COVERAGE RESULT. json_schema_2020_12_test.exs:449 pins that a FALSE boolean slot 3 leaves NO isError on the wire. `ToolsCallError` scores only the error case, and no check in the declared population asks what a successful result must NOT carry, so the false half is unmatched. It is the same absent-versus-false fact the extras-map member records at json_schema_2020_12_test.exs:238 and it is not given a second home here.",
+      "note": "THE OTHER DIRECTION OF THIS MEMBER REACHES NO AXIS, AND THAT IS THE COVERAGE RESULT. json_schema_2020_12_test.exs:504 pins that a FALSE boolean slot 3 leaves NO isError on the wire. `ToolsCallError` scores only the error case, and no check in the declared population asks what a successful result must NOT carry, so the false half is unmatched. It is the same absent-versus-false fact the extras-map member records at json_schema_2020_12_test.exs:258 and it is not given a second home here.",
       "oc_key": [
         "server",
         "tools-call-error",
@@ -2508,13 +2512,13 @@
       ],
       "claim": "a COMPLETED tools/call result carries a resultType marker, and its value is `complete`",
       "escalation": null,
-      "evidence": "json_schema_2020_12_test.exs:340 — `assert result[\"resultType\"] == \"complete\"` — over the result of the tools/call driven at json_schema_2020_12_test.exs:331 — `{result, log} = with_log(fn -> call(\"raw_extras\", %{\"extras\" => %URI{}}) end)`. The test's call helper returns the response's result member, so an error response yields nil and an equality against a string could not hold — which is why the no-error and result-present axes are the SAME observation read at a coarser grain rather than an inference, the reading C1c-ii's two edges on this check already use. The presence axis is the one this edge is really about: it is an IN test on the key, present whatever the value, and an equality assertion against a value cannot hold unless the key is there. THE VALUE AXIS IS SILENT AND THE TWO ANTECEDENTS ARE WHY. The axis requires the resultType of an INPUT-REQUIRED response to be the input_required marker; this unit's response is a COMPLETED tools/call and carries the complete marker, so the axis's antecedent does not hold of it and the axis is not about this case. A reader who reads the axis as unconditional would call it a contradiction, and the difference is stated here so that they can.",
+      "evidence": "json_schema_2020_12_test.exs:386 — `assert result[\"resultType\"] == \"complete\"` — over the result of the tools/call driven at json_schema_2020_12_test.exs:377 — `{result, log} = with_log(fn -> call(\"raw_extras\", %{\"extras\" => %URI{}}) end)`. The test's call helper returns the response's result member, so an error response yields nil and an equality against a string could not hold — which is why the no-error and result-present axes are the SAME observation read at a coarser grain rather than an inference, the reading C1c-ii's two edges on this check already use. The presence axis is the one this edge is really about: it is an IN test on the key, present whatever the value, and an equality assertion against a value cannot hold unless the key is there. THE VALUE AXIS IS SILENT AND THE TWO ANTECEDENTS ARE WHY. The axis requires the resultType of an INPUT-REQUIRED response to be the input_required marker; this unit's response is a COMPLETED tools/call and carries the complete marker, so the axis's antecedent does not hold of it and the axis is not about this case. A reader who reads the axis as unconditional would call it a contradiction, and the difference is stated here so that they can.",
       "member": {
         "module": "MCP.Server.JsonSchema202012Test",
         "register_key": "MCP.Server.JsonSchema202012Test/test R-3 — an unusable extras map is named in a warning, and never raises a struct in slot 3 is named by its module, and nothing is raised",
         "test": "test R-3 — an unusable extras map is named in a warning, and never raises a struct in slot 3 is named by its module, and nothing is raised"
       },
-      "note": "THE COVERAGE RESULT BEHIND THIS EDGE IS BIGGER THAN THE EDGE. SEP-2322 puts resultType on EVERY result — `dispatch.ex:489-490` says so in terms and puts the complete marker on every one — and the official suite scores the field only inside the input-required family, on the input-required path. This unit and its F-10 sibling are the only members in the declared population that pin resultType on a COMPLETE result, and they do it incidentally, while measuring something else. Recorded once in `the_result_type_marker_the_suite_scores_on_one_path_only`.",
+      "note": "THE COVERAGE RESULT BEHIND THIS EDGE IS BIGGER THAN THE EDGE. SEP-2322 puts resultType on EVERY result — `dispatch.ex:497-498` says so in terms and puts the complete marker on every one — and the official suite scores the field only inside the input-required family, on the input-required path. This unit and its F-10 sibling are the only members in the declared population that pin resultType on a COMPLETE result, and they do it incidentally, while measuring something else. Recorded once in `the_result_type_marker_the_suite_scores_on_one_path_only`.",
       "oc_key": [
         "server",
         "input-required-result-result-type",
@@ -2557,13 +2561,13 @@
       ],
       "claim": "a completed tools/call result carries a resultType marker even when its slot 3 was dropped as unusable",
       "escalation": null,
-      "evidence": "json_schema_2020_12_test.exs:436 — `assert result[\"resultType\"] == \"complete\"` — asserted once per shape inside the loop at json_schema_2020_12_test.exs:425 — `for extras <- [[structured_content: %{\"a\" => 1}], [], :structured_content, \"true\"] do`, so the claim is made of four slot-3 shapes and not of one. The three agreements are the same reading its R-3 sibling carries: an equality against a string cannot hold over an error response or an absent result, and it cannot hold unless the key the presence axis tests for is there. The value axis is silent for the same reason — a completed result is not the input-required response that axis quantifies over.",
+      "evidence": "json_schema_2020_12_test.exs:490 — `assert result[\"resultType\"] == \"complete\"` — asserted once per shape inside the loop at json_schema_2020_12_test.exs:479 — `for extras <- [[structured_content: %{\"a\" => 1}], [], :structured_content, \"true\"] do`, so the claim is made of four slot-3 shapes and not of one. The three agreements are the same reading its R-3 sibling carries: an equality against a string cannot hold over an error response or an absent result, and it cannot hold unless the key the presence axis tests for is there. The value axis is silent for the same reason — a completed result is not the input-required response that axis quantifies over.",
       "member": {
         "module": "MCP.Server.JsonSchema202012Test",
         "register_key": "MCP.Server.JsonSchema202012Test/test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named a keyword list, an empty list, an atom and a string are each named",
         "test": "test F-10 — a slot 3 that is neither a map nor a boolean is dropped AND named a keyword list, an empty list, an atom and a string are each named"
       },
-      "note": "THIS MEMBER ALSO ASSERTS THAT THE CONTENT ARRAY IS EMPTY, at json_schema_2020_12_test.exs:435, and that assertion is SILENT on `ToolsCallSimpleText` rather than contradicting it. The antecedents differ and both are visible in the source: the unit drives a handler that was handed no content, so the empty array is forced by the construction and what is being pinned is that an unusable slot 3 does not disturb it; the axis quantifies over the content of a result from a tool that RETURNED content. The reasoning is the one PM-ratified for the whole `content == []` family on MES-119 and it is written out in `the_empty_content_assertions_and_why_every_one_of_them_is_silent`.",
+      "note": "THIS MEMBER ALSO ASSERTS THAT THE CONTENT ARRAY IS EMPTY, at json_schema_2020_12_test.exs:489, and that assertion is SILENT on `ToolsCallSimpleText` rather than contradicting it. The antecedents differ and both are visible in the source: the unit drives a handler that was handed no content, so the empty array is forced by the construction and what is being pinned is that an unusable slot 3 does not disturb it; the axis quantifies over the content of a result from a tool that RETURNED content. The reasoning is the one PM-ratified for the whole `content == []` family on MES-119 and it is written out in `the_empty_content_assertions_and_why_every_one_of_them_is_silent`.",
       "oc_key": [
         "server",
         "input-required-result-result-type",
@@ -2592,7 +2596,7 @@
       "bucket_attributes": [],
       "claim": "a request whose `Origin` is not localhost is answered HTTP 403",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:146 — `    assert conn.status == 403` on a request carrying `origin: http://evil.example`. The check's single axis is `e.statusCode>=400&&e.statusCode<500`, a half-open BAND rather than a status: 403 is inside it, so the unit's stricter assertion entails the axis and the verdict is `agrees`.",
+      "evidence": "streamable_http_stateless_test.exs:183 — `    assert conn.status == 403` on a request carrying `origin: http://evil.example`. The check's single axis is `e.statusCode>=400&&e.statusCode<500`, a half-open BAND rather than a status: 403 is inside it, so the unit's stricter assertion entails the axis and the verdict is `agrees`.",
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test AC7 — non-localhost origin is rejected 403; the identity factory never runs",
@@ -2627,7 +2631,7 @@
       "bucket_attributes": [],
       "claim": "a request whose `Origin` is not localhost is rejected with HTTP 403 over real HTTP",
       "escalation": null,
-      "evidence": "streamable_http_ac_test.exs:178 — `    assert resp.status == 403` against a server started for real over HTTP, where its sibling in `MCP.Transport.StreamableHTTPStatelessTest` drives the plug directly. 403 is inside the axis's `e.statusCode>=400&&e.statusCode<500` band.",
+      "evidence": "streamable_http_ac_test.exs:209 — `    assert resp.status == 403` against a server started for real over HTTP, where its sibling in `MCP.Transport.StreamableHTTPStatelessTest` drives the plug directly. 403 is inside the axis's `e.statusCode>=400&&e.statusCode<500` band.",
       "member": {
         "module": "MCP.Transport.StreamableHTTP.ACTest",
         "register_key": "MCP.Transport.StreamableHTTP.ACTest/test AC7 — non-localhost origin is rejected 403 (acceptance parity)",
@@ -2668,7 +2672,7 @@
       ],
       "claim": "a `tools/list` result carries `ttlMs` and its value is 0",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:77 — `    assert r[\"ttlMs\"] == 0` on the `tools/list` result bound at streamable_http_stateless_test.exs:76.",
+      "evidence": "streamable_http_stateless_test.exs:92 — `    assert r[\"ttlMs\"] == 0` on the `tools/list` result bound at streamable_http_stateless_test.exs:91.",
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test list/read results carry caching hints (ttlMs/cacheScope)",
@@ -2717,7 +2721,7 @@
       ],
       "claim": "a `tools/list` result carries `ttlMs` and its value is 0",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:77 — `    assert r[\"ttlMs\"] == 0` on the `tools/list` result bound at streamable_http_stateless_test.exs:76.",
+      "evidence": "streamable_http_stateless_test.exs:92 — `    assert r[\"ttlMs\"] == 0` on the `tools/list` result bound at streamable_http_stateless_test.exs:91.",
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test list/read results carry caching hints (ttlMs/cacheScope)",
@@ -2758,7 +2762,7 @@
       ],
       "claim": "a `tools/list` result carries `cacheScope` and its value is `public`",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:78 — `    assert r[\"cacheScope\"] == \"public\"` on the same result.",
+      "evidence": "streamable_http_stateless_test.exs:93 — `    assert r[\"cacheScope\"] == \"public\"` on the same result.",
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test list/read results carry caching hints (ttlMs/cacheScope)",
@@ -2797,7 +2801,7 @@
       "bucket_attributes": [],
       "claim": "a `tools/list` result carries `cacheScope` and its value is `public`",
       "escalation": null,
-      "evidence": "streamable_http_stateless_test.exs:78 — `    assert r[\"cacheScope\"] == \"public\"` on the same result.",
+      "evidence": "streamable_http_stateless_test.exs:93 — `    assert r[\"cacheScope\"] == \"public\"` on the same result.",
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",
         "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test list/read results carry caching hints (ttlMs/cacheScope)",
@@ -2838,7 +2842,7 @@
       ],
       "claim": "a `tools/list` result carries `ttlMs` and its value is 0",
       "escalation": null,
-      "evidence": "streamable_http_ac_test.exs:273 — `    assert r[\"ttlMs\"] == 0` on the `tools/list` result bound at streamable_http_ac_test.exs:272, against a server started with no `cache_defaults` configured.",
+      "evidence": "streamable_http_ac_test.exs:323 — `    assert r[\"ttlMs\"] == 0` on the `tools/list` result bound at streamable_http_ac_test.exs:322, against a server started with no `cache_defaults` configured.",
       "member": {
         "module": "MCP.Transport.StreamableHTTP.ACTest",
         "register_key": "MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)",
@@ -2887,7 +2891,7 @@
       ],
       "claim": "a `tools/list` result carries `ttlMs` and its value is 0",
       "escalation": null,
-      "evidence": "streamable_http_ac_test.exs:273 — `    assert r[\"ttlMs\"] == 0` on the `tools/list` result bound at streamable_http_ac_test.exs:272, against a server started with no `cache_defaults` configured.",
+      "evidence": "streamable_http_ac_test.exs:323 — `    assert r[\"ttlMs\"] == 0` on the `tools/list` result bound at streamable_http_ac_test.exs:322, against a server started with no `cache_defaults` configured.",
       "member": {
         "module": "MCP.Transport.StreamableHTTP.ACTest",
         "register_key": "MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)",
@@ -2928,7 +2932,7 @@
       ],
       "claim": "a `tools/list` result carries `cacheScope` and its value is `public`",
       "escalation": null,
-      "evidence": "streamable_http_ac_test.exs:274 — `    assert r[\"cacheScope\"] == \"public\"` on the same result.",
+      "evidence": "streamable_http_ac_test.exs:324 — `    assert r[\"cacheScope\"] == \"public\"` on the same result.",
       "member": {
         "module": "MCP.Transport.StreamableHTTP.ACTest",
         "register_key": "MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)",
@@ -2967,7 +2971,7 @@
       "bucket_attributes": [],
       "claim": "a `tools/list` result carries `cacheScope` and its value is `public`",
       "escalation": null,
-      "evidence": "streamable_http_ac_test.exs:274 — `    assert r[\"cacheScope\"] == \"public\"` on the same result.",
+      "evidence": "streamable_http_ac_test.exs:324 — `    assert r[\"cacheScope\"] == \"public\"` on the same result.",
       "member": {
         "module": "MCP.Transport.StreamableHTTP.ACTest",
         "register_key": "MCP.Transport.StreamableHTTP.ACTest/test default caching policy is no-store (ttlMs 0)",
@@ -3539,7 +3543,7 @@
       ],
       "claim": "`tools/list` over real HTTP answers with the server's tools as an array, each carrying a name",
       "escalation": null,
-      "evidence": "self_compatibility_test.exs:195 — `assert {:ok, %{\"tools\" => [%{\"name\" => name}]}} = MCP.Client.list_tools(client)`, with the bound name pinned at self_compatibility_test.exs:196. The PATTERN is what discharges the three axes and it does so more tightly than an equality would: the map pattern requires the `tools` key, the list pattern requires a JSON array of exactly one element, and the inner map pattern requires that element to carry `name`. A JSON object under `tools` decodes to a map and fails the list pattern.\n\nThis is the only member in this file that reaches a check over REAL HTTP through a real Bandit server (self_compatibility_test.exs:178-193) rather than in-process over `MCP.Test.BridgeTransport`, which is why it is filed beside the BridgeTransport `ToolsList` edge rather than collapsed into it: same check, different transport, two claims.",
+      "evidence": "self_compatibility_test.exs:207 — `assert {:ok, %{\"tools\" => [%{\"name\" => name}]}} = MCP.Client.list_tools(client)`, with the bound name pinned at self_compatibility_test.exs:208. The PATTERN is what discharges the three axes and it does so more tightly than an equality would: the map pattern requires the `tools` key, the list pattern requires a JSON array of exactly one element, and the inner map pattern requires that element to carry `name`. A JSON object under `tools` decodes to a map and fails the list pattern.\n\nThis is the only member in this file that reaches a check over REAL HTTP through a real Bandit server (self_compatibility_test.exs:190-205) rather than in-process over `MCP.Test.BridgeTransport`, which is why it is filed beside the BridgeTransport `ToolsList` edge rather than collapsed into it: same check, different transport, two claims.",
       "member": {
         "module": "MCP.Transport.SelfCompatibilityTest",
         "register_key": "MCP.Transport.SelfCompatibilityTest/test END TO END: our client calls our server's non-header-safe tool over real HTTP",
@@ -3592,7 +3596,7 @@
       ],
       "claim": "a `tools/call` over real HTTP answers with a non-empty content array whose block carries the tool's text",
       "escalation": null,
-      "evidence": "self_compatibility_test.exs:198 — `assert {:ok, %{\"content\" => [%{\"text\" => \"sunny\"}]}} = MCP.Client.call_tool(client, name)`. The pattern carries four axes: the `content` key, a one-element LIST (so not a map and not empty), and a block whose `text` is the non-empty string the tool returned.\n\nTHE TYPE-DISCRIMINATOR AXIS IS SILENT, and it is the one axis a pattern match makes easy to over-claim. `a_content_block_has_type_text` requires a block carrying `\"type\":\"text\"` in the WIRE spelling; this pattern names only the `text` key, so it would match a block with no `type` at all. The handler does set it (self_compatibility_test.exs:62) — a fixture setting a field is not an assertion reading it.",
+      "evidence": "self_compatibility_test.exs:210 — `assert {:ok, %{\"content\" => [%{\"text\" => \"sunny\"}]}} = MCP.Client.call_tool(client, name)`. The pattern carries four axes: the `content` key, a one-element LIST (so not a map and not empty), and a block whose `text` is the non-empty string the tool returned.\n\nTHE TYPE-DISCRIMINATOR AXIS IS SILENT, and it is the one axis a pattern match makes easy to over-claim. `a_content_block_has_type_text` requires a block carrying `\"type\":\"text\"` in the WIRE spelling; this pattern names only the `text` key, so it would match a block with no `type` at all. The handler does set it (self_compatibility_test.exs:65) — a fixture setting a field is not an assertion reading it.",
       "member": {
         "module": "MCP.Transport.SelfCompatibilityTest",
         "register_key": "MCP.Transport.SelfCompatibilityTest/test END TO END: our client calls our server's non-header-safe tool over real HTTP",

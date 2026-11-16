@@ -14,9 +14,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 1106223,
+      "bytes": 1108011,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "447d8651844d4093adf96c8fd73519e1c6e62ebdaa816c092dfdd10c5811118b"
+      "sha256": "50cc50d788ca97a1e89ef00cad6eedee790d8e93d41946f909f0bd12e7820068"
     }
   },
   "revision": "2026-07-28",
@@ -1398,7 +1398,7 @@
       "authored_by": "MES-105 (C1c-i)",
       "cg": null,
       "claim_the_slot_names": "a request whose _meta names a real but unsupported earlier version is rejected with -32022",
-      "evidence": "dispatch_test.exs:109-112 — `assert resp[\"error\"][\"code\"] == -32_022` for `_meta` carrying `\"2025-11-25\"`. The assertion's subject is the error CODE; all three of the check's axes are predicates on `error.data` — that it carries a non-empty `supported` array, that every entry is a version the server reports, and that `requested` echoes what was asked for. Nothing in this unit reads the error object's data member at all.",
+      "evidence": "dispatch_test.exs:145-148 — `assert resp[\"error\"][\"code\"] == -32_022` for `_meta` carrying `\"2025-11-25\"`. The assertion's subject is the error CODE; all three of the check's axes are predicates on `error.data` — that it carries a non-empty `supported` array, that every entry is a version the server reports, and that `requested` echoes what was asked for. Nothing in this unit reads the error object's data member at all.",
       "member": {
         "module": "MCP.Server.DispatchTest",
         "register_key": "MCP.Server.DispatchTest/test old-shape (2025-11-25) version fails fast (-32022)",
@@ -2054,7 +2054,7 @@
       "the_near_miss_that_is_not_a_counterpart": "`PromptsGetWithArgs` — `Get parameterized prompt with argument substitution` — the only row in all 175 matching `(?i)argument`, and a reader who greps for the word lands on it. It is a different obligation on a different endpoint: it scores that a PROMPT template had its placeholders SUBSTITUTED, which is the server transforming the arguments on purpose, where this claim is that a TOOL's arguments are transformed not at all. `ResourcesTemplateRead` is the same shape one endpoint further over. Nearer in spirit is `IgnoreUnexpectedParams`, which is about extra keys being tolerated rather than about the keys that belong arriving unchanged. MEASURED: 0 over all 175 on a pattern deliberately wider than the subject — it would match an `unchanged`, a `verbatim`, a `coerce` or a bare `arguments` row in any scenario. The suite calls tools and scores what comes BACK; no check anywhere asks what the handler was HANDED.",
       "the_search_that_found_none": "a tool's `arguments` reaching the handler byte-identical — nothing coerced, defaulted, expanded or dropped between the wire and the handler's first line",
       "why_no_counterpart": "`no-oc-scenario` — 0 of all 175 manifest rows on either leg, on a pattern wider than the subject.",
-      "why_this_search_is_this_claims_search": "The claim is about the INBOUND half of a tools/call — what the handler was handed — and the search is chosen to sweep that vocabulary across every scenario, not only the tools ones. It found the two substitution rows and nothing else, and substitution is the opposite obligation. WHAT THIS ROW DELIBERATELY DOES NOT CLAIM: the unit's pipeline at json_schema_2020_12_test.exs:568 takes the head of the content array and decodes its text, so the unit cannot pass unless the result's content is a non-empty array whose first block carries decodable text — which is three of ToolsCallSimpleText's five axes. That is a PRECONDITION of a pipeline and not an assertion, and this file credits an axis to an ASSERTION's subject. Recorded so the choice is visible rather than silent; a reader who counts preconditions as claims should read this row as an edge."
+      "why_this_search_is_this_claims_search": "The claim is about the INBOUND half of a tools/call — what the handler was handed — and the search is chosen to sweep that vocabulary across every scenario, not only the tools ones. It found the two substitution rows and nothing else, and substitution is the opposite obligation. WHAT THIS ROW DELIBERATELY DOES NOT CLAIM: the unit's pipeline at json_schema_2020_12_test.exs:648 takes the head of the content array and decodes its text, so the unit cannot pass unless the result's content is a non-empty array whose first block carries decodable text — which is three of ToolsCallSimpleText's five axes. That is a PRECONDITION of a pipeline and not an assertion, and this file credits an axis to an ASSERTION's subject. Recorded so the choice is visible rather than silent; a reader who counts preconditions as claims should read this row as an edge."
     },
     {
       "authored_by": "MES-105 (C1c-i)",
@@ -2726,7 +2726,7 @@
     {
       "authored_by": "MES-121 (C1c-iv-b)",
       "cg": null,
-      "claim_the_slot_names": "our client's encoded `Mcp-Name` is decoded by our server's plug before it is compared to `params.name`, so a conforming client of ours is not self-rejected (self_compatibility_test.exs:100 and self_compatibility_test.exs:109)",
+      "claim_the_slot_names": "our client's encoded `Mcp-Name` is decoded by our server's plug before it is compared to `params.name`, so a conforming client of ours is not self-rejected (self_compatibility_test.exs:104 and self_compatibility_test.exs:114)",
       "member": {
         "module": "MCP.Transport.SelfCompatibilityTest",
         "register_key": "MCP.Transport.SelfCompatibilityTest/test REACHABILITY CONTROL: an encoded Mcp-Name is decoded before comparison, so our own client is not self-rejected",
@@ -3129,7 +3129,7 @@
     {
       "authored_by": "MES-121 (C1c-iv-b)",
       "cg": null,
-      "claim_the_slot_names": "a bare `:`-leading comment line arriving between two events is ignored, and the two events either side are both delivered in order (subscriptions_stream_test.exs:378-381)",
+      "claim_the_slot_names": "a bare `:`-leading comment line arriving between two events is ignored, and the two events either side are both delivered in order (subscriptions_stream_test.exs:396-399)",
       "member": {
         "module": "MCP.Transport.SubscriptionsStreamTest",
         "register_key": "MCP.Transport.SubscriptionsStreamTest/test T-8 keep-alive comment lines our parser ignores a comment line arriving between two events",

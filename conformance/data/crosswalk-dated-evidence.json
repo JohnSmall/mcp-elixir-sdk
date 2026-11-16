@@ -1,0 +1,74 @@
+{
+ "schema": "crosswalk-dated-evidence/1",
+ "established_by": "MES-234 (PO YES on fix D and the dated G30 limb; PM rulings 35494, 35498)",
+ "what_this_is": "The pinned set of crosswalk edges whose `evidence` is a DATED lift: the tree moved under them after they were measured, and they were not re-measured. Each one names the commit its evidence describes in `evidence_at`, and G30 reads its ET windows at that commit and never at the tip. The cells stay what they were measured as; the date says so.",
+ "why_these": "The SDK behaviour under these edges changed in MES-161 and MES-165, so their quotes are no longer at the tip, and re-lifting them at the tip would make the evidence contradict the recorded verdicts, whose OC side is the accepted run. Re-measuring them is the owner ticket's scope.",
+ "ceiling": 8,
+ "ceiling_rule": "The ceiling only goes DOWN. G30 refuses, by name, a ceiling above the one compiled into MCP.Conformance.Crosswalk.dated_ceiling/0, more pins than the ceiling, more records carrying evidence_at than the ceiling, a dated record that is not pinned here (or is pinned at another commit or owner), a dated record with no owner, and a pin that no dated record uses. The owner ticket removes a pin when it re-measures the edge, and lowers the ceiling with it.",
+ "records": [
+  {
+   "file": "crosswalk-edges-server.json",
+   "register_key": "MCP.Server.DispatchTest/test initialize is removed → UnsupportedProtocolVersion (-32022)",
+   "claim": "a removed `initialize` yields JSON-RPC error -32022",
+   "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
+   "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+   "owner": "MES-193"
+  },
+  {
+   "file": "crosswalk-edges-server.json",
+   "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
+   "claim": "a removed `initialize` over HTTP yields JSON-RPC error -32022",
+   "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-initialize/HttpServerMethodNotFound404initialize",
+   "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+   "owner": "MES-193"
+  },
+  {
+   "file": "crosswalk-edges-server.json",
+   "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
+   "claim": "a removed `ping` over HTTP yields JSON-RPC error -32601",
+   "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-ping/HttpServerMethodNotFound404ping",
+   "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+   "owner": "MES-193"
+  },
+  {
+   "file": "crosswalk-edges-server.json",
+   "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test initialize is gone → -32022; ping/logging.setLevel → -32601",
+   "claim": "a removed `logging/setLevel` over HTTP yields JSON-RPC error -32601",
+   "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404-logging-setlevel/HttpServerMethodNotFound404loggingsetLevel",
+   "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+   "owner": "MES-193"
+  },
+  {
+   "file": "crosswalk-edges-server.json",
+   "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test server/discover returns the schema-shaped result with no version gate",
+   "claim": "a server/discover request carrying no clientInfo is SERVED — HTTP 200 with a result, not an error",
+   "tag": "oc:server/server-stateless/sep-2575-request-meta-client-info-optional/RequestMetaClientInfoOptional",
+   "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+   "owner": "MES-193"
+  },
+  {
+   "file": "crosswalk-edges-server.json",
+   "register_key": "MCP.Server.DispatchTest/test request without a protocolVersion _meta fails fast (-32022)",
+   "claim": "a tools/call carrying no _meta at all is rejected with -32022, not -32602",
+   "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+   "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+   "owner": "MES-193"
+  },
+  {
+   "file": "crosswalk-edges-server.json",
+   "register_key": "MCP.Transport.StreamableHTTPStatelessTest/test a request without a protocolVersion _meta fails fast (-32022)",
+   "claim": "a tools/call over real HTTP carrying no _meta is rejected with -32022, not -32602",
+   "tag": "oc:server/server-stateless/sep-2575-request-meta-invalid-missing-meta/RequestMetaInvalid",
+   "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+   "owner": "MES-193"
+  },
+  {
+   "file": "crosswalk-edges-server.json",
+   "register_key": "MCP.Transport.SubscriptionsStreamTest/test JSON mode refuses the method subscriptions/listen returns -32601 rather than an empty stream",
+   "claim": "in JSON mode subscriptions/listen is refused with -32601 inside an HTTP 200 response",
+   "tag": "oc:server/server-stateless/sep-2575-http-server-method-not-found-404/HttpServerMethodNotFound404",
+   "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+   "owner": "MES-193"
+  }
+ ]
+}

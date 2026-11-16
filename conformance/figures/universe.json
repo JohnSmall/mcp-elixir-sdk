@@ -3,6 +3,7 @@
   "authored_by_hand": true,
   "what_this_is": "G31's CLASSIFICATION REGISTRY (PM ruling 3 on MES-120). Every file under conformance/data/** and docs/conformance/**/*.json, keyed by path, as hand_authored, generated or raw_evidence. G31 walks both roots and requires the walk to EQUAL this list both ways, and a file carrying `authored_by_hand: true` or `generated_by` to be classified consistently with it. Only hand_authored files are scanned for figures; all classes feed the cross-reference resolver.",
   "files": {
+    "conformance/data/crosswalk-dated-evidence.json": "hand_authored",
     "conformance/data/crosswalk-edges-client.json": "hand_authored",
     "conformance/data/crosswalk-edges-server.json": "hand_authored",
     "conformance/data/crosswalk-edges.json": "hand_authored",

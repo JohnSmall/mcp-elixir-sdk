@@ -15,9 +15,9 @@
       "sha256": "ef24801db5f7ecb3641e91cf7fb7840552b22d8309f01d75613f594fb415838f"
     },
     "crosswalk": {
-      "bytes": 1106223,
+      "bytes": 1108011,
       "file": "docs/conformance/crosswalk-2026-07-28.json",
-      "sha256": "447d8651844d4093adf96c8fd73519e1c6e62ebdaa816c092dfdd10c5811118b"
+      "sha256": "50cc50d788ca97a1e89ef00cad6eedee790d8e93d41946f909f0bd12e7820068"
     }
   },
   "revision": "2026-07-28",
@@ -147,7 +147,7 @@
       "the_near_miss_that_is_a_real_counterpart_on_the_other_leg": "`NoNetworkRefDereference` — `Client did not dereference the network-URI $ref in the tool inputSchema`. It is a REAL counterpart to the obligation and a real non-counterpart to this claim: SEP-2106's Security Implications binds both peers, and this row scores the CLIENT half. It cannot be declared in this file because this file's member selector opens with a leg equality on `server`; it is not in the client edges file's declared check population either, which is that file's to say. Named so the row reads as `the suite asks the other peer` and not as `nothing exists`.",
       "the_search_as_first_recorded": "A SERVER declining to dereference a network-URI $ref in a tool inputSchema. MEASURED over all 175 manifest rows: `(?i)\\$ref` 1, `(?i)dereferenc` 1 and `(?i)network` 1 are the SAME single row — `client | json-schema-ref-no-deref | sep-2106-no-network-ref-deref | NoNetworkRefDereference` — and 0 of the 119 server rows on all three. `(?i)canary` 0 of 175 and `(?i)fetch|http-uri|remote` 0 of 175. The positive controls over the same population and the same machinery are `(?i)server` 119, `(?i)tool` 39 and `(?i)result` 41, so the sweep reached the rows.",
       "the_search_that_found_none": "a SERVER declining to dereference a network-URI `$ref` in a tool inputSchema",
-      "why_it_is_recorded_here_and_not_in_bucket_1": "The member DOES carry an edge — its success control at json_schema_2020_12_test.exs:184 asserts a non-empty content array, which is `ToolsCallSimpleText`'s `content_is_not_empty` predicate at its own polarity — so it is not A3 §6 state 3 whole, and bucket 1 would hide it from the member equation. Until MES-110, A3 §6's state 3 was read as a property of a MEMBER and there was no bucket for a claim, so none was invented. Since MES-110 state 3 is read per token (rule B, A3 §6), and this row is a claim-level unmatched record in the `claim-unmatched` view, which is not a bucket. Until MES-110 the cost of that placement was that no registered search carried this zero and no control re-ran it, as `the_w4_claim_and_the_registry_no_claim_level_row_can_reach` records. Since MES-110 the zero is registered as CLV06, and the absence control re-runs it."
+      "why_it_is_recorded_here_and_not_in_bucket_1": "The member DOES carry an edge — its success control at json_schema_2020_12_test.exs:198 asserts a non-empty content array, which is `ToolsCallSimpleText`'s `content_is_not_empty` predicate at its own polarity — so it is not A3 §6 state 3 whole, and bucket 1 would hide it from the member equation. Until MES-110, A3 §6's state 3 was read as a property of a MEMBER and there was no bucket for a claim, so none was invented. Since MES-110 state 3 is read per token (rule B, A3 §6), and this row is a claim-level unmatched record in the `claim-unmatched` view, which is not a bucket. Until MES-110 the cost of that placement was that no registered search carried this zero and no control re-ran it, as `the_w4_claim_and_the_registry_no_claim_level_row_can_reach` records. Since MES-110 the zero is registered as CLV06, and the absence control re-runs it."
     },
     {
       "authored_by": "MES-117 (C1c-iv-a)",
@@ -173,7 +173,7 @@
       "authored_by": "MES-117 (C1c-iv-a)",
       "claim": "the per-request identity factory is never invoked for a rejected non-localhost `Origin`",
       "disposition": "no axis contact with the near miss — rule A (A3 §2, MES-110; authored 29283, ratified 29319). The member keeps its other edge(s), so this is a claim-level record (rule B, A3 §6), not bucket 1.",
-      "evidence": "streamable_http_stateless_test.exs:147 — `    refute_receive :factory_ran, 200`, where the factory sends `:factory_ran` to the test process before returning an identity. The assertion's subject is the ORDER of two server-internal events; the axis's subject is the HTTP status on the wire. Nothing observable to the harness distinguishes a 403 decided before the factory ran from one decided after it, so the axis is silent on this claim rather than agreeing with it.",
+      "evidence": "streamable_http_stateless_test.exs:184 — `    refute_receive :factory_ran, 200`, where the factory sends `:factory_ran` to the test process before returning an identity. The assertion's subject is the ORDER of two server-internal events; the axis's subject is the HTTP status on the wire. Nothing observable to the harness distinguishes a 403 decided before the factory ran from one decided after it, so the axis is silent on this claim rather than agreeing with it.",
       "from": "conformance/data/crosswalk-edges-server.json",
       "member": {
         "module": "MCP.Transport.StreamableHTTPStatelessTest",

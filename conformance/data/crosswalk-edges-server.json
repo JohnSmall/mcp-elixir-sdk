@@ -388,8 +388,12 @@
     }
    ],
    "et_verdict": "green",
-   "evidence": "dispatch_test.exs:84 — `assert resp[\"error\"][\"code\"] == -32_022` where the check REQUIRES -32601. Driven at `Dispatch.dispatch/3`, below the transport, so there is no HTTP status for the second axis to be about.",
-   "note": "The epic's own worked 4a contradiction, at the dispatch layer."
+   "evidence": "At bd99a39, dispatch_test.exs:84 — `assert resp[\"error\"][\"code\"] == -32_022` where the check REQUIRES -32601. Driven at `Dispatch.dispatch/3`, below the transport, so there is no HTTP status for the second axis to be about.",
+   "note": "The epic's own worked 4a contradiction, at the dispatch layer.",
+   "evidence_at": {
+    "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+    "owner": "MES-193"
+   }
   },
   {
    "member": {
@@ -410,8 +414,12 @@
     }
    ],
    "et_verdict": "green",
-   "evidence": "streamable_http_stateless_test.exs:89 — `assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022` where the check requires -32601. Driven through the real plug, so an HTTP status EXISTS on the response; the test does not assert it, which is what makes the status axis silent rather than agreeing.",
-   "note": "The same contradiction as the dispatch row, one layer up. A3 §1's cardinality table names this member as yielding THREE edges; this is the first."
+   "evidence": "At bd99a39, streamable_http_stateless_test.exs:89 — `assert error(post(opts(), rpc(\"initialize\", %{})))[\"code\"] == -32_022` where the check requires -32601. Driven through the real plug, so an HTTP status EXISTS on the response; the test does not assert it, which is what makes the status axis silent rather than agreeing.",
+   "note": "The same contradiction as the dispatch row, one layer up. A3 §1's cardinality table names this member as yielding THREE edges; this is the first.",
+   "evidence_at": {
+    "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+    "owner": "MES-193"
+   }
   },
   {
    "member": {
@@ -432,8 +440,12 @@
     }
    ],
    "et_verdict": "green",
-   "evidence": "streamable_http_stateless_test.exs:90 — `assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601`, which is the code the check requires. The HTTP status is not asserted.",
-   "note": "INHERITED, NOT NEWLY ADJUDICATED: this is match-relation.md §4's worked edge record, published by A3 with these axes and this shape. A3 §1 assigns the per-claim decomposition of this member to C1; §4 then performs it. C1a records it rather than re-deciding it."
+   "evidence": "At bd99a39, streamable_http_stateless_test.exs:90 — `assert error(post(opts(), rpc(\"ping\", %{})))[\"code\"] == -32_601`, which is the code the check requires. The HTTP status is not asserted.",
+   "note": "INHERITED, NOT NEWLY ADJUDICATED: this is match-relation.md §4's worked edge record, published by A3 with these axes and this shape. A3 §1 assigns the per-claim decomposition of this member to C1; §4 then performs it. C1a records it rather than re-deciding it.",
+   "evidence_at": {
+    "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+    "owner": "MES-193"
+   }
   },
   {
    "member": {
@@ -454,8 +466,12 @@
     }
    ],
    "et_verdict": "green",
-   "evidence": "streamable_http_stateless_test.exs:91 — `assert error(post(opts(), rpc(\"logging/setLevel\", %{\"level\" => \"info\"})))[\"code\"] == -32_601`. Same shape as the ping claim, a different removed method.",
-   "note": "The third of A3 §1's three edges for this member."
+   "evidence": "At bd99a39, streamable_http_stateless_test.exs:91 — `assert error(post(opts(), rpc(\"logging/setLevel\", %{\"level\" => \"info\"})))[\"code\"] == -32_601`. Same shape as the ping claim, a different removed method.",
+   "note": "The third of A3 §1's three edges for this member.",
+   "evidence_at": {
+    "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+    "owner": "MES-193"
+   }
   },
   {
    "member": {
@@ -608,9 +624,13 @@
     }
    ],
    "et_verdict": "green",
-   "evidence": "streamable_http_stateless_test.exs:52-55 — `conn = post(opts(), rpc(\"server/discover\", %{}))` sends `params` with NO `_meta` at all, and the unit then asserts `assert conn.status == 200` and reads `result` back with `assert r[\"supportedVersions\"] == [@version]`. Both axes are covered: the status assertion is the HTTP-200 axis literally, and reading the `result` key is the no-error axis — `result(conn)` returns `nil` for an error body and the equality would redden. THE FIXTURES DIFFER AND THE DIFFERENCE IS STATED: the OC probe omits `clientInfo` ALONE (it sends protocolVersion and clientCapabilities), while this unit omits the whole `_meta`. For `server/discover` the two coincide — the unit's own name says `with no version gate`, and the check's own scenario places it on a method that applies none — so the claim entails the check's case rather than merely resembling it. On any OTHER method it would not, and this edge must not be read as licensing that.",
+   "evidence": "At bd99a39, streamable_http_stateless_test.exs:52-55 — `conn = post(opts(), rpc(\"server/discover\", %{}))` sends `params` with NO `_meta` at all, and the unit then asserts `assert conn.status == 200` and reads `result` back with `assert r[\"supportedVersions\"] == [@version]`. Both axes are covered: the status assertion is the HTTP-200 axis literally, and reading the `result` key is the no-error axis — `result(conn)` returns `nil` for an error body and the equality would redden. THE FIXTURES DIFFER AND THE DIFFERENCE IS STATED: the OC probe omits `clientInfo` ALONE (it sends protocolVersion and clientCapabilities), while this unit omits the whole `_meta`. For `server/discover` the two coincide — the unit's own name says `with no version gate`, and the check's own scenario places it on a method that applies none — so the claim entails the check's case rather than merely resembling it. On any OTHER method it would not, and this edge must not be read as licensing that.",
    "note": "The only edge in this slice that is `:full` against a GREEN check on BOTH axes without a silent one to carry it. It is also the slice's clearest case of an ET unit being STRONGER than the OC check: the check asks whether an absent `clientInfo` is tolerated, the unit asks whether an absent `_meta` is.",
-   "authored_by": "MES-105 (C1c-i)"
+   "authored_by": "MES-105 (C1c-i)",
+   "evidence_at": {
+    "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+    "owner": "MES-193"
+   }
   },
   {
    "member": {
@@ -694,8 +714,12 @@
     }
    ],
    "et_verdict": "green",
-   "evidence": "dispatch_test.exs:101-105 — `Dispatch.dispatch(req(\"tools/call\", %{\"name\" => \"whoami\"}), ctx(\"PM\"), config())` sends params with no `_meta`, and `assert resp[\"error\"][\"code\"] == -32_022`. The OC check's `missing-meta` fixture is exactly that request shape — `{slug:`missing-meta`,...,params:{},rpcId:101}` — and its single axis requires -32602. A one-axis check with a contradicting claim is `:contradicting` whole, so this is 4a with nothing silent to soften it.",
-   "authored_by": "MES-105 (C1c-i)"
+   "evidence": "At bd99a39, dispatch_test.exs:101-105 — `Dispatch.dispatch(req(\"tools/call\", %{\"name\" => \"whoami\"}), ctx(\"PM\"), config())` sends params with no `_meta`, and `assert resp[\"error\"][\"code\"] == -32_022`. The OC check's `missing-meta` fixture is exactly that request shape — `{slug:`missing-meta`,...,params:{},rpcId:101}` — and its single axis requires -32602. A one-axis check with a contradicting claim is `:contradicting` whole, so this is 4a with nothing silent to soften it.",
+   "authored_by": "MES-105 (C1c-i)",
+   "evidence_at": {
+    "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+    "owner": "MES-193"
+   }
   },
   {
    "member": {
@@ -712,8 +736,12 @@
     }
    ],
    "et_verdict": "green",
-   "evidence": "streamable_http_stateless_test.exs:83-84 — `conn = post(opts(), rpc(\"tools/call\", %{\"name\" => \"whoami\"}))` and `assert error(conn)[\"code\"] == -32_022`, driven through the real plug. The same contradiction as the `Dispatch`-level sibling, carried this time over the transport the OC probe itself uses, which removes the one reading under which the dispatch-level edge might have been an artefact of the seam it was asserted at.",
-   "authored_by": "MES-105 (C1c-i)"
+   "evidence": "At bd99a39, streamable_http_stateless_test.exs:83-84 — `conn = post(opts(), rpc(\"tools/call\", %{\"name\" => \"whoami\"}))` and `assert error(conn)[\"code\"] == -32_022`, driven through the real plug. The same contradiction as the `Dispatch`-level sibling, carried this time over the transport the OC probe itself uses, which removes the one reading under which the dispatch-level edge might have been an artefact of the seam it was asserted at.",
+   "authored_by": "MES-105 (C1c-i)",
+   "evidence_at": {
+    "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+    "owner": "MES-193"
+   }
   },
   {
    "member": {
@@ -960,10 +988,14 @@
     }
    ],
    "et_verdict": "green",
-   "evidence": "subscriptions_stream_test.exs:1028-1029 — `assert response.status == 200` and `assert response.body[\"error\"][\"code\"] == -32_601`, over a real socket through `Req`. The OC axis `te.status!==404` is `fail_when_true` and requires 404; this unit asserts 200 and PASSES, so the claim contradicts it. The code axis agrees. Contradiction beats silence in `shape_from_axes/1`, so the edge is `:contradicting` and lands 4a.",
+   "evidence": "At bd99a39, subscriptions_stream_test.exs:1028-1029 — `assert response.status == 200` and `assert response.body[\"error\"][\"code\"] == -32_601`, over a real socket through `Req`. The OC axis `te.status!==404` is `fail_when_true` and requires 404; this unit asserts 200 and PASSES, so the claim contradicts it. The code axis agrees. Contradiction beats silence in `shape_from_axes/1`, so the edge is `:contradicting` and lands 4a.",
    "note": "THE SLICE'S SHARPEST FINDING, and the only edge in it that contradicts an axis it ALSO agrees with on the same check. Our SDK and the harness agree on WHICH JSON-RPC error an unimplemented method earns and disagree on the HTTP status it rides on — and this unit does not merely fail to assert 404, it asserts 200 and is green. Every other red-OC edge in this slice is silent on `http_status` because the unit never looks at it; this one looked, and wrote down the other answer.",
    "why_contradicts_and_not_silent": "The subject of `assert response.status == 200` is the HTTP status of the response to an unimplemented method, which is the behaviour `http_status` names. There is no reading of `how_a_silent_axis_was_decided` on which an assertion whose subject IS the axis counts as not covering it, and reading it that way would turn a coverage rule into a rule for hiding disagreement.",
-   "authored_by": "MES-105 (C1c-i)"
+   "authored_by": "MES-105 (C1c-i)",
+   "evidence_at": {
+    "commit": "bd99a3945f2885a943ac736b8b2d33422c97ccc0",
+    "owner": "MES-193"
+   }
   },
   {
    "member": {
