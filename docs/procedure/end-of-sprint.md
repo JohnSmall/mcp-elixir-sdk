@@ -5,7 +5,8 @@
 > *Definition-of-Done Gates*; "the two-step gate 6" (6a, 6b) is `docs/procedure/gate-6.md`;
 > the push rule (D8) is `docs/procedure/publication.md`. **One content change, MES-177 AC7:**
 > step 4's sweep cost ("~22 s per mutation cycle × 50 directions … 25–30 minutes", and "a
-> 25–30 minute gate") is replaced by the figure measured on MES-174.
+> 25–30 minute gate") is replaced by the figure measured on MES-174. **Step 6 was added by
+> MES-240** after the move; it is not part of the moved text.
 
 **Runs in the gap between sprints — after the last ticket is Done, before the next
 sprint's first dispatch. PM-owned.** Seats run strict-sequentially, so at a sprint
@@ -142,6 +143,88 @@ moment an advisory can be acted on without disrupting anything.
      the spot, and the finding belongs in the sprint's register as a lapse of the
      merge gate. A red that the push does **not** fix — C3, C4-as-different-object
      or C5 — is a damaged tag or a rewritten `main`, and that is a ticket.
+
+6. **Test-rows drift sweep** (added by MES-240). At the sprint's final tip, with the tree
+   clean and `node` on `PATH`, capture the suite afresh and compare it with the committed
+   `docs/conformance/etcc-exunit-rows.json`:
+
+   ```bash
+   mix conformance.rows_drift
+   ```
+
+   It runs `mix test --seed 0` with `MCP_ETCC_ROWS` naming a file in a private, freshly
+   created temporary directory, never the committed one, and compares the unit keys both
+   ways (added, removed, moved to another file). On every shared key, including one that
+   moved file, it compares `line` (delimit drift), `describe`, `test_type`, `tags` and
+   `status`. A key that moved and changed line is reported under both `moved` and
+   `relined`. The comparison and its guards are in `MCP.Conformance.RowsDrift`. No
+   output path (`--keep`, `--json`) may name the committed file by any route (a symlinked
+   parent, a `..` after a symlink, a hard link): such a run exits 64 before anything is
+   captured or written, and each output is checked again at its own write.
+   A clean run ends with this line:
+
+   ```
+   rows-drift: CLEAN - 0 added, 0 removed, 0 moved, 0 relined, 0 refielded, 0 restatus (N committed rows, N fresh; committed md5 X = fresh md5 X)
+   ```
+
+   and exits 0. **Exit 1 is drift**: every drifted key is listed under its class.
+   **Exit 2 is a refusal**: it names its guard and the side, committed or fresh (RD1-RD9:
+   the wrong schema, a hand-edited file, an incomplete or partial run, a host that
+   excluded tests, a dirty tree, a red suite, duplicate keys, a key that is not its
+   module/name or a module cross-check disagreement), and compares nothing. Every guard
+   applies to both sides. A refusal is never a clean result. Fix the cause and run it
+   again.
+
+   - **Never skipped, and it has no applicability rule.** The committed file goes stale
+     whenever any test file changes, and no ticket re-captures it as a matter of course.
+     That is how it aged unseen from `584e115` until a sweep refused on MES-228.
+   - **Record it in `docs/sprint_{N}_issues.md`, including a clean one**: the command,
+     its last line, its exit status and the fresh `rows_md5`. "Checked, and zero" and
+     "never asked" read identically when only the answer is printed.
+   - **Drift becomes a Jira ticket in the next sprint. Do not re-capture in place.** A
+     re-capture moves the ET-CC register's `keysets` and `reproduce` controls (measured
+     on MES-240) and can cascade through the register chain (MES-230, MES-231), so it is
+     scoped like any other work.
+   - **Cost:** about 2 min 20 s, nearly all of it the capture (measured on MES-240 at
+     2151 rows). The compare itself takes under a second.
+   - **Controls:** `mix run conformance/controls/rows_drift_controls.exs all` plants
+     every drift class and every refusal (on each side) in a committed fixture, plants
+     the never-write cases on decoys, and shows each one going red by name.
+   - **Comparing at a ref** (`--committed-at REF`, the per-ticket entry for MES-241):
+     the earliest committed rows file that passes every guard is `b439347` (MES-230,
+     2026-11-14). The two before it, `18df3a6` and `1a0fe5c`, predate `run.row_errors`
+     and are refused RD3. A base before `b439347` is refused, never compared.
+
+   **What it cannot see**, stated so a clean line is not read as more than it is:
+
+   - **A body-only change.** Rows carry no body hash, so a test whose key, file, line
+     and tags are unchanged reads as no drift. Gate 7 sees body changes per ticket. This
+     step does not.
+   - **Drift between boundaries.** A test added mid-sprint without a re-capture is seen
+     at the next boundary, not on its own ticket. The per-ticket check is MES-241.
+   - **A host without `node`.** It refuses there (RD5) rather than compare a population
+     three rows short (`docs/conformance/etcc-row-key.md` §5.1). That refusal is
+     visible, but it still means the step could not run on that host.
+   - **The register.** It compares rows with the suite, never the ET-CC register with
+     the rows. After any re-capture, `etcc_register_controls.exs keysets` and
+     `reproduce` still have to run.
+   - **A rename's identity.** A renamed test is one removed key plus one added key,
+     which is correct under the key rule. The `rename_candidates` pairing is advice only.
+   - **Fields outside the row** (duration, failure text, the `run` block) are not
+     compared, by design (`etcc-row-key.md` §5).
+   - **Consistency beyond RD9.** RD9 checks that each key is its module/name and that
+     the recorded module cross-check has no disagreements. Other relationships inside a
+     file (for example `totals` against `rows`) are not re-derived. A file hand-edited
+     to agree with itself, with its `rows_md5` resealed, is compared as written.
+   - **A directory swapped in the last instant.** Each output (`--keep`, `--json`) is
+     checked when the task starts and again at its write. It is written to an exclusive
+     temporary file in its resolved real directory and renamed over the final name, so a
+     link planted during the capture is refused, and a link at the final name is
+     replaced, not followed. What is left is a component of that already-resolved real
+     directory being replaced by a symlink between the second check and the rename.
+   - **Stale pointers.** The `ExUnitRows` moduledoc and `etcc-row-key.md` still say
+     drift detection "belongs to MES-84". MES-247 owns re-pointing them, and this step
+     does not.
 
 **Relationship to release.** A release only ever follows a completed sprint — never
 mid-sprint. So this sweep is always upstream of any release, and no release can ship

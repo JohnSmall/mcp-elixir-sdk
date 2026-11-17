@@ -1,0 +1,165 @@
+{
+  "schema": "etcc-exunit-rows/1",
+  "run": {
+    "argv": [
+      "test",
+      "--seed",
+      "0"
+    ],
+    "complete": true,
+    "elixir": "1.19.5",
+    "exclude": [],
+    "include": [],
+    "key_collisions": [],
+    "max_failures": ":infinity",
+    "module_cross_check": {
+      "compared": 2120,
+      "disagreements": [],
+      "modules": 91
+    },
+    "modules_finished": 91,
+    "modules_started": 91,
+    "only_test_ids": null,
+    "otp": "28",
+    "row_errors": [],
+    "rows_md5": "9c756d4ab916c2b5eadce3247b6f486b",
+    "seed": 0,
+    "tip": "4a297b9fca67961be7c375648ef243d2b611d4d4",
+    "tree_clean": true,
+    "tree_dirty": []
+  },
+  "totals": {
+    "by_status": {
+      "excluded": 0,
+      "failed": 0,
+      "invalid": 0,
+      "passed": 7,
+      "skipped": 0
+    },
+    "by_test_type": {
+      "doctest": 1,
+      "test": 6
+    },
+    "by_test_type_not_excluded": {
+      "doctest": 1,
+      "test": 6
+    },
+    "total": 7
+  },
+  "rows": [
+    {
+      "describe": "CG2 / T-CG2 — extensions negotiation, both directions",
+      "failure": null,
+      "file": "test/mcp/client_conformance_test.exs",
+      "key": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions a server declaring NO extensions yields nil, not a crash or an invented map",
+      "line": 219,
+      "module": "MCP.ClientConformanceTest",
+      "name": "test CG2 / T-CG2 — extensions negotiation, both directions a server declaring NO extensions yields nil, not a crash or an invented map",
+      "reason": null,
+      "status": "passed",
+      "tags": {
+        "oc": ":none",
+        "oc_reason": "inbound extensions: no OC client check reads them"
+      },
+      "test_type": "test"
+    },
+    {
+      "describe": "CG2 / T-CG2 — extensions negotiation, both directions",
+      "failure": null,
+      "file": "test/mcp/client_conformance_test.exs",
+      "key": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions an unknown extension is not logged as a fault",
+      "line": 229,
+      "module": "MCP.ClientConformanceTest",
+      "name": "test CG2 / T-CG2 — extensions negotiation, both directions an unknown extension is not logged as a fault",
+      "reason": null,
+      "status": "passed",
+      "tags": {
+        "oc": ":none",
+        "oc_reason": "log posture; no OC client check reads inbound extensions"
+      },
+      "test_type": "test"
+    },
+    {
+      "describe": "CG2 / T-CG2 — extensions negotiation, both directions",
+      "failure": null,
+      "file": "test/mcp/client_conformance_test.exs",
+      "key": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
+      "line": 247,
+      "module": "MCP.ClientConformanceTest",
+      "name": "test CG2 / T-CG2 — extensions negotiation, both directions the OUTBOUND half (MES-16) still rides every request's _meta",
+      "reason": null,
+      "status": "passed",
+      "tags": {
+        "etcc": true,
+        "oc": ":none",
+        "oc_reason": "no OC client check reads clientCapabilities.extensions"
+      },
+      "test_type": "test"
+    },
+    {
+      "describe": "CG2 / T-CG2 — extensions negotiation, both directions",
+      "failure": null,
+      "file": "test/mcp/client_conformance_test.exs",
+      "key": "MCP.ClientConformanceTest/test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
+      "line": 192,
+      "module": "MCP.ClientConformanceTest",
+      "name": "test CG2 / T-CG2 — extensions negotiation, both directions the client can read what the server declared, with the settings map intact",
+      "reason": null,
+      "status": "passed",
+      "tags": {
+        "etcc": true,
+        "oc": ":none",
+        "oc_reason": "inbound extensions: no OC client check reads them"
+      },
+      "test_type": "test"
+    },
+    {
+      "describe": "CG4 / T-CG4 — the client MUST NOT dereference a network $ref",
+      "failure": null,
+      "file": "test/mcp/client_conformance_test.exs",
+      "key": "MCP.ClientConformanceTest/test CG4 / T-CG4 — the client MUST NOT dereference a network $ref CONTROL ON THE CONTROL: the canary really does count a fetch",
+      "line": 138,
+      "module": "MCP.ClientConformanceTest",
+      "name": "test CG4 / T-CG4 — the client MUST NOT dereference a network $ref CONTROL ON THE CONTROL: the canary really does count a fetch",
+      "reason": null,
+      "status": "passed",
+      "tags": {
+        "oc": ":none",
+        "oc_reason": "instrument control: touches no SDK code; no OC check is about it"
+      },
+      "test_type": "test"
+    },
+    {
+      "describe": null,
+      "failure": null,
+      "file": "test/conformance/etcc_citations_test.exs",
+      "key": "MCP.Conformance.CitationsTest/doctest MCP.Conformance.Citations.code_spans/1 (2)",
+      "line": 44,
+      "module": "MCP.Conformance.CitationsTest",
+      "name": "doctest MCP.Conformance.Citations.code_spans/1 (2)",
+      "reason": null,
+      "status": "passed",
+      "tags": {
+        "doctest": "MCP.Conformance.Citations",
+        "doctest_data": {
+          "end_line": 208
+        },
+        "doctest_line": 207
+      },
+      "test_type": "doctest"
+    },
+    {
+      "describe": null,
+      "failure": null,
+      "file": "test/mcp/integration_test.exs",
+      "key": "MCP.IntegrationTest/test graceful close of client and server",
+      "line": 221,
+      "module": "MCP.IntegrationTest",
+      "name": "test graceful close of client and server",
+      "reason": null,
+      "status": "passed",
+      "tags": {},
+      "test_type": "test"
+    }
+  ]
+}
