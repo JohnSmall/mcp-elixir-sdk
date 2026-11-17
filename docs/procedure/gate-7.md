@@ -11,17 +11,31 @@ global scan. **The rule: a test may not merge green if it asserts behaviour that
 OC check contradicts.** Rulings Q1-Q8 on MES-160 (comment `30166`).
 
 **Applicability — the gate-6 pattern.** Gate 7 runs when, and only when, the branch
-changes a path under `test/`, `lib/` or `conformance/`:
+changes a path under `test/`, `lib/` or `conformance/`, or the root `mix.lock`:
 
 ```bash
-git diff --name-only main...{TICKET_KEY} | grep -E '^(test|lib|conformance)/'
+git diff --no-renames --name-only main...{TICKET_KEY} | grep -E '^((test|lib|conformance)/|mix\.lock$)'
 ```
 
-Three dots, for the reason gate 6 gives. No match ⇒ **skip gate 7 and say so in the
-close-out** ("gate 7 not applicable, no test/, lib/ or conformance/ change"). The task
-applies the same rule itself and prints `OC-GATE N/A`, so running it on an inapplicable
+Three dots, for the reason gate 6 gives. **`--no-renames`, as gate 8 has it** (MES-236
+correction round 1): with git's default rename detection a rename lists its destination
+only, so a branch that renamed the root `mix.lock` away read as no lock change, and the
+task printed `N/A` (the CR's probe CR-RE, now control **RE**). With it, a rename lists both
+paths. The task collects its names the same way. A rename's source is a deletion there, and
+a deleted test file has nothing at the tip to declare, so the declaration population is
+unchanged: measured over all 196 first-parent commits on `main` at `017fe10`, one held a
+rename (`5fbf5c2`, `lib/mcp_ex/application.ex` → `lib/mcp_elixir_sdk/application.ex`), and
+none changed an applicability or re-measure flag, or the set of test files present at the
+tip. No match ⇒ **skip gate 7 and say so in the
+close-out** ("gate 7 not applicable, no test/, lib/, conformance/ or mix.lock change"). The
+task applies the same rule itself and prints `OC-GATE N/A`, so running it on an inapplicable
 branch is harmless. `conformance/` is in the trigger (MES-160 N2) because an adapter or
-runner edit can move a live check either way.
+runner edit can move a live check either way. **`mix.lock` is in the trigger by the PO
+ruling of 2026-11-12 (MES-236):** MES-227 changed `mix.lock` only (bandit 1.13.0 → 1.14.1),
+so gate 7 did not apply, and the bump moved the server leg's census — it was MES-228's gate 7
+that refused, for a change no ticket on that branch had made. Only the root `mix.lock`
+counts; a file of that name elsewhere does not. A `mix.exs`-only change is **not** in the
+trigger (PO, 2026-11-16, MES-236 Q4).
 
 **The declaration, at writing time.** Every test the branch **adds or changes** in a
 `test/**/*_test.exs` file carries, directly above it:
@@ -86,10 +100,27 @@ judgement pinned to the branch tip **and to the pinned harness build** —
 before any figure is read. **The committed census is never consulted** — it can be stale. A token passes only when it resolves to exactly
 one row **and** that row is `SUCCESS`. **`WARNING` and `SKIPPED` are refused like
 `FAILURE`** (Q1): a check that cannot be SUCCESS cannot vouch for a test — declare
-`oc: :none` with an `oc_reason` citing it. When the branch changes `lib/` or
-`conformance/`, every test **already** carrying `@tag oc:` check tokens is re-measured
-too (Q5, N2), so a `lib/`- or adapter-only change cannot silently redden an
-earlier-tagged test's check.
+`oc: :none` with an `oc_reason` citing it. When the branch changes `lib/`,
+`conformance/` or `mix.lock`, every test **already** carrying `@tag oc:` check tokens is
+re-measured too (Q5, N2, MES-236 Q1), so a `lib/`-, adapter- or dependency-only change
+cannot silently redden an earlier-tagged test's check.
+
+**A `mix.lock` change also runs every leg whole** (PO, 2026-11-16, MES-236 Q2). A
+lock-only branch changes no test, so without this its population is only the
+already-tagged tests, and the legs those tokens happen to name; with none, it would `PASS
+(0 declaration(s))` having run nothing (measured on the MES-236 plan hop). So on a lock
+change the task runs both legs whether or not a token names them, and a run the census
+does not accept — `CLASSIFICATION_STALE`, `SCENARIO_UNCLASSIFIED`, any refusal — is a
+refusal of its own, one `REFUSE  <class> (<leg> leg, mix.lock changed): …` line counted in
+`REFUSE (n)`. The final line then names the whole runs: `OC-GATE PASS (n declaration(s), 2
+whole run(s), … ms)`. A `PASS` on a lock change therefore means both legs ran on the new
+dependency set, the census accepted both, and every tagged check is `SUCCESS`. It does
+**not** mean no check moved: the census judges scenarios, so a check drifting inside a
+scenario already classified as failing, or a check no test is tagged to, is not seen (a
+check-level diff against `main`'s dependency set was ruled out of this ticket, MES-236 Q3).
+Replayed on MES-227's own lock (base `74883c6`, tip = base + `ae5d6f1`'s `mix.lock`): the
+gate as it was printed `OC-GATE N/A`; the gate as built refuses, the server run
+`CLASSIFICATION_STALE` on `http-header-validation`.
 
 **Red check ⇒ no merge.** If a named check is red, the branch includes the `lib/` fix
 that turns it green, or the test does not merge. There is no known-red path: gate 5
@@ -113,7 +144,12 @@ the branch tip, a dirty tree: each is a **refusal**, never a skip, and each stil
 on the one `OC-GATE` final line. The harness is
 required **when a check token needs measuring**; a branch whose declarations are all
 `:none` measures nothing and needs no harness — that is not a skip, there is nothing
-to run. **The exit status corresponds to the verdict** — 0 for `OC-GATE PASS` and
+to run — **unless the branch changes `mix.lock`**: then both legs run whole whatever the
+declarations are (MES-236 Q2; control **LKV** has zero declarations and still runs and
+refuses), so the harness is required and its absence is a refusal like any other. A forced
+leg passes only on a run the census accepted. A missing measurement, or any other shape,
+is refused as `measurement_missing` or `measurement_malformed` on its own whole-run line
+(correction round 1, control **LKM**). **The exit status corresponds to the verdict** — 0 for `OC-GATE PASS` and
 `OC-GATE N/A`, 1 for `OC-GATE REFUSE (n)` — and the controls hold that; adjudicate on
 the final line all the same, because it names what was measured.
 
@@ -121,7 +157,9 @@ the final line all the same, because it names what was measured.
 gates 2 and 5):** a branch whose tokens name both legs — **10.2-10.3 s** in the task
 (client leg 6.0 s, server leg 4.1-4.2 s, each including its provenance judgement), two
 runs; one leg **~6 s**; a branch declaring only `:none` **~0.5 s** wall (32
-declarations, no leg run). Reading declarations over the whole test tree is ~0.2 s.
+declarations, no leg run). Reading declarations over the whole test tree is ~0.2 s. A
+**`mix.lock`-only branch** at `017fe10` (MES-236, 2026-11-16): **11.1 s** in the task, 11.7 s
+wall — 62 already-tagged declarations re-measured, client leg 6.3 s, server leg 4.1 s.
 
 **Stated residuals — what gate 7 does not see.**
 - **Doctests** (Q3): their content lives in `lib/`; a `test/` diff cannot see it change.
@@ -149,14 +187,17 @@ declarations, no leg run). Reading declarations over the whole test tree is ~0.2
 
 ## Merge-gate checklist item (cite this subsection from the review brief)
 
-> **OC cross-check (gate 7).** Run the applicability diff above and paste it. If it
-> applies, check out `{TICKET_KEY}` with a clean tree, run
+> **OC cross-check (gate 7).** Run the applicability diff above (`test/`, `lib/`,
+> `conformance/` or `mix.lock`) and paste it. If it applies, check out `{TICKET_KEY}` with a
+> clean tree, run
 > `mix conformance.oc_gate {TICKET_KEY}` and paste its output. For each new or changed
 > test, check that the declared check (or `oc: :none` reason) is the honest counterpart
 > of what the test asserts — the gate cannot. For any `oc: :none` that invokes the
 > disclosed exception above, check conditions (a)-(c) against the diff: assertions
 > unchanged, body change only request construction, tag change only the declaration,
-> and the reason naming the red check, its owning ticket and `MES-161 30342`. If it
+> and the reason naming the red check, its owning ticket and `MES-161 30342`. On a `mix.lock`
+> change, check that the output measured both legs and its final line names `2 whole
+> run(s)`. If it
 > cannot run at your seat (no `node`, no harness), report **that**, and do not record
 > the check as done.
 
@@ -182,10 +223,28 @@ has one comment line appended, refused as `run_not_accepted` naming the pinned s
 **N3a/N3b** a `lib/`-only branch re-measuring an existing oc-tagged test, green passing
 and SKIPPED refused. Added on correction round 2: **PO** a test moved across a
 module-attribute redefinition, no statement's bytes changed, refused as
-`[changed: position]  untagged`. The `mutation` mode commits one change to the gate's own source per
-case, in the clone, and requires the named case to go red (M1-M11; M7 file context
+`[changed: position]  untagged`. Added by MES-236 (`mix.lock`, PO ruling 2026-11-12):
+every lock branch's diff against its base is `mix.lock` alone, its plants and mutations
+riding the base. **LK** a lock-only branch is not `N/A`, measures both legs and names `2
+whole run(s)`; **NL** a `mix.lock` below the root is still `N/A` (beside **NA**, docs-only,
+unchanged); **LKS** the MES-227 shape — a stale classification of a passing client scenario
+on the base, a test tagged to a check in it — refuses the planted test on its own line,
+`run_not_accepted` with `CLASSIFICATION_STALE`; **LKV** the same with every check token in
+the tree rewritten to `:none`, so no declaration names a leg, refuses through the
+whole-run line with 0 declarations. Added on MES-236 correction round 1: **RE** the root
+`mix.lock` renamed to `deps.lock` (the base points Mix at `deps.lock`; the branch diff is
+`R100 mix.lock deps.lock` alone) is a lock change, not `N/A`; **LKM** a forced leg whose
+measurement is deleted after measuring (the CR's CR-M15, carried on the base, with no check
+token) is refused as `measurement_missing` on the whole-run line. N3a/N3b assert the planted test's own line, not a
+count (they hard-coded "1 unchanged oc-tagged" from MES-160 and were red at `017fe10`, with
+62 tagged tests on `main`). The `mutation` mode commits one change to the gate's own source per
+case, in the clone, and requires the named case to go red (M1-M17; M7 file context
 ignored → PA, M8 tags not fingerprinted → PJ, M9 pin not passed → R6c, M10 no
-re-measure → N3b, M11 position slot not compared → PO). **Two cases have a second, independent layer, and go red on the
+re-measure → N3b, M11 position slot not compared → PO, M12 `mix.lock` dropped from the
+applicability match → LK, M13 a lock change re-measures nothing → LKS, M14 a lock change
+forces no leg → LKV, M15 the forced client measurement lost after measuring (CR-M15) →
+LKV, M16 a missing forced measurement read as accepted → LKM, M17 rename detection
+restored in the name list → RE). **Two cases have a second, independent layer, and go red on the
 named guard's absent message, not on the verdict:** under **M5** (the HEAD-is-tip check
 removed) the run is still refused, by the census's `COMMIT_MISMATCH`; under **M3** (the
 harness precondition skipped) the runner completes with no harness and the census

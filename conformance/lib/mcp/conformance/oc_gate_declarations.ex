@@ -431,11 +431,21 @@ defmodule MCP.Conformance.OcGateDeclarations do
   objects in `repo` (never the working tree).
 
   Returns `{:ok, %{changed: [...], tagged_elsewhere: [...], lib_changed: bool,
-  conformance_changed: bool, test_changed: bool, merge_base: sha}}`.
+  conformance_changed: bool, test_changed: bool, lock_changed: bool,
+  merge_base: sha}}`.
   `tagged_elsewhere` holds every unchanged test in the tip's tree carrying
   `@tag oc:` check tokens, and is filled only when the branch changes `lib/`
-  (MES-160 Q5) or `conformance/` — an adapter or runner edit can move a live
-  check either way (N2, ruled on correction round 1).
+  (MES-160 Q5), `conformance/` — an adapter or runner edit can move a live
+  check either way (N2, ruled on correction round 1) — or the project's own
+  `mix.lock`. A dependency bump moves live checks with no test changing: MES-227's
+  bandit 1.13.0 → 1.14.1 did (PO ruling 2026-11-12, MES-236). `lock_changed`
+  is the root `mix.lock` exactly; a file of that name elsewhere is not it.
+
+  Names are collected with `--no-renames`, as gate 8 does (MES-180 Q1): with
+  rename detection a rename lists its destination only, so renaming the root
+  `mix.lock` away read as no lock change (MES-236 correction round 1, CR-RE). A
+  rename's source is a deletion here; a deleted test file has nothing at the
+  tip to declare (`changed_in/4` skips it).
 
   Fails closed on anything git cannot answer: an unresolvable ref is an error,
   never an empty diff.
@@ -445,12 +455,13 @@ defmodule MCP.Conformance.OcGateDeclarations do
     with {:ok, base_sha} <- rev_parse(repo, base),
          {:ok, tip_sha} <- rev_parse(repo, tip),
          {:ok, mb} <- git(repo, ["merge-base", base_sha, tip_sha]),
-         {:ok, names} <- git(repo, ["diff", "--name-only", "#{mb}...#{tip_sha}"]) do
+         {:ok, names} <- git(repo, ["diff", "--no-renames", "--name-only", "#{mb}...#{tip_sha}"]) do
       names = String.split(names, "\n", trim: true)
       test_files = Enum.filter(names, &test_file?/1)
       lib_changed = Enum.any?(names, &String.starts_with?(&1, "lib/"))
       conformance_changed = Enum.any?(names, &String.starts_with?(&1, "conformance/"))
-      remeasure = lib_changed or conformance_changed
+      lock_changed = "mix.lock" in names
+      remeasure = lib_changed or conformance_changed or lock_changed
 
       with {:ok, changed} <- changed_in(repo, mb, tip_sha, test_files),
            {:ok, elsewhere} <- tagged_elsewhere(repo, tip_sha, remeasure, changed) do
@@ -462,6 +473,7 @@ defmodule MCP.Conformance.OcGateDeclarations do
            test_changed: Enum.any?(names, &String.starts_with?(&1, "test/")),
            lib_changed: lib_changed,
            conformance_changed: conformance_changed,
+           lock_changed: lock_changed,
            changed: changed,
            tagged_elsewhere: elsewhere
          }}

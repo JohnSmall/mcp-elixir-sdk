@@ -15,15 +15,20 @@ defmodule Mix.Tasks.Conformance.OcGate do
 
     1. Resolves `--base` (default `main`) and `KEY`, and takes the three-dot
        diff `base...KEY`. An unresolvable ref is a refusal, never an empty diff.
-    2. **Applicability.** No path under `test/`, `lib/` or `conformance/` ⇒
-       prints `OC-GATE N/A` and exits 0.
+    2. **Applicability.** No path under `test/`, `lib/` or `conformance/`, and
+       no change to the root `mix.lock` ⇒ prints `OC-GATE N/A` and exits 0.
     3. Reads every new or changed `test/**/*_test.exs` declaration (and, when
-       `lib/` or `conformance/` changed, every test already carrying
-       `@tag oc:` check tokens) via `MCP.Conformance.OcGateDeclarations`.
+       `lib/`, `conformance/` or `mix.lock` changed, every test already
+       carrying `@tag oc:` check tokens) via `MCP.Conformance.OcGateDeclarations`.
     4. Runs, live and whole, each leg the tokens name, and judges each token
        on the run's `checks.json` via `MCP.Conformance.OcGate`.
-    5. Prints one line per declaration, then exactly one of `OC-GATE PASS`,
-       `OC-GATE N/A`, `OC-GATE REFUSE (n)`.
+    5. **A `mix.lock` change** (PO ruling 2026-11-12, MES-236; the case was
+       MES-227's bandit bump) also runs **every** leg whole, named or not, and
+       a run the census does not accept is a refusal of its own — one
+       whole-run line, counted in `REFUSE (n)` — so `PASS` on a lock change
+       always means both legs ran and were accepted, never "nothing measured".
+    6. Prints one line per declaration (and per refused whole run), then
+       exactly one of `OC-GATE PASS`, `OC-GATE N/A`, `OC-GATE REFUSE (n)`.
 
   **The exit status corresponds to the verdict**: 0 for PASS and N/A, 1 for
   REFUSE. Adjudicate on the final line all the same; it names what was
@@ -40,6 +45,9 @@ defmodule Mix.Tasks.Conformance.OcGate do
 
   alias MCP.Conformance.{Argv, OcGate, Provenance}
   alias MCP.Conformance.OcGateDeclarations, as: Decls
+
+  # Every leg a whole run exists for; a `mix.lock` change measures all of them.
+  @all_legs ~w(client server)
 
   @switches [base: :string, harness_dir: :string, out_root: :string]
   @usage "mix conformance.oc_gate TICKET_KEY [--base main] [--harness-dir DIR] [--out-root DIR]"
@@ -72,18 +80,53 @@ defmodule Mix.Tasks.Conformance.OcGate do
     info("base #{base} merge-base #{short(pop.merge_base)}  #{key} tip #{short(pop.tip)}")
 
     cond do
-      not (pop.test_changed or pop.lib_changed or pop.conformance_changed) ->
-        info("OC-GATE N/A: no test/, lib/ or conformance/ change on #{base}...#{key}")
+      not (pop.test_changed or pop.lib_changed or pop.conformance_changed or pop.lock_changed) ->
+        info("OC-GATE N/A: no test/, lib/, conformance/ or mix.lock change on #{base}...#{key}")
 
       (reason = tree_refusal(repo, pop.tip)) != nil ->
         refuse_whole(:wrong_tree, reason)
 
       true ->
         decls = pop.changed ++ pop.tagged_elsewhere
-        measurements = measure(OcGate.legs(decls), pop.tip, opts)
+        forced = forced_legs(pop)
+        legs = (OcGate.legs(decls) ++ forced) |> Enum.uniq() |> Enum.sort()
+        measurements = measure(legs, pop.tip, opts)
         verdicts = OcGate.judge(decls, measurements)
-        report(verdicts, measurements, pop, started)
+        report(verdicts, forced, run_refusals(forced, measurements), measurements, pop, started)
     end
+  end
+
+  # A dependency bump can move any check, tagged or not (MES-236 Q2): on a
+  # `mix.lock` change every leg runs whole, whether or not a token names it.
+  defp forced_legs(%{lock_changed: true}), do: @all_legs
+  defp forced_legs(_pop), do: []
+
+  # A forced leg's run must itself be accepted; a declaration-free branch would
+  # otherwise PASS having judged nothing. Only an accepted run passes: a missing
+  # entry, or any shape but `{:ok, %{rows: _}}`, is refused too (MES-236
+  # correction round 1, the CR's tripwire on CR-M15).
+  defp run_refusals(forced, measurements) do
+    Enum.flat_map(forced, fn leg ->
+      case Map.fetch(measurements, leg) do
+        {:ok, {:ok, %{rows: rows}}} when is_list(rows) ->
+          []
+
+        {:ok, {:error, class, detail}} ->
+          [%{leg: leg, class: class, detail: detail}]
+
+        {:ok, other} ->
+          [%{leg: leg, class: :measurement_malformed, detail: inspect(other)}]
+
+        :error ->
+          [
+            %{
+              leg: leg,
+              class: :measurement_missing,
+              detail: "the leg was forced and not measured"
+            }
+          ]
+      end
+    end)
   end
 
   # Seats share one clone: the live legs measure the working tree, so it must BE
@@ -121,23 +164,25 @@ defmodule Mix.Tasks.Conformance.OcGate do
   defp summary({:ok, %{rows: rows, run_dir: dir}}), do: "#{length(rows)} checks, #{dir}"
   defp summary({:error, class, detail}), do: "#{class}: #{detail}"
 
-  defp report(verdicts, measurements, pop, started) do
+  defp report(verdicts, forced, runs, measurements, pop, started) do
     info(
       "#{length(pop.changed)} new/changed declaration(s), " <>
         "#{length(pop.tagged_elsewhere)} unchanged oc-tagged (lib/ changed: #{pop.lib_changed}, " <>
-        "conformance/ changed: #{pop.conformance_changed}); " <>
+        "conformance/ changed: #{pop.conformance_changed}, mix.lock changed: #{pop.lock_changed}); " <>
         "legs measured: #{inspect(Map.keys(measurements))}"
     )
 
     Enum.each(verdicts, &info(line(&1)))
+    Enum.each(runs, &info("REFUSE  #{&1.class} (#{&1.leg} leg, mix.lock changed): #{&1.detail}"))
 
-    refused = Enum.count(verdicts, &(&1.outcome == :refuse))
+    refused = Enum.count(verdicts, &(&1.outcome == :refuse)) + length(runs)
     ms = System.monotonic_time(:millisecond) - started
+    whole = if forced == [], do: "", else: ", #{length(forced)} whole run(s)"
 
     if refused == 0 do
-      info("OC-GATE PASS (#{length(verdicts)} declaration(s), #{ms} ms)")
+      info("OC-GATE PASS (#{length(verdicts)} declaration(s)#{whole}, #{ms} ms)")
     else
-      info("OC-GATE REFUSE (#{refused}) of #{length(verdicts)} declaration(s), #{ms} ms")
+      info("OC-GATE REFUSE (#{refused}) of #{length(verdicts)} declaration(s)#{whole}, #{ms} ms")
       exit({:shutdown, 1})
     end
   end

@@ -31,8 +31,9 @@
 # harness.dist_sha256).
 #
 # COST, measured on the CC seat 2026-09-27 after correction round 2: `all` 36
-# controls in 122 s wall (live legs included). Run it detached if the engine may
-# exit (setsid nohup ... > file).
+# controls in 122 s wall (live legs included). After MES-236 (2026-11-16, 62
+# oc-tagged tests on main, so most cases re-measure two legs): `all` 43 controls
+# in 254 s wall; 48 after its correction round 1, in 296 s. Run it detached if the engine may exit (setsid nohup ... > file).
 
 defmodule OcGateControls do
   alias MCP.Conformance.{Census, HarnessHost, MatchKey, OcGate}
@@ -87,7 +88,13 @@ defmodule OcGateControls do
       n1(fx),
       n3a(fx),
       n3b(fx),
-      po(fx)
+      po(fx),
+      lk(fx),
+      nl(fx),
+      lks(fx),
+      lkv(fx),
+      re(fx),
+      lkm(fx)
     ]
   end
 
@@ -429,8 +436,8 @@ defmodule OcGateControls do
       :pass ->
         verify("#{name} lib/-only branch re-measures a green oc-tagged test (Q5)", gate_out,
           exit: 0,
-          final: "OC-GATE PASS (1",
-          has: ["0 new/changed", "1 unchanged oc-tagged", "[unchanged]  #{token} -> SUCCESS"]
+          final: "OC-GATE PASS (",
+          has: ["0 new/changed", ~s("planted"  [unchanged]  #{token} -> SUCCESS)]
         )
 
       :refuse ->
@@ -439,7 +446,7 @@ defmodule OcGateControls do
           gate_out,
           exit: 1,
           final: "OC-GATE REFUSE (1)",
-          has: ["1 unchanged oc-tagged", "[unchanged]  #{token} -> SKIPPED (not_success:"]
+          has: [~s("planted"  [unchanged]  #{token} -> SKIPPED (not_success:)]
         )
     end
   end
@@ -482,6 +489,213 @@ defmodule OcGateControls do
       final: "OC-GATE REFUSE (1)",
       has: [~s("alpha"  [changed: position]  untagged:)]
     )
+  end
+
+  # --- MES-236: gate 7 on a mix.lock-only change (PO ruling 2026-11-12) -------
+  #
+  # Every lock branch's diff against its base is `mix.lock` and nothing else: a
+  # plant or a mutation rides the BASE. The lock edit swaps two entries, which
+  # changes the file's bytes and no dependency.
+
+  @plant_stale {"conformance/lib/mcp/conformance/classification.ex",
+                ~s(    "http-custom-header-server-validation" => "SEP-2243 custom-header validation"\n),
+                ~s(    "http-custom-header-server-validation" => "SEP-2243 custom-header validation",\n) <>
+                  ~s(    "http-custom-headers" => "oc-gate control plant: a stale classification"\n)}
+
+  # LK: a mix.lock-only branch is applicable, re-measures, and runs both legs.
+  defp lk(fx, extra \\ []) do
+    lock_branch(fx, "LK", [], extra)
+
+    verify(
+      "LK a mix.lock-only branch is not N/A: every leg runs whole [guard: lock_changed]",
+      gate(fx, "LK", ["--base", "LK-base"]),
+      exit: 0,
+      final: "OC-GATE PASS (",
+      has: [
+        "mix.lock changed: true",
+        "measured client leg",
+        "measured server leg",
+        "2 whole run(s)"
+      ]
+    )
+  end
+
+  # NL: a file NAMED mix.lock below the root is not the project's lock.
+  defp nl(fx) do
+    plant(fx, "NL", [{"docs/oc_gate_control/mix.lock", "%{}\n"}])
+
+    verify("NL a nested mix.lock is not the project lock: still N/A", gate(fx, "NL"),
+      exit: 0,
+      final: "OC-GATE N/A"
+    )
+  end
+
+  # LKS, the MES-227 shape: the dependency set now makes a classified scenario
+  # pass. Planted as a stale classification of the passing http-custom-headers on
+  # the base, with a test tagged to a check in it; the branch touches mix.lock
+  # only. The planted test must be re-measured and refused on its own line.
+  defp lks(fx, extra \\ []) do
+    lock_branch(fx, "LKS", tagged_test(~s(@tag oc: "#{@green}")) ++ [stale_plant(fx)], extra)
+
+    verify(
+      "LKS a mix.lock-only branch re-measures an oc-tagged test (MES-227 shape) [guard: remeasure on lock_changed]",
+      gate(fx, "LKS", ["--base", "LKS-base"]),
+      exit: 1,
+      final: "OC-GATE REFUSE (",
+      has: [
+        ~s("planted"  [unchanged]  #{@green} -> - (run_not_accepted:),
+        "CLASSIFICATION_STALE"
+      ]
+    )
+  end
+
+  # LKV, the vacuity control: as LKS, but NO test carries a check token, so no
+  # declaration names a leg. A lock change still runs every leg whole and refuses
+  # the run the census does not accept.
+  defp lkv(fx, extra \\ []) do
+    lock_branch(fx, "LKV", [stale_plant(fx) | untokened_tests(fx)], extra)
+
+    verify(
+      "LKV a mix.lock-only branch with no oc-tagged test still measures [guard: forced legs + whole-run refusal]",
+      gate(fx, "LKV", ["--base", "LKV-base"]),
+      exit: 1,
+      final: "OC-GATE REFUSE (1) of 0 declaration(s)",
+      has: [
+        "0 new/changed declaration(s), 0 unchanged oc-tagged",
+        "REFUSE  run_not_accepted (client leg, mix.lock changed):",
+        "CLASSIFICATION_STALE"
+      ]
+    )
+  end
+
+  # RE (CR-RE, correction round 1): the root lock RENAMED away. With rename
+  # detection the diff lists only `deps.lock`, and the gate printed N/A. The base
+  # points Mix at `deps.lock`, so the renamed tip still compiles with the same
+  # dependency entries; the branch's only change is the rename.
+  defp re(fx, extra \\ []) do
+    from = "      elixirc_paths: elixirc_paths(Mix.env()),\n"
+    mix = main_blob(fx, "mix.exs")
+    if length(String.split(mix, from)) != 2, do: halt("RE: the mix.exs anchor is not found once")
+
+    plant(
+      fx,
+      "RE-base",
+      [{"mix.exs", String.replace(mix, from, from <> ~s(      lockfile: "deps.lock",\n))}],
+      extra
+    )
+
+    git!(fx, ["checkout", "-q", "-B", "RE", "RE-base"])
+    git!(fx, ["mv", "mix.lock", "deps.lock"])
+    commit!(fx, "control plant RE: rename the root mix.lock")
+    status = git!(fx, ["diff", "--name-status", "RE-base...RE"])
+
+    unless status =~ ~r/^R100\s+mix\.lock\s+deps\.lock$/,
+      do: halt("RE: the diff is #{inspect(status)}, not a pure rename")
+
+    verify(
+      "RE the root mix.lock renamed away is a lock change [guard: --no-renames]",
+      gate(fx, "RE", ["--base", "RE-base"]),
+      exit: 0,
+      final: "OC-GATE PASS (",
+      has: [
+        "mix.lock changed: true",
+        "measured client leg",
+        "measured server leg",
+        "2 whole run(s)"
+      ]
+    )
+  end
+
+  # LKM (correction round 1, the CR's tripwire): a forced leg whose measurement
+  # goes MISSING is refused by the forced-leg rule itself. The base carries
+  # CR-M15 (the client entry deleted after measuring) and no check token, so no
+  # declaration can refuse in its place, and no census refusal is planted.
+  @cr_m15 {"measurements = measure(legs, pop.tip, opts)",
+           ~s[measurements = measure(legs, pop.tip, opts) |> Map.delete("client")]}
+  @lkm_task "conformance/lib/mix/tasks/conformance.oc_gate.ex"
+
+  defp lkm(fx, extra \\ []) do
+    {from, to} = @cr_m15
+    # A mutation of the task rides on top of the planted CR-M15, not instead of it.
+    task_src =
+      case List.keyfind(extra, @lkm_task, 0) do
+        {_, src} -> src
+        nil -> main_blob(fx, @lkm_task)
+      end
+
+    if length(String.split(task_src, from)) != 2,
+      do: halt("LKM: the CR-M15 site is not found once")
+
+    extra = List.keydelete(extra, @lkm_task, 0)
+
+    lock_branch(
+      fx,
+      "LKM",
+      [{@lkm_task, String.replace(task_src, from, to)} | untokened_tests(fx)],
+      extra
+    )
+
+    verify(
+      "LKM a forced leg with no measurement is refused [guard: run_refusals accepts only an accepted run]",
+      gate(fx, "LKM", ["--base", "LKM-base"]),
+      exit: 1,
+      final: "OC-GATE REFUSE (1) of 0 declaration(s)",
+      has: [
+        ~s(legs measured: ["server"]),
+        "REFUSE  measurement_missing (client leg, mix.lock changed): the leg was forced and not measured"
+      ]
+    )
+  end
+
+  # `name-base` = main + mutation + base plant; `name` = base + the lock swap.
+  defp lock_branch(fx, name, base_files, extra) do
+    # LK plants nothing on its base: unmutated, the base is main itself.
+    plant(fx, "#{name}-base", base_files, extra)
+    git!(fx, ["checkout", "-q", "-B", name, "#{name}-base"])
+    [head, a, b | rest] = fx |> Path.join("mix.lock") |> File.read!() |> String.split("\n")
+    if a == b, do: halt("#{name}: the two mix.lock entries are equal; the swap is a no-op")
+    write_all(fx, [{"mix.lock", Enum.join([head, b, a | rest], "\n")}])
+    commit!(fx, "control plant #{name}: mix.lock only")
+    diff = git!(fx, ["diff", "--name-only", "#{name}-base...#{name}"])
+    if diff != "mix.lock", do: halt("#{name}: the branch diff is #{inspect(diff)}, not mix.lock")
+  end
+
+  defp stale_plant(fx) do
+    {file, from, to} = @plant_stale
+    src = main_blob(fx, file)
+
+    if length(String.split(src, from)) != 2,
+      do: halt("stale plant: site not found once in #{file}")
+
+    {file, String.replace(src, from, to)}
+  end
+
+  # Every test file's check tokens rewritten to `:none`; the files that carry none
+  # are left alone. Halts if there was nothing to rewrite.
+  defp untokened_tests(fx) do
+    files =
+      fx
+      |> git!(["ls-tree", "-r", "--name-only", "main", "--", "test/"])
+      |> String.split("\n", trim: true)
+      |> Enum.filter(&String.ends_with?(&1, "_test.exs"))
+      |> Enum.map(fn file ->
+        src = main_blob(fx, file)
+        {file, src, Regex.replace(~r/@tag oc:\s*(\[[^\]]*\]|"oc:[^"]*")/s, src, "@tag oc: :none")}
+      end)
+      |> Enum.reject(fn {_, src, out} -> out == src end)
+      |> Enum.map(fn {file, _, out} -> {file, out} end)
+
+    if files == [], do: halt("LKV: no test carries a check token to rewrite")
+    files
+  end
+
+  # A file as `main` has it, read from git objects, so a case never inherits the
+  # previous case's checkout. Not trimmed: the bytes are written back.
+  defp main_blob(fx, file) do
+    case System.cmd("git", ["-C", fx, "show", "main:#{file}"], stderr_to_stdout: true) do
+      {out, 0} -> out
+      {out, code} -> halt("git show main:#{file} exited #{code}: #{out}")
+    end
   end
 
   # --- the mutations ---------------------------------------------------------
@@ -527,8 +741,8 @@ defmodule OcGateControls do
         "M6 a refusal exits 0",
         "R1",
         fn e -> r1(fx, e) end,
-        {@task, ~s[declaration(s), \#{ms} ms")\n      exit({:shutdown, 1})],
-         ~s[declaration(s), \#{ms} ms")\n      :ok]}
+        {@task, ~s[\#{whole}, \#{ms} ms")\n      exit({:shutdown, 1})],
+         ~s[\#{whole}, \#{ms} ms")\n      :ok]}
       ),
       mutate(
         "M7 the file context is ignored",
@@ -560,6 +774,45 @@ defmodule OcGateControls do
         "PO",
         fn e -> po(fx, e) end,
         {@decls, "b.position != d.position ->", "false ->"}
+      ),
+      mutate(
+        "M12 mix.lock is dropped from the applicability match",
+        "LK",
+        fn e -> lk(fx, e) end,
+        {@task, " or pop.lock_changed) ->", ") ->"}
+      ),
+      mutate(
+        "M13 a mix.lock change re-measures nothing",
+        "LKS",
+        fn e -> lks(fx, e) end,
+        {@decls, "remeasure = lib_changed or conformance_changed or lock_changed",
+         "remeasure = lib_changed or conformance_changed"}
+      ),
+      mutate(
+        "M14 a mix.lock change forces no leg",
+        "LKV",
+        fn e -> lkv(fx, e) end,
+        {@task, "defp forced_legs(%{lock_changed: true}), do: @all_legs",
+         "defp forced_legs(%{lock_changed: true}), do: []"}
+      ),
+      mutate(
+        "M15 a forced client measurement is lost after measuring (CR-M15)",
+        "LKV",
+        fn e -> lkv(fx, e) end,
+        {@task, elem(@cr_m15, 0), elem(@cr_m15, 1)}
+      ),
+      mutate(
+        "M16 a missing forced measurement reads as accepted",
+        "LKM",
+        fn e -> lkm(fx, e) end,
+        {@task, "case Map.fetch(measurements, leg) do",
+         ~s|case Map.fetch(Map.put_new(measurements, leg, {:ok, %{rows: []}}), leg) do|}
+      ),
+      mutate(
+        "M17 rename detection restored in the name list",
+        "RE",
+        fn e -> re(fx, e) end,
+        {@decls, ~s(["diff", "--no-renames", "--name-only",), ~s(["diff", "--name-only",)}
       )
     ]
   end
@@ -618,8 +871,11 @@ defmodule OcGateControls do
       commit!(fx, "control mutation")
     end
 
-    write_all(fx, files)
-    commit!(fx, "control plant #{branch}")
+    # A lock case's base may carry a mutation and nothing else (M12 on LK).
+    if files != [] do
+      write_all(fx, files)
+      commit!(fx, "control plant #{branch}")
+    end
   end
 
   defp write_all(fx, files) do

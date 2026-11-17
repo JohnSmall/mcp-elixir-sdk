@@ -85,7 +85,7 @@ mix dialyzer
 
 Every ticket's Definition of Done runs these gates, each individually, all green.
 **Gates 1-5 always. Gate 6 only when the ticket changes `mix.exs` or `mix.lock`. Gate 7
-only when the ticket changes a path under `test/`, `lib/` or `conformance/`. Gate 8 only
+only when the ticket changes a path under `test/`, `lib/` or `conformance/`, or `mix.lock`. Gate 8 only
 when it changes `lib/`, the ET-CC boundary table or a guard source** — see each gate's applicability rule below:
 
 1. `mix format --check-formatted`
@@ -96,7 +96,11 @@ when it changes `lib/`, the ET-CC boundary table or a guard source** — see eac
 6. `mix hex.audit` **run as the two-step self-validating procedure below** (positive control + audit) — the dependency-advisory gate (added by MES-27 under advisory policy A11; took the set from five to six). **A bare `mix hex.audit` is not sufficient — see the named limitation below.**
 7. `mix conformance.oc_gate {TICKET_KEY}` — the **official-conformance cross-check**
    (added by MES-160 under the PO ruling of 2026-09-27; took the set from six to seven):
-   no test merges green while the OC check it corresponds to is red. **Run it with the
+   no test merges green while the OC check it corresponds to is red. It applies on a
+   `test/`, `lib/`, `conformance/` or `mix.lock` change (`mix.lock` by the PO ruling of
+   2026-11-12, after MES-227's dependency bump merged unchecked; MES-236), established by
+   `git diff --no-renames --name-only main...{TICKET_KEY}`, the gate-8 form, so a rename of
+   the root `mix.lock` counts. **Run it with the
    branch checked out and the tree clean**, and needs `node` and the pinned harness
    build (checked by its `dist/index.js` sha256) — see *Gate 7* below.
 8. `mix conformance.sweep --verify` — the **ET-CC anchor check** (added by MES-175 under
@@ -150,8 +154,8 @@ MES-177, and it binds exactly as it did here. **Read a page before the task it g
 - `docs/procedure/gate-6.md` — gate 6's cost, known limitations and the 6a/6b script. Read
   it whenever gate 6 runs: when the applicability rule above matches, and at the sprint sweep.
 - `docs/procedure/gate-7.md` — gate 7's declarations, measurement, fail-closed conditions,
-  residuals, checklist item and evidence. Read it when the branch touches `test/`, `lib/` or
-  `conformance/`, and in every review.
+  residuals, checklist item and evidence. Read it when the branch touches `test/`, `lib/`,
+  `conformance/` or `mix.lock`, and in every review.
 - `docs/procedure/gate-8.md` — gate 8's verdict forms, cost, residuals, checklist item and
   evidence. Read it when the branch touches `lib/`, and in every review.
 - `docs/procedure/publication.md` — D8: push `main` and the tag, `mix origin.sync`, the

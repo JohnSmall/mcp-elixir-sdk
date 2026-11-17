@@ -202,9 +202,9 @@ included; **29.5 s** cold (no `_build`) — the project compile gates 2 and 5 al
 6. **An unresolvable ref reads as "not applicable".** A mistyped key, a deleted branch or
    the wrong directory makes `git diff` print `fatal:` to stderr and list nothing; `grep`
    exits 1 with empty output — the same as a branch that touches none of the paths. The
-   gate-6 and gate-7 forms share this (S9-23 is the D7 guard's case of it), and so does
-   their rename blind spot that `--no-renames` closes here; the cross-gate remedy is a
-   PM-raised backlog ticket. `gate_8_trigger_test.exs` pins the behaviour as observed
+   gate-6 and gate-7 forms share this (S9-23 is the D7 guard's case of it), and the gate-6
+   form shares the rename blind spot that `--no-renames` closes here (gate 7's form closed
+   it in MES-236); the cross-gate remedy is a PM-raised backlog ticket. `gate_8_trigger_test.exs` pins the behaviour as observed
    (case E1), so a change to it is seen. Check the diff's stderr before reading an empty
    result as a skip.
 7. **The guard sources are three files, as measured at `98c2519`.** `--verify` reaches

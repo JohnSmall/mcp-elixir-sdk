@@ -549,6 +549,61 @@ defmodule MCP.Conformance.OcGateDeclarationsTest do
 
     @tag oc: :none
     @tag oc_reason: "reader unit; no OC counterpart"
+    test "a mix.lock-only change re-measures them too (MES-236)", %{repo: repo} do
+      write!(repo, "mix.lock", "%{\"bandit\": {:hex, :bandit, \"1.14.1\"}}\n")
+      commit!(repo, "lock")
+
+      assert {:ok, pop} = D.population(repo, "main", "K-1")
+      assert pop.lock_changed and pop.changed == []
+      refute pop.lib_changed or pop.conformance_changed or pop.test_changed
+      assert Enum.map(pop.tagged_elsewhere, & &1.id) == ["tagged earlier"]
+    end
+
+    @tag oc: :none
+    @tag oc_reason: "reader unit; no OC counterpart"
+    test "a mix.lock below the root is not the project's lock (MES-236)", %{repo: repo} do
+      File.mkdir_p!(Path.join(repo, "docs/x"))
+      write!(repo, "docs/x/mix.lock", "%{}\n")
+      commit!(repo, "nested lock")
+
+      assert {:ok, pop} = D.population(repo, "main", "K-1")
+      refute pop.lock_changed
+      assert pop.tagged_elsewhere == []
+    end
+
+    @tag oc: :none
+    @tag oc_reason: "reader unit; no OC counterpart"
+    test "renaming the root mix.lock away is a lock change (MES-236 CR-RE)", %{repo: repo} do
+      write!(repo, "mix.lock", "%{}\n")
+      commit!(repo, "a lock on the branch's base")
+      git!(repo, ["branch", "-f", "main"])
+      git!(repo, ["mv", "mix.lock", "deps.lock"])
+      commit!(repo, "rename the lock")
+
+      assert {:ok, pop} = D.population(repo, "main", "K-1")
+      assert pop.lock_changed
+      assert Enum.sort(pop.names) == ["deps.lock", "mix.lock"]
+    end
+
+    @tag oc: :none
+    @tag oc_reason: "reader unit; no OC counterpart"
+    test "a renamed test file: its tests are new at the destination, nothing at the source",
+         %{repo: repo} do
+      git!(repo, ["mv", "test/old_test.exs", "test/renamed_test.exs"])
+      commit!(repo, "rename a test file")
+
+      assert {:ok, pop} = D.population(repo, "main", "K-1")
+      assert Enum.sort(pop.names) == ["test/old_test.exs", "test/renamed_test.exs"]
+
+      assert Enum.map(pop.changed, &{&1.file, &1.id, &1.change}) ==
+               [
+                 {"test/renamed_test.exs", "tagged earlier", :new},
+                 {"test/renamed_test.exs", "untagged earlier", :new}
+               ]
+    end
+
+    @tag oc: :none
+    @tag oc_reason: "reader unit; no OC counterpart"
     test "a deleted test file declares nothing", %{repo: repo} do
       git!(repo, ["rm", "-q", "test/old_test.exs"])
       commit!(repo, "rm")

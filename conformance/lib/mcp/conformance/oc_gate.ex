@@ -4,9 +4,11 @@ defmodule MCP.Conformance.OcGate do
   official-conformance (OC) check it corresponds to is red.**
 
   `MCP.Conformance.OcGateDeclarations` supplies the population — the branch's
-  new and changed tests, plus, when the branch changes `lib/`, every test
-  already carrying `@tag oc:` check tokens — and what each declares. This
-  module measures the named checks **live** and judges.
+  new and changed tests, plus, when the branch changes `lib/`, `conformance/`
+  or the root `mix.lock` (MES-236), every test already carrying `@tag oc:`
+  check tokens — and what each declares. This module measures the named checks
+  **live** and judges. On a `mix.lock` change the task also measures every leg
+  whole, named or not (`Mix.Tasks.Conformance.OcGate`).
 
   ## The measurement is live, and the verdict is read off the checks
 
