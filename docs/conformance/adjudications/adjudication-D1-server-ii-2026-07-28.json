@@ -257,7 +257,41 @@
           "old": "    handle_request(method, id, params, seal_stream_sink(ctx, method), config)\n",
           "new": "    meta = (is_map(params) && params[\"_meta\"]) || %{}\n\n    if not (is_map(meta) and Map.has_key?(meta, \"io.modelcontextprotocol/protocolVersion\") and\n              Map.has_key?(meta, \"io.modelcontextprotocol/clientCapabilities\")),\n       do: reply(id, Error.invalid_params(\"missing required _meta field\"), config),\n       else: handle_request(method, id, params, seal_stream_sink(ctx, method), config)\n"
         }
-      ]
+      ],
+      "retired": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "made_stale_by": {
+          "commit": "bb68d9f",
+          "ticket": "MES-161"
+        },
+        "why": "MES-161 made Dispatch and the Plug reject a request missing a required _meta field with -32602 themselves, and moved the slice's tests onto well-formed _meta. From that merge on, the alternative this mutation realised is this SDK's own behaviour: its edits still apply once each, and none of its recorded units goes red. Retired by marking, as MES-188 retired M10 [PM 36080 Q1].",
+        "scope_of_record": "This mutation's reddens and measured describe the measurement at the record's tree, not main. MES-161 re-resolved the reddens lines mechanically and did not re-measure them. They are kept unedited as that history; this object is the qualification [PM 36080 Q1].",
+        "measured": [
+          {
+            "commit": "bd99a39",
+            "recorded_units_red": 14,
+            "recorded_units": 14,
+            "suite_failures": 152,
+            "suite_tests": 1713
+          },
+          {
+            "commit": "bb68d9f",
+            "recorded_units_red": 0,
+            "recorded_units": 14,
+            "suite_failures": 22,
+            "suite_tests": 1729
+          },
+          {
+            "commit": "84c8431",
+            "recorded_units_red": 0,
+            "recorded_units": 14,
+            "suite_failures": 23,
+            "suite_tests": 2175
+          }
+        ],
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at each commit with 84c8431's mix.lock overlaid; the full suite, mix test --seed 0. The parent is matched against the record as first committed, the merge against the record as MES-161 left it, the tip against the record at the tip; a recorded unit counts as red when a failure reports its basename and line, or the line the entry names as where it is reported."
+      }
     },
     {
       "id": "M9h",
@@ -307,7 +341,41 @@
           "old": "      {:error, {:routing_mismatch, detail}} ->\n",
           "new": "      {:error, :meta_invalid_400} ->\n        send_json_error(conn, 400, -32_602, \"Invalid params\", \"missing required _meta field\")\n\n      {:error, {:routing_mismatch, detail}} ->\n"
         }
-      ]
+      ],
+      "retired": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "made_stale_by": {
+          "commit": "bb68d9f",
+          "ticket": "MES-161"
+        },
+        "why": "MES-161 made Dispatch and the Plug reject a request missing a required _meta field with -32602 themselves, and moved the slice's tests onto well-formed _meta. From that merge on, the alternative this mutation realised is this SDK's own behaviour: its edits still apply once each, and none of its recorded units goes red. Retired by marking, as MES-188 retired M10 [PM 36080 Q1].",
+        "scope_of_record": "This mutation's reddens and measured describe the measurement at the record's tree, not main. MES-161 re-resolved the reddens lines mechanically and did not re-measure them. They are kept unedited as that history; this object is the qualification [PM 36080 Q1].",
+        "measured": [
+          {
+            "commit": "bd99a39",
+            "recorded_units_red": 19,
+            "recorded_units": 19,
+            "suite_failures": 161,
+            "suite_tests": 1713
+          },
+          {
+            "commit": "bb68d9f",
+            "recorded_units_red": 0,
+            "recorded_units": 19,
+            "suite_failures": 29,
+            "suite_tests": 1729
+          },
+          {
+            "commit": "84c8431",
+            "recorded_units_red": 0,
+            "recorded_units": 19,
+            "suite_failures": 39,
+            "suite_tests": 2175
+          }
+        ],
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at each commit with 84c8431's mix.lock overlaid; the full suite, mix test --seed 0. The parent is matched against the record as first committed, the merge against the record as MES-161 left it, the tip against the record at the tip; a recorded unit counts as red when a failure reports its basename and line, or the line the entry names as where it is reported."
+      }
     },
     {
       "id": "M9f",
@@ -391,6 +459,40 @@
             "streamable_http_post_error_conn_test.exs:67 (a JSON body that is not an object is a 400 / -32600 JSON-RPC error, not an empty 500), added by MES-213"
           ]
         }
+      },
+      "retired": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "made_stale_by": {
+          "commit": "bb68d9f",
+          "ticket": "MES-161"
+        },
+        "why": "MES-161 made Dispatch and the Plug reject a request missing a required _meta field with -32602 themselves, and moved the slice's tests onto well-formed _meta. From that merge on, the alternative this mutation realised is this SDK's own behaviour: its edits still apply once each, and none of its recorded units goes red. Retired by marking, as MES-188 retired M10 [PM 36080 Q1].",
+        "scope_of_record": "This mutation's reddens and measured describe the measurement at the record's tree, not main. MES-161 re-resolved the reddens lines mechanically and did not re-measure them. They are kept unedited as that history; this object is the qualification [PM 36080 Q1].",
+        "measured": [
+          {
+            "commit": "bd99a39",
+            "recorded_units_red": 20,
+            "recorded_units": 20,
+            "suite_failures": 165,
+            "suite_tests": 1713
+          },
+          {
+            "commit": "bb68d9f",
+            "recorded_units_red": 0,
+            "recorded_units": 20,
+            "suite_failures": 30,
+            "suite_tests": 1729
+          },
+          {
+            "commit": "84c8431",
+            "recorded_units_red": 0,
+            "recorded_units": 20,
+            "suite_failures": 42,
+            "suite_tests": 2175
+          }
+        ],
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at each commit with 84c8431's mix.lock overlaid; the full suite, mix test --seed 0. The parent is matched against the record as first committed, the merge against the record as MES-161 left it, the tip against the record at the tip; a recorded unit counts as red when a failure reports its basename and line, or the line the entry names as where it is reported. At the parent and the merge, the second edit is repinned.old_was, the bytes that applied before MES-213."
       }
     },
     {
@@ -455,7 +557,19 @@
           "old": "    cond do\n      header_method && header_method != method ->",
           "new": "    cond do\n      is_binary(method) and\n          (is_nil(first_header(conn, \"mcp-protocol-version\")) or is_nil(header_method) or\n             (not is_nil(target) and is_nil(header_name))) ->\n        {:error, {:routing_mismatch, \"missing required header\"}}\n\n      header_method && header_method != method ->"
         }
-      ]
+      ],
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 0,
+        "recorded_units": 13,
+        "suite_failures": 13,
+        "suite_tests": 2175,
+        "class": "zero",
+        "note": "Already retired by MES-188 (made stale by MES-155, 58cb0c0); this re-measurement confirms it at the tip. The suite failures at the tip are tests outside this record, none of them a recorded unit."
+      }
     },
     {
       "id": "M11",
@@ -486,7 +600,21 @@
           "old": "    IO.iodata_to_binary([Enum.join(lines, \"\\n\"), \"\\n\\n\"])\n",
           "new": "    IO.iodata_to_binary([Enum.join(lines, \"\\r\\n\"), \"\\r\\n\\r\\n\"])\n"
         }
-      ]
+      ],
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 8,
+        "recorded_units": 8,
+        "suite_failures": 9,
+        "suite_tests": 2175,
+        "class": "full",
+        "also_reddens_in_slice_red": 0,
+        "also_reddens_in_slice_units": 6,
+        "note": "also_reddens_in_slice is outside MES-214's population (the reddens field, PM 36080) and is reported here, not dispositioned."
+      }
     },
     {
       "id": "M12",
@@ -502,7 +630,18 @@
           "old": "  def comment, do: \":\\r\\n\"\n",
           "new": "  def comment, do: \":\\n\"\n"
         }
-      ]
+      ],
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 2,
+        "recorded_units": 2,
+        "suite_failures": 3,
+        "suite_tests": 2175,
+        "class": "full"
+      }
     },
     {
       "id": "M13",
@@ -518,7 +657,18 @@
           "old": "        \"_meta\" => %{Meta.subscription_id_key() => subscription_id}\n      }\n    }\n  end\n",
           "new": "        \"_meta\" => %{\n          Meta.subscription_id_key() => subscription_id,\n          \"io.modelcontextprotocol/serverInfo\" => %{\"name\" => \"mcp_elixir_sdk\", \"version\" => \"2.0.0\"}\n        }\n      }\n    }\n  end\n"
         }
-      ]
+      ],
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 2,
+        "recorded_units": 2,
+        "suite_failures": 4,
+        "suite_tests": 2175,
+        "class": "full"
+      }
     },
     {
       "id": "M14",
@@ -533,7 +683,18 @@
           "old": "      {:ok, _not_an_object} -> {:error, :invalid_notifications}\n",
           "new": "      {:ok, _not_an_object} -> {:ok, %{}}\n"
         }
-      ]
+      ],
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 1,
+        "recorded_units": 1,
+        "suite_failures": 2,
+        "suite_tests": 2175,
+        "class": "full"
+      }
     },
     {
       "id": "M15",
@@ -548,7 +709,18 @@
           "old": "    |> Plug.Conn.send_resp(405, \"\")\n",
           "new": "    |> Plug.Conn.send_resp(404, \"\")\n"
         }
-      ]
+      ],
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 1,
+        "recorded_units": 1,
+        "suite_failures": 2,
+        "suite_tests": 2175,
+        "class": "full"
+      }
     },
     {
       "id": "M16",
@@ -590,6 +762,19 @@
             "error_data_test.exs:70 (-32700 (plug.ex:347) invalid JSON: the data names the rule and does not echo the body), added by MES-198"
           ]
         }
+      },
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 1,
+        "recorded_units": 1,
+        "suite_failures": 6,
+        "suite_tests": 2175,
+        "class": "full",
+        "repinned_measured_reddens_red": 3,
+        "repinned_measured_reddens_units": 3
       }
     },
     {
@@ -606,7 +791,18 @@
           "old": "  def close_frame(%__MODULE__{}, :peer_closed), do: :none\n",
           "new": "  def close_frame(%__MODULE__{}, :peer_closed), do: :none\n  def close_frame(%__MODULE__{}, :lifetime_expired), do: :none\n"
         }
-      ]
+      ],
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 2,
+        "recorded_units": 2,
+        "suite_failures": 3,
+        "suite_tests": 2175,
+        "class": "full"
+      }
     },
     {
       "id": "M18",
@@ -643,7 +839,21 @@
           "old": "  def parse_filter(params) when is_map(params) do\n    case Map.fetch(params, \"notifications\") do\n",
           "new": "  def parse_filter(params) when is_map(params) do\n    meta = params[\"_meta\"]\n\n    if not (is_map(meta) and Map.has_key?(meta, \"io.modelcontextprotocol/protocolVersion\") and\n              Map.has_key?(meta, \"io.modelcontextprotocol/clientCapabilities\")) do\n      {:error, :missing_required_meta}\n    else\n      parse_filter_body(params)\n    end\n  end\n\n  defp parse_filter_body(params) do\n    case Map.fetch(params, \"notifications\") do\n"
         }
-      ]
+      ],
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 1,
+        "recorded_units": 1,
+        "suite_failures": 4,
+        "suite_tests": 2175,
+        "class": "full",
+        "also_reddens_in_slice_red": 1,
+        "also_reddens_in_slice_units": 12,
+        "note": "also_reddens_in_slice is outside MES-214's population (the reddens field, PM 36080) and is reported here, not dispositioned."
+      }
     }
   ],
   "sections": [

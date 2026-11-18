@@ -221,7 +221,27 @@
       "change": "a second version (\"2025-11-25\") in the server/discover result's supported_versions",
       "reddens": [
         "extensions_negotiation_test.exs:373"
-      ]
+      ],
+      "edits_reconstructed": [
+        {
+          "file": "lib/mcp/server/dispatch.ex",
+          "old": "        supported_versions: [target_version(config)],\n",
+          "new": "        supported_versions: [target_version(config), \"2025-11-25\"],\n"
+        }
+      ],
+      "reconstructed_by": "MES-214",
+      "reconstruction_note": "Reconstructed from the recorded change sentence, which admits one reasonable edit. It tests the recorded change, not the original edit, which was never recorded [PM 36080 Q4].",
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 1,
+        "recorded_units": 1,
+        "suite_failures": 4,
+        "suite_tests": 2175,
+        "class": "full"
+      }
     },
     {
       "id": "M2",
@@ -231,7 +251,13 @@
         "extensions_negotiation_test.exs:125",
         "extensions_negotiation_test.exs:135"
       ],
-      "used_by": "no committed reading (T1/T2 are redundant on the M9 ground); recorded as the 29799 sweep's measurement"
+      "used_by": "no committed reading (T1/T2 are redundant on the M9 ground); recorded as the 29799 sweep's measurement",
+      "unverifiable": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "why": "The recorded change sentence admits more than one reasonable edit, so no edit is chosen [PM 36080 Q4]. \"when nothing is declared\" reads either as the :extensions option being absent, or as any declaration that normalises to nothing (an empty or a fully invalid map). The two edits advertise different wire for an empty declaration.",
+        "scope_of_record": "reddens is kept unedited as the record's history. It is neither reproduced nor refuted at the tip, because the original edit was never recorded."
+      }
     },
     {
       "id": "M3",
@@ -243,7 +269,13 @@
         "extensions_negotiation_test.exs:235",
         "extensions_negotiation_test.exs:261"
       ],
-      "used_by": "no committed reading (those members are redundant on the M9 ground); recorded because each is a second firing reading"
+      "used_by": "no committed reading (those members are redundant on the M9 ground); recorded because each is a second firing reading",
+      "unverifiable": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "why": "The recorded change sentence admits more than one reasonable edit, so no edit is chosen [PM 36080 Q4]. \"a declaration Extensions.normalise/2 would alter\" reads either as a map with a dropped entry, or as any value normalise/2 changes, a non-object value included; and \"an error\" names no reason term. The readings make build/2 fail on different inputs.",
+        "scope_of_record": "reddens is kept unedited as the record's history. It is neither reproduced nor refuted at the tip, because the original edit was never recorded."
+      }
     },
     {
       "id": "M4",
@@ -251,7 +283,13 @@
       "change": "answer -32602 when the request's clientCapabilities.extensions is a declaration Extensions.normalise/2 would alter",
       "reddens": [
         "extensions_negotiation_test.exs:401"
-      ]
+      ],
+      "unverifiable": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "why": "The recorded change sentence admits more than one reasonable edit, so no edit is chosen [PM 36080 Q4]. \"a declaration Extensions.normalise/2 would alter\" reads either as a map with a dropped entry, or as any value normalise/2 changes, a non-object or empty declaration included; and the sentence does not place the check against the -32602 _meta gate and the -32022 version gate. The readings answer -32602 to different requests.",
+        "scope_of_record": "reddens is kept unedited as the record's history. It is neither reproduced nor refuted at the tip, because the original edit was never recorded."
+      }
     },
     {
       "id": "M5",
@@ -260,7 +298,13 @@
       "reddens": [
         "extensions_negotiation_test.exs:304"
       ],
-      "used_by": "no committed reading: the refute reads this SDK's own log prefix, a host value (29717)"
+      "used_by": "no committed reading: the refute reads this SDK's own log prefix, a host value (29717)",
+      "unverifiable": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "why": "The recorded change sentence admits more than one reasonable edit, so no edit is chosen [PM 36080 Q4]. The sentence names neither the log level nor whether one line is logged per kept entry or per declaration, and the level decides whether a test's captured log contains it.",
+        "scope_of_record": "reddens is kept unedited as the record's history. It is neither reproduced nor refuted at the tip, because the original edit was never recorded."
+      }
     },
     {
       "id": "M6",
@@ -268,7 +312,27 @@
       "change": "append the serialized-JSON TextContent block for array and primitive structured content",
       "reddens": [
         "json_schema_2020_12_test.exs:334"
-      ]
+      ],
+      "edits_reconstructed": [
+        {
+          "file": "lib/mcp/server/dispatch.ex",
+          "old": "        warn_missing_text_fallback(value, content, name)\n        Map.put(result, \"structuredContent\", value)\n",
+          "new": "        warn_missing_text_fallback(value, content, name)\n\n        result =\n          if is_map(value),\n            do: result,\n            else: Map.update!(result, \"content\", &(&1 ++ [%{\"type\" => \"text\", \"text\" => Jason.encode!(value)}]))\n\n        Map.put(result, \"structuredContent\", value)\n"
+        }
+      ],
+      "reconstructed_by": "MES-214",
+      "reconstruction_note": "Reconstructed from the recorded change sentence, which admits one reasonable edit. It tests the recorded change, not the original edit, which was never recorded [PM 36080 Q4].",
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 1,
+        "recorded_units": 1,
+        "suite_failures": 2,
+        "suite_tests": 2175,
+        "class": "full"
+      }
     },
     {
       "id": "M7",
@@ -277,7 +341,27 @@
       "reddens": [
         "json_schema_2020_12_test.exs:355",
         "json_schema_2020_12_test.exs:394"
-      ]
+      ],
+      "edits_reconstructed": [
+        {
+          "file": "lib/mcp/server/dispatch.ex",
+          "old": "  defp extras_complaints(extras) do\n",
+          "new": "  defp extras_complaints(_extras), do: []\n\n  defp extras_complaints(extras) do\n"
+        }
+      ],
+      "reconstructed_by": "MES-214",
+      "reconstruction_note": "Reconstructed from the recorded change sentence, which admits one reasonable edit. It tests the recorded change, not the original edit, which was never recorded [PM 36080 Q4].",
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 2,
+        "recorded_units": 2,
+        "suite_failures": 6,
+        "suite_tests": 2175,
+        "class": "full"
+      }
     },
     {
       "id": "M8",
@@ -285,7 +369,13 @@
       "change": "answer tools/list with an error when a listed tool declares the draft-07 dialect",
       "reddens": [
         "json_schema_2020_12_test.exs:80 (the W-3 describe's setup)"
-      ]
+      ],
+      "unverifiable": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "why": "The recorded change sentence admits more than one reasonable edit, so no edit is chosen [PM 36080 Q4]. The sentence names neither the error code nor how a listed tool is recognised as declaring the draft-07 dialect (the $schema URI with or without its trailing #, or otherwise).",
+        "scope_of_record": "reddens is kept unedited as the record's history. It is neither reproduced nor refuted at the tip, because the original edit was never recorded."
+      }
     },
     {
       "id": "M9",
@@ -306,6 +396,40 @@
           "oc:none/no-oc-scenario/extensions-handler-visible-read"
         ],
         "correction": "hop A recorded slice_members_red 32; re-measured at hop B (the same M9 edit, mut.py, seed 0) as 33, the 39 less the six named in slice_members_not_red, read off the run by register key. module_tests_red is unchanged."
+      },
+      "retired": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "made_stale_by": {
+          "commit": "bb68d9f",
+          "ticket": "MES-161"
+        },
+        "why": "MES-161 made Dispatch and the Plug reject a request missing a required _meta field with -32602 themselves, and moved the slice's tests onto well-formed _meta. From that merge on, the alternative this mutation realised is this SDK's own behaviour: its edits still apply once each, and none of its recorded units goes red. Retired by marking, as MES-188 retired M10 [PM 36080 Q1].",
+        "scope_of_record": "This mutation's reddens and measured describe the measurement at the record's tree, not main. MES-161 re-resolved the reddens lines mechanically and did not re-measure them. They are kept unedited as that history; this object is the qualification [PM 36080 Q1].",
+        "measured": [
+          {
+            "commit": "bd99a39",
+            "recorded_units_red": 33,
+            "recorded_units": 33,
+            "suite_failures": 152,
+            "suite_tests": 1713
+          },
+          {
+            "commit": "bb68d9f",
+            "recorded_units_red": 0,
+            "recorded_units": 33,
+            "suite_failures": 22,
+            "suite_tests": 1729
+          },
+          {
+            "commit": "84c8431",
+            "recorded_units_red": 0,
+            "recorded_units": 33,
+            "suite_failures": 23,
+            "suite_tests": 2175
+          }
+        ],
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at each commit with 84c8431's mix.lock overlaid; the full suite, mix test --seed 0. The parent is matched against the record as first committed, the merge against the record as MES-161 left it, the tip against the record at the tip; the units are this slice's members whose firing reading cites basic/index.mdx:380-382; a member counts as red when a failure falls inside its et_test lines. M9's edits are MES-142's M9, byte for byte, which the D1-server-ii record carries."
       }
     }
   ],

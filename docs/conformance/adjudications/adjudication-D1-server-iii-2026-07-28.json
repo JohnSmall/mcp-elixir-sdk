@@ -158,7 +158,41 @@
           "old": "    handle_request(method, id, params, seal_stream_sink(ctx, method), config)\n",
           "new": "    meta = (is_map(params) && params[\"_meta\"]) || %{}\n\n    if not (is_map(meta) and Map.has_key?(meta, \"io.modelcontextprotocol/protocolVersion\") and\n              Map.has_key?(meta, \"io.modelcontextprotocol/clientCapabilities\")),\n       do: reply(id, Error.invalid_params(\"missing required _meta field\"), config),\n       else: handle_request(method, id, params, seal_stream_sink(ctx, method), config)\n"
         }
-      ]
+      ],
+      "retired": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "made_stale_by": {
+          "commit": "bb68d9f",
+          "ticket": "MES-161"
+        },
+        "why": "MES-161 made Dispatch and the Plug reject a request missing a required _meta field with -32602 themselves, and moved the slice's tests onto well-formed _meta. From that merge on, the alternative this mutation realised is this SDK's own behaviour: its edits still apply once each, and none of its recorded units goes red. Retired by marking, as MES-188 retired M10 [PM 36080 Q1].",
+        "scope_of_record": "This mutation's reddens and measured describe the measurement at the record's tree, not main. MES-161 re-resolved the reddens lines mechanically and did not re-measure them. They are kept unedited as that history; this object is the qualification [PM 36080 Q1].",
+        "measured": [
+          {
+            "commit": "bd99a39",
+            "recorded_units_red": 7,
+            "recorded_units": 7,
+            "suite_failures": 152,
+            "suite_tests": 1713
+          },
+          {
+            "commit": "bb68d9f",
+            "recorded_units_red": 0,
+            "recorded_units": 7,
+            "suite_failures": 22,
+            "suite_tests": 1729
+          },
+          {
+            "commit": "84c8431",
+            "recorded_units_red": 0,
+            "recorded_units": 7,
+            "suite_failures": 23,
+            "suite_tests": 2175
+          }
+        ],
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at each commit with 84c8431's mix.lock overlaid; the full suite, mix test --seed 0. The parent is matched against the record as first committed, the merge against the record as MES-161 left it, the tip against the record at the tip; a recorded unit counts as red when a failure reports its basename and line, or the line the entry names as where it is reported."
+      }
     },
     {
       "id": "M9h",
@@ -200,7 +234,41 @@
           "old": "      {:error, {:routing_mismatch, detail}} ->\n",
           "new": "      {:error, :meta_invalid_400} ->\n        send_json_error(conn, 400, -32_602, \"Invalid params\", \"missing required _meta field\")\n\n      {:error, {:routing_mismatch, detail}} ->\n"
         }
-      ]
+      ],
+      "retired": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "made_stale_by": {
+          "commit": "bb68d9f",
+          "ticket": "MES-161"
+        },
+        "why": "MES-161 made Dispatch and the Plug reject a request missing a required _meta field with -32602 themselves, and moved the slice's tests onto well-formed _meta. From that merge on, the alternative this mutation realised is this SDK's own behaviour: its edits still apply once each, and none of its recorded units goes red. Retired by marking, as MES-188 retired M10 [PM 36080 Q1].",
+        "scope_of_record": "This mutation's reddens and measured describe the measurement at the record's tree, not main. MES-161 re-resolved the reddens lines mechanically and did not re-measure them. They are kept unedited as that history; this object is the qualification [PM 36080 Q1].",
+        "measured": [
+          {
+            "commit": "bd99a39",
+            "recorded_units_red": 11,
+            "recorded_units": 11,
+            "suite_failures": 161,
+            "suite_tests": 1713
+          },
+          {
+            "commit": "bb68d9f",
+            "recorded_units_red": 0,
+            "recorded_units": 11,
+            "suite_failures": 29,
+            "suite_tests": 1729
+          },
+          {
+            "commit": "84c8431",
+            "recorded_units_red": 0,
+            "recorded_units": 11,
+            "suite_failures": 39,
+            "suite_tests": 2175
+          }
+        ],
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at each commit with 84c8431's mix.lock overlaid; the full suite, mix test --seed 0. The parent is matched against the record as first committed, the merge against the record as MES-161 left it, the tip against the record at the tip; a recorded unit counts as red when a failure reports its basename and line, or the line the entry names as where it is reported."
+      }
     },
     {
       "id": "M9f",
@@ -278,6 +346,40 @@
             "streamable_http_post_error_conn_test.exs:67 (a JSON body that is not an object is a 400 / -32600 JSON-RPC error, not an empty 500), added by MES-213"
           ]
         }
+      },
+      "retired": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "made_stale_by": {
+          "commit": "bb68d9f",
+          "ticket": "MES-161"
+        },
+        "why": "MES-161 made Dispatch and the Plug reject a request missing a required _meta field with -32602 themselves, and moved the slice's tests onto well-formed _meta. From that merge on, the alternative this mutation realised is this SDK's own behaviour: its edits still apply once each, and none of its recorded units goes red. Retired by marking, as MES-188 retired M10 [PM 36080 Q1].",
+        "scope_of_record": "This mutation's reddens and measured describe the measurement at the record's tree, not main. MES-161 re-resolved the reddens lines mechanically and did not re-measure them. They are kept unedited as that history; this object is the qualification [PM 36080 Q1].",
+        "measured": [
+          {
+            "commit": "bd99a39",
+            "recorded_units_red": 14,
+            "recorded_units": 14,
+            "suite_failures": 165,
+            "suite_tests": 1713
+          },
+          {
+            "commit": "bb68d9f",
+            "recorded_units_red": 0,
+            "recorded_units": 14,
+            "suite_failures": 30,
+            "suite_tests": 1729
+          },
+          {
+            "commit": "84c8431",
+            "recorded_units_red": 0,
+            "recorded_units": 14,
+            "suite_failures": 42,
+            "suite_tests": 2175
+          }
+        ],
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at each commit with 84c8431's mix.lock overlaid; the full suite, mix test --seed 0. The parent is matched against the record as first committed, the merge against the record as MES-161 left it, the tip against the record at the tip; a recorded unit counts as red when a failure reports its basename and line, or the line the entry names as where it is reported. At the parent and the merge, the second edit is repinned.old_was, the bytes that applied before MES-213."
       }
     },
     {
@@ -332,7 +434,19 @@
           "old": "    cond do\n      header_method && header_method != method ->",
           "new": "    cond do\n      is_binary(method) and\n          (is_nil(first_header(conn, \"mcp-protocol-version\")) or is_nil(header_method) or\n             (not is_nil(target) and is_nil(header_name))) ->\n        {:error, {:routing_mismatch, \"missing required header\"}}\n\n      header_method && header_method != method ->"
         }
-      ]
+      ],
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 0,
+        "recorded_units": 3,
+        "suite_failures": 13,
+        "suite_tests": 2175,
+        "class": "zero",
+        "note": "Already retired by MES-188 (made stale by MES-155, 58cb0c0); this re-measurement confirms it at the tip. The suite failures at the tip are tests outside this record, none of them a recorded unit."
+      }
     },
     {
       "id": "M19",
@@ -370,7 +484,21 @@
           "old": "      :ok -> route(method, id, params, ctx, config)\n",
           "new": "      :ok -> route(method, id, params, ctx, config)\n      {:error, :missing_required_meta} -> reply(id, Error.invalid_params(\"missing required _meta field\"), config)\n"
         }
-      ]
+      ],
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 1,
+        "recorded_units": 1,
+        "suite_failures": 15,
+        "suite_tests": 2175,
+        "class": "full",
+        "also_reddens_in_slice_red": 0,
+        "also_reddens_in_slice_units": 7,
+        "note": "also_reddens_in_slice is outside MES-214's population (the reddens field, PM 36080) and is reported here, not dispositioned."
+      }
     },
     {
       "id": "M20",
@@ -393,7 +521,18 @@
           "old": "      |> Enum.reduce(%{}, fn\n        {_key, nil}, acc -> acc\n",
           "new": "      |> Enum.reduce(%{}, fn\n        {:experimental, nil}, acc -> Map.put(acc, :experimental, %{})\n        {_key, nil}, acc -> acc\n"
         }
-      ]
+      ],
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 1,
+        "recorded_units": 1,
+        "suite_failures": 4,
+        "suite_tests": 2175,
+        "class": "full"
+      }
     },
     {
       "id": "M21",
@@ -416,7 +555,18 @@
           "old": "         {:ok, decoded} <- Base.decode64(payload) do\n      decoded\n    else\n      _ -> value\n    end\n",
           "new": "         {:ok, decoded} <- Base.decode64(payload) do\n      decoded\n    else\n      false -> value\n      _ -> :malformed_sentinel\n    end\n"
         }
-      ]
+      ],
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 1,
+        "recorded_units": 1,
+        "suite_failures": 2,
+        "suite_tests": 2175,
+        "class": "full"
+      }
     },
     {
       "id": "M22",
@@ -439,7 +589,18 @@
           "old": "        {_key, nil}, acc -> acc\n        {:input_schema, val}, acc -> Map.put(acc, :inputSchema, val)\n",
           "new": "        {:annotations, nil}, acc -> Map.put(acc, :annotations, %{})\n        {_key, nil}, acc -> acc\n        {:input_schema, val}, acc -> Map.put(acc, :inputSchema, val)\n"
         }
-      ]
+      ],
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 1,
+        "recorded_units": 1,
+        "suite_failures": 1,
+        "suite_tests": 2175,
+        "class": "full"
+      }
     },
     {
       "id": "M23",
@@ -462,7 +623,18 @@
           "old": "        {:input_schema, val}, acc -> Map.put(acc, :inputSchema, val)\n",
           "new": "        {:input_schema, val}, acc ->\n          val = if is_map(val) and Map.get(val, \"else\") == %{}, do: Map.delete(val, \"else\"), else: val\n          Map.put(acc, :inputSchema, val)\n"
         }
-      ]
+      ],
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 1,
+        "recorded_units": 1,
+        "suite_failures": 2,
+        "suite_tests": 2175,
+        "class": "full"
+      }
     },
     {
       "id": "M24",
@@ -485,7 +657,18 @@
           "old": "        {_key, nil}, acc -> acc\n        {:list_changed, val}, acc -> Map.put(acc, :listChanged, val)\n",
           "new": "        {:list_changed, nil}, acc -> Map.put(acc, :listChanged, false)\n        {_key, nil}, acc -> acc\n        {:list_changed, val}, acc -> Map.put(acc, :listChanged, val)\n"
         }
-      ]
+      ],
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 1,
+        "recorded_units": 1,
+        "suite_failures": 2,
+        "suite_tests": 2175,
+        "class": "full"
+      }
     },
     {
       "id": "M25",
@@ -509,7 +692,18 @@
           "old": "  def drain(collector), do: Agent.get(collector, &Enum.reverse/1)\n",
           "new": "  def drain(collector) do\n    ordered = Agent.get(collector, &Enum.reverse/1)\n    logs = for %{\"method\" => \"notifications/message\"} = n <- Enum.reverse(ordered), do: n\n\n    {drained, []} =\n      Enum.map_reduce(ordered, logs, fn\n        %{\"method\" => \"notifications/message\"}, [log | rest] -> {log, rest}\n        n, rest -> {n, rest}\n      end)\n\n    drained\n  end\n"
         }
-      ]
+      ],
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 1,
+        "recorded_units": 1,
+        "suite_failures": 2,
+        "suite_tests": 2175,
+        "class": "full"
+      }
     },
     {
       "id": "M26",
@@ -533,7 +727,18 @@
           "new": "        {:output_schema, nil}, acc -> Map.put(acc, :outputSchema, %{})\n        {_key, nil}, acc -> acc\n        {:input_schema, val}, acc -> Map.put(acc, :inputSchema, val)\n"
         }
       ],
-      "not_conforming": "An `outputSchema: {}` declares an output schema, which binds the server to structured results conforming to it (tools.mdx:511-514; schema.ts:1999-2005); the tool declares none, so the encoding states a different tool."
+      "not_conforming": "An `outputSchema: {}` declares an output schema, which binds the server to structured results conforming to it (tools.mdx:511-514; schema.ts:1999-2005); the tool declares none, so the encoding states a different tool.",
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 1,
+        "recorded_units": 1,
+        "suite_failures": 2,
+        "suite_tests": 2175,
+        "class": "full"
+      }
     },
     {
       "id": "M27",
@@ -557,7 +762,18 @@
           "new": "      struct\n      |> Map.from_struct()\n      |> then(fn m -> if m.extensions, do: %{m | experimental: nil}, else: m end)\n"
         }
       ],
-      "not_conforming": "`experimental` and `extensions` are distinct fields, each a map the server declares (schema.ts:795-797, :871-882); dropping a declared `experimental` map withdraws capabilities the server declared."
+      "not_conforming": "`experimental` and `extensions` are distinct fields, each a map the server declares (schema.ts:795-797, :871-882); dropping a declared `experimental` map withdraws capabilities the server declared.",
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 1,
+        "recorded_units": 1,
+        "suite_failures": 2,
+        "suite_tests": 2175,
+        "class": "full"
+      }
     },
     {
       "id": "M28",
@@ -581,7 +797,18 @@
           "new": "        {:mime_type, _val}, acc -> acc\n"
         }
       ],
-      "not_conforming": "A ResourceLink's `mimeType` is the linked Resource's MIME type when known (schema.ts:1719-1720, :1447, :1459); dropping a declared one loses a field the link carries."
+      "not_conforming": "A ResourceLink's `mimeType` is the linked Resource's MIME type when known (schema.ts:1719-1720, :1447, :1459); dropping a declared one loses a field the link carries.",
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 1,
+        "recorded_units": 1,
+        "suite_failures": 2,
+        "suite_tests": 2175,
+        "class": "full"
+      }
     },
     {
       "id": "M29",
@@ -605,7 +832,18 @@
           "new": "      log_level: nil,\n"
         }
       ],
-      "not_conforming": "io.modelcontextprotocol/logLevel is a per-request protocol field (basic/index.mdx:365-378); a server that does not read it serves the request at a log level the client did not ask for."
+      "not_conforming": "io.modelcontextprotocol/logLevel is a per-request protocol field (basic/index.mdx:365-378); a server that does not read it serves the request at a log level the client did not ask for.",
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 1,
+        "recorded_units": 1,
+        "suite_failures": 9,
+        "suite_tests": 2175,
+        "class": "full"
+      }
     },
     {
       "id": "M30'",
@@ -644,7 +882,21 @@
           "old": "      {:error, error} ->\n        Logger.warning(\"MCP.Server.Connection: failed to decode message: #{inspect(error)}\")\n",
           "new": "      {:error, {:malformed_request, id, error}} ->\n        response = %{\"jsonrpc\" => \"2.0\", \"id\" => id, \"error\" => Map.from_struct(error)}\n        state.transport_module.send_message(state.transport_pid, response)\n        {:noreply, state}\n\n      {:error, error} ->\n        Logger.warning(\"MCP.Server.Connection: failed to decode message: #{inspect(error)}\")\n"
         }
-      ]
+      ],
+      "remeasured": {
+        "date": "2026-11-18",
+        "by": "MES-214",
+        "tree": "84c8431",
+        "run": "the edits applied, one occurrence each (exact-count replacement), to a full-history clone at 84c8431; the full suite, mix test --seed 0, one run per mutation, sequentially; a recorded unit counts as red when a failure reports its basename and line, or the line the entry itself names as where it is reported",
+        "recorded_units_red": 2,
+        "recorded_units": 2,
+        "suite_failures": 20,
+        "suite_tests": 2175,
+        "class": "full",
+        "also_reddens_in_slice_red": 0,
+        "also_reddens_in_slice_units": 2,
+        "note": "also_reddens_in_slice is outside MES-214's population (the reddens field, PM 36080) and is reported here, not dispositioned."
+      }
     }
   ],
   "sections": [

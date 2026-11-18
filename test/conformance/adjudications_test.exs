@@ -6575,6 +6575,157 @@ defmodule MCP.Conformance.AdjudicationsTest do
 
       assert d1sii_mutation(record, "M9")["edits"] == @mes141_m9_edits
     end
+
+    # MES-214 (PM 36080): every D1-server mutation was re-run at 84c8431 over
+    # the full suite, and each carries one dated disposition. A stale one is
+    # retired by marking, as MES-188 retired M10; reddens is never rewritten.
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the D-record files: it asserts the MES-214 re-measurement markings (PM 36080), not SDK wire behaviour, so no OC check corresponds"
+    test "MES-214: each of the 37 D1-server mutations carries exactly one dated MES-214 disposition",
+         %{inputs: inputs} do
+      full = fn ids -> Map.new(ids, &{&1, "full"}) end
+
+      expected = %{
+        @d1si =>
+          full.(~w(M1 M6 M7))
+          |> Map.merge(Map.new(~w(M2 M3 M4 M5 M8), &{&1, "unverifiable"}))
+          |> Map.put("M9", "retired"),
+        @d1sii =>
+          full.(~w(M11 M12 M13 M14 M15 M16 M17 M18))
+          |> Map.merge(Map.new(~w(M9 M9h M9f), &{&1, "retired"}))
+          |> Map.put("M10", "zero"),
+        @d1siii =>
+          full.(~w(M19 M20 M21 M22 M23 M24 M25 M26 M27 M28 M29 M30'))
+          |> Map.merge(Map.new(~w(M9 M9h M9f), &{&1, "retired"}))
+          |> Map.put("M10", "zero")
+      }
+
+      for {path, by_id} <- expected do
+        {:ok, record} = inputs.records[path]
+
+        got =
+          for m <- record["mutations"], into: %{} do
+            kinds =
+              for k <- ~w(retired remeasured unverifiable),
+                  is_map(m[k]) and m[k]["by"] == "MES-214",
+                  do: k
+
+            assert length(kinds) == 1,
+                   "#{path} #{m["id"]}: MES-214 dispositions #{inspect(kinds)}"
+
+            [k] = kinds
+            assert m[k]["date"] == "2026-11-18", "#{path} #{m["id"]}"
+            {m["id"], if(k == "remeasured", do: m[k]["class"], else: k)}
+          end
+
+        assert got == by_id, path
+      end
+
+      assert Enum.sum(for {_, b} <- expected, do: map_size(b)) == 37
+    end
+
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the D-record files: it asserts the MES-214 retirement markings (PM 36080 Q1), not SDK wire behaviour, so no OC check corresponds"
+    test "MES-214: a retired mutation reddens its recorded units at bb68d9f's parent and none from that merge on, and keeps reddens",
+         %{inputs: inputs} do
+      retired =
+        for path <- [@d1si, @d1sii, @d1siii],
+            {:ok, record} <- [inputs.records[path]],
+            m <- record["mutations"],
+            is_map(m["retired"]) and m["retired"]["by"] == "MES-214",
+            do: {path, m}
+
+      assert length(retired) == 7
+
+      for {path, m} <- retired do
+        r = m["retired"]
+        at = "#{path} #{m["id"]}"
+        assert r["made_stale_by"] == %{"commit" => "bb68d9f", "ticket" => "MES-161"}, at
+        assert r["scope_of_record"] =~ "the record's tree, not main", at
+        [parent, merge, tip] = r["measured"]
+
+        assert {parent["commit"], merge["commit"], tip["commit"]} ==
+                 {"bd99a39", "bb68d9f", "84c8431"},
+               at
+
+        n =
+          if is_list(m["reddens"]),
+            do: length(m["reddens"]),
+            else: m["measured"]["slice_members_red"]
+
+        assert parent["recorded_units_red"] == n and parent["recorded_units"] == n, at
+        assert merge["recorded_units_red"] == 0 and merge["recorded_units"] == n, at
+        assert tip["recorded_units_red"] == 0 and tip["recorded_units"] == n, at
+      end
+    end
+
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the D-record files: it asserts the MES-214 re-measurement blocks (PM 36080 Q3), not SDK wire behaviour, so no OC check corresponds"
+    test "MES-214: a re-measured mutation counts its own recorded units at 84c8431, every one red when full",
+         %{inputs: inputs} do
+      remeasured =
+        for path <- [@d1si, @d1sii, @d1siii],
+            {:ok, record} <- [inputs.records[path]],
+            m <- record["mutations"],
+            is_map(m["remeasured"]),
+            do: {path, m}
+
+      assert length(remeasured) == 25
+
+      for {path, m} <- remeasured do
+        r = m["remeasured"]
+        at = "#{path} #{m["id"]}"
+        assert r["by"] == "MES-214" and r["tree"] == "84c8431", at
+        assert r["recorded_units"] == length(m["reddens"]), at
+
+        case r["class"] do
+          "full" -> assert r["recorded_units_red"] == r["recorded_units"], at
+          "zero" -> assert r["recorded_units_red"] == 0 and m["retired"]["by"] == "MES-188", at
+        end
+
+        if Map.has_key?(m, "also_reddens_in_slice") do
+          assert r["also_reddens_in_slice_units"] == length(m["also_reddens_in_slice"]), at
+          assert r["note"] =~ "outside MES-214's population", at
+        end
+      end
+    end
+
+    @tag oc: :none
+    @tag oc_reason:
+           "a G32 unit over the D-record files: it asserts the MES-214 reconstruction labels (PM 36080 Q4), not SDK wire behaviour, so no OC check corresponds"
+    test "MES-214: each reconstructed D1-server-i edit applies exactly once and is labelled as testing the recorded change",
+         %{inputs: inputs} do
+      {:ok, record} = inputs.records[@d1si]
+      ms = record["mutations"]
+
+      # MES-141 recorded no edits for M1-M8; none is invented under that key.
+      assert for(m <- ms, Map.has_key?(m, "edits"), do: m["id"]) == []
+
+      assert for(m <- ms, Map.has_key?(m, "edits_reconstructed"), do: m["id"]) ==
+               ~w(M1 M6 M7)
+
+      assert for(m <- ms, Map.has_key?(m, "unverifiable"), do: m["id"]) ==
+               ~w(M2 M3 M4 M5 M8)
+
+      for m <- ms, Map.has_key?(m, "edits_reconstructed") do
+        assert m["reconstructed_by"] == "MES-214", m["id"]
+        assert m["reconstruction_note"] =~ "not the original edit", m["id"]
+
+        for %{"file" => f, "old" => old, "new" => new} <- m["edits_reconstructed"] do
+          assert old != new and String.contains?(m["lib"], f), m["id"]
+          {:ok, src} = inputs.source_fun.(f)
+          assert length(String.split(src, old)) == 2, "#{m["id"]}: #{f}"
+        end
+      end
+
+      for m <- ms, Map.has_key?(m, "unverifiable") do
+        assert m["unverifiable"]["why"] =~ "more than one reasonable edit", m["id"]
+        refute Map.has_key?(m, "edits_reconstructed"), m["id"]
+      end
+    end
   end
 
   # --- the bucket-1 view, whole (MES-143, the closing slice; PM 30012 item 3) --
