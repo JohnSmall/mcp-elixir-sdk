@@ -19,7 +19,8 @@ defmodule Mix.Tasks.Conformance.RowsDrift do
 
     * `--committed FILE` compares against FILE instead of the committed path.
     * `--committed-at REF` compares against `git show REF:docs/conformance/etcc-exunit-rows.json`.
-      This is the per-ticket entry MES-241 needs, for a base and a tip.
+      Gate 9 (MES-241) does not use it: it builds the register from one fresh capture
+      instead (`docs/procedure/gate-9.md`).
     * `--fresh FILE` adjudicates an existing capture instead of capturing.
     * `--keep FILE` copies the fresh capture to FILE once it is taken. The capture
       itself is always made in a private, freshly created temporary directory.

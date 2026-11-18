@@ -191,8 +191,8 @@ defmodule MCP.Conformance.ETCCRegister do
   @doc "Builds and writes the register. Returns the path."
   def write(opts \\ []) do
     path = Keyword.get(opts, :register, @register)
-    json = build(opts) |> Jason.encode!(pretty: true)
-    File.write!(path, json <> "\n")
+    json = build(opts) |> encode()
+    File.write!(path, json)
     path
   end
 
@@ -759,6 +759,18 @@ defmodule MCP.Conformance.ETCCRegister do
 
   # --- helpers ---
 
+  # Placed at the end of the module so that no line above moves: etcc-boundaries.json pins
+  # a window of this file by line number (G33).
+  @doc """
+  The register's bytes as `write/1` writes them. Gate 9 (`MCP.Conformance.RegisterDrift`,
+  MES-241) compares a rebuild with the committed file through this one function, so the
+  comparison and the writer cannot encode differently.
+  """
+  def encode(register), do: Jason.encode!(register, pretty: true) <> "\n"
+
+  # `:artefact` may be an already-decoded rows artefact: gate 9 builds from a fresh capture
+  # it holds in memory, and never writes that capture over the committed file.
+  defp read_json(%{} = decoded), do: decoded
   defp read_json(path), do: path |> File.read!() |> Jason.decode!()
 
   defp md5_file(path),

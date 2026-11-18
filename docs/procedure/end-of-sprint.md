@@ -190,7 +190,7 @@ moment an advisory can be acted on without disrupting anything.
    - **Controls:** `mix run conformance/controls/rows_drift_controls.exs all` plants
      every drift class and every refusal (on each side) in a committed fixture, plants
      the never-write cases on decoys, and shows each one going red by name.
-   - **Comparing at a ref** (`--committed-at REF`, the per-ticket entry for MES-241):
+   - **Comparing at a ref** (`--committed-at REF`):
      the earliest committed rows file that passes every guard is `b439347` (MES-230,
      2026-11-14). The two before it, `18df3a6` and `1a0fe5c`, predate `run.row_errors`
      and are refused RD3. A base before `b439347` is refused, never compared.
@@ -201,13 +201,15 @@ moment an advisory can be acted on without disrupting anything.
      and tags are unchanged reads as no drift. Gate 7 sees body changes per ticket. This
      step does not.
    - **Drift between boundaries.** A test added mid-sprint without a re-capture is seen
-     at the next boundary, not on its own ticket. The per-ticket check is MES-241.
+     at the next boundary, not on its own ticket, when it is under `test/conformance/`.
+     A `test/mcp/` or doctest change is seen on its own ticket by gate 9
+     (`docs/procedure/gate-9.md`, MES-241), which builds the register from a fresh capture.
    - **A host without `node`.** It refuses there (RD5) rather than compare a population
      three rows short (`docs/conformance/etcc-row-key.md` §5.1). That refusal is
      visible, but it still means the step could not run on that host.
    - **The register.** It compares rows with the suite, never the ET-CC register with
      the rows. After any re-capture, `etcc_register_controls.exs keysets` and
-     `reproduce` still have to run.
+     `reproduce` still have to run; gate 9 runs both on every ticket its trigger matches.
    - **A rename's identity.** A renamed test is one removed key plus one added key,
      which is correct under the key rule. The `rename_candidates` pairing is advice only.
    - **Fields outside the row** (duration, failure text, the `run` block) are not

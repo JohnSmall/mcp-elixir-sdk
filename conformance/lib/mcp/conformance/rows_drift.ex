@@ -10,8 +10,9 @@ defmodule MCP.Conformance.RowsDrift do
   (MES-228). A plain `mix test` writes no rows (`MCP.Conformance.ExUnitRows` is off by
   default), so nothing re-captured the file. This module is that comparison, and
   `mix conformance.rows_drift` is its command. It runs at the sprint boundary
-  (`docs/procedure/end-of-sprint.md`, step 6), and MES-241 is expected to call it per
-  ticket.
+  (`docs/procedure/end-of-sprint.md`, step 6). Per ticket, gate 9
+  (`MCP.Conformance.RegisterDrift`, MES-241) reuses its capture, its guards and its
+  never-write output path.
 
   ## The comparison
 
@@ -64,7 +65,7 @@ defmodule MCP.Conformance.RowsDrift do
 
   `check/2` returns a map with schema `etcc-rows-drift/1`, whose `verdict` is `clean`,
   `drift` or `refused`. `exit_status/1` maps that verdict to 0, 1 or 2. The report is
-  JSON-encodable as it stands, which is the interface MES-241 is to consume.
+  JSON-encodable as it stands.
   """
 
   alias MCP.Conformance.ExUnitRows

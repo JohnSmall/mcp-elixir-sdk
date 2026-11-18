@@ -23,7 +23,9 @@ gate** or ships an **instrument**. It may touch repo docs/config with no correct
 a sprint findings register, a README tidy, an editorial `CLAUDE.md` edit. **When in doubt, it
 is a Task, not a PM Task.** Everything else binds unchanged — D5's baton and channel model,
 D6's commit identity and merge authorship, gates 1–5 (they simply have little to bite on for a
-docs-only change), gate 6 by the three-dot rule, and D8's push of `main` and the tag.
+docs-only change), gate 6 by the three-dot rule, gate 9 by its trigger (it names
+`conformance/data/etcc-decisions.json` and `etcc-boundaries.json`, which this guard does not
+cover; `docs/procedure/gate-9.md`), and D8's push of `main` and the tag.
 
 **Guarded fail-closed at the merge.** The PM-alone merge asserts the branch touched no
 reviewable path, and refuses otherwise:

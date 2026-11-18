@@ -633,6 +633,7 @@ defmodule MCP.Conformance.ExUnitRows do
     dirty = dirty_paths(state)
 
     %{
+      "doctest_sources" => doctest_sources(state.rows),
       "tip" => git("rev-parse", ["HEAD"]),
       "tree_clean" => dirty == [],
       "tree_dirty" => dirty,
@@ -790,4 +791,31 @@ defmodule MCP.Conformance.ExUnitRows do
   end
 
   defp first_frame(_), do: nil
+
+  # Gate 9's RT5 (MES-241 correction round 4): for every module a doctest row names, the
+  # compile source of the definition this VM has loaded AT SUITE END, read here, inside the
+  # test VM. It is not the definition DocTest expanded from, if test code swapped it mid-run
+  # (CR 35837; residual 8 in docs/procedure/gate-9.md, MES-248). A module
+  # name alone cannot say where the doctested definition came from: a same-named copy
+  # compiled from outside lib/ passes a name check (CR, MES-241 35761). This is a run-level
+  # field: the register build reads only the rows and run.rows_md5, and rows_md5 covers the
+  # rows alone, so it cannot move the register. nil when no source can be read.
+  defp doctest_sources(rows) do
+    for %{"test_type" => "doctest", "tags" => %{"doctest" => mod}} <- rows,
+        is_binary(mod),
+        uniq: true,
+        into: %{},
+        do: {mod, compile_source(mod)}
+  end
+
+  defp compile_source(mod) do
+    module = String.to_existing_atom("Elixir." <> mod)
+
+    case module.module_info(:compile)[:source] do
+      nil -> nil
+      source -> to_string(source)
+    end
+  rescue
+    _ -> nil
+  end
 end

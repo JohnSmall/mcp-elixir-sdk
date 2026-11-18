@@ -86,7 +86,8 @@ mix dialyzer
 Every ticket's Definition of Done runs these gates, each individually, all green.
 **Gates 1-5 always. Gate 6 only when the ticket changes `mix.exs` or `mix.lock`. Gate 7
 only when the ticket changes a path under `test/`, `lib/` or `conformance/`, or `mix.lock`. Gate 8 only
-when it changes `lib/`, the ET-CC boundary table or a guard source** — see each gate's applicability rule below:
+when it changes `lib/`, the ET-CC boundary table or a guard source. Gate 9 only when it changes a
+path that can move the ET-CC register** — see each gate's applicability rule below:
 
 1. `mix format --check-formatted`
 2. `mix compile --warnings-as-errors`
@@ -112,6 +113,13 @@ when it changes `lib/`, the ET-CC boundary table or a guard source** — see eac
    `git diff --no-renames --name-only main...{TICKET_KEY} | grep -E '^(lib/|conformance/data/etcc-boundaries\.json$|conformance/lib/mcp/conformance/boundary_sweep\.ex$|conformance/lib/mix/tasks/conformance\.sweep\.ex$)'`.
    No match ⇒ skip it and say so ("gate 8 not applicable, no lib/, table or guard change"). Detail:
    `docs/procedure/gate-8.md`.
+9. `mix conformance.register_drift` — the **ET-CC register drift check** (added by MES-241
+   under the PO ruling of 2026-11-17; took the set from eight to nine): would a fresh capture
+   of the suite change the register? **Run it with the branch checked out, the tree clean and
+   `node` on `PATH`.** Applies by the gate-8 form, this exact command:
+   `git diff --no-renames --name-only main...{TICKET_KEY} | grep -E '^(mix\.exs$|config/|lib/|test/mcp/|test/support/|test/test_helper\.exs$|docs/conformance/etcc-(register|exunit-rows)\.json$|conformance/data/etcc-(decisions|boundaries)\.json$|conformance/lib/mcp/conformance/(etcc_register|unit_locator|exunit_rows|boundary_sweep|rows_drift|register_drift)\.ex$|conformance/lib/mix/tasks/conformance\.register_drift\.ex$)'`.
+   No match ⇒ skip it and say so ("gate 9 not applicable, no register input change"). Detail:
+   `docs/procedure/gate-9.md`.
 
 `mix deps.get` is setup, not a gate.
 
@@ -158,6 +166,8 @@ MES-177, and it binds exactly as it did here. **Read a page before the task it g
   `conformance/` or `mix.lock`, and in every review.
 - `docs/procedure/gate-8.md` — gate 8's verdict forms, cost, residuals, checklist item and
   evidence. Read it when the branch touches `lib/`, and in every review.
+- `docs/procedure/gate-9.md` — gate 9's trigger, verdict forms, remedies, residuals, checklist
+  item and evidence. Read it when the branch touches a register input, and in every review.
 - `docs/procedure/publication.md` — D8: push `main` and the tag, `mix origin.sync`, the
   **Publication check** item. The PM at every merge; CODE_REVIEWER in every review.
 - `docs/procedure/end-of-sprint.md` — the PM, at a sprint boundary.
