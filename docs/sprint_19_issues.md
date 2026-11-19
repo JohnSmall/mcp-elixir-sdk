@@ -205,4 +205,4 @@ and `live_units`. No verdict field moved, nothing was refused, and no ticket was
 - **MES-254** (High): gate 6 red at main, plug EEF-CVE-2026-120287. Gate 6 applies only to tickets
   that change `mix.exs` or `mix.lock`, so it blocks no other ticket, but it is red until this lands.
 - **MES-247**: re-capture `etcc-exunit-rows.json` (drift +83 / 294 / 6).
-- Backlog filed this sprint, all under MES-118: MES-243, 244, 245, 246, 248, 249, 250, 251, 252, 253.
+- Backlog filed this sprint: MES-243, 244, 245, 246, 248, 249, 250, 251, 252, 253.
